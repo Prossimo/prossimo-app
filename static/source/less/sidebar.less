@@ -1,0 +1,43 @@
+//  Aside
+//  ------------------------------------------------------------------------
+
+@sidebar-color: lighten(@black, 30%);
+
+.sidebar {
+    position: fixed;
+    z-index: 50;
+    top: @header-height;
+    left: 0;
+    bottom: 0;
+    width: @sidebar-width;
+    background-color: @sidebar-color;
+    box-shadow: 0 0 3px 0 fadeout(@black, 50%);
+}
+
+.sidebar-nav {
+    li {
+        border-bottom: 1px solid darken(@sidebar-color, 5%);
+    }
+
+    li a {
+        padding: 1.5em 1em;
+        color: darken(@white, 20%);
+
+        &:hover,
+        &:active,
+        &:focus {
+            background-color: lighten(@sidebar-color, 5%);
+            color: darken(@white, 25%);
+        }
+    }
+
+    span {
+        display: block;
+        text-align: center;
+    }
+
+    .glyphicon {
+        padding-bottom: 0.2em;
+        font-size: 2em;
+    }
+}

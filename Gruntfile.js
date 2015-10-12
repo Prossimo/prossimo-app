@@ -3,7 +3,8 @@ module.exports = function (grunt) {
         'jquery/dist/jquery.min.js',
         'handlebars/handlebars.runtime.min.js',
         'underscore/underscore-min.js',
-        'backbone/backbone-min.js'
+        'backbone/backbone-min.js',
+        'backbone.marionette/lib/backbone.marionette.min.js'
     ];
 
     grunt.initConfig({
@@ -30,9 +31,9 @@ module.exports = function (grunt) {
                     '<%= buildUrl %>/js/templates.js': ['<%= sourceUrl %>/**/*.hbs']
                 },
                 options: {
-                    namespace: 'Templates',
+                    namespace: 'app.templates',
                     processName: function(filePath) {
-                        return filePath.replace(/^source\/templates\//, '').replace(/\.hbs$/, '');
+                        return filePath.replace(/^static\/source\/templates\//, '').replace(/\.hbs$/, '');
                     }
                 }
             }
@@ -57,6 +58,13 @@ module.exports = function (grunt) {
                         cwd: '<%= bowerUrl %>',
                         src: vendor_js_files,
                         dest: '<%= buildUrl %>/js/vendor/',
+                        filter: 'isFile'
+                    },
+                    {
+                        expand: true,
+                        cwd: '<%= bowerUrl %>/bootstrap/fonts',
+                        src: ['**'],
+                        dest: '<%= buildUrl %>/fonts/',
                         filter: 'isFile'
                     }
                 ]
@@ -103,11 +111,10 @@ module.exports = function (grunt) {
             livereload: {
                 options: { livereload: true },
                 files: [
-                        '<%= buildUrl %>/css/styles.css',
-                        '<%= buildUrl %>/css/login.css',
-                        '<%= buildUrl %>/js/*.js',
-                        '<%= buildUrl %>/*.html'
-                        ]
+                    '<%= buildUrl %>/css/*.css',
+                    '<%= buildUrl %>/js/**/*.js',
+                    '*.html'
+                ]
             }
         }
     });
@@ -119,9 +126,10 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-uglify');
 
-    grunt.registerTask('default', ['watch']);
     grunt.registerTask('build', [
         'clean:build', 'handlebars:build', 'copy:build', 'copy:vendor',
         'less:build', 'uglify:vendor'
     ]);
+
+    grunt.registerTask('default', ['build', 'watch']);
 };

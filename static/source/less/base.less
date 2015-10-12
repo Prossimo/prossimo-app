@@ -1,9 +1,44 @@
+//  Base page styles
+//  ------------------------------------------------------------------------
+
 html {
     box-sizing: border-box;
+}
+
+body {
+    height: 100vh;
 }
 
 *,
 *:after,
 *:before {
     box-sizing: inherit;
+}
+
+
+//  Header
+//  ------------------------------------------------------------------------
+
+.header {
+    position: fixed;
+    z-index: 100;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: @header-height;
+    background-color: lighten(@black, 50%);
+}
+
+
+//  Main container
+//  ------------------------------------------------------------------------
+
+.main {
+    position: relative;
+    z-index: 1;
+    padding-top: @header-height;
+    padding-left: @sidebar-width;
+    height: 100%;
+    width: 100%;
+    background-color: darken(@white, 10%);
 }
