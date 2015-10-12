@@ -19,8 +19,10 @@ var app = app || {};
                     this.$list.append($item);
 
                     this.$el.on('click', '.' + key, function (e) {
+                        var $this = $(this);
                         e.preventDefault();
                         item.showCallback.apply();
+                        $this.addClass('active').siblings().removeClass('active');
                     });
                 }, this);
             }

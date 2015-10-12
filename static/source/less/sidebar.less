@@ -28,7 +28,12 @@
         &:focus {
             background-color: lighten(@sidebar-color, 5%);
             color: darken(@white, 25%);
+            outline: none;
         }
+    }
+
+    li.active a {
+        background-color: lighten(@sidebar-color, 10%);
     }
 
     span {

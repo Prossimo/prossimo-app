@@ -29,4 +29,5 @@ $(document).ready(function () {
 
     //  TODO: use marionette region?
     $('#sidebar').append( app.main_navigation.render().el );
+    $('#sidebar').find('.docs_import').trigger('click');
 });
