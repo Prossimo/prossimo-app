@@ -3,6 +3,8 @@ var app = app || {};
 $(document).ready(function () {
     'use strict';
 
+    app.current_project = new app.Project();
+
     app.main_region = new Marionette.Region({
         el: '#main'
     });
