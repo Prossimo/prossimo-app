@@ -1,0 +1,40 @@
+.windows-table-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: darken(@white, 20%);
+}
+
+.windows-table-title {
+    background-color: darken(@white, 35%);
+    border-top: 1px solid darken(@white, 45%);
+    border-bottom: 1px solid darken(@white, 45%);
+    text-align: center;
+    padding: 0.2em 3em;
+    text-shadow: 1px 1px 0 darken(@white, 25%);
+
+    &:hover,
+    &:active {
+        background-color: darken(@white, 30%);
+        cursor: pointer;
+    }
+}
+
+
+
+
+.windows-table-contents {
+    padding: 1rem 4rem 1rem;
+    min-height: 5rem;
+}
+
+.windows-table-contents table {
+    margin-bottom: 0;
+    background-color: @white;
+    border: 1px solid darken(@white, 30%);
+}
+
+.windows-table-contents tfoot button {
+    width: 100%;
+}
