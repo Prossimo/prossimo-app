@@ -6,6 +6,7 @@
     "backbone": "~1.2.3",
     "handlebars": "~3.0.3",
     "backbone.marionette": "marionette#~2.4.3",
-    "bootstrap": "~3.3.5"
+    "bootstrap": "~3.3.5",
+    "pdfjs": "git://github.com/mozilla/pdf.js#v1.1.366"
   }
 }

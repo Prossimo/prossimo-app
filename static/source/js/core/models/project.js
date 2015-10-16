@@ -12,7 +12,8 @@ var app = app || {};
             client_email: "",
             client_address: "",
             project_name: "",
-            project_address: ""
+            project_address: "",
+            project_files: []
         },
         initialize: function () {
             this.windows = new app.WindowCollection();

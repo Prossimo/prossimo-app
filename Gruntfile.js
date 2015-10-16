@@ -4,7 +4,8 @@ module.exports = function (grunt) {
         'handlebars/handlebars.runtime.min.js',
         'underscore/underscore-min.js',
         'backbone/backbone-min.js',
-        'backbone.marionette/lib/backbone.marionette.min.js'
+        'backbone.marionette/lib/backbone.marionette.min.js',
+        'bootstrap/js/dropdown.js'
     ];
 
     grunt.initConfig({
@@ -68,6 +69,17 @@ module.exports = function (grunt) {
                         filter: 'isFile'
                     }
                 ]
+            },
+            pdfjs: {
+                files: [
+                    {
+                        expand: true,
+                        cwd: '<%= bowerUrl %>/pdfjs/',
+                        src: ['**', '!**/docs/**', '!**/test/**'],
+                        dest: '<%= buildUrl %>/pdfjs/',
+                        filter: 'isFile'
+                    }
+                ]
             }
         },
 
@@ -85,6 +97,15 @@ module.exports = function (grunt) {
                         vendor_js_files.map(function (component) {
                             return '<%= bowerUrl %>/' + component;
                         })
+                }
+            }
+        },
+
+        connect: {
+            server: {
+                options: {
+                    port: 9987,
+                    base: '.'
                 }
             }
         },
@@ -125,11 +146,12 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-handlebars');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-connect');
 
     grunt.registerTask('build', [
         'clean:build', 'handlebars:build', 'copy:build', 'copy:vendor',
-        'less:build', 'uglify:vendor'
+        'copy:pdfjs', 'less:build', 'uglify:vendor'
     ]);
 
-    grunt.registerTask('default', ['build', 'watch']);
+    grunt.registerTask('default', ['build', 'connect', 'watch']);
 };
