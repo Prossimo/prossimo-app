@@ -5,7 +5,12 @@ module.exports = function (grunt) {
         'underscore/underscore-min.js',
         'backbone/backbone-min.js',
         'backbone.marionette/lib/backbone.marionette.min.js',
+        'handsontable/dist/handsontable.full.min.js',
         'bootstrap/js/dropdown.js'
+    ];
+
+    var vendor_css_files = [
+        'handsontable/dist/handsontable.full.min.css'
     ];
 
     grunt.initConfig({
@@ -63,6 +68,13 @@ module.exports = function (grunt) {
                     },
                     {
                         expand: true,
+                        cwd: '<%= bowerUrl %>',
+                        src: vendor_css_files,
+                        dest: '<%= buildUrl %>/css/vendor/',
+                        filter: 'isFile'
+                    },
+                    {
+                        expand: true,
                         cwd: '<%= bowerUrl %>/bootstrap/fonts',
                         src: ['**'],
                         dest: '<%= buildUrl %>/fonts/',
@@ -83,10 +95,17 @@ module.exports = function (grunt) {
             }
         },
 
+        cssmin: {
+            vendor: {
+
+            }
+        },
+
         uglify: {
             vendor: {
                 options: {
                     mangle: false,
+                    compress: false,
                     banner: '/*! Full list of vendor libraries: \n' +
                         vendor_js_files.map(function (component) {
                             return '<%= buildUrl %>/js/vendor/' + component;
@@ -147,10 +166,11 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-connect');
+    grunt.loadNpmTasks('grunt-contrib-cssmin');
 
     grunt.registerTask('build', [
         'clean:build', 'handlebars:build', 'copy:build', 'copy:vendor',
-        'copy:pdfjs', 'less:build', 'uglify:vendor'
+        'copy:pdfjs', 'less:build', 'uglify:vendor', 'cssmin:vendor'
     ]);
 
     grunt.registerTask('default', ['build', 'connect', 'watch']);
