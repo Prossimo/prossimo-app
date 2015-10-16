@@ -12,6 +12,7 @@ module.exports = function (grunt) {
         sourceUrl: 'static/source',
         buildUrl: 'static/public',
         bowerUrl: 'bower_components',
+        credentials: grunt.file.readJSON('credentials.json'),
 
         less: {
             build: {
@@ -137,6 +138,17 @@ module.exports = function (grunt) {
                     '*.html'
                 ]
             }
+        },
+
+        sshexec: {
+            update: {
+                command: 'cd /var/www/prossimo && ./update.sh',
+                options: {
+                    host: '<%= credentials.host %>',
+                    username: '<%= credentials.username %>',
+                    password: '<%= credentials.password %>'
+                }
+            }
         }
     });
 
@@ -147,11 +159,12 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-connect');
+    grunt.loadNpmTasks('grunt-ssh');
 
     grunt.registerTask('build', [
         'clean:build', 'handlebars:build', 'copy:build', 'copy:vendor',
         'copy:pdfjs', 'less:build', 'uglify:vendor'
     ]);
-
+    grunt.registerTask('deploy', ['sshexec:update']);
     grunt.registerTask('default', ['build', 'connect', 'watch']);
 };
