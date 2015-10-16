@@ -10,6 +10,7 @@ $(document).ready(function () {
     });
 
     app.main_docs_import_view = new app.MainDocsImportView();
+    app.main_drawing_view = new app.MainDrawingWindowsView();
     app.main_quote_view = new app.MainQuoteView();
 
     app.main_navigation = new app.MainNavigationView({
@@ -18,6 +19,13 @@ $(document).ready(function () {
             icon_name: 'file',
             showCallback: function () {
                 app.main_region.show(app.main_docs_import_view, { preventDestroy: true });
+            }
+        },
+        drawing_windows: {
+            title: 'Drawing',
+            icon_name: 'pencil',
+            showCallback: function () {
+                app.main_region.show(app.main_drawing_view, { preventDestroy: true });
             }
         },
         quote: {
