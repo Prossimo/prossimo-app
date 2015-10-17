@@ -5,7 +5,8 @@ module.exports = function (grunt) {
         'underscore/underscore-min.js',
         'backbone/backbone-min.js',
         'backbone.marionette/lib/backbone.marionette.min.js',
-        'bootstrap/js/dropdown.js'
+        'bootstrap/js/dropdown.js',
+        'konva/konva.min.js'
     ];
 
     grunt.initConfig({
