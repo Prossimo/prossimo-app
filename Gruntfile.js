@@ -6,11 +6,13 @@ module.exports = function (grunt) {
         'backbone/backbone-min.js',
         'backbone.marionette/lib/backbone.marionette.min.js',
         'handsontable/dist/handsontable.full.min.js',
-        'bootstrap/js/dropdown.js'
+        'bootstrap/js/dropdown.js',
+        'bootstrap-select/dist/js/bootstrap-select.min.js'
     ];
 
     var vendor_css_files = [
-        'handsontable/dist/handsontable.full.min.css'
+        'handsontable/dist/handsontable.full.min.css',
+        'bootstrap-select/dist/css/bootstrap-select.min.css'
     ];
 
     grunt.initConfig({
@@ -98,7 +100,12 @@ module.exports = function (grunt) {
 
         cssmin: {
             vendor: {
-
+                files: {
+                    '<%= buildUrl %>/css/vendor.min.css':
+                        vendor_css_files.map(function (component) {
+                            return '<%= bowerUrl %>/' + component;
+                        })
+                }
             }
         },
 

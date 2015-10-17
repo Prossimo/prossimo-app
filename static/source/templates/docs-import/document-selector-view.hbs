@@ -1,10 +1,5 @@
-<div class="dropdown document-selector">
-    <button class="btn btn-default dropdown-toggle" type="button" id="document-selector-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-        Select a PDF
-        <span class="caret"></span>
-    </button>
-    <ul class="dropdown-menu" aria-labelledby="document-selector-dropdown">
-        <li><a href="/test/pdf/developer-specs-REV1_2_Public.pdf">developer-specs-REV1_2_Public.pdf</a></li>
-        <li><a href="/test/pdf/helloworld.pdf">helloworld.pdf</a></li>
-    </ul>
-</div>
+<select name="document-selector-dropdown" id="document-selector-dropdown" class="selectpicker" title='Choose a PDF document'>
+    {{#each document_list}}
+        <option {{#if is_selected }}selected{{/if}} value="{{ url }}">{{ name }}</option>
+    {{/each}}
+</select>
