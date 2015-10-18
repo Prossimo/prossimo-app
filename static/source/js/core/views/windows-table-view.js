@@ -7,6 +7,9 @@ var app = app || {};
         tagName: 'div',
         className: 'windows-table-container',
         template: app.templates['core/windows-table-view'],
+        ui: {
+            '$hot_container': '.handsontable-container'
+        },
         events: {
             'click .windows-table-title': 'toggleTableVisibility',
             'click .js-add-new-window': 'addNewWindow'
@@ -18,8 +21,6 @@ var app = app || {};
         addNewWindow: function () {
             var new_window = new app.Window();
             this.collection.add(new_window);
-            console.log( this.collection );
-            this.render();
         },
         getTableAttributes: function () {
             var name_title_hash = {
@@ -37,6 +38,11 @@ var app = app || {};
             }, this);
 
             return table_attributes;
+        },
+        getTableHeadings: function () {
+            return _.map(this.getTableAttributes(), function (item, key) {
+                return item.title;
+            });
         },
         getWindowAttributes: function (model) {
             var table_attributes = this.getTableAttributes();
@@ -61,9 +67,53 @@ var app = app || {};
         initialize: function () {
             // this.table_visibility = 'hidden';
             this.table_visibility = 'visible';
+
+            this.collection.add([
+                { dimensions: "110x130", quantity: 1, type: "Full", description: "Nice" },
+                { dimensions: "120x115", quantity: 2, type: "Vertical", description: "Very heavy", }
+            ]);
+
+            this.listenTo(this.collection, 'all', this.render);
+        },
+        getNewWindow: function () {
+            return new app.Window();
+        },
+        //  This one is from Handsontable / Backbone integration docs
+        getAttributesColumn: function (attr_name) {
+            return {
+                data: function (window_model, value) {
+                    if ( _.isUndefined(value) ) {
+                        return window_model.get(attr_name);
+                    }
+                    window_model.set(attr_name, value);
+                }
+            };
+        },
+        getColumns: function () {
+            return _.map(this.getTableAttributes(), function (item) {
+                return this.getAttributesColumn(item.name);
+            }, this);
         },
         onRender: function () {
-            console.log( this.serializeData() );
+            // this.hot = new Handsontable(this.ui.$hot_container[0], {
+            this.hot = this.ui.$hot_container.handsontable({
+                data: this.collection,
+                // dataSchema: this.getNewWindow,
+                // startRows: 5,
+                // startCols: 5,
+                // colHeaders: true,
+                // minSpareRows: 1
+                // contextMenu: true,
+                // columns: [
+                //     this.getAttributesColumn('dimensions'),
+                //     this.getAttributesColumn('quantity'),
+                //     this.getAttributesColumn('type'),
+                //     this.getAttributesColumn('description')
+                // ],
+                columns: this.getColumns(),
+                colHeaders: this.getTableHeadings()
+                // minSpareRows: 1 //see notes on the left for `minSpareRows`
+            });
         }
     });
 })();
