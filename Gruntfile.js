@@ -107,7 +107,18 @@ module.exports = function (grunt) {
             server: {
                 options: {
                     port: 9987,
-                    base: '.'
+                    base: '.',
+                    middleware: function (connect, options, middlewares) {
+                        middlewares.unshift(function (req, res, next) {
+                            if ( req.url === '/docs/' || req.url === '/drawing/' || req.url === '/quote/' ) {
+                                require('fs').createReadStream('index.html').pipe(res);
+                            } else {
+                                return next();
+                            }
+                        });
+
+                        return middlewares;
+                    }
                 }
             }
         },
