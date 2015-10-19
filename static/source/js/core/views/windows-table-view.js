@@ -18,7 +18,8 @@ var app = app || {};
             this.table_visibility = this.table_visibility === 'hidden' ? 'visible' : 'hidden';
             this.render();
         },
-        addNewWindow: function () {
+        addNewWindow: function (e) {
+            e.stopPropagation();
             var new_window = new app.Window();
             this.collection.add(new_window);
         },
@@ -68,24 +69,30 @@ var app = app || {};
             // this.table_visibility = 'hidden';
             this.table_visibility = 'visible';
 
-            this.collection.add([
-                { dimensions: "110x130", quantity: 1, type: "Full", description: "Nice" },
-                { dimensions: "120x115", quantity: 2, type: "Vertical", description: "Very heavy", }
-            ]);
+            if ( this.collection.length === 0 ) {
+                this.collection.add([
+                    { dimensions: "110x130", quantity: 1, type: "Full", description: "Nice" },
+                    { dimensions: "120x115", quantity: 2, type: "Vertical", description: "Very heavy", }
+                ]);
+            }
 
-            this.listenTo(this.collection, 'all', this.render);
+            // this.listenTo(this.collection, 'all', this.render);
+            this.listenTo(this.collection, 'all', this.renderTable);
         },
-        getNewWindow: function () {
-            return new app.Window();
-        },
+        // getNewWindow: function () {
+        //     return new app.Window();
+        // },
         //  This one is from Handsontable / Backbone integration docs
         getAttributesColumn: function (attr_name) {
             return {
                 data: function (window_model, value) {
-                    if ( _.isUndefined(value) ) {
-                        return window_model.get(attr_name);
+                    if ( window_model ) {
+                        if ( _.isUndefined(value) ) {
+                            return window_model.get(attr_name);
+                        }
+
+                        window_model.set(attr_name, value);
                     }
-                    window_model.set(attr_name, value);
                 }
             };
         },
@@ -94,26 +101,25 @@ var app = app || {};
                 return this.getAttributesColumn(item.name);
             }, this);
         },
+        renderTable: function () {
+            if ( this.hot ) {
+                this.hot.render();
+            }
+        },
         onRender: function () {
-            // this.hot = new Handsontable(this.ui.$hot_container[0], {
-            this.hot = this.ui.$hot_container.handsontable({
+            console.log( 'onrender' );
+
+            this.hot = new Handsontable(this.ui.$hot_container[0], {
                 data: this.collection,
-                // dataSchema: this.getNewWindow,
-                // startRows: 5,
-                // startCols: 5,
-                // colHeaders: true,
-                // minSpareRows: 1
-                // contextMenu: true,
-                // columns: [
-                //     this.getAttributesColumn('dimensions'),
-                //     this.getAttributesColumn('quantity'),
-                //     this.getAttributesColumn('type'),
-                //     this.getAttributesColumn('description')
-                // ],
                 columns: this.getColumns(),
-                colHeaders: this.getTableHeadings()
-                // minSpareRows: 1 //see notes on the left for `minSpareRows`
+                colHeaders: this.getTableHeadings(),
+                stretchH: 'all'
             });
+
+            Handsontable.hooks.once('afterInit', this.renderTable, this.hot);
+        },
+        onShow: function () {
+            this.renderTable();
         }
     });
 })();

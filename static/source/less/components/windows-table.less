@@ -8,6 +8,7 @@
 }
 
 .windows-table-title {
+    position: relative;
     background-color: darken(@white, 35%);
     border-top: 1px solid darken(@white, 45%);
     border-bottom: 1px solid darken(@white, 45%);
@@ -22,23 +23,46 @@
     }
 }
 
+.windows-table-title p {
+    margin: 0;
+}
 
-
+.windows-table-controls {
+    position: absolute;
+    right: 0;
+    padding: 0.3rem 0.5rem;
+    top: -0.9rem;
+    background-color: darken(@white, 40%);
+    border-radius: 5px 0 0 5px;
+    border: 1px solid darken(@white, 45%);
+}
 
 .windows-table-contents {
     // padding: 1rem 4rem 1rem;
-    padding: 1rem;
+    // padding: 2rem 0 1rem;
+    margin: 2rem 1rem 1rem;
     min-height: 5rem;
     max-height: 30rem;
     overflow: auto;
 }
 
+// .windows-table-contents table {
+//     margin-bottom: 1rem;
+//     background-color: @white;
+//     border: 1px solid darken(@white, 30%);
+// }
+
+// .windows-table-contents tfoot button {
+//     width: 100%;
+// }
+
+
+//  Custom styles for handsontable
+
 .windows-table-contents table {
-    margin-bottom: 1rem;
-    background-color: @white;
-    border: 1px solid darken(@white, 30%);
+    width: 100%;
 }
 
-.windows-table-contents tfoot button {
+.windows-table-contents .wtHolder {
     width: 100%;
 }

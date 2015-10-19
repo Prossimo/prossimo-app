@@ -1,32 +1,11 @@
 <div class="windows-table">
-    <div class="windows-table-title">Windows list</div>
+    <div class="windows-table-title">
+        <p>Windows list</p>
+        <div class="windows-table-controls {{ table_visibility }}">
+            <button class="btn js-add-new-window add-new-window">Add a new window</button>
+        </div>
+    </div>
     <div class="windows-table-contents {{ table_visibility }}">
         <div class="handsontable-container"></div>
-
-        <table class="table">
-            <thead>
-                <tr>
-                    {{#each table_attributes}}
-                    <th class="{{ name }}">{{ title }}</th>
-                    {{/each}}
-                </tr>
-            </thead>
-            <tbody>
-                {{#each windows_list}}
-                <tr>
-                    {{#each this}}
-                    <td class="{{@key }}">{{ this }}</td>
-                    {{/each}}
-                </tr>
-                {{/each}}
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="{{ table_attributes_num }}">
-                        <button class="btn js-add-new-window">Add a new window</button>
-                    </td>
-                </tr>
-            </tfoot>
-        </table>
     </div>
 </div>
