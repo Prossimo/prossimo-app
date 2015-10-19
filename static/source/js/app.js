@@ -3,6 +3,12 @@ var app = app || {};
 $(document).ready(function () {
     'use strict';
 
+    app.router = new app.AppRouter();
+
+    //  Register a communication channel for all events in the app
+    app.vent = {};
+    _.extend(app.vent, Backbone.Events);
+
     app.current_project = new app.Project();
 
     app.main_region = new Marionette.Region({
@@ -16,6 +22,7 @@ $(document).ready(function () {
     app.main_navigation = new app.MainNavigationView({
         docs_import: {
             title: 'Docs',
+            path: 'docs',
             icon_name: 'file',
             showCallback: function () {
                 app.main_region.show(app.main_docs_import_view, { preventDestroy: true });
@@ -23,6 +30,7 @@ $(document).ready(function () {
         },
         drawing_windows: {
             title: 'Drawing',
+            path: 'drawing',
             icon_name: 'pencil',
             showCallback: function () {
                 app.main_region.show(app.main_drawing_view, { preventDestroy: true });
@@ -30,6 +38,7 @@ $(document).ready(function () {
         },
         quote: {
             title: 'Quote',
+            path: 'quote',
             icon_name: 'shopping-cart',
             showCallback: function () {
                 app.main_region.show(app.main_quote_view, { preventDestroy: true });
@@ -37,7 +46,9 @@ $(document).ready(function () {
         },
     });
 
-    //  TODO: use marionette region?
-    $('#sidebar').append( app.main_navigation.render().el );
-    $('#sidebar').find('.docs_import').trigger('click');
+    Backbone.history.start({ pushState: true });
+
+    if ( Backbone.history.fragment === '' ) {
+        app.router.navigate('/docs/', { trigger: true });
+    }
 });

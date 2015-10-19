@@ -7,7 +7,8 @@ module.exports = function (grunt) {
         'backbone.marionette/lib/backbone.marionette.min.js',
         'handsontable/dist/handsontable.full.min.js',
         'bootstrap/js/dropdown.js',
-        'bootstrap-select/dist/js/bootstrap-select.min.js'
+        'bootstrap-select/dist/js/bootstrap-select.min.js',
+        'konva/konva.min.js'
     ];
 
     var vendor_css_files = [
@@ -132,7 +133,18 @@ module.exports = function (grunt) {
             server: {
                 options: {
                     port: 9987,
-                    base: '.'
+                    base: '.',
+                    middleware: function (connect, options, middlewares) {
+                        middlewares.unshift(function (req, res, next) {
+                            if ( req.url === '/docs/' || req.url === '/drawing/' || req.url === '/quote/' ) {
+                                require('fs').createReadStream('index.html').pipe(res);
+                            } else {
+                                return next();
+                            }
+                        });
+
+                        return middlewares;
+                    }
                 }
             }
         },

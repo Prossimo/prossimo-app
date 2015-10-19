@@ -3,3 +3,4 @@ bower_components
 build
 dist
 static/public
+*.sublime*
