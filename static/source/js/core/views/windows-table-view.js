@@ -66,8 +66,8 @@ var app = app || {};
             };
         },
         initialize: function () {
-            // this.table_visibility = 'hidden';
-            this.table_visibility = 'visible';
+            this.table_visibility = 'hidden';
+            // this.table_visibility = 'visible';
 
             if ( this.collection.length === 0 ) {
                 this.collection.add([
@@ -107,19 +107,15 @@ var app = app || {};
             }
         },
         onRender: function () {
-            console.log( 'onrender' );
-
             this.hot = new Handsontable(this.ui.$hot_container[0], {
                 data: this.collection,
                 columns: this.getColumns(),
                 colHeaders: this.getTableHeadings(),
-                stretchH: 'all'
+                stretchH: 'all',
+                height: 200
             });
 
             Handsontable.hooks.once('afterInit', this.renderTable, this.hot);
-        },
-        onShow: function () {
-            this.renderTable();
         }
     });
 })();
