@@ -28,7 +28,8 @@ var app = app || {};
                         //  Execute callback on routing
                         app.router.addRoute(item.path + '(/)', function () {
                             item.showCallback.apply();
-                            document.title = 'Prossimo App: ' + item.title;
+                            document.title = 'Prossimo App: ' + item.title +
+                                ' (current version: ' + $('meta[name="latest-commit-sha"]').attr('value') + ')';
                             self.ui.$list.find('.' + key).addClass('active').siblings().removeClass('active');
                         });
                     }

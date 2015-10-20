@@ -16,11 +16,32 @@ module.exports = function (grunt) {
         'bootstrap-select/dist/css/bootstrap-select.min.css'
     ];
 
+    var js_files = [
+        'router.js',
+        'core/models/window.js',
+        'core/models/window-drawing.js',
+        'core/models/project.js',
+        'core/collections/window-collection.js',
+        'core/views/main-navigation-view.js',
+        'core/views/windows-table-view.js',
+        'docs-import/views/main-docs-import-view.js',
+        'docs-import/views/document-selector-view.js',
+        'drawing-windows/views/main-drawing-windows-view.js',
+        'quote/views/main-quote-view.js',
+        'quote/views/quote-item-view.js',
+        'quote/views/quote-table-view.js',
+        'app.js'
+    ];
+
     grunt.initConfig({
         sourceUrl: 'static/source',
         buildUrl: 'static/public',
         bowerUrl: 'bower_components',
         credentials: grunt.file.readJSON('credentials.json'),
+        // hash: '<%= ((new Date()).valueOf().toString()) + (Math.floor((Math.random()*1000000)+1).toString()) %>',
+
+        gitinfo: {},
+        hash: '<%= gitinfo.local.branch.current.shortSHA %>',
 
         less: {
             build: {
@@ -30,7 +51,7 @@ module.exports = function (grunt) {
                     }
                 },
                 files: {
-                    '<%= buildUrl %>/css/styles.css': '<%= sourceUrl %>/less/styles.less',
+                    '<%= buildUrl %>/css/styles.<%= hash %>.css': '<%= sourceUrl %>/less/styles.less',
                 }
             }
         },
@@ -38,7 +59,7 @@ module.exports = function (grunt) {
         handlebars: {
             build: {
                 files: {
-                    '<%= buildUrl %>/js/templates.js': ['<%= sourceUrl %>/**/*.hbs']
+                    '<%= buildUrl %>/js/templates.<%= hash %>.js': ['<%= sourceUrl %>/**/*.hbs']
                 },
                 options: {
                     namespace: 'app.templates',
@@ -102,7 +123,7 @@ module.exports = function (grunt) {
         cssmin: {
             vendor: {
                 files: {
-                    '<%= buildUrl %>/css/vendor.min.css':
+                    '<%= buildUrl %>/css/vendor.<%= hash %>.min.css':
                         vendor_css_files.map(function (component) {
                             return '<%= bowerUrl %>/' + component;
                         })
@@ -121,9 +142,17 @@ module.exports = function (grunt) {
                         }).join('\n') + '*/\n'
                 },
                 files: {
-                    '<%= buildUrl %>/js/vendor.min.js':
+                    '<%= buildUrl %>/js/vendor.<%= hash %>.min.js':
                         vendor_js_files.map(function (component) {
                             return '<%= bowerUrl %>/' + component;
+                        })
+                }
+            },
+            build: {
+                files: {
+                    '<%= buildUrl %>/js/application.<%= hash %>.min.js':
+                        js_files.map(function (component) {
+                            return '<%= sourceUrl %>/js/' + component;
                         })
                 }
             }
@@ -154,19 +183,21 @@ module.exports = function (grunt) {
         },
 
         watch: {
+            replace: {
+                files: ['<%= sourceUrl %>/index.html'],
+                tasks: ['gitinfo', 'replace:build']
+            },
             less: {
                 files: ['<%= sourceUrl %>/less/**/*.less'],
-                tasks: ['less:build']
+                tasks: ['gitinfo', 'less:build']
             },
-            copy: {
-                files: [
-                        '<%= sourceUrl %>/js/**/*.js'
-                ],
-                tasks: ['copy:build']
+            uglify: {
+                files: ['<%= sourceUrl %>/js/**/*.js'],
+                tasks: ['gitinfo', 'uglify:build']
             },
             handlebars: {
                 files: ['<%= sourceUrl %>/templates/**/*.hbs'],
-                tasks: ['handlebars:build']
+                tasks: ['gitinfo', 'handlebars:build']
             },
             livereload: {
                 options: { livereload: true },
@@ -194,6 +225,25 @@ module.exports = function (grunt) {
                 configFile: '.eslintrc'
             },
             target: ['<%= sourceUrl %>/js/**/*.js']
+        },
+
+        replace: {
+            build: {
+                options: {
+                    patterns: [
+                        {
+                            match: 'hash',
+                            replacement: '<%= hash %>'
+                        }
+                    ]
+                },
+                files: [
+                    {
+                        src: '<%= sourceUrl %>/index.html',
+                        dest: './index.html'
+                    }
+                ]
+            }
         }
     });
 
@@ -207,10 +257,12 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-ssh');
     grunt.loadNpmTasks('grunt-eslint');
+    grunt.loadNpmTasks('grunt-replace');
+    grunt.loadNpmTasks('grunt-gitinfo');
 
     grunt.registerTask('build', [
-        'clean:build', 'handlebars:build', 'copy:build', 'copy:vendor',
-        'copy:pdfjs', 'less:build', 'uglify:vendor', 'cssmin:vendor'
+        'gitinfo', 'clean:build', 'handlebars:build', 'copy:build', 'copy:vendor', 'uglify:build',
+        'copy:pdfjs', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:build'
     ]);
     grunt.registerTask('test', ['eslint']);
     grunt.registerTask('deploy', ['test', 'sshexec:update']);

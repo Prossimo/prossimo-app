@@ -4,3 +4,4 @@ build
 dist
 static/public
 *.sublime*
+/index.html
