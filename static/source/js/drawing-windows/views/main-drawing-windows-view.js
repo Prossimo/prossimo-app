@@ -38,14 +38,14 @@ var app = app || {};
             this.stage.add(this.layer);
 
             this.heightInput = this.$('.heightInput');
-            this.widthInput = this.$('.widthInput')
+            this.widthInput = this.$('.widthInput');
 
             this.widthInput.on('change input', function() {
-                this.active_drawing.set('width', parseInt(this.widthInput.val()))
+                this.active_drawing.set('width', parseInt(this.widthInput.val()));
             }.bind(this));
 
             this.heightInput.on('change input', function() {
-                this.active_drawing.set('height', parseInt(this.heightInput.val()))
+                this.active_drawing.set('height', parseInt(this.heightInput.val()));
             }.bind(this));
 
             // set default value
@@ -405,7 +405,7 @@ var app = app || {};
                 }
             });
         },
-        showPopup: function(e) {
+        showPopup: function() {
             var pos = this.stage.getPointerPosition();
             var x = pos.x - 5;
             var y = pos.y - 5;

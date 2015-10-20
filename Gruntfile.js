@@ -187,6 +187,13 @@ module.exports = function (grunt) {
                     password: '<%= credentials.password %>'
                 }
             }
+        },
+
+        eslint: {
+            options: {
+                configFile: '.eslintrc'
+            },
+            target: ['<%= sourceUrl %>/js/**/*.js']
         }
     });
 
@@ -199,11 +206,13 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-ssh');
+    grunt.loadNpmTasks('grunt-eslint');
 
     grunt.registerTask('build', [
         'clean:build', 'handlebars:build', 'copy:build', 'copy:vendor',
         'copy:pdfjs', 'less:build', 'uglify:vendor', 'cssmin:vendor'
     ]);
-    grunt.registerTask('deploy', ['sshexec:update']);
+    grunt.registerTask('test', ['eslint']);
+    grunt.registerTask('deploy', ['test', 'sshexec:update']);
     grunt.registerTask('default', ['build', 'connect', 'watch']);
 };

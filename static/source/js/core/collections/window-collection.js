@@ -13,15 +13,15 @@ var app = app || {};
             this.remove(removed).add.apply(this, args);
             return removed;
         },
-        getTableAttributes: function (table_type) {
+        getTableAttributes: function () {
             var name_title_hash = {
-                dimensions: "Dimensions",
-                quantity: "Quantity",
-                type: "Type",
-                description: "Description",
-                customer_image: "Customer Image",
-                drawing: "Drawing",
-                supplier_image: "Supplier Image"
+                dimensions: 'Dimensions',
+                quantity: 'Quantity',
+                type: 'Type',
+                description: 'Description',
+                customer_image: 'Customer Image',
+                drawing: 'Drawing',
+                supplier_image: 'Supplier Image'
             };
 
             var table_attributes = _.map(name_title_hash, function (item, key) {
@@ -31,7 +31,7 @@ var app = app || {};
             return table_attributes;
         },
         getTableHeadings: function () {
-            return _.map(this.getTableAttributes(), function (item, key) {
+            return _.map(this.getTableAttributes(), function (item) {
                 return item.title;
             });
         },

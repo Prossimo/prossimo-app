@@ -47,7 +47,7 @@ var app = app || {};
                 reference_id: this.model.cid,
                 description: this.getDescription(),
                 quantity: this.model.get('quantity'),
-                price: this.getPrices(),
+                price: this.getPrices()
             };
         }
     });

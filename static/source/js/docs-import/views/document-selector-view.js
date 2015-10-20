@@ -13,7 +13,7 @@ var app = app || {};
         events: {
             'change @ui.$select': 'onChange'
         },
-        onChange: function (e) {
+        onChange: function () {
             this.$el.trigger({
                 type: 'document-selected',
                 url: this.ui.$select.val()
