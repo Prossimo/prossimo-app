@@ -12,11 +12,11 @@ var app = app || {};
             client_email: "",
             client_address: "",
             project_name: "",
-            project_address: "",
-            project_files: []
+            project_address: ""
         },
         initialize: function () {
             this.windows = new app.WindowCollection();
+            this.project_files = [];
         }
     });
 })();

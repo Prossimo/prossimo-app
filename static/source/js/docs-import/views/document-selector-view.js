@@ -23,6 +23,7 @@ var app = app || {};
             this.ui.$select.selectpicker();
         },
         initialize: function () {
+            //  TODO: the list should be loaded from a `current_project`
             //  An unique identifier here is `url`
             this.document_list = [
                 {

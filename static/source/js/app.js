@@ -9,7 +9,20 @@ $(document).ready(function () {
     app.vent = {};
     _.extend(app.vent, Backbone.Events);
 
-    app.current_project = new app.Project();
+    app.current_project = new app.Project({
+        client_name: "Andy Huh",
+        client_company_name: "Fentrend",
+        client_phone: "917.468.0506",
+        client_email: "ben@prossimo.us",
+        client_address: "98 4th Street Suite 213 Brooklyn, NY 11231",
+        project_name: "Italian Market",
+        project_address: "827 Carpenter Lane Philadelphia, PA"
+    });
+
+    app.current_project.windows.add([
+        { dimensions: "110x130", quantity: 1, type: "Full", description: "Nice" },
+        { dimensions: "120x115", quantity: 2, type: "Vertical", description: "Very heavy" }
+    ]);
 
     app.main_region = new Marionette.Region({
         el: '#main'

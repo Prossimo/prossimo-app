@@ -1,0 +1,55 @@
+.quote-screen {
+    display: flex;
+    flex-flow: column;
+}
+
+.quote-outer-container {
+    padding: 2rem;
+    flex: 1 1 auto;
+    overflow: auto;
+}
+
+.quote-container {
+    // margin: 5rem;
+    margin-bottom: 2rem;
+    padding: 4rem;
+    // padding-top: 1px;
+    background-color: @white;
+    border: 1px solid darken(@white, 15%);
+    min-height: 100%;
+}
+
+.quote-project-info {
+    .project-name {
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        font-size: 2em;
+        text-align: center;
+    }
+}
+
+
+//  Table
+
+.quote-table-container {
+    margin: 3rem 0 0;
+}
+
+.quote-table {
+    border: 1px solid darken(@white, 10%);
+    width: 100%;
+}
+
+.quote-table thead th {
+    padding: 0.5em 1em;
+    border: 1px solid darken(@white, 20%);
+    background-color: darken(@white, 1%);
+    // text-align: center;
+}
+
+.quote-table tbody td {
+    padding: 0.5em 1em;
+    border: 1px solid darken(@white, 10%);
+    // text-align: center;
+}
