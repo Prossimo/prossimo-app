@@ -7,4 +7,16 @@
         </tr>
     </thead>
     <tbody></tbody>
+    <tfoot>
+        <tr>
+            <td colspan="{{ footer_colspan }}"></td>
+            <td colspan="1">
+                <ul class="quote-total-prices">
+                    <li><strong>Subtotal</strong> {{ total_prices.subtotal }}</li>
+                    <li><strong>Shipping</strong> {{ total_prices.shipping }}</li>
+                    <li><strong>Total</strong> {{ total_prices.total }}</li>
+                </ul>
+            </td>
+        </tr>
+    </tfoot>
 </table>

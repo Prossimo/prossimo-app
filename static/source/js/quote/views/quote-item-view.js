@@ -7,10 +7,6 @@ var app = app || {};
         tagName: 'tr',
         className: 'quote-item',
         template: app.templates['quote/quote-item-view'],
-            // table_attributes_num: this.getTableAttributes().length,
-            // windows_list: this.collection.map(function (model) {
-            //     return this.getWindowAttributes(model);
-            // }, this)
         getPrices: function () {
             var unit_price = Math.ceil(Math.random() * 10) * 100;
 
@@ -33,7 +29,7 @@ var app = app || {};
 
             var example_params = {
                 mark: 'A',
-                size: '5\'-6"x6\'10"',
+                size: '5\'-6"x6\'-10"',
                 area: '37.5',
                 type: 'CASEMENT',
                 u_factor: '0.2 MAX',
@@ -48,7 +44,7 @@ var app = app || {};
         },
         serializeData: function () {
             return {
-                id: this.model.cid,
+                reference_id: this.model.cid,
                 description: this.getDescription(),
                 quantity: this.model.get('quantity'),
                 price: this.getPrices(),

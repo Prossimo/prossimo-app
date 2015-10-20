@@ -19,14 +19,45 @@
     min-height: 100%;
 }
 
-.quote-project-info {
-    .project-name {
-        text-transform: uppercase;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        font-size: 2em;
-        text-align: center;
-    }
+
+//  Quote header (Prossimo info)
+
+.quote-header {
+    margin-bottom: 4rem;
+    text-align: right;
+}
+
+.quote-header h1 {
+    text-align: right;
+    margin: 0 0 4rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: darken(@white, 30%);
+}
+
+.quote-header ul {
+    display: inline-block;
+    text-align: left;
+    margin: 0 3rem;
+    list-style-type: none;
+}
+
+
+
+
+//  Project info
+
+.quote-project-info .project-name {
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    font-size: 2em;
+    // text-align: center;
+}
+
+.quote-project-info ul {
+    list-style-type: none;
+    padding: 0;
 }
 
 
@@ -51,5 +82,56 @@
 .quote-table tbody td {
     padding: 0.5em 1em;
     border: 1px solid darken(@white, 10%);
+    vertical-align: top;
     // text-align: center;
+}
+
+
+//  Items
+
+.product_description ul {
+    padding: 0;
+    list-style-type: none;
+}
+
+
+//  Table footer
+
+.quote-table tfoot td {
+    padding: 0.5em 1em;
+    border: 1px solid darken(@white, 10%);
+    background-color: darken(@white, 1%);
+    vertical-align: top;
+}
+
+.quote-table .quote-total-prices {
+    padding: 0;
+    list-style-type: none;
+}
+
+
+//  Terms (below table)
+
+.quote-terms-info {
+    margin-top: 6rem;
+}
+
+.quote-terms-info h2 {
+    width: 60%;
+}
+
+.quote-terms-info ul {
+    margin: 4rem 0;
+    padding: 0;
+    font-weight: 700;
+    list-style-type: none;
+}
+
+.quote-terms-info table {
+    margin: 4rem 0 0;
+    width: 100%;
+}
+
+.quote-terms-info table td {
+    padding: 1rem 0;
 }

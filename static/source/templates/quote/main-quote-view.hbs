@@ -1,8 +1,19 @@
 <div class="quote-outer-container">
     <div class="quote-container">
-        {{!-- <div class="quote-header">
-            <p>Quotation</p>
-        </div> --}}
+        <div class="quote-header">
+            <h1>Quotation</h1>
+            <ul class="prossimo-info">
+                <li class="prossimo-address"><strong>PO Box 232, Huguenot, NY 12746</strong></li>
+                <li class="prossimo-phone"><strong>347 687 9888</strong></li>
+                <li class="prossimo-email"><strong><a href="mailto:quotes@prossimo.us">quotes@prossimo.us</a></strong></li>
+                <li class="prossimo-web"><strong><a href="http://www.prossimo.us">www.prossimo.us</a></strong></li>
+            </ul>
+            <ul class="quote-info">
+                <li class="quote-id"><strong>Quote #</strong> <span>{{ quote_id }}</span></li>
+                <li class="quote-date"><strong>Quote Date</strong> <span>{{ quote_date }}</span></li>
+                <li class="quote-revision"><strong>Revision #</strong> <span>{{ quote_revision_id }}</span></li>
+            </ul>
+        </div>
 
         <div class="quote-project-info">
             <h2 class="project-name">{{ project_name }}</h2>
@@ -17,5 +28,25 @@
         </div>
 
         <div class="quote-table-container"></div>
+
+        <div class="quote-terms-info">
+            <h2>All SALES SUBJECT TO PROSSIMO LLC TERMS AND CONDITIONS</h2>
+            <ul class="warranty">
+                <li>Limited warranty: 15 years</li>
+                <li>Lead time: 10-12 weeks</li>
+            </ul>
+            <p>U-value calculations are based on EN ISO 1077</p>
+            <p>Payments accepted: Check, money order, bank transfer</p>
+
+            <table>
+                <tr>
+                    <td colspan="2">I have reviewed and agree to the above quotation for windows and doors.</td>
+                </tr>
+                <tr>
+                    <td>Name:_________________________________</td>
+                    <td>Signature:_________________________________</td>
+                </tr>
+            </table>
+        </div>
     </div>
 </div>

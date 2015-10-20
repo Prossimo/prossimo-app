@@ -12,6 +12,14 @@ var app = app || {};
         },
         initialize: function () {
             this.model = app.current_project;
+            this.listenTo(this.model, 'all', this.render);
+        },
+        serializeData: function () {
+            return _.extend(this.serializeModel(this.model), {
+                quote_id: this.model.cid,
+                quote_date: '5 September, 2015',
+                quote_revision_id: '1'
+            });
         },
         onRender: function () {
             var windows_table_view = new app.WindowsTableView({
