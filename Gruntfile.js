@@ -239,7 +239,7 @@ module.exports = function (grunt) {
                 },
                 files: [
                     {
-                        src: '<%= sourceUrl %>/index.html',
+                        src: '<%= sourceUrl %>/index.html.tpl',
                         dest: './index.html'
                     }
                 ]
