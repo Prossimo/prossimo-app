@@ -20,8 +20,8 @@ $(document).ready(function () {
     });
 
     app.current_project.windows.add([
-        { dimensions: '110x130', quantity: 1, type: 'Full', description: 'Nice' },
-        { dimensions: '120x115', quantity: 2, type: 'Vertical', description: 'Very heavy' }
+        { width: 30, height: 40, quantity: 1, type: 'Full', description: 'Nice' },
+        { width: 38, height: 24, quantity: 2, type: 'Vertical', description: 'Very heavy' }
     ]);
 
     app.main_region = new Marionette.Region({
