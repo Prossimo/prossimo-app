@@ -71,7 +71,7 @@ module.exports = function (grunt) {
         },
 
         copy: {
-            build: {
+            dev: {
                 files: [
                     {
                         expand: true,
@@ -191,9 +191,13 @@ module.exports = function (grunt) {
                 files: ['<%= sourceUrl %>/less/**/*.less'],
                 tasks: ['gitinfo', 'less:build']
             },
-            uglify: {
+            // uglify: {
+            //     files: ['<%= sourceUrl %>/js/**/*.js'],
+            //     tasks: ['gitinfo', 'uglify:build']
+            // },
+            copy: {
                 files: ['<%= sourceUrl %>/js/**/*.js'],
-                tasks: ['gitinfo', 'uglify:build']
+                tasks: ['copy:dev']
             },
             handlebars: {
                 files: ['<%= sourceUrl %>/templates/**/*.hbs'],
@@ -228,13 +232,40 @@ module.exports = function (grunt) {
         },
 
         replace: {
+            dev: {
+                options: {
+                    patterns: [
+                        {
+                            match: 'hash',
+                            replacement: '<%= hash %>'
+                        },
+                        {
+                            match: 'scripts',
+                            replacement: js_files.map(function (component) {
+                                return '<script src="/' + '<%= buildUrl %>/js/' + component + '"></script>';
+                            }).join('\n    ')
+                        }
+                    ]
+                },
+                files: [
+                    {
+                        src: '<%= sourceUrl %>/index.html.tpl',
+                        dest: './index.html'
+                    }
+                ]
+            },
             build: {
                 options: {
                     patterns: [
                         {
                             match: 'hash',
                             replacement: '<%= hash %>'
+                        },
+                        {
+                            match: 'scripts',
+                            replacement: '<script src="/static/public/js/application.<%= hash %>.min.js"></script>'
                         }
+
                     ]
                 },
                 files: [
@@ -261,10 +292,14 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-gitinfo');
 
     grunt.registerTask('build', [
-        'gitinfo', 'clean:build', 'handlebars:build', 'copy:build', 'copy:vendor', 'uglify:build',
+        'gitinfo', 'clean:build', 'handlebars:build', 'copy:vendor', 'uglify:build',
         'copy:pdfjs', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:build'
+    ]);
+    grunt.registerTask('dev', [
+        'gitinfo', 'clean:build', 'handlebars:build', 'copy:dev', 'copy:vendor',
+        'copy:pdfjs', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:dev'
     ]);
     grunt.registerTask('test', ['eslint']);
     grunt.registerTask('deploy', ['test', 'sshexec:update']);
-    grunt.registerTask('default', ['build', 'connect', 'watch']);
+    grunt.registerTask('default', ['dev', 'connect', 'watch']);
 };

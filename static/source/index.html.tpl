@@ -11,7 +11,7 @@
     <script src="/static/public/js/vendor.@@hash.min.js"></script>
     <script src="/static/public/js/templates.@@hash.js"></script>
 
-    <script src="/static/public/js/application.@@hash.min.js"></script>
+    @@scripts
 </head>
 <body>
     <aside id="sidebar" class="sidebar"></aside>
