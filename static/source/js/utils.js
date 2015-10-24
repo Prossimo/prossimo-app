@@ -16,6 +16,11 @@ var app = app || {};
         },
         parseFormat: {
 
+        },
+        convert: {
+            inches_to_mm: function (inch_value) {
+                return parseFloat(inch_value * 24.5);
+            }
         }
     };
 })();

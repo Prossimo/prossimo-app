@@ -30,8 +30,8 @@ var app = app || {};
             };
         },
         initialize: function () {
-            this.table_visibility = 'hidden';
-            // this.table_visibility = 'visible';
+            // this.table_visibility = 'hidden';
+            this.table_visibility = 'visible';
 
             this.listenTo(this.collection, 'all', this.render);
             // this.listenTo(this.collection, 'all', this.renderTable);
@@ -58,14 +58,45 @@ var app = app || {};
         getDimensions: function () {
             return {
                 data: function (window_model, value) {
+                    var f = app.utils.format;
+                    var p = app.utils.parseFormat;
+
                     if ( window_model ) {
                         if ( _.isUndefined(value) ) {
-                            return app.utils.format.dimensions(window_model.get('width'), window_model.get('height'));
+                            return f.dimensions(window_model.get('width'), window_model.get('height'));
                         }
 
                         //  TODO: add proper format parser (with a validator)
-                        // window_model.set('width', app.utils.parseFormat.dimensions(value, 'width'));
+                        // window_model.set('width', p.dimensions(value, 'width'));
                         // window_model.set('width', value);
+                    }
+                },
+                readOnly: true
+            };
+        },
+        getWidthMM: function () {
+            return {
+                data: function (window_model, value) {
+                    var c = app.utils.convert;
+
+                    if ( window_model ) {
+                        if ( _.isUndefined(value) ) {
+                            return c.inches_to_mm(window_model.get('width'));
+                        }
+                    }
+                },
+                readOnly: true
+            };
+        },
+        getHeightMM: function () {
+            return {
+                data: function (window_model, value) {
+                    var c = app.utils.convert;
+
+                    if ( window_model ) {
+                        if ( _.isUndefined(value) ) {
+                            return c.inches_to_mm(window_model.get('height'));
+                        }
                     }
                 },
                 readOnly: true
@@ -77,6 +108,8 @@ var app = app || {};
             }, this);
 
             basic_values.push(this.getDimensions());
+            basic_values.push(this.getWidthMM());
+            basic_values.push(this.getHeightMM());
 
             return basic_values;
         },
@@ -88,6 +121,8 @@ var app = app || {};
         getHeaders: function () {
             var headers = this.collection.getTitles();
             headers.push('Dimensions');
+            headers.push('Width (mm)');
+            headers.push('Height (mm)');
             return headers;
         },
         onRender: function () {
