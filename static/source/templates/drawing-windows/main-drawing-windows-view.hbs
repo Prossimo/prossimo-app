@@ -1,11 +1,11 @@
-<div id="drawing"></div>
+<div id="drawing" oncontextmenu="return false;"></div>
 
 <div id="controls">
-    <div style="float: left; padding: 10px">
+    <div style="float: left; padding: 5px">
         Width:
         <input type="number" class="widthInput"/>
     </div>
-    <div style="float: left; padding: 10px">
+    <div style="float: left; padding: 5px">
         Height:
         <input type="number" class="heightInput"/>
     </div>
@@ -15,5 +15,17 @@
     <div class="popup">
         <img class="add-vertical-million" src="/static/public/img/verticalMullion.png"/>
         <img class="add-horizontal-million" src="/static/public/img/horizontalMullion.png"/>
+    </div>
+</div>
+
+<div class="sash-wrap popup-wrap" style="display: none">
+    <div class="popup">
+        <img class="add-sash" data-type="top-right" src="/static/public/img/sash-top-right.png"/>
+        <img class="add-sash" data-type="top-left" src="/static/public/img/sash-top-left.png"/>
+        <img class="add-sash" data-type="null" src="/static/public/img/sash-null.png"/>
+        </br>
+        <img class="add-sash" data-type="top" src="/static/public/img/sash-top.png"/>
+        <img class="add-sash" data-type="right" src="/static/public/img/sash-right.png"/>
+        <img class="add-sash" data-type="left" src="/static/public/img/sash-left.png"/>
     </div>
 </div>
