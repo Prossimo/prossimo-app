@@ -17,7 +17,9 @@ var app = app || {};
                 height: 2000
             });
             this.listenTo(this.active_drawing, 'all', this.updateCanvas);
+            this.listenTo(this.active_drawing, 'change:width change:height', this.updateInputs);
         },
+
         events: {
             'click .add-vertical-million': 'addVerticalMullion',
             'click .add-horizontal-million': 'addHorizontalMullion',
@@ -26,7 +28,11 @@ var app = app || {};
                 if (el.hasClass('popup-wrap')) {
                     el.hide();
                 }
-            }
+            },
+            'change .heightInput': 'updateModel',
+            'input .heightInput': 'updateModel',
+            'change .widthInput': 'updateModel',
+            'input .widthInput': 'updateModel'
         },
 
         onRender: function(){
@@ -36,28 +42,25 @@ var app = app || {};
 
             this.layer = new Konva.Layer();
             this.stage.add(this.layer);
+            this.updateInputs();
+        },
 
-            this.heightInput = this.$('.heightInput');
-            this.widthInput = this.$('.widthInput');
-
-            this.widthInput.on('change input', function() {
-                this.active_drawing.set('width', parseInt(this.widthInput.val()));
-            }.bind(this));
-
-            this.heightInput.on('change input', function() {
-                this.active_drawing.set('height', parseInt(this.heightInput.val()));
-            }.bind(this));
-
+        updateInputs: function() {
             // set default value
-            this.widthInput.val(this.active_drawing.get('width'));
-            this.heightInput.val(this.active_drawing.get('height'));
+            this.$('.widthInput').val(this.active_drawing.get('width'));
+            this.$('.heightInput').val(this.active_drawing.get('height'));
+        },
 
+        updateModel: function() {
+             this.active_drawing.set({
+                width: parseInt(this.$('.widthInput').val()),
+                height: parseInt(this.$('.heightInput').val())
+            });
+        },
 
-            // do we have "afterRender" callback?!?
-            setTimeout(function() {
-                this.updateSize();
-                this.updateCanvas();
-            }.bind(this), 10);
+        onAttach: function() {
+            this.updateSize();
+            this.updateCanvas();
         },
         onDestroy: function() {
             this.stage.destroy();
@@ -69,7 +72,7 @@ var app = app || {};
             this.stage.height(this.el.offsetHeight);
         },
         createFrame: function(frameWidth, frameHeight) {
-            var padding = 70;
+            var padding = 70;  // in mm
             var group = new Konva.Group();
             var top = new Konva.Line({
                 points: [
@@ -120,21 +123,23 @@ var app = app || {};
 
             group.add(glass, top, left, bottom, right);
 
+            // add styles for borders
             group.find('Line')
                 .closed(true)
                 .stroke('black')
                 .strokeWidth(1)
                 .fill('white');
 
+
             // draw mullions
-            var mullionWidth = 92;
+            var mullionSize = 92; // in mm
             var mullion;
             if (this.active_drawing.get('verticalMullion')) {
                 var x = this.active_drawing.get('verticalMullionX');
                 mullion = new Konva.Rect({
-                    x: Math.round(x - mullionWidth / 2),
+                    x: Math.round(x - mullionSize / 2),
                     y: padding,
-                    width: mullionWidth,
+                    width: mullionSize,
                     height: frameHeight - padding * 2,
                     stroke: 'black',
                     fill: 'white',
@@ -143,12 +148,11 @@ var app = app || {};
                 group.add(mullion);
             } else if (this.active_drawing.get('horizontalMullion')) {
                 var y = this.active_drawing.get('horizontalMullionY');
-                console.log(y);
                 mullion = new Konva.Rect({
                     x: padding,
-                    y: Math.round(y - mullionWidth / 2),
+                    y: Math.round(y - mullionSize / 2),
                     width: frameWidth - padding * 2,
-                    height: mullionWidth,
+                    height: mullionSize,
                     stroke: 'black',
                     fill: 'white',
                     strokeWidth: 1
@@ -169,6 +173,7 @@ var app = app || {};
                     ctx.fillStyle = 'grey';
                     ctx.lineWidth = 0.5;
 
+                    ctx.beginPath();
                     ctx.moveTo(0, 0);
                     ctx.lineTo(width, 0);
 
@@ -182,6 +187,8 @@ var app = app || {};
             var arrow = new Konva.Shape({
                 sceneFunc: function(ctx) {
                     ctx.translate(arrowOffset, 0);
+
+                    ctx.beginPath();
                     // top pointer
                     ctx.moveTo(-arrowSize, arrowSize);
                     ctx.lineTo(0, 0);
@@ -240,6 +247,7 @@ var app = app || {};
                     ctx.fillStyle = 'grey';
                     ctx.lineWidth = 0.5;
 
+                    ctx.beginPath();
                     ctx.moveTo(0, 0);
                     ctx.lineTo(0, height);
 
@@ -254,6 +262,8 @@ var app = app || {};
                 sceneFunc: function(ctx) {
                     // top pointer
                     ctx.translate(0, arrowOffset);
+
+                    ctx.beginPath();
                     ctx.moveTo(arrowSize, -arrowSize);
                     ctx.lineTo(0, 0);
                     ctx.lineTo(arrowSize, arrowSize);
@@ -363,10 +373,10 @@ var app = app || {};
             wrap.style.height = '100%';
             wrap.style.zIndex = 1000;
 
-            document.body.appendChild(wrap);
+            this.$el.append(wrap);
             wrap.addEventListener('click', function(e) {
                 if (e.target === wrap) {
-                    document.body.removeChild(wrap);
+                    $(wrap).remove();
                 }
             });
 
@@ -376,18 +386,20 @@ var app = app || {};
             var wrap = this.createWrap();
             var input = document.createElement('input');
             input.type = 'number';
-
-            // var similarInput = (metric === 'width' ? this.widthInput : this.heightInput);
             input.value = this.active_drawing.get(metric);
 
+            var padding = 3;
             input.style.position = 'absolute';
-            input.style.top = pos.y + this.el.offsetTop + 3 + 'px';
-            input.style.left = pos.x + this.el.offsetLeft + 'px';
+            input.style.top = (pos.y - padding) + 'px';
+            input.style.left = (pos.x - padding) + 'px';
 
-            input.style.height = (size.height + 3) + 'px';
-            input.style.width = (size.width + 3) + 'px';
+            input.style.height = (size.height + padding * 2) + 'px';
+            input.style.width = (size.width + padding * 2) + 'px';
+            input.style.fontSize = '12px';
+
 
             wrap.appendChild(input);
+            input.focus();
 
             input.addEventListener('change', function() {
                 this.active_drawing.set(metric, input.value);
@@ -430,7 +442,7 @@ var app = app || {};
             var wr = this.stage.width() / frameWidth;
             var hr = this.stage.height() / frameHeight;
 
-            var ratio = Math.min(wr, hr) * 0.8;
+            var ratio = Math.min(wr, hr) * 0.7;
 
             var frameOnScreenWidth = frameWidth * ratio;
             var frameOnScreenHeight = frameHeight * ratio;
@@ -440,7 +452,8 @@ var app = app || {};
             });
 
             group.x(Math.round(this.stage.width() / 2 - frameOnScreenWidth / 2) + 0.5);
-            group.y(Math.round(this.stage.height() / 2 - frameOnScreenHeight / 2) + 0.5);
+            // group.y(Math.round(this.stage.height() / 2 - frameOnScreenHeight / 2) + 0.5);
+            group.y(45.5);
 
             this.layer.add(group);
 
@@ -455,7 +468,6 @@ var app = app || {};
         },
 
         addVerticalMullion: function() {
-            console.log(this.active_drawing.get('width') / 2, '!!');
             this.active_drawing.set({
                 verticalMullion: true,
                 horizontalMullion: false,
