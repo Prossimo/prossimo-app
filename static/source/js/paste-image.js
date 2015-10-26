@@ -111,7 +111,7 @@ var app = app || {};
             }
 
             //  Intercept focus from
-            $(document).on('focus', '.copyPaste', function (e) {
+            $(document).on('focus', '.copyPaste', function () {
                 self.focusPasteCatcher();
             });
 
