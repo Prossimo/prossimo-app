@@ -32,9 +32,35 @@ var app = app || {};
         initialize: function () {
             // this.table_visibility = 'hidden';
             this.table_visibility = 'visible';
+            //  Pretend we already have tabs, and this is the default tab
+            //  TODO: update this comment later
+            this.base_tab_names = ['width', 'height', 'quantity', 'description', 'type'];
 
             this.listenTo(this.collection, 'all', this.render);
             // this.listenTo(this.collection, 'all', this.renderTable);
+            this.listenTo(app.vent, 'paste_image', this.onPasteImage);
+        },
+        onPasteImage: function (data) {
+            console.log( 'detected paste image event', data );
+
+            if ( this.hot ) {
+                //  Selected cells are returned in the format:
+                //  [starting_cell_column_num, starting_cell_row_num,
+                //   ending_cell_column_num, ending_cell_row_num]
+                var selected_cells = this.hot.getSelected();
+                console.log( 'selected', selected_cells );
+
+                if ( selected_cells && selected_cells.length ) {
+                    for (var x = selected_cells[0]; x <= selected_cells[2]; x++) {
+                        for (var y = selected_cells[1]; y <= selected_cells[3]; y++) {
+                            console.log( 'pasting to cell', x, y );
+                            this.hot.setDataAtCell(x, y, data);
+                            // this.hot.setDataAtCell(0, 8, 'dfdfd');
+                        }
+                    }
+                }
+
+            }
         },
         // getNewWindow: function () {
         //     return new app.Window();
@@ -55,6 +81,8 @@ var app = app || {};
                 }
             };
         },
+        //  TODO: rename all similar functions, they shouldn't be called
+        //  getSomething
         getDimensions: function () {
             return {
                 data: function (window_model, value) {
@@ -102,14 +130,60 @@ var app = app || {};
                 readOnly: true
             };
         },
+        getCustomerImage: function () {
+            return {
+                data: function (window_model, value) {
+                    if ( window_model ) {
+                        if ( _.isUndefined(value) ) {
+                            return window_model.get('customer_image');
+                        }
+
+                        window_model.set('customer_image', value);
+                    }
+                },
+                // editor: false,
+                // readOnly: true,
+                width: 100,
+                renderer: this.customerImageRenderer
+            };
+        },
+        //  This one is from Handsontable demo on renderers
+        customerImageRenderer: function (instance, td, row, col, prop, value, cellProperties) {
+            console.log( 'render customer image', value );
+
+            var escaped = Handsontable.helper.stringify(value);
+            var img;
+
+            var $td = $(td);
+
+            if ( escaped.indexOf('data:image/png') === 0 ) {
+                img = document.createElement('IMG');
+                img.src = value;
+
+                Handsontable.Dom.addEvent(img, 'mousedown', function (e) {
+                    e.preventDefault();
+                });
+
+                // Handsontable.Dom.empty(td);
+                $td.empty();
+                td.appendChild(img);
+            } else {
+                Handsontable.renderers.TextRenderer.apply(this, arguments);
+            }
+
+            $td.addClass('hot-customer-image-cell');
+
+            return td;
+        },
         getColumnValues: function () {
-            var basic_values = _.map(this.collection.getNameTitleHash(), function (item) {
+            var basic_values = _.map(this.collection.getNameTitleHash(this.base_tab_names), function (item) {
                 return this.getModelAttributeValue(item.name);
             }, this);
 
             basic_values.push(this.getDimensions());
             basic_values.push(this.getWidthMM());
             basic_values.push(this.getHeightMM());
+            basic_values.push(this.getCustomerImage());
 
             return basic_values;
         },
@@ -119,10 +193,11 @@ var app = app || {};
         //     }
         // },
         getHeaders: function () {
-            var headers = this.collection.getTitles();
+            var headers = this.collection.getTitles(this.base_tab_names);
             headers.push('Dimensions');
             headers.push('Width (mm)');
             headers.push('Height (mm)');
+            headers.push('Customer Image');
             return headers;
         },
         onRender: function () {
@@ -133,6 +208,8 @@ var app = app || {};
                 stretchH: 'all',
                 height: 200
             });
+
+            // this.hot.setDataAtCell(0, 1, 'dfdfdf');
 
             // Handsontable.hooks.once('afterInit', this.renderTable, this.hot);
         },

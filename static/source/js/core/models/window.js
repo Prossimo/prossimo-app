@@ -8,7 +8,8 @@ var app = app || {};
         { name: 'height', title: 'Height (inches)', type: 'number' },
         { name: 'quantity', title: 'Quantity', type: 'number' },
         { name: 'description', title: 'Description', type: 'string' },
-        { name: 'type', title: 'Type', type: 'string' }
+        { name: 'type', title: 'Type', type: 'string' },
+        { name: 'customer_image', title: 'Customer Image', type: 'base64image' }
     ];
 
     //  Window properties that could be copied from a spreadsheet or a PDF

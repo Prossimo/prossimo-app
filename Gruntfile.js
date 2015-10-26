@@ -19,6 +19,7 @@ module.exports = function (grunt) {
     var js_files = [
         'router.js',
         'utils.js',
+        'paste-image.js',
         'core/models/window.js',
         'core/models/window-drawing.js',
         'core/models/project.js',
