@@ -83,7 +83,7 @@ var app = app || {};
             return {
                 data: function (window_model, value) {
                     var f = app.utils.format;
-                    var p = app.utils.parseFormat;
+                    // var p = app.utils.parseFormat;
 
                     if ( window_model ) {
                         if ( _.isUndefined(value) ) {
@@ -142,7 +142,7 @@ var app = app || {};
             };
         },
         //  This one is from Handsontable demo on renderers
-        customerImageRenderer: function (instance, td, row, col, prop, value, cellProperties) {
+        customerImageRenderer: function (instance, td, row, col, prop, value) {
             var escaped = Handsontable.helper.stringify(value);
             var img;
             var $td = $(td);
@@ -201,7 +201,7 @@ var app = app || {};
             });
 
             // Handsontable.hooks.once('afterInit', this.renderTable, this.hot);
-        },
+        }
         // onShow: function () {
         //     this.renderTable();
         // }
