@@ -60,6 +60,7 @@ $(document).ready(function () {
     });
 
     Backbone.history.start({ pushState: true });
+    app.paste_image.initialize();
 
     if ( Backbone.history.fragment === '' ) {
         app.router.navigate('/docs/', { trigger: true });

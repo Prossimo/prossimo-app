@@ -23,9 +23,6 @@ var app = app || {};
         },
         initialize: function () {
             this.drawing = new app.WindowDrawing();
-
-            // console.log( this.getNameTitleHash(['width']) );
-            // console.log( this.getNameTitleHash() );
         },
         getDefaultValue: function (type) {
             var default_value = '';
