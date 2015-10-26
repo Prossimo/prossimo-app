@@ -18,11 +18,14 @@ var app = app || {};
             });
             this.listenTo(this.active_drawing, 'all', this.updateCanvas);
             this.listenTo(this.active_drawing, 'change:width change:height', this.updateInputs);
+
+            this.disableContextMenu();
         },
 
         events: {
             'click .add-vertical-million': 'addVerticalMullion',
             'click .add-horizontal-million': 'addHorizontalMullion',
+            'click .add-sash': 'addSash',
             'click .popup-wrap': function(e) {
                 var el = $(e.target);
                 if (el.hasClass('popup-wrap')) {
@@ -70,6 +73,18 @@ var app = app || {};
         updateSize: function() {
             this.stage.width(this.el.offsetWidth);
             this.stage.height(this.el.offsetHeight);
+        },
+
+        disableContextMenu: function() {
+            // Trigger action when the contexmenu is about to be shown
+            $(document).bind('contextmenu', function (event) {
+                var isOnDrawing = $(event.target).parents('#drawing').length > 0;
+                if (!isOnDrawing) {
+                    return;
+                }
+                // don't show native context menu
+                event.preventDefault();
+            });
         },
         createFrame: function(frameWidth, frameHeight) {
             var padding = 70;  // in mm
@@ -417,19 +432,25 @@ var app = app || {};
                 }
             });
         },
-        showPopup: function() {
+        showPopup: function(e) {
+            var popupType;
+            if (e.evt.which === 3) {
+                popupType = 'mullion';
+            }
+            if (e.evt.which === 1) {
+                popupType = 'sash';
+            }
             var pos = this.stage.getPointerPosition();
             var x = pos.x - 5;
             var y = pos.y - 5;
 
-            var $popupWrap = this.$('.popup-wrap');
-            $popupWrap
-            .show()
-            .find('.popup')
-            .css({
-                top: y,
-                left: x
-            });
+            this.$('.' + popupType + '-wrap')
+                .show()
+                .find('.popup')
+                .css({
+                    top: y,
+                    left: x
+                });
         },
         updateCanvas: function() {
             this.layer.children.destroy();
@@ -482,6 +503,11 @@ var app = app || {};
                 horizontalMullionY: this.active_drawing.get('height') / 2
             });
             this.$('.mullion-wrap').hide();
+        },
+        addSash: function(e) {
+            var type = $(e.target).data('type');
+            console.log(type);
+            this.$('.sash-wrap').hide();
         }
     });
 })();
