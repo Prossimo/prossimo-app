@@ -117,6 +117,13 @@ module.exports = function (grunt) {
                         filter: 'isFile'
                     }
                 ]
+            },
+            images: {
+                expand: true,
+                cwd: '<%= sourceUrl %>/img/',
+                src: ['**'],
+                dest: '<%= buildUrl %>/img/',
+                filter: 'isFile',
             }
         },
 
@@ -293,11 +300,11 @@ module.exports = function (grunt) {
 
     grunt.registerTask('build', [
         'gitinfo', 'clean:build', 'handlebars:build', 'copy:vendor', 'uglify:build',
-        'copy:pdfjs', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:build'
+        'copy:pdfjs', 'copy:images', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:build'
     ]);
     grunt.registerTask('dev', [
         'gitinfo', 'clean:build', 'handlebars:build', 'copy:dev', 'copy:vendor',
-        'copy:pdfjs', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:dev'
+        'copy:pdfjs', 'copy:images', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:dev'
     ]);
     grunt.registerTask('test', ['eslint']);
     grunt.registerTask('deploy', ['test', 'sshexec:update']);
