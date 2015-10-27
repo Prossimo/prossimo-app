@@ -11,31 +11,15 @@ var app = app || {};
             frameWidth: 70,
             mullionWidth: 92,
             rootSection: {
-                id: 1,
+                id: _.uniqueId(),
                 sashType: ''
             }
         },
-        findSection: function(section, sectionId) {
-            function findNested(sec, id) {
-                if (sec.id === id) {
-                    return sec;
-                }
-                if (!sec.sections) {
-                    return null;
-                }
-                for (var i = 0; i < sec.sections.length; i++) {
-                    var founded = findNested(sec.sections[i], sectionId);
-                    if (founded) {
-                        return founded;
-                    }
-                }
-            }
-            return findNested(section, sectionId);
-        },
         _updateSection: function(sectionId, func) {
             // HAH, dirty deep clone, rewrite when you have good mood for it
+            // we have to make deep close and backbone will trigger change event
             var rootSection = JSON.parse(JSON.stringify(this.get('rootSection')));
-            var sectionToUpdate = this.findSection(rootSection, sectionId);
+            var sectionToUpdate = app.WindowDrawing.findSection(rootSection, sectionId);
 
             func(sectionToUpdate);
 
@@ -50,14 +34,36 @@ var app = app || {};
             this._updateSection(sectionId, function(section) {
                 section.devider = type;
                 section.sections = [{
-                    id: Math.random(),
+                    id: _.uniqueId(),
                     sashType: 'none'
                 }, {
-                    id: Math.random(),
+                    id: _.uniqueId(),
                     sashType: 'none'
                 }];
                 section.position = 300;
             });
         }
     });
+
+    // static function
+    // it will find section with passed id from passed section and all its children
+    // via nested search
+    app.WindowDrawing.findSection = function(section, sectionId) {
+        function findNested(sec, id) {
+            if (sec.id === id) {
+                return sec;
+            }
+            if (!sec.sections) {
+                return null;
+            }
+            for (var i = 0; i < sec.sections.length; i++) {
+                var founded = findNested(sec.sections[i], sectionId);
+                if (founded) {
+                    return founded;
+                }
+            }
+        }
+        return findNested(section, sectionId);
+    };
+
 })();

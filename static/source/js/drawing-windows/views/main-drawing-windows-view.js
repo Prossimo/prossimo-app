@@ -21,7 +21,7 @@ var app = app || {};
 
         events: {
             'click .split-section': 'splitSection',
-            'click .add-sash': 'addSash',
+            'click .change-sash-type': 'changeSashType',
             'click .popup-wrap': function(e) {
                 var el = $(e.target);
                 if (el.hasClass('popup-wrap')) {
@@ -43,20 +43,6 @@ var app = app || {};
             this.stage.add(this.layer);
             this.updateInputs();
         },
-
-        updateInputs: function() {
-            // set default value
-            this.$('.widthInput').val(this.model.get('width'));
-            this.$('.heightInput').val(this.model.get('height'));
-        },
-
-        updateModel: function() {
-             this.model.set({
-                width: parseInt(this.$('.widthInput').val()),
-                height: parseInt(this.$('.heightInput').val())
-            });
-        },
-
         onAttach: function() {
             this.updateSize();
             this.updateCanvas();
@@ -65,12 +51,28 @@ var app = app || {};
             this.stage.destroy();
         },
 
+        // update inputs on model change
+        updateInputs: function() {
+            this.$('.widthInput').val(this.model.get('width'));
+            this.$('.heightInput').val(this.model.get('height'));
+        },
+
+        // update model on input change
+        updateModel: function() {
+             this.model.set({
+                width: parseInt(this.$('.widthInput').val()),
+                height: parseInt(this.$('.heightInput').val())
+            });
+        },
+
 
         updateSize: function() {
             this.stage.width(this.el.offsetWidth);
             this.stage.height(this.el.offsetHeight);
         },
 
+        // we have to disable context menu for canvas
+        // as we need to enable right click
         disableContextMenu: function() {
             // Trigger action when the contexmenu is about to be shown
             $(document).bind('contextmenu', function (event) {
@@ -82,86 +84,57 @@ var app = app || {};
                 event.preventDefault();
             });
         },
-        createFrame: function(frameWidth, frameHeight) {
-            var padding = 70;  // in mm
+
+        createRootWindow: function() {
+            var frameWidth = this.model.get('frameWidth');  // in mm
+            var width = this.model.get('width');
+            var height = this.model.get('height');
+
             var group = new Konva.Group();
             var top = new Konva.Line({
                 points: [
                     0, 0,
-                    frameWidth, 0,
-                    frameWidth - padding, padding,
-                    padding, padding
+                    width, 0,
+                    width - frameWidth, frameWidth,
+                    frameWidth, frameWidth
                 ]
             });
 
             var left = new Konva.Line({
                 points: [
                     0, 0,
-                    padding, padding,
-                    padding, frameHeight - padding,
-                    0, frameHeight
+                    frameWidth, frameWidth,
+                    frameWidth, height - frameWidth,
+                    0, height
                 ]
             });
 
             var bottom = new Konva.Line({
                 points: [
-                    0, frameHeight,
-                    padding, frameHeight - padding,
-                    frameWidth - padding, frameHeight - padding,
-                    frameWidth, frameHeight
+                    0, height,
+                    frameWidth, height - frameWidth,
+                    width - frameWidth, height - frameWidth,
+                    width, height
                 ]
             });
 
             var right = new Konva.Line({
                 points: [
-                    frameWidth, 0,
-                    frameWidth, frameHeight,
-                    frameWidth - padding, frameHeight - padding,
-                    frameWidth - padding, padding
+                    width, 0,
+                    width, height,
+                    width - frameWidth, height - frameWidth,
+                    width - frameWidth, frameWidth
                 ]
             });
-
-            // var glass = new Konva.Rect({
-            //     x: padding,
-            //     y: padding,
-            //     width: frameWidth - padding * 2,
-            //     height: frameHeight - padding * 2,
-            //     fill: 'lightblue'
-            // });
-
-
-            // glass.on('click', this.showPopup.bind(this));
 
             group.add(top, left, bottom, right);
 
             // add styles for borders
-            group.find('Line')
+            group.children
                 .closed(true)
                 .stroke('black')
                 .strokeWidth(1)
                 .fill('white');
-
-
-            // // draw mullions
-            // var mullionSize = 92; // in mm
-            // var mullion;
-            // if (this.model.get('verticalMullion')) {
-            //     var x = this.model.get('verticalMullionX');
-                
-            //     group.add(mullion);
-            // } else if (this.model.get('horizontalMullion')) {
-            //     var y = this.model.get('horizontalMullionY');
-            //     mullion = new Konva.Rect({
-            //         x: padding,
-            //         y: Math.round(y - mullionSize / 2),
-            //         width: frameWidth - padding * 2,
-            //         height: mullionSize,
-            //         stroke: 'black',
-            //         fill: 'white',
-            //         strokeWidth: 1
-            //     });
-            //     group.add(mullion);
-            // }
 
             return group;
         },
@@ -169,6 +142,8 @@ var app = app || {};
         createSection: function(rootSection, params) {
             var objects = [];
             if (rootSection.sections) {
+
+                // find mullion position
                 var position = rootSection.position;
                 var mullionAttrs = {
                     x: null, y: null, width: null, height: null
@@ -193,6 +168,7 @@ var app = app || {};
                 mullion.setAttrs(mullionAttrs);
                 objects.push(mullion);
 
+                // draw each child section
                 rootSection.sections.forEach(function(sectionData, i) {
                     var sectionParams = {
                         x: null, y: null, width: null, height: null
@@ -432,38 +408,38 @@ var app = app || {};
             });
             group.add(horizontalWholeMertic);
 
-            if (this.model.get('horizontalMullion')) {
-                verticalWholeMertic.move({x: -merticSize});
-                var height = this.model.get('horizontalMullionY') * this.ratio;
-                var topMetric = this.createVerticalMetric(merticSize, height, 'horizontalMullionY');
-                topMetric.position({
-                    x: -merticSize,
-                    y: 0
-                });
-                // var bottomMetric = this.createVerticalMetric(merticSize, frameHeight / 2, 'verticalMullionSubX');
-                // bottomMetric.position({
-                //     x: -merticSize,
-                //     y: frameHeight / 2
-                // });
-                group.add(topMetric);
+            // if (this.model.get('horizontalMullion')) {
+            //     verticalWholeMertic.move({x: -merticSize});
+            //     var height = this.model.get('horizontalMullionY') * this.ratio;
+            //     var topMetric = this.createVerticalMetric(merticSize, height, 'horizontalMullionY');
+            //     topMetric.position({
+            //         x: -merticSize,
+            //         y: 0
+            //     });
+            //     // var bottomMetric = this.createVerticalMetric(merticSize, frameHeight / 2, 'verticalMullionSubX');
+            //     // bottomMetric.position({
+            //     //     x: -merticSize,
+            //     //     y: frameHeight / 2
+            //     // });
+            //     group.add(topMetric);
 
-            }
+            // }
 
-            if (this.model.get('verticalMullion')) {
-                horizontalWholeMertic.move({y: merticSize});
-                var width = this.model.get('verticalMullionX') * this.ratio;
-                var leftMetric = this.createHorizontalMetric(width, merticSize, 'verticalMullionX');
-                leftMetric.position({
-                    x: 0,
-                    y: frameHeight
-                });
-                // var rightMetric = this.createHorizontalMetric(frameWidth / 2, merticSize);
-                // rightMetric.position({
-                //     x: frameWidth / 2,
-                //     y: frameHeight
-                // });
-                group.add(leftMetric);
-            }
+            // if (this.model.get('verticalMullion')) {
+            //     horizontalWholeMertic.move({y: merticSize});
+            //     var width = this.model.get('verticalMullionX') * this.ratio;
+            //     var leftMetric = this.createHorizontalMetric(width, merticSize, 'verticalMullionX');
+            //     leftMetric.position({
+            //         x: 0,
+            //         y: frameHeight
+            //     });
+            //     // var rightMetric = this.createHorizontalMetric(frameWidth / 2, merticSize);
+            //     // rightMetric.position({
+            //     //     x: frameWidth / 2,
+            //     //     y: frameHeight
+            //     // });
+            //     group.add(leftMetric);
+            // }
 
             return group;
         },
@@ -567,7 +543,7 @@ var app = app || {};
             this.layer.add(group);
 
 
-            var frameGroup = this.createFrame(frameWidth, frameHeight);
+            var frameGroup = this.createRootWindow(frameWidth, frameHeight);
             frameGroup.scale({x: ratio, y: ratio});
             group.add(frameGroup);
 
@@ -596,7 +572,7 @@ var app = app || {};
             var devider = $(e.target).data('type');
             this.model.splitSection(this.sectionIdToChange, devider);
         },
-        addSash: function(e) {
+        changeSashType: function(e) {
             this.$('.sash-wrap').hide();
             var type = $(e.target).data('type');
             this.model.setSectionSashType(this.sectionIdToChange, type);
