@@ -20,8 +20,40 @@ $(document).ready(function () {
     });
 
     app.current_project.windows.add([
-        { width: 30, height: 40, quantity: 1, type: 'Full', description: 'Nice' },
-        { width: 38, height: 24, quantity: 2, type: 'Vertical', description: 'Very heavy' }
+        {
+            mark: 'A',
+            width: 30,
+            height: 40,
+            profile_name: 'S900_AWindow',
+            quantity: 1,
+            type: 'Casement',
+            description: 'Tilt and turn inswing / fixed PVC',
+            notes: 'Opening restriction cord included',
+            internal_color: 'Dark grey matte laminate',
+            external_color: 'Dark grey matte laminate',
+            gasket_color: 'Black',
+            original_cost: 399,
+            original_currency: 'EUR',
+            conversion_rate: 0.90326078,
+            price_markup: 2.3
+        },
+        {
+            mark: 'B1',
+            width: 38,
+            height: 24,
+            profile_name: 'S900_AWindow',
+            quantity: 2,
+            type: 'Casement ganged to fixed',
+            description: 'Tilt and turn inswing above / removable ac sash below. PVC',
+            notes: 'Opening restriction cord included',
+            internal_color: 'Dark grey matte laminate',
+            external_color: 'Dark grey matte laminate',
+            gasket_color: 'Black',
+            original_cost: 279,
+            original_currency: 'EUR',
+            conversion_rate: 0.90326078,
+            price_markup: 2.3
+        }
     ]);
 
     app.main_region = new Marionette.Region({

@@ -4,31 +4,52 @@ var app = app || {};
     'use strict';
 
     var WindowProperties = [
+        { name: 'mark', title: 'Mark', type: 'string' },
         { name: 'width', title: 'Width (inches)', type: 'number' },
         { name: 'height', title: 'Height (inches)', type: 'number' },
+        { name: 'profile_name', title: 'Profile', type: 'string' },
         { name: 'quantity', title: 'Quantity', type: 'number' },
-        { name: 'description', title: 'Description', type: 'string' },
         { name: 'type', title: 'Type', type: 'string' },
-        { name: 'customer_image', title: 'Customer Image', type: 'base64image' }
+        { name: 'description', title: 'Description', type: 'string' },
+        { name: 'notes', title: 'Notes', type: 'string' },
+        { name: 'customer_image', title: 'Customer Image', type: 'base64image' },
+        { name: 'internal_color', title: 'Color Internal', type: 'string' },
+        { name: 'external_color', title: 'Color External', type: 'string' },
+        { name: 'gasket_color', title: 'Gasket Color', type: 'string' },
+        { name: 'original_cost', title: 'Original Cost', type: 'number' },
+        { name: 'original_currency', title: 'Original Currency', type: 'string' },
+        { name: 'conversion_rate', title: 'Conversion Rate', type: 'number' },
+        { name: 'price_markup', title: 'Markup', type: 'number' }
     ];
 
     //  Window properties that could be copied from a spreadsheet or a PDF
     app.Window = Backbone.Model.extend({
         defaults: function () {
             var defaults = {};
+
             _.each(WindowProperties, function (item) {
-                defaults[item.name] = this.getDefaultValue(item.type);
+                defaults[item.name] = this.getDefaultValue(item.name, item.type);
             }, this);
+
             return defaults;
         },
         initialize: function () {
             this.drawing = new app.WindowDrawing();
         },
-        getDefaultValue: function (type) {
+        //  TODO: change to hash format like everywhere else
+        getDefaultValue: function (name, type) {
             var default_value = '';
 
             if ( type === 'number' ) {
                 default_value = 0;
+            }
+
+            if ( name === 'original_currency' ) {
+                default_value = 'USD';
+            }
+
+            if ( name === 'conversion_rate' ) {
+                default_value = 1;
             }
 
             return default_value;
@@ -54,7 +75,18 @@ var app = app || {};
         },
         getTitles: function (names) {
             var name_title_hash = this.getNameTitleHash(names);
+
             return _.pluck(name_title_hash, 'title');
+        },
+        //  TODO: do some checks? return error value in some cases?
+        getUnitPrice: function () {
+            var price = parseFloat(this.get('original_cost')) *
+                parseFloat(this.get('conversion_rate')) * parseFloat(this.get('price_markup'));
+
+            return price;
+        },
+        getSubtotalPrice: function () {
+            return this.getUnitPrice() * parseFloat(this.get('quantity'));
         }
     });
 })();

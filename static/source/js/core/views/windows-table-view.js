@@ -16,21 +16,31 @@ var app = app || {};
             'click .nav-tabs a': 'onTabClick'
         },
         initialize: function () {
-            this.table_visibility = 'hidden';
-            // this.table_visibility = 'visible';
+            // this.table_visibility = 'hidden';
+            this.table_visibility = 'visible';
 
             this.tabs = {
                 base: {
                     title: 'Base',
-                    columns: ['width', 'height', 'quantity', 'description', 'type']
+                    columns: ['mark', 'profile_name', 'width', 'height',
+                              'quantity', 'type', 'description', 'notes']
                 },
                 sizes: {
                     title: 'Sizes',
-                    columns: ['width', 'height', 'width_mm', 'height_mm', 'dimensions']
+                    columns: ['mark', 'width', 'height', 'width_mm', 'height_mm', 'dimensions']
+                },
+                colors: {
+                    title: 'Colors',
+                    columns: ['mark', 'external_color', 'internal_color', 'gasket_color']
                 },
                 images: {
                     title: 'Images',
-                    columns: ['customer_image']
+                    columns: ['mark', 'customer_image']
+                },
+                prices: {
+                    title: 'Prices',
+                    columns: ['mark', 'quantity', 'original_cost', 'original_currency',
+                              'conversion_rate', 'price_markup', 'unit_price', 'subtotal_price']
                 }
             };
             this.active_tab = 'base';
@@ -89,21 +99,6 @@ var app = app || {};
                 }
             }
         },
-        getCustomerImage: function () {
-            return {
-                data: function (window_model, value) {
-                    if ( window_model ) {
-                        if ( _.isUndefined(value) ) {
-                            return window_model.get('customer_image');
-                        }
-
-                        window_model.set('customer_image', value);
-                    }
-                },
-                width: 100,
-                renderer: this.customerImageRenderer
-            };
-        },
         //  Render base64-encoded string as an image
         //  This one is from Handsontable demo on renderers
         customerImageRenderer: function (instance, td, row, col, prop, value) {
@@ -143,6 +138,12 @@ var app = app || {};
                 },
                 dimensions: function (model) {
                     return f.dimensions(model.get('width'), model.get('height'));
+                },
+                unit_price: function (model) {
+                    return model.getUnitPrice();
+                },
+                subtotal_price: function (model) {
+                    return model.getSubtotalPrice();
                 }
             };
 
@@ -186,8 +187,13 @@ var app = app || {};
                 width_mm: { readOnly: true },
                 height_mm: { readOnly: true },
                 dimensions: { readOnly: true },
+                unit_price: { readOnly: true },
+                subtotal_price: { readOnly: true },
+                mark: {
+                    width: 100
+                },
                 customer_image: {
-                    width: 100,
+                    width: 300,
                     renderer: this.customerImageRenderer
                 }
             };
@@ -245,7 +251,8 @@ var app = app || {};
                 dimensions: 'Dimensions',
                 width_mm: 'Width (mm)',
                 height_mm: 'Height (mm)',
-                customer_image: 'Customer Image'
+                unit_price: 'Unit Price',
+                subtotal_price: 'Subtotal Price',
             };
 
             return custom_column_headers_hash[column_name];
@@ -255,15 +262,16 @@ var app = app || {};
                 data: this.collection,
                 columns: this.getActiveTabColumnOptions(),
                 colHeaders: this.getActiveTabHeaders(),
+                rowHeaders: true,
                 stretchH: 'all',
                 height: 200
             });
 
             //  TODO: remove this
-            // var self = this;
-            // setTimeout(function () {
-            //     self.hot.render();
-            // }, 100);
+            var self = this;
+            setTimeout(function () {
+                self.hot.render();
+            }, 100);
         }
     });
 })();

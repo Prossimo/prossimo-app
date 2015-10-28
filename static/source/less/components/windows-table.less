@@ -64,6 +64,45 @@
 // }
 
 
+//  Tabs
+
+.windows-table-contents .nav-tabs {
+    border-bottom: none;
+    margin-bottom: 1rem;
+}
+
+.windows-table-contents .nav > li > a {
+    padding: 0.5rem 1.5rem;
+    border: 1px solid darken(@white, 30%);
+    border-radius: 0;
+    color: lighten(@black, 30%);
+    margin: 0;
+    background-color: #ccc;
+
+    &:hover,
+    &:active {
+        background-color: #efefef;
+    }
+}
+
+.windows-table-contents .nav > li + li > a,
+.windows-table-contents .nav > li + li.active > a {
+    border-left: none;
+}
+
+.windows-table-contents .nav > li.active {
+    > a {
+        background-color: #fff;
+    }
+
+    > a:hover,
+    > a:active {
+        border-color: darken(@white, 30%);
+        background-color: #fff;
+    }
+}
+
+
 //  Custom styles for handsontable
 
 .windows-table-contents table {
@@ -77,7 +116,7 @@
 .windows-table-contents .wtHolder td img {
     max-width: 100%;
     height: auto;
-    max-height: 4rem;
+    max-height: 10rem;
 }
 
 
