@@ -16,12 +16,8 @@ var app = app || {};
             'click .nav-tabs a': 'onTabClick'
         },
         initialize: function () {
-            // this.table_visibility = 'hidden';
-            this.table_visibility = 'visible';
-
-            //  Pretend we already have tabs, and this is the default tab
-            //  TODO: update this comment later
-            this.base_tab_names = ['width', 'height', 'quantity', 'description', 'type'];
+            this.table_visibility = 'hidden';
+            // this.table_visibility = 'visible';
 
             this.tabs = {
                 base: {
@@ -40,11 +36,7 @@ var app = app || {};
             this.active_tab = 'base';
 
             this.listenTo(this.collection, 'all', this.render);
-            // this.listenTo(this.collection, 'all', this.renderTable);
             this.listenTo(app.vent, 'paste_image', this.onPasteImage);
-
-            // console.log( 'active tab headers', this.getActiveTabHeaders() );
-            // console.log( 'active tab column options', this.getActiveTabColumnOptions() );
         },
         getActiveTab: function () {
             return this.tabs[this.active_tab];
@@ -77,8 +69,7 @@ var app = app || {};
                     item.is_active = key === this.active_tab;
                     return item;
                 }, this),
-                table_visibility: this.table_visibility//,
-                // table_name_title_hash: this.collection.getNameTitleHash()
+                table_visibility: this.table_visibility
             };
         },
         onPasteImage: function (data) {
@@ -96,77 +87,8 @@ var app = app || {};
                         }
                     }
                 }
-
             }
         },
-        // getNewWindow: function () {
-        //     return new app.Window();
-        // },
-        //  TODO: add better description
-        //  This one is from Handsontable / Backbone integration docs
-        // getModelAttributeValue: function (attr_name) {
-        //     //  TODO: add types and validation
-        //     return {
-        //         data: function (window_model, value) {
-        //             if ( window_model ) {
-        //                 if ( _.isUndefined(value) ) {
-        //                     return window_model.get(attr_name);
-        //                 }
-
-        //                 window_model.set(attr_name, value);
-        //             }
-        //         }
-        //     };
-        // },
-        //  TODO: rename all similar functions, they shouldn't be called
-        //  getSomething
-        getDimensions: function () {
-            return {
-                data: function (window_model, value) {
-                    var f = app.utils.format;
-                    // var p = app.utils.parseFormat;
-
-                    if ( window_model ) {
-                        if ( _.isUndefined(value) ) {
-                            return f.dimensions(window_model.get('width'), window_model.get('height'));
-                        }
-
-                        //  TODO: add proper format parser (with a validator)
-                        // window_model.set('width', p.dimensions(value, 'width'));
-                        // window_model.set('width', value);
-                    }
-                },
-                readOnly: true
-            };
-        },
-        // getWidthMM: function () {
-        //     return {
-        //         data: function (window_model, value) {
-        //             var c = app.utils.convert;
-
-        //             if ( window_model ) {
-        //                 if ( _.isUndefined(value) ) {
-        //                     return c.inches_to_mm(window_model.get('width'));
-        //                 }
-        //             }
-        //         },
-        //         readOnly: true
-        //     };
-        // },
-        // getHeightMM: function () {
-        //     return {
-        //         data: function (window_model, value) {
-        //             var c = app.utils.convert;
-
-        //             if ( window_model ) {
-        //                 if ( _.isUndefined(value) ) {
-        //                     return c.inches_to_mm(window_model.get('height'));
-        //                 }
-        //             }
-        //         },
-        //         readOnly: true
-        //     };
-        // },
         getCustomerImage: function () {
             return {
                 data: function (window_model, value) {
@@ -182,6 +104,7 @@ var app = app || {};
                 renderer: this.customerImageRenderer
             };
         },
+        //  Render base64-encoded string as an image
         //  This one is from Handsontable demo on renderers
         customerImageRenderer: function (instance, td, row, col, prop, value) {
             var escaped = Handsontable.helper.stringify(value);
@@ -196,7 +119,6 @@ var app = app || {};
                     e.preventDefault();
                 });
 
-                // Handsontable.Dom.empty(td);
                 $td.empty();
                 td.appendChild(img);
             } else {
@@ -207,92 +129,45 @@ var app = app || {};
 
             return td;
         },
-        // getColumnValues: function () {
-        //     var basic_values = _.map(this.collection.getNameTitleHash(this.base_tab_names), function (item) {
-        //         return this.getModelAttributeValue(item.name);
-        //     }, this);
-
-        //     basic_values.push(this.getDimensions());
-        //     basic_values.push(this.getWidthMM());
-        //     basic_values.push(this.getHeightMM());
-        //     basic_values.push(this.getCustomerImage());
-
-        //     return basic_values;
-        // },
-        // renderTable: function () {
-        //     console.log( 'rendertable!' );
-
-        //     console.log( this.hot );
-
-        //     if ( this.hot ) {
-        //         console.log( 'rendertable', this.hot );
-
-        //         // this.hot.render();
-        //     }
-        // },
         getGetterFunction: function (window_model, column_name) {
             var c = app.utils.convert;
             var f = app.utils.format;
-            var getters_hash = {
-                width_mm: function (window_model) {
-                    return c.inches_to_mm(window_model.get('height'));
-                },
-                height_mm: function (window_model) {
-                    return c.inches_to_mm(window_model.get('height'));
-                },
-                dimensions: function (window_model) {
-                    return f.dimensions(window_model.get('width'), window_model.get('height'));
-                }
-            };
+            var getter;
 
-            var getter = function (window_model, column_name) {
-                return window_model.get(column_name);
+            var getters_hash = {
+                width_mm: function (model) {
+                    return c.inches_to_mm(model.get('width'));
+                },
+                height_mm: function (model) {
+                    return c.inches_to_mm(model.get('height'));
+                },
+                dimensions: function (model) {
+                    return f.dimensions(model.get('width'), model.get('height'));
+                }
             };
 
             if ( getters_hash[column_name] ) {
                 getter = getters_hash[column_name];
+            } else {
+                getter = function (model, attr_name) {
+                    return model.get(attr_name);
+                };
             }
 
             return getter.apply(this, arguments);
         },
-        getSetterFunction: function (window_model, column_name, value) {
+        //  TODO: use proper format parsers here
+        getSetterFunction: function () {
             // var p = app.utils.parseFormat;
+            var setter;
 
-            var setter = function (window_model, column_name, value) {
-                return window_model.set(column_name, value);
+            setter = function (model, attr_name, val) {
+                return model.set(attr_name, val);
             };
 
             return setter.apply(this, arguments);
         },
         getColumnData: function (column_name) {
-            // var data_obj = {};
-
-            // function (window_model, value) {
-            //         if ( window_model ) {
-            //             if ( _.isUndefined(value) ) {
-            //                 return window_model.get(attr_name);
-            //             }
-
-            //             window_model.set(attr_name, value);
-            //         }
-            //     }
-
-            // var getter = function (window_model, column_name) {
-            //     return window_model.get(column_name);
-            // };
-
-            // var self = this;
-
-            // var getter = this.getGetterFunction(window_model, column_name);
-
-            // var getter = function (window_model, column_name) {
-            //     return self.getGetterFunction(window_model, column_name);
-            // };
-
-            // var setter = function (window_model, column_name, value) {
-            //     return window_model.set(column_name, value);
-            // };
-
             var self = this;
 
             return function (window_model, value) {
@@ -301,8 +176,6 @@ var app = app || {};
                         return self.getGetterFunction(window_model, column_name);
                     }
 
-                    // setter(window_model, column_name, value);
-                    // window_model.set(column_name, value);
                     self.getSetterFunction(window_model, column_name, value);
                 }
             };
@@ -331,14 +204,10 @@ var app = app || {};
             var columns = [];
 
             _.each(this.getActiveTab().columns, function (column_name) {
-                // console.log( column_name );
-
                 var column_obj = _.extend({},
                     { data: this.getColumnData(column_name) },
                     this.getColumnExtras(column_name)
                 );
-
-                // console.log( column_obj );
 
                 columns.push(column_obj);
             }, this);
@@ -381,23 +250,7 @@ var app = app || {};
 
             return custom_column_headers_hash[column_name];
         },
-        // getHeaders: function () {
-        //     var headers = this.collection.getTitles(this.base_tab_names);
-        //     headers.push('Dimensions');
-        //     headers.push('Width (mm)');
-        //     headers.push('Height (mm)');
-        //     headers.push('Customer Image');
-        //     return headers;
-        // },
         onRender: function () {
-            // this.hot = new Handsontable(this.ui.$hot_container[0], {
-            //     data: this.collection,
-            //     columns: this.getColumnValues(),
-            //     colHeaders: this.getHeaders(),
-            //     stretchH: 'all',
-            //     height: 200
-            // });
-
             this.hot = new Handsontable(this.ui.$hot_container[0], {
                 data: this.collection,
                 columns: this.getActiveTabColumnOptions(),
@@ -407,50 +260,10 @@ var app = app || {};
             });
 
             //  TODO: remove this
-            var self = this;
-            setTimeout(function () {
-                // console.log( self.$el.is(':visible') );
-                self.hot.render();
-            }, 100);
-
-            // console.log( 'onrender', this.hot );
-            // console.log( this.$el );
-            // console.log( this.$el.is(':visible') );
-
             // var self = this;
-
             // setTimeout(function () {
-            //     console.log( self.$el.is(':visible') );
-            // }, 200);
-
-            // Handsontable.hooks.once('afterInit', this.renderTable, this.hot);
-        }//,
-        // onShow: function () {
-        //     console.log( 'onshow!' );
-        // },
-        // onDomRefresh: function () {
-        //     console.log( 'ondomrefresh!' );
-        // },
-        // onAttach: function () {
-        //     console.log( 'onattach!' );
-
-        //     this.renderTable();
-        // },
-        // attachElContent: function ( html ) {
-        //     this.$el.html(html);
-        //     var self = this;
-
-        //     setTimeout(function () {
-        //         // console.log( self.$el.is(':visible') );
-        //         self.onAttach();
-        //     }, 200);
-
-        //     this.onAttach();
-
-        //     return this;
-        // }
-        // onShow: function () {
-        //     this.renderTable();
-        // }
+            //     self.hot.render();
+            // }, 100);
+        }
     });
 })();
