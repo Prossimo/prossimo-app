@@ -36,7 +36,6 @@ var app = app || {};
                 }, this);
             }
 
-            //  TODO: use marionette region?
             $('#sidebar').append( this.render().el );
         },
         onRender: function () {

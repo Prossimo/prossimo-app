@@ -10,26 +10,24 @@
 //    cells, so we observe `focus` event on that textarea and intercept the
 //    focus when the data is going to be pasted to *certain* cells
 //  - when we got an image, we trigger a `paste_image` event, and
-//    `WindowsTableView` is listening to that event and process its data
+//    `WindowsTableView` is listening to that event and processing its data
 
 var app = app || {};
 
 (function () {
     'use strict';
 
-    //  TODO: use marionette Object for this
-    app.paste_image = {
+    app.PasteImageHelper = Marionette.Object.extend({
         getTargetCells: function () {
             return $('.hot-customer-image-cell').filter(function (index, element) {
                 return $(element).hasClass('current') || $(element).hasClass('area');
             });
         },
         focusPasteCatcher: function () {
-            var self = app.paste_image;
-            var $target_cells = self.getTargetCells();
+            var $target_cells = this.getTargetCells();
 
-            if ( self.$paste_catcher && $target_cells.length !== 0 ) {
-                self.$paste_catcher.trigger('focus');
+            if ( this.$paste_catcher && $target_cells.length !== 0 ) {
+                this.$paste_catcher.trigger('focus');
             }
         },
         appendPasteCatcher: function () {
@@ -37,15 +35,15 @@ var app = app || {};
                 .attr('contenteditable', '').appendTo('body');
         },
         onPaste: function (e) {
-            var self = app.paste_image;
+            var self = this;
 
             //  Check if we catch the right event (on our catcher)
-            if ( !self.$paste_catcher || e.target !== self.$paste_catcher.get(0) ) {
+            if ( !this.$paste_catcher || e.target !== this.$paste_catcher.get(0) ) {
                 return;
             }
 
             if ( e.originalEvent.clipboardData && e.originalEvent.clipboardData.items ) {
-                self.getClipboardData(e.originalEvent.clipboardData);
+                this.getClipboardData(e.originalEvent.clipboardData);
             } else {
                 setTimeout(function () {
                     self.getContenteditableData();
@@ -70,7 +68,7 @@ var app = app || {};
                 // Loop through all items, looking for any kind of image
                 for (var i = 0; i < items.length; i++) {
                     if ( items[i].type.indexOf('image') !== -1 ) {
-                        // We need to represent the image as a file,
+                        // We need to represent the image as a file
                         var blob = items[i].getAsFile();
                         this.processWithFileReader(blob);
                     }
@@ -104,18 +102,21 @@ var app = app || {};
         },
         initialize: function () {
             var self = this;
+
             this.$paste_catcher = null;
 
             if ( !window.Clipboard ) {
                 this.appendPasteCatcher();
             }
 
-            //  Intercept focus from
+            //  Intercept focus from Handsontable textarea
             $(document).on('focus', '.copyPaste', function () {
                 self.focusPasteCatcher();
             });
 
-            $(window).on('paste', this.onPaste);
+            $(window).on('paste', function (e) {
+                self.onPaste(e);
+            });
         }
-    };
+    });
 })();
