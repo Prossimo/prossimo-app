@@ -10,7 +10,7 @@ var app = app || {};
         getPrices: function () {
             var f = app.utils.format;
             var unit_price = this.model.getUnitPrice();
-            var subtotal_price  = this.model.getSubtotalPrice();
+            var subtotal_price = this.model.getSubtotalPrice();
 
             return {
                 unit: f.price_usd(unit_price),
@@ -36,16 +36,16 @@ var app = app || {};
             };
 
             //  TODO: remove this eventually
-            var example_params = {
-                mark: 'A',
-                size: '5\'-6"x6\'-10"',
-                area: '37.5',
-                type: 'CASEMENT',
-                u_factor: '0.2 MAX',
-                shgc: '0.4 MAX',
-                air_leakage: '0.2 MAX',
-                notes: 'TILT AND TURN INSWING/FIXED PVC'
-            };
+            // var example_params = {
+            //     mark: 'A',
+            //     size: '5\'-6"x6\'-10"',
+            //     area: '37.5',
+            //     type: 'CASEMENT',
+            //     u_factor: '0.2 MAX',
+            //     shgc: '0.4 MAX',
+            //     air_leakage: '0.2 MAX',
+            //     notes: 'TILT AND TURN INSWING/FIXED PVC'
+            // };
 
             var params_source = {
                 mark: this.model.get('mark'),
