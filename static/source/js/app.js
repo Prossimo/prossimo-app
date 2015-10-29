@@ -24,35 +24,41 @@ $(document).ready(function () {
             mark: 'A',
             width: 30,
             height: 40,
-            profile_name: 'S900_AWindow',
             quantity: 1,
             type: 'Casement',
             description: 'Tilt and turn inswing / fixed PVC',
             notes: 'Opening restriction cord included',
+            system: 'Gealan S9000',
             internal_color: 'Dark grey matte laminate',
             external_color: 'Dark grey matte laminate',
             gasket_color: 'Black',
             original_cost: 399,
             original_currency: 'EUR',
             conversion_rate: 0.90326078,
-            price_markup: 2.3
+            price_markup: 2.3,
+            uw: 0.77,
+            glazing: '3Std U=.09 SGHC=.5',
+            discount: 20
         },
         {
             mark: 'B1',
             width: 38,
             height: 24,
-            profile_name: 'S900_AWindow',
             quantity: 2,
             type: 'Casement ganged to fixed',
             description: 'Tilt and turn inswing above / removable ac sash below. PVC',
             notes: 'Opening restriction cord included',
+            system: 'Gealan S9000',
             internal_color: 'Dark grey matte laminate',
             external_color: 'Dark grey matte laminate',
             gasket_color: 'Black',
             original_cost: 279,
             original_currency: 'EUR',
             conversion_rate: 0.90326078,
-            price_markup: 2.3
+            price_markup: 2.3,
+            uw: 0.78,
+            glazing: '3Std U=.09 SGHC=.5',
+            discount: 20
         }
     ]);
 

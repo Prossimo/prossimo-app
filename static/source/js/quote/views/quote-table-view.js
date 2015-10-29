@@ -26,18 +26,19 @@ var app = app || {};
             return table_attributes;
         },
         getTotalPrices: function () {
-            var unit_price = Math.ceil(Math.random() * 10) * 100;
-            var shipping_price = Math.ceil(Math.random() * 30) * 100;
-            var total_quantity = 0;
+            var f = app.utils.format;
+            // var shipping_price = Math.ceil(Math.random() * 30) * 100;
+            var subtotal_price = 0;
+            var shipping_price = 0;
 
             this.collection.each(function (item) {
-                total_quantity += parseInt(item.get('quantity'), 10);
+                subtotal_price += item.getSubtotalPrice();
             });
 
             return {
-                subtotal: unit_price * total_quantity,
-                shipping: shipping_price,
-                total: unit_price * total_quantity + shipping_price
+                subtotal: f.price_usd(subtotal_price),
+                shipping: f.price_usd(shipping_price),
+                total: f.price_usd(subtotal_price + shipping_price)
             };
         },
         serializeData: function () {

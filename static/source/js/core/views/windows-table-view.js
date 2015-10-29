@@ -16,34 +16,32 @@ var app = app || {};
             'click .nav-tabs a': 'onTabClick'
         },
         initialize: function () {
-            // this.table_visibility = 'hidden';
-            this.table_visibility = 'visible';
+            this.table_visibility = 'hidden';
+            // this.table_visibility = 'visible';
 
             this.tabs = {
-                base: {
-                    title: 'Base',
-                    columns: ['mark', 'profile_name', 'width', 'height',
-                              'quantity', 'type', 'description', 'notes']
+                input: {
+                    title: 'Input',
+                    columns: ['mark', 'quantity', 'width', 'height',
+                        'customer_image', 'type', 'description', 'notes']
                 },
-                sizes: {
-                    title: 'Sizes',
-                    columns: ['mark', 'width', 'height', 'width_mm', 'height_mm', 'dimensions']
-                },
-                colors: {
-                    title: 'Colors',
-                    columns: ['mark', 'external_color', 'internal_color', 'gasket_color']
-                },
-                images: {
-                    title: 'Images',
-                    columns: ['mark', 'customer_image']
+                specs: {
+                    title: 'Specs',
+                    columns: ['mark', 'quantity', 'width', 'height', 'width_mm',
+                        'height_mm', 'customer_image', 'drawing', 'type', 'description',
+                        'notes', 'system', 'external_color', 'internal_color', 'gasket_color',
+                        'hinge_style', 'opening_direction', 'threshold', 'internal_sill',
+                        'external_sill', 'glazing', 'uw', 'uw_ip']
                 },
                 prices: {
                     title: 'Prices',
                     columns: ['mark', 'quantity', 'original_cost', 'original_currency',
-                              'conversion_rate', 'price_markup', 'unit_price', 'subtotal_price']
+                        'conversion_rate', 'unit_cost', 'price_markup', 'unit_price',
+                        'subtotal_price', 'discount', 'unit_price_discounted',
+                        'subtotal_price_discounted']
                 }
             };
-            this.active_tab = 'base';
+            this.active_tab = 'input';
 
             this.listenTo(this.collection, 'all', this.render);
             this.listenTo(app.vent, 'paste_image', this.onPasteImage);
@@ -139,11 +137,23 @@ var app = app || {};
                 dimensions: function (model) {
                     return f.dimensions(model.get('width'), model.get('height'));
                 },
+                unit_cost: function (model) {
+                    return f.price_usd(model.getUnitCost());
+                },
                 unit_price: function (model) {
-                    return model.getUnitPrice();
+                    return f.price_usd(model.getUnitPrice());
                 },
                 subtotal_price: function (model) {
-                    return model.getSubtotalPrice();
+                    return f.price_usd(model.getSubtotalPrice());
+                },
+                uw_ip: function (model) {
+                    return model.getUwIp();
+                },
+                unit_price_discounted: function (model) {
+                    return f.price_usd(model.getUnitPriceDiscounted());
+                },
+                subtotal_price_discounted: function (model) {
+                    return f.price_usd(model.getSubtotalPriceDiscounted());
                 }
             };
 
@@ -187,13 +197,18 @@ var app = app || {};
                 width_mm: { readOnly: true },
                 height_mm: { readOnly: true },
                 dimensions: { readOnly: true },
+                unit_cost: { readOnly: true },
                 unit_price: { readOnly: true },
                 subtotal_price: { readOnly: true },
+                unit_price_discounted: { readOnly: true },
+                subtotal_price_discounted: { readOnly: true },
+                drawing: { readOnly: true },
+                uw_ip: { readOnly: true },
                 mark: {
                     width: 100
                 },
                 customer_image: {
-                    width: 300,
+                    // width: 300,
                     renderer: this.customerImageRenderer
                 }
             };
@@ -251,8 +266,13 @@ var app = app || {};
                 dimensions: 'Dimensions',
                 width_mm: 'Width (mm)',
                 height_mm: 'Height (mm)',
+                unit_cost: 'Unit Cost',
                 unit_price: 'Unit Price',
                 subtotal_price: 'Subtotal Price',
+                drawing: 'Drawing',
+                uw_ip: 'Uw-IP',
+                unit_price_discounted: 'Unit Price w/Disc.',
+                subtotal_price_discounted: 'Subtotal Price w/Disc.'
             };
 
             return custom_column_headers_hash[column_name];
@@ -268,10 +288,10 @@ var app = app || {};
             });
 
             //  TODO: remove this
-            var self = this;
-            setTimeout(function () {
-                self.hot.render();
-            }, 100);
+            // var self = this;
+            // setTimeout(function () {
+            //     self.hot.render();
+            // }, 100);
         }
     });
 })();

@@ -8,7 +8,8 @@ module.exports = function (grunt) {
         'handsontable/dist/handsontable.full.min.js',
         'bootstrap/js/dropdown.js',
         'bootstrap-select/dist/js/bootstrap-select.min.js',
-        'konva/konva.min.js'
+        'konva/konva.min.js',
+        'decimal.js/decimal.min.js'
     ];
 
     var vendor_css_files = [

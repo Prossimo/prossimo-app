@@ -3,13 +3,13 @@
 <td class="product_description">
     <ul>
         {{#each description }}
-        <li class="{{ name }}"><strong>{{ title }}:</strong> <span>{{ value }}</span></li>
+        {{#if value }}<li class="{{ name }}"><strong>{{ title }}:</strong> <span>{{ value }}</span></li>{{/if}}
         {{/each}}
     </ul>
 </td>
 <td class="quantity">{{ quantity }}</td>
 <td class="price">
     <p class="unit">Unit price: {{ price.unit }}</p>
-    <p class="subtotal">Subtotal: {{ price.total }}</p>
+    <p class="subtotal">Subtotal: {{ price.subtotal }}</p>
 </td>
 

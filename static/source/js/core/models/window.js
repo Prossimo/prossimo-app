@@ -7,19 +7,30 @@ var app = app || {};
         { name: 'mark', title: 'Mark', type: 'string' },
         { name: 'width', title: 'Width (inches)', type: 'number' },
         { name: 'height', title: 'Height (inches)', type: 'number' },
-        { name: 'profile_name', title: 'Profile', type: 'string' },
         { name: 'quantity', title: 'Quantity', type: 'number' },
         { name: 'type', title: 'Type', type: 'string' },
         { name: 'description', title: 'Description', type: 'string' },
         { name: 'notes', title: 'Notes', type: 'string' },
+
+        { name: 'system', title: 'System', type: 'string' },
         { name: 'customer_image', title: 'Customer Image', type: 'base64image' },
         { name: 'internal_color', title: 'Color Internal', type: 'string' },
         { name: 'external_color', title: 'Color External', type: 'string' },
         { name: 'gasket_color', title: 'Gasket Color', type: 'string' },
+
+        { name: 'hinge_style', title: 'Hinge Style', type: 'string' },
+        { name: 'opening_direction', title: 'Opening Direction', type: 'string' },
+        { name: 'threshold', title: 'Threshold', type: 'string' },
+        { name: 'internal_sill', title: 'Internal Sill', type: 'string' },
+        { name: 'external_sill', title: 'External Sill', type: 'string' },
+        { name: 'glazing', title: 'Glazing', type: 'string' },
+        { name: 'uw', title: 'Uw', type: 'number' },
+
         { name: 'original_cost', title: 'Original Cost', type: 'number' },
         { name: 'original_currency', title: 'Original Currency', type: 'string' },
         { name: 'conversion_rate', title: 'Conversion Rate', type: 'number' },
-        { name: 'price_markup', title: 'Markup', type: 'number' }
+        { name: 'price_markup', title: 'Markup', type: 'number' },
+        { name: 'discount', title: 'Discount', type: 'number' }
     ];
 
     //  Window properties that could be copied from a spreadsheet or a PDF
@@ -79,14 +90,23 @@ var app = app || {};
             return _.pluck(name_title_hash, 'title');
         },
         //  TODO: do some checks? return error value in some cases?
+        getUnitCost: function () {
+            return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
+        },
         getUnitPrice: function () {
-            var price = parseFloat(this.get('original_cost')) *
-                parseFloat(this.get('conversion_rate')) * parseFloat(this.get('price_markup'));
-
-            return price;
+            return this.getUnitCost() * parseFloat(this.get('price_markup'));
         },
         getSubtotalPrice: function () {
             return this.getUnitPrice() * parseFloat(this.get('quantity'));
+        },
+        getUwIp: function () {
+            return parseFloat(this.get('uw')) * 0.176;
+        },
+        getUnitPriceDiscounted: function () {
+            return this.getUnitPrice() * (100 - this.get('discount')) / 100;
+        },
+        getSubtotalPriceDiscounted: function () {
+            return this.getSubtotalPrice() * (100 - this.get('discount')) / 100;
         }
     });
 })();

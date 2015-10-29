@@ -178,6 +178,7 @@
         "Backbone": false,
         "$": false,
         "_": false,
-        "Handsontable": false
+        "Handsontable": false,
+        "Decimal": false
     }
 }

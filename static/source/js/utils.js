@@ -12,6 +12,9 @@ var app = app || {};
                 var height_inches = parseFloat(height) % 12;
 
                 return width_feet + '\'-' + width_inches + '"x' + height_feet + '\'-' + height_inches + '"';
+            },
+            price_usd: function (price) {
+                return '$' + new Decimal(parseFloat(price).toFixed(2)).toFormat(2);
             }
         },
         parseFormat: {
