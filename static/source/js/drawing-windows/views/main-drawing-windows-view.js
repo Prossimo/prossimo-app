@@ -170,9 +170,9 @@ var app = app || {};
                 y: params.y,
                 width: params.width,
                 height: params.height,
-                // fill: 'lightblue',
-                fill: 'rgba(0,0,0,0.5)',
-                stroke: 'red',
+                fill: 'lightblue',
+                // fill: 'rgba(0,0,0,0.5)',
+                // stroke: 'red',
                 id: sectionData.id
             });
             group.add(glass);

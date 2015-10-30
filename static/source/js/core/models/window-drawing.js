@@ -32,7 +32,7 @@ var app = app || {};
         },
         setSectionMullionPosition: function(id, pos) {
             this._updateSection(id, function(section) {
-                section.position = pos;
+                section.position = parseInt(pos, 10);
             });
         },
         splitSection: function(sectionId, type) {
@@ -96,11 +96,16 @@ var app = app || {};
                     x: null, y: null, width: null, height: null
                 };
                 if (rootSection.devider === 'vertical') {
-                    sectionParams.x = 0;
+                    sectionParams.x = params.x;
                     sectionParams.y = params.y;
                     if (i === 0) {
-                        sectionParams.x += this.get('frameWidth');
-                        sectionParams.width = position - this.get('mullionWidth') / 2 - this.get('frameWidth');
+                        // sectionParams.x += this.get('frameWidth');
+                        // sectionParams.width = position - this.get('mullionWidth') / 2 - this.get('frameWidth');
+                        // console.log(rootSection.params.x + position - this.get('mullionWidth') / 2 - this.get('frameWidth'));
+                        sectionParams.width = position - rootSection.params.x - this.get('mullionWidth') / 2;
+                        // if (rootSection.id === this.get('rootSection').id) {
+                        //     sectionParams.width -= this.get('frameWidth') * 2;
+                        // }
                     } else {
                         sectionParams.x = position + this.get('mullionWidth') / 2;
                         sectionParams.width = params.width + params.x - position - this.get('mullionWidth') / 2;
@@ -108,12 +113,13 @@ var app = app || {};
                     sectionParams.height = params.height;
                 } else {
                     sectionParams.x = params.x;
-                    sectionParams.y = position * i + this.get('mullionWidth') / 2 * i;
+                    sectionParams.y = params.y;
                     sectionParams.width = params.width;
                     if (i === 0) {
-                        sectionParams.y += this.get('frameWidth');
-                        sectionParams.height = position - this.get('mullionWidth') / 2 - this.get('frameWidth');
+                        // sectionParams.y += this.get('frameWidth');
+                        sectionParams.height = position - rootSection.params.y - this.get('mullionWidth') / 2;
                     } else {
+                        sectionParams.y = position + this.get('mullionWidth') / 2;
                         sectionParams.height = params.height + params.y - position - this.get('mullionWidth') / 2;
                     }
                 }
@@ -198,6 +204,16 @@ function tests() {
     console.assert(leftSection.x === model.get('frameWidth'));
     console.assert(leftSection.y === model.get('frameWidth'));
     console.assert(leftSection.width === 500 - 10 - 20 / 2);
+    console.assert(leftSection.height === 2000 - 10 * 2);
+
+
+    id = model.get('rootSection').sections[0].id;
+    model.splitSection(id, 'vertical');
+    rootSection = model.generateFullRoot();
+    leftSection = rootSection.sections[0].sections[0].params;
+    console.assert(leftSection.x === model.get('frameWidth'));
+    console.assert(leftSection.y === model.get('frameWidth'));
+    console.assert(leftSection.width === (500 - 10 - 20 / 2) / 2 - 20 / 2);
     console.assert(leftSection.height === 2000 - 10 * 2);
 }
 tests();
