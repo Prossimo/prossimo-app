@@ -3,17 +3,16 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.QuoteTableView = Marionette.CompositeView.extend({
-        template: app.templates['quote/quote-table-view'],
-        childView: app.QuoteItemView,
-        childViewContainer: '.quote-table-body',
+    app.QuoteExtrasTableView = Marionette.CompositeView.extend({
+        template: app.templates['quote/quote-extras-table-view'],
+        childView: app.QuoteExtrasItemView,
+        childViewContainer: '.quote-extras-table-body',
         initialize: function () {
             this.listenTo(this.collection, 'all', this.render);
         },
-        getQuoteTableAttributes: function () {
+        getExtrasTableAttributes: function () {
             var name_title_hash = {
                 ref: 'Ref.',
-                product_image: 'Product Image',
                 product_description: 'Product Description',
                 quantity: 'Quantity',
                 price: 'Price'
@@ -37,14 +36,14 @@ var app = app || {};
 
             return {
                 subtotal: f.price_usd(subtotal_price),
-                shipping: f.price_usd(shipping_price),
+                // shipping: f.price_usd(shipping_price),
                 total: f.price_usd(subtotal_price + shipping_price)
             };
         },
         serializeData: function () {
             return {
-                table_attributes: this.getQuoteTableAttributes(),
-                footer_colspan: this.getQuoteTableAttributes().length - 1,
+                table_attributes: this.getExtrasTableAttributes(),
+                footer_colspan: this.getExtrasTableAttributes().length - 1,
                 total_prices: this.getTotalPrices()
             };
         }

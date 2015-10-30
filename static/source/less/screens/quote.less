@@ -20,7 +20,9 @@
 }
 
 
+//  ------------------------------------------------------------------------
 //  Quote header (Prossimo info)
+//  ------------------------------------------------------------------------
 
 .quote-header {
     margin-bottom: 4rem;
@@ -43,9 +45,9 @@
 }
 
 
-
-
+//  ------------------------------------------------------------------------
 //  Project info
+//  ------------------------------------------------------------------------
 
 .quote-project-info .project-name {
     text-transform: uppercase;
@@ -61,7 +63,9 @@
 }
 
 
+//  ------------------------------------------------------------------------
 //  Table
+//  ------------------------------------------------------------------------
 
 .quote-table-container {
     margin: 3rem 0 0;
@@ -87,15 +91,36 @@
 }
 
 
-//  Items
+//  ------------------------------------------------------------------------
+//  Units
+//  ------------------------------------------------------------------------
 
 .product_description ul {
     padding: 0;
     list-style-type: none;
 }
 
+.quote-table .unit-price {
+    width: 100%;
+}
 
+.quote-table .unit-price td {
+    padding: 0;
+    border: none;
+}
+
+.quote-table .unit-price tr.subtotal {
+    font-weight: 700;
+}
+
+.quote-table .unit-price td.value {
+    text-align: right;
+}
+
+
+//  ------------------------------------------------------------------------
 //  Table footer
+//  ------------------------------------------------------------------------
 
 .quote-table tfoot td {
     padding: 0.5em 1em;
@@ -105,12 +130,41 @@
 }
 
 .quote-table .quote-total-prices {
+    // padding: 0;
+    // list-style-type: none;
+    width: 100%;
+}
+
+.quote-table .quote-total-prices td {
     padding: 0;
-    list-style-type: none;
+    border: none;
+}
+
+.quote-table .quote-total-prices td.value {
+    text-align: right;
+}
+
+.quote-table .quote-total-prices tr.total {
+    font-size: 1.3em;
 }
 
 
+//  ------------------------------------------------------------------------
+//  Extras table
+//  ------------------------------------------------------------------------
+
+.quote-extras-table-container {
+    margin: 3rem 0 0;
+}
+
+.quote-extras-table {
+    &:extend(.quote-table all);
+}
+
+
+//  ------------------------------------------------------------------------
 //  Terms (below table)
+//  ------------------------------------------------------------------------
 
 .quote-terms-info {
     margin-top: 6rem;

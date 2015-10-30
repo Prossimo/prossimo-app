@@ -1,4 +1,4 @@
-<table class="quote-table">
+<table class="quote-extras-table">
     <thead>
         <tr>
             {{#each table_attributes }}
@@ -6,23 +6,23 @@
             {{/each}}
         </tr>
     </thead>
-    <tbody class="quote-table-body"></tbody>
+    <tbody class="quote-extras-table-body"></tbody>
     <tfoot>
         <tr>
             <td colspan="{{ footer_colspan }}"></td>
             <td colspan="1">
                 <table class="quote-total-prices">
                     <tbody>
-                        <tr>
+                        {{!-- <tr>
                             <td><strong>Subtotal</strong></td>
                             <td class="value"><span>{{ total_prices.subtotal }}</span></td>
-                        </tr>
-                        <tr>
+                        </tr> --}}
+                        {{!-- <tr>
                             <td><strong>Shipping</strong></td>
                             <td class="value"><span>{{ total_prices.shipping }}</span></li></td>
-                        </tr>
+                        </tr> --}}
                         <tr class="total">
-                            <td><strong>Total</strong></td>
+                            <td><strong>Total extras</strong></td>
                             <td class="value"><strong>{{ total_prices.total }}</strong></li></td>
                         </tr>
                     </tbody>

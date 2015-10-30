@@ -62,6 +62,27 @@ $(document).ready(function () {
         }
     ]);
 
+    app.current_project.extras.add([
+        {
+            description: 'Grey restrictor cable w/key - 4.25" length',
+            quantity: 90,
+            original_cost: 10,
+            original_currency: 'EUR',
+            conversion_rate: 0.91261693,
+            price_markup: 1.5,
+            discount: 0
+        },
+        {
+            description: 'Piece of junk',
+            quantity: 5,
+            original_cost: 15,
+            original_currency: 'USD',
+            conversion_rate: 1,
+            price_markup: 2,
+            discount: 0
+        },
+    ]);
+
     app.main_region = new Marionette.Region({
         el: '#main'
     });

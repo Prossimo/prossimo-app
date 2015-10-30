@@ -8,7 +8,8 @@ var app = app || {};
         className: 'screen quote-screen',
         template: app.templates['quote/main-quote-view'],
         ui: {
-            '$table_container': '.quote-table-container'
+            '$table_container': '.quote-table-container',
+            '$extras_table_container': '.quote-extras-table-container'
         },
         initialize: function () {
             this.model = app.current_project;
@@ -23,15 +24,21 @@ var app = app || {};
         },
         onRender: function () {
             var windows_table_view = new app.WindowsTableView({
-                collection: app.current_project.windows
+                collection: app.current_project.windows,
+                extras: app.current_project.extras
             });
 
             var quote_table_view = new app.QuoteTableView({
                 collection: app.current_project.windows
             });
 
+            var quote_extras_table_view = new app.QuoteExtrasTableView({
+                collection: app.current_project.extras
+            });
+
             this.$el.append(windows_table_view.render().el);
             this.ui.$table_container.append(quote_table_view.render().el);
+            this.ui.$extras_table_container.append(quote_extras_table_view.render().el);
         }
     });
 })();
