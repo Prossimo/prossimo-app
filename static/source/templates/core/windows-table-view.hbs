@@ -1,8 +1,9 @@
 <div class="windows-table">
     <div class="windows-table-title">
         <p>Windows list</p>
-        <div class="windows-table-controls {{ table_visibility }}">
-            <button class="btn js-add-new-window add-new-window">Add a new window</button>
+        <div class="windows-table-controls {{ table_visibility }} show-{{ mode }}">
+            <button class="btn js-add-new-window add-new-window">Add new window</button>
+            <button class="btn js-add-new-accessory add-new-accessory">Add new accessory</button>
         </div>
     </div>
     <div class="windows-table-contents {{ table_visibility }}">

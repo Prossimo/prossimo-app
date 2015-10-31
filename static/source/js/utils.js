@@ -15,6 +15,9 @@ var app = app || {};
             },
             price_usd: function (price) {
                 return '$' + new Decimal(parseFloat(price).toFixed(2)).toFormat(2);
+            },
+            percent: function (value) {
+                return new Decimal(parseFloat(value).toFixed(2)).toFormat() + '%';
             }
         },
         parseFormat: {

@@ -9,7 +9,27 @@
 </td>
 <td class="quantity">{{ quantity }}</td>
 <td class="price">
-    <p class="unit">Unit price: {{ price.unit }}</p>
-    <p class="subtotal">Subtotal: {{ price.subtotal }}</p>
+    <table class="unit-price">
+        <tbody>
+            <tr class="unit">
+                <td>Unit price:</td>
+                <td class="value">{{ price.unit }}</td>
+            </tr>
+            <tr class="subtotal">
+                <td>Subtotal:</td>
+                <td class="value">{{ price.subtotal }}</td>
+            </tr>
+            {{#if price.discount }}<tr class="discount">
+                <td>Discount:</td>
+                <td class="value">{{ price.discount }}</td>
+            </tr>
+            {{/if}}
+            {{#if price.subtotal_discounted }}<tr class="subtotal">
+                <td>Subtotal w/Discount:</td>
+                <td class="value">{{ price.subtotal_discounted }}</td>
+            </tr>
+            {{/if}}
+        </tbody>
+    </table>
 </td>
 

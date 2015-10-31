@@ -22,9 +22,11 @@ module.exports = function (grunt) {
         'utils.js',
         'paste-image.js',
         'core/models/window.js',
+        'core/models/accessory.js',
         'core/models/window-drawing.js',
         'core/models/project.js',
         'core/collections/window-collection.js',
+        'core/collections/accessory-collection.js',
         'core/views/main-navigation-view.js',
         'core/views/windows-table-view.js',
         'docs-import/views/main-docs-import-view.js',
@@ -32,7 +34,9 @@ module.exports = function (grunt) {
         'drawing-windows/views/main-drawing-windows-view.js',
         'quote/views/main-quote-view.js',
         'quote/views/quote-item-view.js',
+        'quote/views/quote-extras-item-view.js',
         'quote/views/quote-table-view.js',
+        'quote/views/quote-extras-table-view.js',
         'app.js'
     ];
 

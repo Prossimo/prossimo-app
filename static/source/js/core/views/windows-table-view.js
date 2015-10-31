@@ -13,6 +13,7 @@ var app = app || {};
         events: {
             'click .windows-table-title': 'toggleTableVisibility',
             'click .js-add-new-window': 'addNewWindow',
+            'click .js-add-new-accessory': 'addNewAccessory',
             'click .nav-tabs a': 'onTabClick'
         },
         initialize: function () {
@@ -22,11 +23,13 @@ var app = app || {};
             this.tabs = {
                 input: {
                     title: 'Input',
+                    collection: this.collection,
                     columns: ['mark', 'quantity', 'width', 'height',
                         'customer_image', 'type', 'description', 'notes']
                 },
                 specs: {
                     title: 'Specs',
+                    collection: this.collection,
                     columns: ['mark', 'quantity', 'width', 'height', 'width_mm',
                         'height_mm', 'customer_image', 'drawing', 'type', 'description',
                         'notes', 'system', 'external_color', 'internal_color', 'gasket_color',
@@ -35,15 +38,26 @@ var app = app || {};
                 },
                 prices: {
                     title: 'Prices',
+                    collection: this.collection,
                     columns: ['mark', 'quantity', 'original_cost', 'original_currency',
                         'conversion_rate', 'unit_cost', 'price_markup', 'unit_price',
                         'subtotal_price', 'discount', 'unit_price_discounted',
                         'subtotal_price_discounted']
+                },
+                extras: {
+                    title: 'Extras',
+                    collection: this.options.extras,
+                    columns: ['description', 'quantity', 'extras_type', 'original_cost',
+                        'original_currency', 'conversion_rate', 'unit_cost', 'price_markup',
+                        'unit_price', 'subtotal_cost', 'subtotal_price']
                 }
             };
             this.active_tab = 'input';
 
+            //  TODO: remake this, see issue #3
             this.listenTo(this.collection, 'all', this.render);
+            this.listenTo(this.options.extras, 'all', this.render);
+
             this.listenTo(app.vent, 'paste_image', this.onPasteImage);
         },
         getActiveTab: function () {
@@ -71,12 +85,19 @@ var app = app || {};
             e.stopPropagation();
             this.collection.add(new_window);
         },
+        addNewAccessory: function (e) {
+            var new_accessory = new app.Accessory();
+
+            e.stopPropagation();
+            this.options.extras.add(new_accessory);
+        },
         serializeData: function () {
             return {
                 tabs: _.each(this.tabs, function (item, key) {
                     item.is_active = key === this.active_tab;
                     return item;
                 }, this),
+                mode: this.getActiveTab().title === 'Extras' ? 'extras' : 'windows',
                 table_visibility: this.table_visibility
             };
         },
@@ -137,8 +158,14 @@ var app = app || {};
                 dimensions: function (model) {
                     return f.dimensions(model.get('width'), model.get('height'));
                 },
+                // discount: function (model) {
+                //     return f.percent(model.get('discount'));
+                // },
                 unit_cost: function (model) {
                     return f.price_usd(model.getUnitCost());
+                },
+                subtotal_cost: function (model) {
+                    return f.price_usd(model.getSubtotalCost());
                 },
                 unit_price: function (model) {
                     return f.price_usd(model.getUnitPrice());
@@ -191,13 +218,14 @@ var app = app || {};
                 }
             };
         },
-        getColumnExtras: function (column_name) {
-            var extras_obj = {};
-            var extras_hash = {
+        getColumnExtraProperties: function (column_name) {
+            var properties_obj = {};
+            var properties_hash = {
                 width_mm: { readOnly: true },
                 height_mm: { readOnly: true },
                 dimensions: { readOnly: true },
                 unit_cost: { readOnly: true },
+                subtotal_cost: { readOnly: true },
                 unit_price: { readOnly: true },
                 subtotal_price: { readOnly: true },
                 unit_price_discounted: { readOnly: true },
@@ -210,14 +238,18 @@ var app = app || {};
                 customer_image: {
                     // width: 300,
                     renderer: this.customerImageRenderer
+                },
+                extras_type: {
+                    type: 'dropdown',
+                    source: ['Regular', 'Shipping', 'Optional', 'Hidden']
                 }
             };
 
-            if ( extras_hash[column_name] ) {
-                extras_obj = _.extend({}, extras_hash[column_name]);
+            if ( properties_hash[column_name] ) {
+                properties_obj = _.extend({}, properties_hash[column_name]);
             }
 
-            return extras_obj;
+            return properties_obj;
         },
         //  Return all columns
         //  TODO: describe this in a similar fashion as a following method
@@ -227,7 +259,7 @@ var app = app || {};
             _.each(this.getActiveTab().columns, function (column_name) {
                 var column_obj = _.extend({},
                     { data: this.getColumnData(column_name) },
-                    this.getColumnExtras(column_name)
+                    this.getColumnExtraProperties(column_name)
                 );
 
                 columns.push(column_obj);
@@ -242,10 +274,11 @@ var app = app || {};
         //  - if both fail, we show just a system name of a column
         getActiveTabHeaders: function () {
             var headers = [];
+            var active_tab = this.getActiveTab();
 
-            _.each(this.getActiveTab().columns, function (column_name) {
+            _.each(active_tab.columns, function (column_name) {
                 var custom_header = this.getCustomColumnHeader(column_name);
-                var original_header = this.collection.getTitles([column_name]);
+                var original_header = active_tab.collection.getTitles([column_name]);
                 var title = '';
 
                 if ( custom_header ) {
@@ -267,6 +300,7 @@ var app = app || {};
                 width_mm: 'Width (mm)',
                 height_mm: 'Height (mm)',
                 unit_cost: 'Unit Cost',
+                subtotal_cost: 'Subtotal Cost',
                 unit_price: 'Unit Price',
                 subtotal_price: 'Subtotal Price',
                 drawing: 'Drawing',
@@ -279,7 +313,7 @@ var app = app || {};
         },
         onRender: function () {
             this.hot = new Handsontable(this.ui.$hot_container[0], {
-                data: this.collection,
+                data: this.getActiveTab().collection,
                 columns: this.getActiveTabColumnOptions(),
                 colHeaders: this.getActiveTabHeaders(),
                 rowHeaders: true,

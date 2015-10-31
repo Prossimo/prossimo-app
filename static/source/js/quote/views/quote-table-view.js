@@ -6,9 +6,15 @@ var app = app || {};
     app.QuoteTableView = Marionette.CompositeView.extend({
         template: app.templates['quote/quote-table-view'],
         childView: app.QuoteItemView,
-        childViewContainer: 'tbody',
+        childViewContainer: '.quote-table-body',
+        childViewOptions: function () {
+            return {
+                extras: this.options.extras
+            };
+        },
         initialize: function () {
             this.listenTo(this.collection, 'all', this.render);
+            this.listenTo(this.options.extras, 'all', this.render);
         },
         getQuoteTableAttributes: function () {
             var name_title_hash = {
@@ -27,18 +33,14 @@ var app = app || {};
         },
         getTotalPrices: function () {
             var f = app.utils.format;
-            // var shipping_price = Math.ceil(Math.random() * 30) * 100;
-            var subtotal_price = 0;
-            var shipping_price = 0;
-
-            this.collection.each(function (item) {
-                subtotal_price += item.getSubtotalPrice();
-            });
+            var subtotal_price = this.collection.getSubtotalPriceDiscounted();
+            var hidden_price = this.options.extras ? this.options.extras.getHiddenPrice() : 0;
+            var shipping_price = this.options.extras ? this.options.extras.getShippingPrice() : 0;
 
             return {
-                subtotal: f.price_usd(subtotal_price),
+                subtotal: f.price_usd(subtotal_price + hidden_price),
                 shipping: f.price_usd(shipping_price),
-                total: f.price_usd(subtotal_price + shipping_price)
+                total: f.price_usd(subtotal_price + hidden_price + shipping_price)
             };
         },
         serializeData: function () {

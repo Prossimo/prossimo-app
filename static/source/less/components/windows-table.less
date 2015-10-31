@@ -7,6 +7,7 @@
     // right: 0;
     flex: 0 1 auto;
     background-color: darken(@white, 20%);
+    box-shadow: 0 0 3px 0 fadeout(@black, 70%);
 }
 
 .windows-table {
@@ -43,6 +44,22 @@
     border-radius: 5px 0 0 5px;
     border: 1px solid darken(@white, 45%);
 }
+
+.windows-table-controls .add-new-window,
+.windows-table-controls .add-new-accessory {
+    display: none;
+}
+
+.windows-table-controls.show-windows .add-new-window,
+.windows-table-controls.show-extras .add-new-accessory {
+    display: block;
+}
+
+
+
+//  ------------------------------------------------------------------------
+//  Table content part
+//  ------------------------------------------------------------------------
 
 .windows-table-contents {
     // padding: 1rem 4rem 1rem;

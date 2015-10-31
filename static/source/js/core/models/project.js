@@ -16,6 +16,7 @@ var app = app || {};
         },
         initialize: function () {
             this.windows = new app.WindowCollection();
+            this.extras = new app.AccessoryCollection();
             this.project_files = [];
         }
     });
