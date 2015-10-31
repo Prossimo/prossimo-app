@@ -14,16 +14,21 @@ var app = app || {};
             var discount = this.model.get('discount');
             var subtotal_price_discounted = this.model.getSubtotalPriceDiscounted();
 
+            //  We split "hidden" extras equally between all units
+            var collection_price = this.model.collection.getSubtotalPriceDiscounted();
+            var hidden_price = this.options.extras ? this.options.extras.getHiddenPrice() : 0;
+            var hidden_multiplier = 1 + hidden_price / collection_price;
+
             return {
-                unit: f.price_usd(unit_price),
-                subtotal: f.price_usd(subtotal_price),
+                unit: f.price_usd(unit_price * hidden_multiplier),
+                subtotal: f.price_usd(subtotal_price * hidden_multiplier),
                 discount: discount ? f.percent(discount) : null,
-                subtotal_discounted: discount ? f.price_usd(subtotal_price_discounted) : null
+                subtotal_discounted: discount ? f.price_usd(subtotal_price_discounted * hidden_multiplier) : null
             };
         },
-        getProductImage: function () {
-            // this.model
-        },
+        // getProductImage: function () {
+        //     // this.model
+        // },
         getDescription: function () {
             var f = app.utils.format;
 

@@ -7,6 +7,14 @@ var app = app || {};
         template: app.templates['quote/quote-extras-table-view'],
         childView: app.QuoteExtrasItemView,
         childViewContainer: '.quote-extras-table-body',
+        childViewOptions: function () {
+            return {
+                type: this.options.type
+            };
+        },
+        filter: function (child) {
+            return child.get('extras_type') === this.options.type;
+        },
         initialize: function () {
             this.listenTo(this.collection, 'all', this.render);
         },
@@ -26,25 +34,26 @@ var app = app || {};
         },
         getTotalPrices: function () {
             var f = app.utils.format;
-            // var shipping_price = Math.ceil(Math.random() * 30) * 100;
-            var subtotal_price = 0;
-            var shipping_price = 0;
-
-            this.collection.each(function (item) {
-                subtotal_price += item.getSubtotalPrice();
-            });
+            var total_price = this.options.type === 'Regular' ?
+                this.collection.getRegularItemsPrice() :
+                this.collection.getOptionalItemsPrice();
 
             return {
-                subtotal: f.price_usd(subtotal_price),
-                // shipping: f.price_usd(shipping_price),
-                total: f.price_usd(subtotal_price + shipping_price)
+                total: f.price_usd(total_price)
             };
+        },
+        getItemsCount: function () {
+            return this.options.type === 'Regular' ?
+                this.collection.getRegularItems().length :
+                this.collection.getOptionalItems().length;
         },
         serializeData: function () {
             return {
+                items_count: this.getItemsCount(),
                 table_attributes: this.getExtrasTableAttributes(),
                 footer_colspan: this.getExtrasTableAttributes().length - 1,
-                total_prices: this.getTotalPrices()
+                total_prices: this.getTotalPrices(),
+                heading: this.options.type === 'Regular' ? 'Extras' : 'Optional Extras'
             };
         }
     });

@@ -1,4 +1,6 @@
-<table class="quote-extras-table">
+{{#if heading }}<h3 class="{{#unless items_count }} hidden{{/unless}}">{{ heading }}</h3>{{/if}}
+
+<table class="quote-extras-table {{#unless items_count }} hidden{{/unless}}">
     <thead>
         <tr>
             {{#each table_attributes }}
@@ -31,3 +33,4 @@
         </tr>
     </tfoot>
 </table>
+

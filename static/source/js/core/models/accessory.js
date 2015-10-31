@@ -6,6 +6,7 @@ var app = app || {};
     var AccessoryProperties = [
         { name: 'description', title: 'Description', type: 'string' },
         { name: 'quantity', title: 'Quantity', type: 'number' },
+        { name: 'extras_type', title: 'Extras type', type: 'extras_type' },
 
         { name: 'original_cost', title: 'Original Cost', type: 'number' },
         { name: 'original_currency', title: 'Original Currency', type: 'string' },
@@ -37,6 +38,14 @@ var app = app || {};
             }
 
             if ( name === 'conversion_rate' ) {
+                default_value = 1;
+            }
+
+            if ( name === 'extras_type' ) {
+                default_value = 'Regular';
+            }
+
+            if ( name === 'price_markup' ) {
                 default_value = 1;
             }
 

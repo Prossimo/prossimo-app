@@ -21,6 +21,24 @@ var app = app || {};
         },
         getTitles: function (names) {
             return _.clone(this.proxy_window.getTitles(names));
+        },
+        getSubtotalPrice: function () {
+            var total_price = 0;
+
+            this.each(function (item) {
+                total_price += item.getSubtotalPrice();
+            });
+
+            return total_price;
+        },
+        getSubtotalPriceDiscounted: function () {
+            var total_price = 0;
+
+            this.each(function (item) {
+                total_price += item.getSubtotalPriceDiscounted();
+            });
+
+            return total_price;
         }
     });
 })();

@@ -63,6 +63,10 @@ var app = app || {};
                 default_value = 1;
             }
 
+            if ( name === 'price_markup' ) {
+                default_value = 1;
+            }
+
             return default_value;
         },
         //  Return { name: 'name', title: 'Title' } pairs for each item in

@@ -47,9 +47,9 @@ var app = app || {};
                 extras: {
                     title: 'Extras',
                     collection: this.options.extras,
-                    columns: ['description', 'quantity', 'original_cost', 'original_currency',
-                        'conversion_rate', 'unit_cost', 'price_markup', 'unit_price',
-                        'subtotal_cost', 'subtotal_price']
+                    columns: ['description', 'quantity', 'extras_type', 'original_cost',
+                        'original_currency', 'conversion_rate', 'unit_cost', 'price_markup',
+                        'unit_price', 'subtotal_cost', 'subtotal_price']
                 }
             };
             this.active_tab = 'input';
@@ -218,9 +218,9 @@ var app = app || {};
                 }
             };
         },
-        getColumnExtras: function (column_name) {
-            var extras_obj = {};
-            var extras_hash = {
+        getColumnExtraProperties: function (column_name) {
+            var properties_obj = {};
+            var properties_hash = {
                 width_mm: { readOnly: true },
                 height_mm: { readOnly: true },
                 dimensions: { readOnly: true },
@@ -238,14 +238,18 @@ var app = app || {};
                 customer_image: {
                     // width: 300,
                     renderer: this.customerImageRenderer
+                },
+                extras_type: {
+                    type: 'dropdown',
+                    source: ['Regular', 'Shipping', 'Optional', 'Hidden']
                 }
             };
 
-            if ( extras_hash[column_name] ) {
-                extras_obj = _.extend({}, extras_hash[column_name]);
+            if ( properties_hash[column_name] ) {
+                properties_obj = _.extend({}, properties_hash[column_name]);
             }
 
-            return extras_obj;
+            return properties_obj;
         },
         //  Return all columns
         //  TODO: describe this in a similar fashion as a following method
@@ -255,7 +259,7 @@ var app = app || {};
             _.each(this.getActiveTab().columns, function (column_name) {
                 var column_obj = _.extend({},
                     { data: this.getColumnData(column_name) },
-                    this.getColumnExtras(column_name)
+                    this.getColumnExtraProperties(column_name)
                 );
 
                 columns.push(column_obj);

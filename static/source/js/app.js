@@ -81,6 +81,36 @@ $(document).ready(function () {
             price_markup: 2,
             discount: 0
         },
+        {
+            description: 'Optional thingy',
+            quantity: 1,
+            original_cost: 450,
+            original_currency: 'USD',
+            conversion_rate: 1,
+            price_markup: 2,
+            discount: 0,
+            extras_type: 'Optional'
+        },
+        {
+            description: 'Hidden costs for dealing with annoying client',
+            quantity: 1,
+            original_cost: 2000,
+            original_currency: 'USD',
+            conversion_rate: 1,
+            price_markup: 1,
+            discount: 0,
+            extras_type: 'Hidden'
+        },
+        {
+            description: 'Shipping to site',
+            quantity: 1,
+            original_cost: 1500,
+            original_currency: 'USD',
+            conversion_rate: 1,
+            price_markup: 1,
+            discount: 0,
+            extras_type: 'Shipping'
+        }
     ]);
 
     app.main_region = new Marionette.Region({

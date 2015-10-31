@@ -9,21 +9,20 @@ var app = app || {};
         template: app.templates['quote/quote-extras-item-view'],
         getPrices: function () {
             var f = app.utils.format;
-            // var unit_price = this.model.getUnitPrice();
             var subtotal_price = this.model.getSubtotalPrice();
-            // var discount = this.model.get('discount');
-            // var subtotal_price_discounted = this.model.getSubtotalPriceDiscounted();
 
             return {
-                // unit: f.price_usd(unit_price),
-                subtotal: f.price_usd(subtotal_price),
-                // discount: discount ? f.percent(discount) : null,
-                // subtotal_discounted: discount ? f.price_usd(subtotal_price_discounted) : null
+                subtotal: f.price_usd(subtotal_price)
             };
+        },
+        getReferenceId: function () {
+            return this.model.collection.filter(function (item) {
+                return item.get('extras_type') === this.options.type;
+            }, this).indexOf(this.model) + 1;
         },
         serializeData: function () {
             return {
-                reference_id: this.model.collection.indexOf(this.model) + 1,
+                reference_id: this.getReferenceId(),
                 description: this.model.get('description'),
                 quantity: this.model.get('quantity'),
                 price: this.getPrices()
