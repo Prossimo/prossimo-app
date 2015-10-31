@@ -17,8 +17,8 @@ var app = app || {};
             'click .nav-tabs a': 'onTabClick'
         },
         initialize: function () {
-            // this.table_visibility = 'hidden';
-            this.table_visibility = 'visible';
+            this.table_visibility = 'hidden';
+            // this.table_visibility = 'visible';
 
             this.tabs = {
                 input: {
@@ -322,10 +322,10 @@ var app = app || {};
             });
 
             //  TODO: remove this
-            var self = this;
-            setTimeout(function () {
-                self.hot.render();
-            }, 100);
+            // var self = this;
+            // setTimeout(function () {
+            //     self.hot.render();
+            // }, 100);
         }
     });
 })();
