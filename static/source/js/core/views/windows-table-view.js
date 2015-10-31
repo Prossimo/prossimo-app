@@ -60,6 +60,28 @@ var app = app || {};
 
             this.listenTo(app.vent, 'paste_image', this.onPasteImage);
         },
+        appendPopovers: function () {
+            this.$el.popover('destroy');
+
+            this.$el.popover({
+                container: 'body',
+                title: 'Customer Image',
+                html: true,
+                selector: '.customer-image',
+                content: function () {
+                    return $(this).clone();
+                },
+                trigger: 'hover',
+                placement: 'top',
+                delay: {
+                    show: 300
+                }
+            });
+
+            this.$el.on('show.bs.popover', function () {
+                $('.popover').remove();
+            });
+        },
         getActiveTab: function () {
             return this.tabs[this.active_tab];
         },
@@ -122,19 +144,19 @@ var app = app || {};
         //  This one is from Handsontable demo on renderers
         customerImageRenderer: function (instance, td, row, col, prop, value) {
             var escaped = Handsontable.helper.stringify(value);
-            var img;
+            var $img;
             var $td = $(td);
 
             if ( escaped.indexOf('data:image/png') === 0 ) {
-                img = document.createElement('IMG');
-                img.src = value;
+                $img = $('<img class="customer-image" />');
+                $img.attr('src', value);
 
-                Handsontable.Dom.addEvent(img, 'mousedown', function (e) {
+                //  Prevent selection quirk
+                $img.on('mousedown', function (e) {
                     e.preventDefault();
                 });
 
-                $td.empty();
-                td.appendChild(img);
+                $td.empty().append($img);
             } else {
                 Handsontable.renderers.TextRenderer.apply(this, arguments);
             }
@@ -320,6 +342,8 @@ var app = app || {};
                 stretchH: 'all',
                 height: 200
             });
+
+            this.appendPopovers();
 
             //  TODO: remove this
             // var self = this;

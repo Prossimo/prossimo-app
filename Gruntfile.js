@@ -7,6 +7,8 @@ module.exports = function (grunt) {
         'backbone.marionette/lib/backbone.marionette.min.js',
         'handsontable/dist/handsontable.full.min.js',
         'bootstrap/js/dropdown.js',
+        'bootstrap/js/tooltip.js',
+        'bootstrap/js/popover.js',
         'bootstrap-select/dist/js/bootstrap-select.min.js',
         'konva/konva.min.js',
         'decimal.js/decimal.min.js'
