@@ -9,7 +9,8 @@ var app = app || {};
         childViewContainer: '.quote-table-body',
         childViewOptions: function () {
             return {
-                extras: this.options.extras
+                extras: this.options.extras,
+                project: this.options.project
             };
         },
         initialize: function () {
@@ -33,14 +34,15 @@ var app = app || {};
         },
         getTotalPrices: function () {
             var f = app.utils.format;
-            var subtotal_price = this.collection.getSubtotalPriceDiscounted();
-            var hidden_price = this.options.extras ? this.options.extras.getHiddenPrice() : 0;
-            var shipping_price = this.options.extras ? this.options.extras.getShippingPrice() : 0;
+            var total_prices = this.options.project.getTotalPrices();
 
             return {
-                subtotal: f.price_usd(subtotal_price + hidden_price),
-                shipping: f.price_usd(shipping_price),
-                total: f.price_usd(subtotal_price + hidden_price + shipping_price)
+                subtotal_units: f.price_usd(total_prices.subtotal_units),
+                subtotal_units_with_hidden: f.price_usd(total_prices.subtotal_units_with_hidden),
+                subtotal_extras: f.price_usd(total_prices.subtotal_extras),
+                subtotal: f.price_usd(total_prices.subtotal),
+                shipping: f.price_usd(total_prices.shipping),
+                grand_total: f.price_usd(total_prices.grand_total)
             };
         },
         serializeData: function () {

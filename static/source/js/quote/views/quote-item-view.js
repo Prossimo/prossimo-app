@@ -15,9 +15,7 @@ var app = app || {};
             var subtotal_price_discounted = this.model.getSubtotalPriceDiscounted();
 
             //  We split "hidden" extras equally between all units
-            var collection_price = this.model.collection.getSubtotalPriceDiscounted();
-            var hidden_price = this.options.extras ? this.options.extras.getHiddenPrice() : 0;
-            var hidden_multiplier = 1 + hidden_price / collection_price;
+            var hidden_multiplier = this.options.project ? this.options.project.getHiddenMultiplier() : 1;
 
             return {
                 unit: f.price_usd(unit_price * hidden_multiplier),

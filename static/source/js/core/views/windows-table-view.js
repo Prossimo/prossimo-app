@@ -173,8 +173,7 @@ var app = app || {};
                 }
             };
 
-            return function (instance, td, row, col, prop, value, cellProperties) {
-                var escaped = Handsontable.helper.stringify(value);
+            return function (instance, td, row, col, prop, value) {
                 var $td = $(td);
 
                 if ( formatters_hash[attr_name] ) {

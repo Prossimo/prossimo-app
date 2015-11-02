@@ -30,6 +30,7 @@ var app = app || {};
             });
 
             var quote_table_view = new app.QuoteTableView({
+                project: app.current_project,
                 collection: app.current_project.windows,
                 extras: app.current_project.extras
             });

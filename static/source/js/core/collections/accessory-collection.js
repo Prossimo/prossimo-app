@@ -46,7 +46,7 @@ var app = app || {};
             var total_price = 0;
 
             _.each(collection, function (item) {
-                total_price += item.getSubtotalPrice();
+                total_price += item.getSubtotalPriceDiscounted();
             });
 
             return total_price;
