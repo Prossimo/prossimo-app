@@ -165,6 +165,31 @@ var app = app || {};
 
             return td;
         },
+        getFormattedRenderer: function (attr_name) {
+            var f = app.utils.format;
+            var formatters_hash = {
+                discount: function () {
+                    return f.percent.apply(this, arguments);
+                }
+            };
+
+            return function (instance, td, row, col, prop, value, cellProperties) {
+                var escaped = Handsontable.helper.stringify(value);
+                var $td = $(td);
+
+                if ( formatters_hash[attr_name] ) {
+                    $td.empty().append(formatters_hash[attr_name](value));
+                } else {
+                    Handsontable.renderers.TextRenderer.apply(this, arguments);
+                }
+
+                if ( attr_name === 'discount' ) {
+                    $td.addClass('htNumeric');
+                }
+
+                return td;
+            };
+        },
         getGetterFunction: function (window_model, column_name) {
             var c = app.utils.convert;
             var f = app.utils.format;
@@ -180,9 +205,6 @@ var app = app || {};
                 dimensions: function (model) {
                     return f.dimensions(model.get('width'), model.get('height'));
                 },
-                // discount: function (model) {
-                //     return f.percent(model.get('discount'));
-                // },
                 unit_cost: function (model) {
                     return f.price_usd(model.getUnitCost());
                 },
@@ -196,7 +218,7 @@ var app = app || {};
                     return f.price_usd(model.getSubtotalPrice());
                 },
                 uw_ip: function (model) {
-                    return model.getUwIp();
+                    return f.fixed(model.getUwIp(), 5);
                 },
                 unit_price_discounted: function (model) {
                     return f.price_usd(model.getUnitPriceDiscounted());
@@ -216,14 +238,23 @@ var app = app || {};
 
             return getter.apply(this, arguments);
         },
-        //  TODO: use proper format parsers here
-        getSetterFunction: function () {
-            // var p = app.utils.parseFormat;
+        getSetterFunction: function (window_model, column_name) {
+            var p = app.utils.parseFormat;
             var setter;
 
-            setter = function (model, attr_name, val) {
-                return model.set(attr_name, val);
+            var setters_hash = {
+                discount: function (model, attr_name, val) {
+                    return model.set(attr_name, p.percent(val));
+                }
             };
+
+            if ( setters_hash[column_name] ) {
+                setter = setters_hash[column_name];
+            } else {
+                setter = function (model, attr_name, val) {
+                    return model.set(attr_name, val);
+                };
+            }
 
             return setter.apply(this, arguments);
         },
@@ -242,6 +273,28 @@ var app = app || {};
         },
         getColumnExtraProperties: function (column_name) {
             var properties_obj = {};
+
+            var names_title_type_hash = this.getActiveTab()
+                .collection.getNameTitleTypeHash([column_name]);
+            var original_type = names_title_type_hash.length &&
+                names_title_type_hash[0].type || undefined;
+
+            if ( original_type ) {
+                if ( original_type === 'number' ) {
+                    properties_obj.type = 'numeric';
+                }
+            }
+
+            var format_hash = {
+                width: { format: '0,0[.]00' },
+                height: { format: '0,0[.]00' },
+                quantity: { format: '0,0[.]00' },
+                original_cost: { format: '0,0[.]00' },
+                conversion_rate: { format: '0[.]00000' },
+                price_markup: { format: '0,0[.]00' },
+                uw: { format: '0[.]00' }
+            };
+
             var properties_hash = {
                 width_mm: { readOnly: true },
                 height_mm: { readOnly: true },
@@ -258,17 +311,23 @@ var app = app || {};
                     width: 100
                 },
                 customer_image: {
-                    // width: 300,
                     renderer: this.customerImageRenderer
                 },
                 extras_type: {
                     type: 'dropdown',
                     source: ['Regular', 'Shipping', 'Optional', 'Hidden']
+                },
+                discount: {
+                    renderer: this.getFormattedRenderer('discount')
                 }
             };
 
+            if ( format_hash[column_name] ) {
+                properties_obj = _.extend(properties_obj, format_hash[column_name]);
+            }
+
             if ( properties_hash[column_name] ) {
-                properties_obj = _.extend({}, properties_hash[column_name]);
+                properties_obj = _.extend(properties_obj, properties_hash[column_name]);
             }
 
             return properties_obj;

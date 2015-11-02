@@ -18,10 +18,16 @@ var app = app || {};
             },
             percent: function (value) {
                 return new Decimal(parseFloat(value).toFixed(2)).toFormat() + '%';
+            },
+            fixed: function (value, num) {
+                num = num || 2;
+                return new Decimal(parseFloat(value).toFixed(num)).toFormat(num);
             }
         },
         parseFormat: {
-
+            percent: function (string) {
+                return parseFloat(string);
+            }
         },
         convert: {
             inches_to_mm: function (inch_value) {

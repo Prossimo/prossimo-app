@@ -53,7 +53,7 @@ var app = app || {};
         },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs
-        getNameTitleHash: function (names) {
+        getNameTitleTypeHash: function (names) {
             var name_title_hash = [];
 
             if ( !names ) {
@@ -62,14 +62,14 @@ var app = app || {};
 
             _.each(AccessoryProperties, function (item) {
                 if ( _.indexOf(names, item.name) !== -1 ) {
-                    name_title_hash.push({ name: item.name, title: item.title });
+                    name_title_hash.push({ name: item.name, title: item.title, type: item.type });
                 }
             });
 
             return name_title_hash;
         },
         getTitles: function (names) {
-            var name_title_hash = this.getNameTitleHash(names);
+            var name_title_hash = this.getNameTitleTypeHash(names);
 
             return _.pluck(name_title_hash, 'title');
         },

@@ -16,8 +16,8 @@ var app = app || {};
         initialize: function () {
             this.proxy_accessory = new app.Accessory();
         },
-        getNameTitleHash: function (names) {
-            return _.clone(this.proxy_accessory.getNameTitleHash(names));
+        getNameTitleTypeHash: function (names) {
+            return _.clone(this.proxy_accessory.getNameTitleTypeHash(names));
         },
         getTitles: function (names) {
             return _.clone(this.proxy_accessory.getTitles(names));

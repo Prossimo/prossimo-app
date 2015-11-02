@@ -161,6 +161,10 @@ module.exports = function (grunt) {
                     '<%= buildUrl %>/js/vendor.<%= hash %>.min.js':
                         vendor_js_files.map(function (component) {
                             return '<%= bowerUrl %>/' + component;
+                        }),
+                    '<%= buildUrl %>/js/vendor.min.js':
+                        vendor_js_files.map(function (component) {
+                            return '<%= bowerUrl %>/' + component;
                         })
                 }
             },
@@ -291,6 +295,10 @@ module.exports = function (grunt) {
                     }
                 ]
             }
+        },
+
+        qunit: {
+            all: ['test/**/*.html']
         }
     });
 
@@ -306,6 +314,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-replace');
     grunt.loadNpmTasks('grunt-gitinfo');
+    grunt.loadNpmTasks('grunt-contrib-qunit');
 
     grunt.registerTask('build', [
         'gitinfo', 'clean:build', 'handlebars:build', 'copy:vendor', 'uglify:build',
@@ -315,7 +324,7 @@ module.exports = function (grunt) {
         'gitinfo', 'clean:build', 'handlebars:build', 'copy:dev', 'copy:vendor',
         'copy:pdfjs', 'copy:images', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:dev'
     ]);
-    grunt.registerTask('test', ['eslint']);
+    grunt.registerTask('test', ['eslint', 'qunit']);
     grunt.registerTask('deploy', ['test', 'sshexec:update']);
     grunt.registerTask('default', ['dev', 'connect', 'watch']);
 };

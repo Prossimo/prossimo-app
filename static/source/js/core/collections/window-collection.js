@@ -16,8 +16,8 @@ var app = app || {};
         initialize: function () {
             this.proxy_window = new app.Window();
         },
-        getNameTitleHash: function (names) {
-            return _.clone(this.proxy_window.getNameTitleHash(names));
+        getNameTitleTypeHash: function (names) {
+            return _.clone(this.proxy_window.getNameTitleTypeHash(names));
         },
         getTitles: function (names) {
             return _.clone(this.proxy_window.getTitles(names));
