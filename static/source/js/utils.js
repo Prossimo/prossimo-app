@@ -5,13 +5,14 @@ var app = app || {};
 
     app.utils = {
         format: {
-            dimensions: function (width, height) {
-                var width_feet = Math.floor(parseFloat(width) / 12);
-                var width_inches = parseFloat(width) % 12;
-                var height_feet = Math.floor(parseFloat(height) / 12);
-                var height_inches = parseFloat(height) % 12;
+            dimension: function (value) {
+                var value_feet = Math.floor(parseFloat(value) / 12);
+                var value_inches = parseFloat(value) % 12;
 
-                return width_feet + '\'-' + width_inches + '"x' + height_feet + '\'-' + height_inches + '"';
+                return value_feet + '\'-' + value_inches + '"';
+            },
+            dimensions: function (width, height) {
+                return this.dimension(width) + 'x' + this.dimension(height);
             },
             price_usd: function (price) {
                 return '$' + new Decimal(parseFloat(price).toFixed(2)).toFormat(2);
@@ -25,6 +26,43 @@ var app = app || {};
             }
         },
         parseFormat: {
+            dimension: function (size_string) {
+                var result;
+                var match;
+
+                //  Captures |33 3/8|, |82 1/2"|
+                var pattern_1 = /(\d+)\s(\d+)\/(\d+)/i;
+                //  Captures |5-2|, |8'-0|, |9-10"|, |2’–8”|
+                var pattern_2 = /(\d+)\s*(\'|’)*\s*(-|–|—)\s*(\d+)\s*("|”)*/i;
+                //  Captures |30 '|, |30'|, |30’|, |30.5 ’|
+                var pattern_3 = /(\d+\.*\d+)\s*(\'|’)/i;
+                //  Captures |30|, |30 "|, |30"|, |30 ”|, |30.5 ”|
+                var pattern_4 = /(\d+\.*\d+)\s*("|”)*/i;
+
+                if ( pattern_1.test(size_string) ) {
+                    match = pattern_1.exec(size_string);
+                    result = parseFloat(match[1]) + parseFloat(match[2]) / parseFloat(match[3]);
+                } else if ( pattern_2.test(size_string) ) {
+                    match = pattern_2.exec(size_string);
+                    result = parseFloat(match[1]) * 12 + parseFloat(match[4]);
+                } else if ( pattern_3.test(size_string) ) {
+                    match = pattern_3.exec(size_string);
+                    result = parseFloat(match[1]) * 12;
+                } else if ( pattern_4.test(size_string) ) {
+                    match = pattern_4.exec(size_string);
+                    result = match[1];
+                } else {
+                    //  As a last resort, just extract any number from string
+                    result = size_string;
+                }
+
+                return parseFloat(result);
+            },
+            dimensions: function (size_string, attr) {
+                attr = attr && _.indexOf(['both', 'width', 'height'], attr) !== -1 ?
+                    attr : 'both';
+
+            },
             percent: function (string) {
                 return parseFloat(string);
             }

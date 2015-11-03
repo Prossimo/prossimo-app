@@ -47,6 +47,32 @@ test('utils.format.fixed', function () {
 //  Test parseFormat functions from utils.js
 //  ------------------------------------------------------------------------
 
+test('utils.parseFormat.dimension', function () {
+    var p = app.utils.parseFormat;
+
+    equal(p.dimension(' 30 '), 30, 'Expected value is 30');
+    equal(p.dimension('30 "'), 30, 'Expected value is 30');
+    equal(p.dimension('30 ”'), 30, 'Expected value is 30');
+    equal(p.dimension('30"'), 30, 'Expected value is 30');
+    equal(p.dimension('30.5 ”'), 30.5, 'Expected value is 30.5');
+    equal(p.dimension('192 "'), 192, 'Expected value is 192');
+
+    equal(p.dimension('33 3/8'), 33.375, 'Expected value is 33.375');
+    equal(p.dimension('82 1/2"'), 82.5, 'Expected value is 82.5');
+    equal(p.dimension('50 1/14').toFixed(5), '50.07143', 'Expected value is 50.07143');
+
+    equal(p.dimension('82\''), 82 * 12, 'Expected value is 82 * 12');
+    equal(p.dimension('82’'), 82 * 12, 'Expected value is 82 * 12');
+    equal(p.dimension('30.5 ’'), 30.5 * 12, 'Expected value is 30.5 * 12');
+
+    equal(p.dimension('5-2'), 62, 'Expected value is 62');
+    equal(p.dimension('3 - 0'), 36, 'Expected value is 36');
+    equal(p.dimension('8\'-0'), 96, 'Expected value is 96');
+    equal(p.dimension('9-10"'), 118, 'Expected value is 118');
+    equal(p.dimension('2’–8”'), 32, 'Expected value is 62');
+    equal(p.dimension('2 ’ – 8 ”'), 32, 'Expected value is 62');
+});
+
 test('utils.parseFormat.percent', function () {
     var p = app.utils.parseFormat;
 
