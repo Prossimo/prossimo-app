@@ -10,10 +10,8 @@
 }
 
 .quote-container {
-    // margin: 5rem;
     margin-bottom: 2rem;
     padding: 4rem;
-    // padding-top: 1px;
     background-color: @white;
     border: 1px solid darken(@white, 15%);
     min-height: 100%;
@@ -54,7 +52,6 @@
     font-weight: 700;
     letter-spacing: 0.1em;
     font-size: 2em;
-    // text-align: center;
 }
 
 .quote-project-info ul {
@@ -80,14 +77,12 @@
     padding: 0.5em 1em;
     border: 1px solid darken(@white, 20%);
     background-color: darken(@white, 1%);
-    // text-align: center;
 }
 
 .quote-table tbody td {
     padding: 0.5em 1em;
     border: 1px solid darken(@white, 10%);
     vertical-align: top;
-    // text-align: center;
 }
 
 
@@ -119,6 +114,33 @@
 
 
 //  ------------------------------------------------------------------------
+//  Subtotal row
+//  ------------------------------------------------------------------------
+
+tr.subtotal {
+    background-color: darken(@white, 1%);
+}
+
+
+//  ------------------------------------------------------------------------
+//  Columns
+//  ------------------------------------------------------------------------
+
+
+td.ref {
+    width: 5%;
+}
+
+td.price {
+    width: 25%;
+}
+
+td.quantity {
+    width: 10%;
+}
+
+
+//  ------------------------------------------------------------------------
 //  Table footer
 //  ------------------------------------------------------------------------
 
@@ -130,8 +152,6 @@
 }
 
 .quote-table .quote-total-prices {
-    // padding: 0;
-    // list-style-type: none;
     width: 100%;
 }
 
@@ -145,7 +165,19 @@
 }
 
 .quote-table .quote-total-prices tr.total {
-    font-size: 1.3em;
+    font-size: 1.2em;
+}
+
+.quote-table .quote-total-prices tr.grand-total {
+    font-size: 1.4em;
+}
+
+table.grand-total tr {
+    background-color: darken(@white, 2%);
+}
+
+div + table.grand-total {
+    margin-top: 4rem;
 }
 
 
@@ -153,15 +185,29 @@
 //  Extras table
 //  ------------------------------------------------------------------------
 
-.quote-extras-table-container,
-.quote-optional-extras-table-container {
-    margin: 3rem 0 0;
-}
-
 .quote-extras-table {
     &:extend(.quote-table all);
 }
 
+.extras-heading {
+    margin: 0.8em 0.8em 0;
+    font-size: 1.1em;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.optional-extras-subheading {
+    margin: 0.2em 0.8em 0;
+    font-size: 0.9em;
+    text-align: center;
+    font-weight: 700;
+}
+
+.extras-heading + table,
+.optional-extras-subheading + table {
+    margin-top: 1rem;
+}
 
 //  ------------------------------------------------------------------------
 //  Terms (below table)

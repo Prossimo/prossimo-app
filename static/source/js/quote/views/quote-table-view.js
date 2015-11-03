@@ -7,6 +7,10 @@ var app = app || {};
         template: app.templates['quote/quote-table-view'],
         childView: app.QuoteItemView,
         childViewContainer: '.quote-table-body',
+        ui: {
+            '$extras_table_container': '.quote-extras-table-container',
+            '$optional_extras_table_container': '.quote-optional-extras-table-container'
+        },
         childViewOptions: function () {
             return {
                 extras: this.options.extras,
@@ -48,9 +52,28 @@ var app = app || {};
         serializeData: function () {
             return {
                 table_attributes: this.getQuoteTableAttributes(),
-                footer_colspan: this.getQuoteTableAttributes().length - 1,
+                has_extras: this.options.extras &&
+                    this.options.extras.getRegularItems().length ||
+                    this.options.extras.getOptionalItems().length,
+                price_colspan: this.getQuoteTableAttributes().length - 1,
                 total_prices: this.getTotalPrices()
             };
+        },
+        onRender: function () {
+            if ( this.serializeData().has_extras ) {
+                var quote_extras_table_view = new app.QuoteExtrasTableView({
+                    collection: this.options.extras,
+                    type: 'Regular'
+                });
+
+                var quote_optional_extras_table_view = new app.QuoteExtrasTableView({
+                    collection: this.options.extras,
+                    type: 'Optional'
+                });
+
+                this.ui.$extras_table_container.append(quote_extras_table_view.render().el);
+                this.ui.$optional_extras_table_container.append(quote_optional_extras_table_view.render().el);
+            }
         }
     });
 })();

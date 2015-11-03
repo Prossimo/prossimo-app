@@ -1,0 +1,21 @@
+<tr>
+    <td colspan="{{ price_colspan }}"></td>
+    <td class="price" colspan="1">
+        <table class="quote-total-prices">
+            <tbody>
+                <tr>
+                    <td><strong>Subtotal</strong></td>
+                    <td class="value"><span>{{ total_prices.subtotal }}</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Shipping</strong></td>
+                    <td class="value"><span>{{ total_prices.shipping }}</span></li></td>
+                </tr>
+                <tr class="grand-total">
+                    <td><strong>Grand Total</strong></td>
+                    <td class="value"><strong>{{ total_prices.grand_total }}</strong></li></td>
+                </tr>
+            </tbody>
+        </table>
+    </td>
+</tr>

@@ -72,7 +72,13 @@ module.exports = function (grunt) {
                 },
                 options: {
                     namespace: 'app.templates',
+                    partialsUseNamespace: true,
+                    partialRegex: /.*/,
+                    partialsPathRegex: /\/partials\//,
                     processName: function(filePath) {
+                        return filePath.replace(/^static\/source\/templates\//, '').replace(/\.hbs$/, '');
+                    },
+                    processPartialName: function(filePath) {
                         return filePath.replace(/^static\/source\/templates\//, '').replace(/\.hbs$/, '');
                     }
                 }

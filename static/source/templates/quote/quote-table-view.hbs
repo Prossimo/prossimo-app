@@ -8,26 +8,31 @@
     </thead>
     <tbody class="quote-table-body"></tbody>
     <tfoot>
+        {{#if has_extras }}
         <tr>
-            <td colspan="{{ footer_colspan }}"></td>
-            <td colspan="1">
+            <td colspan="{{ price_colspan }}"></td>
+            <td class="price">
                 <table class="quote-total-prices">
                     <tbody>
-                        <tr>
-                            <td><strong>Subtotal</strong></td>
-                            <td class="value"><span>{{ total_prices.subtotal }}</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Shipping</strong></td>
-                            <td class="value"><span>{{ total_prices.shipping }}</span></li></td>
-                        </tr>
                         <tr class="total">
-                            <td><strong>Total</strong></td>
-                            <td class="value"><strong>{{ total_prices.grand_total }}</strong></li></td>
+                            <td><strong>Subtotal</strong></td>
+                            <td class="value"><strong>{{ total_prices.subtotal_units_with_hidden }}</strong></li></td>
                         </tr>
                     </tbody>
                 </table>
             </td>
         </tr>
+        {{else}}
+            {{> 'quote/partials/quote-table-grand-total' }}
+        {{/if}}
     </tfoot>
 </table>
+
+{{#if has_extras }}
+<div class="quote-extras-table-container"></div>
+<div class="quote-optional-extras-table-container"></div>
+
+<table class="quote-table grand-total">
+    {{> 'quote/partials/quote-table-grand-total' }}
+</table>
+{{/if}}

@@ -51,9 +51,10 @@ var app = app || {};
             return {
                 items_count: this.getItemsCount(),
                 table_attributes: this.getExtrasTableAttributes(),
-                footer_colspan: this.getExtrasTableAttributes().length - 1,
+                price_colspan: this.getExtrasTableAttributes().length - 1,
                 total_prices: this.getTotalPrices(),
-                heading: this.options.type === 'Regular' ? 'Extras' : 'Optional Extras'
+                heading: this.options.type === 'Regular' ? 'Extras' : 'Optional Extras',
+                is_optional: this.options.type === 'Optional'
             };
         }
     });
