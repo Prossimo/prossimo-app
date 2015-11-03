@@ -182,13 +182,11 @@ var app = app || {};
 
 })();
 
-
 // some calculation tests.
 // move them into another file
 // add CI test tool
 // write test before adding new feature are bug fixis
 // be awesome
-
 
 function tests() {
     'use strict';
@@ -218,6 +216,3 @@ function tests() {
     console.assert(leftSection.height === 2000 - 10 * 2);
 }
 tests();
-
-
-
