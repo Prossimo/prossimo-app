@@ -44,6 +44,7 @@ var app = app || {};
                 subtotal_units: f.price_usd(total_prices.subtotal_units),
                 subtotal_units_with_hidden: f.price_usd(total_prices.subtotal_units_with_hidden),
                 subtotal_extras: f.price_usd(total_prices.subtotal_extras),
+                subtotal_optional_extras: f.price_usd(total_prices.subtotal_optional_extras),
                 subtotal: f.price_usd(total_prices.subtotal),
                 shipping: f.price_usd(total_prices.shipping),
                 grand_total: f.price_usd(total_prices.grand_total)

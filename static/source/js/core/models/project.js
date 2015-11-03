@@ -37,6 +37,7 @@ var app = app || {};
                 subtotal_units: subtotal_units_price,
                 subtotal_units_with_hidden: subtotal_units_price + hidden_price,
                 subtotal_extras: extras_price,
+                subtotal_optional_extras: optional_extras_price,
                 subtotal: subtotal_units_price + extras_price + hidden_price,
                 shipping: shipping_price,
                 grand_total: subtotal_units_price + extras_price + hidden_price + shipping_price
