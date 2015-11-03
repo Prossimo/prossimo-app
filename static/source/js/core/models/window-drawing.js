@@ -10,6 +10,7 @@ var app = app || {};
             height: 2000,
             frameWidth: 70,
             mullionWidth: 92,
+            sashFrameWidth: 82,
             rootSection: {
                 id: _.uniqueId(),
                 sashType: ''
@@ -101,7 +102,6 @@ var app = app || {};
                     if (i === 0) {
                         // sectionParams.x += this.get('frameWidth');
                         // sectionParams.width = position - this.get('mullionWidth') / 2 - this.get('frameWidth');
-                        // console.log(rootSection.params.x + position - this.get('mullionWidth') / 2 - this.get('frameWidth'));
                         sectionParams.width = position - rootSection.params.x - this.get('mullionWidth') / 2;
                         // if (rootSection.id === this.get('rootSection').id) {
                         //     sectionParams.width -= this.get('frameWidth') * 2;
@@ -182,15 +182,14 @@ var app = app || {};
 
 })();
 
-
 // some calculation tests.
 // move them into another file
 // add CI test tool
 // write test before adding new feature are bug fixis
 // be awesome
 
-
 function tests() {
+    'use strict';
     var model = new app.WindowDrawing({
         width: 1000,
         height: 2000,
@@ -217,6 +216,3 @@ function tests() {
     console.assert(leftSection.height === 2000 - 10 * 2);
 }
 tests();
-
-
-
