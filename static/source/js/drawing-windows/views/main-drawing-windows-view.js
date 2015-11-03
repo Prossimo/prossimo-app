@@ -15,8 +15,6 @@ var app = app || {};
 
             this.listenTo(this.model, 'all', this.updateCanvas);
             this.listenTo(this.model, 'change:width change:height', this.updateInputs);
-
-            this.disableContextMenu();
         },
 
         events: {
@@ -69,20 +67,6 @@ var app = app || {};
         updateSize: function() {
             this.stage.width(this.el.offsetWidth);
             this.stage.height(this.el.offsetHeight);
-        },
-
-        // we have to disable context menu for canvas
-        // as we need to enable right click
-        disableContextMenu: function() {
-            // Trigger action when the contexmenu is about to be shown
-            $(document).bind('contextmenu', function (event) {
-                var isOnDrawing = $(event.target).parents('#drawing').length > 0;
-                if (!isOnDrawing) {
-                    return;
-                }
-                // don't show native context menu
-                event.preventDefault();
-            });
         },
 
         createRootWindow: function() {
@@ -478,7 +462,11 @@ var app = app || {};
                 }
             });
         },
-        showPopup: function(id) {
+        showPopup: function(id, e) {
+            // open modal only on left click
+            if (e.evt.button !== 0) {
+                return;
+            }
             this.sectionIdToChange = id;
             var pos = this.stage.getPointerPosition();
             var x = pos.x - 5;
