@@ -69,10 +69,11 @@ var app = app || {};
             this.stage.height(this.el.offsetHeight);
         },
 
-        createRootWindow: function() {
-            var frameWidth = this.model.get('frameWidth');  // in mm
-            var width = this.model.get('width');
-            var height = this.model.get('height');
+        createFrame: function(params) {
+
+            var frameWidth = params.frameWidth;  // in mm
+            var width = params.width;
+            var height = params.height;
 
             var group = new Konva.Group();
             var top = new Konva.Line({
@@ -148,45 +149,98 @@ var app = app || {};
 
         createSash: function(sectionData) {
             var params = sectionData.params;
-            var group = new Konva.Group();
+            // params of HOLE
+            var hasFrame = sectionData.sashType && (sectionData.sashType !== 'none');
+            var overlap = hasFrame ? 34 : 0;
+            var width = params.width + overlap * 2;
+            var height = params.height + overlap * 2;
+            var x = params.x - overlap;
+            var y = params.y - overlap;
+            var frameWidth = hasFrame ? this.model.get('sashFrameWidth') : 0;
+
+            var group = new Konva.Group({
+                x: x,
+                y: y
+            });
+
+            var glassX = frameWidth;
+            var glassY = frameWidth;
+            var glassWidth = width - frameWidth * 2;
+            var glassHeight = height - frameWidth * 2;
+
             var glass = new Konva.Rect({
-                x: params.x,
-                y: params.y,
-                width: params.width,
-                height: params.height,
+                x: glassX,
+                y: glassY,
+                width: glassWidth,
+                height: glassHeight,
                 fill: 'lightblue',
-                // fill: 'rgba(0,0,0,0.5)',
-                // stroke: 'red',
                 id: sectionData.id
             });
             group.add(glass);
             glass.on('click', this.showPopup.bind(this, sectionData.id));
             var type = sectionData.sashType;
+
             var directionLine = new Konva.Shape({
                 stroke: 'black',
-                x: params.x,
-                y: params.y,
+                x: glassX,
+                y: glassY,
                 sceneFunc: function(ctx) {
                     ctx.beginPath();
                     if (type.indexOf('left') >= 0) {
-                        ctx.moveTo(params.width, params.height);
-                        ctx.lineTo(0, params.height / 2);
-                        ctx.lineTo(params.width, 0);
+                        ctx.moveTo(glassWidth, glassHeight);
+                        ctx.lineTo(0, glassHeight / 2);
+                        ctx.lineTo(glassWidth, 0);
                     }
                     if (type.indexOf('right') >= 0) {
                         ctx.moveTo(0, 0);
-                        ctx.lineTo(params.width, params.height / 2);
-                        ctx.lineTo(0, params.height);
+                        ctx.lineTo(glassWidth, glassHeight / 2);
+                        ctx.lineTo(0, glassHeight);
                     }
                     if (type.indexOf('top') >= 0) {
-                        ctx.moveTo(0, params.height);
-                        ctx.lineTo(params.width / 2, 0);
-                        ctx.lineTo(params.width, params.height);
+                        ctx.moveTo(0, glassHeight);
+                        ctx.lineTo(glassWidth / 2, 0);
+                        ctx.lineTo(glassWidth, glassHeight);
                     }
                     ctx.strokeShape(this);
                 }
             });
             group.add(directionLine);
+
+            if (type !== 'none' && type) {
+                var frameGroup = this.createFrame({
+                    width: width,
+                    height: height,
+                    frameWidth: frameWidth
+                });
+                group.add(frameGroup);
+                if (type.indexOf('left') >= 0 || type.indexOf('right') >= 0) {
+                    var offset = frameWidth / 2;
+                    var pos = {
+                        x: null,
+                        y: height / 2
+                    };
+                    if (type.indexOf('left') >= 0) {
+                        pos.x = offset;
+                    }
+                    if (type.indexOf('right') >= 0) {
+                        pos.x = width - offset;
+                    }
+                    var handle = new Konva.Shape({
+                        x: pos.x,
+                        y: pos.y,
+                        stroke: 'black',
+                        fill: 'rgba(0,0,0,0.2)',
+                        sceneFunc: function(ctx) {
+                            ctx.beginPath();
+                            ctx.rect(-20, -20, 40, 50);
+                            ctx.rect(-10, -5, 20, 70);
+                            ctx.fillStrokeShape(this);
+                        }
+                    });
+                    group.add(handle);
+                }
+            }
+
             return group;
         },
         createVerticalMetric: function(width, height, params) {
@@ -482,7 +536,11 @@ var app = app || {};
             this.layer.add(group);
 
 
-            var frameGroup = this.createRootWindow(frameWidth, frameHeight);
+            var frameGroup = this.createFrame({
+                width: this.model.get('width'),
+                height: this.model.get('height'),
+                frameWidth: this.model.get('frameWidth')
+            });
             frameGroup.scale({x: ratio, y: ratio});
             group.add(frameGroup);
 

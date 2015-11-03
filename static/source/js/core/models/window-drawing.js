@@ -10,6 +10,7 @@ var app = app || {};
             height: 2000,
             frameWidth: 70,
             mullionWidth: 92,
+            sashFrameWidth: 82,
             rootSection: {
                 id: _.uniqueId(),
                 sashType: ''
