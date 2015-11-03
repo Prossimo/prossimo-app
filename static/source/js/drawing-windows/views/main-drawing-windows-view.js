@@ -408,59 +408,36 @@ var app = app || {};
 
             return group;
         },
-        createWrap: function() {
-            var wrap = document.createElement('div');
-            wrap.style.position = 'absolute';
-            wrap.style.backgroundColor = 'rgba(0,0,0,0.1)';
-            wrap.style.top = 0;
-            wrap.style.left = 0;
-            wrap.style.width = '100%';
-            wrap.style.height = '100%';
-            wrap.style.zIndex = 1000;
-
-            this.$el.append(wrap);
-            wrap.addEventListener('click', function(e) {
-                if (e.target === wrap) {
-                    $(wrap).remove();
-                }
-            });
-
-            return wrap;
-        },
         createInput: function(params, pos, size) {
-            var wrap = this.createWrap();
-            var input = document.createElement('input');
-            input.type = 'number';
-            input.value = params.getter();
+            var $wrap = $('<div>')
+                .addClass('.popup-wrap')
+                .appendTo(this.$el)
+                .on('click', function(e) {
+                    if (e.target === $wrap.get(0)) {
+                        $wrap.remove();
+                    }
+                });
 
             var padding = 3;
-            input.style.position = 'absolute';
-            input.style.top = (pos.y - padding) + 'px';
-            input.style.left = (pos.x - padding) + 'px';
-
-            input.style.height = (size.height + padding * 2) + 'px';
-            input.style.width = (size.width + padding * 2) + 'px';
-            input.style.fontSize = '12px';
-
-
-            wrap.appendChild(input);
-            input.focus();
-
-            input.addEventListener('change', function() {
-                params.setter(input.value);
-            });
-
-            input.addEventListener('input', function() {
-                params.setter(input.value);
-            });
-
-
-
-            input.addEventListener('keyup', function(e) {
-                if (e.keyCode === 13) {
-                    document.body.removeChild(wrap);
-                }
-            });
+            $('<input type="number">')
+                .val(params.getter())
+                .css({
+                    position: 'absolute',
+                    top: (pos.y - padding) + 'px',
+                    left: (pos.x - padding) + 'px',
+                    height: (size.height + padding * 2) + 'px',
+                    width: (size.width + padding * 2) + 'px',
+                    fontSize: '12px'
+                })
+                .appendTo($wrap)
+                .select()
+                .on('keyup', function(e) {
+                    if (e.keyCode === 13) {
+                        params.setter(this.value);
+                        $wrap.remove();
+                    }
+                })
+                ;
         },
         showPopup: function(id, e) {
             // open modal only on left click
