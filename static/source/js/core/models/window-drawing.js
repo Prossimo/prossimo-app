@@ -101,7 +101,6 @@ var app = app || {};
                     if (i === 0) {
                         // sectionParams.x += this.get('frameWidth');
                         // sectionParams.width = position - this.get('mullionWidth') / 2 - this.get('frameWidth');
-                        // console.log(rootSection.params.x + position - this.get('mullionWidth') / 2 - this.get('frameWidth'));
                         sectionParams.width = position - rootSection.params.x - this.get('mullionWidth') / 2;
                         // if (rootSection.id === this.get('rootSection').id) {
                         //     sectionParams.width -= this.get('frameWidth') * 2;
@@ -191,6 +190,7 @@ var app = app || {};
 
 
 function tests() {
+    'use strict';
     var model = new app.WindowDrawing({
         width: 1000,
         height: 2000,

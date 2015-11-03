@@ -464,11 +464,11 @@ var app = app || {};
 
             input.addEventListener('change', function() {
                 params.setter(input.value);
-            }.bind(this));
+            });
 
             input.addEventListener('input', function() {
                 params.setter(input.value);
-            }.bind(this));
+            });
 
 
 
