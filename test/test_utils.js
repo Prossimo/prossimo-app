@@ -8,6 +8,18 @@ test('basic test', function () {
 //  Test format functions from utils.js
 //  ------------------------------------------------------------------------
 
+test('utils.format.dimension', function () {
+    var f = app.utils.format;
+
+    equal(f.dimension(20), '1\'-8"', 'Expected value is 1\'-8"');
+    equal(f.dimension(30.5), '2\'-6.5"', 'Expected value is 2\'-6.5"');
+    equal(f.dimension(33.375), '2\'-9.375"', 'Expected value is 2\'-9.375"');
+
+    equal(f.dimension(62), '5\'-2"', 'Expected value is 5\'-2"');
+    equal(f.dimension(33.375, 'fraction'), '2\'-9 3/8"', 'Expected value is 2\'-9 3/8"');
+    equal(f.dimension(50 + 1/14, 'fraction'), '4\'-2 1/14"', 'Expected value is 4\'-2 1/14"');
+});
+
 test('utils.format.dimensions', function () {
     var f = app.utils.format;
 

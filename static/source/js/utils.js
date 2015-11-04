@@ -5,14 +5,27 @@ var app = app || {};
 
     app.utils = {
         format: {
-            dimension: function (value) {
+            dimension: function (value, decimal_format) {
                 var value_feet = Math.floor(parseFloat(value) / 12);
                 var value_inches = parseFloat(value) % 12;
 
+                decimal_format = decimal_format &&
+                    _.indexOf(['floating', 'fraction'], decimal_format) !== -1 ?
+                    decimal_format : 'floating';
+
+                if ( decimal_format === 'fraction' ) {
+                    if ( value_inches - Math.floor(value_inches) ) {
+                        value_inches = Math.floor(value_inches) + ' ' +
+                            new Decimal(value_inches - Math.floor(value_inches)).toFraction(100).join('/');
+                    }
+                } else {
+                    value_inches = this.fixed_minimal(value_inches, 3);
+                }
+
                 return value_feet + '\'-' + value_inches + '"';
             },
-            dimensions: function (width, height) {
-                return this.dimension(width) + 'x' + this.dimension(height);
+            dimensions: function (width, height, decimal_format) {
+                return this.dimension(width, decimal_format) + 'x' + this.dimension(height, decimal_format);
             },
             price_usd: function (price) {
                 return '$' + new Decimal(parseFloat(price).toFixed(2)).toFormat(2);
@@ -23,6 +36,24 @@ var app = app || {};
             fixed: function (value, num) {
                 num = num || 2;
                 return new Decimal(parseFloat(value).toFixed(num)).toFormat(num);
+            },
+            fixed_minimal: function (value, num) {
+                var result;
+                var match;
+                var trailing;
+
+                //  Captures all trailing zeroes (and a preceding dot if any)
+                var pattern = /\.(?:[123456789]+)([0]+)|(\.[0]+)\b/i;
+
+                result = this.fixed(value, num);
+
+                if ( pattern.test(result) ) {
+                    match = pattern.exec(result);
+                    trailing = match[1] ? match[1] : match[2];
+                    result = result.substr(0, result.length - trailing.length);
+                }
+
+                return result;
             }
         },
         parseFormat: {
