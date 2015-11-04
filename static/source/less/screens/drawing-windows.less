@@ -1,3 +1,20 @@
+.drawing-screen {
+    .clearfix();
+}
+
+.drawing-container {
+    float: left;
+    width: 70%;
+    height: 100%;
+}
+
+.drawing-container > div {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+
 #controls {
     position: absolute;
     top: 4px;
@@ -24,4 +41,38 @@
 
 .popup img {
     margin: 0.2em;
+}
+
+
+//  ------------------------------------------------------------------------
+//  Sidebar
+//  ------------------------------------------------------------------------
+
+.drawing-sidebar-container {
+    float: left;
+    width: 30%;
+    height: 100%;
+    background-color: darken(@white, 25%);
+    overflow: auto;
+}
+
+.drawing-sidebar {
+    padding: 2rem;
+}
+
+.active-window-image {
+    margin: 4rem 0;
+}
+
+.active-window-image img {
+    max-width: 100%;
+}
+
+.active-window-properties {
+    margin: 4rem 0;
+}
+
+.active-window-properties ul {
+    padding: 0;
+    list-style-type: none;
 }

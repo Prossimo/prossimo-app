@@ -34,6 +34,8 @@ module.exports = function (grunt) {
         'docs-import/views/main-docs-import-view.js',
         'docs-import/views/document-selector-view.js',
         'drawing-windows/views/main-drawing-windows-view.js',
+        'drawing-windows/views/drawing-view.js',
+        'drawing-windows/views/drawing-sidebar-view.js',
         'quote/views/main-quote-view.js',
         'quote/views/quote-item-view.js',
         'quote/views/quote-extras-item-view.js',

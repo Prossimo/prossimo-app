@@ -1,0 +1,23 @@
+<h3>Select a window</h3>
+
+<select name="window-selector-dropdown" id="window-selector-dropdown" class="selectpicker" title='Choose a window'>
+    {{#each window_list}}
+        <option data-subtext="{{ dimensions }}" {{#if is_selected }}selected{{/if}} value="{{ cid }}">#{{ reference_id }}: <strong>{{ mark }}</strong></option>
+    {{/each}}
+</select>
+
+{{#if active_window_image }}
+    <div class="active-window-image">
+        <img src="{{ active_window_image }}" alt="">
+    </div>
+{{/if}}
+
+{{#if active_window_properties }}
+    <div class="active-window-properties">
+        <ul>
+            {{#each active_window_properties }}
+            <li><strong>{{ @key }}</strong> <span>{{ this }}</span></li>
+            {{/each}}
+        </ul>
+    </div>
+{{/if}}

@@ -91,6 +91,9 @@ var app = app || {};
 
             return _.pluck(name_title_hash, 'title');
         },
+        getRefNum: function () {
+            return this.collection ? this.collection.indexOf(this) + 1 : -1;
+        },
         //  TODO: do some checks? return error value in some cases?
         getUnitCost: function () {
             return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));

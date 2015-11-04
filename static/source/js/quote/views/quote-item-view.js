@@ -49,7 +49,7 @@ var app = app || {};
         },
         serializeData: function () {
             return {
-                reference_id: this.model.collection.indexOf(this.model) + 1,
+                reference_id: this.model.getRefNum(),
                 description: this.getDescription(),
                 quantity: this.model.get('quantity'),
                 price: this.getPrices()
