@@ -30,38 +30,68 @@ var app = app || {};
                 var result;
                 var match;
 
-                //  Captures |33 3/8|, |82 1/2"|
-                var pattern_1 = /(\d+)\s(\d+)\/(\d+)/i;
+                //  Captures |6'-2 1/2"|, |6 - 2 1/2|
+                var pattern_1 = /(\d+)\s*(\'|’|′)*\s*(-|–|—|‐)\s*(\d+)\s(\d+)\s*\/\s*(\d+)\s*("|”|″)*/i;
                 //  Captures |5-2|, |8'-0|, |9-10"|, |2’–8”|
-                var pattern_2 = /(\d+)\s*(\'|’)*\s*(-|–|—)\s*(\d+)\s*("|”)*/i;
+                var pattern_2 = /(\d+)\s*(\'|’|′)*\s*(-|–|—|‐)\s*(\d+)\s*("|”|″)*/i;
+                //  Captures |33 3/8|, |82 1/2"|
+                var pattern_3 = /(\d+)\s(\d+)\s*\/\s*(\d+)/i;
                 //  Captures |30 '|, |30'|, |30’|, |30.5 ’|
-                var pattern_3 = /(\d+\.*\d+)\s*(\'|’)/i;
+                var pattern_4 = /(\d+\.*\d+)\s*(\'|’|′)/i;
                 //  Captures |30|, |30 "|, |30"|, |30 ”|, |30.5 ”|
-                var pattern_4 = /(\d+\.*\d+)\s*("|”)*/i;
+                var pattern_5 = /(\d+\.*\d+)\s*("|”|″)*/i;
 
                 if ( pattern_1.test(size_string) ) {
                     match = pattern_1.exec(size_string);
-                    result = parseFloat(match[1]) + parseFloat(match[2]) / parseFloat(match[3]);
+                    result = parseFloat(match[1]) * 12 + parseFloat(match[4]) +
+                        parseFloat(match[5]) / parseFloat(match[6]);
                 } else if ( pattern_2.test(size_string) ) {
                     match = pattern_2.exec(size_string);
                     result = parseFloat(match[1]) * 12 + parseFloat(match[4]);
                 } else if ( pattern_3.test(size_string) ) {
                     match = pattern_3.exec(size_string);
-                    result = parseFloat(match[1]) * 12;
+                    result = parseFloat(match[1]) + parseFloat(match[2]) / parseFloat(match[3]);
                 } else if ( pattern_4.test(size_string) ) {
                     match = pattern_4.exec(size_string);
+                    result = parseFloat(match[1]) * 12;
+                } else if ( pattern_5.test(size_string) ) {
+                    match = pattern_5.exec(size_string);
                     result = match[1];
                 } else {
-                    //  As a last resort, just extract any number from string
                     result = size_string;
                 }
 
                 return parseFloat(result);
             },
             dimensions: function (size_string, attr) {
+                var width;
+                var height;
+                var result;
+                var match;
+
                 attr = attr && _.indexOf(['both', 'width', 'height'], attr) !== -1 ?
                     attr : 'both';
 
+                var pattern = /(\S+(?:\s*\S*)*)\s*(?:x|X|✕|✖)\s*(\S+(?:\s*\S*)*)/i;
+
+                if ( pattern.test(size_string) ) {
+                    match = pattern.exec(size_string);
+                    width = this.dimension(match[1]);
+                    height = this.dimension(match[2]);
+                }
+
+                if ( attr === 'width' ) {
+                    result = width;
+                } else if ( attr === 'height' ) {
+                    result = height;
+                } else {
+                    result = {
+                        width: width,
+                        height: height
+                    };
+                }
+
+                return result;
             },
             percent: function (string) {
                 return parseFloat(string);

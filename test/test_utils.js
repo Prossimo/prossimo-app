@@ -60,17 +60,53 @@ test('utils.parseFormat.dimension', function () {
     equal(p.dimension('33 3/8'), 33.375, 'Expected value is 33.375');
     equal(p.dimension('82 1/2"'), 82.5, 'Expected value is 82.5');
     equal(p.dimension('50 1/14').toFixed(5), '50.07143', 'Expected value is 50.07143');
+    equal(p.dimension('33 3 / 8'), 33.375, 'Expected value is 33.375');
 
-    equal(p.dimension('82\''), 82 * 12, 'Expected value is 82 * 12');
-    equal(p.dimension('82’'), 82 * 12, 'Expected value is 82 * 12');
-    equal(p.dimension('30.5 ’'), 30.5 * 12, 'Expected value is 30.5 * 12');
+    equal(p.dimension('82\''), 984, 'Expected value is 984 (82 * 12)');
+    equal(p.dimension('82’'), 984, 'Expected value is 984 (82 * 12)');
+    equal(p.dimension('30.5 ’'), 366, 'Expected value is 366 (30.5 * 12)');
 
     equal(p.dimension('5-2'), 62, 'Expected value is 62');
     equal(p.dimension('3 - 0'), 36, 'Expected value is 36');
     equal(p.dimension('8\'-0'), 96, 'Expected value is 96');
     equal(p.dimension('9-10"'), 118, 'Expected value is 118');
-    equal(p.dimension('2’–8”'), 32, 'Expected value is 62');
-    equal(p.dimension('2 ’ – 8 ”'), 32, 'Expected value is 62');
+    equal(p.dimension('2’–8”'), 32, 'Expected value is 32');
+    equal(p.dimension('2 ’ – 8 ”'), 32, 'Expected value is 32');
+
+    equal(p.dimension('6\'-2 1/2"'), 74.5, 'Expected value is 74.5');
+    equal(p.dimension('6 - 2 1/2'), 74.5, 'Expected value is 74.5');
+    equal(p.dimension('6 \' - 2 1 / 2 "'), 74.5, 'Expected value is 74.5');
+});
+
+test('utils.parseFormat.dimension', function () {
+    var p = app.utils.parseFormat;
+
+    deepEqual(p.dimensions('32"X82 1/2"'), { width: 32, height: 82.5 }, 'Expected { width: 32, height: 82.5 }');
+    deepEqual(p.dimensions('38"X83"'), { width: 38, height: 83 }, 'Expected { width: 38, height: 83 }');
+    deepEqual(p.dimensions('6 \' - 2 1 / 2 " X 6 \' - 2 1 / 2 "'), { width: 74.5, height: 74.5 }, 'Expected { width: 74.5, height: 74.5 }');
+
+    deepEqual(p.dimensions('35 x 17'), { width: 35, height: 17 }, 'Expected { width: 35, height: 17 }');
+    deepEqual(p.dimensions('35.75 x 59.75'), { width: 35.75, height: 59.75 }, 'Expected { width: 35.75, height: 59.75 }');
+    deepEqual(p.dimensions('36 x 45.5'), { width: 36, height: 45.5 }, 'Expected { width: 36, height: 45.5 }');
+
+    deepEqual(p.dimensions('5-2x8-0'), { width: 62, height: 96 }, 'Expected { width: 62, height: 96 }');
+    deepEqual(p.dimensions('3-11x7-4'), { width: 47, height: 88 }, 'Expected { width: 47, height: 88 }');
+
+    deepEqual(p.dimensions('71 1/4 x 70 7/8'), { width: 71.25, height: 70.875 }, 'Expected { width: 71.25, height: 70.875 }');
+    deepEqual(p.dimensions('50 x 31 7/8'), { width: 50, height: 31.875 }, 'Expected { width: 50, height: 31.875 }');
+    deepEqual(p.dimensions('30 3/4 x 50 1/14'), { width: 30.75, height: 50 + 1 / 14 }, 'Expected { width: 30.75, height: 50.071428571 }');
+    deepEqual(p.dimensions('13 5/8 x 17'), { width: 13.625, height: 17 }, 'Expected { width: 13.625, height: 17 }');
+
+    deepEqual(p.dimensions('2’–8” X 5’–0”'), { width: 32, height: 60 }, 'Expected { width: 32, height: 60 }');
+    deepEqual(p.dimensions('2’—8” X 5’—0”'), { width: 32, height: 60 }, 'Expected { width: 32, height: 60 }');
+
+    deepEqual(p.dimensions('12\'-10" x 9\'-0"'), { width: 154, height: 108 }, 'Expected { width: 154, height: 108 }');
+    deepEqual(p.dimensions(' 12\'-10" x 9\'-0" '), { width: 154, height: 108 }, 'Expected { width: 154, height: 108 }');
+
+    deepEqual(p.dimensions(' 12\'-10" ✕ 9\'-0" '), { width: 154, height: 108 }, 'Expected { width: 154, height: 108 }');
+
+    equal(p.dimensions('2’—8” X 5’—0”', 'width'), 32, 'Expected value is 32');
+    equal(p.dimensions('2’—8” X 5’—0”', 'height'), 60, 'Expected value is 60');
 });
 
 test('utils.parseFormat.percent', function () {
