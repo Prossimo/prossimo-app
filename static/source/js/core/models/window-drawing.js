@@ -181,38 +181,3 @@ var app = app || {};
     };
 
 })();
-
-// some calculation tests.
-// move them into another file
-// add CI test tool
-// write test before adding new feature are bug fixis
-// be awesome
-
-function tests() {
-    'use strict';
-    var model = new app.WindowDrawing({
-        width: 1000,
-        height: 2000,
-        frameWidth: 10,
-        mullionWidth: 20
-    });
-    var id = model.get('rootSection').id;
-    model.splitSection(id, 'vertical');
-    var rootSection = model.generateFullRoot();
-    var leftSection = rootSection.sections[0].params;
-    console.assert(leftSection.x === model.get('frameWidth'));
-    console.assert(leftSection.y === model.get('frameWidth'));
-    console.assert(leftSection.width === 500 - 10 - 20 / 2);
-    console.assert(leftSection.height === 2000 - 10 * 2);
-
-
-    id = model.get('rootSection').sections[0].id;
-    model.splitSection(id, 'vertical');
-    rootSection = model.generateFullRoot();
-    leftSection = rootSection.sections[0].sections[0].params;
-    console.assert(leftSection.x === model.get('frameWidth'));
-    console.assert(leftSection.y === model.get('frameWidth'));
-    console.assert(leftSection.width === (500 - 10 - 20 / 2) / 2 - 20 / 2);
-    console.assert(leftSection.height === 2000 - 10 * 2);
-}
-tests();
