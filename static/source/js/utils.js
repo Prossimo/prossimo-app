@@ -131,6 +131,9 @@ var app = app || {};
         convert: {
             inches_to_mm: function (inch_value) {
                 return parseFloat(inch_value * 24.5);
+            },
+            mm_to_inches: function (mm_value) {
+                return parseFloat(mm_value / 24.5);
             }
         }
     };

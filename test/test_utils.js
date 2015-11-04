@@ -142,3 +142,11 @@ test('utils.convert.inches_to_mm', function () {
     equal(c.inches_to_mm(1), 24.5, 'Expected value is 24.5');
     equal(c.inches_to_mm(0), 0, 'Expected value is 0');
 });
+
+test('utils.convert.mm_to_inches', function () {
+    var c = app.utils.convert;
+
+    equal(c.mm_to_inches(490), 20, 'Expected value is 20');
+    equal(c.mm_to_inches(24.5), 1, 'Expected value is 1');
+    equal(c.mm_to_inches(0), 0, 'Expected value is 0');
+});
