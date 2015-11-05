@@ -22,8 +22,8 @@ $(document).ready(function () {
     app.current_project.windows.add([
         {
             mark: 'A',
-            width: 30,
-            height: 40,
+            width: 62,
+            height: 96,
             quantity: 1,
             type: 'Casement',
             description: 'Tilt and turn inswing / fixed PVC',
@@ -42,8 +42,8 @@ $(document).ready(function () {
         },
         {
             mark: 'B1',
-            width: 38,
-            height: 24,
+            width: 36,
+            height: 78,
             quantity: 2,
             type: 'Casement ganged to fixed',
             description: 'Tilt and turn inswing above / removable ac sash below. PVC',
