@@ -1,5 +1,9 @@
 test('project basic tests', function () {
-    var win = new app.WindowDrawing();
+    var c = app.utils.convert;
+    var win = new app.Window({
+        width: c.mm_to_inches(1000),
+        height: c.mm_to_inches(2000)
+    });
 
     ok(win.get('width'), 'width should be defined');
     ok(win.get('height'), 'height should be defined');
@@ -7,9 +11,10 @@ test('project basic tests', function () {
 });
 
 test('split by two parts', function() {
-    var win = new app.WindowDrawing({
-        width: 1000,
-        height: 2000,
+    var c = app.utils.convert;
+    var win = new app.Window({
+        width: c.mm_to_inches(1000),
+        height: c.mm_to_inches(2000),
         frameWidth: 10,
         mullionWidth: 20
     });
@@ -24,9 +29,10 @@ test('split by two parts', function() {
 });
 
 test('split by 3 parts', function() {
-    var win = new app.WindowDrawing({
-        width: 1000,
-        height: 2000,
+    var c = app.utils.convert;
+    var win = new app.Window({
+        width: c.mm_to_inches(1000),
+        height: c.mm_to_inches(2000),
         frameWidth: 10,
         mullionWidth: 20
     });
