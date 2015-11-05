@@ -32,15 +32,23 @@ var app = app || {};
 
             var hidden_price = this.extras.getHiddenPrice();
             var shipping_price = this.extras.getShippingPrice();
+            var tax_percent = this.extras.getTaxPercent();
+
+            var subtotal_units_with_hidden = subtotal_units_price + hidden_price;
+            var subtotal = subtotal_units_with_hidden + extras_price;
+            var tax = (tax_percent / 100) * subtotal;
+            var grand_total = subtotal + shipping_price + tax;
 
             return {
                 subtotal_units: subtotal_units_price,
-                subtotal_units_with_hidden: subtotal_units_price + hidden_price,
+                subtotal_units_with_hidden: subtotal_units_with_hidden,
                 subtotal_extras: extras_price,
                 subtotal_optional_extras: optional_extras_price,
-                subtotal: subtotal_units_price + extras_price + hidden_price,
+                subtotal: subtotal,
+                tax_percent: tax_percent,
+                tax: tax,
                 shipping: shipping_price,
-                grand_total: subtotal_units_price + extras_price + hidden_price + shipping_price
+                grand_total: grand_total
             };
         }
     });

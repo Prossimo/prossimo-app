@@ -3,6 +3,8 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var ExtrasTypes = ['Regular', 'Shipping', 'Optional', 'Hidden', 'Tax'];
+
     var AccessoryProperties = [
         { name: 'description', title: 'Description', type: 'string' },
         { name: 'quantity', title: 'Quantity', type: 'number' },
@@ -72,6 +74,9 @@ var app = app || {};
             var name_title_hash = this.getNameTitleTypeHash(names);
 
             return _.pluck(name_title_hash, 'title');
+        },
+        getExtrasTypes: function () {
+            return ExtrasTypes;
         },
         //  TODO: do some checks? return error value in some cases?
         getUnitCost: function () {

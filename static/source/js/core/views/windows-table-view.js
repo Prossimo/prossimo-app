@@ -319,7 +319,7 @@ var app = app || {};
                 },
                 extras_type: {
                     type: 'dropdown',
-                    source: ['Regular', 'Shipping', 'Optional', 'Hidden']
+                    source: this.options.extras.getExtrasTypes()
                 },
                 discount: {
                     renderer: this.getFormattedRenderer('discount')

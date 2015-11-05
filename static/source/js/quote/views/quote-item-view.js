@@ -32,7 +32,7 @@ var app = app || {};
                 size: 'Size',
                 type: 'Type',
                 glazing: 'Glazing',
-                notes: 'Notes'
+                desc: 'Description'
             };
 
             var params_source = {
@@ -40,7 +40,7 @@ var app = app || {};
                 size: f.dimensions(this.model.get('width'), this.model.get('height'), 'fraction'),
                 type: this.model.get('type'),
                 glazing: this.model.get('glazing'),
-                notes: this.model.get('description')
+                desc: this.model.get('description')
             };
 
             return _.map(name_title_hash, function (item, key) {
@@ -51,6 +51,7 @@ var app = app || {};
             return {
                 reference_id: this.model.getRefNum(),
                 description: this.getDescription(),
+                notes: this.model.get('notes'),
                 quantity: this.model.get('quantity'),
                 price: this.getPrices()
             };

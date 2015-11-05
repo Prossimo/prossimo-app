@@ -7,6 +7,12 @@
                     <td><strong>Subtotal</strong></td>
                     <td class="value"><span>{{ total_prices.subtotal }}</span></td>
                 </tr>
+                {{#if total_prices.tax }}
+                <tr>
+                    <td><strong>Tax ({{ total_prices.tax_percent }})</strong></td>
+                    <td class="value"><span>{{ total_prices.tax }}</span></td>
+                </tr>
+                {{/if}}
                 <tr>
                     <td><strong>Shipping</strong></td>
                     <td class="value"><span>{{ total_prices.shipping }}</span></li></td>

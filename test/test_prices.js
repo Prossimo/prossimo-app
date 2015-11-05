@@ -199,6 +199,12 @@ test('subtotal project prices', function () {
             price_markup: 1,
             discount: 0,
             extras_type: 'Shipping'
+        },
+        {
+            description: 'VAT',
+            quantity: 1,
+            price_markup: 1.3,
+            extras_type: 'Tax'
         }
     ]);
 
@@ -222,5 +228,6 @@ test('subtotal project prices', function () {
     equal(total_prices.subtotal_extras.toFixed(2), '1629.26', 'Subtotal price for extras is expected to be 1629.26');
     equal(total_prices.subtotal.toFixed(2), '5578.73', 'Subtotal price for the whole order is expected to be 5578.73');
     equal(total_prices.shipping.toFixed(2), '1500.00', 'Shipping is expected to be 1500.00');
-    equal(total_prices.grand_total.toFixed(2), '7078.73', 'Grand total is expected to be 7078.73');
+    equal(total_prices.tax.toFixed(2), '1673.62', 'Tax is expected to be 1673.62');
+    equal(total_prices.grand_total.toFixed(2), '8752.35', 'Grand total is expected to be 8752.35');
 });

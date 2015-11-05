@@ -17,10 +17,13 @@ var app = app || {};
             this.proxy_accessory = new app.Accessory();
         },
         getNameTitleTypeHash: function (names) {
-            return _.clone(this.proxy_accessory.getNameTitleTypeHash(names));
+            return this.proxy_accessory.getNameTitleTypeHash(names);
         },
         getTitles: function (names) {
-            return _.clone(this.proxy_accessory.getTitles(names));
+            return this.proxy_accessory.getTitles(names);
+        },
+        getExtrasTypes: function () {
+            return this.proxy_accessory.getExtrasTypes();
         },
         getRegularItems: function () {
             return this.models.filter(function (item) {
@@ -40,6 +43,11 @@ var app = app || {};
         getShipping: function () {
             return this.models.filter(function (item) {
                 return item.get('extras_type') === 'Shipping';
+            });
+        },
+        getTaxes: function () {
+            return this.models.filter(function (item) {
+                return item.get('extras_type') === 'Tax';
             });
         },
         getPrice: function (collection) {
@@ -62,6 +70,15 @@ var app = app || {};
         },
         getShippingPrice: function () {
             return this.getPrice(this.getShipping());
+        },
+        getTaxPercent: function () {
+            var base_value = 0;
+
+            _.each(this.getTaxes(), function (item) {
+                base_value += (parseFloat(item.get('price_markup')) - 1) * 100;
+            });
+
+            return base_value;
         }
     });
 })();

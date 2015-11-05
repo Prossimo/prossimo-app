@@ -110,6 +110,12 @@ $(document).ready(function () {
             price_markup: 1,
             discount: 0,
             extras_type: 'Shipping'
+        },
+        {
+            description: 'VAT',
+            quantity: 1,
+            price_markup: 1.3,
+            extras_type: 'Tax'
         }
     ]);
 
