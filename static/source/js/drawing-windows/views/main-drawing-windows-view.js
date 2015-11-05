@@ -15,19 +15,29 @@ var app = app || {};
             'window-selected': 'onWindowSelected'
         },
         onWindowSelected: function (e) {
+            this.stopListening(this.active_window);
             this.active_window = e.model;
             this.updateDrawingView(true);
+        },
+        listenWindow: function() {
+            if (!this.active_window) {
+                return;
+            }
+            this.listenTo(this.active_window, 'all', function() {
+                this.sidebar_view.render();
+            });
         },
         initialize: function () {
             //  Select first window by default
             this.active_window = app.current_project.windows.length ?
                 app.current_project.windows.first() : null;
+            this.listenWindow();
         },
         updateDrawingView: function (update_size_flag) {
             if ( this.active_window ) {
                 this.drawing_view = new app.DrawingView({
                     parent_view: this,
-                    model: this.active_window.drawing
+                    model: this.active_window
                 });
 
                 this.ui.$drawing_container.empty().append(this.drawing_view.render().el);

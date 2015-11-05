@@ -25,7 +25,6 @@ module.exports = function (grunt) {
         'paste-image.js',
         'core/models/window.js',
         'core/models/accessory.js',
-        'core/models/window-drawing.js',
         'core/models/project.js',
         'core/collections/window-collection.js',
         'core/collections/accessory-collection.js',

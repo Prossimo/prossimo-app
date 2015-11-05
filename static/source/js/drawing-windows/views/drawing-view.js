@@ -8,7 +8,6 @@ var app = app || {};
         template: app.templates['drawing-windows/drawing-view'],
         initialize: function () {
             this.listenTo(this.model, 'all', this.updateCanvas);
-            this.listenTo(this.model, 'change:width change:height', this.updateInputs);
             this.listenTo(this.options.parent_view, 'attach', this.onAttach);
         },
 
@@ -20,11 +19,7 @@ var app = app || {};
                 if (el.hasClass('popup-wrap')) {
                     el.hide();
                 }
-            },
-            'change .heightInput': 'updateModel',
-            'input .heightInput': 'updateModel',
-            'change .widthInput': 'updateModel',
-            'input .widthInput': 'updateModel'
+            }
         },
 
         onRender: function(){
@@ -34,7 +29,6 @@ var app = app || {};
 
             this.layer = new Konva.Layer();
             this.stage.add(this.layer);
-            this.updateInputs();
         },
         onAttach: function() {
             this.updateSize();
@@ -42,12 +36,6 @@ var app = app || {};
         },
         onDestroy: function() {
             this.stage.destroy();
-        },
-
-        // update inputs on model change
-        updateInputs: function() {
-            this.$('.widthInput').val(this.model.get('width'));
-            this.$('.heightInput').val(this.model.get('height'));
         },
 
         // update model on input change
@@ -426,10 +414,10 @@ var app = app || {};
 
             var verticalWholeMertic = this.createVerticalMetric(merticSize, height, {
                 setter: function(val) {
-                    this.model.set('height', val);
+                    this.model.setInMetric('height', val, 'mm');
                 }.bind(this),
                 getter: function() {
-                    return this.model.get('height');
+                    return this.model.getInMetric('height', 'mm');
                 }.bind(this)
             });
             verticalWholeMertic.position({
@@ -441,10 +429,10 @@ var app = app || {};
 
             var horizontalWholeMertic = this.createHorizontalMetric(width, merticSize, {
                setter: function(val) {
-                    this.model.set('width', val);
+                    this.model.setInMetric('width', val, 'mm');
                 }.bind(this),
                 getter: function() {
-                    return this.model.get('width');
+                    return this.model.getInMetric('width', 'mm');
                 }.bind(this)
             });
             horizontalWholeMertic.position({
@@ -509,8 +497,8 @@ var app = app || {};
         updateCanvas: function() {
             this.layer.children.destroy();
 
-            var frameWidth = this.model.get('width');
-            var frameHeight = this.model.get('height');
+            var frameWidth = this.model.getInMetric('width', 'mm');
+            var frameHeight = this.model.getInMetric('height', 'mm');
 
             var wr = this.stage.width() / frameWidth;
             var hr = this.stage.height() / frameHeight;
@@ -532,8 +520,8 @@ var app = app || {};
 
 
             var frameGroup = this.createFrame({
-                width: this.model.get('width'),
-                height: this.model.get('height'),
+                width: this.model.getInMetric('width', 'mm'),
+                height: this.model.getInMetric('height', 'mm'),
                 frameWidth: this.model.get('frameWidth')
             });
             frameGroup.scale({x: ratio, y: ratio});
@@ -547,8 +535,8 @@ var app = app || {};
             var sections = this.createSection(this.model.generateFullRoot()/*, {
                 x: this.model.get('frameWidth'),
                 y: this.model.get('frameWidth'),
-                width: this.model.get('width') - this.model.get('frameWidth') * 2,
-                height: this.model.get('height') - this.model.get('frameWidth') * 2
+                width: this.model.getInMetric('width', 'mm') - this.model.get('frameWidth') * 2,
+                height: this.model.getInMetric('height', 'mm') - this.model.get('frameWidth') * 2
             }*/);
 
             sectionsGroup.add.apply(sectionsGroup, sections);
