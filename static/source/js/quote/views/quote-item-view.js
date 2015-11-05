@@ -37,7 +37,7 @@ var app = app || {};
 
             var params_source = {
                 mark: this.model.get('mark'),
-                size: f.dimensions(this.model.get('width'), this.model.get('height')),
+                size: f.dimensions(this.model.get('width'), this.model.get('height'), 'fraction'),
                 type: this.model.get('type'),
                 glazing: this.model.get('glazing'),
                 notes: this.model.get('description')

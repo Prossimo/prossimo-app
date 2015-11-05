@@ -11,22 +11,22 @@ test('basic test', function () {
 test('utils.format.dimension', function () {
     var f = app.utils.format;
 
-    equal(f.dimension(20), '1\'-8"', 'Expected value is 1\'-8"');
-    equal(f.dimension(30.5), '2\'-6.5"', 'Expected value is 2\'-6.5"');
-    equal(f.dimension(33.375), '2\'-9.375"', 'Expected value is 2\'-9.375"');
+    equal(f.dimension(20), '1′−8″', 'Expected value is 1′−8″');
+    equal(f.dimension(30.5), '2′−6.5″', 'Expected value is 2′−6.5″');
+    equal(f.dimension(33.375), '2′−9.375″', 'Expected value is 2′−9.375″');
 
-    equal(f.dimension(62), '5\'-2"', 'Expected value is 5\'-2"');
-    equal(f.dimension(33.375, 'fraction'), '2\'-9 3/8"', 'Expected value is 2\'-9 3/8"');
-    equal(f.dimension(50 + 1/14, 'fraction'), '4\'-2 1/14"', 'Expected value is 4\'-2 1/14"');
+    equal(f.dimension(62), '5′−2″', 'Expected value is 5′−2″');
+    equal(f.dimension(33.375, 'fraction'), '2′−9 3/8″', 'Expected value is 2′−9 3/8″');
+    equal(f.dimension(50 + 1/14, 'fraction'), '4′−2 1/14″', 'Expected value is 4′−2 1/14″');
 });
 
 test('utils.format.dimensions', function () {
     var f = app.utils.format;
 
-    equal(f.dimensions(20, 30), '1\'-8"x2\'-6"', 'Expected value is 1\'-8"x2\'-6"');
-    equal(f.dimensions(0, 0), '0\'-0"x0\'-0"', 'Expected value is 0\'-0"x0\'-0"');
-    equal(f.dimensions(12, 12), '1\'-0"x1\'-0"', 'Expected value is 1\'-0"x1\'-0"');
-    equal(f.dimensions('12', '12'), '1\'-0"x1\'-0"', 'Expected value is 1\'-0"x1\'-0"');
+    equal(f.dimensions(20, 30), '1′−8″ x 2′−6″', 'Expected value is 1′−8″ x 2′−6″');
+    equal(f.dimensions(0, 0), '0′−0″ x 0′−0″', 'Expected value is 0′−0″ x 0′−0″');
+    equal(f.dimensions(12, 12), '1′−0″ x 1′−0″', 'Expected value is 1′−0″ x 1′−0″');
+    equal(f.dimensions('12', '12'), '1′−0″ x 1′−0″', 'Expected value is 1′−0″ x 1′−0″');
 });
 
 test('utils.format.price_usd', function () {
@@ -90,7 +90,7 @@ test('utils.parseFormat.dimension', function () {
     equal(p.dimension('6 \' - 2 1 / 2 "'), 74.5, 'Expected value is 74.5');
 });
 
-test('utils.parseFormat.dimension', function () {
+test('utils.parseFormat.dimensions', function () {
     var p = app.utils.parseFormat;
 
     deepEqual(p.dimensions('32"X82 1/2"'), { width: 32, height: 82.5 }, 'Expected { width: 32, height: 82.5 }');
@@ -119,6 +119,9 @@ test('utils.parseFormat.dimension', function () {
 
     equal(p.dimensions('2’—8” X 5’—0”', 'width'), 32, 'Expected value is 32');
     equal(p.dimensions('2’—8” X 5’—0”', 'height'), 60, 'Expected value is 60');
+
+    equal(p.dimensions('2’—8”', 'height'), 32, 'Expected value is 32');
+    equal(p.dimensions('5’—0”', 'width'), 60, 'Expected value is 60');
 });
 
 test('utils.parseFormat.percent', function () {

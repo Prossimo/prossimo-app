@@ -196,10 +196,10 @@ var app = app || {};
 
             var getters_hash = {
                 width_mm: function (model) {
-                    return c.inches_to_mm(model.get('width'));
+                    return f.fixed_minimal(model.getWidthMM(), 5);
                 },
                 height_mm: function (model) {
-                    return c.inches_to_mm(model.get('height'));
+                    return f.fixed_minimal(model.getHeightMM(), 5);
                 },
                 dimensions: function (model) {
                     return f.dimensions(model.get('width'), model.get('height'));
@@ -244,6 +244,12 @@ var app = app || {};
             var setters_hash = {
                 discount: function (model, attr_name, val) {
                     return model.set(attr_name, p.percent(val));
+                },
+                width: function (model, attr_name, val) {
+                    return model.set(attr_name, p.dimensions(val, 'width'));
+                },
+                height: function (model, attr_name, val) {
+                    return model.set(attr_name, p.dimensions(val, 'height'));
                 }
             };
 

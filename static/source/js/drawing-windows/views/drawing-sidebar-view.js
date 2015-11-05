@@ -52,7 +52,7 @@ var app = app || {};
                         reference_id: item.getRefNum(),
                         cid: item.cid,
                         mark: item.get('mark'),
-                        dimensions: app.utils.format.dimensions(item.get('width'), item.get('height'))
+                        dimensions: app.utils.format.dimensions(item.get('width'), item.get('height'), 'fraction')
                     };
                 }, this),
                 active_window_properties: this.getActiveWindowProperties(),
