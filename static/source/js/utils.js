@@ -22,10 +22,10 @@ var app = app || {};
                     value_inches = this.fixed_minimal(value_inches, 3);
                 }
 
-                return value_feet + '\'-' + value_inches + '"';
+                return value_feet + '′−' + value_inches + '″';
             },
             dimensions: function (width, height, decimal_format) {
-                return this.dimension(width, decimal_format) + 'x' + this.dimension(height, decimal_format);
+                return this.dimension(width, decimal_format) + ' x ' + this.dimension(height, decimal_format);
             },
             price_usd: function (price) {
                 return '$' + new Decimal(parseFloat(price).toFixed(2)).toFormat(2);
@@ -109,6 +109,9 @@ var app = app || {};
                     match = pattern.exec(size_string);
                     width = this.dimension(match[1]);
                     height = this.dimension(match[2]);
+                } else {
+                    width = this.dimension(size_string);
+                    height = this.dimension(size_string);
                 }
 
                 if ( attr === 'width' ) {
