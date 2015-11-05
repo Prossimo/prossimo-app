@@ -190,7 +190,6 @@ var app = app || {};
             };
         },
         getGetterFunction: function (window_model, column_name) {
-            var c = app.utils.convert;
             var f = app.utils.format;
             var getter;
 
