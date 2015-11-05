@@ -25,9 +25,11 @@ module.exports = function (grunt) {
         'paste-image.js',
         'core/models/window.js',
         'core/models/accessory.js',
+        'core/models/profile.js',
         'core/models/project.js',
         'core/collections/window-collection.js',
         'core/collections/accessory-collection.js',
+        'core/collections/profile-collection.js',
         'core/views/main-navigation-view.js',
         'core/views/windows-table-view.js',
         'docs-import/views/main-docs-import-view.js',
@@ -40,6 +42,8 @@ module.exports = function (grunt) {
         'quote/views/quote-extras-item-view.js',
         'quote/views/quote-table-view.js',
         'quote/views/quote-extras-table-view.js',
+        'settings/views/main-settings-view.js',
+        'settings/views/profiles-table-view.js',
         'app.js'
     ];
 
@@ -192,7 +196,9 @@ module.exports = function (grunt) {
                     base: '.',
                     middleware: function (connect, options, middlewares) {
                         middlewares.unshift(function (req, res, next) {
-                            if ( req.url === '/docs/' || req.url === '/drawing/' || req.url === '/quote/' ) {
+                            if ( req.url === '/docs/' || req.url === '/drawing/' ||
+                                 req.url === '/quote/' || req.url === '/settings/'
+                            ) {
                                 require('fs').createReadStream('index.html').pipe(res);
                             } else {
                                 return next();

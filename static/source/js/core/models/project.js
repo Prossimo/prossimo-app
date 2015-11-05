@@ -17,6 +17,7 @@ var app = app || {};
         initialize: function () {
             this.windows = new app.WindowCollection();
             this.extras = new app.AccessoryCollection();
+            this.profiles = new app.ProfileCollection();
             this.project_files = [];
         },
         getHiddenMultiplier: function () {

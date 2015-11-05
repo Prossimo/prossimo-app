@@ -119,6 +119,21 @@ $(document).ready(function () {
         }
     ]);
 
+    app.current_project.profiles.add([
+        {
+            name: 'Default Profile',
+            frameWidth: 70,
+            mullionWidth: 92,
+            sashFrameWidth: 82
+        },
+        {
+            name: 'Alternative Profile',
+            frameWidth: 90,
+            mullionWidth: 112,
+            sashFrameWidth: 102
+        }
+    ]);
+
     app.main_region = new Marionette.Region({
         el: '#main'
     });
@@ -126,6 +141,7 @@ $(document).ready(function () {
     app.main_docs_import_view = new app.MainDocsImportView();
     app.main_drawing_view = new app.MainDrawingWindowsView();
     app.main_quote_view = new app.MainQuoteView();
+    app.main_settings_view = new app.MainSettingsView();
 
     app.main_navigation = new app.MainNavigationView({
         docs_import: {
@@ -150,6 +166,14 @@ $(document).ready(function () {
             icon_name: 'shopping-cart',
             showCallback: function () {
                 app.main_region.show(app.main_quote_view, { preventDestroy: true });
+            }
+        },
+        settings: {
+            title: 'Settings',
+            path: 'settings',
+            icon_name: 'cog',
+            showCallback: function () {
+                app.main_region.show(app.main_settings_view, { preventDestroy: true });
             }
         }
     });

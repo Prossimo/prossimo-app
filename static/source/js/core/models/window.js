@@ -53,9 +53,6 @@ var app = app || {};
 
             return defaults;
         },
-        initialize: function () {
-            // this.drawing = new app.Window();
-        },
         //  TODO: change to hash format like everywhere else
         getDefaultValue: function (name, type) {
             var default_value = '';
