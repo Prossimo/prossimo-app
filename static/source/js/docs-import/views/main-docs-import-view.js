@@ -34,7 +34,8 @@ var app = app || {};
         onRender: function () {
             var windows_table_view = new app.WindowsTableView({
                 collection: app.current_project.windows,
-                extras: app.current_project.extras
+                extras: app.current_project.extras,
+                parent_view: this
             });
 
             var document_selector_view = new app.DocumentSelectorView({

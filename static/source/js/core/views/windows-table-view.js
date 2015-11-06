@@ -54,9 +54,9 @@ var app = app || {};
             };
             this.active_tab = 'input';
 
-            //  TODO: remake this, see issue #3
-            this.listenTo(this.collection, 'all', this.render);
-            this.listenTo(this.options.extras, 'all', this.render);
+            this.listenTo(this.collection, 'all', this.updateTable);
+            this.listenTo(this.options.extras, 'all', this.updateTable);
+            this.listenTo(this.options.parent_view, 'attach', this.updateTable);
 
             this.listenTo(app.vent, 'paste_image', this.onPasteImage);
         },
@@ -405,6 +405,11 @@ var app = app || {};
 
             return custom_column_headers_hash[column_name];
         },
+        updateTable: function () {
+            if ( this.hot ) {
+                this.hot.render();
+            }
+        },
         onRender: function () {
             this.hot = new Handsontable(this.ui.$hot_container[0], {
                 data: this.getActiveTab().collection,
@@ -417,12 +422,6 @@ var app = app || {};
             });
 
             this.appendPopovers();
-
-            //  TODO: remove this
-            // var self = this;
-            // setTimeout(function () {
-            //     self.hot.render();
-            // }, 100);
         }
     });
 })();
