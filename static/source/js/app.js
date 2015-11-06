@@ -9,6 +9,26 @@ $(document).ready(function () {
     app.vent = {};
     _.extend(app.vent, Backbone.Events);
 
+    //  Object to hold project-independent properties
+    app.settings = new app.Settings();
+
+    app.settings.profiles.add([
+        {
+            name: 'Default Profile',
+            frameWidth: 70,
+            mullionWidth: 92,
+            sashFrameWidth: 82,
+            system: 'Gealan S9000'
+        },
+        {
+            name: 'Alternative Profile',
+            frameWidth: 90,
+            mullionWidth: 112,
+            sashFrameWidth: 102,
+            system: 'Gealan S9000'
+        }
+    ]);
+
     app.current_project = new app.Project({
         client_name: 'Andy Huh',
         client_company_name: 'Fentrend',
@@ -28,7 +48,7 @@ $(document).ready(function () {
             type: 'Casement',
             description: 'Tilt and turn inswing / fixed PVC',
             notes: 'Opening restriction cord included',
-            system: 'Gealan S9000',
+            profile_name: 'Default Profile',
             internal_color: 'Dark grey matte laminate',
             external_color: 'Dark grey matte laminate',
             gasket_color: 'Black',
@@ -48,7 +68,7 @@ $(document).ready(function () {
             type: 'Casement ganged to fixed',
             description: 'Tilt and turn inswing above / removable ac sash below. PVC',
             notes: 'Opening restriction cord included',
-            system: 'Gealan S9000',
+            profile_name: 'Default Profile',
             internal_color: 'Dark grey matte laminate',
             external_color: 'Dark grey matte laminate',
             gasket_color: 'Black',
@@ -116,21 +136,6 @@ $(document).ready(function () {
             quantity: 1,
             price_markup: 1.3,
             extras_type: 'Tax'
-        }
-    ]);
-
-    app.current_project.profiles.add([
-        {
-            name: 'Default Profile',
-            frameWidth: 70,
-            mullionWidth: 92,
-            sashFrameWidth: 82
-        },
-        {
-            name: 'Alternative Profile',
-            frameWidth: 90,
-            mullionWidth: 112,
-            sashFrameWidth: 102
         }
     ]);
 

@@ -12,7 +12,7 @@ var app = app || {};
         },
         onRender: function () {
             var profiles_table_view = new app.ProfilesTableView({
-                collection: app.current_project.profiles,
+                collection: app.settings.profiles,
                 parent_view: this
             });
 

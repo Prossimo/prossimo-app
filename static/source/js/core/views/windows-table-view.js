@@ -32,9 +32,9 @@ var app = app || {};
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'width', 'height', 'width_mm',
                         'height_mm', 'customer_image', 'drawing', 'type', 'description',
-                        'notes', 'system', 'external_color', 'internal_color', 'gasket_color',
-                        'hinge_style', 'opening_direction', 'threshold', 'internal_sill',
-                        'external_sill', 'glazing', 'uw', 'uw_ip']
+                        'notes', 'profile_name', 'system', 'external_color', 'internal_color',
+                        'gasket_color', 'hinge_style', 'opening_direction', 'threshold',
+                        'internal_sill', 'external_sill', 'glazing', 'uw', 'uw_ip']
                 },
                 prices: {
                     title: 'Prices',
@@ -223,6 +223,9 @@ var app = app || {};
                 },
                 subtotal_price_discounted: function (model) {
                     return f.price_usd(model.getSubtotalPriceDiscounted());
+                },
+                system: function (model) {
+                    return model.profile.get('system');
                 }
             };
 
@@ -311,6 +314,7 @@ var app = app || {};
                 subtotal_price_discounted: { readOnly: true },
                 drawing: { readOnly: true },
                 uw_ip: { readOnly: true },
+                system: { readOnly: true },
                 mark: {
                     width: 100
                 },
@@ -323,6 +327,10 @@ var app = app || {};
                 },
                 discount: {
                     renderer: this.getFormattedRenderer('discount')
+                },
+                profile_name: {
+                    type: 'dropdown',
+                    source: app.settings.getAvailableProfileNames()
                 }
             };
 
@@ -391,7 +399,8 @@ var app = app || {};
                 drawing: 'Drawing',
                 uw_ip: 'Uw-IP',
                 unit_price_discounted: 'Unit Price w/Disc.',
-                subtotal_price_discounted: 'Subtotal Price w/Disc.'
+                subtotal_price_discounted: 'Subtotal Price w/Disc.',
+                system: 'System'
             };
 
             return custom_column_headers_hash[column_name];
@@ -403,7 +412,8 @@ var app = app || {};
                 colHeaders: this.getActiveTabHeaders(),
                 rowHeaders: true,
                 stretchH: 'all',
-                height: 200
+                height: 200,
+                trimDropdown: false
             });
 
             this.appendPopovers();

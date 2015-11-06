@@ -27,6 +27,7 @@ module.exports = function (grunt) {
         'core/models/accessory.js',
         'core/models/profile.js',
         'core/models/project.js',
+        'core/models/settings.js',
         'core/collections/window-collection.js',
         'core/collections/accessory-collection.js',
         'core/collections/profile-collection.js',

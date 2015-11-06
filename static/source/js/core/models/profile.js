@@ -6,6 +6,7 @@ var app = app || {};
     //  Profile sizes are set in millimeters
     var ProfileProperties = [
         { name: 'name', title: 'Name', type: 'string' },
+        { name: 'system', title: 'System', type: 'string' },
         { name: 'frameWidth', title: 'Frame Width (mm)', type: 'number' },
         { name: 'mullionWidth', title: 'Mullion Width (mm)', type: 'number' },
         { name: 'sashFrameWidth', title: 'Sash Frame Width (mm)', type: 'number' }

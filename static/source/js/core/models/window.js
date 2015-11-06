@@ -12,7 +12,7 @@ var app = app || {};
         { name: 'description', title: 'Description', type: 'string' },
         { name: 'notes', title: 'Notes', type: 'string' },
 
-        { name: 'system', title: 'System', type: 'string' },
+        { name: 'profile_name', title: 'Profile', type: 'string' },
         { name: 'customer_image', title: 'Customer Image', type: 'base64image' },
         { name: 'internal_color', title: 'Color Internal', type: 'string' },
         { name: 'external_color', title: 'Color External', type: 'string' },
@@ -75,6 +75,14 @@ var app = app || {};
 
             return default_value;
         },
+        initialize: function () {
+            this.profile = null;
+            this.setProfile();
+            this.on('change:profile_name', this.setProfile, this);
+        },
+        setProfile: function () {
+            this.profile = app.settings ? app.settings.getProfileByName(this.get('profile_name')) : null;
+        },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs
         getNameTitleTypeHash: function (names) {
@@ -96,6 +104,9 @@ var app = app || {};
             var name_title_hash = this.getNameTitleTypeHash(names);
 
             return _.pluck(name_title_hash, 'title');
+        },
+        getProfileProperties: function () {
+            return app.settings ? app.settings.getProfileProperties(this.get('profile')) : {};
         },
         getRefNum: function () {
             return this.collection ? this.collection.indexOf(this) + 1 : -1;
