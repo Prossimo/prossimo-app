@@ -69,6 +69,7 @@ test('utils.parseFormat.dimension', function () {
     equal(p.dimension('30 ”'), 30, 'Expected value is 30');
     equal(p.dimension('30"'), 30, 'Expected value is 30');
     equal(p.dimension('30.5 ”'), 30.5, 'Expected value is 30.5');
+    equal(p.dimension('4.5 ”'), 4.5, 'Expected value is 4.5');
     equal(p.dimension('192 "'), 192, 'Expected value is 192');
 
     equal(p.dimension('33 3/8'), 33.375, 'Expected value is 33.375');
@@ -78,6 +79,7 @@ test('utils.parseFormat.dimension', function () {
 
     equal(p.dimension('82\''), 984, 'Expected value is 984 (82 * 12)');
     equal(p.dimension('82’'), 984, 'Expected value is 984 (82 * 12)');
+    equal(p.dimension('1’'), 12, 'Expected value is 12 (1 * 12)');
     equal(p.dimension('30.5 ’'), 366, 'Expected value is 366 (30.5 * 12)');
 
     equal(p.dimension('5-2'), 62, 'Expected value is 62');
@@ -90,6 +92,11 @@ test('utils.parseFormat.dimension', function () {
     equal(p.dimension('6\'-2 1/2"'), 74.5, 'Expected value is 74.5');
     equal(p.dimension('6 - 2 1/2'), 74.5, 'Expected value is 74.5');
     equal(p.dimension('6 \' - 2 1 / 2 "'), 74.5, 'Expected value is 74.5');
+
+    equal(p.dimension('4\'6 1/2'), 54.5, 'Expected value is 54.5');
+    equal(p.dimension('4 ’ 6 1/2'), 54.5, 'Expected value is 54.5');
+    equal(p.dimension('4\'6'), 54, 'Expected value is 54');
+    equal(p.dimension('4’'), 48, 'Expected value is 48');
 });
 
 test('utils.parseFormat.dimensions', function () {

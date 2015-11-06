@@ -67,12 +67,12 @@ var app = app || {};
                 var pattern_1 = /(\d+)\s*(\'|’|′)*\s*(-|–|—|‐)\s*(\d+)\s(\d+)\s*\/\s*(\d+)\s*("|”|″)*/i;
                 //  Captures |5-2|, |8'-0|, |9-10"|, |2’–8”|
                 var pattern_2 = /(\d+)\s*(\'|’|′)*\s*(-|–|—|‐)\s*(\d+)\s*("|”|″)*/i;
-                //  Captures |33 3/8|, |82 1/2"|
-                var pattern_3 = /(\d+)\s(\d+)\s*\/\s*(\d+)/i;
-                //  Captures |30 '|, |30'|, |30’|, |30.5 ’|
-                var pattern_4 = /(\d+\.*\d+)\s*(\'|’|′)/i;
+                //  Captures |33 3/8|, |82 1/2"|, |4'6 1/2|
+                var pattern_3 = /(?:(\d+)\s*(?:\'|’|′)\s*)*(\d+)\s(\d+)\s*\/\s*(\d+)/i;
+                //  Captures |30 '|, |30'|, |30’|, |30.5 ’|, |4'6|
+                var pattern_4 = /(\d+(?:\.\d+)*)\s*(?:\'|’|′)\s*(\d+)*/i;
                 //  Captures |30|, |30 "|, |30"|, |30 ”|, |30.5 ”|
-                var pattern_5 = /(\d+\.*\d+)\s*("|”|″)*/i;
+                var pattern_5 = /(\d+(\.\d+)*)\s*("|”|″)*/i;
 
                 if ( pattern_1.test(size_string) ) {
                     match = pattern_1.exec(size_string);
@@ -83,10 +83,11 @@ var app = app || {};
                     result = parseFloat(match[1]) * 12 + parseFloat(match[4]);
                 } else if ( pattern_3.test(size_string) ) {
                     match = pattern_3.exec(size_string);
-                    result = parseFloat(match[1]) + parseFloat(match[2]) / parseFloat(match[3]);
+                    result = (match[1] ? match[1] * 12 : 0) +
+                        parseFloat(match[2]) + parseFloat(match[3]) / parseFloat(match[4]);
                 } else if ( pattern_4.test(size_string) ) {
                     match = pattern_4.exec(size_string);
-                    result = parseFloat(match[1]) * 12;
+                    result = parseFloat(match[1]) * 12 + (match[2] ? parseFloat(match[2]) : 0);
                 } else if ( pattern_5.test(size_string) ) {
                     match = pattern_5.exec(size_string);
                     result = match[1];
