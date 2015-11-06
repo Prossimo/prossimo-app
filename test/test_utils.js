@@ -18,6 +18,7 @@ test('utils.format.dimension', function () {
     equal(f.dimension(62), '5′−2″', 'Expected value is 5′−2″');
     equal(f.dimension(33.375, 'fraction'), '2′−9 3/8″', 'Expected value is 2′−9 3/8″');
     equal(f.dimension(50 + 1/14, 'fraction'), '4′−2 1/14″', 'Expected value is 4′−2 1/14″');
+    equal(f.dimension(50.7959183673469354, 'fraction'), '4′−2 39/49″', 'Expected not to fail with Decimal error');
 });
 
 test('utils.format.dimensions', function () {
@@ -52,6 +53,7 @@ test('utils.format.fixed', function () {
     equal(f.fixed(0.5, 5), '0.50000', 'Expected value is 0.50000');
     equal(f.fixed(20), '20.00', 'Expected value is 20.00');
     equal(f.fixed(0), '0.00', 'Expected value is 0.00');
+    equal(f.fixed(0.5510204081632679, 25), '0.551020408163268', 'Expected not to fail with Decimal error');
 });
 
 

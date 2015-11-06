@@ -13,6 +13,9 @@ var app = app || {};
         events: {
             'change @ui.$select': 'onChange'
         },
+        initialize: function () {
+            this.listenTo(this.options.parent_view.active_window, 'all', this.render);
+        },
         onChange: function () {
             this.$el.trigger({
                 type: 'window-selected',
@@ -32,16 +35,50 @@ var app = app || {};
 
             return active_window_image;
         },
-        //  TODO: improve this function
         getActiveWindowProperties: function () {
-            var active_window_properties = {};
+            var active_window_properties = [];
+            var active_window;
+
+            var relevant_properties = [
+                'mark', 'width', 'height', 'type', 'description', 'notes',
+                'internal_color', 'external_color', 'gasket_color', 'uw',
+                'glazing', 'hinge_style', 'opening_direction', 'threshold',
+                'internal_sill', 'external_sill'
+            ];
 
             if ( this.options.parent_view.active_window ) {
-                active_window_properties = this.options.parent_view.active_window.toJSON();
-                delete active_window_properties.customer_image;
+                active_window = this.options.parent_view.active_window;
+                _.each(relevant_properties, function (item) {
+                    active_window_properties.push({
+                        title: active_window.getTitles([item]),
+                        value: active_window.get(item)
+                    });
+                });
             }
 
             return active_window_properties;
+        },
+        getActiveWindowProfileProperties: function () {
+            var active_window_profile_properties = [];
+            var active_window_profile;
+
+            var relevant_properties = [
+                'name', 'system', 'frameWidth', 'mullionWidth', 'sashFrameWidth'
+            ];
+
+            if ( this.options.parent_view.active_window &&
+                 this.options.parent_view.active_window.profile
+            ) {
+                active_window_profile = this.options.parent_view.active_window.profile;
+                _.each(relevant_properties, function (item) {
+                    active_window_profile_properties.push({
+                        title: active_window_profile.getTitles([item]),
+                        value: active_window_profile.get(item)
+                    });
+                });
+            }
+
+            return active_window_profile_properties;
         },
         serializeData: function () {
             return {
@@ -56,6 +93,7 @@ var app = app || {};
                     };
                 }, this),
                 active_window_properties: this.getActiveWindowProperties(),
+                active_window_profile_properties: this.getActiveWindowProfileProperties(),
                 active_window_image: this.getActiveWindowImage()
             };
         },

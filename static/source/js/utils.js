@@ -8,6 +8,7 @@ var app = app || {};
             dimension: function (value, decimal_format) {
                 var value_feet = Math.floor(parseFloat(value) / 12);
                 var value_inches = parseFloat(value) % 12;
+                var fractional_part;
 
                 decimal_format = decimal_format &&
                     _.indexOf(['floating', 'fraction'], decimal_format) !== -1 ?
@@ -15,8 +16,9 @@ var app = app || {};
 
                 if ( decimal_format === 'fraction' ) {
                     if ( value_inches - Math.floor(value_inches) ) {
+                        fractional_part = (value_inches - Math.floor(value_inches)).toFixed(15);
                         value_inches = Math.floor(value_inches) + ' ' +
-                            new Decimal(value_inches - Math.floor(value_inches)).toFraction(100).join('/');
+                            new Decimal(fractional_part).toFraction(100).join('/');
                     }
                 } else {
                     value_inches = this.fixed_minimal(value_inches, 3);
@@ -34,7 +36,7 @@ var app = app || {};
                 return new Decimal(parseFloat(value).toFixed(2)).toFormat() + '%';
             },
             fixed: function (value, num) {
-                num = num || 2;
+                num = num ? (num < 15 ? num : 15) : 2;
                 return new Decimal(parseFloat(value).toFixed(num)).toFormat(num);
             },
             fixed_minimal: function (value, num) {

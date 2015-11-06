@@ -1,4 +1,4 @@
-<h3>Select a window</h3>
+<h3>Select unit</h3>
 
 <select name="window-selector-dropdown" id="window-selector-dropdown" class="selectpicker" title='Choose a window'>
     {{#each window_list}}
@@ -14,10 +14,32 @@
 
 {{#if active_window_properties }}
     <div class="active-window-properties">
-        <ul>
-            {{#each active_window_properties }}
-            <li><strong>{{ @key }}</strong> <span>{{ this }}</span></li>
-            {{/each}}
-        </ul>
+        <h4>Window properties</h4>
+        <table>
+            <tbody>
+                {{#each active_window_properties }}
+                <tr>
+                    <td class="title">{{ title }}</td>
+                    <td class="value">{{ value }}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+{{/if}}
+
+{{#if active_window_profile_properties }}
+    <div class="active-window-profile-properties">
+        <h4>Profile properties</h4>
+        <table>
+            <tbody>
+                {{#each active_window_profile_properties }}
+                <tr>
+                    <td class="title">{{ title }}</td>
+                    <td class="value">{{ value }}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
     </div>
 {{/if}}
