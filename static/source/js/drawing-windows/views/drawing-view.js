@@ -139,7 +139,7 @@ var app = app || {};
             var height = params.height + overlap * 2;
             var x = params.x - overlap;
             var y = params.y - overlap;
-            var frameWidth = hasFrame ? this.model.get('sashFrameWidth') : 0;
+            var frameWidth = hasFrame ? this.model.profile.get('sashFrameWidth') : 0;
 
             var group = new Konva.Group({
                 x: x,
@@ -522,7 +522,7 @@ var app = app || {};
             var frameGroup = this.createFrame({
                 width: this.model.getInMetric('width', 'mm'),
                 height: this.model.getInMetric('height', 'mm'),
-                frameWidth: this.model.get('frameWidth')
+                frameWidth: this.model.profile.get('frameWidth')
             });
             frameGroup.scale({x: ratio, y: ratio});
             group.add(frameGroup);
@@ -533,10 +533,10 @@ var app = app || {};
             group.add(sectionsGroup);
 
             var sections = this.createSection(this.model.generateFullRoot()/*, {
-                x: this.model.get('frameWidth'),
-                y: this.model.get('frameWidth'),
-                width: this.model.getInMetric('width', 'mm') - this.model.get('frameWidth') * 2,
-                height: this.model.getInMetric('height', 'mm') - this.model.get('frameWidth') * 2
+                x: this.model.profile.get('frameWidth'),
+                y: this.model.profile.get('frameWidth'),
+                width: this.model.getInMetric('width', 'mm') - this.model.profile.get('frameWidth') * 2,
+                height: this.model.getInMetric('height', 'mm') - this.model.profile.get('frameWidth') * 2
             }*/);
 
             sectionsGroup.add.apply(sectionsGroup, sections);
