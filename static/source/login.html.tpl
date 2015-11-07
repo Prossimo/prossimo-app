@@ -3,14 +3,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="latest-commit-sha" value="@@hash">
-    <title>Prossimo App: Login</title>
+    <title>Prossimo App: Sign In</title>
 
     <link rel="stylesheet" href="/static/public/css/login.@@hash.css" media="all">
 </head>
 <body>
     <main id="main" class="main">
         <div class="login-box">
-            <h4>Login to Prossimo App</h4>
+            <h4>Sign In to Prossimo App</h4>
             <form action="">
                 <input id="pa_username" name="pa_username" type="text" class="form-control" placeholder="Username">
                 <input id="pa_password" name="pa_password" type="password" class="form-control" placeholder="Password">
