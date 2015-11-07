@@ -133,8 +133,8 @@ module.exports = function (grunt) {
                 files: [
                     {
                         expand: true,
-                        cwd: '<%= bowerUrl %>/pdfjs/',
-                        src: ['**', '!**/docs/**', '!**/test/**'],
+                        cwd: '<%= bowerUrl %>/pdfjs/build/generic/',
+                        src: ['**'],
                         dest: '<%= buildUrl %>/pdfjs/',
                         filter: 'isFile'
                     }
@@ -267,6 +267,26 @@ module.exports = function (grunt) {
         },
 
         replace: {
+            //  A cheap hack to trick pdfjs building script, it comes without
+            //  its own `.git` directory because it's installed via bower, so
+            //  building fails being unable to find certain SHA in the git
+            //  history. We just replace the SHA with our own number
+            pdfjs: {
+                options: {
+                    patterns: [
+                        {
+                            match: 'hash',
+                            replacement: '<%= hash %>'
+                        }
+                    ]
+                },
+                files: [
+                    {
+                        src: '<%= sourceUrl %>/pdfjs.config.tpl',
+                        dest: '<%= bowerUrl %>/pdfjs/pdfjs.config'
+                    }
+                ]
+            },
             dev: {
                 options: {
                     patterns: [
@@ -314,6 +334,20 @@ module.exports = function (grunt) {
 
         qunit: {
             all: ['test/**/*.html']
+        },
+
+        shell: {
+            build_pdfjs: {
+                options: {
+                    execOptions: {
+                        cwd: '<%= bowerUrl %>/pdfjs/'
+                    }
+                },
+                command: [
+                    'npm install',
+                    'node make generic'
+                ].join('&&')
+            }
         }
     });
 
@@ -330,15 +364,20 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-replace');
     grunt.loadNpmTasks('grunt-gitinfo');
     grunt.loadNpmTasks('grunt-contrib-qunit');
+    grunt.loadNpmTasks('grunt-shell');
+
+    grunt.registerTask('pdfjs', ['gitinfo', 'replace:pdfjs', 'shell:build_pdfjs', 'copy:pdfjs']);
 
     grunt.registerTask('build', [
         'gitinfo', 'clean:build', 'handlebars:build', 'copy:vendor', 'uglify:build',
-        'copy:pdfjs', 'copy:images', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:build'
+        'copy:images', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:build', 'pdfjs'
     ]);
+
     grunt.registerTask('dev', [
         'gitinfo', 'clean:build', 'handlebars:build', 'copy:dev', 'copy:vendor',
-        'copy:pdfjs', 'copy:images', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:dev'
+        'copy:images', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:dev', 'pdfjs'
     ]);
+
     grunt.registerTask('test', ['eslint', 'qunit']);
     grunt.registerTask('deploy', ['test', 'sshexec:update']);
     grunt.registerTask('default', ['dev', 'connect', 'watch']);
