@@ -5,3 +5,4 @@ dist
 static/public
 *.sublime*
 /index.html
+/login.html

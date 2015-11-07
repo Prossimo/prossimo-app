@@ -67,7 +67,8 @@ module.exports = function (grunt) {
                 },
                 files: {
                     '<%= buildUrl %>/css/styles.<%= hash %>.css': '<%= sourceUrl %>/less/styles.less',
-                    '<%= buildUrl %>/css/print.<%= hash %>.css': '<%= sourceUrl %>/less/print.less'
+                    '<%= buildUrl %>/css/print.<%= hash %>.css': '<%= sourceUrl %>/less/print.less',
+                    '<%= buildUrl %>/css/login.<%= hash %>.css': '<%= sourceUrl %>/less/login.less'
                 }
             }
         },
@@ -219,8 +220,8 @@ module.exports = function (grunt) {
 
         watch: {
             replace: {
-                files: ['<%= sourceUrl %>/index.html'],
-                tasks: ['gitinfo', 'replace:build']
+                files: ['<%= sourceUrl %>/*.tpl'],
+                tasks: ['gitinfo', 'replace:dev']
             },
             less: {
                 files: ['<%= sourceUrl %>/less/**/*.less'],
@@ -306,6 +307,10 @@ module.exports = function (grunt) {
                     {
                         src: '<%= sourceUrl %>/index.html.tpl',
                         dest: './index.html'
+                    },
+                    {
+                        src: '<%= sourceUrl %>/login.html.tpl',
+                        dest: './login.html'
                     }
                 ]
             },
@@ -327,6 +332,10 @@ module.exports = function (grunt) {
                     {
                         src: '<%= sourceUrl %>/index.html.tpl',
                         dest: './index.html'
+                    },
+                    {
+                        src: '<%= sourceUrl %>/login.html.tpl',
+                        dest: './login.html'
                     }
                 ]
             }

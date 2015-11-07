@@ -1,0 +1,47 @@
+.main .login-box {
+    padding: 4rem;
+    width: 40rem;
+    height: auto;
+    border: 1px solid darken(@white, 35%);
+    background-color: lighten(@black, 80%);
+    box-shadow: 0 0 3px 0 fadeout(@black, 80%);
+}
+
+.login-box h4 {
+    margin-top: 0;
+    margin-bottom: 4rem;
+}
+
+.login-box input {
+    margin-bottom: 1.5rem;
+    border-color: darken(@white, 35%);
+}
+
+.login-box input:focus {
+    box-shadow: none;
+    border-color: darken(@white, 60%);
+}
+
+.login-box .error-container {
+    // display: none;
+    margin: 3rem 0 1rem;
+    padding: 1.5rem;
+    border: 1px solid lighten(@red, 15%);
+    background-color: fadeout(lighten(@red, 20%), 60%);
+    color: darken(@red, 40%);
+    border-radius: 0.2em;
+}
+
+.login-box .error-container p {
+    margin-bottom: 0;
+}
+
+.login-box .error-container p + p {
+    margin-top: 0.5em;
+}
+
+.btn-login {
+    &:extend(.btn-default all);
+    margin-top: 2rem;
+    border-color: darken(@white, 35%);
+}
