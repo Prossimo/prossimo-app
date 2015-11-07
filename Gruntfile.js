@@ -67,6 +67,7 @@ module.exports = function (grunt) {
                 },
                 files: {
                     '<%= buildUrl %>/css/styles.<%= hash %>.css': '<%= sourceUrl %>/less/styles.less',
+                    '<%= buildUrl %>/css/print.<%= hash %>.css': '<%= sourceUrl %>/less/print.less'
                 }
             }
         },

@@ -5,8 +5,9 @@
     <meta name="latest-commit-sha" value="@@hash">
     <title>Prossimo App (current version: @@hash)</title>
 
-    <link rel="stylesheet" href="/static/public/css/vendor.@@hash.min.css">
-    <link rel="stylesheet" href="/static/public/css/styles.@@hash.css">
+    <link rel="stylesheet" href="/static/public/css/vendor.@@hash.min.css" media="all">
+    <link rel="stylesheet" href="/static/public/css/styles.@@hash.css" media="all">
+    <link rel="stylesheet" href="/static/public/css/print.@@hash.css" media="print">
 
     <script src="/static/public/js/vendor.@@hash.min.js"></script>
     <script src="/static/public/js/templates.@@hash.js"></script>
