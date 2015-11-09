@@ -1,10 +1,19 @@
 <h3>Select unit</h3>
 
-<select name="window-selector-dropdown" id="window-selector-dropdown" class="selectpicker" title='Choose a window'>
-    {{#each window_list}}
-        <option data-subtext="{{ dimensions }}" {{#if is_selected }}selected{{/if}} value="{{ cid }}">#{{ reference_id }}: <strong>{{ mark }}</strong></option>
-    {{/each}}
-</select>
+<div class="window-selector-controls">
+    <div class="window-selector-select">
+        <select name="window-selector-dropdown" id="window-selector-dropdown" class="selectpicker" title='Choose a window'>
+            {{#each window_list}}
+                <option data-subtext="{{ dimensions }}" {{#if is_selected }}selected{{/if}} value="{{ cid }}">#{{ reference_id }}: <strong>{{ mark }}</strong></option>
+            {{/each}}
+        </select>
+    </div>
+
+    <div class="window-selector-buttons">
+        <button class="js-prev-window glyphicon glyphicon-chevron-left"></button>
+        <button class="js-next-window glyphicon glyphicon-chevron-right"></button>
+    </div>
+</div>
 
 {{#if active_window_image }}
     <div class="active-window-image">

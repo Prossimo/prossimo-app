@@ -143,18 +143,13 @@ $(document).ready(function () {
         el: '#main'
     });
 
-    app.main_docs_import_view = new app.MainDocsImportView();
-    app.main_drawing_view = new app.MainDrawingWindowsView();
-    app.main_quote_view = new app.MainQuoteView();
-    app.main_settings_view = new app.MainSettingsView();
-
     app.main_navigation = new app.MainNavigationView({
         docs_import: {
             title: 'Docs',
             path: 'docs',
             icon_name: 'file',
             showCallback: function () {
-                app.main_region.show(app.main_docs_import_view, { preventDestroy: true });
+                app.main_region.show(new app.MainDocsImportView());
             }
         },
         drawing_windows: {
@@ -162,7 +157,7 @@ $(document).ready(function () {
             path: 'drawing',
             icon_name: 'pencil',
             showCallback: function () {
-                app.main_region.show(app.main_drawing_view, { preventDestroy: true });
+                app.main_region.show(new app.MainDrawingWindowsView());
             }
         },
         quote: {
@@ -170,7 +165,7 @@ $(document).ready(function () {
             path: 'quote',
             icon_name: 'shopping-cart',
             showCallback: function () {
-                app.main_region.show(app.main_quote_view, { preventDestroy: true });
+                app.main_region.show(new app.MainQuoteView());
             }
         },
         settings: {
@@ -178,7 +173,7 @@ $(document).ready(function () {
             path: 'settings',
             icon_name: 'cog',
             showCallback: function () {
-                app.main_region.show(app.main_settings_view, { preventDestroy: true });
+                app.main_region.show(new app.MainSettingsView());
             }
         }
     });
