@@ -19,7 +19,8 @@ var app = app || {};
                 if (el.hasClass('popup-wrap')) {
                     el.hide();
                 }
-            }
+            },
+            'keydown #drawing': 'onKeyUp'
         },
 
         onRender: function(){
@@ -33,20 +34,18 @@ var app = app || {};
         onAttach: function() {
             this.updateSize();
             this.updateCanvas();
+            this.$('#drawing').focus();
         },
         onDestroy: function() {
             this.stage.destroy();
         },
 
-        // update model on input change
-        updateModel: function() {
-             this.model.set({
-                width: parseInt(this.$('.widthInput').val()),
-                height: parseInt(this.$('.heightInput').val())
-            });
+        onKeyUp: function(e) {
+            if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
+                this.model.removeMullion(this.selectedMullionId);
+                e.preventDefault();
+            }
         },
-
-
         updateSize: function() {
             this.stage.width(this.el.offsetWidth);
             this.stage.height(this.el.offsetHeight);
@@ -106,7 +105,11 @@ var app = app || {};
 
             return group;
         },
-
+        deselectAll: function() {
+            this.selectedMullionId = null;
+            this.stage.find('.selected').removeName('selected').fill('white');
+            this.stage.draw();
+        },
         createSection: function(rootSection) {
             var objects = [];
             if (rootSection.sections && rootSection.sections.length) {
@@ -116,6 +119,14 @@ var app = app || {};
                     strokeWidth: 1
                 });
                 mullion.setAttrs(rootSection.mullionParams);
+                mullion.on('click', function() {
+                    this.deselectAll();
+                    this.$('#drawing').focus();
+                    this.selectedMullionId = rootSection.id;
+                    mullion.addName('selected');
+                    mullion.fill('red');
+                    mullion.getLayer().draw();
+                }.bind(this));
                 objects.push(mullion);
 
                 // draw each child section
@@ -481,6 +492,7 @@ var app = app || {};
             if (e.evt.button !== 0) {
                 return;
             }
+            this.deselectAll();
             this.sectionIdToChange = id;
             var pos = this.stage.getPointerPosition();
             var x = pos.x - 5;

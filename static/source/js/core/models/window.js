@@ -152,6 +152,13 @@ var app = app || {};
                 section.position = parseInt(pos, 10);
             });
         },
+        removeMullion: function(sectionId) {
+            this._updateSection(sectionId, function(section) {
+                section.devider = null;
+                section.sections = null;
+                section.position = null;
+            });
+        },
         splitSection: function(sectionId, type) {
             this._updateSection(sectionId, function(section) {
                 var full = this.generateFullRoot();
