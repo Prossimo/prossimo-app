@@ -18,7 +18,7 @@ var app = app || {};
             'click @ui.$next': 'onNextBtn'
         },
         initialize: function () {
-            this.listenTo(this.options.parent_view, 'before:destroy', function (e) {
+            this.listenTo(this.options.parent_view, 'before:destroy', function () {
                 this.onBeforeDestroy();
             });
 
