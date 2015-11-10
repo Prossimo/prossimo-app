@@ -8,21 +8,73 @@ var app = app || {};
         className: 'drawing-sidebar',
         template: app.templates['drawing-windows/drawing-sidebar-view'],
         ui: {
-            '$select': '.selectpicker'
+            '$select': '.selectpicker',
+            '$prev': '.js-prev-window',
+            '$next': '.js-next-window'
         },
         events: {
-            'change @ui.$select': 'onChange'
+            'change @ui.$select': 'onChange',
+            'click @ui.$prev': 'onPrevBtn',
+            'click @ui.$next': 'onNextBtn'
         },
         initialize: function () {
+            this.listenTo(this.options.parent_view, 'before:destroy', function () {
+                this.onBeforeDestroy();
+            });
+
             this.listenTo(this.options.parent_view.active_window, 'all', this.render);
         },
-        onChange: function () {
+        selectWindow: function (model) {
             this.$el.trigger({
                 type: 'window-selected',
-                model: this.collection.get(this.ui.$select.val())
+                model: model
             });
 
             this.render();
+        },
+        onChange: function () {
+            this.selectWindow(this.collection.get(this.ui.$select.val()));
+        },
+        onKeyDown: function (e) {
+            if ( $(e.target).is('input') !== false ) {
+                return;
+            }
+
+            if ( e.keyCode === 37 ) {
+                this.onPrevBtn();
+            }
+
+            if ( e.keyCode === 39 ) {
+                this.onNextBtn();
+            }
+        },
+        onNextBtn: function () {
+            var collection_size = this.serializeData().window_list.length;
+            var next_index;
+
+            if ( collection_size > 1 && this.options.parent_view.active_window ) {
+                next_index = this.collection.indexOf(this.options.parent_view.active_window) + 1;
+
+                if ( next_index >= collection_size ) {
+                    next_index = 0;
+                }
+
+                this.selectWindow(this.collection.at(next_index));
+            }
+        },
+        onPrevBtn: function () {
+            var collection_size = this.serializeData().window_list.length;
+            var prev_index;
+
+            if ( collection_size > 1 && this.options.parent_view.active_window ) {
+                prev_index = this.collection.indexOf(this.options.parent_view.active_window) - 1;
+
+                if ( prev_index < 0 ) {
+                    prev_index = collection_size - 1;
+                }
+
+                this.selectWindow(this.collection.at(prev_index));
+            }
         },
         getActiveWindowImage: function () {
             var active_window_image = null;
@@ -98,9 +150,19 @@ var app = app || {};
             };
         },
         onRender: function () {
+            var self = this;
+
             this.ui.$select.selectpicker({
                 showSubtext: true
             });
+
+            $(document).off('keydown');
+            $(document).on('keydown', function (e) {
+                self.onKeyDown(e);
+            });
+        },
+        onBeforeDestroy: function () {
+            $(document).off('keydown');
         }
     });
 })();

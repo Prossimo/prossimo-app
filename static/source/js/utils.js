@@ -18,7 +18,7 @@ var app = app || {};
                     if ( value_inches - Math.floor(value_inches) ) {
                         fractional_part = (value_inches - Math.floor(value_inches)).toFixed(15);
                         value_inches = Math.floor(value_inches) + ' ' +
-                            new Decimal(fractional_part).toFraction(100).join('/');
+                            new Decimal(fractional_part).toFraction(16).join('/');
                     }
                 } else {
                     value_inches = this.fixed_minimal(value_inches, 3);

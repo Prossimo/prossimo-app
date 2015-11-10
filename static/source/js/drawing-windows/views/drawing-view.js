@@ -558,7 +558,7 @@ var app = app || {};
                     fontSize: '12px'
                 })
                 .appendTo($wrap)
-                .select()
+                .focus()
                 .on('keyup', function(e) {
                     if (e.keyCode === 13) {
                         params.setter(this.value);
