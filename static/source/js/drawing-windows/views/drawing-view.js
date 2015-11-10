@@ -190,17 +190,17 @@ var app = app || {};
                 y: glassY,
                 sceneFunc: function(ctx) {
                     ctx.beginPath();
-                    if (type.indexOf('left') >= 0) {
+                    if (type.indexOf('left') >= 0 && (type.indexOf('slide') === -1)) {
                         ctx.moveTo(glassWidth, glassHeight);
                         ctx.lineTo(0, glassHeight / 2);
                         ctx.lineTo(glassWidth, 0);
                     }
-                    if (type.indexOf('right') >= 0) {
+                    if (type.indexOf('right') >= 0 && (type.indexOf('slide') === -1)) {
                         ctx.moveTo(0, 0);
                         ctx.lineTo(glassWidth, glassHeight / 2);
                         ctx.lineTo(0, glassHeight);
                     }
-                    if (type.indexOf('top') >= 0) {
+                    if (type.indexOf('top') >= 0 || type.indexOf('slide') >= 0) {
                         ctx.moveTo(0, glassHeight);
                         ctx.lineTo(glassWidth / 2, 0);
                         ctx.lineTo(glassWidth, glassHeight);
@@ -217,27 +217,36 @@ var app = app || {};
                     frameWidth: frameWidth
                 });
                 group.add(frameGroup);
-                if (type.indexOf('left') >= 0 || type.indexOf('right') >= 0) {
+                if (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type.indexOf('top') >= 0) {
                     var offset = frameWidth / 2;
                     var pos = {
                         x: null,
-                        y: height / 2
+                        y: null,
+                        rotation: 0
                     };
-                    if (type.indexOf('left') >= 0) {
+                    if (type === 'top-left' || type === 'left' || type === 'slide-right') {
                         pos.x = offset;
+                        pos.y = height / 2;
                     }
-                    if (type.indexOf('right') >= 0) {
+                    if (type === 'top-right' || type === 'right' || type === 'slide-left') {
                         pos.x = width - offset;
+                        pos.y = height / 2;
+                    }
+                    if (type === 'top') {
+                        pos.x = width / 2;
+                        pos.y = offset;
+                        pos.rotation = 90;
                     }
                     var handle = new Konva.Shape({
                         x: pos.x,
                         y: pos.y,
+                        rotation: pos.rotation,
                         stroke: 'black',
                         fill: 'rgba(0,0,0,0.2)',
                         sceneFunc: function(ctx) {
                             ctx.beginPath();
-                            ctx.rect(-20, -20, 40, 50);
-                            ctx.rect(-10, -5, 20, 70);
+                            ctx.rect(-23, -23, 46, 55);
+                            ctx.rect(-14, -5, 28, 90);
                             ctx.fillStrokeShape(this);
                         }
                     });
@@ -294,32 +303,51 @@ var app = app || {};
             });
 
             // left text
-            var label = new Konva.Label();
+            var labelInMM = new Konva.Label();
 
-            label.add(new Konva.Tag({
+            labelInMM.add(new Konva.Tag({
                 fill: 'white',
                 stroke: 'grey'
             }));
-            var text = new Konva.Text({
+            var textMM = new Konva.Text({
                 text: params.getter() + 'mm',
                 padding: 2,
                 fill: 'black'
             });
 
-            label.add(text);
-            label.position({
-                x: -text.width() / 2,
-                y: height / 2 - text.height() / 2
+            labelInMM.add(textMM);
+            labelInMM.position({
+                x: -textMM.width() / 2,
+                y: height / 2 - textMM.height() / 2
+            });
+
+            // left text
+            var labelInInches = new Konva.Label();
+
+            labelInInches.add(new Konva.Tag({
+                fill: 'white',
+                stroke: 'grey'
+            }));
+            var textInches = new Konva.Text({
+                text: params.getter() + 'mm',
+                padding: 2,
+                fill: 'black'
+            });
+
+            labelInInches.add(textInches);
+            labelInInches.position({
+                x: -textInches.width() / 2,
+                y: height / 2 - textInches.height() / 2
             });
 
 
             if (params.setter) {
-                label.on('click tap', function() {
-                    this.createInput(params, label.getAbsolutePosition(), text.size());
+                labelInInches.on('click tap', function() {
+                    this.createInput(params, labelInInches.getAbsolutePosition(), textInches.size());
                 }.bind(this));
             }
 
-            group.add(lines, arrow, label);
+            group.add(lines, arrow, labelInInches, labelInMM);
             return group;
         },
 
