@@ -9,6 +9,7 @@ var app = app || {};
         initialize: function () {
             this.listenTo(this.model, 'all', this.updateCanvas);
             this.listenTo(this.options.parent_view, 'attach', this.onAttach);
+            this.state = {};
         },
 
         events: {
@@ -42,9 +43,17 @@ var app = app || {};
 
         onKeyUp: function(e) {
             if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
-                this.model.removeMullion(this.selectedMullionId);
                 e.preventDefault();
+                this.model.removeMullion(this.state.selectedMullionId);
+                this.setState({
+                    selectedMullionId: null
+                });
             }
+        },
+        setState: function(state) {
+            this.state = _.assign(this.state, state);
+            this.updateCanvas();
+            this.$('#drawing').focus();
         },
         updateSize: function() {
             this.stage.width(this.el.offsetWidth);
@@ -106,9 +115,9 @@ var app = app || {};
             return group;
         },
         deselectAll: function() {
-            this.selectedMullionId = null;
-            this.stage.find('.selected').removeName('selected').fill('white');
-            this.stage.draw();
+            this.setState({
+                selectedMullionId: null
+            });
         },
         createSection: function(rootSection) {
             var objects = [];
@@ -119,13 +128,14 @@ var app = app || {};
                     strokeWidth: 1
                 });
                 mullion.setAttrs(rootSection.mullionParams);
-                mullion.on('click', function() {
-                    this.deselectAll();
-                    this.$('#drawing').focus();
-                    this.selectedMullionId = rootSection.id;
+                if (this.state.selectedMullionId === rootSection.id) {
                     mullion.addName('selected');
                     mullion.fill('red');
-                    mullion.getLayer().draw();
+                }
+                mullion.on('click', function() {
+                    this.setState({
+                        selectedMullionId: rootSection.id
+                    });
                 }.bind(this));
                 objects.push(mullion);
 
@@ -303,9 +313,11 @@ var app = app || {};
             });
 
 
-            label.on('click tap', function() {
-                this.createInput(params, label.getAbsolutePosition(), text.size());
-            }.bind(this));
+            if (params.setter) {
+                label.on('click tap', function() {
+                    this.createInput(params, label.getAbsolutePosition(), text.size());
+                }.bind(this));
+            }
 
             group.add(lines, arrow, label);
             return group;
@@ -375,9 +387,11 @@ var app = app || {};
                 y: arrowOffset
             });
 
-            label.on('click tap', function() {
-                this.createInput(params, label.getAbsolutePosition(), text.size());
-            }.bind(this));
+            if (params.setter) {
+                label.on('click tap', function() {
+                    this.createInput(params, label.getAbsolutePosition(), text.size());
+                }.bind(this));
+            }
 
             group.add(lines, arrow, label);
             return group;
@@ -388,38 +402,104 @@ var app = app || {};
             var group = new Konva.Group();
             var verticalRows = 0;
             var horizontalRows = 0;
+            var verticalMullions = [];
+            var horizontalMullions = [];
+
             this.model.getMullions().forEach(function(mul) {
-                var metric;
+                if (this.state.selectedMullionId && this.state.selectedMullionId !== mul.id) {
+                    return;
+                }
                 if (mul.type === 'vertical') {
-                    metric = this.createHorizontalMetric(mul.position * this.ratio, merticSize, {
-                        setter: function(val) {
-                            this.model.setSectionMullionPosition(mul.id, val);
-                        }.bind(this),
-                        getter: function() {
-                            return mul.position;
-                        }
-                    });
-                    metric.position({
-                        x: 0,
-                        y: height + horizontalRows * merticSize
-                    });
-                    group.add(metric);
-                    horizontalRows += 1;
+                    verticalMullions.push(mul);
                 } else {
-                    metric = this.createVerticalMetric(merticSize, mul.position * this.ratio, {
-                        setter: function(val) {
-                            this.model.setSectionMullionPosition(mul.id, val);
-                        }.bind(this),
+                    horizontalMullions.push(mul);
+                }
+            }.bind(this));
+
+            verticalMullions.sort(function(a, b) {return a.position - b.position; });
+            horizontalMullions.sort(function(a, b) {return a.position - b.position; });
+
+            var pos = 0;
+            verticalMullions.forEach(function(mul, i) {
+                var width_ = mul.position - pos;
+                var params = {
+                    getter: function() {
+                        return width_;
+                    }
+                };
+                if (verticalMullions.length === 1) {
+                    params.setter = function(val) {
+                        this.model.setSectionMullionPosition(mul.id, val);
+                    }.bind(this);
+                }
+                var metric = this.createHorizontalMetric(width_ * this.ratio, merticSize, params);
+                metric.position({
+                    x: pos * this.ratio,
+                    y: height
+                });
+                pos = mul.position;
+                group.add(metric);
+                if ( i === verticalMullions.length - 1) {
+                    horizontalRows += 1;
+                    width_ = this.model.getInMetric('width', 'mm') - pos;
+                    params = {
                         getter: function() {
-                            return mul.position;
+                            return width_;
                         }
-                    });
+                    };
+                    if (verticalMullions.length === 1) {
+                        params.setter = function(val) {
+                            this.model.setSectionMullionPosition(mul.id, this.model.getInMetric('width', 'mm') - val);
+                        }.bind(this);
+                    }
+                    metric = this.createHorizontalMetric(width_ * this.ratio, merticSize, params);
                     metric.position({
-                        x: -merticSize * (verticalRows + 1),
-                        y: 0
+                        x: pos * this.ratio,
+                        y: height
                     });
                     group.add(metric);
+                }
+            }.bind(this));
+
+            pos = 0;
+            horizontalMullions.forEach(function(mul, i) {
+                var height_ = mul.position - pos;
+                var params = {
+                    getter: function() {
+                        return height_;
+                    }
+                };
+                if (horizontalMullions.length === 1) {
+                    params.setter = function(val) {
+                        this.model.setSectionMullionPosition(mul.id, val);
+                    }.bind(this);
+                }
+                var metric = this.createVerticalMetric(merticSize, height_ * this.ratio, params);
+                metric.position({
+                    x: -merticSize,
+                    y: pos * this.ratio
+                });
+                pos = mul.position;
+                group.add(metric);
+                if ( i === horizontalMullions.length - 1) {
                     verticalRows += 1;
+                    height_ = this.model.getInMetric('height', 'mm') - pos;
+                    params = {
+                        getter: function() {
+                            return height_;
+                        }
+                    };
+                    if (horizontalMullions.length === 1) {
+                        params.setter = function(val) {
+                            this.model.setSectionMullionPosition(mul.id, this.model.getInMetric('height', 'mm') - val);
+                        }.bind(this);
+                    }
+                    metric = this.createVerticalMetric(merticSize, height_ * this.ratio, params);
+                    metric.position({
+                        x: -merticSize,
+                        y: pos * this.ratio
+                    });
+                    group.add(metric);
                 }
             }.bind(this));
 
