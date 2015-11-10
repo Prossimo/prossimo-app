@@ -155,11 +155,22 @@ var app = app || {};
             var params = sectionData.params;
             // params of HOLE
             var hasFrame = sectionData.sashType && (sectionData.sashType !== 'none');
-            var overlap = hasFrame ? 34 : 0;
-            var width = params.width + overlap * 2;
-            var height = params.height + overlap * 2;
-            var x = params.x - overlap;
-            var y = params.y - overlap;
+            var topOverlap = 0;
+            var bottomOverlap = 0;
+            var leftOverlap = 0;
+            var rightOverlap = 0;
+            var FRAME_OVERLAP = 34;
+            var MULLION_OVERLAP = 12;
+            if (hasFrame) {
+                topOverlap = sectionData.mullionEdges.top ? MULLION_OVERLAP : FRAME_OVERLAP;
+                bottomOverlap = sectionData.mullionEdges.bottom ? MULLION_OVERLAP : FRAME_OVERLAP;
+                leftOverlap = sectionData.mullionEdges.left ? MULLION_OVERLAP : FRAME_OVERLAP;
+                rightOverlap = sectionData.mullionEdges.right ? MULLION_OVERLAP : FRAME_OVERLAP;
+            }
+            var width = params.width + leftOverlap + rightOverlap;
+            var height = params.height + topOverlap + bottomOverlap;
+            var x = params.x - leftOverlap;
+            var y = params.y - topOverlap;
             var frameWidth = hasFrame ? this.model.profile.get('sashFrameWidth') : 0;
 
             var group = new Konva.Group({
@@ -253,7 +264,6 @@ var app = app || {};
                     group.add(handle);
                 }
             }
-
             return group;
         },
         createVerticalMetric: function(width, height, params) {

@@ -178,6 +178,23 @@ var app = app || {};
                 }
             }.bind(this));
         },
+        // one after full calulcalation section will be something like:
+        // {
+        //     id: 5,
+        //     sashType: null,
+        //     params: { x, y, width, height },
+        //     devider: 'vertical',
+        //     position: 50,
+        //     sections: [{
+        //         id: 6,
+        //         mullionEdges : {right : true},
+        //         params: {}
+        //     }, {
+        //         id: 7,
+        //         mullionEdges : {left : true},
+        //         params: {}
+        //     }]
+        // }
         generateFullRoot: function(rootSection, params) {
             rootSection = rootSection || JSON.parse(JSON.stringify(this.get('rootSection')));
             var defaultParams = {
@@ -196,6 +213,7 @@ var app = app || {};
             }
             params = params || defaultParams;
             rootSection.params = params;
+            rootSection.mullionEdges = rootSection.mullionEdges || {};
             var position = rootSection.position;
             if (rootSection.sections && rootSection.sections.length) {
                 var mullionAttrs = {
@@ -219,20 +237,17 @@ var app = app || {};
                 var sectionParams = {
                     x: null, y: null, width: null, height: null
                 };
+                sectionData.mullionEdges = _.clone(rootSection.mullionEdges);
                 if (rootSection.devider === 'vertical') {
                     sectionParams.x = params.x;
                     sectionParams.y = params.y;
                     if (i === 0) {
-                        // sectionParams.x += this.profile.get('frameWidth');
-                        // sectionParams.width = position - this.profile.get('mullionWidth') / 2 -
-                        //     this.profile.get('frameWidth');
                         sectionParams.width = position - rootSection.params.x - this.profile.get('mullionWidth') / 2;
-                        // if (rootSection.id === this.get('rootSection').id) {
-                        //     sectionParams.width -= this.profile.get('frameWidth') * 2;
-                        // }
+                        sectionData.mullionEdges.right = true;
                     } else {
                         sectionParams.x = position + this.profile.get('mullionWidth') / 2;
                         sectionParams.width = params.width + params.x - position - this.profile.get('mullionWidth') / 2;
+                        sectionData.mullionEdges.left = true;
                     }
                     sectionParams.height = params.height;
                 } else {
@@ -240,12 +255,13 @@ var app = app || {};
                     sectionParams.y = params.y;
                     sectionParams.width = params.width;
                     if (i === 0) {
-                        // sectionParams.y += this.profile.get('frameWidth');
+                        sectionData.mullionEdges.bottom = true;
                         sectionParams.height = position - rootSection.params.y - this.profile.get('mullionWidth') / 2;
                     } else {
                         sectionParams.y = position + this.profile.get('mullionWidth') / 2;
                         sectionParams.height = params.height + params.y - position -
                             this.profile.get('mullionWidth') / 2;
+                        sectionData.mullionEdges.top = true;
                     }
                 }
                 return this.generateFullRoot(sectionData, sectionParams);
