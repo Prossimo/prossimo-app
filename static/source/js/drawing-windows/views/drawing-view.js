@@ -318,7 +318,7 @@ var app = app || {};
             labelMM.add(textMM);
             labelMM.position({
                 x: -textMM.width() / 2,
-                y: height / 2 + textMM.height() / 2 
+                y: height / 2 + textMM.height() / 2
             });
 
             // left text
