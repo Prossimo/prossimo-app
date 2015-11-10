@@ -303,9 +303,9 @@ var app = app || {};
             });
 
             // left text
-            var labelInMM = new Konva.Label();
+            var labelMM = new Konva.Label();
 
-            labelInMM.add(new Konva.Tag({
+            labelMM.add(new Konva.Tag({
                 fill: 'white',
                 stroke: 'grey'
             }));
@@ -315,39 +315,41 @@ var app = app || {};
                 fill: 'black'
             });
 
-            labelInMM.add(textMM);
-            labelInMM.position({
+            labelMM.add(textMM);
+            labelMM.position({
                 x: -textMM.width() / 2,
-                y: height / 2 - textMM.height() / 2
+                y: height / 2 + textMM.height() / 2 
             });
 
             // left text
-            var labelInInches = new Konva.Label();
+            var labelInches = new Konva.Label();
 
-            labelInInches.add(new Konva.Tag({
+            labelInches.add(new Konva.Tag({
                 fill: 'white',
                 stroke: 'grey'
             }));
+            var inches = app.utils.convert.mm_to_inches(params.getter());
+            var val = app.utils.format.dimension(inches, 'fraction');
             var textInches = new Konva.Text({
-                text: params.getter() + 'mm',
+                text: val,
                 padding: 2,
                 fill: 'black'
             });
 
-            labelInInches.add(textInches);
-            labelInInches.position({
+            labelInches.add(textInches);
+            labelInches.position({
                 x: -textInches.width() / 2,
                 y: height / 2 - textInches.height() / 2
             });
 
 
             if (params.setter) {
-                labelInInches.on('click tap', function() {
-                    this.createInput(params, labelInInches.getAbsolutePosition(), textInches.size());
+                labelInches.on('click tap', function() {
+                    this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
                 }.bind(this));
             }
 
-            group.add(lines, arrow, labelInInches, labelInMM);
+            group.add(lines, arrow, labelInches, labelMM);
             return group;
         },
 
@@ -397,31 +399,51 @@ var app = app || {};
                 strokeWidth: 0.5
             });
 
-            var label = new Konva.Label();
+            var labelMM = new Konva.Label();
 
-            label.add(new Konva.Tag({
+            labelMM.add(new Konva.Tag({
                 fill: 'white',
                 stroke: 'grey'
             }));
-            var text = new Konva.Text({
+            var textMM = new Konva.Text({
                 text: params.getter() + 'mm',
                 padding: 2,
                 fill: 'black'
             });
 
-            label.add(text);
-            label.position({
-                x: width / 2 - text.width() / 2,
+            labelMM.add(textMM);
+            labelMM.position({
+                x: width / 2 - textMM.width() / 2,
+                y: arrowOffset + textMM.height()
+            });
+
+            var labelInches = new Konva.Label();
+
+            labelInches.add(new Konva.Tag({
+                fill: 'white',
+                stroke: 'grey'
+            }));
+            var inches = app.utils.convert.mm_to_inches(params.getter());
+            var val = app.utils.format.dimension(inches, 'fraction');
+            var textInches = new Konva.Text({
+                text: val,
+                padding: 2,
+                fill: 'black'
+            });
+
+            labelInches.add(textInches);
+            labelInches.position({
+                x: width / 2 - textInches.width() / 2,
                 y: arrowOffset
             });
 
             if (params.setter) {
-                label.on('click tap', function() {
-                    this.createInput(params, label.getAbsolutePosition(), text.size());
+                labelInches.on('click tap', function() {
+                    this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
                 }.bind(this));
             }
 
-            group.add(lines, arrow, label);
+            group.add(lines, arrow, labelInches, labelMM);
             return group;
         },
 
@@ -575,21 +597,23 @@ var app = app || {};
                 });
 
             var padding = 3;
+            var valInInches = app.utils.convert.mm_to_inches(params.getter());
             $('<input type="number">')
-                .val(params.getter())
+                .val(valInInches)
                 .css({
                     position: 'absolute',
                     top: (pos.y - padding) + 'px',
                     left: (pos.x - padding) + 'px',
                     height: (size.height + padding * 2) + 'px',
-                    width: (size.width + padding * 2) + 'px',
+                    width: (size.width + 20 + padding * 2) + 'px',
                     fontSize: '12px'
                 })
                 .appendTo($wrap)
                 .focus()
                 .on('keyup', function(e) {
                     if (e.keyCode === 13) {
-                        params.setter(this.value);
+                        var valInMM = app.utils.convert.inches_to_mm(this.value);
+                        params.setter(valInMM);
                         $wrap.remove();
                     }
                 })
@@ -634,7 +658,7 @@ var app = app || {};
             // place window on center
             group.x(Math.round(this.stage.width() / 2 - frameOnScreenWidth / 2) + 0.5);
             // and will small offset from top
-            group.y(45.5);
+            group.y(10 + 0.5);
 
             this.layer.add(group);
 
