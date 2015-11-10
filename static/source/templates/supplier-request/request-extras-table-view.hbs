@@ -1,0 +1,14 @@
+{{#if heading }}<h3 class="extras-heading{{#unless items_count }} hidden{{/unless}}">{{ heading }}</h3>{{/if}}
+
+{{#if is_optional }}<h4 class="optional-extras-subheading{{#unless items_count }} hidden{{/unless}}">Not inlcuded in total</h4>{{/if}}
+
+<table class="supplier-request-extras-table {{#unless items_count }} hidden{{/unless}}">
+    <thead>
+        <tr>
+            {{#each table_attributes }}
+            <th class="{{ name }}">{{ title }}</th>
+            {{/each}}
+        </tr>
+    </thead>
+    <tbody class="supplier-request-extras-table-body"></tbody>
+</table>

@@ -1,0 +1,18 @@
+<table class="supplier-request-table">
+    <thead>
+        <tr>
+            {{#each table_attributes }}
+            <th class="{{ name }}">{{ title }}</th>
+            {{/each}}
+        </tr>
+    </thead>
+    <tbody class="supplier-request-table-body"></tbody>
+</table>
+
+{{#if has_extras }}
+<div class="supplier-request-extras-table-container"></div>
+<div class="supplier-request-optional-extras-table-container"></div>
+{{/if}}
+
+
+

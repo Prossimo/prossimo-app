@@ -168,6 +168,14 @@ $(document).ready(function () {
                 app.main_region.show(new app.MainQuoteView());
             }
         },
+        supplier_request: {
+            title: 'Supplier',
+            path: 'supplier',
+            icon_name: 'send',
+            showCallback: function () {
+                app.main_region.show(new app.MainSupplierRequestView());
+            }
+        },
         settings: {
             title: 'Settings',
             path: 'settings',

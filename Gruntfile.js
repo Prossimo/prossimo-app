@@ -45,6 +45,11 @@ module.exports = function (grunt) {
         'quote/views/quote-extras-table-view.js',
         'settings/views/main-settings-view.js',
         'settings/views/profiles-table-view.js',
+        'supplier-request/views/main-supplier-request-view.js',
+        'supplier-request/views/request-item-view.js',
+        'supplier-request/views/request-table-view.js',
+        'supplier-request/views/request-extras-item-view.js',
+        'supplier-request/views/request-extras-table-view.js',
         'app.js'
     ];
 
@@ -200,7 +205,8 @@ module.exports = function (grunt) {
                     middleware: function (connect, options, middlewares) {
                         middlewares.unshift(function (req, res, next) {
                             if ( req.url === '/docs/' || req.url === '/drawing/' ||
-                                 req.url === '/quote/' || req.url === '/settings/'
+                                 req.url === '/quote/' || req.url === '/settings/' ||
+                                 req.url === '/supplier/'
                             ) {
                                 require('fs').createReadStream('index.html').pipe(res);
                             } else {
