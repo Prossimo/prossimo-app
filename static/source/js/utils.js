@@ -3,6 +3,10 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var MAX_DENOMINATOR = 16;
+    //  For numbers that are passed to Decimal constructor
+    var MAX_SIGNIFICANT_DIGITS = 15;
+
     app.utils = {
         format: {
             dimension: function (value, decimal_format) {
@@ -15,10 +19,22 @@ var app = app || {};
                     decimal_format : 'floating';
 
                 if ( decimal_format === 'fraction' ) {
+                    //  If fractional part is too close to 0 or to 1, we just
+                    //  round value_inches to a nearest integer. This prevents
+                    //  us from getting something like |2′−6 1/1″|. Too close
+                    //  means smaller than half of 1/16 of an inch, given that
+                    //  MAX_DENOMINATOR == 16
+                    if (
+                        Math.abs(Math.round(value_inches) - value_inches) > 0 &&
+                        Math.abs(Math.round(value_inches) - value_inches) < (1 / MAX_DENOMINATOR) / 2
+                    ) {
+                        value_inches = Math.round(value_inches);
+                    }
+
                     if ( value_inches - Math.floor(value_inches) ) {
-                        fractional_part = (value_inches - Math.floor(value_inches)).toFixed(15);
+                        fractional_part = (value_inches - Math.floor(value_inches)).toFixed(MAX_SIGNIFICANT_DIGITS);
                         value_inches = Math.floor(value_inches) + ' ' +
-                            new Decimal(fractional_part).toFraction(16).join('/');
+                            new Decimal(fractional_part).toFraction(MAX_DENOMINATOR).join('/');
                     }
                 } else {
                     value_inches = this.fixed_minimal(value_inches, 3);
@@ -36,7 +52,7 @@ var app = app || {};
                 return new Decimal(parseFloat(value).toFixed(2)).toFormat() + '%';
             },
             fixed: function (value, num) {
-                num = num ? (num < 15 ? num : 15) : 2;
+                num = num ? (num < MAX_SIGNIFICANT_DIGITS ? num : MAX_SIGNIFICANT_DIGITS) : 2;
                 return new Decimal(parseFloat(value).toFixed(num)).toFormat(num);
             },
             fixed_minimal: function (value, num) {
