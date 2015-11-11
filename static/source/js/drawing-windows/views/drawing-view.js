@@ -623,9 +623,7 @@ var app = app || {};
                 .focus()
                 .on('keyup', function(e) {
                     if (e.keyCode === 13) {
-                        console.log(this.value);
                         var inches = app.utils.parseFormat.dimension(this.value);
-                        console.log(inches);
                         var mm = app.utils.convert.inches_to_mm(inches);
                         params.setter(mm);
                         $wrap.remove();
