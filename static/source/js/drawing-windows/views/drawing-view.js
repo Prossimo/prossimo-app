@@ -608,8 +608,9 @@ var app = app || {};
 
             var padding = 3;
             var valInInches = app.utils.convert.mm_to_inches(params.getter());
-            $('<input type="number">')
-                .val(valInInches)
+            var val = app.utils.format.dimension(valInInches, 'fraction');
+            $('<input>')
+                .val(val)
                 .css({
                     position: 'absolute',
                     top: (pos.y - padding) + 'px',
@@ -622,8 +623,11 @@ var app = app || {};
                 .focus()
                 .on('keyup', function(e) {
                     if (e.keyCode === 13) {
-                        var valInMM = app.utils.convert.inches_to_mm(this.value);
-                        params.setter(valInMM);
+                        console.log(this.value);
+                        var inches = app.utils.parseFormat.dimension(this.value);
+                        console.log(inches);
+                        var mm = app.utils.convert.inches_to_mm(inches);
+                        params.setter(mm);
                         $wrap.remove();
                     }
                 })
