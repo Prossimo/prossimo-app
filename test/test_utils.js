@@ -88,10 +88,13 @@ test('utils.parseFormat.dimension', function () {
     equal(p.dimension('9-10"'), 118, 'Expected value is 118');
     equal(p.dimension('2’–8”'), 32, 'Expected value is 32');
     equal(p.dimension('2 ’ – 8 ”'), 32, 'Expected value is 32');
+    equal(p.dimension('2 ’−8 ”'), 32, 'Expected value is 32');
 
     equal(p.dimension('6\'-2 1/2"'), 74.5, 'Expected value is 74.5');
     equal(p.dimension('6 - 2 1/2'), 74.5, 'Expected value is 74.5');
     equal(p.dimension('6 \' - 2 1 / 2 "'), 74.5, 'Expected value is 74.5');
+    equal(p.dimension('6 − 2 1/2'), 74.5, 'Expected value is 74.5');
+    equal(p.dimension('6 ― 2 1/2'), 74.5, 'Expected value is 74.5');
 
     equal(p.dimension('4\'6 1/2'), 54.5, 'Expected value is 54.5');
     equal(p.dimension('4 ’ 6 1/2'), 54.5, 'Expected value is 54.5');
