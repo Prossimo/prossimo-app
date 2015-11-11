@@ -21,6 +21,7 @@ var app = app || {};
                     el.hide();
                 }
             },
+            'click #clear-frame': 'clearFrame',
             'keydown #drawing': 'onKeyUp'
         },
 
@@ -58,6 +59,10 @@ var app = app || {};
         updateSize: function() {
             this.stage.width(this.el.offsetWidth);
             this.stage.height(this.el.offsetHeight);
+        },
+
+        clearFrame: function() {
+            this.model.clearFrame();
         },
 
         createFrame: function(params) {

@@ -316,6 +316,13 @@ var app = app || {};
             } else {
                 this.set(attr, app.utils.convert.mm_to_inches(val));
             }
+        },
+        clearFrame: function() {
+            var rootId = this.get('rootSection').id;
+            this.removeMullion(rootId);
+            this._updateSection(rootId, function(section) {
+                section.sashType = 'none';
+            });
         }
     });
 
