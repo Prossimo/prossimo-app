@@ -16,7 +16,10 @@ var app = app || {};
             'click .js-add-new-profile': 'addNewProfile'
         },
         initialize: function () {
-            this.columns = ['name', 'system', 'frameWidth', 'mullionWidth', 'sashFrameWidth'];
+            this.columns = [
+                'name', 'system', 'frameWidth', 'mullionWidth', 'sashFrameWidth',
+                'sashFrameOverlap', 'sashMullionOverlap'
+            ];
 
             this.listenTo(this.collection, 'all', this.updateTable);
             this.listenTo(this.options.parent_view, 'attach', this.updateTable);

@@ -18,6 +18,8 @@ $(document).ready(function () {
             frameWidth: 70,
             mullionWidth: 92,
             sashFrameWidth: 82,
+            sashFrameOverlap: 34,
+            sashMullionOverlap: 12,
             system: 'Gealan S9000'
         },
         {
@@ -25,6 +27,8 @@ $(document).ready(function () {
             frameWidth: 90,
             mullionWidth: 112,
             sashFrameWidth: 102,
+            sashFrameOverlap: 36,
+            sashMullionOverlap: 14,
             system: 'Gealan S9000'
         }
     ]);

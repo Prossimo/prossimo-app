@@ -164,13 +164,13 @@ var app = app || {};
             var bottomOverlap = 0;
             var leftOverlap = 0;
             var rightOverlap = 0;
-            var FRAME_OVERLAP = 34;
-            var MULLION_OVERLAP = 12;
+            var frameOverlap = this.model.profile.get('sashFrameOverlap');
+            var mullionOverlap = this.model.profile.get('sashMullionOverlap');
             if (hasFrame) {
-                topOverlap = sectionData.mullionEdges.top ? MULLION_OVERLAP : FRAME_OVERLAP;
-                bottomOverlap = sectionData.mullionEdges.bottom ? MULLION_OVERLAP : FRAME_OVERLAP;
-                leftOverlap = sectionData.mullionEdges.left ? MULLION_OVERLAP : FRAME_OVERLAP;
-                rightOverlap = sectionData.mullionEdges.right ? MULLION_OVERLAP : FRAME_OVERLAP;
+                topOverlap = sectionData.mullionEdges.top ? mullionOverlap : frameOverlap;
+                bottomOverlap = sectionData.mullionEdges.bottom ? mullionOverlap : frameOverlap;
+                leftOverlap = sectionData.mullionEdges.left ? mullionOverlap : frameOverlap;
+                rightOverlap = sectionData.mullionEdges.right ? mullionOverlap : frameOverlap;
             }
             var width = params.width + leftOverlap + rightOverlap;
             var height = params.height + topOverlap + bottomOverlap;
