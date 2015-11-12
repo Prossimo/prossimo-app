@@ -603,7 +603,7 @@ var app = app || {};
         },
         createInput: function(params, pos, size) {
             var $wrap = $('<div>')
-                .addClass('.popup-wrap')
+                .addClass('popup-wrap')
                 .appendTo(this.$el)
                 .on('click', function(e) {
                     if (e.target === $wrap.get(0)) {
@@ -627,10 +627,13 @@ var app = app || {};
                 .appendTo($wrap)
                 .focus()
                 .on('keyup', function(e) {
-                    if (e.keyCode === 13) {
+                    if (e.keyCode === 13) {  // enter
                         var inches = app.utils.parseFormat.dimension(this.value);
                         var mm = app.utils.convert.inches_to_mm(inches);
                         params.setter(mm);
+                        $wrap.remove();
+                    }
+                    if (e.keyCode === 27) { // esc
                         $wrap.remove();
                     }
                 })
