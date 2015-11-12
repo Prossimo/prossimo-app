@@ -332,7 +332,7 @@ var app = app || {};
 
             labelMM.add(textMM);
             labelMM.position({
-                x: -textMM.width() / 2,
+                x: -textMM.width() / 2.5,
                 y: height / 2 + textMM.height() / 2
             });
 
@@ -353,7 +353,7 @@ var app = app || {};
 
             labelInches.add(textInches);
             labelInches.position({
-                x: -textInches.width() / 2,
+                x: -textInches.width() / 4,
                 y: height / 2 - textInches.height() / 2
             });
 
@@ -429,7 +429,7 @@ var app = app || {};
             labelMM.add(textMM);
             labelMM.position({
                 x: width / 2 - textMM.width() / 2,
-                y: arrowOffset + textMM.height()
+                y: arrowOffset + textMM.height() / 2
             });
 
             var labelInches = new Konva.Label();
@@ -449,7 +449,7 @@ var app = app || {};
             labelInches.add(textInches);
             labelInches.position({
                 x: width / 2 - textInches.width() / 2,
-                y: arrowOffset
+                y: arrowOffset - labelInches.height() / 2
             });
 
             if (params.setter) {
