@@ -57,8 +57,8 @@ var app = app || {};
             this.$('#drawing').focus();
         },
         updateSize: function(width, height) {
-            this.stage.width(width || this.el.offsetWidth);
-            this.stage.height(height || this.el.offsetHeight);
+            this.stage.width(width || this.$('#drawing').get(0).offsetWidth);
+            this.stage.height(height || this.$('#drawing').get(0).offsetHeight);
         },
 
         clearFrame: function() {
@@ -595,7 +595,6 @@ var app = app || {};
             pos = 0;
             horizontalMullions.forEach(function(mul, i) {
                 var height_ = mul.position - pos;
-                console.log();
                 var params = {
                     getter: function() {
                         return height_;
