@@ -627,6 +627,7 @@ var app = app || {};
                 })
                 .appendTo($wrap)
                 .focus()
+                .select()
                 .on('keyup', function(e) {
                     if (e.keyCode === 13) {  // enter
                         var inches = app.utils.parseFormat.dimension(this.value);
