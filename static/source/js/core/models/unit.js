@@ -210,7 +210,7 @@ var app = app || {};
                 };
             }
             if (rootSection.id === this.get('rootSection').id &&
-                    this.profile.get('unitType') === 'Patio Door' &&
+                    this.profile.isThresholdPossible() &&
                     this.profile.get('lowThreshold')) {
                 defaultParams = {
                     x: this.profile.get('frameWidth'),

@@ -1,6 +1,10 @@
+/* global app */
+/* eslint-env qunit */
+/* eslint strict:0  */
+
 //  Test that QUnit is working
 test('basic test', function () {
-    ok(true, "Passed.");
+    ok(true, 'Passed.');
 });
 
 
@@ -17,7 +21,7 @@ test('utils.format.dimension', function () {
 
     equal(f.dimension(62), '5′−2″', 'Expected value is 5′−2″');
     equal(f.dimension(33.375, 'fraction'), '2′−9 3/8″', 'Expected value is 2′−9 3/8″');
-    equal(f.dimension(50 + 1/14, 'fraction'), '4′−2 1/14″', 'Expected value is 4′−2 1/14″');
+    equal(f.dimension(50 + 1 / 14, 'fraction'), '4′−2 1/14″', 'Expected value is 4′−2 1/14″');
     equal(f.dimension(50.7959183673469354, 'fraction'), '4′−2 4/5″', 'Expected not to fail with Decimal error');
     equal(f.dimension(30.979591836734695, 'fraction'), '2′−7″', 'Expected not to return 2′−6 1/1″');
 });

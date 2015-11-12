@@ -54,10 +54,10 @@ var app = app || {};
             };
         },
         checkboxRenderer: function (instance, td, row, col) {
-            var isThresholdPossible = instance.getData().at(row).isThresholdPossible();
+            var isThresholdEditable = instance.getData().at(row).isThresholdEditable();
 
             //  We need this because otherwise user will be able to paste
-            if ( isThresholdPossible ) {
+            if ( isThresholdEditable ) {
                 instance.setCellMeta(row, col, 'readOnly', false);
             } else {
                 instance.setCellMeta(row, col, 'readOnly', true);
@@ -67,7 +67,7 @@ var app = app || {};
 
             //  We explicitly make input disabled because setting it to
             //  `readOnly` doesn't prevent user from clicking
-            if ( !isThresholdPossible ) {
+            if ( !isThresholdEditable ) {
                 $(td).find('input').attr('disabled', true);
             }
 

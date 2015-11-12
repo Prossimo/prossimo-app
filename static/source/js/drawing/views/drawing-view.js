@@ -752,7 +752,7 @@ var app = app || {};
 
 
             var frameGroup;
-            if (this.model.profile.get('unitType') === 'Patio Door' && this.model.profile.get('lowThreshold')) {
+            if (this.model.profile.isThresholdPossible() && this.model.profile.get('lowThreshold')) {
                 frameGroup = this.createDoorFrame({
                     width: this.model.getInMetric('width', 'mm'),
                     height: this.model.getInMetric('height', 'mm'),

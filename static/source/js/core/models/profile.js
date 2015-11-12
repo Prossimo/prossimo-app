@@ -5,7 +5,9 @@ var app = app || {};
 
     var UNIT_TYPES = ['Window', 'Patio Door', 'Entry Door', 'Tilt + Slide', 'Lift + Slide', 'Folding'];
     var DEFAULT_UNIT_TYPE = 'Window';
-    var TYPES_WITH_THRESHOLD = ['Patio Door'];
+    var TYPES_WITH_POSSIBLE_THRESHOLD = ['Patio Door', 'Entry Door'];
+    var TYPES_WITH_EDITABLE_THRESHOLD = ['Patio Door'];
+    var TYPES_WITH_ALWAYS_LOW_THRESHOLD = ['Entry Door'];
 
     //  Profile sizes are set in millimeters
     var PROFILE_PROPERTIES = [
@@ -49,7 +51,13 @@ var app = app || {};
             return default_value;
         },
         isThresholdPossible: function () {
-            return _.indexOf(TYPES_WITH_THRESHOLD, this.get('unitType')) !== -1;
+            return _.indexOf(TYPES_WITH_POSSIBLE_THRESHOLD, this.get('unitType')) !== -1;
+        },
+        isThresholdEditable: function () {
+            return _.indexOf(TYPES_WITH_EDITABLE_THRESHOLD, this.get('unitType')) !== -1;
+        },
+        hasAlwaysLowThreshold: function () {
+            return _.indexOf(TYPES_WITH_ALWAYS_LOW_THRESHOLD, this.get('unitType')) !== -1;
         },
         getThresholdType: function () {
             var threshold_type = '--';
@@ -67,6 +75,8 @@ var app = app || {};
         onTypeUpdate: function () {
             if ( !this.isThresholdPossible() ) {
                 this.set('lowThreshold', false);
+            } else if ( this.hasAlwaysLowThreshold() ) {
+                this.set('lowThreshold', true);
             }
         },
         initialize: function () {
