@@ -217,7 +217,8 @@ var app = app || {};
                     y: this.profile.get('frameWidth'),
                     width: this.getInMetric('width', 'mm') - this.profile.get('frameWidth') * 2,
                     height: this.getInMetric('height', 'mm') - this.profile.get('frameWidth') - this.profile.get('thresholdWidth')
-                };   
+                };
+                rootSection.thresholdEdge = true;  
             }
             params = params || defaultParams;
             rootSection.params = params;
@@ -246,6 +247,7 @@ var app = app || {};
                     x: null, y: null, width: null, height: null
                 };
                 sectionData.mullionEdges = _.clone(rootSection.mullionEdges);
+                sectionData.thresholdEdge = rootSection.thresholdEdge;
                 if (rootSection.devider === 'vertical') {
                     sectionParams.x = params.x;
                     sectionParams.y = params.y;
@@ -265,6 +267,7 @@ var app = app || {};
                     if (i === 0) {
                         sectionData.mullionEdges.bottom = true;
                         sectionParams.height = position - rootSection.params.y - this.profile.get('mullionWidth') / 2;
+                        sectionData.thresholdEdge = false;
                     } else {
                         sectionParams.y = position + this.profile.get('mullionWidth') / 2;
                         sectionParams.height = params.height + params.y - position -

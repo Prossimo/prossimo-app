@@ -235,8 +235,7 @@ var app = app || {};
                 leftOverlap = sectionData.mullionEdges.left ? mullionOverlap : frameOverlap;
                 rightOverlap = sectionData.mullionEdges.right ? mullionOverlap : frameOverlap;
             }
-            if (hasFrame && sectionData.id === this.model.get('rootSection').id &&
-                this.model.profile.get('unitType') === 'Patio Door' && this.model.profile.get('lowThreshold')) {
+            if (hasFrame && sectionData.thresholdEdge) {
                 bottomOverlap = thresholdOverlap;
             }
             var width = params.width + leftOverlap + rightOverlap;
