@@ -117,7 +117,7 @@ var app = app || {};
             var relevant_properties = [
                 'name', 'unitType', 'system', 'frameWidth', 'mullionWidth',
                 'sashFrameWidth', 'sashFrameOverlap', 'sashMullionOverlap',
-                'lowThreshold'
+                'lowThreshold', 'thresholdWidth'
             ];
 
             if ( this.options.parent_view.active_unit &&

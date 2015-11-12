@@ -20,16 +20,17 @@ $(document).ready(function () {
             sashFrameWidth: 82,
             sashFrameOverlap: 34,
             sashMullionOverlap: 12,
-            thresholdWidth: 20,
             system: 'Gealan S9000'
         },
         {
             name: 'Alternative Profile',
+            unitType: 'Patio Door',
             frameWidth: 90,
             mullionWidth: 112,
             sashFrameWidth: 102,
             sashFrameOverlap: 36,
             sashMullionOverlap: 14,
+            lowThreshold: true,
             thresholdWidth: 20,
             system: 'Gealan S9000'
         }
@@ -74,7 +75,7 @@ $(document).ready(function () {
             type: 'Casement ganged to fixed',
             description: 'Tilt and turn inswing above / removable ac sash below. PVC',
             notes: 'Opening restriction cord included',
-            profile_name: 'Default Profile',
+            profile_name: 'Alternative Profile',
             internal_color: 'Dark grey matte laminate',
             external_color: 'Dark grey matte laminate',
             gasket_color: 'Black',

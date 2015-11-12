@@ -218,7 +218,7 @@ var app = app || {};
                     width: this.getInMetric('width', 'mm') - this.profile.get('frameWidth') * 2,
                     height: this.getInMetric('height', 'mm') - this.profile.get('frameWidth') - this.profile.get('thresholdWidth')
                 };
-                rootSection.thresholdEdge = true;  
+                rootSection.thresholdEdge = true;
             }
             params = params || defaultParams;
             rootSection.params = params;

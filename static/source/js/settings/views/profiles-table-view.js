@@ -19,7 +19,7 @@ var app = app || {};
             this.columns = [
                 'name', 'unitType', 'system', 'frameWidth', 'mullionWidth',
                 'sashFrameWidth', 'sashFrameOverlap', 'sashMullionOverlap',
-                'lowThreshold'
+                'lowThreshold', 'thresholdWidth'
             ];
 
             this.listenTo(this.collection, 'all', this.updateTable);
@@ -73,6 +73,19 @@ var app = app || {};
 
             return td;
         },
+        thresholdWidthRenderer: function (instance, td, row, col) {
+            var isThresholdPossible = instance.getData().at(row).isThresholdPossible();
+
+            if ( isThresholdPossible ) {
+                instance.setCellMeta(row, col, 'readOnly', false);
+                Handsontable.renderers.NumericRenderer.apply(this, arguments);
+            } else {
+                instance.setCellMeta(row, col, 'readOnly', true);
+                $(td).addClass('htNumeric').text('--');
+            }
+
+            return td;
+        },
         getColumnExtraProperties: function (column_name) {
             var properties_obj = {};
 
@@ -99,6 +112,9 @@ var app = app || {};
                 },
                 lowThreshold: {
                     renderer: this.checkboxRenderer
+                },
+                thresholdWidth: {
+                    renderer: this.thresholdWidthRenderer
                 }
             };
 

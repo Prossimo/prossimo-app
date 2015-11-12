@@ -17,7 +17,7 @@ var app = app || {};
         { name: 'sashFrameWidth', title: 'Sash Frame Width (mm)', type: 'number' },
         { name: 'sashFrameOverlap', title: 'Sash-Frame Overlap (mm)', type: 'number' },
         { name: 'sashMullionOverlap', title: 'Sash-Mullion Overlap (mm)', type: 'number' },
-        { name: 'thresholdWidth', title: 'Threshold width (mm)', type: 'number' },
+        { name: 'thresholdWidth', title: 'Threshold Width (mm)', type: 'number' },
         { name: 'lowThreshold', title: 'Low Threshold', type: 'boolean' }
     ];
 
