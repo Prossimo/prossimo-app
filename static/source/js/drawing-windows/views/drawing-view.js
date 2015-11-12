@@ -56,9 +56,9 @@ var app = app || {};
             this.updateCanvas();
             this.$('#drawing').focus();
         },
-        updateSize: function() {
-            this.stage.width(this.el.offsetWidth);
-            this.stage.height(this.el.offsetHeight);
+        updateSize: function(width, height) {
+            this.stage.width(width || this.el.offsetWidth);
+            this.stage.height(height || this.el.offsetHeight);
         },
 
         clearFrame: function() {
@@ -481,8 +481,8 @@ var app = app || {};
                 }
             }.bind(this));
 
-            verticalMullions.sort(function(a, b) {return a.position - b.position; });
-            horizontalMullions.sort(function(a, b) {return a.position - b.position; });
+            verticalMullions.sort(function(a, b) {return b.position - a.position; });
+            horizontalMullions.sort(function(a, b) {return b.position - a.position; });
 
             var pos = 0;
             verticalMullions.forEach(function(mul, i) {
@@ -506,10 +506,10 @@ var app = app || {};
                 group.add(metric);
                 if ( i === verticalMullions.length - 1) {
                     horizontalRows += 1;
-                    width_ = this.model.getInMetric('width', 'mm') - pos;
+                    var width__ = this.model.getInMetric('width', 'mm') - pos;
                     params = {
                         getter: function() {
-                            return width_;
+                            return width__;
                         }
                     };
                     if (verticalMullions.length === 1) {
@@ -517,7 +517,7 @@ var app = app || {};
                             this.model.setSectionMullionPosition(mul.id, this.model.getInMetric('width', 'mm') - val);
                         }.bind(this);
                     }
-                    metric = this.createHorizontalMetric(width_ * this.ratio, merticSize, params);
+                    metric = this.createHorizontalMetric(width__ * this.ratio, merticSize, params);
                     metric.position({
                         x: pos * this.ratio,
                         y: height
@@ -529,6 +529,7 @@ var app = app || {};
             pos = 0;
             horizontalMullions.forEach(function(mul, i) {
                 var height_ = mul.position - pos;
+                console.log();
                 var params = {
                     getter: function() {
                         return height_;
@@ -548,10 +549,10 @@ var app = app || {};
                 group.add(metric);
                 if ( i === horizontalMullions.length - 1) {
                     verticalRows += 1;
-                    height_ = this.model.getInMetric('height', 'mm') - pos;
+                    var height__ = this.model.getInMetric('height', 'mm') - pos;
                     params = {
                         getter: function() {
-                            return height_;
+                            return height__;
                         }
                     };
                     if (horizontalMullions.length === 1) {
@@ -559,7 +560,7 @@ var app = app || {};
                             this.model.setSectionMullionPosition(mul.id, this.model.getInMetric('height', 'mm') - val);
                         }.bind(this);
                     }
-                    metric = this.createVerticalMetric(merticSize, height_ * this.ratio, params);
+                    metric = this.createVerticalMetric(merticSize, height__ * this.ratio, params);
                     metric.position({
                         x: -merticSize,
                         y: pos * this.ratio
@@ -603,7 +604,7 @@ var app = app || {};
         },
         createInput: function(params, pos, size) {
             var $wrap = $('<div>')
-                .addClass('.popup-wrap')
+                .addClass('popup-wrap')
                 .appendTo(this.$el)
                 .on('click', function(e) {
                     if (e.target === $wrap.get(0)) {
@@ -626,11 +627,15 @@ var app = app || {};
                 })
                 .appendTo($wrap)
                 .focus()
+                .select()
                 .on('keyup', function(e) {
-                    if (e.keyCode === 13) {
+                    if (e.keyCode === 13) {  // enter
                         var inches = app.utils.parseFormat.dimension(this.value);
                         var mm = app.utils.convert.inches_to_mm(inches);
                         params.setter(mm);
+                        $wrap.remove();
+                    }
+                    if (e.keyCode === 27) { // esc
                         $wrap.remove();
                     }
                 })
@@ -719,4 +724,30 @@ var app = app || {};
             this.model.setSectionSashType(this.sectionIdToChange, type);
         }
     });
+
+    app.preview = function(windowModel, width, height, mode) {
+        mode = mode || 'base64';
+        var view = new app.DrawingView({
+            model: windowModel
+        });
+        view.render();
+        view.updateSize(width, height);
+        view.updateCanvas();
+        var result;
+        if (mode === 'canvas') {
+            result = view.layer.canvas._canvas;
+        } else if (mode === 'base64') {
+            result = view.stage.toDataURL();
+        } else if (mode === 'image') {
+            result = new Image();
+            result.src = view.stage.toDataURL();
+        } else {
+            throw new Error('unrecognized mode for preview: ' + mode);
+        }
+        // clean
+        view.destroy();
+        view.remove();
+        return result;
+    };
+
 })();
