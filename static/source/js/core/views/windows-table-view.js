@@ -18,7 +18,6 @@ var app = app || {};
         },
         initialize: function () {
             this.table_visibility = 'hidden';
-            // this.table_visibility = 'visible';
 
             this.tabs = {
                 input: {
@@ -226,6 +225,9 @@ var app = app || {};
                 },
                 system: function (model) {
                     return model.profile.get('system');
+                },
+                threshold: function (model) {
+                    return model.profile.getThresholdType();
                 }
             };
 
@@ -315,6 +317,7 @@ var app = app || {};
                 drawing: { readOnly: true },
                 uw_ip: { readOnly: true },
                 system: { readOnly: true },
+                threshold: { readOnly: true },
                 mark: {
                     width: 100
                 },
@@ -400,7 +403,8 @@ var app = app || {};
                 uw_ip: 'Uw-IP',
                 unit_price_discounted: 'Unit Price w/Disc.',
                 subtotal_price_discounted: 'Subtotal Price w/Disc.',
-                system: 'System'
+                system: 'System',
+                threshold: 'Threshold'
             };
 
             return custom_column_headers_hash[column_name];

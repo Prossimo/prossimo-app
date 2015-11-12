@@ -3,9 +3,9 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var ExtrasTypes = ['Regular', 'Shipping', 'Optional', 'Hidden', 'Tax'];
+    var EXTRAS_TYPES = ['Regular', 'Shipping', 'Optional', 'Hidden', 'Tax'];
 
-    var AccessoryProperties = [
+    var ACCESSORY_PROPERTIES = [
         { name: 'description', title: 'Description', type: 'string' },
         { name: 'quantity', title: 'Quantity', type: 'number' },
         { name: 'extras_type', title: 'Extras type', type: 'extras_type' },
@@ -21,7 +21,7 @@ var app = app || {};
         defaults: function () {
             var defaults = {};
 
-            _.each(AccessoryProperties, function (item) {
+            _.each(ACCESSORY_PROPERTIES, function (item) {
                 defaults[item.name] = this.getDefaultValue(item.name, item.type);
             }, this);
 
@@ -59,10 +59,10 @@ var app = app || {};
             var name_title_hash = [];
 
             if ( !names ) {
-                names = _.pluck( AccessoryProperties, 'name' );
+                names = _.pluck( ACCESSORY_PROPERTIES, 'name' );
             }
 
-            _.each(AccessoryProperties, function (item) {
+            _.each(ACCESSORY_PROPERTIES, function (item) {
                 if ( _.indexOf(names, item.name) !== -1 ) {
                     name_title_hash.push({ name: item.name, title: item.title, type: item.type });
                 }
@@ -76,7 +76,7 @@ var app = app || {};
             return _.pluck(name_title_hash, 'title');
         },
         getExtrasTypes: function () {
-            return ExtrasTypes;
+            return EXTRAS_TYPES;
         },
         //  TODO: do some checks? return error value in some cases?
         getUnitCost: function () {

@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var WindowProperties = [
+    var WINDOW_PROPERTIES = [
         { name: 'mark', title: 'Mark', type: 'string' },
         { name: 'width', title: 'Width (inches)', type: 'number' },
         { name: 'height', title: 'Height (inches)', type: 'number' },
@@ -20,7 +20,6 @@ var app = app || {};
 
         { name: 'hinge_style', title: 'Hinge Style', type: 'string' },
         { name: 'opening_direction', title: 'Opening Direction', type: 'string' },
-        { name: 'threshold', title: 'Threshold', type: 'string' },
         { name: 'internal_sill', title: 'Internal Sill', type: 'string' },
         { name: 'external_sill', title: 'External Sill', type: 'string' },
         { name: 'glazing', title: 'Glazing', type: 'string' },
@@ -43,7 +42,7 @@ var app = app || {};
                 }
             };
 
-            _.each(WindowProperties, function (item) {
+            _.each(WINDOW_PROPERTIES, function (item) {
                 defaults[item.name] = this.getDefaultValue(item.name, item.type);
             }, this);
 
@@ -85,10 +84,10 @@ var app = app || {};
             var name_title_hash = [];
 
             if ( !names ) {
-                names = _.pluck( WindowProperties, 'name' );
+                names = _.pluck( WINDOW_PROPERTIES, 'name' );
             }
 
-            _.each(WindowProperties, function (item) {
+            _.each(WINDOW_PROPERTIES, function (item) {
                 if ( _.indexOf(names, item.name) !== -1 ) {
                     name_title_hash.push({ name: item.name, title: item.title, type: item.type });
                 }

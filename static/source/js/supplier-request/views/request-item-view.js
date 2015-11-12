@@ -15,7 +15,8 @@ var app = app || {};
                 size: 'Size',
                 type: 'Type',
                 glazing: 'Glazing',
-                desc: 'Description'
+                desc: 'Description',
+                threshold: 'Threshold'
             };
 
             var params_source = {
@@ -23,7 +24,9 @@ var app = app || {};
                 size: f.dimensions(this.model.get('width'), this.model.get('height'), 'fraction'),
                 type: this.model.get('type'),
                 glazing: this.model.get('glazing'),
-                desc: this.model.get('description')
+                desc: this.model.get('description'),
+                threshold: this.model.profile.isThresholdPossible() ?
+                    this.model.profile.getThresholdType() : false
             };
 
             return _.map(name_title_hash, function (item, key) {

@@ -94,8 +94,8 @@ var app = app || {};
             var relevant_properties = [
                 'mark', 'width', 'height', 'type', 'description', 'notes',
                 'internal_color', 'external_color', 'gasket_color', 'uw',
-                'glazing', 'hinge_style', 'opening_direction', 'threshold',
-                'internal_sill', 'external_sill'
+                'glazing', 'hinge_style', 'opening_direction', 'internal_sill',
+                'external_sill'
             ];
 
             if ( this.options.parent_view.active_window ) {
@@ -115,7 +115,9 @@ var app = app || {};
             var active_window_profile;
 
             var relevant_properties = [
-                'name', 'system', 'frameWidth', 'mullionWidth', 'sashFrameWidth'
+                'name', 'unitType', 'system', 'frameWidth', 'mullionWidth',
+                'sashFrameWidth', 'sashFrameOverlap', 'sashMullionOverlap',
+                'lowThreshold'
             ];
 
             if ( this.options.parent_view.active_window &&
