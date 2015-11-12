@@ -56,9 +56,9 @@ var app = app || {};
             this.updateCanvas();
             this.$('#drawing').focus();
         },
-        updateSize: function() {
-            this.stage.width(this.el.offsetWidth);
-            this.stage.height(this.el.offsetHeight);
+        updateSize: function(width, height) {
+            this.stage.width(width || this.el.offsetWidth);
+            this.stage.height(height || this.el.offsetHeight);
         },
 
         clearFrame: function() {
@@ -724,4 +724,30 @@ var app = app || {};
             this.model.setSectionSashType(this.sectionIdToChange, type);
         }
     });
+
+    app.preview = function(windowModel, width, height, mode) {
+        mode = mode || 'base64';
+        var view = new app.DrawingView({
+            model: windowModel
+        });
+        view.render();
+        view.updateSize(width, height);
+        view.updateCanvas();
+        var result;
+        if (mode === 'canvas') {
+            result = view.layer.canvas._canvas;
+        } else if (mode === 'base64') {
+            result = view.stage.toDataURL();
+        } else if (mode === 'image') {
+            result = new Image();
+            result.src = view.stage.toDataURL();
+        } else {
+            throw new Error('unrecognized mode for preview: ' + mode);
+        }
+        // clean
+        view.destroy();
+        view.remove();
+        return result;
+    };
+
 })();
