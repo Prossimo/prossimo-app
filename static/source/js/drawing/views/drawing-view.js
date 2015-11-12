@@ -119,6 +119,68 @@ var app = app || {};
 
             return group;
         },
+
+        createDoorFrame: function(params) {
+            var frameWidth = params.frameWidth;  // in mm
+            var thresholdWidth = this.model.profile.get('thresholdWidth');
+            var width = params.width;
+            var height = params.height;
+
+            var group = new Konva.Group();
+            var top = new Konva.Line({
+                points: [
+                    0, 0,
+                    width, 0,
+                    width - frameWidth, frameWidth,
+                    frameWidth, frameWidth
+                ],
+                closed: true
+            });
+
+            var left = new Konva.Line({
+                points: [
+                    0, 0,
+                    frameWidth, frameWidth,
+                    frameWidth, height - thresholdWidth,
+                    0, height - thresholdWidth
+                ]
+            });
+
+            var right = new Konva.Line({
+                points: [
+                    width, 0,
+                    width, height - thresholdWidth,
+                    width - frameWidth, height - thresholdWidth,
+                    width - frameWidth, frameWidth
+                ]
+            });
+
+            group.add(top, left, right);
+
+            group.children
+                .closed(true)
+                .stroke('black')
+                .strokeWidth(1)
+                .fill('white');
+
+
+            var bottom = new Konva.Line({
+                points: [
+                    0, height - thresholdWidth,
+                    width, height - thresholdWidth,
+                    width, height,
+                    0, height
+                ],
+                closed: true,
+                stroke: 'black',
+                strokeWidth: 1,
+                fill: 'grey'
+            });
+            group.add(bottom);
+            // add styles for borders
+
+            return group;
+        },
         deselectAll: function() {
             this.setState({
                 selectedMullionId: null
@@ -166,11 +228,16 @@ var app = app || {};
             var rightOverlap = 0;
             var frameOverlap = this.model.profile.get('sashFrameOverlap');
             var mullionOverlap = this.model.profile.get('sashMullionOverlap');
+            var thresholdOverlap = mullionOverlap;
             if (hasFrame) {
                 topOverlap = sectionData.mullionEdges.top ? mullionOverlap : frameOverlap;
                 bottomOverlap = sectionData.mullionEdges.bottom ? mullionOverlap : frameOverlap;
                 leftOverlap = sectionData.mullionEdges.left ? mullionOverlap : frameOverlap;
                 rightOverlap = sectionData.mullionEdges.right ? mullionOverlap : frameOverlap;
+            }
+            if (hasFrame && sectionData.id === this.model.get('rootSection').id &&
+                this.model.profile.get('unitType') === 'Patio Door' && this.model.profile.get('lowThreshold')) {
+                bottomOverlap = thresholdOverlap;
             }
             var width = params.width + leftOverlap + rightOverlap;
             var height = params.height + topOverlap + bottomOverlap;
@@ -685,11 +752,20 @@ var app = app || {};
             this.layer.add(group);
 
 
-            var frameGroup = this.createFrame({
-                width: this.model.getInMetric('width', 'mm'),
-                height: this.model.getInMetric('height', 'mm'),
-                frameWidth: this.model.profile.get('frameWidth')
-            });
+            var frameGroup;
+            if (this.model.profile.get('unitType') === 'Patio Door' && this.model.profile.get('lowThreshold')) {
+                frameGroup = this.createDoorFrame({
+                    width: this.model.getInMetric('width', 'mm'),
+                    height: this.model.getInMetric('height', 'mm'),
+                    frameWidth: this.model.profile.get('frameWidth')
+                });
+            } else {
+                frameGroup = this.createFrame({
+                    width: this.model.getInMetric('width', 'mm'),
+                    height: this.model.getInMetric('height', 'mm'),
+                    frameWidth: this.model.profile.get('frameWidth')
+                });
+            }
             frameGroup.scale({x: ratio, y: ratio});
             group.add(frameGroup);
 

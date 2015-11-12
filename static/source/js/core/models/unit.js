@@ -209,6 +209,16 @@ var app = app || {};
                     height: this.getInMetric('height', 'mm') - this.profile.get('frameWidth') * 2
                 };
             }
+            if (rootSection.id === this.get('rootSection').id &&
+                    this.profile.get('unitType') === 'Patio Door' &&
+                    this.profile.get('lowThreshold')) {
+                defaultParams = {
+                    x: this.profile.get('frameWidth'),
+                    y: this.profile.get('frameWidth'),
+                    width: this.getInMetric('width', 'mm') - this.profile.get('frameWidth') * 2,
+                    height: this.getInMetric('height', 'mm') - this.profile.get('frameWidth') - this.profile.get('thresholdWidth')
+                };   
+            }
             params = params || defaultParams;
             rootSection.params = params;
             rootSection.mullionEdges = rootSection.mullionEdges || {};
