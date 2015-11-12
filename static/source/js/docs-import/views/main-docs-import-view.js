@@ -32,8 +32,8 @@ var app = app || {};
             this.active_document_url = '';
         },
         onRender: function () {
-            var windows_table_view = new app.WindowsTableView({
-                collection: app.current_project.windows,
+            var units_table_view = new app.UnitsTableView({
+                collection: app.current_project.units,
                 extras: app.current_project.extras,
                 parent_view: this
             });
@@ -43,7 +43,7 @@ var app = app || {};
                 active_document_url: this.active_document_url
             });
 
-            this.$el.append(windows_table_view.render().el);
+            this.$el.append(units_table_view.render().el);
             this.ui.$selection_area.append(document_selector_view.render().el);
 
             this.updateFile();

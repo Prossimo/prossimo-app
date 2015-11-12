@@ -10,7 +10,7 @@
 //    cells, so we observe `focus` event on that textarea and intercept the
 //    focus when the data is going to be pasted to *certain* cells
 //  - when we got an image, we trigger a `paste_image` event, and
-//    `WindowsTableView` is listening to that event and processing its data
+//    `UnitsTableView` is listening to that event and processing its data
 
 var app = app || {};
 

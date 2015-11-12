@@ -1,0 +1,54 @@
+<h3>Select unit</h3>
+
+<div class="unit-selector-controls">
+    <div class="unit-selector-select">
+        <select name="unit-selector-dropdown" id="unit-selector-dropdown" class="selectpicker" title='Choose a unit'>
+            {{#each unit_list}}
+                <option data-subtext="{{ dimensions }}" {{#if is_selected }}selected{{/if}} value="{{ cid }}">#{{ reference_id }}: <strong>{{ mark }}</strong></option>
+            {{/each}}
+        </select>
+    </div>
+
+    <div class="unit-selector-buttons">
+        <button class="js-prev-unit glyphicon glyphicon-chevron-left"></button>
+        <button class="js-next-unit glyphicon glyphicon-chevron-right"></button>
+    </div>
+</div>
+
+{{#if active_unit_image }}
+    <div class="active-unit-image">
+        <img src="{{ active_unit_image }}" alt="">
+    </div>
+{{/if}}
+
+{{#if active_unit_properties }}
+    <div class="active-unit-properties">
+        <h4>Unit properties</h4>
+        <table>
+            <tbody>
+                {{#each active_unit_properties }}
+                <tr>
+                    <td class="title">{{ title }}</td>
+                    <td class="value">{{ value }}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+{{/if}}
+
+{{#if active_unit_profile_properties }}
+    <div class="active-unit-profile-properties">
+        <h4>Profile properties</h4>
+        <table>
+            <tbody>
+                {{#each active_unit_profile_properties }}
+                <tr>
+                    <td class="title">{{ title }}</td>
+                    <td class="value">{{ value }}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+{{/if}}

@@ -43,7 +43,7 @@ $(document).ready(function () {
         project_address: '827 Carpenter Lane Philadelphia, PA'
     });
 
-    app.current_project.windows.add([
+    app.current_project.units.add([
         {
             mark: 'A',
             width: 62,
@@ -156,12 +156,12 @@ $(document).ready(function () {
                 app.main_region.show(new app.MainDocsImportView());
             }
         },
-        drawing_windows: {
+        drawing: {
             title: 'Drawing',
             path: 'drawing',
             icon_name: 'pencil',
             showCallback: function () {
-                app.main_region.show(new app.MainDrawingWindowsView());
+                app.main_region.show(new app.MainDrawingView());
             }
         },
         quote: {

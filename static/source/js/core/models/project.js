@@ -15,18 +15,18 @@ var app = app || {};
             project_address: ''
         },
         initialize: function () {
-            this.windows = new app.WindowCollection();
+            this.units = new app.UnitCollection();
             this.extras = new app.AccessoryCollection();
             this.project_files = [];
         },
         getHiddenMultiplier: function () {
-            var subtotal_units_price = this.windows.getSubtotalPriceDiscounted();
+            var subtotal_units_price = this.units.getSubtotalPriceDiscounted();
             var hidden_price = this.extras.getHiddenPrice();
 
             return subtotal_units_price ? ( 1 + hidden_price / subtotal_units_price ) : 1;
         },
         getTotalPrices: function () {
-            var subtotal_units_price = this.windows.getSubtotalPriceDiscounted();
+            var subtotal_units_price = this.units.getSubtotalPriceDiscounted();
             var extras_price = this.extras.getRegularItemsPrice();
             var optional_extras_price = this.extras.getOptionalItemsPrice();
 

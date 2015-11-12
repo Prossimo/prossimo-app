@@ -1,6 +1,10 @@
+/* global app */
+/* eslint-env qunit */
+/* eslint strict:0  */
+
 //  Test that QUnit is working
 test('basic test', function () {
-    ok(true, "Passed.");
+    ok(true, 'Passed.');
 });
 
 
@@ -20,21 +24,21 @@ test('project basic tests', function () {
     });
 
     equal(current_project.get('client_name'), 'Andy Huh', 'Client name should be Andy Huh');
-    ok(_.isArray(current_project.windows.models), 'Windows collection should be an array');
-    equal(current_project.windows.models.length, 0, 'Windows collection shoud have no items');
+    ok(_.isArray(current_project.units.models), 'Units collection should be an array');
+    equal(current_project.units.models.length, 0, 'Units collection shoud have no items');
     ok(_.isArray(current_project.extras.models), 'Extras collection should be an array');
     equal(current_project.extras.models.length, 0, 'Extras collection shoud have no items');
 });
 
 
 //  ------------------------------------------------------------------------
-//  Test that prices for a single Window model are calculated properly
+//  Test that prices for a single Unit model are calculated properly
 //  ------------------------------------------------------------------------
 
-test('single window tests', function () {
+test('single unit tests', function () {
     var current_project = new app.Project();
 
-    current_project.windows.add([
+    current_project.units.add([
         {
             mark: 'A',
             width: 30,
@@ -56,16 +60,16 @@ test('single window tests', function () {
         }
     ]);
 
-    var first_window = current_project.windows.first();
+    var first_unit = current_project.units.first();
 
-    equal(first_window.get('mark'), 'A', 'Unit mark is expected to be A');
-    equal(first_window.get('original_cost'), 399, 'Unit original cost is expected to be 399');
+    equal(first_unit.get('mark'), 'A', 'Unit mark is expected to be A');
+    equal(first_unit.get('original_cost'), 399, 'Unit original cost is expected to be 399');
 
-    equal(first_window.getUnitCost().toFixed(2), '441.73', 'Unit cost converted to USD is expected to be 441.73');
-    equal(first_window.getUnitPrice().toFixed(2), '1015.99', 'Unit end price is expected to be 1015.99');
-    equal(first_window.getSubtotalPrice(), first_window.getUnitPrice(), 'Price should be same for a single unit and for subtotal');
-    equal(first_window.getUnitPriceDiscounted().toFixed(2), '812.79', 'Price with discount is expected to be 812.79');
-    equal(first_window.getSubtotalPriceDiscounted(), first_window.getUnitPriceDiscounted(), 'Discounted price should be same for a single unit and for subtotal');
+    equal(first_unit.getUnitCost().toFixed(2), '441.73', 'Unit cost converted to USD is expected to be 441.73');
+    equal(first_unit.getUnitPrice().toFixed(2), '1015.99', 'Unit end price is expected to be 1015.99');
+    equal(first_unit.getSubtotalPrice(), first_unit.getUnitPrice(), 'Price should be same for a single unit and for subtotal');
+    equal(first_unit.getUnitPriceDiscounted().toFixed(2), '812.79', 'Price with discount is expected to be 812.79');
+    equal(first_unit.getSubtotalPriceDiscounted(), first_unit.getUnitPriceDiscounted(), 'Discounted price should be same for a single unit and for subtotal');
 });
 
 
@@ -107,7 +111,7 @@ test('single accessory tests', function () {
 test('subtotal project prices', function () {
     var current_project = new app.Project();
 
-    current_project.windows.add([
+    current_project.units.add([
         {
             mark: 'A',
             width: 30,
@@ -205,9 +209,9 @@ test('subtotal project prices', function () {
         }
     ]);
 
-    //  End prices for windows
-    equal(current_project.windows.getSubtotalPrice().toFixed(2), '2436.84', 'Subtotal for windows is expected to be 2436.84');
-    equal(current_project.windows.getSubtotalPriceDiscounted().toFixed(2), '1949.47', 'Subtotal w/Discount for windows is expected to be 1949.47');
+    //  End prices for units
+    equal(current_project.units.getSubtotalPrice().toFixed(2), '2436.84', 'Subtotal for units is expected to be 2436.84');
+    equal(current_project.units.getSubtotalPriceDiscounted().toFixed(2), '1949.47', 'Subtotal w/Discount for units is expected to be 1949.47');
 
     //  End prices for accessories
     equal(current_project.extras.getRegularItemsPrice().toFixed(2), '1629.26', 'Subtotal for regular extras is expected to be 1629.26');

@@ -3,22 +3,21 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.WindowsTableView = Marionette.ItemView.extend({
+    app.UnitsTableView = Marionette.ItemView.extend({
         tagName: 'div',
-        className: 'windows-table-container',
-        template: app.templates['core/windows-table-view'],
+        className: 'units-table-container',
+        template: app.templates['core/units-table-view'],
         ui: {
             '$hot_container': '.handsontable-container'
         },
         events: {
-            'click .windows-table-title': 'toggleTableVisibility',
-            'click .js-add-new-window': 'addNewWindow',
+            'click .units-table-title': 'toggleTableVisibility',
+            'click .js-add-new-unit': 'addNewUnit',
             'click .js-add-new-accessory': 'addNewAccessory',
             'click .nav-tabs a': 'onTabClick'
         },
         initialize: function () {
             this.table_visibility = 'hidden';
-            // this.table_visibility = 'visible';
 
             this.tabs = {
                 input: {
@@ -101,11 +100,11 @@ var app = app || {};
             this.table_visibility = this.table_visibility === 'hidden' ? 'visible' : 'hidden';
             this.render();
         },
-        addNewWindow: function (e) {
-            var new_window = new app.Window();
+        addNewUnit: function (e) {
+            var new_unit = new app.Unit();
 
             e.stopPropagation();
-            this.collection.add(new_window);
+            this.collection.add(new_unit);
         },
         addNewAccessory: function (e) {
             var new_accessory = new app.Accessory();
@@ -119,7 +118,7 @@ var app = app || {};
                     item.is_active = key === this.active_tab;
                     return item;
                 }, this),
-                mode: this.getActiveTab().title === 'Extras' ? 'extras' : 'windows',
+                mode: this.getActiveTab().title === 'Extras' ? 'extras' : 'units',
                 table_visibility: this.table_visibility
             };
         },
@@ -189,7 +188,7 @@ var app = app || {};
                 return td;
             };
         },
-        getGetterFunction: function (window_model, column_name) {
+        getGetterFunction: function (unit_model, column_name) {
             var f = app.utils.format;
             var getter;
 
@@ -226,6 +225,9 @@ var app = app || {};
                 },
                 system: function (model) {
                     return model.profile.get('system');
+                },
+                threshold: function (model) {
+                    return model.profile.getThresholdType();
                 }
             };
 
@@ -239,7 +241,7 @@ var app = app || {};
 
             return getter.apply(this, arguments);
         },
-        getSetterFunction: function (window_model, column_name) {
+        getSetterFunction: function (unit_model, column_name) {
             var p = app.utils.parseFormat;
             var setter;
 
@@ -268,13 +270,13 @@ var app = app || {};
         getColumnData: function (column_name) {
             var self = this;
 
-            return function (window_model, value) {
-                if ( window_model ) {
+            return function (unit_model, value) {
+                if ( unit_model ) {
                     if ( _.isUndefined(value) ) {
-                        return self.getGetterFunction(window_model, column_name);
+                        return self.getGetterFunction(unit_model, column_name);
                     }
 
-                    self.getSetterFunction(window_model, column_name, value);
+                    self.getSetterFunction(unit_model, column_name, value);
                 }
             };
         },
@@ -315,6 +317,7 @@ var app = app || {};
                 drawing: { readOnly: true },
                 uw_ip: { readOnly: true },
                 system: { readOnly: true },
+                threshold: { readOnly: true },
                 mark: {
                     width: 100
                 },
@@ -362,8 +365,8 @@ var app = app || {};
         },
         //  We try to get a proper heading for all columns in our active tab
         //  - first we check if we have some custom headings (mainly to
-        //    redefine titles from original Window object or add new columns)
-        //  - then we check if original Window object has title for that column
+        //    redefine titles from original Unit object or add new columns)
+        //  - then we check if original Unit object has title for that column
         //  - if both fail, we show just a system name of a column
         getActiveTabHeaders: function () {
             var headers = [];
@@ -400,7 +403,8 @@ var app = app || {};
                 uw_ip: 'Uw-IP',
                 unit_price_discounted: 'Unit Price w/Disc.',
                 subtotal_price_discounted: 'Subtotal Price w/Disc.',
-                system: 'System'
+                system: 'System',
+                threshold: 'Threshold'
             };
 
             return custom_column_headers_hash[column_name];

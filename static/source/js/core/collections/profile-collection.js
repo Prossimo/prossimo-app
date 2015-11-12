@@ -17,10 +17,13 @@ var app = app || {};
             this.proxy_profile = new app.Profile();
         },
         getNameTitleTypeHash: function (names) {
-            return _.clone(this.proxy_profile.getNameTitleTypeHash(names));
+            return this.proxy_profile.getNameTitleTypeHash(names);
         },
         getTitles: function (names) {
-            return _.clone(this.proxy_profile.getTitles(names));
+            return this.proxy_profile.getTitles(names);
+        },
+        getUnitTypes: function () {
+            return this.proxy_profile.getUnitTypes();
         }
     });
 })();

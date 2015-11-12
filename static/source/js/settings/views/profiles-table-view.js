@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    //  See `core/views/windows-table-view.js` for reference, it's similar
+    //  See `core/views/units-table-view.js` for reference, it's similar
     //  and better commented, this file borrows a lot from there
     app.ProfilesTableView = Marionette.ItemView.extend({
         tagName: 'div',
@@ -17,8 +17,9 @@ var app = app || {};
         },
         initialize: function () {
             this.columns = [
-                'name', 'system', 'frameWidth', 'mullionWidth', 'sashFrameWidth',
-                'sashFrameOverlap', 'sashMullionOverlap'
+                'name', 'unitType', 'system', 'frameWidth', 'mullionWidth',
+                'sashFrameWidth', 'sashFrameOverlap', 'sashMullionOverlap',
+                'lowThreshold'
             ];
 
             this.listenTo(this.collection, 'all', this.updateTable);
@@ -52,6 +53,26 @@ var app = app || {};
                 }
             };
         },
+        checkboxRenderer: function (instance, td, row, col) {
+            var isThresholdPossible = instance.getData().at(row).isThresholdPossible();
+
+            //  We need this because otherwise user will be able to paste
+            if ( isThresholdPossible ) {
+                instance.setCellMeta(row, col, 'readOnly', false);
+            } else {
+                instance.setCellMeta(row, col, 'readOnly', true);
+            }
+
+            Handsontable.renderers.CheckboxRenderer.apply(this, arguments);
+
+            //  We explicitly make input disabled because setting it to
+            //  `readOnly` doesn't prevent user from clicking
+            if ( !isThresholdPossible ) {
+                $(td).find('input').attr('disabled', true);
+            }
+
+            return td;
+        },
         getColumnExtraProperties: function (column_name) {
             var properties_obj = {};
 
@@ -71,8 +92,22 @@ var app = app || {};
                 sashFrameWidth: { format: '0,0[.]00' }
             };
 
+            var properties_hash = {
+                unitType: {
+                    type: 'dropdown',
+                    source: this.collection.getUnitTypes()
+                },
+                lowThreshold: {
+                    renderer: this.checkboxRenderer
+                }
+            };
+
             if ( format_hash[column_name] ) {
                 properties_obj = _.extend(properties_obj, format_hash[column_name]);
+            }
+
+            if ( properties_hash[column_name] ) {
+                properties_obj = _.extend(properties_obj, properties_hash[column_name]);
             }
 
             return properties_obj;
@@ -121,7 +156,8 @@ var app = app || {};
                 colHeaders: this.getColumnHeaders(),
                 rowHeaders: true,
                 stretchH: 'all',
-                height: 200
+                height: 200,
+                trimDropdown: false
             });
         }
     });
