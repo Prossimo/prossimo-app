@@ -3,31 +3,31 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.MainDrawingWindowsView = Marionette.ItemView.extend({
+    app.MainDrawingView = Marionette.ItemView.extend({
         tagName: 'div',
         className: 'screen drawing-screen',
-        template: app.templates['drawing-windows/main-drawing-windows-view'],
+        template: app.templates['drawing/main-drawing-view'],
         ui: {
             '$drawing_container': '.drawing-container',
             '$sidebar_container': '.drawing-sidebar-container'
         },
         events: {
-            'window-selected': 'onWindowSelected'
+            'unit-selected': 'onUnitSelected'
         },
-        onWindowSelected: function (e) {
-            this.active_window = e.model;
+        onUnitSelected: function (e) {
+            this.active_unit = e.model;
             this.updateDrawingView(true);
         },
         initialize: function () {
-            //  Select first window by default
-            this.active_window = app.current_project.windows.length ?
-                app.current_project.windows.first() : null;
+            //  Select first unit by default
+            this.active_unit = app.current_project.units.length ?
+                app.current_project.units.first() : null;
         },
         updateDrawingView: function (update_size_flag) {
-            if ( this.active_window ) {
+            if ( this.active_unit ) {
                 this.drawing_view = new app.DrawingView({
                     parent_view: this,
-                    model: this.active_window
+                    model: this.active_unit
                 });
 
                 this.ui.$drawing_container.empty().append(this.drawing_view.render().el);
@@ -42,7 +42,7 @@ var app = app || {};
             this.updateDrawingView();
 
             this.sidebar_view = new app.DrawingSidebarView({
-                collection: app.current_project.windows,
+                collection: app.current_project.units,
                 parent_view: this
             });
 

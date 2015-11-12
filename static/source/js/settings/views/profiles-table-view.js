@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    //  See `core/views/windows-table-view.js` for reference, it's similar
+    //  See `core/views/units-table-view.js` for reference, it's similar
     //  and better commented, this file borrows a lot from there
     app.ProfilesTableView = Marionette.ItemView.extend({
         tagName: 'div',

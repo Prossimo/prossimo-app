@@ -1,4 +1,6 @@
 module.exports = function (grunt) {
+    'use strict';
+
     var vendor_js_files = [
         'jquery/dist/jquery.min.js',
         'handlebars/handlebars.runtime.min.js',
@@ -23,21 +25,21 @@ module.exports = function (grunt) {
         'router.js',
         'utils.js',
         'paste-image.js',
-        'core/models/window.js',
+        'core/models/unit.js',
         'core/models/accessory.js',
         'core/models/profile.js',
         'core/models/project.js',
         'core/models/settings.js',
-        'core/collections/window-collection.js',
+        'core/collections/unit-collection.js',
         'core/collections/accessory-collection.js',
         'core/collections/profile-collection.js',
         'core/views/main-navigation-view.js',
-        'core/views/windows-table-view.js',
+        'core/views/units-table-view.js',
         'docs-import/views/main-docs-import-view.js',
         'docs-import/views/document-selector-view.js',
-        'drawing-windows/views/main-drawing-windows-view.js',
-        'drawing-windows/views/drawing-view.js',
-        'drawing-windows/views/drawing-sidebar-view.js',
+        'drawing/views/main-drawing-view.js',
+        'drawing/views/drawing-view.js',
+        'drawing/views/drawing-sidebar-view.js',
         'quote/views/main-quote-view.js',
         'quote/views/quote-item-view.js',
         'quote/views/quote-extras-item-view.js',
@@ -106,7 +108,7 @@ module.exports = function (grunt) {
                         cwd: '<%= sourceUrl %>/js/',
                         src: ['**'],
                         dest: '<%= buildUrl %>/js/',
-                        filter: 'isFile',
+                        filter: 'isFile'
                     }
                 ]
             },
@@ -151,7 +153,7 @@ module.exports = function (grunt) {
                 cwd: '<%= sourceUrl %>/img/',
                 src: ['**'],
                 dest: '<%= buildUrl %>/img/',
-                filter: 'isFile',
+                filter: 'isFile'
             }
         },
 
@@ -221,7 +223,7 @@ module.exports = function (grunt) {
         },
 
         clean: {
-            build: ['<%= buildUrl %>/**'],
+            build: ['<%= buildUrl %>/**']
         },
 
         watch: {

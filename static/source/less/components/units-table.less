@@ -1,4 +1,4 @@
-.windows-table-container {
+.units-table-container {
     position: relative;
     z-index: 300;
     flex: 0 1 auto;
@@ -6,13 +6,13 @@
     box-shadow: 0 0 3px 0 fadeout(@black, 70%);
 }
 
-.windows-table {
+.units-table {
     position: relative;
     z-index: 300;
     background-color: inherit;
 }
 
-.windows-table-title {
+.units-table-title {
     background-color: darken(@white, 35%);
     border-top: 1px solid darken(@white, 45%);
     border-bottom: 1px solid darken(@white, 45%);
@@ -27,11 +27,11 @@
     }
 }
 
-.windows-table-title p {
+.units-table-title p {
     margin: 0;
 }
 
-.windows-table-controls {
+.units-table-controls {
     position: absolute;
     right: 0;
     padding: 0.3rem 0.5rem;
@@ -41,13 +41,13 @@
     border: 1px solid darken(@white, 45%);
 }
 
-.windows-table-controls .add-new-window,
-.windows-table-controls .add-new-accessory {
+.units-table-controls .add-new-unit,
+.units-table-controls .add-new-accessory {
     display: none;
 }
 
-.windows-table-controls.show-windows .add-new-window,
-.windows-table-controls.show-extras .add-new-accessory {
+.units-table-controls.show-units .add-new-unit,
+.units-table-controls.show-extras .add-new-accessory {
     display: block;
 }
 
@@ -57,7 +57,7 @@
 //  Table content part
 //  ------------------------------------------------------------------------
 
-.windows-table-contents {
+.units-table-contents {
     margin: 2rem 1rem 1rem;
     min-height: 5rem;
     max-height: 30rem;
@@ -67,12 +67,12 @@
 
 //  Tabs
 
-.windows-table-contents .nav-tabs {
+.units-table-contents .nav-tabs {
     border-bottom: none;
     margin-bottom: 1rem;
 }
 
-.windows-table-contents .nav > li > a {
+.units-table-contents .nav > li > a {
     padding: 0.5rem 1.5rem;
     border: 1px solid darken(@white, 30%);
     border-radius: 0;
@@ -86,12 +86,12 @@
     }
 }
 
-.windows-table-contents .nav > li + li > a,
-.windows-table-contents .nav > li + li.active > a {
+.units-table-contents .nav > li + li > a,
+.units-table-contents .nav > li + li.active > a {
     border-left: none;
 }
 
-.windows-table-contents .nav > li.active {
+.units-table-contents .nav > li.active {
     > a {
         background-color: #fff;
     }
@@ -108,15 +108,15 @@
 //  Custom styles for handsontable
 //  ------------------------------------------------------------------------
 
-.windows-table-contents table {
+.units-table-contents table {
     width: 100%;
 }
 
-.windows-table-contents .wtHolder {
+.units-table-contents .wtHolder {
     width: 100%;
 }
 
-.windows-table-contents .wtHolder td img {
+.units-table-contents .wtHolder td img {
     max-width: 100%;
     height: auto;
     max-height: 10rem;

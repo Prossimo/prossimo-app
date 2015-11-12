@@ -22,19 +22,19 @@ var app = app || {};
             });
         },
         onRender: function () {
-            var windows_table_view = new app.WindowsTableView({
-                collection: app.current_project.windows,
+            var units_table_view = new app.UnitsTableView({
+                collection: app.current_project.units,
                 extras: app.current_project.extras,
                 parent_view: this
             });
 
             var quote_table_view = new app.QuoteTableView({
                 project: app.current_project,
-                collection: app.current_project.windows,
+                collection: app.current_project.units,
                 extras: app.current_project.extras
             });
 
-            this.$el.append(windows_table_view.render().el);
+            this.$el.append(units_table_view.render().el);
             this.ui.$table_container.append(quote_table_view.render().el);
         }
     });

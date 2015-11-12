@@ -5,7 +5,7 @@ var app = app || {};
 
     app.DrawingView = Marionette.ItemView.extend({
         tagName: 'div',
-        template: app.templates['drawing-windows/drawing-view'],
+        template: app.templates['drawing/drawing-view'],
         initialize: function () {
             this.listenTo(this.model, 'all', this.updateCanvas);
             this.listenTo(this.options.parent_view, 'attach', this.onAttach);
@@ -677,7 +677,7 @@ var app = app || {};
 
             var group = new Konva.Group();
 
-            // place window on center
+            // place unit on center
             group.x(Math.round(this.stage.width() / 2 - frameOnScreenWidth / 2) + 0.5);
             // and will small offset from top
             group.y(10 + 0.5);
@@ -725,10 +725,10 @@ var app = app || {};
         }
     });
 
-    app.preview = function(windowModel, width, height, mode) {
+    app.preview = function(unitModel, width, height, mode) {
         mode = mode || 'base64';
         var view = new app.DrawingView({
-            model: windowModel
+            model: unitModel
         });
         view.render();
         view.updateSize(width, height);

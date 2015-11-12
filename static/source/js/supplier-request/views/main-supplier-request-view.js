@@ -17,7 +17,7 @@ var app = app || {};
         onRender: function () {
             var request_table_view = new app.RequestTableView({
                 project: app.current_project,
-                collection: app.current_project.windows,
+                collection: app.current_project.units,
                 extras: app.current_project.extras
             });
 

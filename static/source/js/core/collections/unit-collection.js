@@ -3,8 +3,8 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.WindowCollection = Backbone.Collection.extend({
-        model: app.Window,
+    app.UnitCollection = Backbone.Collection.extend({
+        model: app.Unit,
         //  This emulates Array.splice. From Handsontable docs example
         splice: function (index, howMany) {
             var args = _.toArray(arguments).slice(2).concat({at: index});
@@ -14,13 +14,13 @@ var app = app || {};
             return removed;
         },
         initialize: function () {
-            this.proxy_window = new app.Window();
+            this.proxy_unit = new app.Unit();
         },
         getNameTitleTypeHash: function (names) {
-            return _.clone(this.proxy_window.getNameTitleTypeHash(names));
+            return this.proxy_unit.getNameTitleTypeHash(names);
         },
         getTitles: function (names) {
-            return _.clone(this.proxy_window.getTitles(names));
+            return this.proxy_unit.getTitles(names);
         },
         getSubtotalPrice: function () {
             var total_price = 0;

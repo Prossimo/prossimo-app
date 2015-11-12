@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var WINDOW_PROPERTIES = [
+    var UNIT_PROPERTIES = [
         { name: 'mark', title: 'Mark', type: 'string' },
         { name: 'width', title: 'Width (inches)', type: 'number' },
         { name: 'height', title: 'Height (inches)', type: 'number' },
@@ -32,8 +32,7 @@ var app = app || {};
         { name: 'discount', title: 'Discount', type: 'number' }
     ];
 
-    //  Window properties that could be copied from a spreadsheet or a PDF
-    app.Window = Backbone.Model.extend({
+    app.Unit = Backbone.Model.extend({
         defaults: function () {
             var defaults = {
                 rootSection: {
@@ -42,7 +41,7 @@ var app = app || {};
                 }
             };
 
-            _.each(WINDOW_PROPERTIES, function (item) {
+            _.each(UNIT_PROPERTIES, function (item) {
                 defaults[item.name] = this.getDefaultValue(item.name, item.type);
             }, this);
 
@@ -84,10 +83,10 @@ var app = app || {};
             var name_title_hash = [];
 
             if ( !names ) {
-                names = _.pluck( WINDOW_PROPERTIES, 'name' );
+                names = _.pluck( UNIT_PROPERTIES, 'name' );
             }
 
-            _.each(WINDOW_PROPERTIES, function (item) {
+            _.each(UNIT_PROPERTIES, function (item) {
                 if ( _.indexOf(names, item.name) !== -1 ) {
                     name_title_hash.push({ name: item.name, title: item.title, type: item.type });
                 }
@@ -135,7 +134,7 @@ var app = app || {};
             // HAH, dirty deep clone, rewrite when you have good mood for it
             // we have to make deep clone and backbone will trigger change event
             var rootSection = JSON.parse(JSON.stringify(this.get('rootSection')));
-            var sectionToUpdate = app.Window.findSection(rootSection, sectionId);
+            var sectionToUpdate = app.Unit.findSection(rootSection, sectionId);
 
             func(sectionToUpdate);
 
@@ -161,7 +160,7 @@ var app = app || {};
         splitSection: function(sectionId, type) {
             this._updateSection(sectionId, function(section) {
                 var full = this.generateFullRoot();
-                var fullSection = app.Window.findSection(full, sectionId);
+                var fullSection = app.Unit.findSection(full, sectionId);
                 section.devider = type;
                 section.sections = [{
                     id: _.uniqueId(),
@@ -328,7 +327,7 @@ var app = app || {};
     // static function
     // it will find section with passed id from passed section and all its children
     // via nested search
-    app.Window.findSection = function(section, sectionId) {
+    app.Unit.findSection = function(section, sectionId) {
         function findNested(sec, id) {
             if (sec.id === id) {
                 return sec;
