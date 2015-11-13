@@ -145,6 +145,11 @@ var app = app || {};
                 section.sashType = type;
             });
         },
+        setPanelType: function(sectionId, type){
+            this._updateSection(sectionId, function(section) {
+                section.panelType = type;
+            });
+        },
         setSectionMullionPosition: function(id, pos) {
             this._updateSection(id, function(section) {
                 section.position = parseInt(pos, 10);

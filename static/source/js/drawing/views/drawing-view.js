@@ -10,11 +10,13 @@ var app = app || {};
             this.listenTo(this.model, 'all', this.updateCanvas);
             this.listenTo(this.options.parent_view, 'attach', this.onAttach);
             this.state = {};
+            this.checkUnitType();
         },
 
         events: {
             'click .split-section': 'splitSection',
             'click .change-sash-type': 'changeSashType',
+            'click .change-panel-type': 'changePanelType',
             'click .popup-wrap': function(e) {
                 var el = $(e.target);
                 if (el.hasClass('popup-wrap')) {
@@ -34,6 +36,7 @@ var app = app || {};
             this.stage.add(this.layer);
         },
         onAttach: function() {
+            this.checkUnitType();
             this.updateSize();
             this.updateCanvas();
             this.$('#drawing').focus();
@@ -63,6 +66,16 @@ var app = app || {};
 
         clearFrame: function() {
             this.model.clearFrame();
+        },
+
+        checkUnitType: function() {
+            var type = this.model.profile.get('unitType');
+            var showPanelType = (type === 'Patio Door') || (type === 'Entry Door');
+            if (showPanelType) {
+                this.$('.panel-type').show();
+            } else {
+                this.$('.panel-type').hide();
+            }
         },
 
         createFrame: function(params) {
@@ -263,6 +276,12 @@ var app = app || {};
                 id: sectionData.id
             });
             group.add(glass);
+
+            var unitType = this.model.profile.get('unitType');
+            var isDoor = (unitType === 'Patio Door') || (unitType === 'Entry Door');
+            if (isDoor && sectionData.panelType === 'solid') {
+                glass.fill('lightgrey');
+            }
             glass.on('click', this.showPopup.bind(this, sectionData.id));
             var type = sectionData.sashType;
 
@@ -677,6 +696,8 @@ var app = app || {};
                     }
                 });
 
+            var containerPos = this.$('#drawing').position();
+
             var padding = 3;
             var valInInches = app.utils.convert.mm_to_inches(params.getter());
             var val = app.utils.format.dimension(valInInches, 'fraction');
@@ -684,8 +705,8 @@ var app = app || {};
                 .val(val)
                 .css({
                     position: 'absolute',
-                    top: (pos.y - padding) + 'px',
-                    left: (pos.x - padding) + 'px',
+                    top: (pos.y - padding + containerPos.top) + 'px',
+                    left: (pos.x - padding + containerPos.left) + 'px',
                     height: (size.height + padding * 2) + 'px',
                     width: (size.width + 20 + padding * 2) + 'px',
                     fontSize: '12px'
@@ -714,8 +735,9 @@ var app = app || {};
             this.deselectAll();
             this.sectionIdToChange = id;
             var pos = this.stage.getPointerPosition();
-            var x = pos.x - 5;
-            var y = pos.y - 5;
+            var containerPos = this.$('#drawing').position();
+            var x = pos.x - 5 + containerPos.left;
+            var y = pos.y - 5 + containerPos.top;
 
             this.$('.popup-wrap')
                 .show()
@@ -796,6 +818,11 @@ var app = app || {};
             this.$('.popup-wrap').hide();
             var type = $(e.target).data('type');
             this.model.setSectionSashType(this.sectionIdToChange, type);
+        },
+        changePanelType: function(e) {
+            this.$('.popup-wrap').hide();
+            var type = $(e.target).data('type');
+            this.model.setPanelType(this.sectionIdToChange, type);
         }
     });
 
