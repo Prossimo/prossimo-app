@@ -24,7 +24,7 @@ var app = app || {};
                 }
             },
             'click #clear-frame': 'clearFrame',
-            'keydown #drawing': 'onKeyUp'
+            'keydown #drawing': 'handleCanvasKeyDown'
         },
 
         onRender: function(){
@@ -45,7 +45,7 @@ var app = app || {};
             this.stage.destroy();
         },
 
-        onKeyUp: function(e) {
+        handleCanvasKeyDown: function(e) {
             if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
                 e.preventDefault();
                 this.model.removeMullion(this.state.selectedMullionId);
@@ -71,11 +71,7 @@ var app = app || {};
         checkUnitType: function() {
             var type = this.model.profile.get('unitType');
             var showPanelType = (type === 'Patio Door') || (type === 'Entry Door');
-            if (showPanelType) {
-                this.$('.panel-type').show();
-            } else {
-                this.$('.panel-type').hide();
-            }
+            this.$('.panel-type').toggle(showPanelType);
         },
 
         createFrame: function(params) {
@@ -146,8 +142,7 @@ var app = app || {};
                     width, 0,
                     width - frameWidth, frameWidth,
                     frameWidth, frameWidth
-                ],
-                closed: true
+                ]
             });
 
             var left = new Konva.Line({
@@ -190,7 +185,6 @@ var app = app || {};
                 fill: 'grey'
             });
             group.add(bottom);
-            // add styles for borders
 
             return group;
         },
@@ -794,12 +788,7 @@ var app = app || {};
             sectionsGroup.scale({x: ratio, y: ratio});
             group.add(sectionsGroup);
 
-            var sections = this.createSection(this.model.generateFullRoot()/*, {
-                x: this.model.profile.get('frameWidth'),
-                y: this.model.profile.get('frameWidth'),
-                width: this.model.getInMetric('width', 'mm') - this.model.profile.get('frameWidth') * 2,
-                height: this.model.getInMetric('height', 'mm') - this.model.profile.get('frameWidth') * 2
-            }*/);
+            var sections = this.createSection(this.model.generateFullRoot());
 
             sectionsGroup.add.apply(sectionsGroup, sections);
 
@@ -843,6 +832,8 @@ var app = app || {};
             result = new Image();
             result.src = view.stage.toDataURL();
         } else {
+            view.destroy();
+            view.remove();
             throw new Error('unrecognized mode for preview: ' + mode);
         }
         // clean

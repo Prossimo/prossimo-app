@@ -181,13 +181,14 @@ var app = app || {};
                 }
             }.bind(this));
         },
-        // one after full calulcalation section will be something like:
+        // after full calulcalation section will be something like:
         // {
         //     id: 5,
-        //     sashType: null,
+        //     sashType: 'none', // top-right, top-left, none, top, right, left, slide-right, slide-left
+        //     panelType: 'glass' // or 'solid'. works for doors
         //     params: { x, y, width, height },
-        //     devider: 'vertical',
-        //     position: 50,
+        //     devider: 'vertical',    // or horizontal
+        //     position: 50,       // position of center of mullion from top left point of unit
         //     sections: [{
         //         id: 6,
         //         mullionEdges : {right : true},
