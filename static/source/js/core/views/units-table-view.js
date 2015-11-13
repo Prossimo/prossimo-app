@@ -165,10 +165,21 @@ var app = app || {};
             return td;
         },
         getFormattedRenderer: function (attr_name) {
+            var args = _.toArray(arguments).slice(1);
+
             var f = app.utils.format;
             var formatters_hash = {
                 discount: function () {
                     return f.percent.apply(this, arguments);
+                },
+                fixed_minimal: function () {
+                    return f.fixed_minimal.apply(this, arguments);
+                },
+                fixed: function () {
+                    return f.fixed.apply(this, arguments);
+                },
+                price_usd: function () {
+                    return f.price_usd.apply(this, arguments);
                 }
             };
 
@@ -176,12 +187,12 @@ var app = app || {};
                 var $td = $(td);
 
                 if ( formatters_hash[attr_name] ) {
-                    $td.empty().append(formatters_hash[attr_name](value));
-                } else {
-                    Handsontable.renderers.TextRenderer.apply(this, arguments);
+                    arguments[5] = formatters_hash[attr_name](value, args[0]);
                 }
 
-                if ( attr_name === 'discount' ) {
+                Handsontable.renderers.TextRenderer.apply(this, arguments);
+
+                if ( _.indexOf(['discount', 'fixed_minimal', 'fixed', 'price_usd'], attr_name) !== -1 ) {
                     $td.addClass('htNumeric');
                 }
 
@@ -194,34 +205,34 @@ var app = app || {};
 
             var getters_hash = {
                 width_mm: function (model) {
-                    return f.fixed_minimal(model.getWidthMM(), 5);
+                    return model.getWidthMM();
                 },
                 height_mm: function (model) {
-                    return f.fixed_minimal(model.getHeightMM(), 5);
+                    return model.getHeightMM();
                 },
                 dimensions: function (model) {
                     return f.dimensions(model.get('width'), model.get('height'));
                 },
                 unit_cost: function (model) {
-                    return f.price_usd(model.getUnitCost());
+                    return model.getUnitCost();
                 },
                 subtotal_cost: function (model) {
-                    return f.price_usd(model.getSubtotalCost());
+                    return model.getSubtotalCost();
                 },
                 unit_price: function (model) {
-                    return f.price_usd(model.getUnitPrice());
+                    return model.getUnitPrice();
                 },
                 subtotal_price: function (model) {
-                    return f.price_usd(model.getSubtotalPrice());
+                    return model.getSubtotalPrice();
                 },
                 uw_ip: function (model) {
-                    return f.fixed(model.getUwIp(), 5);
+                    return model.getUwIp();
                 },
                 unit_price_discounted: function (model) {
-                    return f.price_usd(model.getUnitPriceDiscounted());
+                    return model.getUnitPriceDiscounted();
                 },
                 subtotal_price_discounted: function (model) {
-                    return f.price_usd(model.getSubtotalPriceDiscounted());
+                    return model.getSubtotalPriceDiscounted();
                 },
                 system: function (model) {
                     return model.profile.get('system');
@@ -305,17 +316,47 @@ var app = app || {};
             };
 
             var properties_hash = {
-                width_mm: { readOnly: true },
-                height_mm: { readOnly: true },
-                dimensions: { readOnly: true },
-                unit_cost: { readOnly: true },
-                subtotal_cost: { readOnly: true },
-                unit_price: { readOnly: true },
-                subtotal_price: { readOnly: true },
-                unit_price_discounted: { readOnly: true },
-                subtotal_price_discounted: { readOnly: true },
+                width_mm: {
+                    readOnly: true,
+                    renderer: this.getFormattedRenderer('fixed_minimal')
+                },
+                height_mm: {
+                    readOnly: true,
+                    renderer: this.getFormattedRenderer('fixed_minimal')
+                },
+                dimensions: {
+                    readOnly: true,
+                    renderer: this.getFormattedRenderer('price_usd')
+                },
+                unit_cost: {
+                    readOnly: true,
+                    renderer: this.getFormattedRenderer('price_usd')
+                },
+                subtotal_cost: {
+                    readOnly: true,
+                    renderer: this.getFormattedRenderer('price_usd')
+                },
+                unit_price: {
+                    readOnly: true,
+                    renderer: this.getFormattedRenderer('price_usd')
+                },
+                subtotal_price: {
+                    readOnly: true,
+                    renderer: this.getFormattedRenderer('price_usd')
+                },
+                unit_price_discounted: {
+                    readOnly: true,
+                    renderer: this.getFormattedRenderer('price_usd')
+                },
+                subtotal_price_discounted: {
+                    readOnly: true,
+                    renderer: this.getFormattedRenderer('price_usd')
+                },
                 drawing: { readOnly: true },
-                uw_ip: { readOnly: true },
+                uw_ip: {
+                    readOnly: true,
+                    renderer: this.getFormattedRenderer('fixed', 5)
+                },
                 system: { readOnly: true },
                 threshold: { readOnly: true },
                 mark: {

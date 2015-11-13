@@ -68,7 +68,7 @@ var app = app || {};
             //  We explicitly make input disabled because setting it to
             //  `readOnly` doesn't prevent user from clicking
             if ( !isThresholdEditable ) {
-                $(td).find('input').attr('disabled', true);
+                $(td).addClass('htDimmed').find('input').attr('disabled', true);
             }
 
             return td;
@@ -81,7 +81,7 @@ var app = app || {};
                 Handsontable.renderers.NumericRenderer.apply(this, arguments);
             } else {
                 instance.setCellMeta(row, col, 'readOnly', true);
-                $(td).addClass('htNumeric').text('--');
+                $(td).addClass('htDimmed htNumeric').text('--');
             }
 
             return td;

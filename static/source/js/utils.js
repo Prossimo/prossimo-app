@@ -52,7 +52,7 @@ var app = app || {};
                 return new Decimal(parseFloat(value).toFixed(2)).toFormat() + '%';
             },
             fixed: function (value, num) {
-                num = num ? (num < MAX_SIGNIFICANT_DIGITS ? num : MAX_SIGNIFICANT_DIGITS) : 2;
+                num = _.isNumber(num) ? (num < MAX_SIGNIFICANT_DIGITS ? num : MAX_SIGNIFICANT_DIGITS) : 2;
                 return new Decimal(parseFloat(value).toFixed(num)).toFormat(num);
             },
             fixed_minimal: function (value, num) {
