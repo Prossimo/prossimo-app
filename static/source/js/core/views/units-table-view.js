@@ -139,66 +139,6 @@ var app = app || {};
                 }
             }
         },
-        //  Render base64-encoded string as an image
-        //  This one is from Handsontable demo on renderers
-        customerImageRenderer: function (instance, td, row, col, prop, value) {
-            var escaped = Handsontable.helper.stringify(value);
-            var $img;
-            var $td = $(td);
-
-            if ( escaped.indexOf('data:image/png') === 0 ) {
-                $img = $('<img class="customer-image" />');
-                $img.attr('src', value);
-
-                //  Prevent selection quirk
-                $img.on('mousedown', function (e) {
-                    e.preventDefault();
-                });
-
-                $td.empty().append($img);
-            } else {
-                Handsontable.renderers.TextRenderer.apply(this, arguments);
-            }
-
-            $td.addClass('hot-customer-image-cell');
-
-            return td;
-        },
-        getFormattedRenderer: function (attr_name) {
-            var args = _.toArray(arguments).slice(1);
-
-            var f = app.utils.format;
-            var formatters_hash = {
-                discount: function () {
-                    return f.percent.apply(this, arguments);
-                },
-                fixed_minimal: function () {
-                    return f.fixed_minimal.apply(this, arguments);
-                },
-                fixed: function () {
-                    return f.fixed.apply(this, arguments);
-                },
-                price_usd: function () {
-                    return f.price_usd.apply(this, arguments);
-                }
-            };
-
-            return function (instance, td, row, col, prop, value) {
-                var $td = $(td);
-
-                if ( formatters_hash[attr_name] ) {
-                    arguments[5] = formatters_hash[attr_name](value, args[0]);
-                }
-
-                Handsontable.renderers.TextRenderer.apply(this, arguments);
-
-                if ( _.indexOf(['discount', 'fixed_minimal', 'fixed', 'price_usd'], attr_name) !== -1 ) {
-                    $td.addClass('htNumeric');
-                }
-
-                return td;
-            };
-        },
         getGetterFunction: function (unit_model, column_name) {
             var f = app.utils.format;
             var getter;
@@ -318,44 +258,44 @@ var app = app || {};
             var properties_hash = {
                 width_mm: {
                     readOnly: true,
-                    renderer: this.getFormattedRenderer('fixed_minimal')
+                    renderer: app.hot_renderers.getFormattedRenderer('fixed_minimal')
                 },
                 height_mm: {
                     readOnly: true,
-                    renderer: this.getFormattedRenderer('fixed_minimal')
+                    renderer: app.hot_renderers.getFormattedRenderer('fixed_minimal')
                 },
                 dimensions: {
                     readOnly: true,
-                    renderer: this.getFormattedRenderer('price_usd')
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
                 },
                 unit_cost: {
                     readOnly: true,
-                    renderer: this.getFormattedRenderer('price_usd')
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
                 },
                 subtotal_cost: {
                     readOnly: true,
-                    renderer: this.getFormattedRenderer('price_usd')
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
                 },
                 unit_price: {
                     readOnly: true,
-                    renderer: this.getFormattedRenderer('price_usd')
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
                 },
                 subtotal_price: {
                     readOnly: true,
-                    renderer: this.getFormattedRenderer('price_usd')
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
                 },
                 unit_price_discounted: {
                     readOnly: true,
-                    renderer: this.getFormattedRenderer('price_usd')
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
                 },
                 subtotal_price_discounted: {
                     readOnly: true,
-                    renderer: this.getFormattedRenderer('price_usd')
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
                 },
                 drawing: { readOnly: true },
                 uw_ip: {
                     readOnly: true,
-                    renderer: this.getFormattedRenderer('fixed', 5)
+                    renderer: app.hot_renderers.getFormattedRenderer('fixed', 5)
                 },
                 system: { readOnly: true },
                 threshold: { readOnly: true },
@@ -363,14 +303,14 @@ var app = app || {};
                     width: 100
                 },
                 customer_image: {
-                    renderer: this.customerImageRenderer
+                    renderer: app.hot_renderers.customerImageRenderer
                 },
                 extras_type: {
                     type: 'dropdown',
                     source: this.options.extras.getExtrasTypes()
                 },
                 discount: {
-                    renderer: this.getFormattedRenderer('discount')
+                    renderer: app.hot_renderers.getFormattedRenderer('discount')
                 },
                 profile_name: {
                     type: 'dropdown',

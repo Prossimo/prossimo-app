@@ -25,6 +25,7 @@ module.exports = function (grunt) {
         'router.js',
         'utils.js',
         'paste-image.js',
+        'hot_renderers.js',
         'core/models/unit.js',
         'core/models/accessory.js',
         'core/models/profile.js',
