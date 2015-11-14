@@ -139,89 +139,40 @@ var app = app || {};
                 }
             }
         },
-        //  Render base64-encoded string as an image
-        //  This one is from Handsontable demo on renderers
-        customerImageRenderer: function (instance, td, row, col, prop, value) {
-            var escaped = Handsontable.helper.stringify(value);
-            var $img;
-            var $td = $(td);
-
-            if ( escaped.indexOf('data:image/png') === 0 ) {
-                $img = $('<img class="customer-image" />');
-                $img.attr('src', value);
-
-                //  Prevent selection quirk
-                $img.on('mousedown', function (e) {
-                    e.preventDefault();
-                });
-
-                $td.empty().append($img);
-            } else {
-                Handsontable.renderers.TextRenderer.apply(this, arguments);
-            }
-
-            $td.addClass('hot-customer-image-cell');
-
-            return td;
-        },
-        getFormattedRenderer: function (attr_name) {
-            var f = app.utils.format;
-            var formatters_hash = {
-                discount: function () {
-                    return f.percent.apply(this, arguments);
-                }
-            };
-
-            return function (instance, td, row, col, prop, value) {
-                var $td = $(td);
-
-                if ( formatters_hash[attr_name] ) {
-                    $td.empty().append(formatters_hash[attr_name](value));
-                } else {
-                    Handsontable.renderers.TextRenderer.apply(this, arguments);
-                }
-
-                if ( attr_name === 'discount' ) {
-                    $td.addClass('htNumeric');
-                }
-
-                return td;
-            };
-        },
         getGetterFunction: function (unit_model, column_name) {
             var f = app.utils.format;
             var getter;
 
             var getters_hash = {
                 width_mm: function (model) {
-                    return f.fixed_minimal(model.getWidthMM(), 5);
+                    return model.getWidthMM();
                 },
                 height_mm: function (model) {
-                    return f.fixed_minimal(model.getHeightMM(), 5);
+                    return model.getHeightMM();
                 },
                 dimensions: function (model) {
                     return f.dimensions(model.get('width'), model.get('height'));
                 },
                 unit_cost: function (model) {
-                    return f.price_usd(model.getUnitCost());
+                    return model.getUnitCost();
                 },
                 subtotal_cost: function (model) {
-                    return f.price_usd(model.getSubtotalCost());
+                    return model.getSubtotalCost();
                 },
                 unit_price: function (model) {
-                    return f.price_usd(model.getUnitPrice());
+                    return model.getUnitPrice();
                 },
                 subtotal_price: function (model) {
-                    return f.price_usd(model.getSubtotalPrice());
+                    return model.getSubtotalPrice();
                 },
                 uw_ip: function (model) {
-                    return f.fixed(model.getUwIp(), 5);
+                    return model.getUwIp();
                 },
                 unit_price_discounted: function (model) {
-                    return f.price_usd(model.getUnitPriceDiscounted());
+                    return model.getUnitPriceDiscounted();
                 },
                 subtotal_price_discounted: function (model) {
-                    return f.price_usd(model.getSubtotalPriceDiscounted());
+                    return model.getSubtotalPriceDiscounted();
                 },
                 system: function (model) {
                     return model.profile.get('system');
@@ -305,31 +256,61 @@ var app = app || {};
             };
 
             var properties_hash = {
-                width_mm: { readOnly: true },
-                height_mm: { readOnly: true },
-                dimensions: { readOnly: true },
-                unit_cost: { readOnly: true },
-                subtotal_cost: { readOnly: true },
-                unit_price: { readOnly: true },
-                subtotal_price: { readOnly: true },
-                unit_price_discounted: { readOnly: true },
-                subtotal_price_discounted: { readOnly: true },
+                width_mm: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('fixed_minimal')
+                },
+                height_mm: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('fixed_minimal')
+                },
+                dimensions: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
+                },
+                unit_cost: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
+                },
+                subtotal_cost: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
+                },
+                unit_price: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
+                },
+                subtotal_price: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
+                },
+                unit_price_discounted: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
+                },
+                subtotal_price_discounted: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
+                },
                 drawing: { readOnly: true },
-                uw_ip: { readOnly: true },
+                uw_ip: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('fixed', 5)
+                },
                 system: { readOnly: true },
                 threshold: { readOnly: true },
                 mark: {
                     width: 100
                 },
                 customer_image: {
-                    renderer: this.customerImageRenderer
+                    renderer: app.hot_renderers.customerImageRenderer
                 },
                 extras_type: {
                     type: 'dropdown',
                     source: this.options.extras.getExtrasTypes()
                 },
                 discount: {
-                    renderer: this.getFormattedRenderer('discount')
+                    renderer: app.hot_renderers.getFormattedRenderer('discount')
                 },
                 profile_name: {
                     type: 'dropdown',

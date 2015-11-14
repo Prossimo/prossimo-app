@@ -25,7 +25,8 @@ var app = app || {};
                 reference_id: this.getReferenceId(),
                 description: this.model.get('description'),
                 quantity: this.model.get('quantity'),
-                price: this.getPrices()
+                price: this.getPrices(),
+                show_price: this.options.show_price !== false
             };
         }
     });

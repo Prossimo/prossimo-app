@@ -1,6 +1,7 @@
 <td class="ref">{{ reference_id }}</td>
 <td class="product_description">{{ description }}</td>
 <td class="quantity">{{ quantity }}</td>
+{{#if show_price }}
 <td class="price">
     <table class="unit-price">
         <tbody>
@@ -11,4 +12,4 @@
         </tbody>
     </table>
 </td>
-
+{{/if }}

@@ -82,9 +82,7 @@ var app = app || {};
         },
 
         checkUnitType: function() {
-            var type = this.model.profile.get('unitType');
-            var showPanelType = (type === 'Patio Door') || (type === 'Entry Door');
-            this.$('.panel-type').toggle(showPanelType);
+            this.$('.panel-type').toggle(this.model.profile.isSolidPanelPossible());
         },
 
         createFrame: function(params) {
@@ -302,12 +300,9 @@ var app = app || {};
                 });
                 group.add(glass);
 
-                var unitType = this.model.profile.get('unitType');
-                var isDoor = (unitType === 'Patio Door') || (unitType === 'Entry Door');
-                if (isDoor && sectionData.panelType === 'solid') {
+                if (this.model.profile.isSolidPanelPossible() && sectionData.panelType === 'solid') {
                     glass.fill('lightgrey');
                 }
-                glass.on('click', this.showPopup.bind(this, sectionData.id));
             }
             var type = sectionData.sashType;
 

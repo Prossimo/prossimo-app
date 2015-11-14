@@ -9,6 +9,7 @@
     {{#if notes }}<p class="notes"><strong>{{ notes }}</strong></p>{{/if}}
 </td>
 <td class="quantity">{{ quantity }}</td>
+{{#if show_price }}
 <td class="price">
     <table class="unit-price">
         <tbody>
@@ -33,4 +34,4 @@
         </tbody>
     </table>
 </td>
-
+{{/if}}

@@ -7,6 +7,7 @@
         </tr>
     </thead>
     <tbody class="quote-table-body"></tbody>
+    {{#if show_price }}
     <tfoot>
         {{#if has_extras }}
         <tr>
@@ -26,13 +27,16 @@
             {{> 'quote/partials/quote-table-grand-total' }}
         {{/if}}
     </tfoot>
+    {{/if}}
 </table>
 
 {{#if has_extras }}
 <div class="quote-extras-table-container"></div>
 <div class="quote-optional-extras-table-container"></div>
 
-<table class="quote-table grand-total">
-    {{> 'quote/partials/quote-table-grand-total' }}
-</table>
+    {{#if show_price }}
+    <table class="quote-table grand-total">
+        {{> 'quote/partials/quote-table-grand-total' }}
+    </table>
+    {{/if }}
 {{/if}}

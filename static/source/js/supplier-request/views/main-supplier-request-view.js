@@ -15,10 +15,11 @@ var app = app || {};
             this.listenTo(this.model, 'all', this.render);
         },
         onRender: function () {
-            var request_table_view = new app.RequestTableView({
+            var request_table_view = new app.QuoteTableView({
                 project: app.current_project,
                 collection: app.current_project.units,
-                extras: app.current_project.extras
+                extras: app.current_project.extras,
+                show_price: false
             });
 
             this.ui.$table_container.append(request_table_view.render().el);

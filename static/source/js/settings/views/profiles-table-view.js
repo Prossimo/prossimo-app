@@ -53,39 +53,6 @@ var app = app || {};
                 }
             };
         },
-        checkboxRenderer: function (instance, td, row, col) {
-            var isThresholdEditable = instance.getData().at(row).isThresholdEditable();
-
-            //  We need this because otherwise user will be able to paste
-            if ( isThresholdEditable ) {
-                instance.setCellMeta(row, col, 'readOnly', false);
-            } else {
-                instance.setCellMeta(row, col, 'readOnly', true);
-            }
-
-            Handsontable.renderers.CheckboxRenderer.apply(this, arguments);
-
-            //  We explicitly make input disabled because setting it to
-            //  `readOnly` doesn't prevent user from clicking
-            if ( !isThresholdEditable ) {
-                $(td).find('input').attr('disabled', true);
-            }
-
-            return td;
-        },
-        thresholdWidthRenderer: function (instance, td, row, col) {
-            var isThresholdPossible = instance.getData().at(row).isThresholdPossible();
-
-            if ( isThresholdPossible ) {
-                instance.setCellMeta(row, col, 'readOnly', false);
-                Handsontable.renderers.NumericRenderer.apply(this, arguments);
-            } else {
-                instance.setCellMeta(row, col, 'readOnly', true);
-                $(td).addClass('htNumeric').text('--');
-            }
-
-            return td;
-        },
         getColumnExtraProperties: function (column_name) {
             var properties_obj = {};
 
@@ -111,10 +78,10 @@ var app = app || {};
                     source: this.collection.getUnitTypes()
                 },
                 lowThreshold: {
-                    renderer: this.checkboxRenderer
+                    renderer: app.hot_renderers.thresholdCheckboxRenderer
                 },
                 thresholdWidth: {
-                    renderer: this.thresholdWidthRenderer
+                    renderer: app.hot_renderers.thresholdWidthRenderer
                 }
             };
 

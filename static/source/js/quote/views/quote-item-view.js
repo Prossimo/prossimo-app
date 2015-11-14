@@ -56,7 +56,8 @@ var app = app || {};
                 description: this.getDescription(),
                 notes: this.model.get('notes'),
                 quantity: this.model.get('quantity'),
-                price: this.getPrices()
+                price: this.getPrices(),
+                show_price: this.options.show_price !== false
             };
         }
     });
