@@ -1,5 +1,5 @@
 <td class="ref">{{ reference_id }}</td>
-<td class="product_image"></td>
+<td class="product_image">{{#if product_image }}<img src="{{ product_image }}" alt="">{{/if}}</td>
 <td class="product_description">
     <ul>
         {{#each description }}

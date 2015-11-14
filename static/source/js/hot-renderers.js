@@ -29,6 +29,29 @@ var app = app || {};
 
             return td;
         },
+        drawingPreviewRenderer: function (instance, td, row, col, prop, value) {
+            var escaped = Handsontable.helper.stringify(value);
+            var $img;
+            var $td = $(td);
+
+            if ( escaped.indexOf('data:image/png') === 0 ) {
+                $img = $('<img class="drawing-preview" />');
+                $img.attr('src', value);
+
+                //  Prevent selection quirk (this is from HoT demo)
+                $img.on('mousedown', function (e) {
+                    e.preventDefault();
+                });
+
+                $td.empty().append($img);
+            } else {
+                Handsontable.renderers.TextRenderer.apply(this, arguments);
+            }
+
+            $td.addClass('hot-drawing-preview-cell');
+
+            return td;
+        },
         //  Format value with the help of formatters from `utils.js`
         getFormattedRenderer: function (attr_name) {
             var args = _.toArray(arguments).slice(1);

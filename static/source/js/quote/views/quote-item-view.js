@@ -50,6 +50,9 @@ var app = app || {};
                 return { name: key, title: item, value: params_source[key] };
             }, this);
         },
+        getProductImage: function () {
+            return app.preview(this.model, 200, 200, 'base64');
+        },
         serializeData: function () {
             return {
                 reference_id: this.model.getRefNum(),
@@ -57,6 +60,7 @@ var app = app || {};
                 notes: this.model.get('notes'),
                 quantity: this.model.get('quantity'),
                 price: this.getPrices(),
+                product_image: this.getProductImage(),
                 show_price: this.options.show_price !== false
             };
         }

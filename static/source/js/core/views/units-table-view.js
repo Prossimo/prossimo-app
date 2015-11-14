@@ -64,9 +64,8 @@ var app = app || {};
 
             this.$el.popover({
                 container: 'body',
-                title: 'Customer Image',
                 html: true,
-                selector: '.customer-image',
+                selector: '.customer-image, .drawing-preview',
                 content: function () {
                     return $(this).clone();
                 },
@@ -155,6 +154,9 @@ var app = app || {};
                 },
                 unit_cost: function (model) {
                     return model.getUnitCost();
+                },
+                drawing: function (model) {
+                    return app.preview(model, 500, 500, 'base64');
                 },
                 subtotal_cost: function (model) {
                     return model.getSubtotalCost();
@@ -292,7 +294,10 @@ var app = app || {};
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('price_usd')
                 },
-                drawing: { readOnly: true },
+                drawing: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.drawingPreviewRenderer
+                },
                 uw_ip: {
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('fixed', 5)
