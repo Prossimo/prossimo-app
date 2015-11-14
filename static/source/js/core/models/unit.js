@@ -178,7 +178,12 @@ var app = app || {};
             });
         },
         removeSash: function(sectionId) {
-
+            this._updateSection(sectionId, function(section) {
+                section.sashType = 'none';
+                section.devider = null;
+                section.sections = null;
+                section.position = null;
+            });
         },
         splitSection: function(sectionId, type) {
             this._updateSection(sectionId, function(section) {
