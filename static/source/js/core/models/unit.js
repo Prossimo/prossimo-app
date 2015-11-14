@@ -150,6 +150,21 @@ var app = app || {};
                 section.panelType = type;
             });
         },
+        addMullion: function(sectionId, type) {
+            this._updateSection(sectionId, function(section) {
+                var full = this.generateFullRoot();
+                var fullSection = app.Unit.findSection(full, sectionId);
+                section.mullions = section.mullions || [];
+                section.mullion.push({
+
+                });
+                if (type === 'vertical') {
+                    section.position = fullSection.params.x + fullSection.params.width / 2;
+                } else {
+                    section.position = fullSection.params.y + fullSection.params.height / 2;
+                }
+            });
+        },
         setSectionMullionPosition: function(id, pos) {
             this._updateSection(id, function(section) {
                 section.position = parseInt(pos, 10);
@@ -245,6 +260,9 @@ var app = app || {};
                     mullionAttrs.y = position - this.profile.get('mullionWidth') / 2;
                     mullionAttrs.width = params.width;
                     mullionAttrs.height = this.profile.get('mullionWidth');
+                }
+                if (rootSection.sashType !== 'none') {
+                       
                 }
                 rootSection.mullionParams = mullionAttrs;
             }

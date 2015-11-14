@@ -217,10 +217,9 @@ var app = app || {};
                 rootSection.sections.forEach(function(sectionData) {
                     objects = objects.concat(this.createSection(sectionData));
                 }.bind(this));
-            } else {
-                var sash = this.createSash(rootSection);
-                objects.push(sash);
             }
+            var sash = this.createSash(rootSection);
+            objects.push(sash);
 
             return objects;
         },
@@ -260,23 +259,25 @@ var app = app || {};
             var glassY = frameWidth;
             var glassWidth = width - frameWidth * 2;
             var glassHeight = height - frameWidth * 2;
+            if (!sectionData.sections || !sectionData.sections.length) {
 
-            var glass = new Konva.Rect({
-                x: glassX,
-                y: glassY,
-                width: glassWidth,
-                height: glassHeight,
-                fill: 'lightblue',
-                id: sectionData.id
-            });
-            group.add(glass);
+                var glass = new Konva.Rect({
+                    x: glassX,
+                    y: glassY,
+                    width: glassWidth,
+                    height: glassHeight,
+                    fill: 'lightblue',
+                    id: sectionData.id
+                });
+                group.add(glass);
 
-            var unitType = this.model.profile.get('unitType');
-            var isDoor = (unitType === 'Patio Door') || (unitType === 'Entry Door');
-            if (isDoor && sectionData.panelType === 'solid') {
-                glass.fill('lightgrey');
+                var unitType = this.model.profile.get('unitType');
+                var isDoor = (unitType === 'Patio Door') || (unitType === 'Entry Door');
+                if (isDoor && sectionData.panelType === 'solid') {
+                    glass.fill('lightgrey');
+                }
+                glass.on('click', this.showPopup.bind(this, sectionData.id));
             }
-            glass.on('click', this.showPopup.bind(this, sectionData.id));
             var type = sectionData.sashType;
 
             var directionLine = new Konva.Shape({
