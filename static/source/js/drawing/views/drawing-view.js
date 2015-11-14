@@ -9,7 +9,9 @@ var app = app || {};
         initialize: function () {
             this.listenTo(this.model, 'all', this.updateCanvas);
             this.listenTo(this.options.parent_view, 'attach', this.onAttach);
-            this.state = {};
+            this.state = {
+                insideView: true
+            };
             this.checkUnitType();
         },
 
@@ -24,7 +26,8 @@ var app = app || {};
                 }
             },
             'click #clear-frame': 'clearFrame',
-            'keydown #drawing': 'handleCanvasKeyDown'
+            'keydown #drawing': 'handleCanvasKeyDown',
+            'click #change-view': 'handleChangeView'
         },
 
         onRender: function(){
@@ -48,11 +51,21 @@ var app = app || {};
         handleCanvasKeyDown: function(e) {
             if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
                 e.preventDefault();
-                this.model.removeMullion(this.state.selectedMullionId);
-                this.setState({
-                    selectedMullionId: null
-                });
+                if (this.state.selectedMullionId) {
+                    this.model.removeMullion(this.state.selectedMullionId);
+                }
+                if (this.state.selectedSashId) {
+                    this.model.removeSash(this.state.selectedSashId);
+                }
+                this.deselectAll();
             }
+        },
+        handleChangeView: function() {
+            this.setState({
+                insideView: !this.state.insideView
+            });
+            var buttonText = this.state.insideView ? 'Show outside view': 'Show inside view';
+            this.$('#change-view').text(buttonText);
         },
         setState: function(state) {
             this.state = _.assign(this.state, state);
@@ -79,6 +92,7 @@ var app = app || {};
             var frameWidth = params.frameWidth;  // in mm
             var width = params.width;
             var height = params.height;
+            var sectionId = params.sectionId;
 
             var group = new Konva.Group();
             var top = new Konva.Line({
@@ -123,8 +137,18 @@ var app = app || {};
             group.children
                 .closed(true)
                 .stroke('black')
-                .strokeWidth(1)
-                .fill('white');
+                .strokeWidth(1);
+
+            if (sectionId && this.state.selectedSashId === sectionId) {
+                group.children.fill('red');
+            } else {
+                group.children.fill('white');
+            }
+            group.on('click', function() {
+                this.setState({
+                    selectedSashId: sectionId
+                });
+            }.bind(this));
 
             return group;
         },
@@ -190,7 +214,8 @@ var app = app || {};
         },
         deselectAll: function() {
             this.setState({
-                selectedMullionId: null
+                selectedMullionId: null,
+                selectedSashId: null
             });
         },
         createSection: function(rootSection) {
@@ -211,12 +236,18 @@ var app = app || {};
                         selectedMullionId: rootSection.id
                     });
                 }.bind(this));
-                objects.push(mullion);
+                if (this.state.insideView) {
+                    objects.push(mullion);
+                }
 
                 // draw each child section
                 rootSection.sections.forEach(function(sectionData) {
                     objects = objects.concat(this.createSection(sectionData));
                 }.bind(this));
+
+                if (!this.state.insideView) {
+                    objects.push(mullion);
+                }
             }
             var sash = this.createSash(rootSection);
             objects.push(sash);
@@ -310,10 +341,12 @@ var app = app || {};
                 var frameGroup = this.createFrame({
                     width: width,
                     height: height,
-                    frameWidth: frameWidth
+                    frameWidth: frameWidth,
+                    sectionId: sectionData.id
                 });
                 group.add(frameGroup);
-                if (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type.indexOf('top') >= 0) {
+                var shouldDrawHandle = this.state.insideView && (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type.indexOf('top') >= 0);
+                if (shouldDrawHandle) {
                     var offset = frameWidth / 2;
                     var pos = {
                         x: null,
@@ -542,7 +575,7 @@ var app = app || {};
             return group;
         },
 
-        createInfo: function(width, height) {
+        createInfo: function(mullions, width, height) {
             var merticSize = 30;
             var group = new Konva.Group();
             var verticalRows = 0;
@@ -550,7 +583,7 @@ var app = app || {};
             var verticalMullions = [];
             var horizontalMullions = [];
 
-            this.model.getMullions().forEach(function(mul) {
+            mullions.forEach(function(mul) {
                 if (this.state.selectedMullionId && this.state.selectedMullionId !== mul.id) {
                     return;
                 }
@@ -789,12 +822,28 @@ var app = app || {};
             sectionsGroup.scale({x: ratio, y: ratio});
             group.add(sectionsGroup);
 
-            var sections = this.createSection(this.model.generateFullRoot());
+            var root;
+            if (this.state.insideView) {
+                root = this.model.generateFullRoot();
+            } else {
+                root = this.model.generateFullReversedRoot();
+            }
+            var sections = this.createSection(root);
 
             sectionsGroup.add.apply(sectionsGroup, sections);
 
-            var infoGroup = this.createInfo(frameOnScreenWidth, frameOnScreenHeight);
+            var mullions;
+            if (this.state.insideView) {
+                mullions = this.model.getMullions();
+            } else {
+                mullions = this.model.getRevertedMullions();
+            }
+            var infoGroup = this.createInfo(mullions, frameOnScreenWidth, frameOnScreenHeight);
             group.add(infoGroup);
+
+            if (!this.state.insideView) {
+                frameGroup.moveToTop();
+            }
 
             this.layer.draw();
         },
