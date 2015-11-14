@@ -9,7 +9,8 @@ var app = app || {};
         childViewContainer: '.quote-extras-table-body',
         childViewOptions: function () {
             return {
-                type: this.options.type
+                type: this.options.type,
+                show_price: this.options.show_price
             };
         },
         filter: function (child) {
@@ -22,9 +23,12 @@ var app = app || {};
             var name_title_hash = {
                 ref: 'Ref.',
                 product_description: 'Product Description',
-                quantity: 'Quantity',
-                price: 'Price'
+                quantity: 'Quantity'
             };
+
+            if ( this.options.show_price !== false ) {
+                name_title_hash.price = 'Price';
+            }
 
             var table_attributes = _.map(name_title_hash, function (item, key) {
                 return { name: key, title: item };
@@ -54,7 +58,8 @@ var app = app || {};
                 price_colspan: this.getExtrasTableAttributes().length - 1,
                 total_prices: this.getTotalPrices(),
                 heading: this.options.type === 'Regular' ? 'Extras' : 'Optional Extras',
-                is_optional: this.options.type === 'Optional'
+                is_optional: this.options.type === 'Optional',
+                show_price: this.options.show_price !== false
             };
         }
     });

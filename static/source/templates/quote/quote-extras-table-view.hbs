@@ -11,6 +11,7 @@
         </tr>
     </thead>
     <tbody class="quote-extras-table-body"></tbody>
+    {{#if show_price }}
     <tfoot>
         <tr>
             <td colspan="{{ price_colspan }}"></td>
@@ -26,4 +27,5 @@
             </td>
         </tr>
     </tfoot>
+    {{/if}}
 </table>

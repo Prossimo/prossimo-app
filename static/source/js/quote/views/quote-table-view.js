@@ -14,7 +14,8 @@ var app = app || {};
         childViewOptions: function () {
             return {
                 extras: this.options.extras,
-                project: this.options.project
+                project: this.options.project,
+                show_price: this.options.show_price
             };
         },
         initialize: function () {
@@ -26,9 +27,12 @@ var app = app || {};
                 ref: 'Ref.',
                 product_image: 'Product Image',
                 product_description: 'Product Description',
-                quantity: 'Quantity',
-                price: 'Price'
+                quantity: 'Quantity'
             };
+
+             if ( this.options.show_price !== false ) {
+                name_title_hash.price = 'Price';
+            }
 
             var table_attributes = _.map(name_title_hash, function (item, key) {
                 return { name: key, title: item };
@@ -59,18 +63,21 @@ var app = app || {};
                     this.options.extras.getRegularItems().length ||
                     this.options.extras.getOptionalItems().length,
                 price_colspan: this.getQuoteTableAttributes().length - 1,
-                total_prices: this.getTotalPrices()
+                total_prices: this.getTotalPrices(),
+                show_price: this.options.show_price !== false
             };
         },
         onRender: function () {
             if ( this.serializeData().has_extras ) {
                 var quote_extras_table_view = new app.QuoteExtrasTableView({
                     collection: this.options.extras,
+                    show_price: this.options.show_price,
                     type: 'Regular'
                 });
 
                 var quote_optional_extras_table_view = new app.QuoteExtrasTableView({
                     collection: this.options.extras,
+                    show_price: this.options.show_price,
                     type: 'Optional'
                 });
 
