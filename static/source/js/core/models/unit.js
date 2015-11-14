@@ -150,6 +150,21 @@ var app = app || {};
                 section.panelType = type;
             });
         },
+        addMullion: function(sectionId, type) {
+            this._updateSection(sectionId, function(section) {
+                var full = this.generateFullRoot();
+                var fullSection = app.Unit.findSection(full, sectionId);
+                section.mullions = section.mullions || [];
+                section.mullion.push({
+
+                });
+                if (type === 'vertical') {
+                    section.position = fullSection.params.x + fullSection.params.width / 2;
+                } else {
+                    section.position = fullSection.params.y + fullSection.params.height / 2;
+                }
+            });
+        },
         setSectionMullionPosition: function(id, pos) {
             this._updateSection(id, function(section) {
                 section.position = parseInt(pos, 10);
@@ -157,6 +172,14 @@ var app = app || {};
         },
         removeMullion: function(sectionId) {
             this._updateSection(sectionId, function(section) {
+                section.devider = null;
+                section.sections = null;
+                section.position = null;
+            });
+        },
+        removeSash: function(sectionId) {
+            this._updateSection(sectionId, function(section) {
+                section.sashType = 'none';
                 section.devider = null;
                 section.sections = null;
                 section.position = null;
@@ -246,6 +269,9 @@ var app = app || {};
                     mullionAttrs.width = params.width;
                     mullionAttrs.height = this.profile.get('mullionWidth');
                 }
+                if (rootSection.sashType !== 'none') {
+
+                }
                 rootSection.mullionParams = mullionAttrs;
             }
             rootSection.sections = _.map(rootSection.sections, function(sectionData, i) {
@@ -285,6 +311,31 @@ var app = app || {};
             }.bind(this));
             return rootSection;
         },
+        generateFullReversedRoot: function(rootSection){
+            rootSection = rootSection || this.generateFullRoot();
+            var width = this.getInMetric('width', 'mm');
+            rootSection.params.x = width - rootSection.params.x - rootSection.params.width;
+            if (rootSection.devider === 'vertical') {
+                rootSection.position = width - rootSection.position;
+                rootSection.sections = rootSection.sections.reverse();
+                var temp = rootSection.mullionEdges.left;
+                rootSection.mullionEdges.left = rootSection.mullionEdges.right;
+                rootSection.mullionEdges.right = temp;
+                rootSection.mullionParams.x = width - rootSection.mullionParams.x - this.profile.get('mullionWidth');
+            }
+            var type = rootSection.sashType;
+            if (type.indexOf('left') >= 0) {
+                type = type.replace('left', 'right');
+            }
+            if (type.indexOf('right') >= 0) {
+                type = type.replace('right', 'left');
+            }
+            rootSection.sashType = type;
+            rootSection.sections = _.map(rootSection.sections, function(sectionData) {
+                return this.generateFullReversedRoot(sectionData);
+            }.bind(this));
+            return rootSection;
+        },
         flatterSections: function(rootSection) {
             rootSection = rootSection || this.get('rootSection');
             var sections = [];
@@ -300,7 +351,7 @@ var app = app || {};
         getMullions: function(rootSection) {
             rootSection = rootSection || this.get('rootSection');
             var mullions = [];
-            if (rootSection.sections) {
+            if (rootSection.sections && rootSection.sections.length) {
                 mullions.push({
                     type: rootSection.devider,
                     position: rootSection.position,
@@ -314,6 +365,9 @@ var app = app || {};
                 mullions = [];
             }
             return _.flatten(mullions);
+        },
+        getRevertedMullions: function() {
+            return this.getMullions(this.generateFullReversedRoot());
         },
         getInMetric: function(attr, metric) {
             if (!metric || (['mm', 'inches'].indexOf(metric) === -1)) {
