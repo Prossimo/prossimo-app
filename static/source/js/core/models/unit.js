@@ -269,9 +269,9 @@ var app = app || {};
                     mullionAttrs.width = params.width;
                     mullionAttrs.height = this.profile.get('mullionWidth');
                 }
-                if (rootSection.sashType !== 'none') {
+                // if (rootSection.sashType !== 'none') {
 
-                }
+                // }
                 rootSection.mullionParams = mullionAttrs;
             }
             rootSection.sections = _.map(rootSection.sections, function(sectionData, i) {

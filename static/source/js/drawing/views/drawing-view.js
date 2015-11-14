@@ -64,7 +64,7 @@ var app = app || {};
             this.setState({
                 insideView: !this.state.insideView
             });
-            var buttonText = this.state.insideView ? 'Show outside view': 'Show inside view';
+            var buttonText = this.state.insideView ? 'Show outside view' : 'Show inside view';
             this.$('#change-view').text(buttonText);
         },
         setState: function(state) {
@@ -303,6 +303,7 @@ var app = app || {};
                 if (this.model.profile.isSolidPanelPossible() && sectionData.panelType === 'solid') {
                     glass.fill('lightgrey');
                 }
+                glass.on('click', this.showPopup.bind(this, sectionData.id));
             }
             var type = sectionData.sashType;
 
@@ -340,7 +341,8 @@ var app = app || {};
                     sectionId: sectionData.id
                 });
                 group.add(frameGroup);
-                var shouldDrawHandle = this.state.insideView && (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type.indexOf('top') >= 0);
+                var shouldDrawHandle = this.state.insideView &&
+                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type.indexOf('top') >= 0);
                 if (shouldDrawHandle) {
                     var offset = frameWidth / 2;
                     var pos = {
