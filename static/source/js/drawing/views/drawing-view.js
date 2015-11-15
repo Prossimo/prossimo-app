@@ -853,6 +853,17 @@ var app = app || {};
         changeSashType: function(e) {
             this.$('.popup-wrap').hide();
             var type = $(e.target).data('type');
+
+            // revirse sash type from right to left
+            // or from left to right on onside view
+            // UX will be better for this case
+            if (!this.state.insideView) {
+                if (type.indexOf('left') >= 0) {
+                    type = type.replace('left', 'right');
+                } else if (type.indexOf('right') >= 0) {
+                    type = type.replace('right', 'left');
+                }
+            }
             this.model.setSectionSashType(this.sectionIdToChange, type);
         },
         changePanelType: function(e) {
