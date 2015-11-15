@@ -318,10 +318,15 @@ var app = app || {};
             if (rootSection.devider === 'vertical') {
                 rootSection.position = width - rootSection.position;
                 rootSection.sections = rootSection.sections.reverse();
-                var temp = rootSection.mullionEdges.left;
-                rootSection.mullionEdges.left = rootSection.mullionEdges.right;
-                rootSection.mullionEdges.right = temp;
+                // var temp = rootSection.mullionEdges.left;
+                // rootSection.mullionEdges.left = rootSection.mullionEdges.right;
+                // rootSection.mullionEdges.right = temp;
                 rootSection.mullionParams.x = width - rootSection.mullionParams.x - this.profile.get('mullionWidth');
+            }
+            if (rootSection.devider === 'horizontal') {
+                console.log(rootSection.mullionParams.x);
+                rootSection.mullionParams.x = width - rootSection.mullionParams.x - rootSection.mullionParams.width;
+                console.log(rootSection.mullionParams.x);
             }
             var type = rootSection.sashType;
             if (type.indexOf('left') >= 0) {
@@ -332,6 +337,9 @@ var app = app || {};
             }
             rootSection.sashType = type;
             rootSection.sections = _.map(rootSection.sections, function(sectionData) {
+                var temp = sectionData.mullionEdges.left;
+                sectionData.mullionEdges.left = sectionData.mullionEdges.right;
+                sectionData.mullionEdges.right = temp;
                 return this.generateFullReversedRoot(sectionData);
             }.bind(this));
             return rootSection;
