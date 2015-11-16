@@ -1,6 +1,7 @@
 /* global app */
 /* eslint-env qunit */
 /* eslint strict:0  */
+/* eslint max-len:0  */
 
 //  Test that QUnit is working
 test('basic test', function () {

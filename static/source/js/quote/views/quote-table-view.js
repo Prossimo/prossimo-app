@@ -26,7 +26,7 @@ var app = app || {};
             var name_title_hash = {
                 ref: 'Ref.',
                 customer_image: 'Customer Image',
-                product_image: 'Product Image',
+                product_image: 'Shop Drawing',
                 product_description: 'Product Description',
                 quantity: 'Quantity'
             };

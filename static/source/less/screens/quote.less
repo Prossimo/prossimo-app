@@ -125,23 +125,32 @@
 //  ------------------------------------------------------------------------
 
 
-td.ref {
-    width: 5%;
+td.ref,
+th.ref {
+    width: 3%;
 }
 
-td.price {
-    width: 25%;
-}
-
-td.product_description {
+td.price,
+th.price {
     width: 20%;
 }
 
-td.quantity {
-    width: 5%;
+// :not(.quote-extras-table) td.product_description,
+// :not(.quote-extras-table) th.product_description {
+//     width: 30%;
+// }
+
+td.quantity,
+th.quantity {
+    width: 3%;
 }
 
-td.customer_image img,
+td.customer_image img {
+    display: block;
+    max-height: 20em;
+    max-width: 20em;
+}
+
 td.product_image img {
     display: block;
     max-height: 30em;
