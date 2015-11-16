@@ -13,6 +13,8 @@
     <script src="/static/public/js/templates.@@hash.js"></script>
 
     @@scripts
+
+    <script src="/test/customer-images/customer-images.js"></script>
 </head>
 <body>
     <aside id="sidebar" class="sidebar"></aside>

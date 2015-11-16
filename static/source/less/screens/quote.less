@@ -15,8 +15,12 @@
     background-color: @white;
     border: 1px solid darken(@white, 15%);
     min-height: 100%;
-    max-width: 114rem;
-    min-width: 96rem;
+    // max-width: 114rem;
+    // min-width: 96rem;
+    max-width: 170rem;
+    min-width: 150rem;
+    width: 100%;
+    overflow: visible;
 }
 
 
@@ -129,12 +133,19 @@ td.price {
     width: 25%;
 }
 
-td.quantity {
-    width: 10%;
+td.product_description {
+    width: 20%;
 }
 
+td.quantity {
+    width: 5%;
+}
+
+td.customer_image img,
 td.product_image img {
     display: block;
+    max-height: 30em;
+    max-width: 30em;
 }
 
 

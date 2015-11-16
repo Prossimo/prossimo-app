@@ -50,8 +50,11 @@ var app = app || {};
                 return { name: key, title: item, value: params_source[key] };
             }, this);
         },
+        getCustomerImage: function () {
+            return this.model.get('customer_image');
+        },
         getProductImage: function () {
-            return app.preview(this.model, 200, 200, 'base64');
+            return app.preview(this.model, 400, 400, 'base64');
         },
         serializeData: function () {
             return {
@@ -60,6 +63,7 @@ var app = app || {};
                 notes: this.model.get('notes'),
                 quantity: this.model.get('quantity'),
                 price: this.getPrices(),
+                customer_image: this.getCustomerImage(),
                 product_image: this.getProductImage(),
                 show_price: this.options.show_price !== false
             };

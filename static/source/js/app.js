@@ -65,7 +65,8 @@ $(document).ready(function () {
             price_markup: 2.3,
             uw: 0.77,
             glazing: '3Std U=.09 SGHC=.5',
-            discount: 20
+            discount: 20,
+            customer_image: app.test_images['1'].url
         },
         {
             mark: 'B1',
@@ -85,7 +86,8 @@ $(document).ready(function () {
             price_markup: 2.3,
             uw: 0.78,
             glazing: '3Std U=.09 SGHC=.5',
-            discount: 20
+            discount: 20,
+            customer_image: app.test_images['2'].url
         }
     ]);
 
