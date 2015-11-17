@@ -63,6 +63,18 @@ module.exports = function (grunt) {
         hash: '<%= gitinfo.local.branch.current.shortSHA %>',
 
         less: {
+            dev: {
+                options: {
+                    modifyVars: {
+                        bowerPath: '"../../<%= bowerUrl %>"'
+                    }
+                },
+                files: {
+                    '<%= buildUrl %>/css/styles.dev.css': '<%= sourceUrl %>/less/styles.less',
+                    '<%= buildUrl %>/css/print.dev.css': '<%= sourceUrl %>/less/print.less',
+                    '<%= buildUrl %>/css/login.dev.css': '<%= sourceUrl %>/less/login.less'
+                }
+            },
             build: {
                 options: {
                     modifyVars: {
@@ -78,6 +90,23 @@ module.exports = function (grunt) {
         },
 
         handlebars: {
+            dev: {
+                files: {
+                    '<%= buildUrl %>/js/templates.dev.js': ['<%= sourceUrl %>/**/*.hbs']
+                },
+                options: {
+                    namespace: 'app.templates',
+                    partialsUseNamespace: true,
+                    partialRegex: /.*/,
+                    partialsPathRegex: /\/partials\//,
+                    processName: function(filePath) {
+                        return filePath.replace(/^static\/source\/templates\//, '').replace(/\.hbs$/, '');
+                    },
+                    processPartialName: function(filePath) {
+                        return filePath.replace(/^static\/source\/templates\//, '').replace(/\.hbs$/, '');
+                    }
+                }
+            },
             build: {
                 files: {
                     '<%= buildUrl %>/js/templates.<%= hash %>.js': ['<%= sourceUrl %>/**/*.hbs']
@@ -155,6 +184,14 @@ module.exports = function (grunt) {
         },
 
         cssmin: {
+            vendor_dev: {
+                files: {
+                    '<%= buildUrl %>/css/vendor.dev.min.css':
+                        vendor_css_files.map(function (component) {
+                            return '<%= bowerUrl %>/' + component;
+                        })
+                }
+            },
             vendor: {
                 files: {
                     '<%= buildUrl %>/css/vendor.<%= hash %>.min.css':
@@ -166,6 +203,22 @@ module.exports = function (grunt) {
         },
 
         uglify: {
+            vendor_dev: {
+                options: {
+                    mangle: false,
+                    compress: false,
+                    banner: '/*! Full list of vendor libraries: \n' +
+                        vendor_js_files.map(function (component) {
+                            return '<%= buildUrl %>/js/vendor/' + component;
+                        }).join('\n') + '*/\n'
+                },
+                files: {
+                    '<%= buildUrl %>/js/vendor.dev.min.js':
+                        vendor_js_files.map(function (component) {
+                            return '<%= bowerUrl %>/' + component;
+                        })
+                }
+            },
             vendor: {
                 options: {
                     mangle: false,
@@ -177,10 +230,6 @@ module.exports = function (grunt) {
                 },
                 files: {
                     '<%= buildUrl %>/js/vendor.<%= hash %>.min.js':
-                        vendor_js_files.map(function (component) {
-                            return '<%= bowerUrl %>/' + component;
-                        }),
-                    '<%= buildUrl %>/js/vendor.min.js':
                         vendor_js_files.map(function (component) {
                             return '<%= bowerUrl %>/' + component;
                         })
@@ -298,7 +347,7 @@ module.exports = function (grunt) {
                     patterns: [
                         {
                             match: 'hash',
-                            replacement: '<%= hash %>'
+                            replacement: 'dev'
                         },
                         {
                             match: 'scripts',
@@ -388,8 +437,8 @@ module.exports = function (grunt) {
     ]);
 
     grunt.registerTask('dev', [
-        'gitinfo', 'clean:build', 'handlebars:build', 'copy:dev', 'copy:vendor',
-        'copy:images', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:dev', 'pdfjs'
+        'clean:build', 'handlebars:dev', 'copy:dev', 'copy:vendor', 'copy:images',
+        'less:dev', 'uglify:vendor_dev', 'cssmin:vendor_dev', 'replace:dev', 'pdfjs'
     ]);
 
     grunt.registerTask('test', ['eslint', 'qunit']);
