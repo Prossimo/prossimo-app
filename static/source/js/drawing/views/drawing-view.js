@@ -593,8 +593,6 @@ var app = app || {};
 
             verticalMullions.sort(function(a, b) {return a.position - b.position; });
             horizontalMullions.sort(function(a, b) {return a.position - b.position; });
-            console.log(horizontalMullions);
-
 
             var pos = 0;
             verticalMullions.forEach(function(mul, i) {
@@ -644,7 +642,6 @@ var app = app || {};
             pos = 0;
             horizontalMullions.forEach(function(mul, i) {
                 var height_ = mul.position - pos;
-                console.log('height', height_);
                 if (height_ > 0) {
                     var params = {
                         getter: function() {
