@@ -591,29 +591,34 @@ var app = app || {};
                 }
             }.bind(this));
 
-            verticalMullions.sort(function(a, b) {return b.position - a.position; });
-            horizontalMullions.sort(function(a, b) {return b.position - a.position; });
+            verticalMullions.sort(function(a, b) {return a.position - b.position; });
+            horizontalMullions.sort(function(a, b) {return a.position - b.position; });
+            console.log(horizontalMullions);
+
 
             var pos = 0;
             verticalMullions.forEach(function(mul, i) {
                 var width_ = mul.position - pos;
-                var params = {
-                    getter: function() {
-                        return width_;
+                // do not draw very small dimension
+                if (width_ > 0) {
+                    var params = {
+                        getter: function() {
+                            return width_;
+                        }
+                    };
+                    if (verticalMullions.length === 1) {
+                        params.setter = function(val) {
+                            this.model.setSectionMullionPosition(mul.id, val);
+                        }.bind(this);
                     }
-                };
-                if (verticalMullions.length === 1) {
-                    params.setter = function(val) {
-                        this.model.setSectionMullionPosition(mul.id, val);
-                    }.bind(this);
+                    var metric = this.createHorizontalMetric(width_ * this.ratio, merticSize, params);
+                    metric.position({
+                        x: pos * this.ratio,
+                        y: height
+                    });
+                    pos = mul.position;
+                    group.add(metric);
                 }
-                var metric = this.createHorizontalMetric(width_ * this.ratio, merticSize, params);
-                metric.position({
-                    x: pos * this.ratio,
-                    y: height
-                });
-                pos = mul.position;
-                group.add(metric);
                 if ( i === verticalMullions.length - 1) {
                     horizontalRows += 1;
                     var width__ = this.model.getInMetric('width', 'mm') - pos;
@@ -639,23 +644,26 @@ var app = app || {};
             pos = 0;
             horizontalMullions.forEach(function(mul, i) {
                 var height_ = mul.position - pos;
-                var params = {
-                    getter: function() {
-                        return height_;
+                console.log('height', height_);
+                if (height_ > 0) {
+                    var params = {
+                        getter: function() {
+                            return height_;
+                        }
+                    };
+                    if (horizontalMullions.length === 1) {
+                        params.setter = function(val) {
+                            this.model.setSectionMullionPosition(mul.id, val);
+                        }.bind(this);
                     }
-                };
-                if (horizontalMullions.length === 1) {
-                    params.setter = function(val) {
-                        this.model.setSectionMullionPosition(mul.id, val);
-                    }.bind(this);
+                    var metric = this.createVerticalMetric(merticSize, height_ * this.ratio, params);
+                    metric.position({
+                        x: -merticSize,
+                        y: pos * this.ratio
+                    });
+                    pos = mul.position;
+                    group.add(metric);
                 }
-                var metric = this.createVerticalMetric(merticSize, height_ * this.ratio, params);
-                metric.position({
-                    x: -merticSize,
-                    y: pos * this.ratio
-                });
-                pos = mul.position;
-                group.add(metric);
                 if ( i === horizontalMullions.length - 1) {
                     verticalRows += 1;
                     var height__ = this.model.getInMetric('height', 'mm') - pos;
