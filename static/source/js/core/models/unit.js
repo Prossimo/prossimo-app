@@ -331,8 +331,7 @@ var app = app || {};
             var type = rootSection.sashType;
             if (type.indexOf('left') >= 0) {
                 type = type.replace('left', 'right');
-            }
-            if (type.indexOf('right') >= 0) {
+            } else if (type.indexOf('right') >= 0) {
                 type = type.replace('right', 'left');
             }
             rootSection.sashType = type;
