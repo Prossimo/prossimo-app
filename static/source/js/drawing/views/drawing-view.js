@@ -83,6 +83,9 @@ var app = app || {};
 
         checkUnitType: function() {
             this.$('.panel-type').toggle(this.model.profile.isSolidPanelPossible());
+            var isEntryDoor = this.model.profile.get('unitType') === 'Entry Door';
+            this.$('[data-type="flush-left"]').toggle(isEntryDoor);
+            this.$('[data-type="flush-right"]').toggle(isEntryDoor);
         },
 
         createFrame: function(params) {
@@ -147,6 +150,27 @@ var app = app || {};
                     selectedSashId: sectionId
                 });
             }.bind(this));
+
+            return group;
+        },
+
+        createFlushFrame: function(params) {
+            // var frameWidth = params.frameWidth;  // in mm
+            var width = params.width;
+            var height = params.height;
+            var sectionId = params.sectionId;
+
+            var group = new Konva.Group();
+            var rect = new Konva.Rect({
+                width: width,
+                height: height,
+                fill: 'white',
+                stroke: 'black',
+                strokeWidth: 1
+            });
+
+            group.add(rect);
+            group.on('click', this.showPopup.bind(this, sectionId));
 
             return group;
         },
@@ -307,7 +331,62 @@ var app = app || {};
             }
             var type = sectionData.sashType;
 
-            var directionLine = new Konva.Shape({
+            if (type !== 'none' && type) {
+                var frameGroup;
+                if (type === 'flush-right' || type === 'flush-left') {
+                    frameGroup = this.createFlushFrame({
+                        width: width,
+                        height: height,
+                        frameWidth: frameWidth,
+                        sectionId: sectionData.id
+                    });
+                } else {
+                    frameGroup = this.createFrame({
+                        width: width,
+                        height: height,
+                        frameWidth: frameWidth,
+                        sectionId: sectionData.id
+                    });
+                }
+                group.add(frameGroup);
+                var shouldDrawHandle = this.state.insideView &&
+                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type.indexOf('top') >= 0);
+                if (shouldDrawHandle) {
+                    var offset = frameWidth / 2;
+                    var pos = {
+                        x: null,
+                        y: null,
+                        rotation: 0
+                    };
+                    if (type === 'top-left' || type === 'left' || type === 'slide-right' || type === 'flush-left') {
+                        pos.x = offset;
+                        pos.y = height / 2;
+                    }
+                    if (type === 'top-right' || type === 'right' || type === 'slide-left' || type === 'flush-right') {
+                        pos.x = width - offset;
+                        pos.y = height / 2;
+                    }
+                    if (type === 'top') {
+                        pos.x = width / 2;
+                        pos.y = offset;
+                        pos.rotation = 90;
+                    }
+                    var handle = new Konva.Shape({
+                        x: pos.x,
+                        y: pos.y,
+                        rotation: pos.rotation,
+                        stroke: 'black',
+                        fill: 'rgba(0,0,0,0.2)',
+                        sceneFunc: function(ctx) {
+                            ctx.beginPath();
+                            ctx.rect(-23, -23, 46, 55);
+                            ctx.rect(-14, -5, 28, 90);
+                            ctx.fillStrokeShape(this);
+                        }
+                    });
+                    group.add(handle);
+                }
+                var directionLine = new Konva.Shape({
                 stroke: 'black',
                 x: glassX,
                 y: glassY,
@@ -332,52 +411,6 @@ var app = app || {};
                 }
             });
             group.add(directionLine);
-
-            if (type !== 'none' && type) {
-                var frameGroup = this.createFrame({
-                    width: width,
-                    height: height,
-                    frameWidth: frameWidth,
-                    sectionId: sectionData.id
-                });
-                group.add(frameGroup);
-                var shouldDrawHandle = this.state.insideView &&
-                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type.indexOf('top') >= 0);
-                if (shouldDrawHandle) {
-                    var offset = frameWidth / 2;
-                    var pos = {
-                        x: null,
-                        y: null,
-                        rotation: 0
-                    };
-                    if (type === 'top-left' || type === 'left' || type === 'slide-right') {
-                        pos.x = offset;
-                        pos.y = height / 2;
-                    }
-                    if (type === 'top-right' || type === 'right' || type === 'slide-left') {
-                        pos.x = width - offset;
-                        pos.y = height / 2;
-                    }
-                    if (type === 'top') {
-                        pos.x = width / 2;
-                        pos.y = offset;
-                        pos.rotation = 90;
-                    }
-                    var handle = new Konva.Shape({
-                        x: pos.x,
-                        y: pos.y,
-                        rotation: pos.rotation,
-                        stroke: 'black',
-                        fill: 'rgba(0,0,0,0.2)',
-                        sceneFunc: function(ctx) {
-                            ctx.beginPath();
-                            ctx.rect(-23, -23, 46, 55);
-                            ctx.rect(-14, -5, 28, 90);
-                            ctx.fillStrokeShape(this);
-                        }
-                    });
-                    group.add(handle);
-                }
             }
             return group;
         },
