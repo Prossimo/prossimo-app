@@ -9,6 +9,7 @@ var app = app || {};
     var TYPES_WITH_EDITABLE_THRESHOLD = ['Patio Door'];
     var TYPES_WITH_ALWAYS_LOW_THRESHOLD = ['Entry Door'];
     var TYPES_WITH_POSSIBLE_SOLID_PANEL = ['Patio Door', 'Entry Door'];
+    var TYPES_WITH_POSSIBLE_FLUSH_PANEL = ['Entry Door'];
 
     //  Profile sizes are set in millimeters
     var PROFILE_PROPERTIES = [
@@ -62,6 +63,9 @@ var app = app || {};
         },
         isSolidPanelPossible: function () {
             return _.indexOf(TYPES_WITH_POSSIBLE_SOLID_PANEL, this.get('unitType')) !== -1;
+        },
+        isFlushPanelPossible: function () {
+            return _.indexOf(TYPES_WITH_POSSIBLE_FLUSH_PANEL, this.get('unitType')) !== -1;
         },
         getThresholdType: function () {
             var threshold_type = '--';

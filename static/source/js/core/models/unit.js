@@ -141,7 +141,6 @@ var app = app || {};
             this.set('rootSection', rootSection);
         },
         setSectionSashType: function(sectionId, type) {
-            console.log(type);
             this._updateSection(sectionId, function(section) {
                 section.sashType = type;
             });

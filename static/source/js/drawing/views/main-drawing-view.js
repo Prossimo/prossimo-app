@@ -23,7 +23,7 @@ var app = app || {};
             this.active_unit = app.current_project.units.length ?
                 app.current_project.units.first() : null;
         },
-        updateDrawingView: function (update_size_flag) {
+        updateDrawingView: function (update_rendered_flag) {
             if ( this.drawing_view ) {
                 this.drawing_view.destroy();
             }
@@ -36,9 +36,8 @@ var app = app || {};
 
                 this.ui.$drawing_container.empty().append(this.drawing_view.render().el);
 
-                if ( this._isShown && update_size_flag ) {
-                    this.drawing_view.updateSize();
-                    this.drawing_view.updateCanvas();
+                if ( this._isShown && update_rendered_flag ) {
+                    this.drawing_view.trigger('update_rendered');
                 }
             }
         },
@@ -51,6 +50,9 @@ var app = app || {};
             });
 
             this.ui.$sidebar_container.append(this.sidebar_view.render().el);
+        },
+        onAttach: function () {
+            this.drawing_view.trigger('update_rendered');
         },
         onDestroy: function () {
             this.sidebar_view.destroy();

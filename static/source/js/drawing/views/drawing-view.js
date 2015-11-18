@@ -8,11 +8,15 @@ var app = app || {};
         template: app.templates['drawing/drawing-view'],
         initialize: function () {
             this.listenTo(this.model, 'all', this.updateCanvas);
-            this.listenTo(this.options.parent_view, 'attach', this.onAttach);
+            this.on('update_rendered', this.updateRenderedScene, this);
             this.state = {
                 insideView: true
             };
-            this.checkUnitType();
+        },
+
+        ui: {
+            '$panel_type': '.panel-type',
+            '$flush_panels': '[data-type="flush-left"], [data-type="flush-right"]'
         },
 
         events: {
@@ -38,7 +42,7 @@ var app = app || {};
             this.layer = new Konva.Layer();
             this.stage.add(this.layer);
         },
-        onAttach: function() {
+        updateRenderedScene: function () {
             this.checkUnitType();
             this.updateSize();
             this.updateCanvas();
@@ -82,10 +86,8 @@ var app = app || {};
         },
 
         checkUnitType: function() {
-            this.$('.panel-type').toggle(this.model.profile.isSolidPanelPossible());
-            var isEntryDoor = this.model.profile.get('unitType') === 'Entry Door';
-            this.$('[data-type="flush-left"]').toggle(isEntryDoor);
-            this.$('[data-type="flush-right"]').toggle(isEntryDoor);
+            this.ui.$panel_type.toggle(this.model.profile.isSolidPanelPossible());
+            this.ui.$flush_panels.toggle(this.model.profile.isFlushPanelPossible());
         },
 
         createFrame: function(params) {
