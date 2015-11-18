@@ -142,6 +142,11 @@ var app = app || {};
                 height: 200,
                 trimDropdown: false
             });
+        },
+        onDestroy: function () {
+            if ( this.hot ) {
+                this.hot.destroy();
+            }
         }
     });
 })();

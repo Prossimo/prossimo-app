@@ -76,7 +76,7 @@ var app = app || {};
                 }
             });
 
-            this.$el.on('show.bs.popover', function () {
+            this.$el.off('show.bs.popover').on('show.bs.popover', function () {
                 $('.popover').remove();
             });
         },
@@ -412,6 +412,14 @@ var app = app || {};
             });
 
             this.appendPopovers();
+        },
+        onDestroy: function () {
+            this.$el.off('show.bs.popover');
+            this.$el.popover('destroy');
+
+            if ( this.hot ) {
+                this.hot.destroy();
+            }
         }
     });
 })();

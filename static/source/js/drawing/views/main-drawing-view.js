@@ -24,6 +24,10 @@ var app = app || {};
                 app.current_project.units.first() : null;
         },
         updateDrawingView: function (update_size_flag) {
+            if ( this.drawing_view ) {
+                this.drawing_view.destroy();
+            }
+
             if ( this.active_unit ) {
                 this.drawing_view = new app.DrawingView({
                     parent_view: this,
@@ -47,6 +51,9 @@ var app = app || {};
             });
 
             this.ui.$sidebar_container.append(this.sidebar_view.render().el);
+        },
+        onDestroy: function () {
+            this.sidebar_view.destroy();
         }
     });
 })();

@@ -70,20 +70,26 @@ var app = app || {};
         },
         onRender: function () {
             if ( this.serializeData().has_extras ) {
-                var quote_extras_table_view = new app.QuoteExtrasTableView({
+                this.quote_extras_table_view = new app.QuoteExtrasTableView({
                     collection: this.options.extras,
                     show_price: this.options.show_price,
                     type: 'Regular'
                 });
 
-                var quote_optional_extras_table_view = new app.QuoteExtrasTableView({
+                this.quote_optional_extras_table_view = new app.QuoteExtrasTableView({
                     collection: this.options.extras,
                     show_price: this.options.show_price,
                     type: 'Optional'
                 });
 
-                this.ui.$extras_table_container.append(quote_extras_table_view.render().el);
-                this.ui.$optional_extras_table_container.append(quote_optional_extras_table_view.render().el);
+                this.ui.$extras_table_container.append(this.quote_extras_table_view.render().el);
+                this.ui.$optional_extras_table_container.append(this.quote_optional_extras_table_view.render().el);
+            }
+        },
+        onDestroy: function () {
+            if ( this.serializeData().has_extras ) {
+                this.quote_extras_table_view.destroy();
+                this.quote_optional_extras_table_view.destroy();
             }
         }
     });

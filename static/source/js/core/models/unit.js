@@ -324,9 +324,7 @@ var app = app || {};
                 rootSection.mullionParams.x = width - rootSection.mullionParams.x - this.profile.get('mullionWidth');
             }
             if (rootSection.devider === 'horizontal') {
-                console.log(rootSection.mullionParams.x);
                 rootSection.mullionParams.x = width - rootSection.mullionParams.x - rootSection.mullionParams.width;
-                console.log(rootSection.mullionParams.x);
             }
             var type = rootSection.sashType;
             if (type.indexOf('left') >= 0) {

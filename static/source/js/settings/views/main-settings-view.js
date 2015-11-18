@@ -11,12 +11,15 @@ var app = app || {};
             '$profiles_table_container': '.profiles-table-container'
         },
         onRender: function () {
-            var profiles_table_view = new app.ProfilesTableView({
+            this.profiles_table_view = new app.ProfilesTableView({
                 collection: app.settings.profiles,
                 parent_view: this
             });
 
-            this.ui.$profiles_table_container.append(profiles_table_view.render().el);
+            this.ui.$profiles_table_container.append(this.profiles_table_view.render().el);
+        },
+        onDestroy: function () {
+            this.profiles_table_view.destroy();
         }
     });
 })();

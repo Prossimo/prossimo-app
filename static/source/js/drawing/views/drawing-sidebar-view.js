@@ -18,10 +18,6 @@ var app = app || {};
             'click @ui.$next': 'onNextBtn'
         },
         initialize: function () {
-            this.listenTo(this.options.parent_view, 'before:destroy', function () {
-                this.onBeforeDestroy();
-            });
-
             this.listenTo(this.options.parent_view.active_unit, 'all', this.render);
         },
         selectUnit: function (model) {
@@ -158,12 +154,11 @@ var app = app || {};
                 showSubtext: true
             });
 
-            $(document).off('keydown');
-            $(document).on('keydown', function (e) {
+            $(document).off('keydown').on('keydown', function (e) {
                 self.onKeyDown(e);
             });
         },
-        onBeforeDestroy: function () {
+        onDestroy: function () {
             $(document).off('keydown');
         }
     });

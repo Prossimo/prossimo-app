@@ -15,11 +15,6 @@ var app = app || {};
                 $img = $('<img class="customer-image" />');
                 $img.attr('src', value);
 
-                //  Prevent selection quirk (this is from HoT demo)
-                $img.on('mousedown', function (e) {
-                    e.preventDefault();
-                });
-
                 $td.empty().append($img);
             } else {
                 Handsontable.renderers.TextRenderer.apply(this, arguments);
@@ -37,11 +32,6 @@ var app = app || {};
             if ( escaped.indexOf('data:image/png') === 0 ) {
                 $img = $('<img class="drawing-preview" />');
                 $img.attr('src', value);
-
-                //  Prevent selection quirk (this is from HoT demo)
-                $img.on('mousedown', function (e) {
-                    e.preventDefault();
-                });
 
                 $td.empty().append($img);
             } else {

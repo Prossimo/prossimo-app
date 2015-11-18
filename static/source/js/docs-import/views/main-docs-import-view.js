@@ -32,21 +32,25 @@ var app = app || {};
             this.active_document_url = '';
         },
         onRender: function () {
-            var units_table_view = new app.UnitsTableView({
+            this.units_table_view = new app.UnitsTableView({
                 collection: app.current_project.units,
                 extras: app.current_project.extras,
                 parent_view: this
             });
 
-            var document_selector_view = new app.DocumentSelectorView({
+            this.document_selector_view = new app.DocumentSelectorView({
                 model: app.current_project,
                 active_document_url: this.active_document_url
             });
 
-            this.$el.append(units_table_view.render().el);
-            this.ui.$selection_area.append(document_selector_view.render().el);
+            this.$el.append(this.units_table_view.render().el);
+            this.ui.$selection_area.append(this.document_selector_view.render().el);
 
             this.updateFile();
+        },
+        onDestroy: function () {
+            this.units_table_view.destroy();
+            this.document_selector_view.destroy();
         }
     });
 })();
