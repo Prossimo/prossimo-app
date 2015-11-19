@@ -17,7 +17,7 @@ var app = app || {};
         initialize: function () {
             this.units = new app.UnitCollection();
             this.extras = new app.AccessoryCollection();
-            this.project_files = [];
+            this.files = new app.ProjectFileCollection();
         },
         getHiddenMultiplier: function () {
             var subtotal_units_price = this.units.getSubtotalPriceDiscounted();

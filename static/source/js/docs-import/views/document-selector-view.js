@@ -22,25 +22,15 @@ var app = app || {};
         onRender: function () {
             this.ui.$select.selectpicker();
         },
-        initialize: function () {
-            //  TODO: the list should be loaded from a `current_project`
-            //  An unique identifier here is `url`
-            this.document_list = [
-                {
-                    name: 'developer-specs-REV1_2_Public.pdf',
-                    url: '/test/pdf/developer-specs-REV1_2_Public.pdf'
-                },
-                {
-                    name: 'helloworld.pdf',
-                    url: '/test/pdf/helloworld.pdf'
-                }
-            ];
-        },
         serializeData: function () {
             return {
-                document_list: _.map(this.document_list, function (item) {
-                    item.is_selected = item.url === this.options.active_document_url;
-                    return item;
+                document_list: app.current_project.files.map(function (item) {
+                    return {
+                        is_selected: item.url === this.options.active_document_url,
+                        name: item.get('name'),
+                        type: item.get('type'),
+                        url: item.get('url')
+                    };
                 }, this)
             };
         }

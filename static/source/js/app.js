@@ -46,6 +46,19 @@ $(document).ready(function () {
         project_address: '827 Carpenter Lane Philadelphia, PA'
     });
 
+    app.current_project.files.add([
+        {
+            name: 'developer-specs-REV1_2_Public.pdf',
+            type: 'pdf',
+            url: '/test/pdf/developer-specs-REV1_2_Public.pdf'
+        },
+        {
+            name: 'helloworld.pdf',
+            type: 'pdf',
+            url: '/test/pdf/helloworld.pdf'
+        }
+    ]);
+
     app.current_project.units.add([
         {
             mark: 'A',

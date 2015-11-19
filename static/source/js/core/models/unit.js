@@ -13,7 +13,7 @@ var app = app || {};
         { name: 'notes', title: 'Notes', type: 'string' },
 
         { name: 'profile_name', title: 'Profile', type: 'string' },
-        { name: 'customer_image', title: 'Customer Image', type: 'base64image' },
+        { name: 'customer_image', title: 'Customer Image', type: 'string' },
         { name: 'internal_color', title: 'Color Internal', type: 'string' },
         { name: 'external_color', title: 'Color External', type: 'string' },
         { name: 'gasket_color', title: 'Gasket Color', type: 'string' },
