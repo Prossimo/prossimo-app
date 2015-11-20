@@ -14,7 +14,9 @@
 
     @@scripts
 
-    <script src="/test/customer-images/customer-images.js"></script>
+    <script src="/test/data/customer-images.js"></script>
+    <script src="/test/data/test-settings.js"></script>
+    <script src="/test/data/test-project.js"></script>
 </head>
 <body>
     <aside id="sidebar" class="sidebar"></aside>

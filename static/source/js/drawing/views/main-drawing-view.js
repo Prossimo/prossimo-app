@@ -52,7 +52,9 @@ var app = app || {};
             this.ui.$sidebar_container.append(this.sidebar_view.render().el);
         },
         onAttach: function () {
-            this.drawing_view.trigger('update_rendered');
+            if ( this.drawing_view ) {
+                this.drawing_view.trigger('update_rendered');
+            }
         },
         onDestroy: function () {
             this.sidebar_view.destroy();

@@ -19,23 +19,52 @@ var app = app || {};
             e.preventDefault();
             app.router.navigate(nav_target, { trigger: true });
         },
+        setTitle: function (title_part) {
+            document.title = 'Prossimo App: ' + title_part +
+                ' (current version: ' + $('meta[name="latest-commit-sha"]').attr('value') + ')';
+        },
+        setActiveNavItem: function (key) {
+            this.ui.$list.find('.' + key).addClass('active').siblings().removeClass('active');
+        },
+        setActivePath: function (path) {
+            this.active_path = path;
+        },
+        reloadActiveScreen: function () {
+            if ( this.active_path && _.isFunction(this.router_callbacks[this.active_path]) ) {
+                this.router_callbacks[this.active_path].call();
+            }
+        },
         initialize: function () {
+            this.router_callbacks = {};
+
             if ( this.options ) {
                 _.forEach(this.options, function (item, key) {
                     if ( _.isFunction(item.showCallback) ) {
                         var self = this;
 
+                        this.router_callbacks[item.path] = function () {
+                            if ( app.current_project ) {
+                                item.showCallback.call();
+                            } else {
+                                app.main_region.show(new app.NoProjectSelectedView());
+                            }
+
+                            self.setActivePath(item.path);
+                            self.setTitle(item.title);
+                            self.setActiveNavItem(key);
+                        };
+
                         //  Execute callback on routing
                         app.router.addRoute(item.path + '(/)', function () {
-                            item.showCallback.apply();
-                            document.title = 'Prossimo App: ' + item.title +
-                                ' (current version: ' + $('meta[name="latest-commit-sha"]').attr('value') + ')';
-                            self.ui.$list.find('.' + key).addClass('active').siblings().removeClass('active');
+                            if ( _.isFunction(self.router_callbacks[item.path]) ) {
+                                self.router_callbacks[item.path].call();
+                            }
                         });
                     }
                 }, this);
             }
 
+            this.listenTo(app.vent, 'current_project_changed', this.reloadActiveScreen);
             $('#sidebar').append( this.render().el );
         },
         onRender: function () {

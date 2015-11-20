@@ -35,9 +35,12 @@ module.exports = function (grunt) {
         'core/collections/unit-collection.js',
         'core/collections/accessory-collection.js',
         'core/collections/profile-collection.js',
+        'core/collections/project-collection.js',
         'core/collections/project-file-collection.js',
         'core/views/main-navigation-view.js',
         'core/views/units-table-view.js',
+        'core/views/project-selector-view.js',
+        'core/views/no-project-selected-view.js',
         'docs-import/views/main-docs-import-view.js',
         'docs-import/views/document-selector-view.js',
         'drawing/views/main-drawing-view.js',
@@ -281,7 +284,7 @@ module.exports = function (grunt) {
             },
             less: {
                 files: ['<%= sourceUrl %>/less/**/*.less'],
-                tasks: ['gitinfo', 'less:build']
+                tasks: ['gitinfo', 'less:dev']
             },
             // uglify: {
             //     files: ['<%= sourceUrl %>/js/**/*.js'],
@@ -293,7 +296,7 @@ module.exports = function (grunt) {
             },
             handlebars: {
                 files: ['<%= sourceUrl %>/templates/**/*.hbs'],
-                tasks: ['gitinfo', 'handlebars:build']
+                tasks: ['handlebars:dev']
             },
             livereload: {
                 options: { livereload: true },
