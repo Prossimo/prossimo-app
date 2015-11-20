@@ -45,6 +45,7 @@ var app = app || {};
         },
         getDescription: function () {
             var f = app.utils.format;
+            var c = app.utils.convert;
 
             var name_title_hash = {
                 mark: 'Mark',
@@ -57,7 +58,9 @@ var app = app || {};
 
             var params_source = {
                 mark: this.model.get('mark'),
-                size: f.dimensions(this.model.get('width'), this.model.get('height'), 'fraction'),
+                size: this.options.show_sizes_in_mm ?
+                    f.dimensions_mm(c.inches_to_mm(this.model.get('width')), c.inches_to_mm(this.model.get('height'))) :
+                    f.dimensions(this.model.get('width'), this.model.get('height'), 'fraction'),
                 type: this.model.get('type'),
                 glazing: this.model.get('glazing'),
                 desc: this.model.get('description'),
@@ -73,7 +76,12 @@ var app = app || {};
             return this.model.get('customer_image');
         },
         getProductImage: function () {
-            return app.preview(this.model, 400, 400, 'base64');
+            return app.preview(this.model, {
+                width: 400,
+                height: 400,
+                mode: 'base64',
+                position: this.options.show_outside_units_view ? 'outside' : 'inside'
+            });
         },
         serializeData: function () {
             return {

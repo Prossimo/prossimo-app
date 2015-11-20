@@ -15,7 +15,9 @@ var app = app || {};
             return {
                 extras: this.options.extras,
                 project: this.options.project,
-                show_price: this.options.show_price
+                show_price: this.options.show_price,
+                show_outside_units_view: this.options.show_outside_units_view,
+                show_sizes_in_mm: this.options.show_sizes_in_mm
             };
         },
         initialize: function () {

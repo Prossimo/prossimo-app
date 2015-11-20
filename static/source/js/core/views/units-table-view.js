@@ -156,7 +156,11 @@ var app = app || {};
                     return model.getUnitCost();
                 },
                 drawing: function (model) {
-                    return app.preview(model, 500, 500, 'base64');
+                    return app.preview(model, {
+                        width: 500,
+                        height: 500,
+                        mode: 'base64'
+                    });
                 },
                 subtotal_cost: function (model) {
                     return model.getSubtotalCost();
