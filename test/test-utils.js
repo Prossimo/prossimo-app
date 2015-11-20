@@ -35,6 +35,12 @@ test('utils.format.dimensions', function () {
     equal(f.dimensions('12', '12'), '1′−0″ x 1′−0″', 'Expected value is 1′−0″ x 1′−0″');
 });
 
+test('utils.format.dimensions_mm', function () {
+    var f = app.utils.format;
+
+    equal(f.dimensions_mm(2500, 1300), '2,500 x 1,300', 'Expected value is 2,500 x 1,300');
+});
+
 test('utils.format.price_usd', function () {
     var f = app.utils.format;
 

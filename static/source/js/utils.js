@@ -45,6 +45,9 @@ var app = app || {};
             dimensions: function (width, height, decimal_format) {
                 return this.dimension(width, decimal_format) + ' x ' + this.dimension(height, decimal_format);
             },
+            dimensions_mm: function (width, height) {
+                return this.fixed_minimal(width) + ' x ' + this.fixed_minimal(height);
+            },
             price_usd: function (price) {
                 return '$' + new Decimal(parseFloat(price).toFixed(2)).toFormat(2);
             },

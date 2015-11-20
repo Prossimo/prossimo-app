@@ -913,27 +913,48 @@ var app = app || {};
         }
     });
 
-    app.preview = function(unitModel, width, height, mode) {
-        mode = mode || 'base64';
+    app.preview = function(unitModel, options) {
+        var result;
+        var defaults = {
+            width: 300,
+            height: 300,
+            mode: 'base64',
+            position: 'inside'
+        };
+
+        options = _.defaults({}, options, defaults);
+
         var view = new app.DrawingView({
             model: unitModel
         });
+
         view.render();
-        view.updateSize(width, height);
+        view.updateSize(options.width, options.height);
         view.updateCanvas();
-        var result;
-        if (mode === 'canvas') {
+
+        if ( _.indexOf(['inside', 'outside'], options.position) !== -1 ) {
+            view.setState({
+                insideView: options.position === 'inside'
+            });
+        } else {
+            view.destroy();
+            view.remove();
+            throw new Error('unrecognized position for preview: ' + options.position);
+        }
+
+        if (options.mode === 'canvas') {
             result = view.layer.canvas._canvas;
-        } else if (mode === 'base64') {
+        } else if (options.mode === 'base64') {
             result = view.stage.toDataURL();
-        } else if (mode === 'image') {
+        } else if (options.mode === 'image') {
             result = new Image();
             result.src = view.stage.toDataURL();
         } else {
             view.destroy();
             view.remove();
-            throw new Error('unrecognized mode for preview: ' + mode);
+            throw new Error('unrecognized mode for preview: ' + options.mode);
         }
+
         // clean
         view.destroy();
         view.remove();

@@ -19,7 +19,8 @@ var app = app || {};
                 project: app.current_project,
                 collection: app.current_project.units,
                 extras: app.current_project.extras,
-                show_price: false
+                show_price: false,
+                show_sizes_in_mm: true
             });
 
             this.ui.$table_container.append(this.request_table_view.render().el);
