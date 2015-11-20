@@ -20,7 +20,7 @@ var app = app || {};
         },
         onChange: function () {
             var new_id = this.ui.$select.val();
-            console.log( 'project selector onchange', this.ui.$select.val() );
+            // console.log( 'project selector onchange', this.ui.$select.val() );
             this.setCurrentProject(new_id);
         },
         setCurrentProject: function (new_id) {
