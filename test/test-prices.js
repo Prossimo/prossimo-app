@@ -71,6 +71,10 @@ test('single unit tests', function () {
     equal(first_unit.getSubtotalPrice(), first_unit.getUnitPrice(), 'Price should be same for a single unit and for subtotal');
     equal(first_unit.getUnitPriceDiscounted().toFixed(2), '812.79', 'Price with discount is expected to be 812.79');
     equal(first_unit.getSubtotalPriceDiscounted(), first_unit.getUnitPriceDiscounted(), 'Discounted price should be same for a single unit and for subtotal');
+
+    equal(first_unit.getAreaInSquareFeet().toFixed(2), '8.33', 'Unit area is expected to be 8.33');
+    equal(first_unit.getSquareFeetPrice().toFixed(2), '121.92', 'Price per sq.ft is expected to be 121.92');
+    equal(first_unit.getSquareFeetPriceDiscounted().toFixed(2), '97.53', 'Discounted price per sq.ft is expected to be 97.53');
 });
 
 

@@ -111,6 +111,16 @@ var app = app || {};
         getHeightMM: function () {
             return app.utils.convert.inches_to_mm(this.get('height'));
         },
+        getAreaInSquareFeet: function () {
+            return parseFloat(this.get('width')) * parseFloat(this.get('height')) / 144;
+        },
+        getTotalSquareFeet: function () {
+            return this.getAreaInSquareFeet() * parseFloat(this.get('quantity'));
+        },
+        getAreaInSquareMeters: function () {
+            var c = app.utils.convert;
+            return parseFloat(c.inches_to_mm(this.get('width'))) / 1000 * parseFloat(c.inches_to_mm(this.get('height'))) / 1000;
+        },
         //  TODO: do some checks? return error value in some cases?
         getUnitCost: function () {
             return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
@@ -129,6 +139,12 @@ var app = app || {};
         },
         getSubtotalPriceDiscounted: function () {
             return this.getSubtotalPrice() * (100 - this.get('discount')) / 100;
+        },
+        getSquareFeetPrice: function () {
+            return this.getTotalSquareFeet() ? this.getSubtotalPrice() / this.getTotalSquareFeet() : 0;
+        },
+        getSquareFeetPriceDiscounted: function () {
+            return this.getTotalSquareFeet() ? this.getSubtotalPriceDiscounted() / this.getTotalSquareFeet() : 0;
         },
         _updateSection: function(sectionId, func) {
             // HAH, dirty deep clone, rewrite when you have good mood for it
