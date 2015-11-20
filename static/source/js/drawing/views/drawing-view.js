@@ -10,7 +10,7 @@ var app = app || {};
             this.listenTo(this.model, 'all', this.updateCanvas);
             this.on('update_rendered', this.updateRenderedScene, this);
             this.state = {
-                insideView: true
+                insideView: false
             };
         },
 
@@ -46,6 +46,7 @@ var app = app || {};
             this.checkUnitType();
             this.updateSize();
             this.updateCanvas();
+            this.updateUI();
             this.$('#drawing').focus();
         },
         onDestroy: function() {
@@ -68,12 +69,11 @@ var app = app || {};
             this.setState({
                 insideView: !this.state.insideView
             });
-            var buttonText = this.state.insideView ? 'Show outside view' : 'Show inside view';
-            this.$('#change-view').text(buttonText);
         },
         setState: function(state) {
             this.state = _.assign(this.state, state);
             this.updateCanvas();
+            this.updateUI();
             this.$('#drawing').focus();
         },
         updateSize: function(width, height) {
@@ -883,6 +883,11 @@ var app = app || {};
             }
 
             this.layer.draw();
+        },
+
+        updateUI: function() {
+            var buttonText = this.state.insideView ? 'Show outside view' : 'Show inside view';
+            this.$('#change-view').text(buttonText);
         },
 
         splitSection: function(e) {
