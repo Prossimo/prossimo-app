@@ -4,9 +4,28 @@ var app = app || {};
     'use strict';
 
     app.QuoteItemView = Marionette.ItemView.extend({
-        tagName: 'tr',
+        tagName: 'div',
         className: 'quote-item',
         template: app.templates['quote/quote-item-view'],
+        getQuoteTableAttributes: function () {
+            var name_title_hash = {
+                ref: 'Ref.',
+                customer_image: 'Customer Image',
+                product_image: 'Shop Drawing',
+                product_description: 'Product Description',
+                quantity: 'Quantity'
+            };
+
+             if ( this.options.show_price !== false ) {
+                name_title_hash.price = 'Price';
+            }
+
+            var table_attributes = _.map(name_title_hash, function (item, key) {
+                return { name: key, title: item };
+            }, this);
+
+            return table_attributes;
+        },
         getPrices: function () {
             var f = app.utils.format;
             var unit_price = this.model.getUnitPrice();
@@ -58,6 +77,7 @@ var app = app || {};
         },
         serializeData: function () {
             return {
+                table_attributes: this.getQuoteTableAttributes(),
                 reference_id: this.model.getRefNum(),
                 description: this.getDescription(),
                 notes: this.model.get('notes'),

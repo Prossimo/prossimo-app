@@ -75,8 +75,9 @@
 }
 
 .quote-table {
-    border: 1px solid darken(@white, 10%);
+    // border: 1px solid darken(@white, 10%);
     width: 100%;
+    table-layout: fixed;
 }
 
 .quote-table thead th {
@@ -91,10 +92,18 @@
     vertical-align: top;
 }
 
-
 //  ------------------------------------------------------------------------
 //  Units
 //  ------------------------------------------------------------------------
+
+.quote-item {
+    margin-bottom: 2rem;
+}
+
+.quote-unit {
+    width: 100%;
+    table-layout: fixed;
+}
 
 .product_description ul {
     padding: 0;
@@ -119,6 +128,13 @@
     text-align: right;
 }
 
+table.subtotal {
+    table-layout: fixed;
+    width: 100%;
+    border: 1px solid darken(@white, 10%);
+    background-color: darken(@white, 1%);
+}
+
 
 //  ------------------------------------------------------------------------
 //  Columns
@@ -127,7 +143,39 @@
 
 td.ref,
 th.ref {
-    width: 3%;
+    width: 4%;
+}
+
+td.customer_image,
+th.customer_image {
+    width: 18%;
+}
+
+td.customer_image img {
+    display: block;
+    max-height: 20em;
+    max-width: 100%;
+}
+
+td.product_image,
+th.product_image {
+    width: 34%;
+}
+
+td.product_image img {
+    display: block;
+    max-height: 30em;
+    max-width: 100%;
+}
+
+td.product_description,
+th.product_description {
+    width: 28%;
+}
+
+td.quantity,
+th.quantity {
+    width: 7%;
 }
 
 td.price,
@@ -135,26 +183,16 @@ th.price {
     width: 20%;
 }
 
-// :not(.quote-extras-table) td.product_description,
-// :not(.quote-extras-table) th.product_description {
-//     width: 30%;
-// }
-
-td.quantity,
-th.quantity {
-    width: 3%;
+td.extras_product_description,
+th.extras_product_description {
+    width: 80%;
 }
 
-td.customer_image img {
-    display: block;
-    max-height: 20em;
-    max-width: 20em;
-}
-
-td.product_image img {
-    display: block;
-    max-height: 30em;
-    max-width: 30em;
+.subtotal td.price,
+.subtotal th.price,
+.grand-total td.price,
+.grand-total th.price {
+    width: 24.5%;
 }
 
 

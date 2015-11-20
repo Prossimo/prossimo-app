@@ -281,7 +281,7 @@ module.exports = function (grunt) {
             },
             less: {
                 files: ['<%= sourceUrl %>/less/**/*.less'],
-                tasks: ['gitinfo', 'less:build']
+                tasks: ['gitinfo', 'less:dev']
             },
             // uglify: {
             //     files: ['<%= sourceUrl %>/js/**/*.js'],
@@ -293,7 +293,7 @@ module.exports = function (grunt) {
             },
             handlebars: {
                 files: ['<%= sourceUrl %>/templates/**/*.hbs'],
-                tasks: ['gitinfo', 'handlebars:build']
+                tasks: ['gitinfo', 'handlebars:dev']
             },
             livereload: {
                 options: { livereload: true },

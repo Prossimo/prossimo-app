@@ -56,13 +56,10 @@
         }
     }
 
-    // thead {
-    //     display: table-header-group;
-    // }
-
-    // tbody {
-    //     display: table-row-group;
-    // }
+    .quote-header h1 {
+        font-size: 20px;
+        margin-bottom: 20px;
+    }
 
     td.customer_image img {
         display: block;
@@ -76,19 +73,16 @@
         max-width: 300px;
     }
 
-    // table tbody tr td:before,
-    // table tbody tr td:after {
-    //     display: block;
-    //     height: 4px;
-    //     content: "";
-    // }
-
-    tr,
-    tr td {
+    .quote-item {
         page-break-inside: avoid;
     }
 
-    .product_description ul {
+    .quote-extras-table-container,
+    .quote-optional-extras-table-container {
+        page-break-inside: avoid;
+    }
+
+    .grand-total {
         page-break-inside: avoid;
     }
 }

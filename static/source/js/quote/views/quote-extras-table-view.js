@@ -22,7 +22,7 @@ var app = app || {};
         getExtrasTableAttributes: function () {
             var name_title_hash = {
                 ref: 'Ref.',
-                product_description: 'Product Description',
+                extras_product_description: 'Product Description',
                 quantity: 'Quantity'
             };
 
