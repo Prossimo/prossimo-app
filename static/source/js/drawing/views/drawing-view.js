@@ -641,6 +641,9 @@ var app = app || {};
                     };
                     if (verticalMullions.length === 1) {
                         params.setter = function(val) {
+                            if (!this.state.insideView) {
+                                val = this.model.getInMetric('width', 'mm') - val;
+                            }
                             this.model.setSectionMullionPosition(mul.id, val);
                         }.bind(this);
                     }
@@ -662,7 +665,10 @@ var app = app || {};
                     };
                     if (verticalMullions.length === 1) {
                         params.setter = function(val) {
-                            this.model.setSectionMullionPosition(mul.id, this.model.getInMetric('width', 'mm') - val);
+                            if (this.state.insideView) {
+                                val = this.model.getInMetric('width', 'mm') - val;
+                            }
+                            this.model.setSectionMullionPosition(mul.id, val);
                         }.bind(this);
                     }
                     metric = this.createHorizontalMetric(width__ * this.ratio, merticSize, params);
