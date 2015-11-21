@@ -16,7 +16,8 @@ var app = app || {};
 
         ui: {
             '$panel_type': '.panel-type',
-            '$flush_panels': '[data-type="flush-turn-right"], [data-type="flush-turn-left"]'
+            '$flush_panels': '[data-type="flush-turn-right"], [data-type="flush-turn-left"]',
+            '$title': '#drawing-view-title'
         },
 
         events: {
@@ -895,6 +896,8 @@ var app = app || {};
         updateUI: function() {
             var buttonText = this.state.insideView ? 'Show outside view' : 'Show inside view';
             this.$('#change-view').text(buttonText);
+            var titleText = this.state.insideView ? 'Inside view' : 'Outside view';
+            this.ui.$title.text(titleText);
         },
 
         splitSection: function(e) {
