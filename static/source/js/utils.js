@@ -75,6 +75,12 @@ var app = app || {};
                 }
 
                 return result;
+            },
+            square_feet: function (value, num) {
+                return this.fixed_minimal(value, num) + ' sq.ft';
+            },
+            square_meters: function (value, num) {
+                return this.fixed_minimal(value, num) + ' m<sup>2</sup>';
             }
         },
         parseFormat: {
