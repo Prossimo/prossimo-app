@@ -11,7 +11,8 @@ var app = app || {};
             var name_title_hash = {
                 ref: 'Ref.',
                 customer_image: 'Customer Image',
-                product_image: 'Shop Drawing',
+                product_image: 'Shop Drawing' +
+                    (this.options.show_outside_units_view ? ': <small>View from Exterior</small>' : ''),
                 product_description: 'Product Description',
                 quantity: 'Quantity'
             };
