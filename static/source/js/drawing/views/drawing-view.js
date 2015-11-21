@@ -16,7 +16,7 @@ var app = app || {};
 
         ui: {
             '$panel_type': '.panel-type',
-            '$flush_panels': '[data-type="flush-left"], [data-type="flush-right"]'
+            '$flush_panels': '[data-type="flush-turn-right"], [data-type="flush-turn-left"]'
         },
 
         events: {
@@ -282,7 +282,7 @@ var app = app || {};
         createSash: function(sectionData) {
             var params = sectionData.params;
             // params of HOLE
-            var hasFrame = sectionData.sashType && (sectionData.sashType !== 'none');
+            var hasFrame = (sectionData.sashType !== 'fixed_in_frame');
             var topOverlap = 0;
             var bottomOverlap = 0;
             var leftOverlap = 0;
@@ -333,9 +333,9 @@ var app = app || {};
             }
             var type = sectionData.sashType;
 
-            if (type !== 'none' && type) {
+            if (type !== 'fixed_in_frame') {
                 var frameGroup;
-                if (type === 'flush-right' || type === 'flush-left') {
+                if (type === 'flush-turn-right' || type === 'flush-turn-left') {
                     frameGroup = this.createFlushFrame({
                         width: width,
                         height: height,
@@ -352,7 +352,7 @@ var app = app || {};
                 }
                 group.add(frameGroup);
                 var shouldDrawHandle = (this.state.insideView &&
-                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type.indexOf('top') >= 0))
+                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type === 'tilt_only'))
                     || (!this.state.insideView && this.model.profile.hasOutsideHandle());
                 if (shouldDrawHandle) {
                     var offset = frameWidth / 2;
@@ -361,15 +361,15 @@ var app = app || {};
                         y: null,
                         rotation: 0
                     };
-                    if (type === 'top-left' || type === 'left' || type === 'slide-right' || type === 'flush-left') {
+                    if (type === 'tilt_turn_right' || type === 'turn_only_right' || type === 'slide-right' || type === 'flush-turn-right') {
                         pos.x = offset;
                         pos.y = height / 2;
                     }
-                    if (type === 'top-right' || type === 'right' || type === 'slide-left' || type === 'flush-right') {
+                    if (type === 'tilt_turn_left' || type === 'turn_only_left' || type === 'slide-left' || type === 'flush-turn-left') {
                         pos.x = width - offset;
                         pos.y = height / 2;
                     }
-                    if (type === 'top') {
+                    if (type === 'tilt_only') {
                         pos.x = width / 2;
                         pos.y = offset;
                         pos.rotation = 90;
@@ -395,17 +395,17 @@ var app = app || {};
                 y: glassY,
                 sceneFunc: function(ctx) {
                     ctx.beginPath();
-                    if (type.indexOf('left') >= 0 && (type.indexOf('slide') === -1)) {
+                    if (type.indexOf('right') >= 0 && (type.indexOf('slide') === -1)) {
                         ctx.moveTo(glassWidth, glassHeight);
                         ctx.lineTo(0, glassHeight / 2);
                         ctx.lineTo(glassWidth, 0);
                     }
-                    if (type.indexOf('right') >= 0 && (type.indexOf('slide') === -1)) {
+                    if (type.indexOf('left') >= 0 && (type.indexOf('slide') === -1)) {
                         ctx.moveTo(0, 0);
                         ctx.lineTo(glassWidth, glassHeight / 2);
                         ctx.lineTo(0, glassHeight);
                     }
-                    if (type.indexOf('top') >= 0 || type.indexOf('slide') >= 0) {
+                    if (type.indexOf('tilt_turn_') >= 0 || type.indexOf('slide') >= 0) {
                         ctx.moveTo(0, glassHeight);
                         ctx.lineTo(glassWidth / 2, 0);
                         ctx.lineTo(glassWidth, glassHeight);

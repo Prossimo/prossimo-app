@@ -32,12 +32,19 @@ var app = app || {};
         { name: 'discount', title: 'Discount', type: 'number' }
     ];
 
+    var SASH_TYPES = [
+        'tilt_turn_left', 'tilt_turn_right', 'fixed_in_frame', 'tilt_only',
+        'turn_only_left', 'turn_only_right', 'fixed_in_sash',
+        // additional types for solid doors
+        'flush-turn-right', 'flush-turn-left'
+    ];
+
     app.Unit = Backbone.Model.extend({
         defaults: function () {
             var defaults = {
                 rootSection: {
                     id: _.uniqueId(),
-                    sashType: ''
+                    sashType: 'fixed_in_frame'
                 }
             };
 
@@ -157,6 +164,9 @@ var app = app || {};
             this.set('rootSection', rootSection);
         },
         setSectionSashType: function(sectionId, type) {
+            if (!_.includes(SASH_TYPES, type)) {
+                throw new Error('Unrecognozed sash type: ' + type);
+            }
             this._updateSection(sectionId, function(section) {
                 section.sashType = type;
             });
@@ -195,7 +205,7 @@ var app = app || {};
         },
         removeSash: function(sectionId) {
             this._updateSection(sectionId, function(section) {
-                section.sashType = 'none';
+                section.sashType = 'fixed_in_frame';
                 section.devider = null;
                 section.sections = null;
                 section.position = null;
@@ -208,10 +218,10 @@ var app = app || {};
                 section.devider = type;
                 section.sections = [{
                     id: _.uniqueId(),
-                    sashType: 'none'
+                    sashType: 'fixed_in_frame'
                 }, {
                     id: _.uniqueId(),
-                    sashType: 'none'
+                    sashType: 'fixed_in_frame'
                 }];
                 if (type === 'vertical') {
                     section.position = fullSection.params.x + fullSection.params.width / 2;
@@ -413,7 +423,7 @@ var app = app || {};
             var rootId = this.get('rootSection').id;
             this.removeMullion(rootId);
             this._updateSection(rootId, function(section) {
-                section.sashType = 'none';
+                section.sashType = 'fixed_in_frame';
             });
         }
     });
