@@ -198,7 +198,7 @@ var app = app || {};
         },
         removeMullion: function(sectionId) {
             this._updateSection(sectionId, function(section) {
-                section.devider = null;
+                section.divider = null;
                 section.sections = null;
                 section.position = null;
             });
@@ -206,7 +206,7 @@ var app = app || {};
         removeSash: function(sectionId) {
             this._updateSection(sectionId, function(section) {
                 section.sashType = 'fixed_in_frame';
-                section.devider = null;
+                section.divider = null;
                 section.sections = null;
                 section.position = null;
             });
@@ -215,7 +215,7 @@ var app = app || {};
             this._updateSection(sectionId, function(section) {
                 var full = this.generateFullRoot();
                 var fullSection = app.Unit.findSection(full, sectionId);
-                section.devider = type;
+                section.divider = type;
                 section.sections = [{
                     id: _.uniqueId(),
                     sashType: 'fixed_in_frame'
@@ -236,7 +236,7 @@ var app = app || {};
         //     sashType: 'none', // top-right, top-left, none, top, right, left, slide-right, slide-left
         //     panelType: 'glass' // or 'solid'. works for doors
         //     params: { x, y, width, height },
-        //     devider: 'vertical',    // or horizontal
+        //     divider: 'vertical',    // or horizontal
         //     position: 50,       // position of center of mullion from top left point of unit
         //     sections: [{
         //         id: 6,
@@ -283,7 +283,7 @@ var app = app || {};
                 var mullionAttrs = {
                     x: null, y: null, width: null, height: null
                 };
-                if (rootSection.devider === 'vertical') {
+                if (rootSection.divider === 'vertical') {
                     mullionAttrs.x = position - this.profile.get('mullionWidth') / 2;
                     mullionAttrs.y = params.y;
                     mullionAttrs.width = this.profile.get('mullionWidth');
@@ -306,7 +306,7 @@ var app = app || {};
                 };
                 sectionData.mullionEdges = _.clone(rootSection.mullionEdges);
                 sectionData.thresholdEdge = rootSection.thresholdEdge;
-                if (rootSection.devider === 'vertical') {
+                if (rootSection.divider === 'vertical') {
                     sectionParams.x = params.x;
                     sectionParams.y = params.y;
                     if (i === 0) {
@@ -341,7 +341,7 @@ var app = app || {};
             rootSection = rootSection || this.generateFullRoot();
             var width = this.getInMetric('width', 'mm');
             rootSection.params.x = width - rootSection.params.x - rootSection.params.width;
-            if (rootSection.devider === 'vertical') {
+            if (rootSection.divider === 'vertical') {
                 rootSection.position = width - rootSection.position;
                 rootSection.sections = rootSection.sections.reverse();
                 // var temp = rootSection.mullionEdges.left;
@@ -349,7 +349,7 @@ var app = app || {};
                 // rootSection.mullionEdges.right = temp;
                 rootSection.mullionParams.x = width - rootSection.mullionParams.x - this.profile.get('mullionWidth');
             }
-            if (rootSection.devider === 'horizontal') {
+            if (rootSection.divider === 'horizontal') {
                 rootSection.mullionParams.x = width - rootSection.mullionParams.x - rootSection.mullionParams.width;
             }
             var type = rootSection.sashType;
@@ -384,7 +384,7 @@ var app = app || {};
             var mullions = [];
             if (rootSection.sections && rootSection.sections.length) {
                 mullions.push({
-                    type: rootSection.devider,
+                    type: rootSection.divider,
                     position: rootSection.position,
                     id: rootSection.id
                 });

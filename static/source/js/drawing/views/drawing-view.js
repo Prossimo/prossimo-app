@@ -899,8 +899,8 @@ var app = app || {};
 
         splitSection: function(e) {
             this.$('.popup-wrap').hide();
-            var devider = $(e.target).data('type');
-            this.model.splitSection(this.sectionIdToChange, devider);
+            var divider = $(e.target).data('type');
+            this.model.splitSection(this.sectionIdToChange, divider);
         },
         changeSashType: function(e) {
             this.$('.popup-wrap').hide();
