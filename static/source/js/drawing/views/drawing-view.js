@@ -10,13 +10,14 @@ var app = app || {};
             this.listenTo(this.model, 'all', this.updateCanvas);
             this.on('update_rendered', this.updateRenderedScene, this);
             this.state = {
-                insideView: true
+                insideView: false
             };
         },
 
         ui: {
             '$panel_type': '.panel-type',
-            '$flush_panels': '[data-type="flush-left"], [data-type="flush-right"]'
+            '$flush_panels': '[data-type="flush-turn-right"], [data-type="flush-turn-left"]',
+            '$title': '#drawing-view-title'
         },
 
         events: {
@@ -46,6 +47,7 @@ var app = app || {};
             this.checkUnitType();
             this.updateSize();
             this.updateCanvas();
+            this.updateUI();
             this.$('#drawing').focus();
         },
         onDestroy: function() {
@@ -68,12 +70,11 @@ var app = app || {};
             this.setState({
                 insideView: !this.state.insideView
             });
-            var buttonText = this.state.insideView ? 'Show outside view' : 'Show inside view';
-            this.$('#change-view').text(buttonText);
         },
         setState: function(state) {
             this.state = _.assign(this.state, state);
             this.updateCanvas();
+            this.updateUI();
             this.$('#drawing').focus();
         },
         updateSize: function(width, height) {
@@ -282,7 +283,7 @@ var app = app || {};
         createSash: function(sectionData) {
             var params = sectionData.params;
             // params of HOLE
-            var hasFrame = sectionData.sashType && (sectionData.sashType !== 'none');
+            var hasFrame = (sectionData.sashType !== 'fixed_in_frame');
             var topOverlap = 0;
             var bottomOverlap = 0;
             var leftOverlap = 0;
@@ -333,9 +334,9 @@ var app = app || {};
             }
             var type = sectionData.sashType;
 
-            if (type !== 'none' && type) {
+            if (type !== 'fixed_in_frame') {
                 var frameGroup;
-                if (type === 'flush-right' || type === 'flush-left') {
+                if (type === 'flush-turn-right' || type === 'flush-turn-left') {
                     frameGroup = this.createFlushFrame({
                         width: width,
                         height: height,
@@ -351,8 +352,9 @@ var app = app || {};
                     });
                 }
                 group.add(frameGroup);
-                var shouldDrawHandle = this.state.insideView &&
-                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type.indexOf('top') >= 0);
+                var shouldDrawHandle = (this.state.insideView &&
+                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type === 'tilt_only'))
+                    || (!this.state.insideView && this.model.profile.hasOutsideHandle());
                 if (shouldDrawHandle) {
                     var offset = frameWidth / 2;
                     var pos = {
@@ -360,15 +362,15 @@ var app = app || {};
                         y: null,
                         rotation: 0
                     };
-                    if (type === 'top-left' || type === 'left' || type === 'slide-right' || type === 'flush-left') {
+                    if (type === 'tilt_turn_right' || type === 'turn_only_right' || type === 'slide-right' || type === 'flush-turn-right') {
                         pos.x = offset;
                         pos.y = height / 2;
                     }
-                    if (type === 'top-right' || type === 'right' || type === 'slide-left' || type === 'flush-right') {
+                    if (type === 'tilt_turn_left' || type === 'turn_only_left' || type === 'slide-left' || type === 'flush-turn-left') {
                         pos.x = width - offset;
                         pos.y = height / 2;
                     }
-                    if (type === 'top') {
+                    if (type === 'tilt_only') {
                         pos.x = width / 2;
                         pos.y = offset;
                         pos.rotation = 90;
@@ -394,17 +396,17 @@ var app = app || {};
                 y: glassY,
                 sceneFunc: function(ctx) {
                     ctx.beginPath();
-                    if (type.indexOf('left') >= 0 && (type.indexOf('slide') === -1)) {
+                    if (type.indexOf('right') >= 0 && (type.indexOf('slide') === -1)) {
                         ctx.moveTo(glassWidth, glassHeight);
                         ctx.lineTo(0, glassHeight / 2);
                         ctx.lineTo(glassWidth, 0);
                     }
-                    if (type.indexOf('right') >= 0 && (type.indexOf('slide') === -1)) {
+                    if (type.indexOf('left') >= 0 && (type.indexOf('slide') === -1)) {
                         ctx.moveTo(0, 0);
                         ctx.lineTo(glassWidth, glassHeight / 2);
                         ctx.lineTo(0, glassHeight);
                     }
-                    if (type.indexOf('top') >= 0 || type.indexOf('slide') >= 0) {
+                    if (type.indexOf('tilt_turn_') >= 0 || type.indexOf('slide') >= 0) {
                         ctx.moveTo(0, glassHeight);
                         ctx.lineTo(glassWidth / 2, 0);
                         ctx.lineTo(glassWidth, glassHeight);
@@ -641,6 +643,9 @@ var app = app || {};
                     };
                     if (verticalMullions.length === 1) {
                         params.setter = function(val) {
+                            if (!this.state.insideView) {
+                                val = this.model.getInMetric('width', 'mm') - val;
+                            }
                             this.model.setSectionMullionPosition(mul.id, val);
                         }.bind(this);
                     }
@@ -662,7 +667,10 @@ var app = app || {};
                     };
                     if (verticalMullions.length === 1) {
                         params.setter = function(val) {
-                            this.model.setSectionMullionPosition(mul.id, this.model.getInMetric('width', 'mm') - val);
+                            if (this.state.insideView) {
+                                val = this.model.getInMetric('width', 'mm') - val;
+                            }
+                            this.model.setSectionMullionPosition(mul.id, val);
                         }.bind(this);
                     }
                     metric = this.createHorizontalMetric(width__ * this.ratio, merticSize, params);
@@ -885,10 +893,17 @@ var app = app || {};
             this.layer.draw();
         },
 
+        updateUI: function() {
+            var buttonText = this.state.insideView ? 'Show outside view' : 'Show inside view';
+            this.$('#change-view').text(buttonText);
+            var titleText = this.state.insideView ? 'Inside view' : 'Outside view';
+            this.ui.$title.text(titleText);
+        },
+
         splitSection: function(e) {
             this.$('.popup-wrap').hide();
-            var devider = $(e.target).data('type');
-            this.model.splitSection(this.sectionIdToChange, devider);
+            var divider = $(e.target).data('type');
+            this.model.splitSection(this.sectionIdToChange, divider);
         },
         changeSashType: function(e) {
             this.$('.popup-wrap').hide();
@@ -913,27 +928,48 @@ var app = app || {};
         }
     });
 
-    app.preview = function(unitModel, width, height, mode) {
-        mode = mode || 'base64';
+    app.preview = function(unitModel, options) {
+        var result;
+        var defaults = {
+            width: 300,
+            height: 300,
+            mode: 'base64',
+            position: 'inside'
+        };
+
+        options = _.defaults({}, options, defaults);
+
         var view = new app.DrawingView({
             model: unitModel
         });
+
         view.render();
-        view.updateSize(width, height);
+        view.updateSize(options.width, options.height);
         view.updateCanvas();
-        var result;
-        if (mode === 'canvas') {
+
+        if ( _.indexOf(['inside', 'outside'], options.position) !== -1 ) {
+            view.setState({
+                insideView: options.position === 'inside'
+            });
+        } else {
+            view.destroy();
+            view.remove();
+            throw new Error('unrecognized position for preview: ' + options.position);
+        }
+
+        if (options.mode === 'canvas') {
             result = view.layer.canvas._canvas;
-        } else if (mode === 'base64') {
+        } else if (options.mode === 'base64') {
             result = view.stage.toDataURL();
-        } else if (mode === 'image') {
+        } else if (options.mode === 'image') {
             result = new Image();
             result.src = view.stage.toDataURL();
         } else {
             view.destroy();
             view.remove();
-            throw new Error('unrecognized mode for preview: ' + mode);
+            throw new Error('unrecognized mode for preview: ' + options.mode);
         }
+
         // clean
         view.destroy();
         view.remove();

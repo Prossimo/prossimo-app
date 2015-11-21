@@ -15,31 +15,14 @@ var app = app || {};
             return {
                 extras: this.options.extras,
                 project: this.options.project,
-                show_price: this.options.show_price
+                show_price: this.options.show_price,
+                show_outside_units_view: this.options.show_outside_units_view,
+                show_sizes_in_mm: this.options.show_sizes_in_mm
             };
         },
         initialize: function () {
             this.listenTo(this.collection, 'all', this.render);
             this.listenTo(this.options.extras, 'all', this.render);
-        },
-        getQuoteTableAttributes: function () {
-            var name_title_hash = {
-                ref: 'Ref.',
-                customer_image: 'Customer Image',
-                product_image: 'Shop Drawing',
-                product_description: 'Product Description',
-                quantity: 'Quantity'
-            };
-
-             if ( this.options.show_price !== false ) {
-                name_title_hash.price = 'Price';
-            }
-
-            var table_attributes = _.map(name_title_hash, function (item, key) {
-                return { name: key, title: item };
-            }, this);
-
-            return table_attributes;
         },
         getTotalPrices: function () {
             var f = app.utils.format;
@@ -59,11 +42,9 @@ var app = app || {};
         },
         serializeData: function () {
             return {
-                table_attributes: this.getQuoteTableAttributes(),
                 has_extras: this.options.extras &&
                     this.options.extras.getRegularItems().length ||
                     this.options.extras.getOptionalItems().length,
-                price_colspan: this.getQuoteTableAttributes().length - 1,
                 total_prices: this.getTotalPrices(),
                 show_price: this.options.show_price !== false
             };

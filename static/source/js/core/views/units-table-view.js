@@ -41,7 +41,8 @@ var app = app || {};
                     columns: ['mark', 'quantity', 'original_cost', 'original_currency',
                         'conversion_rate', 'unit_cost', 'price_markup', 'unit_price',
                         'subtotal_price', 'discount', 'unit_price_discounted',
-                        'subtotal_price_discounted']
+                        'subtotal_price_discounted', 'total_square_feet',
+                        'square_feet_price', 'square_feet_price_discounted']
                 },
                 extras: {
                     title: 'Extras',
@@ -156,7 +157,11 @@ var app = app || {};
                     return model.getUnitCost();
                 },
                 drawing: function (model) {
-                    return app.preview(model, 500, 500, 'base64');
+                    return app.preview(model, {
+                        width: 500,
+                        height: 500,
+                        mode: 'base64'
+                    });
                 },
                 subtotal_cost: function (model) {
                     return model.getSubtotalCost();
@@ -181,6 +186,15 @@ var app = app || {};
                 },
                 threshold: function (model) {
                     return model.profile.getThresholdType();
+                },
+                total_square_feet: function (model) {
+                    return model.getTotalSquareFeet();
+                },
+                square_feet_price: function (model) {
+                    return model.getSquareFeetPrice();
+                },
+                square_feet_price_discounted: function (model) {
+                    return model.getSquareFeetPriceDiscounted();
                 }
             };
 
@@ -320,6 +334,18 @@ var app = app || {};
                 profile_name: {
                     type: 'dropdown',
                     source: app.settings.getAvailableProfileNames()
+                },
+                total_square_feet: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('fixed_minimal')
+                },
+                square_feet_price: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
+                },
+                square_feet_price_discounted: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
                 }
             };
 
@@ -390,7 +416,10 @@ var app = app || {};
                 unit_price_discounted: 'Unit Price w/Disc.',
                 subtotal_price_discounted: 'Subtotal Price w/Disc.',
                 system: 'System',
-                threshold: 'Threshold'
+                threshold: 'Threshold',
+                total_square_feet: 'Total Sq.Ft',
+                square_feet_price: 'Price per Sq.Ft',
+                square_feet_price_discounted: 'Price per Sq.Ft w/Disc.'
             };
 
             return custom_column_headers_hash[column_name];

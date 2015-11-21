@@ -35,6 +35,12 @@ test('utils.format.dimensions', function () {
     equal(f.dimensions('12', '12'), '1′−0″ x 1′−0″', 'Expected value is 1′−0″ x 1′−0″');
 });
 
+test('utils.format.dimensions_mm', function () {
+    var f = app.utils.format;
+
+    equal(f.dimensions_mm(2500, 1300), '2,500 x 1,300', 'Expected value is 2,500 x 1,300');
+});
+
 test('utils.format.price_usd', function () {
     var f = app.utils.format;
 
@@ -59,6 +65,20 @@ test('utils.format.fixed', function () {
     equal(f.fixed(20), '20.00', 'Expected value is 20.00');
     equal(f.fixed(0), '0.00', 'Expected value is 0.00');
     equal(f.fixed(0.5510204081632679, 25), '0.551020408163268', 'Expected not to fail with Decimal error');
+});
+
+test('utils.format.square_feet', function () {
+    var f = app.utils.format;
+
+    equal(f.square_feet(12), '12 sq.ft', 'Expected value is 12 sq.ft');
+    equal(f.square_feet(4.55), '4.55 sq.ft', 'Expected value is 4.55 sq.ft');
+});
+
+test('utils.format.square_meters', function () {
+    var f = app.utils.format;
+
+    equal(f.square_meters(12), '12 m<sup>2</sup>', 'Expected value is 12 m<sup>2</sup>');
+    equal(f.square_meters(4.55), '4.55 m<sup>2</sup>', 'Expected value is 4.55 m<sup>2</sup>');
 });
 
 

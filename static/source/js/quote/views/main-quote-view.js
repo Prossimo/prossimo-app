@@ -31,7 +31,8 @@ var app = app || {};
             this.quote_table_view = new app.QuoteTableView({
                 project: app.current_project,
                 collection: app.current_project.units,
-                extras: app.current_project.extras
+                extras: app.current_project.extras,
+                show_outside_units_view: true
             });
 
             this.$el.append(this.units_table_view.render().el);
