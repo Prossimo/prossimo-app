@@ -10,6 +10,7 @@ var app = app || {};
     var TYPES_WITH_ALWAYS_LOW_THRESHOLD = ['Entry Door'];
     var TYPES_WITH_POSSIBLE_SOLID_PANEL = ['Patio Door', 'Entry Door'];
     var TYPES_WITH_POSSIBLE_FLUSH_PANEL = ['Entry Door'];
+    var TYPES_WITH_OUTSIDE_HANDLE = ['Patio Door', 'Entry Door'];
 
     //  Profile sizes are set in millimeters
     var PROFILE_PROPERTIES = [
@@ -66,6 +67,9 @@ var app = app || {};
         },
         isFlushPanelPossible: function () {
             return _.indexOf(TYPES_WITH_POSSIBLE_FLUSH_PANEL, this.get('unitType')) !== -1;
+        },
+        hasOutsideHandle: function() {
+            return _.indexOf(TYPES_WITH_OUTSIDE_HANDLE, this.get('unitType')) !== -1;
         },
         getThresholdType: function () {
             var threshold_type = '--';

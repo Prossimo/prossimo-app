@@ -351,8 +351,9 @@ var app = app || {};
                     });
                 }
                 group.add(frameGroup);
-                var shouldDrawHandle = this.state.insideView &&
-                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type.indexOf('top') >= 0);
+                var shouldDrawHandle = (this.state.insideView &&
+                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type.indexOf('top') >= 0))
+                    || (!this.state.insideView && this.model.profile.hasOutsideHandle());
                 if (shouldDrawHandle) {
                     var offset = frameWidth / 2;
                     var pos = {
