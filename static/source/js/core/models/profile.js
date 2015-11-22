@@ -15,15 +15,15 @@ var app = app || {};
     //  Profile sizes are set in millimeters
     var PROFILE_PROPERTIES = [
         { name: 'name', title: 'Name', type: 'string' },
-        { name: 'unitType', title: 'Type', type: 'string' },
+        { name: 'unit_type', title: 'Type', type: 'string' },
         { name: 'system', title: 'System', type: 'string' },
-        { name: 'frameWidth', title: 'Frame Width (mm)', type: 'number' },
-        { name: 'mullionWidth', title: 'Mullion Width (mm)', type: 'number' },
-        { name: 'sashFrameWidth', title: 'Sash Frame Width (mm)', type: 'number' },
-        { name: 'sashFrameOverlap', title: 'Sash-Frame Overlap (mm)', type: 'number' },
-        { name: 'sashMullionOverlap', title: 'Sash-Mullion Overlap (mm)', type: 'number' },
-        { name: 'thresholdWidth', title: 'Threshold Width (mm)', type: 'number' },
-        { name: 'lowThreshold', title: 'Low Threshold', type: 'boolean' }
+        { name: 'frame_width', title: 'Frame Width (mm)', type: 'number' },
+        { name: 'mullion_width', title: 'Mullion Width (mm)', type: 'number' },
+        { name: 'sash_frame_width', title: 'Sash Frame Width (mm)', type: 'number' },
+        { name: 'sash_frame_overlap', title: 'Sash-Frame Overlap (mm)', type: 'number' },
+        { name: 'sash_mullion_overlap', title: 'Sash-Mullion Overlap (mm)', type: 'number' },
+        { name: 'threshold_width', title: 'Threshold Width (mm)', type: 'number' },
+        { name: 'low_threshold', title: 'Low Threshold', type: 'boolean' }
     ];
 
     app.Profile = Backbone.Model.extend({
@@ -43,11 +43,11 @@ var app = app || {};
                 default_value = 0;
             }
 
-            if ( name === 'unitType' ) {
+            if ( name === 'unit_type' ) {
                 default_value = DEFAULT_UNIT_TYPE;
             }
 
-            if ( name === 'lowThreshold' ) {
+            if ( name === 'low_threshold' ) {
                 default_value = false;
             }
 
@@ -67,28 +67,28 @@ var app = app || {};
             return Backbone.sync.call(this, method, model, options);
         },
         isThresholdPossible: function () {
-            return _.indexOf(TYPES_WITH_POSSIBLE_THRESHOLD, this.get('unitType')) !== -1;
+            return _.indexOf(TYPES_WITH_POSSIBLE_THRESHOLD, this.get('unit_type')) !== -1;
         },
         isThresholdEditable: function () {
-            return _.indexOf(TYPES_WITH_EDITABLE_THRESHOLD, this.get('unitType')) !== -1;
+            return _.indexOf(TYPES_WITH_EDITABLE_THRESHOLD, this.get('unit_type')) !== -1;
         },
         hasAlwaysLowThreshold: function () {
-            return _.indexOf(TYPES_WITH_ALWAYS_LOW_THRESHOLD, this.get('unitType')) !== -1;
+            return _.indexOf(TYPES_WITH_ALWAYS_LOW_THRESHOLD, this.get('unit_type')) !== -1;
         },
         isSolidPanelPossible: function () {
-            return _.indexOf(TYPES_WITH_POSSIBLE_SOLID_PANEL, this.get('unitType')) !== -1;
+            return _.indexOf(TYPES_WITH_POSSIBLE_SOLID_PANEL, this.get('unit_type')) !== -1;
         },
         isFlushPanelPossible: function () {
-            return _.indexOf(TYPES_WITH_POSSIBLE_FLUSH_PANEL, this.get('unitType')) !== -1;
+            return _.indexOf(TYPES_WITH_POSSIBLE_FLUSH_PANEL, this.get('unit_type')) !== -1;
         },
         hasOutsideHandle: function() {
-            return _.indexOf(TYPES_WITH_OUTSIDE_HANDLE, this.get('unitType')) !== -1;
+            return _.indexOf(TYPES_WITH_OUTSIDE_HANDLE, this.get('unit_type')) !== -1;
         },
         getThresholdType: function () {
             var threshold_type = '--';
 
             if ( this.isThresholdPossible() ) {
-                if ( this.get('lowThreshold') === true ) {
+                if ( this.get('low_threshold') === true ) {
                     threshold_type = 'Low';
                 } else {
                     threshold_type = 'Standard';
@@ -99,13 +99,13 @@ var app = app || {};
         },
         onTypeUpdate: function () {
             if ( !this.isThresholdPossible() ) {
-                this.set('lowThreshold', false);
+                this.set('low_threshold', false);
             } else if ( this.hasAlwaysLowThreshold() ) {
-                this.set('lowThreshold', true);
+                this.set('low_threshold', true);
             }
         },
         initialize: function () {
-            this.on('change:unitType', this.onTypeUpdate, this);
+            this.on('change:unit_type', this.onTypeUpdate, this);
         },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs

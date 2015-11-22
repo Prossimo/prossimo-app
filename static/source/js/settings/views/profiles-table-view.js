@@ -17,9 +17,9 @@ var app = app || {};
         },
         initialize: function () {
             this.columns = [
-                'name', 'unitType', 'system', 'frameWidth', 'mullionWidth',
-                'sashFrameWidth', 'sashFrameOverlap', 'sashMullionOverlap',
-                'lowThreshold', 'thresholdWidth'
+                'name', 'unit_type', 'system', 'frame_width', 'mullion_width',
+                'sash_frame_width', 'sash_frame_overlap', 'sash_mullion_overlap',
+                'low_threshold', 'threshold_width'
             ];
 
             this.listenTo(this.collection, 'all', this.updateTable);
@@ -68,20 +68,20 @@ var app = app || {};
             }
 
             var format_hash = {
-                frameWidth: { format: '0,0[.]00' },
-                mullionWidth: { format: '0,0[.]00' },
-                sashFrameWidth: { format: '0,0[.]00' }
+                frame_width: { format: '0,0[.]00' },
+                mullion_width: { format: '0,0[.]00' },
+                sash_frame_width: { format: '0,0[.]00' }
             };
 
             var properties_hash = {
-                unitType: {
+                unit_type: {
                     type: 'dropdown',
                     source: this.collection.getUnitTypes()
                 },
-                lowThreshold: {
+                low_threshold: {
                     renderer: app.hot_renderers.thresholdCheckboxRenderer
                 },
-                thresholdWidth: {
+                threshold_width: {
                     renderer: app.hot_renderers.thresholdWidthRenderer
                 }
             };

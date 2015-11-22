@@ -19,15 +19,15 @@ test('split by two parts', function() {
         height: c.mm_to_inches(2000)
     });
     unit.profile = new app.Profile({
-        frameWidth: 10,
-        mullionWidth: 20
+        frame_width: 10,
+        mullion_width: 20
     });
-    var id = unit.get('rootSection').id;
+    var id = unit.get('root_section').id;
     unit.splitSection(id, 'vertical');
     var rootSection = unit.generateFullRoot();
     var leftSection = rootSection.sections[0].params;
-    equal(leftSection.x, unit.profile.get('frameWidth'));
-    equal(leftSection.y, unit.profile.get('frameWidth'));
+    equal(leftSection.x, unit.profile.get('frame_width'));
+    equal(leftSection.y, unit.profile.get('frame_width'));
     equal(leftSection.width, 500 - 10 - 20 / 2);
     equal(leftSection.height, 2000 - 10 * 2);
 });
@@ -38,18 +38,18 @@ test('split by 3 parts', function() {
         height: c.mm_to_inches(2000)
     });
     unit.profile = new app.Profile({
-        frameWidth: 10,
-        mullionWidth: 20
+        frame_width: 10,
+        mullion_width: 20
     });
-    var id = unit.get('rootSection').id;
+    var id = unit.get('root_section').id;
     unit.splitSection(id, 'vertical');
 
-    id = unit.get('rootSection').sections[0].id;
+    id = unit.get('root_section').sections[0].id;
     unit.splitSection(id, 'vertical');
     var rootSection = unit.generateFullRoot();
     var leftSection = rootSection.sections[0].sections[0].params;
-    equal(leftSection.x, unit.profile.get('frameWidth'));
-    equal(leftSection.y, unit.profile.get('frameWidth'));
+    equal(leftSection.x, unit.profile.get('frame_width'));
+    equal(leftSection.y, unit.profile.get('frame_width'));
     equal(leftSection.width, (500 - 10 - 20 / 2) / 2 - 20 / 2);
     equal(leftSection.height, 2000 - 10 * 2);
 });
@@ -61,11 +61,11 @@ test('find sash border offsets', function() {
         height: c.mm_to_inches(2000)
     });
     unit.profile = new app.Profile({
-        frameWidth: 10,
-        mullionWidth: 20
+        frame_width: 10,
+        mullion_width: 20
     });
     // split by 2 parts
-    var id = unit.get('rootSection').id;
+    var id = unit.get('root_section').id;
     unit.splitSection(id, 'vertical');
     var rootSection = unit.generateFullRoot();
     var leftSection = rootSection.sections[0];

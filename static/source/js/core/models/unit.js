@@ -42,7 +42,7 @@ var app = app || {};
     app.Unit = Backbone.Model.extend({
         defaults: function () {
             var defaults = {
-                rootSection: {
+                root_section: {
                     id: _.uniqueId(),
                     sashType: 'fixed_in_frame'
                 }
@@ -156,12 +156,12 @@ var app = app || {};
         _updateSection: function(sectionId, func) {
             // HAH, dirty deep clone, rewrite when you have good mood for it
             // we have to make deep clone and backbone will trigger change event
-            var rootSection = JSON.parse(JSON.stringify(this.get('rootSection')));
+            var rootSection = JSON.parse(JSON.stringify(this.get('root_section')));
             var sectionToUpdate = app.Unit.findSection(rootSection, sectionId);
 
             func(sectionToUpdate);
 
-            this.set('rootSection', rootSection);
+            this.set('root_section', rootSection);
         },
         setSectionSashType: function(sectionId, type) {
             if (!_.includes(SASH_TYPES, type)) {
@@ -249,29 +249,29 @@ var app = app || {};
         //     }]
         // }
         generateFullRoot: function(rootSection, params) {
-            rootSection = rootSection || JSON.parse(JSON.stringify(this.get('rootSection')));
+            rootSection = rootSection || JSON.parse(JSON.stringify(this.get('root_section')));
             var defaultParams = {
                 x: 0,
                 y: 0,
                 width: this.getInMetric('width', 'mm'),
                 height: this.getInMetric('height', 'mm')
             };
-            if (rootSection.id === this.get('rootSection').id) {
+            if (rootSection.id === this.get('root_section').id) {
                 defaultParams = {
-                    x: this.profile.get('frameWidth'),
-                    y: this.profile.get('frameWidth'),
-                    width: this.getInMetric('width', 'mm') - this.profile.get('frameWidth') * 2,
-                    height: this.getInMetric('height', 'mm') - this.profile.get('frameWidth') * 2
+                    x: this.profile.get('frame_width'),
+                    y: this.profile.get('frame_width'),
+                    width: this.getInMetric('width', 'mm') - this.profile.get('frame_width') * 2,
+                    height: this.getInMetric('height', 'mm') - this.profile.get('frame_width') * 2
                 };
             }
-            if (rootSection.id === this.get('rootSection').id &&
+            if (rootSection.id === this.get('root_section').id &&
                     this.profile.isThresholdPossible() &&
-                    this.profile.get('lowThreshold')) {
+                    this.profile.get('low_threshold')) {
                 defaultParams = {
-                    x: this.profile.get('frameWidth'),
-                    y: this.profile.get('frameWidth'),
-                    width: this.getInMetric('width', 'mm') - this.profile.get('frameWidth') * 2,
-                    height: this.getInMetric('height', 'mm') - this.profile.get('frameWidth') - this.profile.get('thresholdWidth')
+                    x: this.profile.get('frame_width'),
+                    y: this.profile.get('frame_width'),
+                    width: this.getInMetric('width', 'mm') - this.profile.get('frame_width') * 2,
+                    height: this.getInMetric('height', 'mm') - this.profile.get('frame_width') - this.profile.get('threshold_width')
                 };
                 rootSection.thresholdEdge = true;
             }
@@ -284,16 +284,16 @@ var app = app || {};
                     x: null, y: null, width: null, height: null
                 };
                 if (rootSection.divider === 'vertical') {
-                    mullionAttrs.x = position - this.profile.get('mullionWidth') / 2;
+                    mullionAttrs.x = position - this.profile.get('mullion_width') / 2;
                     mullionAttrs.y = params.y;
-                    mullionAttrs.width = this.profile.get('mullionWidth');
+                    mullionAttrs.width = this.profile.get('mullion_width');
                     mullionAttrs.height = params.height;
 
                 } else {
                     mullionAttrs.x = params.x;
-                    mullionAttrs.y = position - this.profile.get('mullionWidth') / 2;
+                    mullionAttrs.y = position - this.profile.get('mullion_width') / 2;
                     mullionAttrs.width = params.width;
-                    mullionAttrs.height = this.profile.get('mullionWidth');
+                    mullionAttrs.height = this.profile.get('mullion_width');
                 }
                 // if (rootSection.sashType !== 'none') {
 
@@ -310,11 +310,11 @@ var app = app || {};
                     sectionParams.x = params.x;
                     sectionParams.y = params.y;
                     if (i === 0) {
-                        sectionParams.width = position - rootSection.params.x - this.profile.get('mullionWidth') / 2;
+                        sectionParams.width = position - rootSection.params.x - this.profile.get('mullion_width') / 2;
                         sectionData.mullionEdges.right = true;
                     } else {
-                        sectionParams.x = position + this.profile.get('mullionWidth') / 2;
-                        sectionParams.width = params.width + params.x - position - this.profile.get('mullionWidth') / 2;
+                        sectionParams.x = position + this.profile.get('mullion_width') / 2;
+                        sectionParams.width = params.width + params.x - position - this.profile.get('mullion_width') / 2;
                         sectionData.mullionEdges.left = true;
                     }
                     sectionParams.height = params.height;
@@ -324,12 +324,12 @@ var app = app || {};
                     sectionParams.width = params.width;
                     if (i === 0) {
                         sectionData.mullionEdges.bottom = true;
-                        sectionParams.height = position - rootSection.params.y - this.profile.get('mullionWidth') / 2;
+                        sectionParams.height = position - rootSection.params.y - this.profile.get('mullion_width') / 2;
                         sectionData.thresholdEdge = false;
                     } else {
-                        sectionParams.y = position + this.profile.get('mullionWidth') / 2;
+                        sectionParams.y = position + this.profile.get('mullion_width') / 2;
                         sectionParams.height = params.height + params.y - position -
-                            this.profile.get('mullionWidth') / 2;
+                            this.profile.get('mullion_width') / 2;
                         sectionData.mullionEdges.top = true;
                     }
                 }
@@ -347,7 +347,7 @@ var app = app || {};
                 // var temp = rootSection.mullionEdges.left;
                 // rootSection.mullionEdges.left = rootSection.mullionEdges.right;
                 // rootSection.mullionEdges.right = temp;
-                rootSection.mullionParams.x = width - rootSection.mullionParams.x - this.profile.get('mullionWidth');
+                rootSection.mullionParams.x = width - rootSection.mullionParams.x - this.profile.get('mullion_width');
             }
             if (rootSection.divider === 'horizontal') {
                 rootSection.mullionParams.x = width - rootSection.mullionParams.x - rootSection.mullionParams.width;
@@ -368,7 +368,7 @@ var app = app || {};
             return rootSection;
         },
         flatterSections: function(rootSection) {
-            rootSection = rootSection || this.get('rootSection');
+            rootSection = rootSection || this.get('root_section');
             var sections = [];
             if (rootSection.sections) {
                 sections = _.concat(_.map(rootSection.sections, function(s) {
@@ -380,7 +380,7 @@ var app = app || {};
             return sections;
         },
         getMullions: function(rootSection) {
-            rootSection = rootSection || this.get('rootSection');
+            rootSection = rootSection || this.get('root_section');
             var mullions = [];
             if (rootSection.sections && rootSection.sections.length) {
                 mullions.push({
@@ -420,7 +420,7 @@ var app = app || {};
             }
         },
         clearFrame: function() {
-            var rootId = this.get('rootSection').id;
+            var rootId = this.get('root_section').id;
             this.removeMullion(rootId);
             this._updateSection(rootId, function(section) {
                 section.sashType = 'fixed_in_frame';

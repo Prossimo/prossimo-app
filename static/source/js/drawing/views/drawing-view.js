@@ -180,7 +180,7 @@ var app = app || {};
 
         createDoorFrame: function(params) {
             var frameWidth = params.frameWidth;  // in mm
-            var thresholdWidth = this.model.profile.get('thresholdWidth');
+            var thresholdWidth = this.model.profile.get('threshold_width');
             var width = params.width;
             var height = params.height;
 
@@ -288,8 +288,8 @@ var app = app || {};
             var bottomOverlap = 0;
             var leftOverlap = 0;
             var rightOverlap = 0;
-            var frameOverlap = this.model.profile.get('sashFrameOverlap');
-            var mullionOverlap = this.model.profile.get('sashMullionOverlap');
+            var frameOverlap = this.model.profile.get('sash_frame_overlap');
+            var mullionOverlap = this.model.profile.get('sash_mullion_overlap');
             var thresholdOverlap = mullionOverlap;
             if (hasFrame) {
                 topOverlap = sectionData.mullionEdges.top ? mullionOverlap : frameOverlap;
@@ -304,7 +304,7 @@ var app = app || {};
             var height = params.height + topOverlap + bottomOverlap;
             var x = params.x - leftOverlap;
             var y = params.y - topOverlap;
-            var frameWidth = hasFrame ? this.model.profile.get('sashFrameWidth') : 0;
+            var frameWidth = hasFrame ? this.model.profile.get('sash_frame_width') : 0;
 
             var group = new Konva.Group({
                 x: x,
@@ -846,17 +846,17 @@ var app = app || {};
 
 
             var frameGroup;
-            if (this.model.profile.isThresholdPossible() && this.model.profile.get('lowThreshold')) {
+            if (this.model.profile.isThresholdPossible() && this.model.profile.get('low_threshold')) {
                 frameGroup = this.createDoorFrame({
                     width: this.model.getInMetric('width', 'mm'),
                     height: this.model.getInMetric('height', 'mm'),
-                    frameWidth: this.model.profile.get('frameWidth')
+                    frameWidth: this.model.profile.get('frame_width')
                 });
             } else {
                 frameGroup = this.createFrame({
                     width: this.model.getInMetric('width', 'mm'),
                     height: this.model.getInMetric('height', 'mm'),
-                    frameWidth: this.model.profile.get('frameWidth')
+                    frameWidth: this.model.profile.get('frame_width')
                 });
             }
             frameGroup.scale({x: ratio, y: ratio});
