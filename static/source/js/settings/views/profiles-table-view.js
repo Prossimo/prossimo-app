@@ -40,7 +40,8 @@ var app = app || {};
             };
 
             setter = function (model, attr_name, val) {
-                return model.set(attr_name, val);
+                // return model.set(attr_name, val);
+                return model.save(attr_name, val);
             };
 
             return function (profile_model, value) {

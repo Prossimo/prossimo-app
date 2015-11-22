@@ -8,7 +8,11 @@ var app = app || {};
             api_base_path: 'http://127.0.0.1:8000/api'
         },
         initialize: function () {
-            this.profiles = new app.ProfileCollection();
+            this.profiles = new app.ProfileCollection({
+                api_base_path: this.get('api_base_path')
+            });
+
+            this.profiles.fetch();
         },
         getAvailableProfileNames: function () {
             return this.profiles.map(function (item) {

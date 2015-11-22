@@ -5,6 +5,12 @@ var app = app || {};
 
     app.ProfileCollection = Backbone.Collection.extend({
         model: app.Profile,
+        url: function () {
+            return (this.options.api_base_path ? this.options.api_base_path : '') + '/profiles';
+        },
+        parse: function (data) {
+            return data.profiles;
+        },
         //  This emulates Array.splice. From Handsontable docs example
         splice: function (index, howMany) {
             var args = _.toArray(arguments).slice(2).concat({at: index});
@@ -13,7 +19,8 @@ var app = app || {};
             this.remove(removed).add.apply(this, args);
             return removed;
         },
-        initialize: function () {
+        initialize: function (options) {
+            this.options = options || {};
             this.proxy_profile = new app.Profile();
         },
         getNameTitleTypeHash: function (names) {
