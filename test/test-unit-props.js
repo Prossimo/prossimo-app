@@ -3,6 +3,8 @@
 /* eslint strict:0  */
 
 var c = app.utils.convert;
+app.no_backend = true;
+
 test('project basic tests', function () {
     var unit = new app.Unit({
         width: c.mm_to_inches(1000),

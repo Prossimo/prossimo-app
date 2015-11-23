@@ -1,3 +1,5 @@
+var app = app || {};
+
 (function () {
     'use strict';
 
@@ -35,5 +37,14 @@
         }
 
         return Backbone.Model.prototype.save.call(this, key, val, options);
+    };
+
+    //  Don't save anything if we have special flag on `app`
+    Backbone.Model.prototype.persist = function () {
+        if ( app && app.no_backend ) {
+            this.set.apply(this, arguments);
+        } else {
+            this.save.apply(this, arguments);
+        }
     };
 })();

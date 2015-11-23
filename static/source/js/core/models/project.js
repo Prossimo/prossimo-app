@@ -15,26 +15,21 @@ var app = app || {};
             project_address: ''
         },
         initialize: function () {
-            this.units = new app.UnitCollection({project: this});
-            this.extras = new app.AccessoryCollection({project: this});
-            this.files = new app.ProjectFileCollection({project: this});
-
-            console.log( 'initialize project', this );
+            this.units = new app.UnitCollection(null, { project: this });
+            this.extras = new app.AccessoryCollection(null, { project: this });
+            this.files = new app.ProjectFileCollection(null, { project: this });
 
             if ( this.get('units') ) {
-                console.log( 'has units', this.get('units') );
                 this.units.set(this.get('units'));
                 this.unset('units', {silent: true});
             }
 
             if ( this.get('accessories') ) {
-                console.log( 'has accessories', this.get('accessories') );
                 this.extras.set(this.get('accessories'));
                 this.unset('accessories', {silent: true});
             }
 
             if ( this.get('files') ) {
-                console.log( 'has files', this.get('files') );
                 this.files.set(this.get('files'));
                 this.unset('files', {silent: true});
             }

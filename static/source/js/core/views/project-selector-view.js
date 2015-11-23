@@ -20,17 +20,13 @@ var app = app || {};
         },
         onChange: function () {
             var new_id = this.ui.$select.val();
-            // console.log( 'project selector onchange', this.ui.$select.val() );
             this.setCurrentProject(new_id);
         },
         setCurrentProject: function (new_id) {
-            console.log( 'set current project', new_id );
             app.current_project = this.collection.get(new_id);
             app.vent.trigger('current_project_changed');
         },
         onRender: function () {
-            // console.log( 'project selector render' );
-            // console.log( this.collection );
             this.ui.$select.selectpicker({
                 style: 'btn-xs'
             });

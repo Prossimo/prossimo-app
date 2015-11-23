@@ -17,7 +17,7 @@ var app = app || {};
             this.remove(removed).add.apply(this, args);
             return removed;
         },
-        initialize: function (options) {
+        initialize: function (models, options) {
             this.options = options || {};
             this.proxy_unit = new app.Unit();
         },
