@@ -131,18 +131,22 @@ var app = app || {};
         updateTable: function () {
             if ( this.hot ) {
                 this.hot.render();
+            } else {
+                this.render();
             }
         },
         onRender: function () {
-            this.hot = new Handsontable(this.ui.$hot_container[0], {
-                data: this.collection,
-                columns: this.getColumnOptions(),
-                colHeaders: this.getColumnHeaders(),
-                rowHeaders: true,
-                stretchH: 'all',
-                height: 200,
-                trimDropdown: false
-            });
+            if ( this.collection.length ) {
+                this.hot = new Handsontable(this.ui.$hot_container[0], {
+                    data: this.collection,
+                    columns: this.getColumnOptions(),
+                    colHeaders: this.getColumnHeaders(),
+                    rowHeaders: true,
+                    stretchH: 'all',
+                    height: 200,
+                    trimDropdown: false
+                });
+            }
         },
         onDestroy: function () {
             if ( this.hot ) {

@@ -54,16 +54,10 @@ var app = app || {};
             return default_value;
         },
         sync: function (method, model, options) {
-            console.log( 'Syncing profile', arguments );
+            if ( method === 'create' || method === 'update' ) {
+                options.attrs = { profile: _.omit(model.toJSON(), ['id']) };
+            }
 
-            console.log( 'method', method );
-            console.log( 'model', model );
-            console.log( 'options', options );
-
-            options.attrs = { profile: _.omit(model.toJSON(),
-                ['id', 'low_threshold', 'windows', 'unitType']) };
-
-            // return Backbone.sync.apply(this, arguments);
             return Backbone.sync.call(this, method, model, options);
         },
         isThresholdPossible: function () {

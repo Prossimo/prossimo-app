@@ -9,7 +9,9 @@ var app = app || {};
             return (this.options.api_base_path ? this.options.api_base_path : '') + '/profiles';
         },
         parse: function (data) {
-            return data.profiles;
+            return _.map(data.profiles, function (profile) {
+                return _.omit(profile, ['units']);
+            });
         },
         //  This emulates Array.splice. From Handsontable docs example
         splice: function (index, howMany) {
