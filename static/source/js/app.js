@@ -20,6 +20,7 @@ $(document).ready(function () {
             sashFrameWidth: 82,
             sashFrameOverlap: 34,
             sashMullionOverlap: 12,
+            barWidth: 20,
             system: 'Gealan S9000'
         },
         {
@@ -32,6 +33,7 @@ $(document).ready(function () {
             sashMullionOverlap: 14,
             lowThreshold: true,
             thresholdWidth: 20,
+            barWidth: 20,
             system: 'Gealan S9000'
         }
     ]);
