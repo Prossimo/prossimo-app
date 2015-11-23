@@ -84,6 +84,9 @@ var app = app || {};
 
             return default_value;
         },
+        save: function () {
+            return Backbone.Model.prototype.saveAndGetId.apply(this, arguments);
+        },
         sync: function (method, model, options) {
             if ( method === 'create' || method === 'update' ) {
                 // console.log( 'syncing unit' );

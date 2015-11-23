@@ -22,6 +22,7 @@ module.exports = function (grunt) {
     ];
 
     var js_files = [
+        'backbone-extensions.js',
         'router.js',
         'utils.js',
         'paste-image.js',
