@@ -853,8 +853,18 @@ var app = app || {};
                 });
         },
         updateCanvas: function() {
-            this.layer.children.destroy();
+            this.layer.destroyChildren();
 
+            var back = new Konva.Rect({
+                width: this.stage.width(),
+                height: this.stage.height()
+            })
+            this.layer.add(back);
+            back.on('click tap', function() {
+                this.setState({
+                    selectedSashId: null
+                });
+            }.bind(this));
             var frameWidth = this.model.getInMetric('width', 'mm');
             var frameHeight = this.model.getInMetric('height', 'mm');
 
