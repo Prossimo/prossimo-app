@@ -20,7 +20,6 @@ $(document).ready(function () {
             sashFrameWidth: 82,
             sashFrameOverlap: 34,
             sashMullionOverlap: 12,
-            barWidth: 20,
             system: 'Gealan S9000'
         },
         {
@@ -67,6 +66,7 @@ $(document).ready(function () {
             width: 62,
             height: 96,
             quantity: 1,
+            glazing_bar_width: 20,
             type: 'Casement',
             description: 'Tilt and turn inswing / fixed PVC',
             notes: 'Opening restriction cord included',
@@ -88,6 +88,7 @@ $(document).ready(function () {
             width: 36,
             height: 78,
             quantity: 2,
+            glazing_bar_width: 20,
             type: 'Casement ganged to fixed',
             description: 'Tilt and turn inswing above / removable ac sash below. PVC',
             notes: 'Opening restriction cord included',

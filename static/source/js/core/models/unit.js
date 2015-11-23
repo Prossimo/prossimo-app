@@ -11,6 +11,7 @@ var app = app || {};
         { name: 'type', title: 'Type', type: 'string' },
         { name: 'description', title: 'Description', type: 'string' },
         { name: 'notes', title: 'Notes', type: 'string' },
+        { name: 'glazing_bar_width', title: 'Glazing Bar Width (mm)', type: 'number' },
 
         { name: 'profile_name', title: 'Profile', type: 'string' },
         { name: 'customer_image', title: 'Customer Image', type: 'string' },

@@ -19,7 +19,6 @@ var app = app || {};
         { name: 'system', title: 'System', type: 'string' },
         { name: 'frameWidth', title: 'Frame Width (mm)', type: 'number' },
         { name: 'mullionWidth', title: 'Mullion Width (mm)', type: 'number' },
-        { name: 'barWidth', title: 'Bar Width (mm)', type: 'number' },
         { name: 'sashFrameWidth', title: 'Sash Frame Width (mm)', type: 'number' },
         { name: 'sashFrameOverlap', title: 'Sash-Frame Overlap (mm)', type: 'number' },
         { name: 'sashMullionOverlap', title: 'Sash-Mullion Overlap (mm)', type: 'number' },

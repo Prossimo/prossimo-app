@@ -349,7 +349,7 @@ var app = app || {};
                 for(var i = 0; i < sectionData.vertical_bars_number; i++) {
                     bar = new Konva.Rect({
                         x: glassX + x_offset * (i + 1), y: glassY,
-                        width: this.model.profile.get('barWidth'), height: glassHeight,
+                        width: this.model.get('glazing_bar_width'), height: glassHeight,
                         fill: 'white'
                     });
                     group.add(bar);
@@ -358,7 +358,7 @@ var app = app || {};
                 for(i = 0; i < sectionData.horizontal_bars_number; i++) {
                     bar = new Konva.Rect({
                         x: glassX, y: glassY + y_offset * (i + 1),
-                        width: glassWidth, height: this.model.profile.get('barWidth'),
+                        width: glassWidth, height: this.model.get('glazing_bar_width'),
                         fill: 'white'
                     });
                     group.add(bar);
