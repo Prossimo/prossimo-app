@@ -153,6 +153,9 @@ var app = app || {};
         getSquareFeetPriceDiscounted: function () {
             return this.getTotalSquareFeet() ? this.getSubtotalPriceDiscounted() / this.getTotalSquareFeet() : 0;
         },
+        getSection: function(sectionId) {
+            return app.Unit.findSection(this.generateFullRoot(), sectionId);
+        },
         _updateSection: function(sectionId, func) {
             // HAH, dirty deep clone, rewrite when you have good mood for it
             // we have to make deep clone and backbone will trigger change event
@@ -169,6 +172,12 @@ var app = app || {};
             }
             this._updateSection(sectionId, function(section) {
                 section.sashType = type;
+            });
+        },
+        setSectionBars: function(sectionId, bars) {
+            this._updateSection(sectionId, function(section) {
+                section.vertical_bars_number = parseInt(bars.vertical, 10);
+                section.horizontal_bars_number = parseInt(bars.horizontal, 10);
             });
         },
         setPanelType: function(sectionId, type){
