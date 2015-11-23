@@ -53,6 +53,13 @@ var app = app || {};
 
             return default_value;
         },
+        sync: function (method, model, options) {
+            if ( method === 'create' || method === 'update' ) {
+                options.attrs = { project_accessory: _.omit(model.toJSON(), ['id']) };
+            }
+
+            return Backbone.sync.call(this, method, model, options);
+        },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs
         getNameTitleTypeHash: function (names) {
