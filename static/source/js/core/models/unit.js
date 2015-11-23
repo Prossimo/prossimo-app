@@ -41,12 +41,13 @@ var app = app || {};
 
     app.Unit = Backbone.Model.extend({
         defaults: function () {
-            var defaults = {
-                root_section: {
-                    id: _.uniqueId(),
-                    sashType: 'fixed_in_frame'
-                }
-            };
+            var defaults = {};
+            // var defaults = {
+            //     root_section: {
+            //         id: _.uniqueId(),
+            //         sashType: 'fixed_in_frame'
+            //     }
+            // };
 
             _.each(UNIT_PROPERTIES, function (item) {
                 defaults[item.name] = this.getDefaultValue(item.name, item.type);
@@ -74,11 +75,53 @@ var app = app || {};
                 default_value = 1;
             }
 
+            if ( name === 'root_section' ) {
+                default_value = {
+                    id: _.uniqueId(),
+                    sashType: 'fixed_in_frame'
+                };
+            }
+
             return default_value;
+        },
+        sync: function (method, model, options) {
+            if ( method === 'create' || method === 'update' ) {
+                // console.log( 'syncing unit' );
+                // console.log( _.omit(model.toJSON(), ['id']) );
+                // console.log( _.extendOwn(_.omit(model.toJSON(), ['id']), {
+                //     root_section: JSON.stringify(model.get('root_section'))
+                //     //root_section: 'ok'
+                // }) );
+
+                options.attrs = { project_unit: _.extendOwn(_.omit(model.toJSON(), ['id']), {
+                    root_section: JSON.stringify(model.get('root_section'))
+                }) };
+            }
+
+            return Backbone.sync.call(this, method, model, options);
+        },
+        //  TODO: this function should be called on model init (maybe not only)
+        //  and check whether root section could be used by drawing code or
+        //  should it be reset to defaults
+        validateRootSection: function () {
+            console.log( 'validate root section' );
+
+            this.set('root_section', this.getDefaultValue('root_section'));
+
+            // var root_section = this.get('root_section');
+
+            // if ( _.isString(root_section) ) {
+            //     this.set('root_section', this.getDefaultValue('root_section'));
+            // }
+
+            // if ( _.isObject(this.get(''))JSON.parse(this.object) ) {
+
+            // }
         },
         initialize: function () {
             this.profile = null;
             this.setProfile();
+            this.validateRootSection();
             this.on('change:profile_name', this.setProfile, this);
         },
         setProfile: function () {

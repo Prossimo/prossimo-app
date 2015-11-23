@@ -9,6 +9,7 @@ var app = app || {};
             return app.settings.get('api_base_path') + '/projects';
         },
         parse: function (data) {
+            console.log( 'parsing projects data', data );
             return data.projects;
         }
     });

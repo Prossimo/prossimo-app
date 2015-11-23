@@ -214,13 +214,16 @@ var app = app || {};
 
             var setters_hash = {
                 discount: function (model, attr_name, val) {
-                    return model.set(attr_name, p.percent(val));
+                    // return model.set(attr_name, p.percent(val));
+                    return model.save(attr_name, p.percent(val));
                 },
                 width: function (model, attr_name, val) {
-                    return model.set(attr_name, p.dimensions(val, 'width'));
+                    // return model.set(attr_name, p.dimensions(val, 'width'));
+                    return model.save(attr_name, p.dimensions(val, 'width'));
                 },
                 height: function (model, attr_name, val) {
-                    return model.set(attr_name, p.dimensions(val, 'height'));
+                    // return model.set(attr_name, p.dimensions(val, 'height'));
+                    return model.save(attr_name, p.dimensions(val, 'height'));
                 }
             };
 
@@ -228,7 +231,8 @@ var app = app || {};
                 setter = setters_hash[column_name];
             } else {
                 setter = function (model, attr_name, val) {
-                    return model.set(attr_name, val);
+                    // return model.set(attr_name, val);
+                    return model.save(attr_name, val);
                 };
             }
 

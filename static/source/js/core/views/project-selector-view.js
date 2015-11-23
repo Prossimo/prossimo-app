@@ -24,7 +24,7 @@ var app = app || {};
             this.setCurrentProject(new_id);
         },
         setCurrentProject: function (new_id) {
-            // console.log( 'set current project', new_id );
+            console.log( 'set current project', new_id );
             app.current_project = this.collection.get(new_id);
             app.vent.trigger('current_project_changed');
         },
