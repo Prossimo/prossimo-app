@@ -858,7 +858,7 @@ var app = app || {};
             var back = new Konva.Rect({
                 width: this.stage.width(),
                 height: this.stage.height()
-            })
+            });
             this.layer.add(back);
             back.on('click tap', function() {
                 this.setState({

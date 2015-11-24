@@ -53,6 +53,9 @@ var app = app || {};
 
             return default_value;
         },
+        initialize: function (attributes, options) {
+            this.options = options || {};
+        },
         isThresholdPossible: function () {
             return _.indexOf(TYPES_WITH_POSSIBLE_THRESHOLD, this.get('unitType')) !== -1;
         },

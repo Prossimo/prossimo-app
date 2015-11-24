@@ -77,13 +77,25 @@ var app = app || {};
 
             return default_value;
         },
-        initialize: function () {
+        initialize: function (attributes, options) {
+            this.options = options || {};
             this.profile = null;
-            this.setProfile();
-            this.on('change:profile_name', this.setProfile, this);
+
+            if ( !this.options.proxy ) {
+                this.setProfile();
+                this.on('change:profile_name', this.setProfile, this);
+            }
         },
         setProfile: function () {
-            this.profile = app.settings ? app.settings.getProfileByName(this.get('profile_name')) : null;
+            this.profile = null;
+
+            if ( app.settings && !this.get('profile_name') ) {
+                this.set('profile_name', app.settings.getDefaultProfileName());
+            }
+
+            if ( app.settings ) {
+                this.profile = app.settings.getProfileByNameOrNew(this.get('profile_name'));
+            }
         },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs

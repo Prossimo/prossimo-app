@@ -14,7 +14,7 @@ var app = app || {};
             return removed;
         },
         initialize: function () {
-            this.proxy_profile = new app.Profile();
+            this.proxy_profile = new app.Profile(null, { proxy: true });
         },
         getNameTitleTypeHash: function (names) {
             return this.proxy_profile.getNameTitleTypeHash(names);

@@ -14,7 +14,7 @@ var app = app || {};
             return removed;
         },
         initialize: function () {
-            this.proxy_unit = new app.Unit();
+            this.proxy_unit = new app.Unit(null, { proxy: true });
         },
         getNameTitleTypeHash: function (names) {
             return this.proxy_unit.getNameTitleTypeHash(names);

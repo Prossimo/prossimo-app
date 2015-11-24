@@ -53,6 +53,9 @@ var app = app || {};
 
             return default_value;
         },
+        initialize: function (attributes, options) {
+            this.options = options || {};
+        },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs
         getNameTitleTypeHash: function (names) {
