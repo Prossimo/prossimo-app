@@ -112,6 +112,16 @@ var app = app || {};
             }
 
             return td;
+        },
+        //  Add remove button to remove item from collection
+        removeItemRenderer: function (instance, td, row) {
+            var $td = $(td);
+            var $button = $('<button class="btn btn-xs js-remove-item"' +
+                'data-row="' + row + '">Remove</button>');
+
+            $td.empty().append($button);
+
+            return td;
         }
     };
 })();

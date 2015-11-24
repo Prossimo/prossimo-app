@@ -14,7 +14,8 @@ var app = app || {};
             'click .units-table-title': 'toggleTableVisibility',
             'click .js-add-new-unit': 'addNewUnit',
             'click .js-add-new-accessory': 'addNewAccessory',
-            'click .nav-tabs a': 'onTabClick'
+            'click .nav-tabs a': 'onTabClick',
+            'click .js-remove-item': 'onRemoveItem'
         },
         initialize: function () {
             this.table_visibility = 'hidden';
@@ -24,7 +25,7 @@ var app = app || {};
                     title: 'Input',
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'width', 'height',
-                        'customer_image', 'type', 'description', 'notes']
+                        'customer_image', 'type', 'description', 'notes', 'remove_item']
                 },
                 specs: {
                     title: 'Specs',
@@ -33,7 +34,8 @@ var app = app || {};
                         'height_mm', 'customer_image', 'drawing', 'type', 'description',
                         'notes', 'profile_name', 'system', 'external_color', 'internal_color',
                         'gasket_color', 'hinge_style', 'opening_direction', 'threshold',
-                        'internal_sill', 'external_sill', 'glazing', 'uw', 'uw_ip']
+                        'internal_sill', 'external_sill', 'glazing', 'uw', 'uw_ip',
+                        'remove_item']
                 },
                 prices: {
                     title: 'Prices',
@@ -42,14 +44,14 @@ var app = app || {};
                         'conversion_rate', 'unit_cost', 'price_markup', 'unit_price',
                         'subtotal_price', 'discount', 'unit_price_discounted',
                         'subtotal_price_discounted', 'total_square_feet',
-                        'square_feet_price', 'square_feet_price_discounted']
+                        'square_feet_price', 'square_feet_price_discounted', 'remove_item']
                 },
                 extras: {
                     title: 'Extras',
                     collection: this.options.extras,
                     columns: ['description', 'quantity', 'extras_type', 'original_cost',
                         'original_currency', 'conversion_rate', 'unit_cost', 'price_markup',
-                        'unit_price', 'subtotal_cost', 'subtotal_price']
+                        'unit_price', 'subtotal_cost', 'subtotal_price', 'remove_item']
                 }
             };
             this.active_tab = 'input';
@@ -121,6 +123,15 @@ var app = app || {};
                 mode: this.getActiveTab().title === 'Extras' ? 'extras' : 'units',
                 table_visibility: this.table_visibility
             };
+        },
+        onRemoveItem: function (e) {
+            var target_row = $(e.target).data('row');
+            var target_object;
+
+            if ( this.hot ) {
+                target_object = this.hot.getData().at(target_row);
+                this.hot.getData().remove(target_object);
+            }
         },
         onPasteImage: function (data) {
             if ( this.hot ) {
@@ -346,6 +357,10 @@ var app = app || {};
                 square_feet_price_discounted: {
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('price_usd')
+                },
+                remove_item: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.removeItemRenderer
                 }
             };
 
@@ -419,7 +434,8 @@ var app = app || {};
                 threshold: 'Threshold',
                 total_square_feet: 'Total Sq.Ft',
                 square_feet_price: 'Price per Sq.Ft',
-                square_feet_price_discounted: 'Price per Sq.Ft w/Disc.'
+                square_feet_price_discounted: 'Price per Sq.Ft w/Disc.',
+                remove_item: ' '
             };
 
             return custom_column_headers_hash[column_name];
