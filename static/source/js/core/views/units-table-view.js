@@ -435,8 +435,6 @@ var app = app || {};
                 columns: this.getActiveTabColumnOptions(),
                 colHeaders: this.getActiveTabHeaders(),
                 rowHeaders: true,
-                stretchH: 'all',
-                height: 200,
                 trimDropdown: false
             });
 

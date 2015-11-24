@@ -138,8 +138,6 @@ var app = app || {};
                 columns: this.getColumnOptions(),
                 colHeaders: this.getColumnHeaders(),
                 rowHeaders: true,
-                stretchH: 'all',
-                height: 200,
                 trimDropdown: false
             });
         },
