@@ -80,7 +80,8 @@ var app = app || {};
         },
         //  Render Low Threshold checkbox, sometimes make cell read-only
         thresholdCheckboxRenderer: function (instance, td, row, col) {
-            var isThresholdEditable = instance.getData().at(row).isThresholdEditable();
+            var isThresholdEditable = instance.getData().at(row) &&
+                instance.getData().at(row).isThresholdEditable();
 
             //  We need this because otherwise user will be able to paste
             if ( isThresholdEditable ) {
@@ -101,7 +102,8 @@ var app = app || {};
         },
         //  Render Threshold Width param cell, sometimes make cell read-only
         thresholdWidthRenderer: function (instance, td, row, col) {
-            var isThresholdPossible = instance.getData().at(row).isThresholdPossible();
+            var isThresholdPossible = instance.getData().at(row) &&
+                instance.getData().at(row).isThresholdPossible();
 
             if ( isThresholdPossible ) {
                 instance.setCellMeta(row, col, 'readOnly', false);

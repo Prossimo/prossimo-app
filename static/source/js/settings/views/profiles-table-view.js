@@ -13,13 +13,14 @@ var app = app || {};
             '$hot_container': '.profiles-handsontable-container'
         },
         events: {
-            'click .js-add-new-profile': 'addNewProfile'
+            'click .js-add-new-profile': 'addNewProfile',
+            'click .js-remove-item': 'onRemoveItem'
         },
         initialize: function () {
             this.columns = [
                 'name', 'unitType', 'system', 'frameWidth', 'mullionWidth',
                 'sashFrameWidth', 'sashFrameOverlap', 'sashMullionOverlap',
-                'lowThreshold', 'thresholdWidth'
+                'lowThreshold', 'thresholdWidth', 'remove_item'
             ];
 
             this.listenTo(this.collection, 'all', this.updateTable);
@@ -30,6 +31,15 @@ var app = app || {};
 
             e.stopPropagation();
             this.collection.add(new_profile);
+        },
+        onRemoveItem: function (e) {
+            var target_row = $(e.target).data('row');
+            var target_object;
+
+            if ( this.hot ) {
+                target_object = this.hot.getData().at(target_row);
+                this.hot.getData().remove(target_object);
+            }
         },
         getColumnData: function (column_name) {
             var setter;
@@ -82,6 +92,10 @@ var app = app || {};
                 },
                 thresholdWidth: {
                     renderer: app.hot_renderers.thresholdWidthRenderer
+                },
+                remove_item: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.removeItemRenderer
                 }
             };
 
@@ -113,10 +127,13 @@ var app = app || {};
             var headers = [];
 
             _.each(this.columns, function (column_name) {
+                var custom_header = this.getCustomColumnHeader(column_name);
                 var original_header = this.collection.getTitles([column_name]);
                 var title = '';
 
-                if ( original_header && original_header[0] ) {
+                if ( custom_header ) {
+                    title = custom_header;
+                } else if ( original_header && original_header[0] ) {
                     title = original_header[0];
                 } else {
                     title = column_name;
@@ -126,6 +143,13 @@ var app = app || {};
             }, this);
 
             return headers;
+        },
+        getCustomColumnHeader: function (column_name) {
+            var custom_column_headers_hash = {
+                remove_item: ' '
+            };
+
+            return custom_column_headers_hash[column_name];
         },
         updateTable: function () {
             if ( this.hot ) {
