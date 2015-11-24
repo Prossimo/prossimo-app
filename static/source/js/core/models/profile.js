@@ -55,6 +55,10 @@ var app = app || {};
         },
         initialize: function (attributes, options) {
             this.options = options || {};
+
+            if ( !this.options.proxy ) {
+                this.on('change:unitType', this.onTypeUpdate, this);
+            }
         },
         isThresholdPossible: function () {
             return _.indexOf(TYPES_WITH_POSSIBLE_THRESHOLD, this.get('unitType')) !== -1;
@@ -93,9 +97,6 @@ var app = app || {};
             } else if ( this.hasAlwaysLowThreshold() ) {
                 this.set('lowThreshold', true);
             }
-        },
-        initialize: function () {
-            this.on('change:unitType', this.onTypeUpdate, this);
         },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs
