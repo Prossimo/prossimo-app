@@ -368,6 +368,10 @@ module.exports = function (grunt) {
                             }).join('\n    ') + '\n    ' + test_data_js_files.map(function (test_component) {
                                 return '<script src="/' + test_component + '"></script>';
                             }).join('\n    ')
+                        },
+                        {
+                            match: 'api_base_path',
+                            replacement: 'http://127.0.0.1:8000/api'
                         }
                     ]
                 },
@@ -392,6 +396,10 @@ module.exports = function (grunt) {
                         {
                             match: 'scripts',
                             replacement: '<script src="/static/public/js/application.<%= hash %>.min.js"></script>'
+                        },
+                        {
+                            match: 'api_base_path',
+                            replacement: '/api'
                         }
 
                     ]

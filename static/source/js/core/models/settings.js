@@ -5,7 +5,7 @@ var app = app || {};
 
     app.Settings = Backbone.Model.extend({
         defaults: {
-            api_base_path: 'http://127.0.0.1:8000/api'
+            api_base_path: $('meta[name="api-base-path"]').attr('value') || '/api'
         },
         initialize: function () {
             this.profiles = new app.ProfileCollection(null, {
