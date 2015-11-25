@@ -70,6 +70,10 @@ var app = app || {};
                 default_value = 1;
             }
 
+            if ( name === 'glazing_bar_width' ) {
+                default_value = 22;
+            }
+
             if ( name === 'root_section' ) {
                 default_value = {
                     id: _.uniqueId(),
