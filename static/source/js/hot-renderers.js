@@ -80,7 +80,8 @@ var app = app || {};
         },
         //  Render Low Threshold checkbox, sometimes make cell read-only
         thresholdCheckboxRenderer: function (instance, td, row, col) {
-            var isThresholdEditable = instance.getData().at(row).isThresholdEditable();
+            var isThresholdEditable = instance.getData().at(row) &&
+                instance.getData().at(row).isThresholdEditable();
 
             //  We need this because otherwise user will be able to paste
             if ( isThresholdEditable ) {
@@ -101,7 +102,8 @@ var app = app || {};
         },
         //  Render Threshold Width param cell, sometimes make cell read-only
         thresholdWidthRenderer: function (instance, td, row, col) {
-            var isThresholdPossible = instance.getData().at(row).isThresholdPossible();
+            var isThresholdPossible = instance.getData().at(row) &&
+                instance.getData().at(row).isThresholdPossible();
 
             if ( isThresholdPossible ) {
                 instance.setCellMeta(row, col, 'readOnly', false);
@@ -110,6 +112,37 @@ var app = app || {};
                 instance.setCellMeta(row, col, 'readOnly', true);
                 $(td).addClass('htDimmed htNumeric').text('--');
             }
+
+            return td;
+        },
+        //  Add move up / down buttons to move item within collection
+        moveItemRenderer: function (instance, td, row) {
+            var $td = $(td);
+            var is_first_item = row === 0;
+            var is_last_item = row === instance.getData().length - 1;
+
+            var $button_up = $('<button class="btn btn-move btn-up btn-xs js-move-item-up"' +
+                'data-row="' + row + '">Up</button>');
+            var $button_down = $('<button class="btn btn-move btn-down btn-xs js-move-item-down"' +
+                'data-row="' + row + '">Down</button>');
+
+            if ( is_first_item ) {
+                $button_up.addClass('disabled');
+            } else if ( is_last_item ) {
+                $button_down.addClass('disabled');
+            }
+
+            $td.empty().append($button_up.add($button_down));
+
+            return td;
+        },
+        //  Add remove button to remove item from collection
+        removeItemRenderer: function (instance, td, row) {
+            var $td = $(td);
+            var $button = $('<button class="btn btn-xs js-remove-item"' +
+                'data-row="' + row + '">Remove</button>');
+
+            $td.empty().append($button);
 
             return td;
         }

@@ -19,9 +19,18 @@ var app = app || {};
                 return item.get('name');
             });
         },
-        getProfileByName: function (profile_name) {
+        getProfileByNameOrNew: function (profile_name) {
             var profile = this.profiles.findWhere({name: profile_name});
             return profile ? profile : new app.Profile();
+        },
+        getDefaultProfileName: function () {
+            var default_profile_name = '';
+
+            if ( this.profiles.length ) {
+                default_profile_name = this.profiles.at(0).get('name');
+            }
+
+            return default_profile_name;
         }
     });
 })();

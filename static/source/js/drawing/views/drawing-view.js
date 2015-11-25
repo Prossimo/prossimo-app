@@ -17,7 +17,10 @@ var app = app || {};
         ui: {
             '$panel_type': '.panel-type',
             '$flush_panels': '[data-type="flush-turn-right"], [data-type="flush-turn-left"]',
-            '$title': '#drawing-view-title'
+            '$title': '#drawing-view-title',
+            '$bars_control': '#bars-control',
+            '$vertical_bars_number': '#vertical-bars-number',
+            '$horizontal_bars_number': '#horizontal-bars-number'
         },
 
         events: {
@@ -32,7 +35,11 @@ var app = app || {};
             },
             'click #clear-frame': 'clearFrame',
             'keydown #drawing': 'handleCanvasKeyDown',
-            'click #change-view': 'handleChangeView'
+            'click #change-view': 'handleChangeView',
+            'change #vertical-bars-number': 'handleBarNumberChange',
+            'input #vertical-bars-number': 'handleBarNumberChange',
+            'change #horizontal-bars-number': 'handleBarNumberChange',
+            'input #horizontal-bars-number': 'handleBarNumberChange'
         },
 
         onRender: function(){
@@ -69,6 +76,12 @@ var app = app || {};
         handleChangeView: function() {
             this.setState({
                 insideView: !this.state.insideView
+            });
+        },
+        handleBarNumberChange: function() {
+            this.model.setSectionBars(this.state.selectedSashId, {
+                vertical: this.ui.$vertical_bars_number.val(),
+                horizontal: this.ui.$horizontal_bars_number.val()
             });
         },
         setState: function(state) {
@@ -316,7 +329,6 @@ var app = app || {};
             var glassWidth = width - frameWidth * 2;
             var glassHeight = height - frameWidth * 2;
             if (!sectionData.sections || !sectionData.sections.length) {
-
                 var glass = new Konva.Rect({
                     x: glassX,
                     y: glassY,
@@ -331,6 +343,26 @@ var app = app || {};
                     glass.fill('lightgrey');
                 }
                 glass.on('click', this.showPopup.bind(this, sectionData.id));
+
+                var bar;
+                var x_offset = glassWidth / (sectionData.vertical_bars_number + 1);
+                for(var i = 0; i < sectionData.vertical_bars_number; i++) {
+                    bar = new Konva.Rect({
+                        x: glassX + x_offset * (i + 1), y: glassY,
+                        width: this.model.get('glazing_bar_width'), height: glassHeight,
+                        fill: 'white'
+                    });
+                    group.add(bar);
+                }
+                var y_offset = glassHeight / (sectionData.horizontal_bars_number + 1);
+                for(i = 0; i < sectionData.horizontal_bars_number; i++) {
+                    bar = new Konva.Rect({
+                        x: glassX, y: glassY + y_offset * (i + 1),
+                        width: glassWidth, height: this.model.get('glazing_bar_width'),
+                        fill: 'white'
+                    });
+                    group.add(bar);
+                }
             }
             var type = sectionData.sashType;
 
@@ -821,8 +853,18 @@ var app = app || {};
                 });
         },
         updateCanvas: function() {
-            this.layer.children.destroy();
+            this.layer.destroyChildren();
 
+            var back = new Konva.Rect({
+                width: this.stage.width(),
+                height: this.stage.height()
+            });
+            this.layer.add(back);
+            back.on('click tap', function() {
+                this.setState({
+                    selectedSashId: null
+                });
+            }.bind(this));
             var frameWidth = this.model.getInMetric('width', 'mm');
             var frameHeight = this.model.getInMetric('height', 'mm');
 
@@ -898,6 +940,11 @@ var app = app || {};
             this.$('#change-view').text(buttonText);
             var titleText = this.state.insideView ? 'Inside view' : 'Outside view';
             this.ui.$title.text(titleText);
+
+            var selectedSash = this.model.getSection(this.state.selectedSashId);
+            this.ui.$bars_control.toggle(!!this.state.selectedSashId);
+            this.ui.$vertical_bars_number.val(selectedSash && selectedSash.vertical_bars_number || 0);
+            this.ui.$horizontal_bars_number.val(selectedSash && selectedSash.horizontal_bars_number || 0);
         },
 
         splitSection: function(e) {

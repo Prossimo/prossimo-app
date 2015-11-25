@@ -11,6 +11,7 @@ var app = app || {};
         { name: 'type', title: 'Type', type: 'string' },
         { name: 'description', title: 'Description', type: 'string' },
         { name: 'notes', title: 'Notes', type: 'string' },
+        { name: 'glazing_bar_width', title: 'Glazing Bar Width (mm)', type: 'number' },
 
         { name: 'profile_name', title: 'Profile', type: 'string' },
         { name: 'customer_image', title: 'Customer Image', type: 'string' },
@@ -101,14 +102,26 @@ var app = app || {};
                 this.set('root_section', this.getDefaultValue('root_section'));
             }
         },
-        initialize: function () {
+        initialize: function (attributes, options) {
+            this.options = options || {};
             this.profile = null;
-            this.setProfile();
-            this.validateRootSection();
-            this.on('change:profile_name', this.setProfile, this);
+
+            if ( !this.options.proxy ) {
+                this.setProfile();
+                this.validateRootSection();
+                this.on('change:profile_name', this.setProfile, this);
+            }
         },
         setProfile: function () {
-            this.profile = app.settings ? app.settings.getProfileByName(this.get('profile_name')) : null;
+            this.profile = null;
+
+            if ( app.settings && !this.get('profile_name') ) {
+                this.set('profile_name', app.settings.getDefaultProfileName());
+            }
+
+            if ( app.settings ) {
+                this.profile = app.settings.getProfileByNameOrNew(this.get('profile_name'));
+            }
         },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs
@@ -179,6 +192,9 @@ var app = app || {};
         getSquareFeetPriceDiscounted: function () {
             return this.getTotalSquareFeet() ? this.getSubtotalPriceDiscounted() / this.getTotalSquareFeet() : 0;
         },
+        getSection: function(sectionId) {
+            return app.Unit.findSection(this.generateFullRoot(), sectionId);
+        },
         _updateSection: function(sectionId, func) {
             // HAH, dirty deep clone, rewrite when you have good mood for it
             // we have to make deep clone and backbone will trigger change event
@@ -195,6 +211,12 @@ var app = app || {};
             }
             this._updateSection(sectionId, function(section) {
                 section.sashType = type;
+            });
+        },
+        setSectionBars: function(sectionId, bars) {
+            this._updateSection(sectionId, function(section) {
+                section.vertical_bars_number = parseInt(bars.vertical, 10);
+                section.horizontal_bars_number = parseInt(bars.horizontal, 10);
             });
         },
         setPanelType: function(sectionId, type){
