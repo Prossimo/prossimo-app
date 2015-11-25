@@ -10,7 +10,7 @@ var app = app || {};
 
         function processResponse (status, model, response) {
             var location_string = response.getResponseHeader('Location');
-            var pattern = /=(\d+)/;
+            var pattern = /(\d+)$/;
             var match;
             var new_id;
 
