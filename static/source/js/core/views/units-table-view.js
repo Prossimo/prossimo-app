@@ -37,8 +37,8 @@ var app = app || {};
                         'height_mm', 'customer_image', 'drawing', 'type', 'description',
                         'notes', 'profile_name', 'system', 'external_color', 'internal_color',
                         'gasket_color', 'hinge_style', 'opening_direction', 'threshold',
-                        'internal_sill', 'external_sill', 'glazing', 'uw', 'uw_ip',
-                        'move_item', 'remove_item']
+                        'internal_sill', 'external_sill', 'glazing', 'glazing_bar_width',
+                        'uw', 'uw_ip', 'move_item', 'remove_item']
                 },
                 prices: {
                     title: 'Prices',
