@@ -3,6 +3,12 @@ bower_components
 build
 dist
 static/public
+docs/index.html
+drawing/index.html
+quote/index.html
+settings/index.html
+supplier/index.html
+split
 *.sublime*
 /index.html
 /login.html
