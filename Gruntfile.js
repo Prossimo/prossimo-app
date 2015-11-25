@@ -58,6 +58,12 @@ module.exports = function (grunt) {
         'app.js'
     ];
 
+    var test_data_js_files = [
+        'test/data/customer-images.js',
+        'test/data/test-settings.js',
+        'test/data/test-project.js'
+    ];
+
     grunt.initConfig({
         sourceUrl: 'static/source',
         buildUrl: 'static/public',
@@ -359,6 +365,8 @@ module.exports = function (grunt) {
                             match: 'scripts',
                             replacement: js_files.map(function (component) {
                                 return '<script src="/' + '<%= buildUrl %>/js/' + component + '"></script>';
+                            }).join('\n    ') + '\n    ' + test_data_js_files.map(function (test_component) {
+                                return '<script src="/' + test_component + '"></script>';
                             }).join('\n    ')
                         }
                     ]
