@@ -23,7 +23,7 @@ var app = app || {};
 
             return removed;
         },
-        initialize: function (options) {
+        initialize: function (models, options) {
             this.options = options || {};
             this.proxy_profile = new app.Profile(null, { proxy: true });
         },
