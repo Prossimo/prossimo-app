@@ -14,13 +14,15 @@ var app = app || {};
         },
         events: {
             'click .js-add-new-profile': 'addNewProfile',
-            'click .js-remove-item': 'onRemoveItem'
+            'click .js-remove-item': 'onRemoveItem',
+            'click .js-move-item-up': 'onMoveItemUp',
+            'click .js-move-item-down': 'onMoveItemDown'
         },
         initialize: function () {
             this.columns = [
                 'name', 'unitType', 'system', 'frameWidth', 'mullionWidth',
                 'sashFrameWidth', 'sashFrameOverlap', 'sashMullionOverlap',
-                'lowThreshold', 'thresholdWidth', 'remove_item'
+                'lowThreshold', 'thresholdWidth', 'move_item', 'remove_item'
             ];
 
             this.listenTo(this.collection, 'all', this.updateTable);
@@ -39,6 +41,24 @@ var app = app || {};
             if ( this.hot ) {
                 target_object = this.hot.getData().at(target_row);
                 this.hot.getData().remove(target_object);
+            }
+        },
+        onMoveItemUp: function (e) {
+            var target_row = $(e.target).data('row');
+            var target_object;
+
+            if ( this.hot && $(e.target).hasClass('disabled') === false ) {
+                target_object = this.hot.getData().at(target_row);
+                this.hot.getData().moveItemUp(target_object);
+            }
+        },
+        onMoveItemDown: function (e) {
+            var target_row = $(e.target).data('row');
+            var target_object;
+
+            if ( this.hot && $(e.target).hasClass('disabled') === false ) {
+                target_object = this.hot.getData().at(target_row);
+                this.hot.getData().moveItemDown(target_object);
             }
         },
         getColumnData: function (column_name) {
@@ -93,6 +113,10 @@ var app = app || {};
                 thresholdWidth: {
                     renderer: app.hot_renderers.thresholdWidthRenderer
                 },
+                move_item: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.moveItemRenderer
+                },
                 remove_item: {
                     readOnly: true,
                     renderer: app.hot_renderers.removeItemRenderer
@@ -146,6 +170,7 @@ var app = app || {};
         },
         getCustomColumnHeader: function (column_name) {
             var custom_column_headers_hash = {
+                'move_item': 'Move',
                 remove_item: ' '
             };
 

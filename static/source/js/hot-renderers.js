@@ -115,6 +115,27 @@ var app = app || {};
 
             return td;
         },
+        //  Add move up / down buttons to move item within collection
+        moveItemRenderer: function (instance, td, row) {
+            var $td = $(td);
+            var is_first_item = row === 0;
+            var is_last_item = row === instance.getData().length - 1;
+
+            var $button_up = $('<button class="btn btn-move btn-up btn-xs js-move-item-up"' +
+                'data-row="' + row + '">Up</button>');
+            var $button_down = $('<button class="btn btn-move btn-down btn-xs js-move-item-down"' +
+                'data-row="' + row + '">Down</button>');
+
+            if ( is_first_item ) {
+                $button_up.addClass('disabled');
+            } else if ( is_last_item ) {
+                $button_down.addClass('disabled');
+            }
+
+            $td.empty().append($button_up.add($button_down));
+
+            return td;
+        },
         //  Add remove button to remove item from collection
         removeItemRenderer: function (instance, td, row) {
             var $td = $(td);

@@ -15,7 +15,9 @@ var app = app || {};
             'click .js-add-new-unit': 'addNewUnit',
             'click .js-add-new-accessory': 'addNewAccessory',
             'click .nav-tabs a': 'onTabClick',
-            'click .js-remove-item': 'onRemoveItem'
+            'click .js-remove-item': 'onRemoveItem',
+            'click .js-move-item-up': 'onMoveItemUp',
+            'click .js-move-item-down': 'onMoveItemDown'
         },
         initialize: function () {
             this.table_visibility = 'hidden';
@@ -25,7 +27,8 @@ var app = app || {};
                     title: 'Input',
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'width', 'height',
-                        'customer_image', 'type', 'description', 'notes', 'remove_item']
+                        'customer_image', 'type', 'description', 'notes',
+                        'move_item', 'remove_item']
                 },
                 specs: {
                     title: 'Specs',
@@ -35,7 +38,7 @@ var app = app || {};
                         'notes', 'profile_name', 'system', 'external_color', 'internal_color',
                         'gasket_color', 'hinge_style', 'opening_direction', 'threshold',
                         'internal_sill', 'external_sill', 'glazing', 'uw', 'uw_ip',
-                        'remove_item']
+                        'move_item', 'remove_item']
                 },
                 prices: {
                     title: 'Prices',
@@ -44,14 +47,16 @@ var app = app || {};
                         'conversion_rate', 'unit_cost', 'price_markup', 'unit_price',
                         'subtotal_price', 'discount', 'unit_price_discounted',
                         'subtotal_price_discounted', 'total_square_feet',
-                        'square_feet_price', 'square_feet_price_discounted', 'remove_item']
+                        'square_feet_price', 'square_feet_price_discounted',
+                        'move_item', 'remove_item']
                 },
                 extras: {
                     title: 'Extras',
                     collection: this.options.extras,
                     columns: ['description', 'quantity', 'extras_type', 'original_cost',
                         'original_currency', 'conversion_rate', 'unit_cost', 'price_markup',
-                        'unit_price', 'subtotal_cost', 'subtotal_price', 'remove_item']
+                        'unit_price', 'subtotal_cost', 'subtotal_price',
+                        'move_item', 'remove_item']
                 }
             };
             this.active_tab = 'input';
@@ -131,6 +136,24 @@ var app = app || {};
             if ( this.hot ) {
                 target_object = this.hot.getData().at(target_row);
                 this.hot.getData().remove(target_object);
+            }
+        },
+        onMoveItemUp: function (e) {
+            var target_row = $(e.target).data('row');
+            var target_object;
+
+            if ( this.hot && $(e.target).hasClass('disabled') === false ) {
+                target_object = this.hot.getData().at(target_row);
+                this.hot.getData().moveItemUp(target_object);
+            }
+        },
+        onMoveItemDown: function (e) {
+            var target_row = $(e.target).data('row');
+            var target_object;
+
+            if ( this.hot && $(e.target).hasClass('disabled') === false ) {
+                target_object = this.hot.getData().at(target_row);
+                this.hot.getData().moveItemDown(target_object);
             }
         },
         onPasteImage: function (data) {
@@ -358,6 +381,10 @@ var app = app || {};
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('price_usd')
                 },
+                move_item: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.moveItemRenderer
+                },
                 remove_item: {
                     readOnly: true,
                     renderer: app.hot_renderers.removeItemRenderer
@@ -435,6 +462,7 @@ var app = app || {};
                 total_square_feet: 'Total Sq.Ft',
                 square_feet_price: 'Price per Sq.Ft',
                 square_feet_price_discounted: 'Price per Sq.Ft w/Disc.',
+                move_item: 'Move',
                 remove_item: ' '
             };
 

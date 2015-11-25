@@ -15,6 +15,24 @@ var app = app || {};
 
             return removed;
         },
+        swapItems: function (index1, index2) {
+            this.models[index1] = this.models.splice(index2, 1, this.models[index1])[0];
+            this.trigger('swap');
+        },
+        moveItemUp: function (model) {
+            var index = this.indexOf(model);
+
+            if ( index > 0 ) {
+                this.swapItems(index, index - 1);
+            }
+        },
+        moveItemDown: function (model) {
+            var index = this.indexOf(model);
+
+            if ( index >= 0 && index < this.length - 1 ) {
+                this.swapItems(index, index + 1);
+            }
+        },
         initialize: function () {
             this.proxy_accessory = new app.Accessory(null, { proxy: true });
         },
