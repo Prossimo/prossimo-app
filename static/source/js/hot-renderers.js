@@ -128,7 +128,9 @@ var app = app || {};
 
             if ( is_first_item ) {
                 $button_up.addClass('disabled');
-            } else if ( is_last_item ) {
+            }
+
+            if ( is_last_item ) {
                 $button_down.addClass('disabled');
             }
 
