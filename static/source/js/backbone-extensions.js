@@ -39,9 +39,9 @@ var app = app || {};
         return Backbone.Model.prototype.save.call(this, key, val, options);
     };
 
-    //  Don't save anything if we have special flag on `app`
+    //  Don't save anything if we have special flag on `app` or an attribute
     Backbone.Model.prototype.persist = function () {
-        if ( app && app.no_backend ) {
+        if ( app && app.no_backend || this.get('no_backend') === true ) {
             this.set.apply(this, arguments);
         } else {
             this.save.apply(this, arguments);

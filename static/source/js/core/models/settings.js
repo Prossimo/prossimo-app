@@ -12,7 +12,7 @@ var app = app || {};
                 api_base_path: this.get('api_base_path')
             });
 
-            this.profiles.fetch();
+            this.profiles.fetch({ remove: false });
         },
         getAvailableProfileNames: function () {
             return this.profiles.map(function (item) {

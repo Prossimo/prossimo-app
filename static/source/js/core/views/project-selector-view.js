@@ -15,7 +15,7 @@ var app = app || {};
         },
         initialize: function () {
             $('#header').append( this.render().el );
-            this.collection.fetch({remove: false});
+            this.collection.fetch({ remove: false });
             this.listenTo(this.collection, 'all', this.render);
         },
         onChange: function () {
@@ -24,6 +24,13 @@ var app = app || {};
         },
         setCurrentProject: function (new_id) {
             app.current_project = this.collection.get(new_id);
+
+            if ( app.current_project.get('no_backend') === true ) {
+                app.no_backend = true;
+            } else {
+                delete app.no_backend;
+            }
+
             app.vent.trigger('current_project_changed');
         },
         onRender: function () {
