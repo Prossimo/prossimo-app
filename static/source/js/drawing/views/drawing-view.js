@@ -900,7 +900,7 @@ var app = app || {};
             if (!this.state.insideView) {
                 frameGroup.moveToTop();
             }
-            
+
             var mullions;
             if (this.state.insideView) {
                 mullions = this.model.getMullions();

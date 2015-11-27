@@ -27,7 +27,7 @@ test('split by two parts', function() {
     var id = unit.get('root_section').id;
     unit.splitSection(id, 'vertical');
     var rootSection = unit.generateFullRoot();
-    var leftSection = rootSection.sections[0].params;
+    var leftSection = rootSection.sections[0].openingParams;
     equal(leftSection.x, unit.profile.get('frame_width'));
     equal(leftSection.y, unit.profile.get('frame_width'));
     equal(leftSection.width, 500 - 10 - 20 / 2);
@@ -49,7 +49,7 @@ test('split by 3 parts', function() {
     id = unit.get('root_section').sections[0].id;
     unit.splitSection(id, 'vertical');
     var rootSection = unit.generateFullRoot();
-    var leftSection = rootSection.sections[0].sections[0].params;
+    var leftSection = rootSection.sections[0].sections[0].openingParams;
     equal(leftSection.x, unit.profile.get('frame_width'));
     equal(leftSection.y, unit.profile.get('frame_width'));
     equal(leftSection.width, (500 - 10 - 20 / 2) / 2 - 20 / 2);
