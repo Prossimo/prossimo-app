@@ -367,14 +367,14 @@ var app = app || {};
                 };
                 if (rootSection.divider === 'vertical') {
                     mullionAttrs.x = position - this.profile.get('mullion_width') / 2;
-                    mullionAttrs.y = openingParams.y;
+                    mullionAttrs.y = rootSection.glassParams.y;
                     mullionAttrs.width = this.profile.get('mullion_width');
-                    mullionAttrs.height = openingParams.height;
+                    mullionAttrs.height = rootSection.glassParams.height;
 
                 } else {
-                    mullionAttrs.x = openingParams.x;
+                    mullionAttrs.x = rootSection.glassParams.x;
                     mullionAttrs.y = position - this.profile.get('mullion_width') / 2;
-                    mullionAttrs.width = openingParams.width;
+                    mullionAttrs.width = rootSection.glassParams.width;
                     mullionAttrs.height = this.profile.get('mullion_width');
                 }
                 // if (rootSection.sashType !== 'none') {
@@ -423,12 +423,11 @@ var app = app || {};
             rootSection = rootSection || this.generateFullRoot();
             var width = this.getInMetric('width', 'mm');
             rootSection.openingParams.x = width - rootSection.openingParams.x - rootSection.openingParams.width;
+            rootSection.glassParams.x = width - rootSection.glassParams.x - rootSection.glassParams.width;
+            rootSection.sashParams.x = width - rootSection.sashParams.x - rootSection.sashParams.width;
             if (rootSection.divider === 'vertical') {
                 rootSection.position = width - rootSection.position;
                 rootSection.sections = rootSection.sections.reverse();
-                // var temp = rootSection.mullionEdges.left;
-                // rootSection.mullionEdges.left = rootSection.mullionEdges.right;
-                // rootSection.mullionEdges.right = temp;
                 rootSection.mullionParams.x = width - rootSection.mullionParams.x - this.profile.get('mullion_width');
             }
             if (rootSection.divider === 'horizontal') {
@@ -520,8 +519,10 @@ var app = app || {};
                 res.glasses = res.glasses.concat(subSizes.glasses);
             }, this);
             if (root.sections.length === 0) {
-                res.openings.push(root.openingParams);
                 res.glasses.push(root.glassParams);
+            }
+            if (root.sashType !== 'fixed_in_frame') {
+                res.openings.push(root.openingParams);
             }
             return res;
         }
