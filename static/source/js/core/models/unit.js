@@ -245,7 +245,7 @@ var app = app || {};
         },
         setSectionMullionPosition: function(id, pos) {
             this._updateSection(id, function(section) {
-                section.position = parseInt(pos, 10);
+                section.position = parseFloat(pos);
             });
         },
         removeMullion: function(sectionId) {
