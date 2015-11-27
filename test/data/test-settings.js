@@ -11,7 +11,8 @@ $(document).ready(function () {
             sash_frame_width: 82,
             sash_frame_overlap: 34,
             sash_mullion_overlap: 12,
-            system: 'Gealan S9000'
+            system: 'Gealan S9000',
+            no_backend: true
         },
         {
             name: 'Alternative Profile (test)',
@@ -23,7 +24,8 @@ $(document).ready(function () {
             sash_mullion_overlap: 14,
             low_threshold: true,
             threshold_width: 20,
-            system: 'Gealan S9000'
+            system: 'Gealan S9000',
+            no_backend: true
         }
     ]);
 });

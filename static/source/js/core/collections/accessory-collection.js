@@ -9,37 +9,9 @@ var app = app || {};
             return app.settings.get('api_base_path') +
                 '/projects/' + this.options.project.get('id') + '/accessories';
         },
-        //  This emulates Array.splice. From Handsontable docs example
-        splice: function (index, how_many /* new_item_1, new_item_2, ... */) {
-            var args = _.toArray(arguments).slice(2).concat({at: index});
-            var removed = this.models.slice(index, index + how_many);
-
-            this.remove(removed);
-            this.add.apply(this, args);
-
-            return removed;
-        },
         initialize: function (models, options) {
             this.options = options || {};
             this.proxy_accessory = new app.Accessory(null, { proxy: true });
-        },
-        swapItems: function (index1, index2) {
-            this.models[index1] = this.models.splice(index2, 1, this.models[index1])[0];
-            this.trigger('swap');
-        },
-        moveItemUp: function (model) {
-            var index = this.indexOf(model);
-
-            if ( index > 0 ) {
-                this.swapItems(index, index - 1);
-            }
-        },
-        moveItemDown: function (model) {
-            var index = this.indexOf(model);
-
-            if ( index >= 0 && index < this.length - 1 ) {
-                this.swapItems(index, index + 1);
-            }
         },
         getNameTitleTypeHash: function (names) {
             return this.proxy_accessory.getNameTitleTypeHash(names);

@@ -161,10 +161,10 @@ var app = app || {};
         },
         convert: {
             inches_to_mm: function (inch_value) {
-                return parseFloat(inch_value * 24.5);
+                return parseFloat(inch_value * 25.4);
             },
             mm_to_inches: function (mm_value) {
-                return parseFloat(mm_value / 24.5);
+                return parseFloat(mm_value / 25.4);
             }
         }
     };

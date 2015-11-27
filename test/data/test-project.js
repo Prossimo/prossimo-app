@@ -10,8 +10,9 @@ $(document).ready(function () {
         client_phone: '917.468.0506',
         client_email: 'ben@prossimo.us',
         client_address: '98 4th Street Suite 213 Brooklyn, NY 11231',
-        project_name: 'Italian Market (Test)',
-        project_address: '827 Carpenter Lane Philadelphia, PA'
+        project_name: 'Italian Market (Local, no backend)',
+        project_address: '827 Carpenter Lane Philadelphia, PA',
+        no_backend: true
     });
 
     test_project.files.add([
@@ -133,5 +134,4 @@ $(document).ready(function () {
 
 
     app.projects.add(test_project);
-
 });

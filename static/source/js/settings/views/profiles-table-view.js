@@ -40,7 +40,7 @@ var app = app || {};
 
             if ( this.hot ) {
                 target_object = this.hot.getData().at(target_row);
-                this.hot.getData().remove(target_object);
+                target_object.destroy();
             }
         },
         onMoveItemUp: function (e) {

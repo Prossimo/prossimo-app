@@ -88,7 +88,7 @@ var app = app || {};
         },
         sync: function (method, model, options) {
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { project_unit: _.extendOwn(_.omit(model.toJSON(), ['id', 'glazing_bar_width']), {
+                options.attrs = { project_unit: _.extendOwn(_.omit(model.toJSON(), ['id']), {
                     root_section: JSON.stringify(model.get('root_section'))
                 }) };
             }
