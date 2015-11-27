@@ -294,40 +294,18 @@ var app = app || {};
         },
 
         createSash: function(sectionData) {
-            var params = sectionData.params;
-            // params of HOLE
             var hasFrame = (sectionData.sashType !== 'fixed_in_frame');
-            var topOverlap = 0;
-            var bottomOverlap = 0;
-            var leftOverlap = 0;
-            var rightOverlap = 0;
-            var frameOverlap = this.model.profile.get('sash_frame_overlap');
-            var mullionOverlap = this.model.profile.get('sash_mullion_overlap');
-            var thresholdOverlap = mullionOverlap;
-            if (hasFrame) {
-                topOverlap = sectionData.mullionEdges.top ? mullionOverlap : frameOverlap;
-                bottomOverlap = sectionData.mullionEdges.bottom ? mullionOverlap : frameOverlap;
-                leftOverlap = sectionData.mullionEdges.left ? mullionOverlap : frameOverlap;
-                rightOverlap = sectionData.mullionEdges.right ? mullionOverlap : frameOverlap;
-            }
-            if (hasFrame && sectionData.thresholdEdge) {
-                bottomOverlap = thresholdOverlap;
-            }
-            var width = params.width + leftOverlap + rightOverlap;
-            var height = params.height + topOverlap + bottomOverlap;
-            var x = params.x - leftOverlap;
-            var y = params.y - topOverlap;
             var frameWidth = hasFrame ? this.model.profile.get('sash_frame_width') : 0;
 
             var group = new Konva.Group({
-                x: x,
-                y: y
+                x: sectionData.sashParams.x,
+                y: sectionData.sashParams.y
             });
 
-            var glassX = frameWidth;
-            var glassY = frameWidth;
-            var glassWidth = width - frameWidth * 2;
-            var glassHeight = height - frameWidth * 2;
+            var glassX = sectionData.glassParams.x - sectionData.sashParams.x;
+            var glassY = sectionData.glassParams.y - sectionData.sashParams.y;
+            var glassWidth = sectionData.glassParams.width;
+            var glassHeight = sectionData.glassParams.height;
             if (!sectionData.sections || !sectionData.sections.length) {
                 var glass = new Konva.Rect({
                     x: glassX,
@@ -370,15 +348,15 @@ var app = app || {};
                 var frameGroup;
                 if (type === 'flush-turn-right' || type === 'flush-turn-left') {
                     frameGroup = this.createFlushFrame({
-                        width: width,
-                        height: height,
+                        width: sectionData.sashParams.width,
+                        height: sectionData.sashParams.height,
                         frameWidth: frameWidth,
                         sectionId: sectionData.id
                     });
                 } else {
                     frameGroup = this.createFrame({
-                        width: width,
-                        height: height,
+                        width: sectionData.sashParams.width,
+                        height: sectionData.sashParams.height,
                         frameWidth: frameWidth,
                         sectionId: sectionData.id
                     });
@@ -396,14 +374,14 @@ var app = app || {};
                     };
                     if (type === 'tilt_turn_right' || type === 'turn_only_right' || type === 'slide-right' || type === 'flush-turn-right') {
                         pos.x = offset;
-                        pos.y = height / 2;
+                        pos.y = sectionData.sashParams.height / 2;
                     }
                     if (type === 'tilt_turn_left' || type === 'turn_only_left' || type === 'slide-left' || type === 'flush-turn-left') {
-                        pos.x = width - offset;
-                        pos.y = height / 2;
+                        pos.x = sectionData.sashParams.width - offset;
+                        pos.y = sectionData.sashParams.height / 2;
                     }
                     if (type === 'tilt_only') {
-                        pos.x = width / 2;
+                        pos.x = sectionData.sashParams.width / 2;
                         pos.y = offset;
                         pos.rotation = 90;
                     }

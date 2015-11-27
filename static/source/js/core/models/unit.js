@@ -237,9 +237,9 @@ var app = app || {};
 
                 });
                 if (type === 'vertical') {
-                    section.position = fullSection.params.x + fullSection.params.width / 2;
+                    section.position = fullSection.openingParams.x + fullSection.openingParams.width / 2;
                 } else {
-                    section.position = fullSection.params.y + fullSection.params.height / 2;
+                    section.position = fullSection.openingParams.y + fullSection.openingParams.height / 2;
                 }
             });
         },
@@ -276,9 +276,9 @@ var app = app || {};
                     sashType: 'fixed_in_frame'
                 }];
                 if (type === 'vertical') {
-                    section.position = fullSection.params.x + fullSection.params.width / 2;
+                    section.position = fullSection.openingParams.x + fullSection.openingParams.width / 2;
                 } else {
-                    section.position = fullSection.params.y + fullSection.params.height / 2;
+                    section.position = fullSection.openingParams.y + fullSection.openingParams.height / 2;
                 }
             }.bind(this));
         },
@@ -287,20 +287,20 @@ var app = app || {};
         //     id: 5,
         //     sashType: 'none', // top-right, top-left, none, top, right, left, slide-right, slide-left
         //     panelType: 'glass' // or 'solid'. works for doors
-        //     params: { x, y, width, height },
+        //     openingParams: { x, y, width, height },
         //     divider: 'vertical',    // or horizontal
         //     position: 50,       // position of center of mullion from top left point of unit
         //     sections: [{
         //         id: 6,
         //         mullionEdges : {right : true},
-        //         params: {}
+        //         openingParams: {}
         //     }, {
         //         id: 7,
         //         mullionEdges : {left : true},
-        //         params: {}
+        //         openingParams: {}
         //     }]
         // }
-        generateFullRoot: function(rootSection, params) {
+        generateFullRoot: function(rootSection, openingParams) {
             rootSection = rootSection || JSON.parse(JSON.stringify(this.get('root_section')));
             var defaultParams = {
                 x: 0,
@@ -327,9 +327,39 @@ var app = app || {};
                 };
                 rootSection.thresholdEdge = true;
             }
-            params = params || defaultParams;
-            rootSection.params = params;
+            openingParams = openingParams || defaultParams;
+            rootSection.openingParams = openingParams;
             rootSection.mullionEdges = rootSection.mullionEdges || {};
+            rootSection.glassParams = {};
+            rootSection.sashParams = {};
+            var hasFrame = (rootSection.sashType !== 'fixed_in_frame');
+            var topOverlap = 0;
+            var bottomOverlap = 0;
+            var leftOverlap = 0;
+            var rightOverlap = 0;
+            var frameOverlap = this.profile.get('sash_frame_overlap');
+            var mullionOverlap = this.profile.get('sash_mullion_overlap');
+            var thresholdOverlap = mullionOverlap;
+            if (hasFrame) {
+                topOverlap = rootSection.mullionEdges.top ? mullionOverlap : frameOverlap;
+                bottomOverlap = rootSection.mullionEdges.bottom ? mullionOverlap : frameOverlap;
+                leftOverlap = rootSection.mullionEdges.left ? mullionOverlap : frameOverlap;
+                rightOverlap = rootSection.mullionEdges.right ? mullionOverlap : frameOverlap;
+            }
+            if (hasFrame && rootSection.thresholdEdge) {
+                bottomOverlap = thresholdOverlap;
+            }
+            rootSection.sashParams.width = rootSection.openingParams.width + leftOverlap + rightOverlap;
+            rootSection.sashParams.height = rootSection.openingParams.height + topOverlap + bottomOverlap;
+            rootSection.sashParams.x = rootSection.openingParams.x - leftOverlap;
+            rootSection.sashParams.y = rootSection.openingParams.y - topOverlap;
+            var frameWidth = hasFrame ? this.profile.get('sash_frame_width') : 0;
+
+            rootSection.glassParams.x = rootSection.sashParams.x + frameWidth;
+            rootSection.glassParams.y = rootSection.sashParams.y + frameWidth;
+            rootSection.glassParams.width = rootSection.sashParams.width - frameWidth * 2;
+            rootSection.glassParams.height = rootSection.sashParams.height - frameWidth * 2;
+
             var position = rootSection.position;
             if (rootSection.sections && rootSection.sections.length) {
                 var mullionAttrs = {
@@ -337,14 +367,14 @@ var app = app || {};
                 };
                 if (rootSection.divider === 'vertical') {
                     mullionAttrs.x = position - this.profile.get('mullion_width') / 2;
-                    mullionAttrs.y = params.y;
+                    mullionAttrs.y = openingParams.y;
                     mullionAttrs.width = this.profile.get('mullion_width');
-                    mullionAttrs.height = params.height;
+                    mullionAttrs.height = openingParams.height;
 
                 } else {
-                    mullionAttrs.x = params.x;
+                    mullionAttrs.x = openingParams.x;
                     mullionAttrs.y = position - this.profile.get('mullion_width') / 2;
-                    mullionAttrs.width = params.width;
+                    mullionAttrs.width = openingParams.width;
                     mullionAttrs.height = this.profile.get('mullion_width');
                 }
                 // if (rootSection.sashType !== 'none') {
@@ -359,28 +389,28 @@ var app = app || {};
                 sectionData.mullionEdges = _.clone(rootSection.mullionEdges);
                 sectionData.thresholdEdge = rootSection.thresholdEdge;
                 if (rootSection.divider === 'vertical') {
-                    sectionParams.x = params.x;
-                    sectionParams.y = params.y;
+                    sectionParams.x = openingParams.x;
+                    sectionParams.y = openingParams.y;
                     if (i === 0) {
-                        sectionParams.width = position - rootSection.params.x - this.profile.get('mullion_width') / 2;
+                        sectionParams.width = position - rootSection.openingParams.x - this.profile.get('mullion_width') / 2;
                         sectionData.mullionEdges.right = true;
                     } else {
                         sectionParams.x = position + this.profile.get('mullion_width') / 2;
-                        sectionParams.width = params.width + params.x - position - this.profile.get('mullion_width') / 2;
+                        sectionParams.width = openingParams.width + openingParams.x - position - this.profile.get('mullion_width') / 2;
                         sectionData.mullionEdges.left = true;
                     }
-                    sectionParams.height = params.height;
+                    sectionParams.height = openingParams.height;
                 } else {
-                    sectionParams.x = params.x;
-                    sectionParams.y = params.y;
-                    sectionParams.width = params.width;
+                    sectionParams.x = openingParams.x;
+                    sectionParams.y = openingParams.y;
+                    sectionParams.width = openingParams.width;
                     if (i === 0) {
                         sectionData.mullionEdges.bottom = true;
-                        sectionParams.height = position - rootSection.params.y - this.profile.get('mullion_width') / 2;
+                        sectionParams.height = position - rootSection.openingParams.y - this.profile.get('mullion_width') / 2;
                         sectionData.thresholdEdge = false;
                     } else {
                         sectionParams.y = position + this.profile.get('mullion_width') / 2;
-                        sectionParams.height = params.height + params.y - position -
+                        sectionParams.height = openingParams.height + openingParams.y - position -
                             this.profile.get('mullion_width') / 2;
                         sectionData.mullionEdges.top = true;
                     }
@@ -392,7 +422,7 @@ var app = app || {};
         generateFullReversedRoot: function(rootSection){
             rootSection = rootSection || this.generateFullRoot();
             var width = this.getInMetric('width', 'mm');
-            rootSection.params.x = width - rootSection.params.x - rootSection.params.width;
+            rootSection.openingParams.x = width - rootSection.openingParams.x - rootSection.openingParams.width;
             if (rootSection.divider === 'vertical') {
                 rootSection.position = width - rootSection.position;
                 rootSection.sections = rootSection.sections.reverse();
@@ -477,6 +507,23 @@ var app = app || {};
             this._updateSection(rootId, function(section) {
                 section.sashType = 'fixed_in_frame';
             });
+        },
+        getSizes: function(root) {
+            root = root || this.generateFullRoot();
+            var res = {
+                openings: [],
+                glasses: []
+            };
+            _.each(root.sections, function(sec) {
+                var subSizes = this.getSizes(sec);
+                res.openings = res.openings.concat(subSizes.openings);
+                res.glasses = res.glasses.concat(subSizes.glasses);
+            }, this);
+            if (root.sections.length === 0) {
+                res.openings.push(root.openingParams);
+                res.glasses.push(root.glassParams);
+            }
+            return res;
         }
     });
 
