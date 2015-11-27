@@ -897,6 +897,10 @@ var app = app || {};
 
             sectionsGroup.add.apply(sectionsGroup, sections);
 
+            if (!this.state.insideView) {
+                frameGroup.moveToTop();
+            }
+            
             var mullions;
             if (this.state.insideView) {
                 mullions = this.model.getMullions();
@@ -906,9 +910,6 @@ var app = app || {};
             var infoGroup = this.createInfo(mullions, frameOnScreenWidth, frameOnScreenHeight);
             group.add(infoGroup);
 
-            if (!this.state.insideView) {
-                frameGroup.moveToTop();
-            }
 
             this.layer.draw();
         },
