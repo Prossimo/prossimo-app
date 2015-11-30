@@ -90,14 +90,16 @@ var app = app || {};
 
                 //  Captures |6'-2 1/2"|, |6 - 2 1/2|
                 var pattern_1 = /(\d+)\s*(\'|’|′)*\s*(-|–|—|‒|―|‐|−)\s*(\d+)\s(\d+)\s*\/\s*(\d+)\s*("|”|″)*/i;
-                //  Captures |5-2|, |8'-0|, |9-10"|, |2’–8”|
-                var pattern_2 = /(\d+)\s*(\'|’|′)*\s*(-|–|—|‒|―|‐|−)\s*(\d+)\s*("|”|″)*/i;
+                //  Captures |5-2|, |8'-0|, |9-10"|, |2’–8”|, |2’–8.5”|, |2.5’−8.5”|
+                var pattern_2 = /(\d+(?:\.\d+)*)\s*(\'|’|′)*\s*(-|–|—|‒|―|‐|−)\s*(\d+(?:\.\d+)*)\s*("|”|″)*/i;
                 //  Captures |33 3/8|, |82 1/2"|, |4'6 1/2|
                 var pattern_3 = /(?:(\d+)\s*(?:\'|’|′)\s*)*(\d+)\s(\d+)\s*\/\s*(\d+)/i;
                 //  Captures |30 '|, |30'|, |30’|, |30.5 ’|, |4'6|
-                var pattern_4 = /(\d+(?:\.\d+)*)\s*(?:\'|’|′)\s*(\d+)*/i;
+                var pattern_4 = /(\d+(?:\.\d+)*)\s*(?:\'|’|′)\s*(\d+(?:\.\d+)*)*/i;
+                //  Captures |2 3|, |2.5 8.5|, |2 8.5|, |2' 3|, |2' 3"|
+                var pattern_5 = /(\d+(?:\.\d+)*\s*(?:\'|’|′)*)\s+(\d+(?:\.\d+)*\s*("|”|″)*)/i;
                 //  Captures |30|, |30 "|, |30"|, |30 ”|, |30.5 ”|
-                var pattern_5 = /(\d+(\.\d+)*)\s*("|”|″)*/i;
+                var pattern_6 = /(\d+(?:\.\d+)*)\s*("|”|″)*/i;
 
                 if ( pattern_1.test(size_string) ) {
                     match = pattern_1.exec(size_string);
@@ -115,6 +117,9 @@ var app = app || {};
                     result = parseFloat(match[1]) * 12 + (match[2] ? parseFloat(match[2]) : 0);
                 } else if ( pattern_5.test(size_string) ) {
                     match = pattern_5.exec(size_string);
+                    result = parseFloat(match[1]) * 12 + (match[2] ? parseFloat(match[2]) : 0);
+                } else if ( pattern_6.test(size_string) ) {
+                    match = pattern_6.exec(size_string);
                     result = match[1];
                 } else {
                     result = size_string;

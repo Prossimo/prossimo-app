@@ -101,7 +101,14 @@ test('utils.parseFormat.dimension', function () {
     equal(p.dimension('82 1/2"'), 82.5, 'Expected value is 82.5');
     equal(p.dimension('50 1/14').toFixed(5), '50.07143', 'Expected value is 50.07143');
     equal(p.dimension('33 3 / 8'), 33.375, 'Expected value is 33.375');
+
     equal(p.dimension('2 8.5'), 32.5, 'Expected value is 32.5');
+    equal(p.dimension('2 3'), 27, 'Expected value is 27');
+    equal(p.dimension('2.5 8.5'), 38.5, 'Expected value is 38.5');
+    equal(p.dimension('2\' 3'), 27, 'Expected value is 27');
+    equal(p.dimension('2\' 3.5'), 27.5, 'Expected value is 27.5');
+    equal(p.dimension('2\' 3"'), 27, 'Expected value is 27');
+    equal(p.dimension('2.5\' 3.5"'), 33.5, 'Expected value is 33.5');
 
     equal(p.dimension('82\''), 984, 'Expected value is 984 (82 * 12)');
     equal(p.dimension('82’'), 984, 'Expected value is 984 (82 * 12)');
