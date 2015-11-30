@@ -188,7 +188,7 @@ var app = app || {};
         getSubtotalPrice: function () {
             return this.getUnitPrice() * parseFloat(this.get('quantity'));
         },
-        getUwIp: function () {
+        getUValue: function () {
             return parseFloat(this.get('uw')) * 0.176;
         },
         getUnitPriceDiscounted: function () {

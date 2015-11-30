@@ -40,7 +40,7 @@ var app = app || {};
                         'lock_mechanism', 'glazing_bead', 'gasket_color',
                         'hinge_style', 'opening_direction', 'threshold',
                         'internal_sill', 'external_sill', 'glazing', 'glazing_bar_width',
-                        'uw', 'uw_ip', 'move_item', 'remove_item']
+                        'uw', 'u_value', 'move_item', 'remove_item']
                 },
                 prices: {
                     title: 'Prices',
@@ -208,8 +208,8 @@ var app = app || {};
                 subtotal_price: function (model) {
                     return model.getSubtotalPrice();
                 },
-                uw_ip: function (model) {
-                    return model.getUwIp();
+                u_value: function (model) {
+                    return model.getUValue();
                 },
                 unit_price_discounted: function (model) {
                     return model.getUnitPriceDiscounted();
@@ -348,7 +348,7 @@ var app = app || {};
                     readOnly: true,
                     renderer: app.hot_renderers.drawingPreviewRenderer
                 },
-                uw_ip: {
+                u_value: {
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('fixed', 5)
                 },
@@ -488,7 +488,7 @@ var app = app || {};
                 unit_price: 'Unit Price',
                 subtotal_price: 'Subtotal Price',
                 drawing: 'Drawing',
-                uw_ip: 'Uw-IP',
+                u_value: 'U Value',
                 unit_price_discounted: 'Unit Price w/Disc.',
                 subtotal_price_discounted: 'Subtotal Price w/Disc.',
                 system: 'System',
