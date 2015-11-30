@@ -522,7 +522,7 @@ var app = app || {};
                 res.glasses.push(root.glassParams);
             }
             if (root.sashType !== 'fixed_in_frame') {
-                res.openings.push(root.openingParams);
+                res.openings.push(root.sashParams);
             }
             return res;
         }

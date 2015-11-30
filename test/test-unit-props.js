@@ -199,7 +199,6 @@ test('Size calculations for Unit #001 from 377 E 10th project', function () {
     unit.setSectionMullionPosition(right_section.id, 1511.3);
     full_root = unit.generateFullRoot();
 
-    //  TODO: add Glass 3 and Glass 4, enable tests
     //  Glass 1
     equal(Math.abs(target_sizes.glasses[2].width - unit.getSizes().glasses[0].width) < margin_of_error,
         true, 'Glass 1 width equals calculated width');
@@ -216,13 +215,26 @@ test('Size calculations for Unit #001 from 377 E 10th project', function () {
     // var top_right_section = full_root.sections[1].sections[0];
     // var bottom_right_section = full_root.sections[1].sections[1];
 
-    // console.log( unit.generateFullRoot() );
-    // console.log( unit.getSizes() );
+    //  TODO: enable
+    // //  Glass 3
+    // equal(Math.abs(target_sizes.openings[0].width - unit.getSizes().openings[2].width) < margin_of_error,
+    //     true, 'Glass 2 width equals calculated width');
+    // equal(Math.abs(target_sizes.openings[0].height - unit.getSizes().openings[2].height) < margin_of_error,
+    //     true, 'Glass 2 height equals calculated height');
+    // //  Glass 4
+    // equal(Math.abs(target_sizes.openings[1].width - unit.getSizes().openings[3].width) < margin_of_error,
+    //     true, 'Glass 2 width equals calculated width');
+    // equal(Math.abs(target_sizes.openings[1].height - unit.getSizes().openings[3].height) < margin_of_error,
+    //     true, 'Glass 2 height equals calculated height');
 
-    // $('body').append( app.preview(unit, {
-    //     width: 1000,
-    //     height: 1000,
-    //     mode: 'image',
-    //     position: 'inside'
-    // }) );
+    // //  Opening 1
+    // equal(Math.abs(target_sizes.openings[0].width - unit.getSizes().openings[1].width) < margin_of_error,
+    //     true, 'Glass 2 width equals calculated width');
+    // equal(Math.abs(target_sizes.openings[0].height - unit.getSizes().openings[1].height) < margin_of_error,
+    //     true, 'Glass 2 height equals calculated height');
+    // //  Opening 2
+    // equal(Math.abs(target_sizes.openings[0].width - unit.getSizes().openings[1].width) < margin_of_error,
+    //     true, 'Glass 2 width equals calculated width');
+    // equal(Math.abs(target_sizes.openings[0].height - unit.getSizes().openings[1].height) < margin_of_error,
+    //     true, 'Glass 2 height equals calculated height');
 });
