@@ -27,8 +27,8 @@ var app = app || {};
                     title: 'Input',
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'width', 'height',
-                        'customer_image', 'type', 'description', 'notes',
-                        'move_item', 'remove_item']
+                        'customer_image', 'drawing', 'type', 'description',
+                        'notes', 'move_item', 'remove_item']
                 },
                 specs: {
                     title: 'Specs',
@@ -36,7 +36,9 @@ var app = app || {};
                     columns: ['mark', 'quantity', 'width', 'height', 'width_mm',
                         'height_mm', 'customer_image', 'drawing', 'type', 'description',
                         'notes', 'profile_name', 'system', 'external_color', 'internal_color',
-                        'gasket_color', 'hinge_style', 'opening_direction', 'threshold',
+                        'interior_handle', 'exterior_handle', 'hardware_type',
+                        'lock_mechanism', 'glazing_bead', 'gasket_color',
+                        'hinge_style', 'opening_direction', 'threshold',
                         'internal_sill', 'external_sill', 'glazing', 'glazing_bar_width',
                         'uw', 'uw_ip', 'move_item', 'remove_item']
                 },
@@ -388,6 +390,38 @@ var app = app || {};
                 remove_item: {
                     readOnly: true,
                     renderer: app.hot_renderers.removeItemRenderer
+                },
+                internal_color: {
+                    type: 'dropdown',
+                    source: app.settings.getColors()
+                },
+                external_color: {
+                    type: 'dropdown',
+                    source: app.settings.getColors()
+                },
+                interior_handle: {
+                    type: 'dropdown',
+                    source: app.settings.getInteriorHandleTypes()
+                },
+                'hinge_style': {
+                    type: 'dropdown',
+                    source: app.settings.getHingeTypes()
+                },
+                'glazing_bead': {
+                    type: 'dropdown',
+                    source: app.settings.getGlazingBeadTypes()
+                },
+                'glazing': {
+                    type: 'dropdown',
+                    source: app.settings.getGlassOrPanelTypes()
+                },
+                'glazing_bar_width': {
+                    type: 'dropdown',
+                    source: app.settings.getGlazingBarWidths()
+                },
+                'gasket_color': {
+                    type: 'dropdown',
+                    source: app.settings.getGasketColors()
                 }
             };
 

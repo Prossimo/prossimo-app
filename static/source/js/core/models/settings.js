@@ -3,6 +3,25 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var COLORS = ['White', 'Golden Oak', 'Mahagony', 'Grey'];
+    var GASKET_COLORS = ['Black', 'Grey'];
+    var INTERIOR_HANDLE_TYPES = [
+        'White Plastic-No Lock', 'Brushed Silver Metal-No Lock', 'Brass Metal-No Lock',
+        'Brown Plastic-No Lock', 'White Plastic-W/Lock + Key', 'Brushed Silver Metal-W/Lock + Key',
+        'Brass Metal-W/Lock + Key', 'Brown Plastic-W/Lock + Key'
+    ];
+    var HINGE_TYPES = [
+        'Flush Mount-White Plastic Cover', 'Flush Mount-Brown Plastic Cover',
+        'Flush Mount-Brushed Silver Metal Cover', 'Flush Mount-Brass Metal Cover'
+    ];
+    var GLAZING_BEAD_TYPES = ['Rounded', 'Square'];
+    var GLAZING_BAR_WIDTHS = [12, 22, 44];
+    var GLASS_OR_PANEL_TYPES = [
+        'Triple Standard - Ug=.09 SGHC=.50 LT=71%', 'Triple Tempered',
+        'Triple Low Gain', 'Triple Low Gain Tempered', 'Triple High Gain',
+        'Triple High Gain Tempered', 'Triple Standard-Outer Frosted', 'Triple Tempered-Outer Frosted'
+    ];
+
     app.Settings = Backbone.Model.extend({
         defaults: {
             api_base_path: $('meta[name="api-base-path"]').attr('value') || '/api'
@@ -31,6 +50,27 @@ var app = app || {};
             }
 
             return default_profile_name;
+        },
+        getColors: function () {
+            return COLORS;
+        },
+        getInteriorHandleTypes: function () {
+            return INTERIOR_HANDLE_TYPES;
+        },
+        getHingeTypes: function () {
+            return HINGE_TYPES;
+        },
+        getGlazingBeadTypes: function () {
+            return GLAZING_BEAD_TYPES;
+        },
+        getGasketColors: function () {
+            return GASKET_COLORS;
+        },
+        getGlazingBarWidths: function () {
+            return GLAZING_BAR_WIDTHS;
+        },
+        getGlassOrPanelTypes: function () {
+            return GLASS_OR_PANEL_TYPES;
         }
     });
 })();

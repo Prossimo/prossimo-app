@@ -15,15 +15,20 @@ var app = app || {};
 
         { name: 'profile_name', title: 'Profile', type: 'string' },
         { name: 'customer_image', title: 'Customer Image', type: 'string' },
-        { name: 'internal_color', title: 'Color Internal', type: 'string' },
-        { name: 'external_color', title: 'Color External', type: 'string' },
-        { name: 'gasket_color', title: 'Gasket Color', type: 'string' },
+        { name: 'internal_color', title: 'Color Interior', type: 'string' },
+        { name: 'external_color', title: 'Color Exterior', type: 'string' },
+        { name: 'interior_handle', title: 'Interior Handle', type: 'string' },
+        { name: 'exterior_handle', title: 'Exterior Handle', type: 'string' },
+        { name: 'hardware_type', title: 'Hardware Type', type: 'string' },
+        { name: 'lock_mechanism', title: 'Lock Mechanism', type: 'string' },
+        { name: 'glazing_bead', title: 'Glazing Bead', type: 'string' },
 
+        { name: 'gasket_color', title: 'Gasket Color', type: 'string' },
         { name: 'hinge_style', title: 'Hinge Style', type: 'string' },
         { name: 'opening_direction', title: 'Opening Direction', type: 'string' },
         { name: 'internal_sill', title: 'Internal Sill', type: 'string' },
         { name: 'external_sill', title: 'External Sill', type: 'string' },
-        { name: 'glazing', title: 'Glazing', type: 'string' },
+        { name: 'glazing', title: 'Glass Packet / Panel Type', type: 'string' },
         { name: 'uw', title: 'Uw', type: 'number' },
 
         { name: 'original_cost', title: 'Original Cost', type: 'number' },
@@ -32,6 +37,8 @@ var app = app || {};
         { name: 'price_markup', title: 'Markup', type: 'number' },
         { name: 'discount', title: 'Discount', type: 'number' }
     ];
+
+    var DOOR_ONLY_PROPERTIES = ['exterior_handle', 'lock_mechanism'];
 
     var SASH_TYPES = [
         'tilt_turn_left', 'tilt_turn_right', 'fixed_in_frame', 'tilt_only',
@@ -198,6 +205,9 @@ var app = app || {};
         },
         getSection: function(sectionId) {
             return app.Unit.findSection(this.generateFullRoot(), sectionId);
+        },
+        isDoorOnlyAttribute: function (attribute_name) {
+            return _.indexOf(DOOR_ONLY_PROPERTIES, attribute_name) !== -1;
         },
         _updateSection: function(sectionId, func) {
             // HAH, dirty deep clone, rewrite when you have good mood for it
