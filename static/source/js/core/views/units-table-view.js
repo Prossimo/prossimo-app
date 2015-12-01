@@ -20,7 +20,8 @@ var app = app || {};
             'click .js-move-item-down': 'onMoveItemDown'
         },
         initialize: function () {
-            this.table_visibility = 'hidden';
+            this.table_visibility = this.options.is_always_visible ? 'visible' :
+                (this.options.table_visibility ? this.options.table_visibility : 'hidden');
 
             this.tabs = {
                 input: {
@@ -104,8 +105,10 @@ var app = app || {};
             this.render();
         },
         toggleTableVisibility: function () {
-            this.table_visibility = this.table_visibility === 'hidden' ? 'visible' : 'hidden';
-            this.render();
+            if ( !this.options.is_always_visible ) {
+                this.table_visibility = this.table_visibility === 'hidden' ? 'visible' : 'hidden';
+                this.render();
+            }
         },
         addNewUnit: function (e) {
             var new_unit = new app.Unit();
@@ -126,7 +129,8 @@ var app = app || {};
                     return item;
                 }, this),
                 mode: this.getActiveTab().title === 'Extras' ? 'extras' : 'units',
-                table_visibility: this.table_visibility
+                table_visibility: this.table_visibility,
+                is_always_visible: this.options.is_always_visible
             };
         },
         onRemoveItem: function (e) {

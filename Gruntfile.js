@@ -42,6 +42,7 @@ module.exports = function (grunt) {
         'core/views/units-table-view.js',
         'core/views/project-selector-view.js',
         'core/views/no-project-selected-view.js',
+        'units-table/views/main-units-table-view.js',
         'docs-import/views/main-docs-import-view.js',
         'docs-import/views/document-selector-view.js',
         'drawing/views/main-drawing-view.js',
@@ -266,7 +267,7 @@ module.exports = function (grunt) {
                         middlewares.unshift(function (req, res, next) {
                             if ( req.url === '/docs/' || req.url === '/drawing/' ||
                                  req.url === '/quote/' || req.url === '/settings/' ||
-                                 req.url === '/supplier/'
+                                 req.url === '/supplier/' || req.url === '/units/'
                             ) {
                                 require('fs').createReadStream('index.html').pipe(res);
                             } else {

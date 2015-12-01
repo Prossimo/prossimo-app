@@ -39,12 +39,12 @@ var app = app || {};
 
             if ( this.options ) {
                 _.forEach(this.options, function (item, key) {
-                    if ( _.isFunction(item.showCallback) ) {
+                    if ( _.isFunction(item.onShow) ) {
                         var self = this;
 
                         this.router_callbacks[item.path] = function () {
                             if ( app.current_project || item.path === 'settings' ) {
-                                item.showCallback.call();
+                                item.onShow.call();
                             } else {
                                 app.main_region.show(new app.NoProjectSelectedView());
                             }
