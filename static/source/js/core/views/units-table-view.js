@@ -481,13 +481,17 @@ var app = app || {};
             }
         },
         onRender: function () {
-            this.hot = new Handsontable(this.ui.$hot_container[0], {
-                data: this.getActiveTab().collection,
-                columns: this.getActiveTabColumnOptions(),
-                colHeaders: this.getActiveTabHeaders(),
-                rowHeaders: true,
-                trimDropdown: false
-            });
+            var self = this;
+
+            setTimeout(function () {
+                self.hot = new Handsontable(self.ui.$hot_container[0], {
+                    data: self.getActiveTab().collection,
+                    columns: self.getActiveTabColumnOptions(),
+                    colHeaders: self.getActiveTabHeaders(),
+                    rowHeaders: true,
+                    trimDropdown: false
+                });
+            }, 5);
 
             this.appendPopovers();
         },
