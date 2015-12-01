@@ -190,13 +190,16 @@ var app = app || {};
                 unit_cost: function (model) {
                     return model.getUnitCost();
                 },
-                drawing: function (model) {
-                    return app.preview(model, {
-                        width: 500,
-                        height: 500,
-                        mode: 'base64'
-                    });
-                },
+                //  FIXME: disabled due to performance issues, see
+                //  https://bitbucket.org/prossimo/prossimo-app/issues/78/handsontable-performance-is-slowwwww
+                //  https://bitbucket.org/prossimo/prossimo-app/issues/87/disable-image-preview-in-spreadsheet
+                // drawing: function (model) {
+                //     return app.preview(model, {
+                //         width: 500,
+                //         height: 500,
+                //         mode: 'base64'
+                //     });
+                // },
                 subtotal_cost: function (model) {
                     return model.getSubtotalCost();
                 },
