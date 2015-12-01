@@ -102,10 +102,10 @@ var app = app || {};
         },
         //  Render Threshold Width param cell, sometimes make cell read-only
         thresholdWidthRenderer: function (instance, td, row, col) {
-            var isThresholdPossible = instance.getData().at(row) &&
+            var is_threshold_possible = instance.getData().at(row) &&
                 instance.getData().at(row).isThresholdPossible();
 
-            if ( isThresholdPossible ) {
+            if ( is_threshold_possible ) {
                 instance.setCellMeta(row, col, 'readOnly', false);
                 Handsontable.renderers.NumericRenderer.apply(this, arguments);
             } else {
@@ -145,6 +145,20 @@ var app = app || {};
                 'data-row="' + row + '">Remove</button>');
 
             $td.empty().append($button);
+
+            return td;
+        },
+        doorOnlyRenderer: function (instance, td, row, col) {
+            var is_editable = instance.getData().at(row) &&
+                instance.getData().at(row).areDoorOnlyAttributesEditable();
+
+            if ( is_editable ) {
+                instance.setCellMeta(row, col, 'readOnly', false);
+                Handsontable.renderers.TextRenderer.apply(this, arguments);
+            } else {
+                instance.setCellMeta(row, col, 'readOnly', true);
+                $(td).addClass('htDimmed').text('--');
+            }
 
             return td;
         }

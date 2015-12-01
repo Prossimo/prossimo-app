@@ -403,25 +403,31 @@ var app = app || {};
                     type: 'dropdown',
                     source: app.settings.getInteriorHandleTypes()
                 },
-                'hinge_style': {
+                hinge_style: {
                     type: 'dropdown',
                     source: app.settings.getHingeTypes()
                 },
-                'glazing_bead': {
+                glazing_bead: {
                     type: 'dropdown',
                     source: app.settings.getGlazingBeadTypes()
                 },
-                'glazing': {
+                glazing: {
                     type: 'dropdown',
                     source: app.settings.getGlassOrPanelTypes()
                 },
-                'glazing_bar_width': {
+                glazing_bar_width: {
                     type: 'dropdown',
                     source: app.settings.getGlazingBarWidths()
                 },
-                'gasket_color': {
+                gasket_color: {
                     type: 'dropdown',
                     source: app.settings.getGasketColors()
+                },
+                exterior_handle: {
+                    renderer: app.hot_renderers.doorOnlyRenderer
+                },
+                lock_mechanism: {
+                    renderer: app.hot_renderers.doorOnlyRenderer
                 }
             };
 

@@ -38,6 +38,8 @@ var app = app || {};
         { name: 'discount', title: 'Discount', type: 'number' }
     ];
 
+    //  We only enable those properties for editing on units where profile
+    //  returns `true` on `hasOutsideHandle` call
     var DOOR_ONLY_PROPERTIES = ['exterior_handle', 'lock_mechanism'];
 
     var SASH_TYPES = [
@@ -208,6 +210,15 @@ var app = app || {};
         },
         isDoorOnlyAttribute: function (attribute_name) {
             return _.indexOf(DOOR_ONLY_PROPERTIES, attribute_name) !== -1;
+        },
+        areDoorOnlyAttributesEditable: function () {
+            var is_editable = false;
+
+            if ( this.profile && this.profile.hasOutsideHandle() ) {
+                is_editable = true;
+            }
+
+            return is_editable;
         },
         _updateSection: function(sectionId, func) {
             // HAH, dirty deep clone, rewrite when you have good mood for it
