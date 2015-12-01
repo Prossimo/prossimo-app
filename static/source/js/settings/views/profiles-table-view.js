@@ -119,7 +119,11 @@ var app = app || {};
             var format_hash = {
                 frame_width: { format: '0,0[.]00' },
                 mullion_width: { format: '0,0[.]00' },
-                sash_frame_width: { format: '0,0[.]00' }
+                sash_frame_width: { format: '0,0[.]00' },
+                sash_frame_overlap: { format: '0,0[.]00' },
+                sash_mullion_overlap: { format: '0,0[.]00' },
+                frame_u_value: { format: '0,0[.]00' },
+                spacer_thermal_bridge_value: { format: '0,0[.]00' }
             };
 
             var properties_hash = {

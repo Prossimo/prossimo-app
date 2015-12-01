@@ -24,7 +24,7 @@ var app = app || {};
         { name: 'sash_mullion_overlap', title: 'Sash-Mullion Overlap (mm)', type: 'number' },
         { name: 'frame_corners', title: 'Frame Corners', type: 'string' },
         { name: 'sash_corners', title: 'Sash Corners', type: 'string' },
-        { name: 'threshold_width', title: 'Threshold Width (mm)', type: 'number' },
+        { name: 'threshold_width', title: 'Threshold Height (mm)', type: 'number' },
         { name: 'low_threshold', title: 'Low Threshold', type: 'boolean' },
         { name: 'frame_u_value', title: 'Frame U Value', type: 'number' },
         { name: 'spacer_thermal_bridge_value', title: 'Spacer Thermal Bridge Value', type: 'number' }
