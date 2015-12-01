@@ -26,9 +26,17 @@ var app = app || {};
                     //  MAX_DENOMINATOR == 16
                     if (
                         Math.abs(Math.round(value_inches) - value_inches) > 0 &&
-                        Math.abs(Math.round(value_inches) - value_inches) < (1 / MAX_DENOMINATOR) / 2
+                        Math.abs(Math.round(value_inches) - value_inches) <= (1 / MAX_DENOMINATOR) / 2
                     ) {
                         value_inches = Math.round(value_inches);
+                    }
+
+                    //  If value_inches is too close to 12, we set it to 0 and
+                    //  increase value_feet by 1. This prevents us from getting
+                    //  something like |1′−12″|
+                    if ( value_inches === 12 ) {
+                        value_feet += 1;
+                        value_inches = 0;
                     }
 
                     if ( value_inches - Math.floor(value_inches) ) {
