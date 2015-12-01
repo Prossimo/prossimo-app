@@ -22,7 +22,9 @@ var app = app || {};
             this.columns = [
                 'name', 'unit_type', 'system', 'frame_width', 'mullion_width',
                 'sash_frame_width', 'sash_frame_overlap', 'sash_mullion_overlap',
-                'low_threshold', 'threshold_width', 'move_item', 'remove_item'
+                'frame_corners', 'sash_corners', 'low_threshold', 'threshold_width',
+                'frame_u_value', 'visible_frame_width_fixed', 'visible_frame_width_operable',
+                'spacer_thermal_bridge_value', 'move_item', 'remove_item'
             ];
 
             this.listenTo(this.collection, 'all', this.updateTable);
@@ -61,13 +63,31 @@ var app = app || {};
                 this.hot.getData().moveItemDown(target_object);
             }
         },
-        getColumnData: function (column_name) {
-            var setter;
+        getGetterFunction: function (profile_model, column_name) {
             var getter;
 
-            getter = function (model, attr_name) {
-                return model.get(attr_name);
+            var getters_hash = {
+                visible_frame_width_fixed: function (model) {
+                    return model.getVisibleFrameWidthFixed();
+                },
+                visible_frame_width_operable: function (model) {
+                    return model.getVisibleFrameWidthOperable();
+                }
             };
+
+            if ( getters_hash[column_name] ) {
+                getter = getters_hash[column_name];
+            } else {
+                getter = function (model, attr_name) {
+                    return model.get(attr_name);
+                };
+            }
+
+            return getter.apply(this, arguments);
+        },
+        getColumnData: function (column_name) {
+            var self = this;
+            var setter;
 
             setter = function (model, attr_name, val) {
                 return model.persist(attr_name, val);
@@ -76,7 +96,7 @@ var app = app || {};
             return function (profile_model, value) {
                 if ( profile_model ) {
                     if ( _.isUndefined(value) ) {
-                        return getter(profile_model, column_name);
+                        return self.getGetterFunction(profile_model, column_name);
                     }
 
                     setter(profile_model, column_name, value);
@@ -120,6 +140,26 @@ var app = app || {};
                 remove_item: {
                     readOnly: true,
                     renderer: app.hot_renderers.removeItemRenderer
+                },
+                system: {
+                    type: 'dropdown',
+                    source: app.settings.getSystems()
+                },
+                frame_corners: {
+                    type: 'dropdown',
+                    source: app.settings.getFrameCornerTypes()
+                },
+                sash_corners: {
+                    type: 'dropdown',
+                    source: app.settings.getSashCornerTypes()
+                },
+                visible_frame_width_fixed: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('fixed_minimal')
+                },
+                visible_frame_width_operable: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('fixed_minimal')
                 }
             };
 
@@ -170,7 +210,9 @@ var app = app || {};
         },
         getCustomColumnHeader: function (column_name) {
             var custom_column_headers_hash = {
-                'move_item': 'Move',
+                visible_frame_width_fixed: 'Visible Frame Width Fixed',
+                visible_frame_width_operable: 'Visible Frame Width Operable',
+                move_item: 'Move',
                 remove_item: ' '
             };
 

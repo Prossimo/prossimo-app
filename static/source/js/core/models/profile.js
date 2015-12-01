@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var UNIT_TYPES = ['Window', 'Patio Door', 'Entry Door', 'Tilt + Slide', 'Lift + Slide', 'Folding'];
+    var UNIT_TYPES = ['Window', 'Patio Door', 'Entry Door'];
     var DEFAULT_UNIT_TYPE = 'Window';
     var TYPES_WITH_POSSIBLE_THRESHOLD = ['Patio Door', 'Entry Door'];
     var TYPES_WITH_EDITABLE_THRESHOLD = ['Patio Door'];
@@ -22,8 +22,12 @@ var app = app || {};
         { name: 'sash_frame_width', title: 'Sash Frame Width (mm)', type: 'number' },
         { name: 'sash_frame_overlap', title: 'Sash-Frame Overlap (mm)', type: 'number' },
         { name: 'sash_mullion_overlap', title: 'Sash-Mullion Overlap (mm)', type: 'number' },
+        { name: 'frame_corners', title: 'Frame Corners', type: 'string' },
+        { name: 'sash_corners', title: 'Sash Corners', type: 'string' },
         { name: 'threshold_width', title: 'Threshold Width (mm)', type: 'number' },
-        { name: 'low_threshold', title: 'Low Threshold', type: 'boolean' }
+        { name: 'low_threshold', title: 'Low Threshold', type: 'boolean' },
+        { name: 'frame_u_value', title: 'Frame U Value', type: 'number' },
+        { name: 'spacer_thermal_bridge_value', title: 'Spacer Thermal Bridge Value', type: 'number' }
     ];
 
     app.Profile = Backbone.Model.extend({
@@ -132,6 +136,13 @@ var app = app || {};
         },
         getUnitTypes: function () {
             return UNIT_TYPES;
+        },
+        getVisibleFrameWidthFixed: function () {
+            return this.get('frame_width');
+        },
+        getVisibleFrameWidthOperable: function () {
+            return parseFloat(this.get('frame_width')) + parseFloat(this.get('sash_frame_width')) -
+                parseFloat(this.get('sash_frame_overlap'));
         }
     });
 })();

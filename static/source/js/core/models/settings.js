@@ -3,6 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
+    //  That's what we use for Units
     var COLORS = ['White', 'Golden Oak', 'Mahagony', 'Grey'];
     var GASKET_COLORS = ['Black', 'Grey'];
     var INTERIOR_HANDLE_TYPES = [
@@ -21,6 +22,10 @@ var app = app || {};
         'Triple Low Gain', 'Triple Low Gain Tempered', 'Triple High Gain',
         'Triple High Gain Tempered', 'Triple Standard-Outer Frosted', 'Triple Tempered-Outer Frosted'
     ];
+
+    //  That's what we use for Profiles
+    var SYSTEMS = ['Workhorse uPVC', 'Pinnacle uPVC'];
+    var CORNER_TYPES = ['Mitered', 'Square (Vertical)', 'Square (Horizontal)'];
 
     app.Settings = Backbone.Model.extend({
         defaults: {
@@ -71,6 +76,15 @@ var app = app || {};
         },
         getGlassOrPanelTypes: function () {
             return GLASS_OR_PANEL_TYPES;
+        },
+        getSystems: function () {
+            return SYSTEMS;
+        },
+        getFrameCornerTypes: function () {
+            return CORNER_TYPES;
+        },
+        getSashCornerTypes: function () {
+            return CORNER_TYPES;
         }
     });
 })();
