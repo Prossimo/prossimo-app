@@ -11,16 +11,36 @@ var app = app || {};
             '$select': '.selectpicker'
         },
         events: {
-            'change @ui.$select': 'onChange'
+            'change @ui.$select': 'onChange',
+            'click .js-add-new-local-project': 'onAddNewLocalProject'
         },
         initialize: function () {
-            $('#header').append( this.render().el );
-            this.collection.fetch({ remove: false });
+            var self = this;
+
+            this.no_backend = false;
             this.listenTo(this.collection, 'all', this.render);
+
+            $('#header').append( this.render().el );
+
+            this.collection.fetch({
+                remove: false,
+                error: function () {
+                    self.no_backend = true;
+                }
+            });
         },
         onChange: function () {
             var new_id = this.ui.$select.val();
             this.setCurrentProject(new_id);
+        },
+        onAddNewLocalProject: function () {
+            var new_id = this.collection.length + 1;
+
+            this.collection.add({
+                id: new_id,
+                project_name: 'Local Project #' + new_id,
+                no_backend: true
+            });
         },
         setCurrentProject: function (new_id) {
             app.current_project = this.collection.get(new_id);
@@ -40,6 +60,7 @@ var app = app || {};
         },
         serializeData: function () {
             return {
+                no_backend: this.no_backend,
                 project_list: this.collection.map(function (item) {
                     return {
                         is_selected: app.current_project && item.id === app.current_project.id,
