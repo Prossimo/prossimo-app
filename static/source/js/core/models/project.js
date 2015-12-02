@@ -3,36 +3,92 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var PROJECT_PROPERTIES = [
+        { name: 'pipedrive_id', title: 'Pipedrive ID', type: 'string' },
+        { name: 'client_name', title: 'Client Name', type: 'string' },
+        { name: 'client_company_name', title: 'Company', type: 'string' },
+        { name: 'client_phone', title: 'Phone', type: 'string' },
+        { name: 'client_email', title: 'Email', type: 'string' },
+        { name: 'client_address', title: 'Client Address', type: 'string' },
+        { name: 'project_name', title: 'Project Name', type: 'string' },
+        { name: 'project_address', title: 'Project Address', type: 'string' }
+    ];
+
     app.Project = Backbone.Model.extend({
-        defaults: {
-            pipedrive_id: null,
-            client_name: '',
-            client_company_name: '',
-            client_phone: '',
-            client_email: '',
-            client_address: '',
-            project_name: '',
-            project_address: ''
+        defaults: function () {
+            var defaults = {};
+
+            _.each(PROJECT_PROPERTIES, function (item) {
+                defaults[item.name] = this.getDefaultValue(item.name, item.type);
+            }, this);
+
+            return defaults;
         },
-        initialize: function () {
-            this.units = new app.UnitCollection(null, { project: this });
-            this.extras = new app.AccessoryCollection(null, { project: this });
-            this.files = new app.ProjectFileCollection(null, { project: this });
+        getDefaultValue: function (name, type) {
+            var default_value = '';
 
-            if ( this.get('units') ) {
-                this.units.set(this.get('units'));
-                this.unset('units', {silent: true});
+            if ( type === 'number' ) {
+                default_value = 0;
             }
 
-            if ( this.get('accessories') ) {
-                this.extras.set(this.get('accessories'));
-                this.unset('accessories', {silent: true});
+            if ( type === 'pipedrive_id' ) {
+                default_value = null;
             }
 
-            if ( this.get('files') ) {
-                this.files.set(this.get('files'));
-                this.unset('files', {silent: true});
+            return default_value;
+        },
+        sync: function (method, model, options) {
+            if ( method === 'update' ) {
+                options.attrs = { project: _.omit(model.toJSON(), ['id']) };
             }
+
+            return Backbone.sync.call(this, method, model, options);
+        },
+        initialize: function (attributes, options) {
+            this.options = options || {};
+
+            if ( !this.options.proxy ) {
+                this.units = new app.UnitCollection(null, { project: this });
+                this.extras = new app.AccessoryCollection(null, { project: this });
+                this.files = new app.ProjectFileCollection(null, { project: this });
+
+                if ( this.get('units') ) {
+                    this.units.set(this.get('units'));
+                    this.unset('units', { silent: true });
+                }
+
+                if ( this.get('accessories') ) {
+                    this.extras.set(this.get('accessories'));
+                    this.unset('accessories', { silent: true });
+                }
+
+                if ( this.get('files') ) {
+                    this.files.set(this.get('files'));
+                    this.unset('files', { silent: true });
+                }
+            }
+        },
+        //  Return { name: 'name', title: 'Title' } pairs for each item in
+        //  `names` array. If the array is empty, return all possible pairs
+        getNameTitleTypeHash: function (names) {
+            var name_title_hash = [];
+
+            if ( !names ) {
+                names = _.pluck( PROJECT_PROPERTIES, 'name' );
+            }
+
+            _.each(PROJECT_PROPERTIES, function (item) {
+                if ( _.indexOf(names, item.name) !== -1 ) {
+                    name_title_hash.push({ name: item.name, title: item.title, type: item.type });
+                }
+            });
+
+            return name_title_hash;
+        },
+        getTitles: function (names) {
+            var name_title_hash = this.getNameTitleTypeHash(names);
+
+            return _.pluck(name_title_hash, 'title');
         },
         getHiddenMultiplier: function () {
             var subtotal_units_price = this.units.getSubtotalPriceDiscounted();

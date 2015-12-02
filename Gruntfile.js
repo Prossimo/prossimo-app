@@ -42,6 +42,7 @@ module.exports = function (grunt) {
         'core/views/units-table-view.js',
         'core/views/project-selector-view.js',
         'core/views/no-project-selected-view.js',
+        'units-table/views/main-units-table-view.js',
         'docs-import/views/main-docs-import-view.js',
         'docs-import/views/document-selector-view.js',
         'drawing/views/main-drawing-view.js',
@@ -50,11 +51,13 @@ module.exports = function (grunt) {
         'quote/views/main-quote-view.js',
         'quote/views/quote-item-view.js',
         'quote/views/quote-extras-item-view.js',
+        'quote/views/quote-header-view.js',
         'quote/views/quote-table-view.js',
         'quote/views/quote-extras-table-view.js',
         'settings/views/main-settings-view.js',
         'settings/views/profiles-table-view.js',
         'supplier-request/views/main-supplier-request-view.js',
+        'supplier-request/views/supplier-request-header-view.js',
         'app.js'
     ];
 
@@ -266,7 +269,7 @@ module.exports = function (grunt) {
                         middlewares.unshift(function (req, res, next) {
                             if ( req.url === '/docs/' || req.url === '/drawing/' ||
                                  req.url === '/quote/' || req.url === '/settings/' ||
-                                 req.url === '/supplier/'
+                                 req.url === '/supplier/' || req.url === '/units/'
                             ) {
                                 require('fs').createReadStream('index.html').pipe(res);
                             } else {

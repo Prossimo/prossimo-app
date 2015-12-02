@@ -9,7 +9,7 @@ var app = app || {};
         template: app.templates['quote/quote-item-view'],
         getQuoteTableAttributes: function () {
             var name_title_hash = {
-                ref: 'Ref.',
+                mark: 'Mark',
                 customer_image: 'Customer Image',
                 product_image: 'Shop Drawing' +
                     (this.options.show_outside_units_view ? ': <small>View from Exterior</small>' : ''),
@@ -49,7 +49,6 @@ var app = app || {};
             var c = app.utils.convert;
 
             var name_title_hash = {
-                mark: 'Mark',
                 size: 'Size',
                 type: 'Type',
                 glazing: 'Glazing',
@@ -58,7 +57,6 @@ var app = app || {};
             };
 
             var params_source = {
-                mark: this.model.get('mark'),
                 size: this.options.show_sizes_in_mm ?
                     f.dimensions_mm(c.inches_to_mm(this.model.get('width')), c.inches_to_mm(this.model.get('height'))) :
                     f.dimensions(this.model.get('width'), this.model.get('height'), 'fraction'),
@@ -87,7 +85,7 @@ var app = app || {};
         serializeData: function () {
             return {
                 table_attributes: this.getQuoteTableAttributes(),
-                reference_id: this.model.getRefNum(),
+                mark: this.model.get('mark'),
                 description: this.getDescription(),
                 notes: this.model.get('notes'),
                 quantity: this.model.get('quantity'),

@@ -20,7 +20,8 @@ var app = app || {};
             'click .js-move-item-down': 'onMoveItemDown'
         },
         initialize: function () {
-            this.table_visibility = 'hidden';
+            this.table_visibility = this.options.is_always_visible ? 'visible' :
+                (this.options.table_visibility ? this.options.table_visibility : 'hidden');
 
             this.tabs = {
                 input: {
@@ -59,6 +60,13 @@ var app = app || {};
                         'original_currency', 'conversion_rate', 'unit_cost', 'price_markup',
                         'unit_price', 'subtotal_cost', 'subtotal_price',
                         'move_item', 'remove_item']
+                },
+                project_info: {
+                    title: 'Project Info',
+                    collection: app.projects,
+                    columns: ['pipedrive_id', 'project_name', 'client_name',
+                        'client_company_name', 'client_phone', 'client_email',
+                        'client_address', 'project_address']
                 }
             };
             this.active_tab = 'input';
@@ -106,8 +114,10 @@ var app = app || {};
             this.render();
         },
         toggleTableVisibility: function () {
-            this.table_visibility = this.table_visibility === 'hidden' ? 'visible' : 'hidden';
-            this.render();
+            if ( !this.options.is_always_visible ) {
+                this.table_visibility = this.table_visibility === 'hidden' ? 'visible' : 'hidden';
+                this.render();
+            }
         },
         addNewUnit: function (e) {
             var new_unit = new app.Unit();
@@ -127,8 +137,10 @@ var app = app || {};
                     item.is_active = key === this.active_tab;
                     return item;
                 }, this),
-                mode: this.getActiveTab().title === 'Extras' ? 'extras' : 'units',
-                table_visibility: this.table_visibility
+                mode: this.getActiveTab().title === 'Extras' ? 'extras' :
+                    (this.getActiveTab().title === 'Project Info' ? 'none' : 'units'),
+                table_visibility: this.table_visibility,
+                is_always_visible: this.options.is_always_visible
             };
         },
         onRemoveItem: function (e) {
@@ -192,13 +204,16 @@ var app = app || {};
                 unit_cost: function (model) {
                     return model.getUnitCost();
                 },
-                drawing: function (model) {
-                    return app.preview(model, {
-                        width: 500,
-                        height: 500,
-                        mode: 'base64'
-                    });
-                },
+                //  FIXME: disabled due to performance issues, see
+                //  https://bitbucket.org/prossimo/prossimo-app/issues/78/handsontable-performance-is-slowwwww
+                //  https://bitbucket.org/prossimo/prossimo-app/issues/87/disable-image-preview-in-spreadsheet
+                // drawing: function (model) {
+                //     return app.preview(model, {
+                //         width: 500,
+                //         height: 500,
+                //         mode: 'base64'
+                //     });
+                // },
                 subtotal_cost: function (model) {
                     return model.getSubtotalCost();
                 },
@@ -428,8 +443,12 @@ var app = app || {};
                 },
                 lock_mechanism: {
                     renderer: app.hot_renderers.doorOnlyRenderer
+                },
+                pipedrive_id: {
+                    readOnly: true
                 }
             };
+
 
             if ( format_hash[column_name] ) {
                 properties_obj = _.extend(properties_obj, format_hash[column_name]);
@@ -437,6 +456,12 @@ var app = app || {};
 
             if ( properties_hash[column_name] ) {
                 properties_obj = _.extend(properties_obj, properties_hash[column_name]);
+            }
+
+            if ( _.indexOf(this.tabs.project_info.columns, column_name) !== -1 ) {
+                properties_obj = _.extend(properties_obj, {
+                    renderer: app.hot_renderers.projectInfoRenderer
+                });
             }
 
             return properties_obj;
@@ -514,13 +539,17 @@ var app = app || {};
             }
         },
         onRender: function () {
-            this.hot = new Handsontable(this.ui.$hot_container[0], {
-                data: this.getActiveTab().collection,
-                columns: this.getActiveTabColumnOptions(),
-                colHeaders: this.getActiveTabHeaders(),
-                rowHeaders: true,
-                trimDropdown: false
-            });
+            var self = this;
+
+            setTimeout(function () {
+                self.hot = new Handsontable(self.ui.$hot_container[0], {
+                    data: self.getActiveTab().collection,
+                    columns: self.getActiveTabColumnOptions(),
+                    colHeaders: self.getActiveTabHeaders(),
+                    rowHeaders: true,
+                    trimDropdown: false
+                });
+            }, 5);
 
             this.appendPopovers();
         },

@@ -22,6 +22,7 @@ var app = app || {};
         },
         initialize: function () {
             this.listenTo(this.collection, 'all', this.render);
+            this.listenTo(this.options.project, 'all', this.render);
             this.listenTo(this.options.extras, 'all', this.render);
         },
         getTotalPrices: function () {

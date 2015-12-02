@@ -22,11 +22,19 @@ $(document).ready(function () {
     });
 
     app.main_navigation = new app.MainNavigationView({
+        units_table: {
+            title: 'Units',
+            path: 'units',
+            icon_name: 'th',
+            onShow: function () {
+                app.main_region.show(new app.MainUnitsTableView());
+            }
+        },
         docs_import: {
             title: 'Docs',
             path: 'docs',
             icon_name: 'file',
-            showCallback: function () {
+            onShow: function () {
                 app.main_region.show(new app.MainDocsImportView());
             }
         },
@@ -34,7 +42,7 @@ $(document).ready(function () {
             title: 'Drawing',
             path: 'drawing',
             icon_name: 'pencil',
-            showCallback: function () {
+            onShow: function () {
                 app.main_region.show(new app.MainDrawingView());
             }
         },
@@ -42,7 +50,7 @@ $(document).ready(function () {
             title: 'Quote',
             path: 'quote',
             icon_name: 'shopping-cart',
-            showCallback: function () {
+            onShow: function () {
                 app.main_region.show(new app.MainQuoteView());
             }
         },
@@ -50,7 +58,7 @@ $(document).ready(function () {
             title: 'Supplier',
             path: 'supplier',
             icon_name: 'send',
-            showCallback: function () {
+            onShow: function () {
                 app.main_region.show(new app.MainSupplierRequestView());
             }
         },
@@ -58,7 +66,7 @@ $(document).ready(function () {
             title: 'Settings',
             path: 'settings',
             icon_name: 'cog',
-            showCallback: function () {
+            onShow: function () {
                 app.main_region.show(new app.MainSettingsView());
             }
         }
@@ -68,6 +76,6 @@ $(document).ready(function () {
     app.paste_image_helper = new app.PasteImageHelper();
 
     if ( Backbone.history.fragment === '' ) {
-        app.router.navigate('/docs/', { trigger: true });
+        app.router.navigate('/units/', { trigger: true });
     }
 });

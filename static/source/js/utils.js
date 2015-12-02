@@ -13,6 +13,8 @@ var app = app || {};
                 var value_feet = Math.floor(parseFloat(value) / 12);
                 var value_inches = parseFloat(value) % 12;
                 var fractional_part;
+                var closest_possible_fraction = 0;
+                var i;
 
                 decimal_format = decimal_format &&
                     _.indexOf(['floating', 'fraction'], decimal_format) !== -1 ?
@@ -26,13 +28,37 @@ var app = app || {};
                     //  MAX_DENOMINATOR == 16
                     if (
                         Math.abs(Math.round(value_inches) - value_inches) > 0 &&
-                        Math.abs(Math.round(value_inches) - value_inches) < (1 / MAX_DENOMINATOR) / 2
+                        Math.abs(Math.round(value_inches) - value_inches) <= (1 / MAX_DENOMINATOR) / 2
                     ) {
                         value_inches = Math.round(value_inches);
                     }
 
+                    //  If value_inches is too close to 12, we set it to 0 and
+                    //  increase value_feet by 1. This prevents us from getting
+                    //  something like |1′−12″|
+                    if ( value_inches === 12 ) {
+                        value_feet += 1;
+                        value_inches = 0;
+                    }
+
                     if ( value_inches - Math.floor(value_inches) ) {
-                        fractional_part = (value_inches - Math.floor(value_inches)).toFixed(MAX_SIGNIFICANT_DIGITS);
+                        fractional_part = (value_inches - Math.floor(value_inches));
+
+                        //  We want to only have denominators from the list:
+                        //  [2, 4, 8, 16], so we select the closest fraction
+                        //  with denominator from this list and use it
+                        for ( i = 1; i < MAX_DENOMINATOR; i++ ) {
+                            var i_fraction = i / MAX_DENOMINATOR;
+
+                            if (
+                                Math.abs(fractional_part - i_fraction) <
+                                Math.abs(fractional_part - closest_possible_fraction)
+                            ) {
+                                closest_possible_fraction = i_fraction;
+                            }
+                        }
+
+                        fractional_part = closest_possible_fraction.toFixed(MAX_SIGNIFICANT_DIGITS);
                         value_inches = Math.floor(value_inches) + ' ' +
                             new Decimal(fractional_part).toFraction(MAX_DENOMINATOR).join('/');
                     }
@@ -46,7 +72,7 @@ var app = app || {};
                 return this.dimension(width, decimal_format) + ' x ' + this.dimension(height, decimal_format);
             },
             dimensions_mm: function (width, height) {
-                return this.fixed_minimal(width) + ' x ' + this.fixed_minimal(height);
+                return this.fixed_minimal(width, 0) + ' x ' + this.fixed_minimal(height, 0);
             },
             price_usd: function (price) {
                 return '$' + new Decimal(parseFloat(price).toFixed(2)).toFormat(2);

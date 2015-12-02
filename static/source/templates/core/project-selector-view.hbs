@@ -4,3 +4,6 @@
         <option {{#if is_selected }}selected{{/if}} value="{{ id }}">{{ project_name }}</option>
     {{/each}}
 </select>
+{{#if no_backend }}
+<button class="btn btn-xs js-add-new-local-project">Add new local project</button>
+{{/if}}

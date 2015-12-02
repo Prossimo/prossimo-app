@@ -21,9 +21,17 @@ test('utils.format.dimension', function () {
 
     equal(f.dimension(62), '5′−2″', 'Expected value is 5′−2″');
     equal(f.dimension(33.375, 'fraction'), '2′−9 3/8″', 'Expected value is 2′−9 3/8″');
-    equal(f.dimension(50 + 1 / 14, 'fraction'), '4′−2 1/14″', 'Expected value is 4′−2 1/14″');
-    equal(f.dimension(50.7959183673469354, 'fraction'), '4′−2 4/5″', 'Expected not to fail with Decimal error');
+    equal(f.dimension(50 + 1 / 14, 'fraction'), '4′−2 1/16″', 'Expected value is 4′−2 1/16″');
+    equal(f.dimension(50 + 1 / 7, 'fraction'), '4′−2 1/8″', 'Expected value is 4′−2 1/8″');
+    equal(f.dimension(50 + 1 / 3, 'fraction'), '4′−2 5/16″', 'Expected value is 4′−2 5/16″');
+    equal(f.dimension(50 + 1 / 2, 'fraction'), '4′−2 1/2″', 'Expected value is 4′−2 1/2″');
+    equal(f.dimension(50 + 3 / 8, 'fraction'), '4′−2 3/8″', 'Expected value is 4′−2 3/8″');
+    equal(f.dimension(50 + 3 / 7, 'fraction'), '4′−2 7/16″', 'Expected value is 4′−2 7/16″');
+
+    equal(f.dimension(50.7959183673469354, 'fraction'), '4′−2 13/16″', 'Expected not to fail with Decimal error');
     equal(f.dimension(30.979591836734695, 'fraction'), '2′−7″', 'Expected not to return 2′−6 1/1″');
+    equal(f.dimension(23.99, 'fraction'), '2′−0″', 'Expected not to return 1′−12″');
+    equal(f.dimension(23.96875, 'fraction'), '2′−0″', 'Expected not to return 1′−12″ or 1′−11 1/1″');
 });
 
 test('utils.format.dimensions', function () {

@@ -27,6 +27,21 @@
     }
 }
 
+.units-table.always-visible .units-table-title {
+    text-align: left;
+    padding: 0.2rem 1.5rem;
+
+    p {
+        margin: 1rem 0 1rem;
+    }
+
+    &:hover,
+    &:active {
+        background-color: darken(@white, 35%);
+        cursor: default;
+    }
+}
+
 .units-table-title p {
     margin: 0;
 }
@@ -41,6 +56,10 @@
     border: 1px solid darken(@white, 45%);
 }
 
+.units-table.always-visible .units-table-controls {
+    top: 0.15rem;
+}
+
 .units-table-controls .add-new-unit,
 .units-table-controls .add-new-accessory {
     display: none;
@@ -51,6 +70,9 @@
     display: block;
 }
 
+.units-table-controls.show-none {
+    display: none;
+}
 
 
 //  ------------------------------------------------------------------------
@@ -110,6 +132,48 @@
     }
 }
 
+
+//  ------------------------------------------------------------------------
+//  We also have a screen
+//  ------------------------------------------------------------------------
+
+.units-table-screen .units-table-wrapper {
+    height: 100%;
+}
+
+.units-table-screen .units-table-container {
+    position: relative;
+    flex: none;
+    height: 100%;
+}
+
+.units-table-screen .units-table {
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+}
+
+.units-table-screen .units-table-title {
+    flex: 0 1 auto;
+}
+
+.units-table-screen .units-table-contents {
+    display: flex;
+    flex-flow: column;
+    flex: 1 1 auto;
+    margin: 0;
+    padding: 2rem 1rem 1rem;
+}
+
+.units-table-screen .tab-container {
+    flex: 0 1 auto;
+}
+
+.units-table-screen .units-table-scroll-wrapper {
+    flex: 1 1 auto;
+    max-height: none;
+    height: auto;
+}
 
 //  ------------------------------------------------------------------------
 //  Custom styles for handsontable
