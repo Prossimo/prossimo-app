@@ -58,6 +58,13 @@ var app = app || {};
                         'original_currency', 'conversion_rate', 'unit_cost', 'price_markup',
                         'unit_price', 'subtotal_cost', 'subtotal_price',
                         'move_item', 'remove_item']
+                },
+                project_info: {
+                    title: 'Project Info',
+                    collection: app.projects,
+                    columns: ['pipedrive_id', 'project_name', 'client_name',
+                        'client_company_name', 'client_phone', 'client_email',
+                        'client_address', 'project_address']
                 }
             };
             this.active_tab = 'input';
@@ -128,7 +135,8 @@ var app = app || {};
                     item.is_active = key === this.active_tab;
                     return item;
                 }, this),
-                mode: this.getActiveTab().title === 'Extras' ? 'extras' : 'units',
+                mode: this.getActiveTab().title === 'Extras' ? 'extras' :
+                    (this.getActiveTab().title === 'Project Info' ? 'none' : 'units'),
                 table_visibility: this.table_visibility,
                 is_always_visible: this.options.is_always_visible
             };
@@ -395,8 +403,12 @@ var app = app || {};
                 remove_item: {
                     readOnly: true,
                     renderer: app.hot_renderers.removeItemRenderer
+                },
+                pipedrive_id: {
+                    readOnly: true
                 }
             };
+
 
             if ( format_hash[column_name] ) {
                 properties_obj = _.extend(properties_obj, format_hash[column_name]);
@@ -404,6 +416,12 @@ var app = app || {};
 
             if ( properties_hash[column_name] ) {
                 properties_obj = _.extend(properties_obj, properties_hash[column_name]);
+            }
+
+            if ( _.indexOf(this.tabs.project_info.columns, column_name) !== -1 ) {
+                properties_obj = _.extend(properties_obj, {
+                    renderer: app.hot_renderers.projectInfoRenderer
+                });
             }
 
             return properties_obj;

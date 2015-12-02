@@ -147,6 +147,20 @@ var app = app || {};
             $td.empty().append($button);
 
             return td;
+        },
+        //  Disable currently inactive projects in Project info tab
+        projectInfoRenderer: function (instance, td, row, col) {
+            var is_current_project = instance.getData().at(row) &&
+                instance.getData().at(row) === app.current_project;
+
+            if ( !is_current_project ) {
+                instance.setCellMeta(row, col, 'readOnly', true);
+                $(td).addClass('htDimmed');
+            }
+
+            Handsontable.renderers.TextRenderer.apply(this, arguments);
+
+            return td;
         }
     };
 })();

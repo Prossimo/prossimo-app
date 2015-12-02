@@ -51,11 +51,13 @@ module.exports = function (grunt) {
         'quote/views/main-quote-view.js',
         'quote/views/quote-item-view.js',
         'quote/views/quote-extras-item-view.js',
+        'quote/views/quote-header-view.js',
         'quote/views/quote-table-view.js',
         'quote/views/quote-extras-table-view.js',
         'settings/views/main-settings-view.js',
         'settings/views/profiles-table-view.js',
         'supplier-request/views/main-supplier-request-view.js',
+        'supplier-request/views/supplier-request-header-view.js',
         'app.js'
     ];
 

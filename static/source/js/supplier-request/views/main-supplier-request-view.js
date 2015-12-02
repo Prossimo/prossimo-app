@@ -8,13 +8,14 @@ var app = app || {};
         className: 'screen supplier-request-screen',
         template: app.templates['supplier-request/main-supplier-request-view'],
         ui: {
+            '$header_container': '.supplier-request-header-container',
             '$table_container': '.supplier-request-table-container'
         },
-        initialize: function () {
-            this.model = app.current_project;
-            this.listenTo(this.model, 'all', this.render);
-        },
         onRender: function () {
+            this.request_header_view = new app.SupplierRequestHeaderView({
+                model: app.current_project
+            });
+
             this.request_table_view = new app.QuoteTableView({
                 project: app.current_project,
                 collection: app.current_project.units,
@@ -23,9 +24,11 @@ var app = app || {};
                 show_sizes_in_mm: true
             });
 
+            this.ui.$header_container.append(this.request_header_view.render().el);
             this.ui.$table_container.append(this.request_table_view.render().el);
         },
         onDestroy: function () {
+            this.request_header_view.destroy();
             this.request_table_view.destroy();
         }
     });

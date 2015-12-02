@@ -10,10 +10,6 @@ var app = app || {};
         ui: {
             '$wrapper': '.units-table-wrapper'
         },
-        initialize: function () {
-            this.model = app.current_project;
-            this.listenTo(this.model, 'all', this.render);
-        },
         onRender: function () {
             this.units_table_view = new app.UnitsTableView({
                 collection: app.current_project.units,

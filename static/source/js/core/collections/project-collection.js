@@ -10,6 +10,15 @@ var app = app || {};
         },
         parse: function (data) {
             return data.projects;
+        },
+        initialize: function () {
+            this.proxy_project = new app.Project(null, { proxy: true });
+        },
+        getNameTitleTypeHash: function (names) {
+            return this.proxy_project.getNameTitleTypeHash(names);
+        },
+        getTitles: function (names) {
+            return this.proxy_project.getTitles(names);
         }
     });
 })();
