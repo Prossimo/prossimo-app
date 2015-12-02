@@ -13,6 +13,8 @@ var app = app || {};
                 var value_feet = Math.floor(parseFloat(value) / 12);
                 var value_inches = parseFloat(value) % 12;
                 var fractional_part;
+                var closest_possible_fraction = 0;
+                var i;
 
                 decimal_format = decimal_format &&
                     _.indexOf(['floating', 'fraction'], decimal_format) !== -1 ?
@@ -40,7 +42,23 @@ var app = app || {};
                     }
 
                     if ( value_inches - Math.floor(value_inches) ) {
-                        fractional_part = (value_inches - Math.floor(value_inches)).toFixed(MAX_SIGNIFICANT_DIGITS);
+                        fractional_part = (value_inches - Math.floor(value_inches));
+
+                        //  We want to only have denominators from the list:
+                        //  [2, 4, 8, 16], so we select the closest fraction
+                        //  with denominator from this list and use it
+                        for ( i = 1; i < MAX_DENOMINATOR; i++ ) {
+                            var i_fraction = i / MAX_DENOMINATOR;
+
+                            if (
+                                Math.abs(fractional_part - i_fraction) <
+                                Math.abs(fractional_part - closest_possible_fraction)
+                            ) {
+                                closest_possible_fraction = i_fraction;
+                            }
+                        }
+
+                        fractional_part = closest_possible_fraction.toFixed(MAX_SIGNIFICANT_DIGITS);
                         value_inches = Math.floor(value_inches) + ' ' +
                             new Decimal(fractional_part).toFraction(MAX_DENOMINATOR).join('/');
                     }
