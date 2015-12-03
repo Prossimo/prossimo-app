@@ -230,13 +230,18 @@ var app = app || {};
             }
         },
         onRender: function () {
+            var self = this;
+
             if ( this.collection.length ) {
                 this.hot = new Handsontable(this.ui.$hot_container[0], {
                     data: this.collection,
                     columns: this.getColumnOptions(),
                     colHeaders: this.getColumnHeaders(),
                     rowHeaders: true,
-                    trimDropdown: false
+                    trimDropdown: false,
+                    maxRows: function () {
+                        return self.collection.length;
+                    }
                 });
             }
         },
