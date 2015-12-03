@@ -48,27 +48,32 @@ var app = app || {};
             var f = app.utils.format;
             var c = app.utils.convert;
 
-            var name_title_hash = {
-                size: 'Size',
-                type: 'Type',
-                glazing: 'Glazing',
-                desc: 'Description',
-                threshold: 'Threshold'
-            };
+            var params_list = ['type', 'glazing', 'internal_color', 'external_color',
+                'interior_handle', 'exterior_handle', 'description', 'hardware_type',
+                'lock_mechanism', 'glazing_bead', 'gasket_color', 'hinge_style',
+                'opening_direction', 'internal_sill', 'external_sill'];
+            var source_hash = this.model.getNameTitleTypeHash(params_list);
+
+            var name_title_hash = _.extend({
+                size: 'Size'
+            }, _.object( _.pluck(source_hash, 'name'), _.pluck(source_hash, 'title') ), {
+                glazing: this.model.profile.isSolidPanelPossible() ||
+                    this.model.profile.isFlushPanelPossible() ? 'Glass Packet/Panel Type' : 'Glass Packet',
+                threshold: 'Threshold',
+                u_value: 'U Value'
+            });
 
             var params_source = {
                 size: this.options.show_sizes_in_mm ?
                     f.dimensions_mm(c.inches_to_mm(this.model.get('width')), c.inches_to_mm(this.model.get('height'))) :
                     f.dimensions(this.model.get('width'), this.model.get('height'), 'fraction'),
-                type: this.model.get('type'),
-                glazing: this.model.get('glazing'),
-                desc: this.model.get('description'),
                 threshold: this.model.profile.isThresholdPossible() ?
-                    this.model.profile.getThresholdType() : false
+                    this.model.profile.getThresholdType() : false,
+                u_value: this.model.get('uw') ? f.fixed(this.model.getUValue(), 5) : false
             };
 
             return _.map(name_title_hash, function (item, key) {
-                return { name: key, title: item, value: params_source[key] };
+                return { name: key, title: item, value: params_source[key] || this.model.get(key) };
             }, this);
         },
         getCustomerImage: function () {
