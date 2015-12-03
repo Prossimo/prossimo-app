@@ -55,6 +55,10 @@ var app = app || {};
                 default_value = false;
             }
 
+            if ( name === 'threshold_width' ) {
+                default_value = 20;
+            }
+
             return default_value;
         },
         save: function () {
