@@ -146,15 +146,15 @@ var app = app || {};
                     renderer: app.hot_renderers.removeItemRenderer
                 },
                 system: {
-                    type: 'dropdown',
+                    type: 'autocomplete',
                     source: app.settings.getSystems()
                 },
                 frame_corners: {
-                    type: 'dropdown',
+                    type: 'autocomplete',
                     source: app.settings.getFrameCornerTypes()
                 },
                 sash_corners: {
-                    type: 'dropdown',
+                    type: 'autocomplete',
                     source: app.settings.getSashCornerTypes()
                 },
                 visible_frame_width_fixed: {

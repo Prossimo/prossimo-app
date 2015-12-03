@@ -407,35 +407,35 @@ var app = app || {};
                     renderer: app.hot_renderers.removeItemRenderer
                 },
                 internal_color: {
-                    type: 'dropdown',
+                    type: 'autocomplete',
                     source: app.settings.getColors()
                 },
                 external_color: {
-                    type: 'dropdown',
+                    type: 'autocomplete',
                     source: app.settings.getColors()
                 },
                 interior_handle: {
-                    type: 'dropdown',
+                    type: 'autocomplete',
                     source: app.settings.getInteriorHandleTypes()
                 },
                 hinge_style: {
-                    type: 'dropdown',
+                    type: 'autocomplete',
                     source: app.settings.getHingeTypes()
                 },
                 glazing_bead: {
-                    type: 'dropdown',
+                    type: 'autocomplete',
                     source: app.settings.getGlazingBeadTypes()
                 },
                 glazing: {
-                    type: 'dropdown',
+                    type: 'autocomplete',
                     source: app.settings.getGlassOrPanelTypes()
                 },
                 glazing_bar_width: {
-                    type: 'dropdown',
+                    type: 'autocomplete',
                     source: app.settings.getGlazingBarWidths()
                 },
                 gasket_color: {
-                    type: 'dropdown',
+                    type: 'autocomplete',
                     source: app.settings.getGasketColors()
                 },
                 exterior_handle: {
