@@ -39,6 +39,11 @@ var app = app || {};
             });
 
             return total_price;
+        },
+        hasAtLeastOneCustomerImage: function () {
+            return this.any(function (model) {
+                return model.get('customer_image') !== '';
+            });
         }
     });
 })();

@@ -1,4 +1,4 @@
-<table class="quote-unit">
+<table class="quote-unit{{#unless show_customer_image}} no-customer-image{{/unless}}">
     <thead>
         <tr>
             {{#each table_attributes }}
@@ -8,11 +8,13 @@
     </thead>
     <tbody><tr>
         <td class="mark">{{ mark }}</td>
+        {{#if show_customer_image }}
         <td class="customer_image">
             {{#if customer_image }}
             <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
             {{/if}}
         </td>
+        {{/if}}
         <td class="product_image">
             {{#if product_image }}
             <div class="image-wrapper"><img src="{{ product_image }}" alt=""></div>

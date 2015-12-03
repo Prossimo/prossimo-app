@@ -14,11 +14,18 @@ var app = app || {};
                 product_image: 'Shop Drawing' +
                     (this.options.show_outside_units_view ? ': <small>View from Exterior</small>' : ''),
                 product_description: 'Product Description',
-                quantity: 'Quantity'
+                quantity: 'Quantity',
+                price: 'Price'
             };
 
-             if ( this.options.show_price !== false ) {
-                name_title_hash.price = 'Price';
+            if ( this.model.collection &&
+                 this.model.collection.hasAtLeastOneCustomerImage() === false
+            ) {
+                delete name_title_hash.customer_image;
+            }
+
+            if ( this.options.show_price === false ) {
+                delete name_title_hash.price;
             }
 
             var table_attributes = _.map(name_title_hash, function (item, key) {
@@ -80,9 +87,12 @@ var app = app || {};
             return this.model.get('customer_image');
         },
         getProductImage: function () {
+            var preview_size = this.model.collection &&
+                this.model.collection.hasAtLeastOneCustomerImage() ? 400 : 500;
+
             return app.preview(this.model, {
-                width: 400,
-                height: 400,
+                width: preview_size,
+                height: preview_size,
                 mode: 'base64',
                 position: this.options.show_outside_units_view ? 'outside' : 'inside'
             });
@@ -97,7 +107,9 @@ var app = app || {};
                 price: this.getPrices(),
                 customer_image: this.getCustomerImage(),
                 product_image: this.getProductImage(),
-                show_price: this.options.show_price !== false
+                show_price: this.options.show_price !== false,
+                show_customer_image: this.model.collection &&
+                    this.model.collection.hasAtLeastOneCustomerImage()
             };
         }
     });
