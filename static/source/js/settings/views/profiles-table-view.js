@@ -233,16 +233,18 @@ var app = app || {};
             var self = this;
 
             if ( this.collection.length ) {
-                this.hot = new Handsontable(this.ui.$hot_container[0], {
-                    data: this.collection,
-                    columns: this.getColumnOptions(),
-                    colHeaders: this.getColumnHeaders(),
-                    rowHeaders: true,
-                    trimDropdown: false,
-                    maxRows: function () {
-                        return self.collection.length;
-                    }
-                });
+                setTimeout(function () {
+                    self.hot = new Handsontable(self.ui.$hot_container[0], {
+                        data: self.collection,
+                        columns: self.getColumnOptions(),
+                        colHeaders: self.getColumnHeaders(),
+                        rowHeaders: true,
+                        trimDropdown: false,
+                        maxRows: function () {
+                            return self.collection.length;
+                        }
+                    });
+                }, 50);
             }
         },
         onDestroy: function () {
