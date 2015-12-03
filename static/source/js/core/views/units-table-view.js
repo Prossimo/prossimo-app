@@ -365,7 +365,7 @@ var app = app || {};
                 },
                 u_value: {
                     readOnly: true,
-                    renderer: app.hot_renderers.getFormattedRenderer('fixed', 5)
+                    renderer: app.hot_renderers.getFormattedRenderer('fixed', 3)
                 },
                 system: { readOnly: true },
                 threshold: { readOnly: true },

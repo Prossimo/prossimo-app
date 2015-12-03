@@ -69,7 +69,7 @@ var app = app || {};
                     f.dimensions(this.model.get('width'), this.model.get('height'), 'fraction'),
                 threshold: this.model.profile.isThresholdPossible() ?
                     this.model.profile.getThresholdType() : false,
-                u_value: this.model.get('uw') ? f.fixed(this.model.getUValue(), 5) : false
+                u_value: this.model.get('uw') ? f.fixed(this.model.getUValue(), 3) : false
             };
 
             return _.map(name_title_hash, function (item, key) {
