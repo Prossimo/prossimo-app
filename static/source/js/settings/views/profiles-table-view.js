@@ -232,6 +232,16 @@ var app = app || {};
         onRender: function () {
             var self = this;
 
+            var fixed_columns = ['name', 'unit_type', 'system'];
+            var active_tab_columns = this.columns;
+            var fixed_columns_count = 0;
+
+            _.each(fixed_columns, function (column) {
+                if ( _.indexOf(active_tab_columns, column) !== -1 ) {
+                    fixed_columns_count += 1;
+                }
+            });
+
             if ( this.collection.length ) {
                 setTimeout(function () {
                     self.hot = new Handsontable(self.ui.$hot_container[0], {
@@ -242,7 +252,8 @@ var app = app || {};
                         trimDropdown: false,
                         maxRows: function () {
                             return self.collection.length;
-                        }
+                        },
+                        fixedColumnsLeft: fixed_columns_count
                     });
                 }, 50);
             }

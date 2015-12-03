@@ -540,6 +540,16 @@ var app = app || {};
         },
         onRender: function () {
             var self = this;
+            var fixed_columns = ['mark', 'quantity', 'width', 'height',
+                'width_mm', 'height_mm', 'customer_image', 'drawing'];
+            var active_tab_columns = self.getActiveTab().columns;
+            var fixed_columns_count = 0;
+
+            _.each(fixed_columns, function (column) {
+                if ( _.indexOf(active_tab_columns, column) !== -1 ) {
+                    fixed_columns_count += 1;
+                }
+            });
 
             setTimeout(function () {
                 self.hot = new Handsontable(self.ui.$hot_container[0], {
@@ -550,7 +560,8 @@ var app = app || {};
                     trimDropdown: false,
                     maxRows: function () {
                         return self.getActiveTab().collection.length;
-                    }
+                    },
+                    fixedColumnsLeft: fixed_columns_count
                 });
             }, 5);
 
