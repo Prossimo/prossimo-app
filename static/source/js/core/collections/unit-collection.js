@@ -9,6 +9,9 @@ var app = app || {};
             return app.settings.get('api_base_path') +
                 '/projects/' + this.options.project.get('id') + '/units';
         },
+        comparator: function (item) {
+            return item.id;
+        },
         initialize: function (models, options) {
             this.options = options || {};
             this.proxy_unit = new app.Unit(null, { proxy: true });

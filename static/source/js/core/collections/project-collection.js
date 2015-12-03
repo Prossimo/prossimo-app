@@ -11,6 +11,9 @@ var app = app || {};
         parse: function (data) {
             return data.projects;
         },
+        comparator: function (item) {
+            return item.id;
+        },
         initialize: function () {
             this.proxy_project = new app.Project(null, { proxy: true });
         },

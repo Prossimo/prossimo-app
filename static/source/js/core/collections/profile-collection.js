@@ -13,6 +13,9 @@ var app = app || {};
                 return _.omit(profile, ['units']);
             });
         },
+        comparator: function (item) {
+            return item.id;
+        },
         initialize: function (models, options) {
             this.options = options || {};
             this.proxy_profile = new app.Profile(null, { proxy: true });
