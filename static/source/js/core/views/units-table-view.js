@@ -28,14 +28,14 @@ var app = app || {};
                     title: 'Input',
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'width', 'height',
-                        'customer_image', 'drawing', 'type', 'description',
+                        'drawing', 'customer_image', 'type', 'description',
                         'notes', 'move_item', 'remove_item']
                 },
                 specs: {
                     title: 'Specs',
                     collection: this.collection,
-                    columns: ['mark', 'quantity', 'width', 'height', 'width_mm',
-                        'height_mm', 'customer_image', 'drawing', 'type', 'description',
+                    columns: ['mark', 'quantity', 'width', 'height', 'drawing',
+                        'customer_image', 'width_mm', 'height_mm', 'type', 'description',
                         'notes', 'profile_name', 'system', 'external_color', 'internal_color',
                         'interior_handle', 'exterior_handle', 'hardware_type',
                         'lock_mechanism', 'glazing_bead', 'gasket_color',
@@ -540,8 +540,7 @@ var app = app || {};
         },
         onRender: function () {
             var self = this;
-            var fixed_columns = ['mark', 'quantity', 'width', 'height',
-                'width_mm', 'height_mm', 'customer_image', 'drawing'];
+            var fixed_columns = ['mark', 'quantity', 'width', 'height', 'drawing'];
             var active_tab_columns = self.getActiveTab().columns;
             var fixed_columns_count = 0;
 
