@@ -482,7 +482,7 @@ var app = app || {};
                 stroke: 'grey'
             }));
             var textMM = new Konva.Text({
-                text: app.utils.format.fixed_minimal(params.getter(), 0) + ' mm',
+                text: app.utils.format.dimension_mm(params.getter()),
                 padding: 2,
                 fill: 'black'
             });
@@ -578,7 +578,7 @@ var app = app || {};
                 stroke: 'grey'
             }));
             var textMM = new Konva.Text({
-                text: app.utils.format.fixed_minimal(params.getter(), 0) + ' mm',
+                text: app.utils.format.dimension_mm(params.getter()),
                 padding: 2,
                 fill: 'black'
             });

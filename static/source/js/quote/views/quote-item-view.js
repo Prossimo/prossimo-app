@@ -14,7 +14,8 @@ var app = app || {};
                 product_image: 'Shop Drawing' +
                     (this.options.show_outside_units_view ? ': <small>View from Exterior</small>' : ''),
                 product_description: 'Product Description',
-                quantity: 'Quantity',
+                tech_specs: 'Tech Specs',
+                quantity: 'Qty',
                 price: 'Price'
             };
 
@@ -83,6 +84,78 @@ var app = app || {};
                 return { name: key, title: item, value: params_source[key] || this.model.get(key) };
             }, this);
         },
+        getTechSpecs: function () {
+            var f = app.utils.format;
+            var c = app.utils.convert;
+            var m = app.utils.math;
+
+            var sizes = this.model.getSizes();
+            var glasses_openings = {
+                glasses: [],
+                openings: []
+            };
+
+            _.each(sizes.openings, function (opening, index) {
+                if ( opening.width > 0 && opening.height > 0 ) {
+                    glasses_openings.openings.push({
+                        name: 'Opening #' + (index + 1),
+                        size: this.options.show_sizes_in_mm ?
+                            f.dimensions_mm(opening.width, opening.height) :
+                            f.dimensions(c.mm_to_inches(opening.width), c.mm_to_inches(opening.height), 'fraction'),
+                        area: this.options.show_sizes_in_mm ?
+                            f.square_meters(m.square_meters(opening.width, opening.height)) :
+                            f.square_feet(m.square_feet(c.mm_to_inches(opening.width), c.mm_to_inches(opening.height)), 2, 'sup')
+                    });
+                }
+            }, this);
+
+            _.each(sizes.glasses, function (glass, index) {
+                if ( glass.width > 0 && glass.height > 0 ) {
+                    glasses_openings.glasses.push({
+                        name: 'Glass #' + (index + 1),
+                        size: this.options.show_sizes_in_mm ?
+                            f.dimensions_mm(glass.width, glass.height) :
+                            f.dimensions(c.mm_to_inches(glass.width), c.mm_to_inches(glass.height), 'fraction'),
+                        area: this.options.show_sizes_in_mm ?
+                            f.square_meters(m.square_meters(glass.width, glass.height)) :
+                            f.square_feet(m.square_feet(c.mm_to_inches(glass.width), c.mm_to_inches(glass.height)), 2, 'sup')
+                    });
+                }
+            }, this);
+
+            var params_list = ['threshold_width', 'frame_u_value',
+                'spacer_thermal_bridge_value'];
+
+            var source_hash = this.model.profile.getNameTitleTypeHash(params_list);
+
+            var name_title_hash = _.extend({
+                visible_frame_width_fixed: 'Visible Frame Width Fixed',
+                visible_frame_width_operational: 'Visible Frame Width Operational'
+            }, _.object( _.pluck(source_hash, 'name'), _.pluck(source_hash, 'title') ), {
+                threshold_width: 'Threshold Height'
+            });
+
+            var params_source = {
+                threshold_width: this.model.profile.isThresholdPossible() ?
+                    f.dimension_mm(this.model.profile.get('threshold_width')) : false,
+                frame_u_value: this.model.profile.get('frame_u_value') ?
+                    f.fixed_minimal(this.model.profile.get('frame_u_value'), 3) : false,
+                spacer_thermal_bridge_value: this.model.profile.get('spacer_thermal_bridge_value') ?
+                    f.fixed_minimal(this.model.profile.get('spacer_thermal_bridge_value'), 3) : false,
+                visible_frame_width_fixed: f.dimension_mm(this.model.profile.getVisibleFrameWidthFixed()),
+                visible_frame_width_operational: f.dimension_mm(this.model.profile.getVisibleFrameWidthOperable())
+            };
+
+            var params = _.map(name_title_hash, function (item, key) {
+                return { name: key, title: item, value: params_source[key] };
+            }, this);
+
+            return {
+                system: this.model.profile.get('system'),
+                glasses_openings: glasses_openings,
+                params: params
+            };
+        },
         getCustomerImage: function () {
             return this.model.get('customer_image');
         },
@@ -102,6 +175,7 @@ var app = app || {};
                 table_attributes: this.getQuoteTableAttributes(),
                 mark: this.model.get('mark'),
                 description: this.getDescription(),
+                tech_specs: this.getTechSpecs(),
                 notes: this.model.get('notes'),
                 quantity: this.model.get('quantity'),
                 price: this.getPrices(),

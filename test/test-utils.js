@@ -43,6 +43,13 @@ test('utils.format.dimensions', function () {
     equal(f.dimensions('12', '12'), '1′−0″ x 1′−0″', 'Expected value is 1′−0″ x 1′−0″');
 });
 
+test('utils.format.dimension_mm', function () {
+    var f = app.utils.format;
+
+    equal(f.dimension_mm(2500), '2,500 mm', 'Expected value is 2,500 mm');
+    equal(f.dimension_mm(33.3), '33 mm', 'Expected value is 33 mm');
+});
+
 test('utils.format.dimensions_mm', function () {
     var f = app.utils.format;
 
@@ -80,6 +87,8 @@ test('utils.format.square_feet', function () {
 
     equal(f.square_feet(12), '12 sq.ft', 'Expected value is 12 sq.ft');
     equal(f.square_feet(4.55), '4.55 sq.ft', 'Expected value is 4.55 sq.ft');
+
+    equal(f.square_feet(4.55, 2, 'sup'), '4.55 ft<sup>2</sup>', 'Expected value is 4.55 ft<sup>2</sup>');
 });
 
 test('utils.format.square_meters', function () {
@@ -187,6 +196,28 @@ test('utils.parseFormat.percent', function () {
     equal(p.percent('20.5%'), 20.5, 'Expected value is 20.5');
     equal(p.percent('0%'), 0, 'Expected value is 0');
     equal(p.percent(0), 0, 'Expected value is 0');
+});
+
+
+//  ------------------------------------------------------------------------
+//  Test math functions from utils.js
+//  ------------------------------------------------------------------------
+
+test('utils.math.square_feet', function () {
+    var m = app.utils.math;
+
+    equal(m.square_feet(20, 20).toFixed(5), '2.77778', 'Expected value is 2.77778');
+    equal(m.square_feet(12, 12), 1, 'Expected value is 1');
+    equal(m.square_feet(0, 0), 0, 'Expected value is 0');
+});
+
+
+test('utils.math.square_meters', function () {
+    var m = app.utils.math;
+
+    equal(m.square_meters(200, 200), 0.04, 'Expected value is 0.04');
+    equal(m.square_meters(1000, 1000), 1, 'Expected value is 1');
+    equal(m.square_meters(0, 0), 0, 'Expected value is 0');
 });
 
 

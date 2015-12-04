@@ -171,14 +171,14 @@ var app = app || {};
             return app.utils.convert.inches_to_mm(this.get('height'));
         },
         getAreaInSquareFeet: function () {
-            return parseFloat(this.get('width')) * parseFloat(this.get('height')) / 144;
+            return app.utils.math.square_feet(this.get('width'), this.get('height'));
         },
         getTotalSquareFeet: function () {
             return this.getAreaInSquareFeet() * parseFloat(this.get('quantity'));
         },
         getAreaInSquareMeters: function () {
             var c = app.utils.convert;
-            return parseFloat(c.inches_to_mm(this.get('width'))) / 1000 * parseFloat(c.inches_to_mm(this.get('height'))) / 1000;
+            return app.utils.math.square_meters(c.inches_to_mm(this.get('width')), c.inches_to_mm(this.get('height')));
         },
         //  TODO: do some checks? return error value in some cases?
         getUnitCost: function () {

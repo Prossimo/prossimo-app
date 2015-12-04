@@ -71,6 +71,9 @@ var app = app || {};
             dimensions: function (width, height, decimal_format) {
                 return this.dimension(width, decimal_format) + ' x ' + this.dimension(height, decimal_format);
             },
+            dimension_mm: function (value) {
+                return this.fixed_minimal(value, 0) + ' mm';
+            },
             dimensions_mm: function (width, height) {
                 return this.fixed_minimal(width, 0) + ' x ' + this.fixed_minimal(height, 0);
             },
@@ -102,11 +105,17 @@ var app = app || {};
 
                 return result;
             },
-            square_feet: function (value, num) {
-                return this.fixed_minimal(value, num) + ' sq.ft';
+            square_feet: function (value, num, format) {
+                format = (format && _.indexOf(['normal', 'sup'], format) !== -1) ?
+                    format : 'normal';
+                return this.fixed_minimal(value, num) + (format === 'sup' ?
+                    ' ft<sup>2</sup>' : ' sq.ft');
             },
-            square_meters: function (value, num) {
-                return this.fixed_minimal(value, num) + ' m<sup>2</sup>';
+            square_meters: function (value, num, format) {
+                format = (format && _.indexOf(['normal', 'sup'], format) !== -1) ?
+                    format : 'sup';
+                return this.fixed_minimal(value, num) + (format === 'sup' ?
+                    ' m<sup>2</sup>' : ' sq.m');
             }
         },
         parseFormat: {
@@ -188,6 +197,14 @@ var app = app || {};
             },
             percent: function (string) {
                 return parseFloat(string);
+            }
+        },
+        math: {
+            square_feet: function (width, height) {
+                return parseFloat(width) * parseFloat(height) / 144;
+            },
+            square_meters: function (width_mm, height_mm) {
+                return parseFloat(width_mm) / 1000 * parseFloat(height_mm) / 1000;
             }
         },
         convert: {

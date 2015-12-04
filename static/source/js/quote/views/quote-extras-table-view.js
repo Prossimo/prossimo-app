@@ -23,7 +23,7 @@ var app = app || {};
             var name_title_hash = {
                 ref: 'Ref.',
                 extras_product_description: 'Product Description',
-                quantity: 'Quantity'
+                quantity: 'Qty'
             };
 
             if ( this.options.show_price !== false ) {
