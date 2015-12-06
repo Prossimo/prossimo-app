@@ -27,15 +27,26 @@
 //  ------------------------------------------------------------------------
 
 .quote-header {
+    position: relative;
     margin-bottom: 3rem;
     text-align: right;
-    background-image: url(../img/logo.png);
-    background-repeat: no-repeat;
-    background-size: 15rem auto;
+}
+
+.prossimo-logo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 18rem;
+    height: auto;
+}
+
+.prossimo-logo img {
+    width: 100%;
+    height: auto;
 }
 
 .quote-header h1 {
-    padding-top: 1.5rem;
+    padding-top: 2rem;
     margin: 0 0 4rem;
     font-weight: 700;
     color: darken(@white, 30%);
