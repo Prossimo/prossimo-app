@@ -130,6 +130,39 @@ var app = app || {};
 
             return active_unit_profile_properties;
         },
+        getActiveUnitOpeningsGlassesProperties: function () {
+            var f = app.utils.format;
+            var c = app.utils.convert;
+            var m = app.utils.math;
+
+            var sizes = this.options.parent_view.active_unit.getSizes();
+            var glasses_openings = {
+                glasses: [],
+                openings: []
+            };
+
+             _.each(sizes.openings, function (opening, index) {
+                if ( opening.width > 0 && opening.height > 0 ) {
+                    glasses_openings.openings.push({
+                        name: 'Opening #' + (index + 1),
+                        size: f.dimensions_in(c.mm_to_inches(opening.width), c.mm_to_inches(opening.height), 'fraction'),
+                        area: f.square_feet(m.square_feet(c.mm_to_inches(opening.width), c.mm_to_inches(opening.height)), 2, 'sup')
+                    });
+                }
+            }, this);
+
+            _.each(sizes.glasses, function (glass, index) {
+                if ( glass.width > 0 && glass.height > 0 ) {
+                    glasses_openings.glasses.push({
+                        name: 'Glass #' + (index + 1),
+                        size: f.dimensions_in(c.mm_to_inches(glass.width), c.mm_to_inches(glass.height), 'fraction'),
+                        area: f.square_feet(m.square_feet(c.mm_to_inches(glass.width), c.mm_to_inches(glass.height)), 2, 'sup')
+                    });
+                }
+            }, this);
+
+            return glasses_openings;
+        },
         serializeData: function () {
             return {
                 unit_list: this.collection.map(function (item) {
@@ -144,6 +177,7 @@ var app = app || {};
                 }, this),
                 active_unit_properties: this.getActiveUnitProperties(),
                 active_unit_profile_properties: this.getActiveUnitProfileProperties(),
+                active_unit_openings_glasses_properties: this.getActiveUnitOpeningsGlassesProperties(),
                 active_unit_image: this.getActiveUnitImage()
             };
         },

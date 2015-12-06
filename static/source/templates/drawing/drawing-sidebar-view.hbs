@@ -52,3 +52,39 @@
         </table>
     </div>
 {{/if}}
+
+{{#if active_unit_openings_glasses_properties }}
+    <div class="active-unit-openings-glasses-properties">
+        <h4>Openings / Glasses</h4>
+        {{#each active_unit_openings_glasses_properties.openings }}
+        <h5>{{ name }}</h5>
+        <table>
+            <tbody>
+                <tr>
+                    <td class="title">Size</td>
+                    <td class="value">{{ size }}</td>
+                </tr>
+                <tr>
+                    <td class="title">Area</td>
+                    <td class="value">{{{ area }}}</td>
+                </tr>
+            </tbody>
+        </table>
+        {{/each}}
+        {{#each active_unit_openings_glasses_properties.glasses }}
+        <h5>{{ name }}</h5>
+        <table>
+            <tbody>
+                <tr>
+                    <td class="title">Size</td>
+                    <td class="value">{{ size }}</td>
+                </tr>
+                <tr>
+                    <td class="title">Area</td>
+                    <td class="value">{{{ area }}}</td>
+                </tr>
+            </tbody>
+        </table>
+        {{/each}}
+    </div>
+{{/if}}
