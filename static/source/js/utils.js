@@ -77,6 +77,12 @@ var app = app || {};
             dimensions_mm: function (width, height) {
                 return this.fixed_minimal(width, 0) + ' x ' + this.fixed_minimal(height, 0);
             },
+            dimension_in: function (value) {
+                return this.fixed_minimal(value, 2) + '″';
+            },
+            dimensions_in: function (width, height) {
+                return this.dimension_in(width) + ' x ' + this.dimension_in(height);
+            },
             price_usd: function (price) {
                 return '$' + new Decimal(parseFloat(price).toFixed(2)).toFormat(2);
             },

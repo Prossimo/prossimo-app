@@ -101,7 +101,7 @@ var app = app || {};
                         name: 'Opening #' + (index + 1),
                         size: this.options.show_sizes_in_mm ?
                             f.dimensions_mm(opening.width, opening.height) :
-                            f.dimensions(c.mm_to_inches(opening.width), c.mm_to_inches(opening.height), 'fraction'),
+                            f.dimensions_in(c.mm_to_inches(opening.width), c.mm_to_inches(opening.height), 'fraction'),
                         area: this.options.show_sizes_in_mm ?
                             f.square_meters(m.square_meters(opening.width, opening.height)) :
                             f.square_feet(m.square_feet(c.mm_to_inches(opening.width), c.mm_to_inches(opening.height)), 2, 'sup')
@@ -115,7 +115,7 @@ var app = app || {};
                         name: 'Glass #' + (index + 1),
                         size: this.options.show_sizes_in_mm ?
                             f.dimensions_mm(glass.width, glass.height) :
-                            f.dimensions(c.mm_to_inches(glass.width), c.mm_to_inches(glass.height), 'fraction'),
+                            f.dimensions_in(c.mm_to_inches(glass.width), c.mm_to_inches(glass.height), 'fraction'),
                         area: this.options.show_sizes_in_mm ?
                             f.square_meters(m.square_meters(glass.width, glass.height)) :
                             f.square_feet(m.square_feet(c.mm_to_inches(glass.width), c.mm_to_inches(glass.height)), 2, 'sup')

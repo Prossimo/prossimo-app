@@ -56,6 +56,19 @@ test('utils.format.dimensions_mm', function () {
     equal(f.dimensions_mm(2500, 1300), '2,500 x 1,300', 'Expected value is 2,500 x 1,300');
 });
 
+test('utils.format.dimension_in', function () {
+    var f = app.utils.format;
+
+    equal(f.dimension_in(14), '14″', 'Expected value is 14″');
+    equal(f.dimension_in(28.35), '28.35″', 'Expected value is 28.35″');
+});
+
+test('utils.format.dimensions_in', function () {
+    var f = app.utils.format;
+
+    equal(f.dimensions_in(38.14, 22), '38.14″ x 22″', 'Expected value is 38.14″ x 22″');
+});
+
 test('utils.format.price_usd', function () {
     var f = app.utils.format;
 
