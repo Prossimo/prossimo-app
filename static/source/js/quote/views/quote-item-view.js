@@ -55,38 +55,6 @@ var app = app || {};
         getDescription: function () {
             var f = app.utils.format;
             var c = app.utils.convert;
-
-            var params_list = ['type', 'glazing', 'internal_color', 'external_color',
-                'interior_handle', 'exterior_handle', 'description', 'hardware_type',
-                'lock_mechanism', 'glazing_bead', 'gasket_color', 'hinge_style',
-                'opening_direction', 'internal_sill', 'external_sill'];
-            var source_hash = this.model.getNameTitleTypeHash(params_list);
-
-            var name_title_hash = _.extend({
-                size: 'Size'
-            }, _.object( _.pluck(source_hash, 'name'), _.pluck(source_hash, 'title') ), {
-                glazing: this.model.profile.isSolidPanelPossible() ||
-                    this.model.profile.isFlushPanelPossible() ? 'Glass Packet/Panel Type' : 'Glass Packet',
-                threshold: 'Threshold',
-                u_value: 'U Value'
-            });
-
-            var params_source = {
-                size: this.options.show_sizes_in_mm ?
-                    f.dimensions_mm(c.inches_to_mm(this.model.get('width')), c.inches_to_mm(this.model.get('height'))) :
-                    f.dimensions(this.model.get('width'), this.model.get('height'), 'fraction'),
-                threshold: this.model.profile.isThresholdPossible() ?
-                    this.model.profile.getThresholdType() : false,
-                u_value: this.model.get('uw') ? f.fixed(this.model.getUValue(), 3) : false
-            };
-
-            return _.map(name_title_hash, function (item, key) {
-                return { name: key, title: item, value: params_source[key] || this.model.get(key) };
-            }, this);
-        },
-        getTechSpecs: function () {
-            var f = app.utils.format;
-            var c = app.utils.convert;
             var m = app.utils.math;
 
             var sizes = this.model.getSizes();
@@ -94,6 +62,12 @@ var app = app || {};
                 glasses: [],
                 openings: []
             };
+
+            var params_list = ['type', 'glazing', 'internal_color', 'external_color',
+                'interior_handle', 'exterior_handle', 'description', 'hardware_type',
+                'lock_mechanism', 'glazing_bead', 'gasket_color', 'hinge_style',
+                'opening_direction', 'internal_sill', 'external_sill'];
+            var source_hash = this.model.getNameTitleTypeHash(params_list);
 
             _.each(sizes.openings, function (opening, index) {
                 if ( opening.width > 0 && opening.height > 0 ) {
@@ -123,6 +97,35 @@ var app = app || {};
                 }
             }, this);
 
+            var name_title_hash = _.extend({
+                size: 'Size'
+            }, _.object( _.pluck(source_hash, 'name'), _.pluck(source_hash, 'title') ), {
+                glazing: this.model.profile.isSolidPanelPossible() ||
+                    this.model.profile.isFlushPanelPossible() ? 'Glass Packet/Panel Type' : 'Glass Packet',
+                threshold: 'Threshold',
+                u_value: 'U Value'
+            });
+
+            var params_source = {
+                size: this.options.show_sizes_in_mm ?
+                    f.dimensions_mm(c.inches_to_mm(this.model.get('width')), c.inches_to_mm(this.model.get('height'))) :
+                    f.dimensions(this.model.get('width'), this.model.get('height'), 'fraction'),
+                threshold: this.model.profile.isThresholdPossible() ?
+                    this.model.profile.getThresholdType() : false,
+                u_value: this.model.get('uw') ? f.fixed(this.model.getUValue(), 3) : false
+            };
+
+            var params = _.map(name_title_hash, function (item, key) {
+                return { name: key, title: item, value: params_source[key] || this.model.get(key) };
+            }, this);
+
+            return {
+                glasses_openings: glasses_openings,
+                params: params
+            };
+        },
+        getTechSpecs: function () {
+            var f = app.utils.format;
             var params_list = ['threshold_width', 'frame_u_value',
                 'spacer_thermal_bridge_value'];
 
@@ -152,7 +155,6 @@ var app = app || {};
 
             return {
                 system: this.model.profile.get('system'),
-                glasses_openings: glasses_openings,
                 params: params
             };
         },

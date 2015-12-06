@@ -22,27 +22,27 @@
         </td>
         <td class="product_description">
             <ul>
-                {{#each description }}
+                {{#each description.params }}
                 {{#if value }}<li class="{{ name }}"><strong>{{ title }}:</strong> <span>{{ value }}</span></li>{{/if}}
                 {{/each}}
             </ul>
             {{#if notes }}<p class="notes"><strong>{{ notes }}</strong></p>{{/if}}
+            <ul>
+                {{#each description.glasses_openings.openings }}
+                <li class="opening"><strong>{{ name }}:</strong> <span>{{ size }} ({{{ area }}})</span></li>
+                {{/each}}
+            </ul>
+            <ul>
+                {{#each description.glasses_openings.glasses }}
+                <li class="glass"><strong>{{ name }}:</strong> <span>{{ size }} ({{{ area }}})</span></li>
+                {{/each}}
+            </ul>
         </td>
         <td class="tech_specs">
             <ul>
                 {{#if tech_specs.system }}<li class="system"><strong>System:</strong> <span>{{ tech_specs.system }}</span></li>{{/if}}
                 {{#each tech_specs.params }}
                 {{#if value }}<li class="{{ name }}"><strong>{{ title }}:</strong> <span>{{ value }}</span></li>{{/if}}
-                {{/each}}
-            </ul>
-            <ul>
-                {{#each tech_specs.glasses_openings.openings }}
-                <li class="opening"><strong>{{ name }}:</strong> <span>{{ size }} ({{{ area }}})</span></li>
-                {{/each}}
-            </ul>
-            <ul>
-                {{#each tech_specs.glasses_openings.glasses }}
-                <li class="glass"><strong>{{ name }}:</strong> <span>{{ size }} ({{{ area }}})</span></li>
                 {{/each}}
             </ul>
         </td>
