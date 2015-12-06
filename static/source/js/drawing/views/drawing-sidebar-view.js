@@ -134,32 +134,36 @@ var app = app || {};
             var f = app.utils.format;
             var c = app.utils.convert;
             var m = app.utils.math;
+            var sizes;
 
-            var sizes = this.options.parent_view.active_unit.getSizes();
             var glasses_openings = {
                 glasses: [],
                 openings: []
             };
 
-             _.each(sizes.openings, function (opening, index) {
-                if ( opening.width > 0 && opening.height > 0 ) {
-                    glasses_openings.openings.push({
-                        name: 'Opening #' + (index + 1),
-                        size: f.dimensions_in(c.mm_to_inches(opening.width), c.mm_to_inches(opening.height), 'fraction'),
-                        area: f.square_feet(m.square_feet(c.mm_to_inches(opening.width), c.mm_to_inches(opening.height)), 2, 'sup')
-                    });
-                }
-            }, this);
+            if ( this.options.parent_view.active_unit ) {
+                sizes = this.options.parent_view.active_unit.getSizes();
 
-            _.each(sizes.glasses, function (glass, index) {
-                if ( glass.width > 0 && glass.height > 0 ) {
-                    glasses_openings.glasses.push({
-                        name: 'Glass #' + (index + 1),
-                        size: f.dimensions_in(c.mm_to_inches(glass.width), c.mm_to_inches(glass.height), 'fraction'),
-                        area: f.square_feet(m.square_feet(c.mm_to_inches(glass.width), c.mm_to_inches(glass.height)), 2, 'sup')
-                    });
-                }
-            }, this);
+                 _.each(sizes.openings, function (opening, index) {
+                    if ( opening.width > 0 && opening.height > 0 ) {
+                        glasses_openings.openings.push({
+                            name: 'Opening #' + (index + 1),
+                            size: f.dimensions_in(c.mm_to_inches(opening.width), c.mm_to_inches(opening.height), 'fraction'),
+                            area: f.square_feet(m.square_feet(c.mm_to_inches(opening.width), c.mm_to_inches(opening.height)), 2, 'sup')
+                        });
+                    }
+                }, this);
+
+                _.each(sizes.glasses, function (glass, index) {
+                    if ( glass.width > 0 && glass.height > 0 ) {
+                        glasses_openings.glasses.push({
+                            name: 'Glass #' + (index + 1),
+                            size: f.dimensions_in(c.mm_to_inches(glass.width), c.mm_to_inches(glass.height), 'fraction'),
+                            area: f.square_feet(m.square_feet(c.mm_to_inches(glass.width), c.mm_to_inches(glass.height)), 2, 'sup')
+                        });
+                    }
+                }, this);
+            }
 
             return glasses_openings;
         },
