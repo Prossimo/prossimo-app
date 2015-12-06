@@ -36,7 +36,12 @@ var app = app || {};
                 api_base_path: this.get('api_base_path')
             });
 
-            this.profiles.fetch({ remove: false });
+            this.profiles.fetch({
+                remove: false,
+                data: {
+                    limit: 1000
+                }
+            });
         },
         getAvailableProfileNames: function () {
             return this.profiles.map(function (item) {

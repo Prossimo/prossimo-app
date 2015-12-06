@@ -26,6 +26,9 @@ var app = app || {};
                 remove: false,
                 error: function () {
                     self.no_backend = true;
+                },
+                data: {
+                    limit: 1000
                 }
             });
         },
@@ -55,7 +58,8 @@ var app = app || {};
         },
         onRender: function () {
             this.ui.$select.selectpicker({
-                style: 'btn-xs'
+                style: 'btn-xs',
+                size: 10
             });
         },
         serializeData: function () {
