@@ -134,12 +134,13 @@ var app = app || {};
             return this.model.get('customer_image');
         },
         getProductImage: function () {
-            var preview_size = this.model.collection &&
-                this.model.collection.hasAtLeastOneCustomerImage() ? 400 : 500;
+            var preview_height = 400;
+            var preview_width = this.model.collection &&
+                this.model.collection.hasAtLeastOneCustomerImage() ? 400 : 450;
 
             return app.preview(this.model, {
-                width: preview_size,
-                height: preview_size,
+                width: preview_width,
+                height: preview_height,
                 mode: 'base64',
                 position: this.options.show_outside_units_view ? 'outside' : 'inside'
             });
