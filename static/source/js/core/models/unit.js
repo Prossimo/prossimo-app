@@ -49,6 +49,22 @@ var app = app || {};
         'flush-turn-right', 'flush-turn-left'
     ];
 
+    var SASH_TYPES_WITH_OPENING = _.without(SASH_TYPES, 'fixed_in_frame');
+
+    var SASH_TYPE_NAME_MAP = {
+        'flush-turn-right': 'Turn Only Right Hinge',
+        'flush-turn-left': 'Turn Only Left Hinge',
+        'fixed_in_frame': 'Fixed',
+        'fixed_in_sash': 'Fixed',
+        'tilt_only': 'Tilt Only',
+        'tilt_turn_right': 'Tilt-turn Right Hinge',
+        'tilt_turn_left': 'Tilt-turn Left Hinge',
+        'turn_only_right': 'Turn Only Right Hinge',
+        'turn_only_left': 'Turn Only Left Hinge',
+        'slide-right': 'Slide Right',
+        'slide-left': 'Slide Left'
+    };
+
     app.Unit = Backbone.Model.extend({
         defaults: function () {
             var defaults = {};
@@ -219,6 +235,13 @@ var app = app || {};
             }
 
             return is_editable;
+        },
+        getSashName: function (type) {
+            if ( _.indexOf(_.keys(SASH_TYPE_NAME_MAP), type) === -1 ) {
+                throw new Error('Unrecognized sash type: ' + type);
+            }
+
+            return SASH_TYPE_NAME_MAP[type];
         },
         _updateSection: function(sectionId, func) {
             // HAH, dirty deep clone, rewrite when you have good mood for it
@@ -546,6 +569,35 @@ var app = app || {};
                 res.openings.push(root.sashParams);
             }
             return res;
+        },
+        getSashList: function (current_root) {
+            var current_sash = {
+                opening: {},
+                glass: {}
+            };
+            var section_result;
+            var result = [];
+
+            current_root = current_root || this.generateFullRoot();
+
+            _.each(current_root.sections, function (section) {
+                section_result = this.getSashList(section);
+                result = result.concat(section_result);
+            }, this);
+
+            if ( _.indexOf(SASH_TYPES_WITH_OPENING, current_root.sashType) !== -1 ) {
+                current_sash.opening.width = current_root.sashParams.width;
+                current_sash.opening.height = current_root.sashParams.height;
+            }
+
+            current_sash.type = this.getSashName(current_root.sashType);
+            current_sash.glass.width = current_root.glassParams.width;
+            current_sash.glass.height = current_root.glassParams.height;
+            current_sash.glass.type = this.get('glazing');
+
+            result.push(current_sash);
+
+            return result;
         }
     });
 

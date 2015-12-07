@@ -53,35 +53,30 @@
     </div>
 {{/if}}
 
-{{#if active_unit_openings_glasses_properties }}
+{{#if active_unit_sashes }}
     <div class="active-unit-openings-glasses-properties">
-        <h4>Openings / Glasses</h4>
-        {{#each active_unit_openings_glasses_properties.openings }}
+        <h4>Sash List</h4>
+        {{#each active_unit_sashes }}
         <h5>{{ name }}</h5>
         <table>
             <tbody>
                 <tr>
-                    <td class="title">Size</td>
-                    <td class="value">{{ size }}</td>
+                    <td class="title">Type</td>
+                    <td class="value">{{ type }}</td>
+                </tr>
+                {{#if opening_size }}
+                <tr>
+                    <td class="title">Clear Opening</td>
+                    <td class="value">{{{ opening_size }}}</td>
+                </tr>
+                {{/if}}
+                <tr>
+                    <td class="title">Glazing/Panel</td>
+                    <td class="value">{{ glazing_type }}</td>
                 </tr>
                 <tr>
-                    <td class="title">Area</td>
-                    <td class="value">{{{ area }}}</td>
-                </tr>
-            </tbody>
-        </table>
-        {{/each}}
-        {{#each active_unit_openings_glasses_properties.glasses }}
-        <h5>{{ name }}</h5>
-        <table>
-            <tbody>
-                <tr>
-                    <td class="title">Size</td>
-                    <td class="value">{{ size }}</td>
-                </tr>
-                <tr>
-                    <td class="title">Area</td>
-                    <td class="value">{{{ area }}}</td>
+                    <td class="title">Glazing/Panel Visible Size</td>
+                    <td class="value">{{{ glazing_size }}}</td>
                 </tr>
             </tbody>
         </table>

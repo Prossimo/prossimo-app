@@ -56,11 +56,8 @@ var app = app || {};
             var c = app.utils.convert;
             var m = app.utils.math;
 
-            var sizes = this.model.getSizes();
-            var glasses_openings = {
-                glasses: [],
-                openings: []
-            };
+            var sash_list_source = this.model.getSashList();
+            var sashes = [];
 
             var params_list = ['type', 'glazing', 'internal_color', 'external_color',
                 'interior_handle', 'exterior_handle', 'description', 'hardware_type',
@@ -68,32 +65,42 @@ var app = app || {};
                 'opening_direction', 'internal_sill', 'external_sill'];
             var source_hash = this.model.getNameTitleTypeHash(params_list);
 
-            _.each(sizes.openings, function (opening, index) {
-                if ( opening.width > 0 && opening.height > 0 ) {
-                    glasses_openings.openings.push({
-                        name: 'Opening #' + (index + 1),
-                        size: this.options.show_sizes_in_mm ?
-                            f.dimensions_mm(opening.width, opening.height) :
-                            f.dimensions_in(c.mm_to_inches(opening.width), c.mm_to_inches(opening.height), 'fraction'),
-                        area: this.options.show_sizes_in_mm ?
-                            f.square_meters(m.square_meters(opening.width, opening.height)) :
-                            f.square_feet(m.square_feet(c.mm_to_inches(opening.width), c.mm_to_inches(opening.height)), 2, 'sup')
-                    });
-                }
-            }, this);
+            _.each(sash_list_source, function (source_item, index) {
+                var sash_item = {};
+                var glass_size;
+                var glass_area;
+                var opening_size;
+                var opening_area;
 
-            _.each(sizes.glasses, function (glass, index) {
-                if ( glass.width > 0 && glass.height > 0 ) {
-                    glasses_openings.glasses.push({
-                        name: 'Glass #' + (index + 1),
-                        size: this.options.show_sizes_in_mm ?
-                            f.dimensions_mm(glass.width, glass.height) :
-                            f.dimensions_in(c.mm_to_inches(glass.width), c.mm_to_inches(glass.height), 'fraction'),
-                        area: this.options.show_sizes_in_mm ?
-                            f.square_meters(m.square_meters(glass.width, glass.height)) :
-                            f.square_feet(m.square_feet(c.mm_to_inches(glass.width), c.mm_to_inches(glass.height)), 2, 'sup')
-                    });
+                sash_item.name = 'Sash #' + (index + 1);
+                sash_item.type = source_item.type;
+
+                glass_size = this.options.show_sizes_in_mm ?
+                    f.dimensions_mm(source_item.glass.width, source_item.glass.height) :
+                    f.dimensions_in(c.mm_to_inches(source_item.glass.width), c.mm_to_inches(source_item.glass.height), 'fraction');
+
+                glass_area = this.options.show_sizes_in_mm ?
+                    f.square_meters(m.square_meters(source_item.glass.width, source_item.glass.height)) :
+                    f.square_feet(m.square_feet(c.mm_to_inches(source_item.glass.width),
+                        c.mm_to_inches(source_item.glass.height)), 2, 'sup');
+
+                sash_item.glazing_type = source_item.glass.type;
+                sash_item.glazing_size = glass_size + ' (' + glass_area + ')';
+
+                if ( source_item.opening.height && source_item.opening.width ) {
+                    opening_size = this.options.show_sizes_in_mm ?
+                        f.dimensions_mm(source_item.opening.width, source_item.opening.height) :
+                        f.dimensions_in(c.mm_to_inches(source_item.opening.width), c.mm_to_inches(source_item.opening.height), 'fraction');
+
+                    opening_area = this.options.show_sizes_in_mm ?
+                        f.square_meters(m.square_meters(source_item.opening.width, source_item.opening.height)) :
+                        f.square_feet(m.square_feet(c.mm_to_inches(source_item.opening.width),
+                            c.mm_to_inches(source_item.opening.height)), 2, 'sup');
+
+                    sash_item.opening_size = opening_size + ' (' + opening_area + ')';
                 }
+
+                sashes.push(sash_item);
             }, this);
 
             var name_title_hash = _.extend({
@@ -119,7 +126,7 @@ var app = app || {};
             }, this);
 
             return {
-                glasses_openings: glasses_openings,
+                sashes: sashes,
                 params: params
             };
         },

@@ -130,42 +130,50 @@ var app = app || {};
 
             return active_unit_profile_properties;
         },
-        getActiveUnitOpeningsGlassesProperties: function () {
+        getActiveUnitSashList: function () {
             var f = app.utils.format;
             var c = app.utils.convert;
             var m = app.utils.math;
-            var sizes;
-
-            var glasses_openings = {
-                glasses: [],
-                openings: []
-            };
+            var sash_list_source;
+            var sashes = [];
 
             if ( this.options.parent_view.active_unit ) {
-                sizes = this.options.parent_view.active_unit.getSizes();
+                sash_list_source = this.options.parent_view.active_unit.getSashList();
 
-                 _.each(sizes.openings, function (opening, index) {
-                    if ( opening.width > 0 && opening.height > 0 ) {
-                        glasses_openings.openings.push({
-                            name: 'Opening #' + (index + 1),
-                            size: f.dimensions_in(c.mm_to_inches(opening.width), c.mm_to_inches(opening.height), 'fraction'),
-                            area: f.square_feet(m.square_feet(c.mm_to_inches(opening.width), c.mm_to_inches(opening.height)), 2, 'sup')
-                        });
-                    }
-                }, this);
+                _.each(sash_list_source, function (source_item, index) {
+                    var sash_item = {};
+                    var glass_size;
+                    var glass_area;
+                    var opening_size;
+                    var opening_area;
 
-                _.each(sizes.glasses, function (glass, index) {
-                    if ( glass.width > 0 && glass.height > 0 ) {
-                        glasses_openings.glasses.push({
-                            name: 'Glass #' + (index + 1),
-                            size: f.dimensions_in(c.mm_to_inches(glass.width), c.mm_to_inches(glass.height), 'fraction'),
-                            area: f.square_feet(m.square_feet(c.mm_to_inches(glass.width), c.mm_to_inches(glass.height)), 2, 'sup')
-                        });
+                    sash_item.name = 'Sash #' + (index + 1);
+                    sash_item.type = source_item.type;
+
+                    glass_size = f.dimensions_in(c.mm_to_inches(source_item.glass.width),
+                        c.mm_to_inches(source_item.glass.height), 'fraction');
+
+                    glass_area = f.square_feet(m.square_feet(c.mm_to_inches(source_item.glass.width),
+                        c.mm_to_inches(source_item.glass.height)), 2, 'sup');
+
+                    sash_item.glazing_type = source_item.glass.type;
+                    sash_item.glazing_size = glass_size + ' (' + glass_area + ')';
+
+                    if ( source_item.opening.height && source_item.opening.width ) {
+                        opening_size = f.dimensions_in(c.mm_to_inches(source_item.opening.width),
+                            c.mm_to_inches(source_item.opening.height), 'fraction');
+
+                        opening_area = f.square_feet(m.square_feet(c.mm_to_inches(source_item.opening.width),
+                            c.mm_to_inches(source_item.opening.height)), 2, 'sup');
+
+                        sash_item.opening_size = opening_size + ' (' + opening_area + ')';
                     }
+
+                    sashes.push(sash_item);
                 }, this);
             }
 
-            return glasses_openings;
+            return sashes;
         },
         serializeData: function () {
             return {
@@ -181,7 +189,7 @@ var app = app || {};
                 }, this),
                 active_unit_properties: this.getActiveUnitProperties(),
                 active_unit_profile_properties: this.getActiveUnitProfileProperties(),
-                active_unit_openings_glasses_properties: this.getActiveUnitOpeningsGlassesProperties(),
+                active_unit_sashes: this.getActiveUnitSashList(),
                 active_unit_image: this.getActiveUnitImage()
             };
         },

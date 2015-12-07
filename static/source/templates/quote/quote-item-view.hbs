@@ -28,13 +28,14 @@
             </ul>
             {{#if notes }}<p class="notes"><strong>{{ notes }}</strong></p>{{/if}}
             <ul>
-                {{#each description.glasses_openings.openings }}
-                <li class="opening"><strong>{{ name }}:</strong> <span>{{ size }} ({{{ area }}})</span></li>
-                {{/each}}
-            </ul>
-            <ul>
-                {{#each description.glasses_openings.glasses }}
-                <li class="glass"><strong>{{ name }}:</strong> <span>{{ size }} ({{{ area }}})</span></li>
+                {{#each description.sashes }}
+                <li class="opening">
+                    <h6>{{ name }}:</h6>
+                    <p><strong>Type:</strong> <span>{{ type }}</span></p>
+                    {{#if opening_size }}<p><strong>Clear Opening:</strong> <span>{{{ opening_size }}} </span></p>{{/if}}
+                    <p><strong>Glazing/Panel:</strong> <span>{{ glazing_type }}</span></p>
+                    <p><strong>Glazing/Panel Visible Size:</strong> <span>{{{ glazing_size }}}</span></p>
+                </li>
                 {{/each}}
             </ul>
         </td>
