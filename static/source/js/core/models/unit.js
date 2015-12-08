@@ -432,6 +432,7 @@ var app = app || {};
                 };
                 sectionData.mullionEdges = _.clone(rootSection.mullionEdges);
                 sectionData.thresholdEdge = rootSection.thresholdEdge;
+                sectionData.parentId = rootSection.id;
                 if (rootSection.divider === 'vertical') {
                     sectionParams.x = openingParams.x;
                     sectionParams.y = openingParams.y;
@@ -491,6 +492,20 @@ var app = app || {};
                 return this.generateFullReversedRoot(sectionData);
             }.bind(this));
             return rootSection;
+        },
+        // it is not possible to add sash inside another sash
+        // so this function check all parent
+        canAddSashToSection: function(sectionId){
+            var fullRoot = this.generateFullRoot();
+            var section = app.Unit.findSection(fullRoot, sectionId);
+            if (section.parentId === undefined) {
+                return true;
+            }
+            var parentSection = app.Unit.findSection(fullRoot, section.parentId);
+            if (parentSection.sashType !== 'fixed_in_frame') {
+                return false;
+            }
+            return this.canAddSashToSection(section.parentId);
         },
         flatterSections: function(rootSection) {
             rootSection = rootSection || this.get('root_section');

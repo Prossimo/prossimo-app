@@ -19,6 +19,7 @@ var app = app || {};
             '$flush_panels': '[data-type="flush-turn-right"], [data-type="flush-turn-left"]',
             '$title': '#drawing-view-title',
             '$bars_control': '#bars-control',
+            '$section_control': '#section_control',
             '$vertical_bars_number': '#vertical-bars-number',
             '$horizontal_bars_number': '#horizontal-bars-number'
         },
@@ -321,6 +322,10 @@ var app = app || {};
                     glass.fill('lightgrey');
                 }
                 glass.on('click', this.showPopup.bind(this, sectionData.id));
+
+                if (sectionData.id === this.state.selectedSashId) {
+                    glass.fill('lightgreen')
+                }
 
                 var bar;
                 var x_offset = glassWidth / (sectionData.vertical_bars_number + 1);
@@ -818,19 +823,22 @@ var app = app || {};
                 return;
             }
             this.deselectAll();
-            this.sectionIdToChange = id;
-            var pos = this.stage.getPointerPosition();
-            var containerPos = this.$('#drawing').position();
-            var x = pos.x - 5 + containerPos.left;
-            var y = pos.y - 5 + containerPos.top;
+            this.setState({
+                selectedSashId: id
+            });
+            // this.sectionIdToChange = id;
+            // var pos = this.stage.getPointerPosition();
+            // var containerPos = this.$('#drawing').position();
+            // var x = pos.x - 5 + containerPos.left;
+            // var y = pos.y - 5 + containerPos.top;
 
-            this.$('.popup-wrap')
-                .show()
-                .find('.popup')
-                .css({
-                    top: y,
-                    left: x
-                });
+            // this.$('.popup-wrap')
+            //     .show()
+            //     .find('.popup')
+            //     .css({
+            //         top: y,
+            //         left: x
+            //     });
         },
         updateCanvas: function() {
             this.layer.destroyChildren();
@@ -922,16 +930,21 @@ var app = app || {};
             var titleText = this.state.insideView ? 'Inside view' : 'Outside view';
             this.ui.$title.text(titleText);
 
-            var selectedSash = this.model.getSection(this.state.selectedSashId);
-            this.ui.$bars_control.toggle(!!this.state.selectedSashId);
+            var selectedSashId = this.state.selectedSashId;
+
+            var selectedSash = this.model.getSection(selectedSashId);
+            this.ui.$bars_control.toggle(!!selectedSashId);
             this.ui.$vertical_bars_number.val(selectedSash && selectedSash.vertical_bars_number || 0);
             this.ui.$horizontal_bars_number.val(selectedSash && selectedSash.horizontal_bars_number || 0);
+            this.ui.$section_control.toggle(!!selectedSashId);
+            this.$('.sash-types').toggle(selectedSashId && this.model.canAddSashToSection(selectedSashId))
         },
 
         splitSection: function(e) {
             this.$('.popup-wrap').hide();
             var divider = $(e.target).data('type');
-            this.model.splitSection(this.sectionIdToChange, divider);
+            this.model.splitSection(this.state.selectedSashId, divider);
+            this.deselectAll();
         },
         changeSashType: function(e) {
             this.$('.popup-wrap').hide();
@@ -947,12 +960,12 @@ var app = app || {};
                     type = type.replace('right', 'left');
                 }
             }
-            this.model.setSectionSashType(this.sectionIdToChange, type);
+            this.model.setSectionSashType(this.state.selectedSashId, type);
         },
         changePanelType: function(e) {
             this.$('.popup-wrap').hide();
             var type = $(e.target).data('type');
-            this.model.setPanelType(this.sectionIdToChange, type);
+            this.model.setPanelType(this.state.selectedSashId, type);
         }
     });
 

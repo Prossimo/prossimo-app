@@ -2,9 +2,33 @@
     <button class="btn btn-xs" id="clear-frame">Clear frame</button>
     <button class="btn btn-xs" id="change-view">Show outside view</button>
     <div id="drawing-view-title">Outside view</div>
-    <div id="bars-control">
-        Vertical: <input type="number" id="vertical-bars-number" value='0'>
-        Horizontal: <input type="number" id="horizontal-bars-number" value='0'>
+    <div id="section_control">
+        Split section:
+        <img class="split-section" data-type="vertical" src="/static/public/img/verticalMullion.png"/>
+        <img class="split-section" data-type="horizontal" src="/static/public/img/horizontalMullion.png"/>
+        
+        <span class="sash-types">
+        |
+        Section type:
+            <img class="change-sash-type" data-type="tilt_turn_left" src="/static/public/img/tilt_turn_left.png"/>
+            <img class="change-sash-type" data-type="tilt_turn_right" src="/static/public/img/tilt_turn_right.png"/>
+            <img class="change-sash-type" data-type="fixed_in_frame" src="/static/public/img/fixed_in_frame.png"/>
+            <img class="change-sash-type" data-type="tilt_only" src="/static/public/img/tilt_only.png"/>
+            <img class="change-sash-type" data-type="turn_only_left" src="/static/public/img/turn_only_left.png"/>
+            <img class="change-sash-type" data-type="turn_only_right" src="/static/public/img/turn_only_right.png"/>
+            <img class="change-sash-type" data-type="fixed_in_sash" src="/static/public/img/fixed_in_sash.png"/>
+            <img class="change-sash-type" data-type="flush-turn-right" src="/static/public/img/flush-turn-right.png"/>
+            <img class="change-sash-type" data-type="flush-turn-left" src="/static/public/img/flush-turn-left.png"/>
+        </span>
+        <span class='panel-type' style="text-align: center">
+            <img class="change-panel-type" data-type="solid" src="/static/public/img/panel-solid.png"/>
+            <img class="change-panel-type" data-type="glass" src="/static/public/img/panel-glass.png"/>
+        </span>
+        <span id="bars-control">
+            |
+            Vertical bars: <input type="number" id="vertical-bars-number" value='0'>
+            Horizontal bars: <input type="number" id="horizontal-bars-number" value='0'>
+        </span>
     </div>
 </div>
 
