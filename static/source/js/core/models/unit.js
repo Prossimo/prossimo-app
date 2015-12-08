@@ -610,7 +610,9 @@ var app = app || {};
             current_sash.glass.height = current_root.glassParams.height;
             current_sash.glass.type = this.get('glazing');
 
-            result.push(current_sash);
+            if ( current_root.sections.length === 0 ) {
+                result.push(current_sash);
+            }
 
             return result;
         }
