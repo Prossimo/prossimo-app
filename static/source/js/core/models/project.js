@@ -27,12 +27,13 @@ var app = app || {};
         getDefaultValue: function (name, type) {
             var default_value = '';
 
-            if ( type === 'number' ) {
-                default_value = 0;
-            }
+            var type_value_hash = {
+                number: 0,
+                pipedrive_id: null
+            };
 
-            if ( type === 'pipedrive_id' ) {
-                default_value = null;
+            if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
+                default_value = type_value_hash[type];
             }
 
             return default_value;
