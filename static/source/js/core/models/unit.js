@@ -52,10 +52,10 @@ var app = app || {};
     var SASH_TYPES_WITH_OPENING = _.without(SASH_TYPES, 'fixed_in_frame');
 
     var SASH_TYPE_NAME_MAP = {
-        'flush-turn-right': 'Turn Only Right Hinge',
-        'flush-turn-left': 'Turn Only Left Hinge',
+        'flush-turn-right': 'Flush Panel Right Hinge',
+        'flush-turn-left': 'Flush Panel Left Hinge',
         'fixed_in_frame': 'Fixed',
-        'fixed_in_sash': 'Fixed',
+        'fixed_in_sash': 'Fixed in Sash',
         'tilt_only': 'Tilt Only',
         'tilt_turn_right': 'Tilt-turn Right Hinge',
         'tilt_turn_left': 'Tilt-turn Left Hinge',
