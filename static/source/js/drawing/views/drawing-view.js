@@ -484,12 +484,13 @@ var app = app || {};
             var textMM = new Konva.Text({
                 text: app.utils.format.dimension_mm(params.getter()),
                 padding: 2,
+                fontSize: 11,
                 fill: 'black'
             });
 
             labelMM.add(textMM);
             labelMM.position({
-                x: -textMM.width() / 2.5,
+                x: width - textMM.width() - 5,
                 y: height / 2 + textMM.height() / 2
             });
 
@@ -510,7 +511,7 @@ var app = app || {};
 
             labelInches.add(textInches);
             labelInches.position({
-                x: -textInches.width() / 4,
+                x: width / 2 - textInches.width() / 2,
                 y: height / 2 - textInches.height() / 2
             });
 
@@ -580,6 +581,7 @@ var app = app || {};
             var textMM = new Konva.Text({
                 text: app.utils.format.dimension_mm(params.getter()),
                 padding: 2,
+                fontSize: 11,
                 fill: 'black'
             });
 
@@ -620,7 +622,7 @@ var app = app || {};
         },
 
         createInfo: function(mullions, width, height) {
-            var merticSize = 30;
+            var merticSize = 50;
             var group = new Konva.Group();
             var verticalRows = 0;
             var horizontalRows = 0;
