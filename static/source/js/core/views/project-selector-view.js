@@ -28,7 +28,7 @@ var app = app || {};
                     self.no_backend = true;
                 },
                 data: {
-                    limit: 1000
+                    limit: 0
                 }
             });
         },

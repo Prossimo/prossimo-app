@@ -39,7 +39,7 @@ var app = app || {};
             this.profiles.fetch({
                 remove: false,
                 data: {
-                    limit: 1000
+                    limit: 0
                 }
             });
         },

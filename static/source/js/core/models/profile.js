@@ -43,20 +43,28 @@ var app = app || {};
         getDefaultValue: function (name, type) {
             var default_value = '';
 
-            if ( type === 'number' ) {
-                default_value = 0;
+            var type_value_hash = {
+                number: 0
+            };
+
+            var name_value_hash = {
+                unit_type: DEFAULT_UNIT_TYPE,
+                low_threshold: false,
+                threshold_width: 20
+            };
+
+            if ( app.settings ) {
+                name_value_hash.system = app.settings.getSystems()[0];
+                name_value_hash.frame_corners = app.settings.getFrameCornerTypes()[0];
+                name_value_hash.sash_corners = app.settings.getSashCornerTypes()[0];
             }
 
-            if ( name === 'unit_type' ) {
-                default_value = DEFAULT_UNIT_TYPE;
+            if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
+                default_value = type_value_hash[type];
             }
 
-            if ( name === 'low_threshold' ) {
-                default_value = false;
-            }
-
-            if ( name === 'threshold_width' ) {
-                default_value = 20;
+            if ( _.indexOf(_.keys(name_value_hash), name) !== -1 ) {
+                default_value = name_value_hash[name];
             }
 
             return default_value;

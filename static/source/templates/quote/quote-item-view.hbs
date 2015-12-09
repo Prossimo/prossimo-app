@@ -33,7 +33,7 @@
                     <h6>{{ name }}:</h6>
                     <p><strong>Type:</strong> <span>{{ type }}</span></p>
                     {{#if opening_size }}<p><strong>Clear Opening:</strong> <span>{{{ opening_size }}} </span></p>{{/if}}
-                    <p><strong>Glazing/Panel:</strong> <span>{{ glazing_type }}</span></p>
+                    {{#if glazing_type }}<p><strong>Glazing/Panel:</strong> <span>{{ glazing_type }}</span></p>{{/if}}
                     <p><strong>Glazing/Panel Visible Size:</strong> <span>{{{ glazing_size }}}</span></p>
                 </li>
                 {{/each}}

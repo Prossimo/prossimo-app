@@ -52,10 +52,10 @@ var app = app || {};
     var SASH_TYPES_WITH_OPENING = _.without(SASH_TYPES, 'fixed_in_frame');
 
     var SASH_TYPE_NAME_MAP = {
-        'flush-turn-right': 'Turn Only Right Hinge',
-        'flush-turn-left': 'Turn Only Left Hinge',
+        'flush-turn-right': 'Flush Panel Right Hinge',
+        'flush-turn-left': 'Flush Panel Left Hinge',
         'fixed_in_frame': 'Fixed',
-        'fixed_in_sash': 'Fixed',
+        'fixed_in_sash': 'Fixed in Sash',
         'tilt_only': 'Tilt Only',
         'tilt_turn_right': 'Tilt-turn Right Hinge',
         'tilt_turn_left': 'Tilt-turn Left Hinge',
@@ -75,35 +75,40 @@ var app = app || {};
 
             return defaults;
         },
-        //  TODO: change to hash format like everywhere else
         getDefaultValue: function (name, type) {
             var default_value = '';
 
-            if ( type === 'number' ) {
-                default_value = 0;
-            }
+            var type_value_hash = {
+                number: 0
+            };
 
-            if ( name === 'original_currency' ) {
-                default_value = 'USD';
-            }
-
-            if ( name === 'conversion_rate' ) {
-                default_value = 1;
-            }
-
-            if ( name === 'price_markup' ) {
-                default_value = 1;
-            }
-
-            if ( name === 'glazing_bar_width' ) {
-                default_value = 22;
-            }
-
-            if ( name === 'root_section' ) {
-                default_value = {
+            var name_value_hash = {
+                original_currency: 'USD',
+                conversion_rate: 1,
+                price_markup: 1,
+                root_section: {
                     id: _.uniqueId(),
                     sashType: 'fixed_in_frame'
-                };
+                }
+            };
+
+            if ( app.settings ) {
+                name_value_hash.internal_color = app.settings.getColors()[0];
+                name_value_hash.external_color = app.settings.getColors()[0];
+                name_value_hash.interior_handle = app.settings.getInteriorHandleTypes()[0];
+                name_value_hash.glazing_bead = app.settings.getGlazingBeadTypes()[0];
+                name_value_hash.gasket_color = app.settings.getGasketColors()[0];
+                name_value_hash.hinge_style = app.settings.getHingeTypes()[0];
+                name_value_hash.glazing = app.settings.getGlassOrPanelTypes()[0];
+                name_value_hash.glazing_bar_width = app.settings.getGlazingBarWidths()[0];
+            }
+
+            if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
+                default_value = type_value_hash[type];
+            }
+
+            if ( _.indexOf(_.keys(name_value_hash), name) !== -1 ) {
+                default_value = name_value_hash[name];
             }
 
             return default_value;
@@ -605,12 +610,14 @@ var app = app || {};
                 current_sash.opening.height = current_root.sashParams.height;
             }
 
-            current_sash.type = this.getSashName(current_root.sashType);
-            current_sash.glass.width = current_root.glassParams.width;
-            current_sash.glass.height = current_root.glassParams.height;
-            current_sash.glass.type = this.get('glazing');
+            if ( current_root.sections.length === 0 ) {
+                current_sash.type = this.getSashName(current_root.sashType);
+                current_sash.glass.width = current_root.glassParams.width;
+                current_sash.glass.height = current_root.glassParams.height;
+                current_sash.glass.type = this.get('glazing');
 
-            result.push(current_sash);
+                result.push(current_sash);
+            }
 
             return result;
         }

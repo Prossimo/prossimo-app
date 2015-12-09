@@ -27,28 +27,26 @@ var app = app || {};
 
             return defaults;
         },
-        //  TODO: change to hash format like everywhere else
         getDefaultValue: function (name, type) {
             var default_value = '';
 
-            if ( type === 'number' ) {
-                default_value = 0;
+            var type_value_hash = {
+                number: 0
+            };
+
+            var name_value_hash = {
+                original_currency: 'USD',
+                conversion_rate: 1,
+                extras_type: 'Regular',
+                price_markup: 1
+            };
+
+            if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
+                default_value = type_value_hash[type];
             }
 
-            if ( name === 'original_currency' ) {
-                default_value = 'USD';
-            }
-
-            if ( name === 'conversion_rate' ) {
-                default_value = 1;
-            }
-
-            if ( name === 'extras_type' ) {
-                default_value = 'Regular';
-            }
-
-            if ( name === 'price_markup' ) {
-                default_value = 1;
+            if ( _.indexOf(_.keys(name_value_hash), name) !== -1 ) {
+                default_value = name_value_hash[name];
             }
 
             return default_value;
