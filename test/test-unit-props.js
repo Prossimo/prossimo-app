@@ -240,3 +240,83 @@ test('Size calculations for Unit #001 from 377 E 10th project', function () {
     equal(Math.abs(target_sizes.openings[1].height - unit.getSizes().openings[1].height) < margin_of_error,
         true, 'Opening 2 height equals calculated height');
 });
+
+
+//  We use values in mms because that's what was used in the reference project.
+test('Size calculations for Unit #013 from 377 E 10th project', function () {
+    //  1 millimeter difference is possible
+    var margin_of_error = 1;
+
+    var unit = new app.Unit({
+        width: c.mm_to_inches(711),
+        height: c.mm_to_inches(1880)
+    });
+
+    unit.profile = new app.Profile({
+        frame_width: 70,
+        mullion_width: 92,
+        sash_frame_width: 82,
+        sash_frame_overlap: 34,
+        sash_mullion_overlap: 34
+    });
+
+    var target_sizes = {
+        glasses: [
+            {
+                width: 475,
+                height: 360
+            },
+            {
+                width: 475,
+                height: 1096
+            }
+        ],
+        openings: [
+            {
+                width: 639,
+                height: 524
+            },
+            {
+                width: 639,
+                height: 1260
+            }
+        ]
+    };
+
+    var root_id = unit.get('root_section').id;
+
+    //  Now split sections as in the reference unit
+    unit.splitSection(root_id, 'horizontal');
+    unit.setSectionMullionPosition(root_id, 1308);
+
+    var full_root = unit.generateFullRoot();
+
+    //  Add proper sash types
+    var top_section = full_root.sections[0];
+    var bottom_section = full_root.sections[1];
+
+    unit.setSectionSashType(top_section.id, 'tilt_turn_left');
+    unit.setSectionSashType(bottom_section.id, 'turn_only_left');
+
+    //  Opening 1
+    equal(Math.abs(target_sizes.openings[1].width - unit.getSizes().openings[0].width) < margin_of_error,
+        true, 'Opening 1 width equals calculated width');
+    equal(Math.abs(target_sizes.openings[1].height - unit.getSizes().openings[0].height) < margin_of_error,
+        true, 'Opening 1 height equals calculated height');
+    //  Opening 2
+    equal(Math.abs(target_sizes.openings[0].width - unit.getSizes().openings[1].width) < margin_of_error,
+        true, 'Opening 2 width equals calculated width');
+    equal(Math.abs(target_sizes.openings[0].height - unit.getSizes().openings[1].height) < margin_of_error,
+        true, 'Opening 2 height equals calculated height');
+
+    //  Glass 1
+    equal(Math.abs(target_sizes.glasses[1].width - unit.getSizes().glasses[0].width) < margin_of_error,
+        true, 'Glass 1 width equals calculated width');
+    equal(Math.abs(target_sizes.glasses[1].height - unit.getSizes().glasses[0].height) < margin_of_error,
+        true, 'Glass 1 height equals calculated height');
+    //  Glass 2
+    equal(Math.abs(target_sizes.glasses[0].width - unit.getSizes().glasses[1].width) < margin_of_error,
+        true, 'Glass 2 width equals calculated width');
+    equal(Math.abs(target_sizes.glasses[0].height - unit.getSizes().glasses[1].height) < margin_of_error,
+        true, 'Glass 2 height equals calculated height');
+});
