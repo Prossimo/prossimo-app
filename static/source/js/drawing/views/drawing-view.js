@@ -324,7 +324,7 @@ var app = app || {};
                 glass.on('click', this.showPopup.bind(this, sectionData.id));
 
                 if (sectionData.id === this.state.selectedSashId) {
-                    glass.fill('lightgreen')
+                    glass.fill('lightgreen');
                 }
 
                 var bar;
@@ -937,7 +937,7 @@ var app = app || {};
             this.ui.$vertical_bars_number.val(selectedSash && selectedSash.vertical_bars_number || 0);
             this.ui.$horizontal_bars_number.val(selectedSash && selectedSash.horizontal_bars_number || 0);
             this.ui.$section_control.toggle(!!selectedSashId);
-            this.$('.sash-types').toggle(selectedSashId && this.model.canAddSashToSection(selectedSashId))
+            this.$('.sash-types').toggle(selectedSashId && this.model.canAddSashToSection(selectedSashId));
         },
 
         splitSection: function(e) {
