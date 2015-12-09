@@ -3,6 +3,9 @@ var app = app || {};
 (function () {
     'use strict';
 
+    // global param
+    var insideView = false;
+
     app.DrawingView = Marionette.ItemView.extend({
         tagName: 'div',
         template: app.templates['drawing/drawing-view'],
@@ -10,7 +13,7 @@ var app = app || {};
             this.listenTo(this.model, 'all', this.updateCanvas);
             this.on('update_rendered', this.updateRenderedScene, this);
             this.state = {
-                insideView: false
+                insideView: insideView
             };
         },
 
@@ -75,8 +78,9 @@ var app = app || {};
             }
         },
         handleChangeView: function() {
+            insideView = !insideView;
             this.setState({
-                insideView: !this.state.insideView
+                insideView: insideView
             });
         },
         handleBarNumberChange: function() {
@@ -324,7 +328,8 @@ var app = app || {};
                 glass.on('click', this.showPopup.bind(this, sectionData.id));
 
                 if (sectionData.id === this.state.selectedSashId) {
-                    glass.fill('lightgreen');
+                    glass.stroke('darkgreen');
+                    glass.strokeWidth(8 / this.ratio);
                 }
 
                 var bar;
