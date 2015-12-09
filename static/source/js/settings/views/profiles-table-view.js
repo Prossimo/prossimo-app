@@ -243,6 +243,8 @@ var app = app || {};
             });
 
             if ( this.collection.length ) {
+                //  We use setTimeout because we want to wait until flexbox
+                //  sizes are calculated properly
                 setTimeout(function () {
                     self.hot = new Handsontable(self.ui.$hot_container[0], {
                         data: self.collection,

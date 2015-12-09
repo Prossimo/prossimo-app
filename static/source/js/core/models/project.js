@@ -97,18 +97,36 @@ var app = app || {};
 
             return subtotal_units_price ? ( 1 + hidden_price / subtotal_units_price ) : 1;
         },
+        getSubtotalUnitsPrice: function () {
+            return this.units.getSubtotalPriceDiscounted();
+        },
+        getHiddenPrice: function () {
+            return this.extras.getHiddenPrice();
+        },
+        getExtrasPrice: function () {
+            return this.extras.getRegularItemsPrice();
+        },
+        //  This is what we use as tax base
+        getSubtotalPrice: function () {
+            var subtotal_units_price = this.getSubtotalUnitsPrice();
+            var hidden_price = this.getHiddenPrice();
+            var subtotal_units_with_hidden = subtotal_units_price + hidden_price;
+            var extras_price = this.extras.getRegularItemsPrice();
+
+            return subtotal_units_with_hidden + extras_price;
+        },
         getTotalPrices: function () {
-            var subtotal_units_price = this.units.getSubtotalPriceDiscounted();
+            var subtotal_units_price = this.getSubtotalUnitsPrice();
             var extras_price = this.extras.getRegularItemsPrice();
             var optional_extras_price = this.extras.getOptionalItemsPrice();
 
             var hidden_price = this.extras.getHiddenPrice();
             var shipping_price = this.extras.getShippingPrice();
-            var tax_percent = this.extras.getTaxPercent();
+            var total_tax_percent = this.extras.getTotalTaxPercent();
 
             var subtotal_units_with_hidden = subtotal_units_price + hidden_price;
             var subtotal = subtotal_units_with_hidden + extras_price;
-            var tax = (tax_percent / 100) * subtotal;
+            var tax = (total_tax_percent / 100) * subtotal;
             var grand_total = subtotal + shipping_price + tax;
 
             return {
@@ -117,7 +135,7 @@ var app = app || {};
                 subtotal_extras: extras_price,
                 subtotal_optional_extras: optional_extras_price,
                 subtotal: subtotal,
-                tax_percent: tax_percent,
+                tax_percent: total_tax_percent,
                 tax: tax,
                 shipping: shipping_price,
                 grand_total: grand_total

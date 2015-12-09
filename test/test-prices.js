@@ -236,4 +236,11 @@ test('subtotal project prices', function () {
     equal(total_prices.shipping.toFixed(2), '1500.00', 'Shipping is expected to be 1500.00');
     equal(total_prices.tax.toFixed(2), '1673.62', 'Tax is expected to be 1673.62');
     equal(total_prices.grand_total.toFixed(2), '8752.35', 'Grand total is expected to be 8752.35');
+
+    //  Individual price calculation functions should match with `total_prices`
+    equal(total_prices.subtotal_units, current_project.getSubtotalUnitsPrice(), 'getSubtotalUnitsPrice result should match total_prices.subtotal_units');
+    equal(total_prices.subtotal_units_with_hidden, current_project.getSubtotalUnitsPrice() + current_project.getHiddenPrice(),
+        'getSubtotalUnitsPrice + getHiddenPrice result should match total_prices.subtotal_units_with_hidden');
+    equal(total_prices.subtotal_extras, current_project.getExtrasPrice(), 'getExtrasPrice result should match total_prices.subtotal_extras');
+    equal(total_prices.subtotal, current_project.getSubtotalPrice(), 'getSubtotalPrice result should match total_prices.subtotal');
 });

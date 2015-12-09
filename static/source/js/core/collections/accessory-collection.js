@@ -32,7 +32,12 @@ var app = app || {};
         },
         getOptionalItems: function () {
             return this.models.filter(function (item) {
-                return item.get('extras_type') === 'Optional';
+                return item.isOptionalType();
+            });
+        },
+        getOptionalPercentBasedItems: function () {
+            return this.models.filter(function (item) {
+                return item.get('extras_type') === 'Optional, %';
             });
         },
         getHiddenItems: function () {
@@ -71,11 +76,11 @@ var app = app || {};
         getShippingPrice: function () {
             return this.getPrice(this.getShipping());
         },
-        getTaxPercent: function () {
+        getTotalTaxPercent: function () {
             var base_value = 0;
 
             _.each(this.getTaxes(), function (item) {
-                base_value += (parseFloat(item.get('price_markup')) - 1) * 100;
+                base_value += item.getMarkupPercent();
             });
 
             return base_value;

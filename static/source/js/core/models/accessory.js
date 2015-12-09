@@ -3,7 +3,10 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var EXTRAS_TYPES = ['Regular', 'Shipping', 'Optional', 'Hidden', 'Tax'];
+    var EXTRAS_TYPES = ['Regular', 'Shipping', 'Optional', 'Optional, %', 'Hidden', 'Tax'];
+    var DEFAULT_EXTRAS_TYPE = 'Regular';
+    var PERCENT_BASED_EXTRAS_TYPES = ['Optional, %', 'Tax'];
+    var OPTIONAL_EXTRAS_TYPES = ['Optional', 'Optional, %'];
 
     var ACCESSORY_PROPERTIES = [
         { name: 'description', title: 'Description', type: 'string' },
@@ -37,7 +40,7 @@ var app = app || {};
             var name_value_hash = {
                 original_currency: 'USD',
                 conversion_rate: 1,
-                extras_type: 'Regular',
+                extras_type: DEFAULT_EXTRAS_TYPE,
                 price_markup: 1
             };
 
@@ -89,7 +92,15 @@ var app = app || {};
         getExtrasTypes: function () {
             return EXTRAS_TYPES;
         },
-        //  TODO: do some checks? return error value in some cases?
+        isPercentBasedType: function () {
+            return _.indexOf(PERCENT_BASED_EXTRAS_TYPES, this.get('extras_type')) !== -1;
+        },
+        isOptionalType: function () {
+            return _.indexOf(OPTIONAL_EXTRAS_TYPES, this.get('extras_type')) !== -1;
+        },
+        getMarkupPercent: function () {
+            return (parseFloat(this.get('price_markup')) - 1) * 100;
+        },
         getUnitCost: function () {
             return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
         },
@@ -100,7 +111,20 @@ var app = app || {};
             return this.getUnitCost() * parseFloat(this.get('price_markup'));
         },
         getSubtotalPrice: function () {
-            return this.getUnitPrice() * parseFloat(this.get('quantity'));
+            var subtotal_price = this.getUnitPrice() * parseFloat(this.get('quantity'));
+
+            if ( app.current_project ) {
+                //  If this is percent-based optional extras, base is Unit Subtotal
+                if ( this.get('extras_type') !== 0 && this.isPercentBasedType() && this.isOptionalType() ) {
+                    subtotal_price = (this.getMarkupPercent() / 100) *
+                        (app.current_project.getSubtotalUnitsPrice() + app.current_project.getHiddenPrice() );
+                //  If this is tax, base is everything except shipping
+                } else if ( this.get('extras_type') !== 0 && this.isPercentBasedType() ) {
+                    subtotal_price = (this.getMarkupPercent() / 100) * app.current_project.getSubtotalPrice();
+                }
+            }
+
+            return subtotal_price;
         },
         getUnitPriceDiscounted: function () {
             return this.getUnitPrice() * (100 - this.get('discount')) / 100;

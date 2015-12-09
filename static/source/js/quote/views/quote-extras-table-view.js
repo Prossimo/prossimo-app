@@ -14,7 +14,9 @@ var app = app || {};
             };
         },
         filter: function (child) {
-            return child.get('extras_type') === this.options.type;
+            return this.options.type === 'Optional' ?
+                child.isOptionalType() :
+                child.get('extras_type') === this.options.type;
         },
         initialize: function () {
             this.listenTo(this.collection, 'all', this.render);

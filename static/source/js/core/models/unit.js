@@ -201,7 +201,6 @@ var app = app || {};
             var c = app.utils.convert;
             return app.utils.math.square_meters(c.inches_to_mm(this.get('width')), c.inches_to_mm(this.get('height')));
         },
-        //  TODO: do some checks? return error value in some cases?
         getUnitCost: function () {
             return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
         },
