@@ -86,6 +86,7 @@ var app = app || {};
                 original_currency: 'USD',
                 conversion_rate: 1,
                 price_markup: 1,
+                quantity: 1,
                 root_section: {
                     id: _.uniqueId(),
                     sashType: 'fixed_in_frame'

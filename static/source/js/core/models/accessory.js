@@ -41,7 +41,8 @@ var app = app || {};
                 original_currency: 'USD',
                 conversion_rate: 1,
                 extras_type: DEFAULT_EXTRAS_TYPE,
-                price_markup: 1
+                price_markup: 1,
+                quantity: 1
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
