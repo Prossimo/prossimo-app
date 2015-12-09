@@ -324,7 +324,8 @@ var app = app || {};
                 glass.on('click', this.showPopup.bind(this, sectionData.id));
 
                 if (sectionData.id === this.state.selectedSashId) {
-                    glass.fill('lightgreen');
+                    glass.stroke('darkgreen');
+                    glass.strokeWidth(8 / this.ratio);
                 }
 
                 var bar;
