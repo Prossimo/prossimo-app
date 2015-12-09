@@ -20,7 +20,7 @@ var app = app || {};
         },
         initialize: function () {
             this.columns = [
-                'name', 'unit_type', 'system', 'frame_width', 'mullion_width',
+                'name', 'unit_type', 'system', 'supplier_system', 'frame_width', 'mullion_width',
                 'sash_frame_width', 'sash_frame_overlap', 'sash_mullion_overlap',
                 'frame_corners', 'sash_corners', 'low_threshold', 'threshold_width',
                 'frame_u_value', 'visible_frame_width_fixed', 'visible_frame_width_operable',
@@ -148,6 +148,10 @@ var app = app || {};
                 system: {
                     type: 'autocomplete',
                     source: app.settings.getSystems()
+                },
+                supplier_system: {
+                    type: 'autocomplete',
+                    source: app.settings.getSupplierSystems()
                 },
                 frame_corners: {
                     type: 'autocomplete',

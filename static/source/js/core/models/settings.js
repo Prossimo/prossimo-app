@@ -25,6 +25,7 @@ var app = app || {};
 
     //  That's what we use for Profiles
     var SYSTEMS = ['Workhorse uPVC', 'Pinnacle uPVC'];
+    var SUPPLIER_SYSTEMS = ['Gaelan S8000', 'Gaelan S9000'];
     var CORNER_TYPES = ['Mitered', 'Square (Vertical)', 'Square (Horizontal)'];
 
     app.Settings = Backbone.Model.extend({
@@ -84,6 +85,9 @@ var app = app || {};
         },
         getSystems: function () {
             return SYSTEMS;
+        },
+        getSupplierSystems: function () {
+            return SUPPLIER_SYSTEMS;
         },
         getFrameCornerTypes: function () {
             return CORNER_TYPES;

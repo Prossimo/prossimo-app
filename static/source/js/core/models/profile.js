@@ -16,7 +16,8 @@ var app = app || {};
     var PROFILE_PROPERTIES = [
         { name: 'name', title: 'Name', type: 'string' },
         { name: 'unit_type', title: 'Type', type: 'string' },
-        { name: 'system', title: 'System', type: 'string' },
+        { name: 'system', title: 'Prossimo System', type: 'string' },
+        { name: 'supplier_system', title: 'Supplier System', type: 'string' },
         { name: 'frame_width', title: 'Frame Width (mm)', type: 'number' },
         { name: 'mullion_width', title: 'Mullion Width (mm)', type: 'number' },
         { name: 'sash_frame_width', title: 'Sash Frame Width (mm)', type: 'number' },
@@ -55,6 +56,7 @@ var app = app || {};
 
             if ( app.settings ) {
                 name_value_hash.system = app.settings.getSystems()[0];
+                name_value_hash.supplier_system = app.settings.getSupplierSystems()[0];
                 name_value_hash.frame_corners = app.settings.getFrameCornerTypes()[0];
                 name_value_hash.sash_corners = app.settings.getSashCornerTypes()[0];
             }

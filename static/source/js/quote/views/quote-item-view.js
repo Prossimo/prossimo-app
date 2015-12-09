@@ -104,7 +104,8 @@ var app = app || {};
             }, this);
 
             var name_title_hash = _.extend({
-                size: 'Size'
+                size: 'Size',
+                system: 'System'
             }, _.object( _.pluck(source_hash, 'name'), _.pluck(source_hash, 'title') ), {
                 glazing: this.model.profile.isSolidPanelPossible() ||
                     this.model.profile.isFlushPanelPossible() ? 'Glass Packet/Panel Type' : 'Glass Packet',
@@ -113,6 +114,9 @@ var app = app || {};
             });
 
             var params_source = {
+                system: this.options.show_supplier_system ?
+                    this.model.profile.get('supplier_system') :
+                    this.model.profile.get('system'),
                 size: this.options.show_sizes_in_mm ?
                     f.dimensions_mm(c.inches_to_mm(this.model.get('width')), c.inches_to_mm(this.model.get('height'))) :
                     f.dimensions(this.model.get('width'), this.model.get('height'), 'fraction'),

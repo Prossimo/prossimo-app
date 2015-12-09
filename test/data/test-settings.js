@@ -10,8 +10,8 @@ $(document).ready(function () {
             mullion_width: 92,
             sash_frame_width: 82,
             sash_frame_overlap: 34,
-            sash_mullion_overlap: 12,
-            system: 'Gealan S9000',
+            sash_mullion_overlap: 34,
+            system: 'Workhorse uPVC',
             no_backend: true
         },
         {
@@ -21,10 +21,10 @@ $(document).ready(function () {
             mullion_width: 112,
             sash_frame_width: 102,
             sash_frame_overlap: 36,
-            sash_mullion_overlap: 14,
+            sash_mullion_overlap: 36,
             low_threshold: true,
             threshold_width: 20,
-            system: 'Gealan S9000',
+            system: 'Workhorse uPVC',
             no_backend: true
         }
     ]);

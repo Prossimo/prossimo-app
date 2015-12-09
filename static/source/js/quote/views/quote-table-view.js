@@ -17,7 +17,8 @@ var app = app || {};
                 project: this.options.project,
                 show_price: this.options.show_price,
                 show_outside_units_view: this.options.show_outside_units_view,
-                show_sizes_in_mm: this.options.show_sizes_in_mm
+                show_sizes_in_mm: this.options.show_sizes_in_mm,
+                show_supplier_system: this.options.show_supplier_system
             };
         },
         initialize: function () {
