@@ -19,6 +19,7 @@ var app = app || {};
             'click .js-move-item-down': 'onMoveItemDown'
         },
         initialize: function () {
+            this.table_update_timeout = null;
             this.columns = [
                 'name', 'unit_type', 'system', 'supplier_system', 'frame_width', 'mullion_width',
                 'sash_frame_width', 'sash_frame_overlap', 'sash_mullion_overlap',
@@ -41,7 +42,7 @@ var app = app || {};
             var target_object;
 
             if ( this.hot ) {
-                target_object = this.hot.getData().at(target_row);
+                target_object = this.hot.getSourceData().at(target_row);
                 target_object.destroy();
             }
         },
@@ -50,8 +51,8 @@ var app = app || {};
             var target_object;
 
             if ( this.hot && $(e.target).hasClass('disabled') === false ) {
-                target_object = this.hot.getData().at(target_row);
-                this.hot.getData().moveItemUp(target_object);
+                target_object = this.hot.getSourceData().at(target_row);
+                this.hot.getSourceData().moveItemUp(target_object);
             }
         },
         onMoveItemDown: function (e) {
@@ -59,8 +60,8 @@ var app = app || {};
             var target_object;
 
             if ( this.hot && $(e.target).hasClass('disabled') === false ) {
-                target_object = this.hot.getData().at(target_row);
-                this.hot.getData().moveItemDown(target_object);
+                target_object = this.hot.getSourceData().at(target_row);
+                this.hot.getSourceData().moveItemDown(target_object);
             }
         },
         getGetterFunction: function (profile_model, column_name) {
@@ -227,8 +228,13 @@ var app = app || {};
             return custom_column_headers_hash[column_name];
         },
         updateTable: function () {
+            var self = this;
+
             if ( this.hot ) {
-                this.hot.render();
+                clearTimeout(this.table_update_timeout);
+                this.table_update_timeout = setTimeout(function () {
+                    self.hot.render();
+                }, 20);
             } else {
                 this.render();
             }

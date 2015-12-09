@@ -80,8 +80,8 @@ var app = app || {};
         },
         //  Render Low Threshold checkbox, sometimes make cell read-only
         thresholdCheckboxRenderer: function (instance, td, row, col) {
-            var isThresholdEditable = instance.getData().at(row) &&
-                instance.getData().at(row).isThresholdEditable();
+            var isThresholdEditable = instance.getSourceData().at(row) &&
+                instance.getSourceData().at(row).isThresholdEditable();
 
             //  We need this because otherwise user will be able to paste
             if ( isThresholdEditable ) {
@@ -102,8 +102,8 @@ var app = app || {};
         },
         //  Render Threshold Width param cell, sometimes make cell read-only
         thresholdWidthRenderer: function (instance, td, row, col) {
-            var is_threshold_possible = instance.getData().at(row) &&
-                instance.getData().at(row).isThresholdPossible();
+            var is_threshold_possible = instance.getSourceData().at(row) &&
+                instance.getSourceData().at(row).isThresholdPossible();
 
             if ( is_threshold_possible ) {
                 instance.setCellMeta(row, col, 'readOnly', false);
@@ -119,7 +119,7 @@ var app = app || {};
         moveItemRenderer: function (instance, td, row) {
             var $td = $(td);
             var is_first_item = row === 0;
-            var is_last_item = row === instance.getData().length - 1;
+            var is_last_item = row === instance.getSourceData().length - 1;
 
             var $button_up = $('<button class="btn btn-move btn-up btn-xs js-move-item-up"' +
                 'data-row="' + row + '">Up</button>');
@@ -149,8 +149,8 @@ var app = app || {};
             return td;
         },
         doorOnlyRenderer: function (instance, td, row, col) {
-            var is_editable = instance.getData().at(row) &&
-                instance.getData().at(row).areDoorOnlyAttributesEditable();
+            var is_editable = instance.getSourceData().at(row) &&
+                instance.getSourceData().at(row).areDoorOnlyAttributesEditable();
 
             if ( is_editable ) {
                 instance.setCellMeta(row, col, 'readOnly', false);
@@ -164,8 +164,8 @@ var app = app || {};
         },
         //  Disable currently inactive projects in Project info tab
         projectInfoRenderer: function (instance, td, row, col) {
-            var is_current_project = instance.getData().at(row) &&
-                instance.getData().at(row) === app.current_project;
+            var is_current_project = instance.getSourceData().at(row) &&
+                instance.getSourceData().at(row) === app.current_project;
 
             if ( !is_current_project ) {
                 instance.setCellMeta(row, col, 'readOnly', true);

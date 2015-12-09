@@ -20,6 +20,7 @@ var app = app || {};
             'click .js-move-item-down': 'onMoveItemDown'
         },
         initialize: function () {
+            this.table_update_timeout = null;
             this.table_visibility = this.options.is_always_visible ? 'visible' :
                 (this.options.table_visibility ? this.options.table_visibility : 'hidden');
 
@@ -148,7 +149,7 @@ var app = app || {};
             var target_object;
 
             if ( this.hot ) {
-                target_object = this.hot.getData().at(target_row);
+                target_object = this.hot.getSourceData().at(target_row);
                 target_object.destroy();
             }
         },
@@ -157,8 +158,8 @@ var app = app || {};
             var target_object;
 
             if ( this.hot && $(e.target).hasClass('disabled') === false ) {
-                target_object = this.hot.getData().at(target_row);
-                this.hot.getData().moveItemUp(target_object);
+                target_object = this.hot.getSourceData().at(target_row);
+                this.hot.getSourceData().moveItemUp(target_object);
             }
         },
         onMoveItemDown: function (e) {
@@ -166,8 +167,8 @@ var app = app || {};
             var target_object;
 
             if ( this.hot && $(e.target).hasClass('disabled') === false ) {
-                target_object = this.hot.getData().at(target_row);
-                this.hot.getData().moveItemDown(target_object);
+                target_object = this.hot.getSourceData().at(target_row);
+                this.hot.getSourceData().moveItemDown(target_object);
             }
         },
         onPasteImage: function (data) {
@@ -534,8 +535,13 @@ var app = app || {};
             return custom_column_headers_hash[column_name];
         },
         updateTable: function () {
+            var self = this;
+
             if ( this.hot ) {
-                this.hot.render();
+                clearTimeout(this.table_update_timeout);
+                this.table_update_timeout = setTimeout(function () {
+                    self.hot.render();
+                }, 20);
             }
         },
         onRender: function () {
