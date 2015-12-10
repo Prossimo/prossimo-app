@@ -985,6 +985,29 @@ var app = app || {};
 
         options = _.defaults({}, options, defaults);
 
+        var full_root_json_string = JSON.stringify(unitModel.generateFullRoot());
+        var options_json_string = JSON.stringify(options);
+
+        //  If we already got an image for the same full_root and same options,
+        //  just return it from our preview cache
+        if (
+            unitModel.preview && unitModel.preview.result &&
+            unitModel.preview.result[options_json_string] &&
+            full_root_json_string === unitModel.preview.full_root_json_string
+        ) {
+            return unitModel.preview.result[options_json_string];
+        }
+
+        //  If full root changes, preview cache should be erased
+        if (
+            !unitModel.preview ||
+            !unitModel.preview.result ||
+            full_root_json_string !== unitModel.preview.full_root_json_string
+        ) {
+            unitModel.preview = {};
+            unitModel.preview.result = {};
+        }
+
         var view = new app.DrawingView({
             model: unitModel
         });
@@ -1015,6 +1038,9 @@ var app = app || {};
             view.remove();
             throw new Error('unrecognized mode for preview: ' + options.mode);
         }
+
+        unitModel.preview.full_root_json_string = full_root_json_string;
+        unitModel.preview.result[options_json_string] = result;
 
         // clean
         view.destroy();
