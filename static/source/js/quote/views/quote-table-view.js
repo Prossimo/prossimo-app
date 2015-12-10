@@ -7,6 +7,7 @@ var app = app || {};
         template: app.templates['quote/quote-table-view'],
         childView: app.QuoteItemView,
         childViewContainer: '.quote-table-body',
+        reorderOnSort: true,
         ui: {
             '$extras_table_container': '.quote-extras-table-container',
             '$optional_extras_table_container': '.quote-optional-extras-table-container'
@@ -20,11 +21,6 @@ var app = app || {};
                 show_sizes_in_mm: this.options.show_sizes_in_mm,
                 show_supplier_system: this.options.show_supplier_system
             };
-        },
-        initialize: function () {
-            this.listenTo(this.collection, 'all', this.render);
-            this.listenTo(this.options.project, 'all', this.render);
-            this.listenTo(this.options.extras, 'all', this.render);
         },
         getTotalPrices: function () {
             var f = app.utils.format;

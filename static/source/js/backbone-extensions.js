@@ -62,7 +62,9 @@ var app = app || {};
         },
         swapItems: function (index1, index2) {
             this.models[index1] = this.models.splice(index2, 1, this.models[index1])[0];
-            this.trigger('swap');
+            this.models[index1].trigger('swap');
+            this.models[index2].trigger('swap');
+            this.trigger('sort');
         },
         moveItemUp: function (model) {
             var index = this.indexOf(model);

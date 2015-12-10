@@ -7,6 +7,9 @@ var app = app || {};
         tagName: 'div',
         className: 'quote-item',
         template: app.templates['quote/quote-item-view'],
+        initialize: function () {
+            this.listenTo(this.model, 'change', this.render);
+        },
         getQuoteTableAttributes: function () {
             var name_title_hash = {
                 mark: 'Mark',
