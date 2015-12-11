@@ -40,6 +40,7 @@ var app = app || {};
         },
         serializeData: function () {
             return {
+                units_count: this.collection.length,
                 has_extras: this.options.extras &&
                     this.options.extras.getRegularItems().length ||
                     this.options.extras.getOptionalItems().length,

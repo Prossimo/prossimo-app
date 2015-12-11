@@ -1,5 +1,20 @@
 <div class="quote-table">
     <div class="quote-table-body"></div>
+    <table class="total-units">
+        <tbody><tr>
+            <td colspan="{{ price_colspan }}"></td>
+            <td class="total-units-column">
+                <table class="quote-total-units">
+                    <tbody>
+                        <tr class="total">
+                            <td><strong>Total Units</strong></td>
+                            <td class="value"><strong>{{ units_count }}</strong></li></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr></tbody>
+    </table>
     {{#if show_price }}
         {{#if has_extras }}
         <table class="subtotal">

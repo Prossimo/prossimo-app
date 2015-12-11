@@ -157,7 +157,8 @@ li.opening p {
     text-align: right;
 }
 
-table.subtotal {
+table.subtotal,
+table.total-units {
     table-layout: fixed;
     width: 100%;
     border: 1px solid darken(@white, 10%);
@@ -224,6 +225,8 @@ th.extras_product_description {
 
 .subtotal td.price,
 .subtotal th.price,
+.total-units td.total-units-column,
+.total-units th.total-units-column,
 .grand-total td.price,
 .grand-total th.price {
     width: 24%;
@@ -253,21 +256,30 @@ th.extras_product_description {
     vertical-align: top;
 }
 
-.quote-table .quote-total-prices {
+.quote-table .quote-total-prices,
+.quote-table .quote-total-units {
     width: 100%;
 }
 
-.quote-table .quote-total-prices td {
+.quote-table .total-units + .subtotal,
+.quote-table .total-units + .subtotal td {
+    border-top: none;
+}
+
+.quote-table .quote-total-prices td,
+.quote-table .quote-total-units td {
     padding: 0;
     border: none;
     vertical-align: bottom;
 }
 
-.quote-table .quote-total-prices td.value {
+.quote-table .quote-total-prices td.value,
+.quote-table .quote-total-units td.value {
     text-align: right;
 }
 
-.quote-table .quote-total-prices tr.total {
+.quote-table .quote-total-prices tr.total,
+.quote-table .quote-total-units tr.total {
     font-size: 1.2em;
 }
 
