@@ -1,1 +1,13 @@
-<div class="profiles-table-container"></div>
+<div class="tab-container">
+    <ul class="nav nav-tabs">
+    {{#each tabs }}
+        <li class="{{ @key }}{{#if is_active }} active{{/if}}"><a href="#{{ @key }}">{{ title }}</a></li>
+    {{/each}}
+    </ul>
+</div>
+
+<div class="active-tab-content">
+{{#each tabs }}
+    <div class="{{ @key }}-container{{#if is_active }} visible{{else}} hidden{{/if}}"></div>
+{{/each}}
+</div>

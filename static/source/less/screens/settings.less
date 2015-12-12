@@ -1,12 +1,97 @@
-.profiles-table-container {
+.settings-screen {
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+
+//  ------------------------------------------------------------------------
+//  Tabs
+//  ------------------------------------------------------------------------
+
+.settings-screen .tab-container {
+    flex: 0 1 auto;
     padding: 1.5rem 3rem;
+    background-color: #B3B3B3;
+    border-bottom: 1px solid #999;
+}
+
+.settings-screen .nav-tabs {
+    border-bottom: medium none;
+    margin-bottom: 0;
+}
+
+.settings-screen .nav > li > a {
+    padding: 0.5rem 1.5rem;
+    border: 1px solid #999;
+    border-radius: 0;
+    color: lighten(@black, 30%);
+    margin: 0;
+    background-color: #ccc;
+
+    &:hover,
+    &:active {
+        background-color: #efefef;
+    }
+}
+
+.settings-screen .nav > li + li > a,
+.settings-screen .nav > li + li.active > a {
+    border-left: none;
+}
+
+.settings-screen .nav > li.active {
+    > a {
+        background-color: #fff;
+    }
+
+    > a:hover,
+    > a:active {
+        border-color: darken(@white, 30%);
+        background-color: #fff;
+    }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Content
+//  ------------------------------------------------------------------------
+
+.active-tab-content {
+    flex: 1 1 auto;
+    display: flex;
+    flex-flow: column;
+}
+
+
+//  ------------------------------------------------------------------------
+//  Profiles
+//  ------------------------------------------------------------------------
+
+.profiles-container {
+    padding: 1.5rem 3rem;
+    height: 100%;
+    flex: 1 1 auto;
+    display: flex;
+    flex-flow: column;
+}
+
+.profiles-table {
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+    flex: 1 1 auto;
+}
+
+.profiles-table-title {
+    flex: 0 1 auto;
 }
 
 .profiles-table-scroll-wrapper {
+    flex: 1 1 auto;
     position: relative;
     overflow: hidden;
     width: 100%;
-    height: 15rem;
+    height: auto;
     background-color: darken(@white, 15%);
 }
 
@@ -22,4 +107,43 @@
 
 .profiles-table-controls .btn {
     border-color: darken(@white, 30%);
+}
+
+
+//  ------------------------------------------------------------------------
+//  UI Settings
+//  ------------------------------------------------------------------------
+
+.ui_settings-container {
+    padding: 1.5rem 3rem;
+    height: 100%;
+    flex: 1 1 auto;
+    // display: flex;
+    // flex-flow: column nowrap;
+}
+
+.ui-settings ul {
+    margin-top: 4rem;
+    padding-left: 0;
+    list-style-type: none;
+}
+
+.ui-settings ul h6,
+.ui-settings ul p,
+.ui-settings ul button {
+    display: inline-block;
+    margin-right: 2rem;
+}
+
+.ui-settings ul h6 {
+    font-size: 1em;
+    font-weight: 700;
+}
+
+.ui-settings ul h6:after {
+    content: ':';
+}
+
+.ui-settings ul button {
+    border: 1px solid darken(@white, 30%);
 }

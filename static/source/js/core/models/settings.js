@@ -3,7 +3,10 @@ var app = app || {};
 (function () {
     'use strict';
 
+    //  --------------------------------------------------------------------
     //  That's what we use for Units
+    //  --------------------------------------------------------------------
+
     var COLORS = ['White', 'Golden Oak', 'Mahagony', 'Grey'];
     var GASKET_COLORS = ['Black', 'Grey'];
     var INTERIOR_HANDLE_TYPES = [
@@ -23,14 +26,59 @@ var app = app || {};
         'Triple High Gain Tempered', 'Triple Standard-Outer Frosted', 'Triple Tempered-Outer Frosted'
     ];
 
+    //  --------------------------------------------------------------------
     //  That's what we use for Profiles
+    //  --------------------------------------------------------------------
+
     var SYSTEMS = ['Workhorse uPVC', 'Pinnacle uPVC'];
     var SUPPLIER_SYSTEMS = ['Gaelan S8000', 'Gaelan S9000'];
     var CORNER_TYPES = ['Mitered', 'Square (Vertical)', 'Square (Horizontal)'];
 
+    //  --------------------------------------------------------------------
+    // That's what we use for settings
+    //  --------------------------------------------------------------------
+
+    var SETTINGS_PROPERTIES = [
+        { name: 'api_base_path', title: 'API Base Path', type: 'string' },
+        { name: 'inches_display_mode', title: 'Inches Display Mode', type: 'string' }
+    ];
+    var UI_SETTINGS = ['inches_display_mode'];
+    var INCHES_DISPLAY_MODES = [
+        { name: 'feet_and_inches', title: 'Feet + Inches' },
+        { name: 'inches_only', title: 'Inches Only' }
+    ];
+
     app.Settings = Backbone.Model.extend({
-        defaults: {
-            api_base_path: $('meta[name="api-base-path"]').attr('value') || '/api'
+        defaults: function () {
+            var defaults = {};
+
+            _.each(SETTINGS_PROPERTIES, function (item) {
+                defaults[item.name] = this.getDefaultValue(item.name, item.type);
+            }, this);
+
+            return defaults;
+        },
+        getDefaultValue: function (name, type) {
+            var default_value = '';
+
+            var type_value_hash = {
+                number: 0
+            };
+
+            var name_value_hash = {
+                api_base_path: $('meta[name="api-base-path"]').attr('value') || '/api',
+                inches_display_mode: INCHES_DISPLAY_MODES[0].name
+            };
+
+            if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
+                default_value = type_value_hash[type];
+            }
+
+            if ( _.indexOf(_.keys(name_value_hash), name) !== -1 ) {
+                default_value = name_value_hash[name];
+            }
+
+            return default_value;
         },
         initialize: function () {
             this.profiles = new app.ProfileCollection(null, {
@@ -43,6 +91,27 @@ var app = app || {};
                     limit: 0
                 }
             });
+        },
+        getNameTitleTypeHash: function (names) {
+            var name_title_type_hash = {};
+
+            if ( !names ) {
+                names = _.pluck( SETTINGS_PROPERTIES, 'name' );
+            }
+
+            _.each(SETTINGS_PROPERTIES, function (item) {
+                if ( _.indexOf(names, item.name) !== -1 ) {
+                    name_title_type_hash[item.name] = { title: item.title, type: item.type };
+                }
+            });
+
+            return name_title_type_hash;
+        },
+        getUISettingsList: function () {
+            return UI_SETTINGS;
+        },
+        getInchesDisplayModes: function () {
+            return INCHES_DISPLAY_MODES;
         },
         getAvailableProfileNames: function () {
             return this.profiles.map(function (item) {
