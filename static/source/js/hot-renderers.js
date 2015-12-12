@@ -48,6 +48,9 @@ var app = app || {};
 
             var f = app.utils.format;
             var formatters_hash = {
+                dimension: function () {
+                    return f.dimension.apply(this, arguments);
+                },
                 discount: function () {
                     return f.percent.apply(this, arguments);
                 },
@@ -66,12 +69,12 @@ var app = app || {};
                 var $td = $(td);
 
                 if ( formatters_hash[attr_name] ) {
-                    arguments[5] = formatters_hash[attr_name](value, args[0]);
+                    arguments[5] = formatters_hash[attr_name](value, args[0], args[1]);
                 }
 
                 Handsontable.renderers.TextRenderer.apply(this, arguments);
 
-                if ( _.indexOf(['discount', 'fixed_minimal', 'fixed', 'price_usd'], attr_name) !== -1 ) {
+                if ( _.indexOf(['dimension', 'discount', 'fixed_minimal', 'fixed', 'price_usd'], attr_name) !== -1 ) {
                     $td.addClass('htNumeric');
                 }
 

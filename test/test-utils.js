@@ -32,13 +32,18 @@ test('utils.format.dimension', function () {
     equal(f.dimension(30.979591836734695, 'fraction'), '2′−7″', 'Expected not to return 2′−6 1/1″');
     equal(f.dimension(23.99, 'fraction'), '2′−0″', 'Expected not to return 1′−12″');
     equal(f.dimension(23.96875, 'fraction'), '2′−0″', 'Expected not to return 1′−12″ or 1′−11 1/1″');
+
+    equal(f.dimension(50 + 3 / 7, 'fraction', 'feet_plus_inches'), '4′−2 7/16″', 'Expected value is 4′−2 7/16″');
+    equal(f.dimension(50 + 3 / 7, 'fraction', 'inches_only'), '50 7/16″', 'Expected value is 50 7/16″');
+    equal(f.dimension(62, 'fraction', 'inches_only'), '62″', 'Expected value is 62″');
+    equal(f.dimension(33.375, null, 'inches_only'), '33.375″', 'Expected value is 33.375″');
 });
 
 test('utils.format.dimensions', function () {
     var f = app.utils.format;
 
     equal(f.dimensions(20, 30), '1′−8″ x 2′−6″', 'Expected value is 1′−8″ x 2′−6″');
-    equal(f.dimensions(0, 0), '0′−0″ x 0′−0″', 'Expected value is 0′−0″ x 0′−0″');
+    equal(f.dimensions(0, 0), '0″ x 0″', 'Expected value is 0′−0″ x 0′−0″');
     equal(f.dimensions(12, 12), '1′−0″ x 1′−0″', 'Expected value is 1′−0″ x 1′−0″');
     equal(f.dimensions('12', '12'), '1′−0″ x 1′−0″', 'Expected value is 1′−0″ x 1′−0″');
 });

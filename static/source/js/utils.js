@@ -9,9 +9,9 @@ var app = app || {};
 
     app.utils = {
         format: {
-            dimension: function (value, decimal_format) {
-                var value_feet = Math.floor(parseFloat(value) / 12);
-                var value_inches = parseFloat(value) % 12;
+            dimension: function (value, decimal_format, inches_display_mode) {
+                var value_feet;
+                var value_inches;
                 var fractional_part;
                 var closest_possible_fraction = 0;
                 var i;
@@ -19,6 +19,18 @@ var app = app || {};
                 decimal_format = decimal_format &&
                     _.indexOf(['floating', 'fraction'], decimal_format) !== -1 ?
                     decimal_format : 'floating';
+
+                inches_display_mode = inches_display_mode &&
+                    _.indexOf(['feet_and_inches', 'inches_only'], inches_display_mode) !== -1 ?
+                    inches_display_mode : 'feet_and_inches';
+
+                if ( inches_display_mode === 'feet_and_inches' ) {
+                    value_feet = Math.floor(parseFloat(value) / 12);
+                    value_inches = parseFloat(value) % 12;
+                } else {
+                    value_feet = 0;
+                    value_inches = parseFloat(value);
+                }
 
                 if ( decimal_format === 'fraction' ) {
                     //  If fractional part is too close to 0 or to 1, we just
@@ -66,10 +78,11 @@ var app = app || {};
                     value_inches = this.fixed_minimal(value_inches, 3);
                 }
 
-                return value_feet + '′−' + value_inches + '″';
+                return (value_feet ? value_feet + '′−' : '' ) + value_inches + '″';
             },
-            dimensions: function (width, height, decimal_format) {
-                return this.dimension(width, decimal_format) + ' x ' + this.dimension(height, decimal_format);
+            dimensions: function (width, height, decimal_format, inches_display_mode) {
+                return this.dimension(width, decimal_format, inches_display_mode) +
+                    ' x ' + this.dimension(height, decimal_format, inches_display_mode);
             },
             dimension_mm: function (value) {
                 return this.fixed_minimal(value, 0) + ' mm';

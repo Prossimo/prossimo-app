@@ -311,8 +311,6 @@ var app = app || {};
             }
 
             var format_hash = {
-                width: { format: '0,0[.]00' },
-                height: { format: '0,0[.]00' },
                 quantity: { format: '0,0[.]00' },
                 original_cost: { format: '0,0[.]00' },
                 conversion_rate: { format: '0[.]00000' },
@@ -321,6 +319,14 @@ var app = app || {};
             };
 
             var properties_hash = {
+                width: {
+                    renderer: app.hot_renderers.getFormattedRenderer('dimension', null,
+                        app.settings.get('inches_display_mode') || null)
+                },
+                height: {
+                    renderer: app.hot_renderers.getFormattedRenderer('dimension', null,
+                        app.settings.get('inches_display_mode') || null)
+                },
                 width_mm: {
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('fixed_minimal')
