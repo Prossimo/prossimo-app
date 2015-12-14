@@ -159,14 +159,11 @@ var app = app || {};
             group.children
                 .closed(true)
                 .stroke('black')
-                .strokeWidth(1);
+                .strokeWidth(1)
+                .fill('white');
 
-            if (sectionId && this.state.selectedSashId === sectionId) {
-                group.children.fill('red');
-            } else {
-                group.children.fill('white');
-            }
             group.on('click', function() {
+                this.deselectAll();
                 this.setState({
                     selectedSashId: sectionId
                 });
@@ -271,10 +268,10 @@ var app = app || {};
                 });
                 mullion.setAttrs(rootSection.mullionParams);
                 if (this.state.selectedMullionId === rootSection.id) {
-                    mullion.addName('selected');
-                    mullion.fill('red');
+                    mullion.fill('lightgrey');
                 }
                 mullion.on('click', function() {
+                    this.deselectAll();
                     this.setState({
                         selectedMullionId: rootSection.id
                     });
@@ -327,10 +324,10 @@ var app = app || {};
                 }
                 glass.on('click', this.showPopup.bind(this, sectionData.id));
 
-                if (sectionData.id === this.state.selectedSashId) {
-                    glass.stroke('darkgreen');
-                    glass.strokeWidth(8 / this.ratio);
-                }
+                // if (sectionData.id === this.state.selectedSashId) {
+                //     glass.stroke('darkgreen');
+                //     glass.strokeWidth(8 / this.ratio);
+                // }
 
                 var bar;
                 var x_offset = glassWidth / (sectionData.vertical_bars_number + 1);
@@ -411,30 +408,38 @@ var app = app || {};
                     group.add(handle);
                 }
                 var directionLine = new Konva.Shape({
-                stroke: 'black',
-                x: glassX,
-                y: glassY,
-                sceneFunc: function(ctx) {
-                    ctx.beginPath();
-                    if (type.indexOf('right') >= 0 && (type.indexOf('slide') === -1)) {
-                        ctx.moveTo(glassWidth, glassHeight);
-                        ctx.lineTo(0, glassHeight / 2);
-                        ctx.lineTo(glassWidth, 0);
+                    stroke: 'black',
+                    x: glassX,
+                    y: glassY,
+                    sceneFunc: function(ctx) {
+                        ctx.beginPath();
+                        if (type.indexOf('right') >= 0 && (type.indexOf('slide') === -1)) {
+                            ctx.moveTo(glassWidth, glassHeight);
+                            ctx.lineTo(0, glassHeight / 2);
+                            ctx.lineTo(glassWidth, 0);
+                        }
+                        if (type.indexOf('left') >= 0 && (type.indexOf('slide') === -1)) {
+                            ctx.moveTo(0, 0);
+                            ctx.lineTo(glassWidth, glassHeight / 2);
+                            ctx.lineTo(0, glassHeight);
+                        }
+                        if (type.indexOf('tilt_turn_') >= 0 || type.indexOf('slide') >= 0) {
+                            ctx.moveTo(0, glassHeight);
+                            ctx.lineTo(glassWidth / 2, 0);
+                            ctx.lineTo(glassWidth, glassHeight);
+                        }
+                        ctx.strokeShape(this);
                     }
-                    if (type.indexOf('left') >= 0 && (type.indexOf('slide') === -1)) {
-                        ctx.moveTo(0, 0);
-                        ctx.lineTo(glassWidth, glassHeight / 2);
-                        ctx.lineTo(0, glassHeight);
-                    }
-                    if (type.indexOf('tilt_turn_') >= 0 || type.indexOf('slide') >= 0) {
-                        ctx.moveTo(0, glassHeight);
-                        ctx.lineTo(glassWidth / 2, 0);
-                        ctx.lineTo(glassWidth, glassHeight);
-                    }
-                    ctx.strokeShape(this);
-                }
-            });
-            group.add(directionLine);
+                });
+                group.add(directionLine);
+            }
+            if (sectionData.id === this.state.selectedSashId) {
+                var selectionRect = new Konva.Rect({
+                    width: sectionData.sashParams.width,
+                    height: sectionData.sashParams.height,
+                    fill: 'rgba(0,0,0,0.2)'
+                });
+                group.add(selectionRect);
             }
             return group;
         },
