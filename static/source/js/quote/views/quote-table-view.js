@@ -45,7 +45,8 @@ var app = app || {};
         },
         serializeData: function () {
             return {
-                units_count: this.collection.length,
+                total_unit_types: this.collection.getTotalUnitTypes(),
+                total_unit_quantity: this.collection.getTotalUnitQuantity(),
                 has_extras: this.options.extras &&
                     this.options.extras.getRegularItems().length ||
                     this.options.extras.getOptionalItems().length,
