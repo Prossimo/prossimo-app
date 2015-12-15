@@ -129,6 +129,12 @@ var app = app || {};
             var tax = (total_tax_percent / 100) * subtotal;
             var grand_total = subtotal + shipping_price + tax;
 
+            //  TODO: this value should be customizable, not just 50% always,
+            //  when it'll be customizable, it should also be tested
+            var deposit_percent = 50;
+            var deposit_on_contract = (deposit_percent / 100) * grand_total;
+            var balance_due_at_delivery = grand_total - deposit_on_contract;
+
             return {
                 subtotal_units: subtotal_units_price,
                 subtotal_units_with_hidden: subtotal_units_with_hidden,
@@ -138,7 +144,10 @@ var app = app || {};
                 tax_percent: total_tax_percent,
                 tax: tax,
                 shipping: shipping_price,
-                grand_total: grand_total
+                grand_total: grand_total,
+                deposit_percent: deposit_percent,
+                deposit_on_contract: deposit_on_contract,
+                balance_due_at_delivery: balance_due_at_delivery
             };
         }
     });

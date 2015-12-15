@@ -32,10 +32,15 @@ var app = app || {};
                 subtotal_extras: f.price_usd(total_prices.subtotal_extras),
                 subtotal_optional_extras: f.price_usd(total_prices.subtotal_optional_extras),
                 subtotal: f.price_usd(total_prices.subtotal),
-                tax_percent: f.percent(total_prices.tax_percent),
+                tax_percent: total_prices.tax_percent ?
+                    f.percent(total_prices.tax_percent) : false,
                 tax: f.price_usd(total_prices.tax),
                 shipping: f.price_usd(total_prices.shipping),
-                grand_total: f.price_usd(total_prices.grand_total)
+                grand_total: f.price_usd(total_prices.grand_total),
+                deposit_percent: total_prices.deposit_percent ?
+                    f.percent(total_prices.deposit_percent) : false,
+                deposit_on_contract: f.price_usd(total_prices.deposit_on_contract),
+                balance_due_at_delivery: f.price_usd(total_prices.balance_due_at_delivery)
             };
         },
         serializeData: function () {
