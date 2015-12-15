@@ -590,6 +590,7 @@ var app = app || {};
             }
             return res;
         },
+        //  Returns sizes in mms
         getSashList: function (current_root) {
             var current_sash = {
                 opening: {},
@@ -617,6 +618,46 @@ var app = app || {};
                 current_sash.glass.type = this.get('glazing');
 
                 result.push(current_sash);
+            }
+
+            return result;
+        },
+        //  Returns sizes in mms
+        getFixedAndOperableSectionsList: function (current_root) {
+            var profile = this.profile;
+            var current_area = {};
+            var section_result;
+            var result = [];
+
+            current_root = current_root || this.generateFullRoot();
+
+            _.each(current_root.sections, function (section) {
+                section_result = this.getFixedAndOperableSectionsList(section);
+                result = result.concat(section_result);
+            }, this);
+
+            if ( _.indexOf(SASH_TYPES_WITH_OPENING, current_root.sashType) !== -1 ) {
+                current_area.type = 'operable';
+            } else {
+                current_area.type = 'fixed';
+            }
+
+            if ( current_root.sections.length === 0 ) {
+                current_area.width = current_root.openingParams.width;
+                current_area.height = current_root.openingParams.height;
+
+                _.each(['top', 'right', 'bottom', 'left'], function (position) {
+                    var measurement = position === 'top' || position === 'bottom' ?
+                        'height' : 'width';
+
+                    if ( current_root.mullionEdges[position] ) {
+                        current_area[measurement] += profile.get('mullion_width') / 2;
+                    } else {
+                        current_area[measurement] += profile.get('frame_width');
+                    }
+                }, this);
+
+                result.push(current_area);
             }
 
             return result;
