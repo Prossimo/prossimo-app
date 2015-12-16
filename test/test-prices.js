@@ -3,6 +3,10 @@
 /* eslint strict:0  */
 /* eslint max-len:0  */
 
+var m = app.utils.math;
+app.no_backend = true;
+
+
 //  Test that QUnit is working
 test('basic test', function () {
     ok(true, 'Passed.');
@@ -243,4 +247,52 @@ test('subtotal project prices', function () {
         'getSubtotalUnitsPrice + getHiddenPrice result should match total_prices.subtotal_units_with_hidden');
     equal(total_prices.subtotal_extras, current_project.getExtrasPrice(), 'getExtrasPrice result should match total_prices.subtotal_extras');
     equal(total_prices.subtotal, current_project.getSubtotalPrice(), 'getSubtotalPrice result should match total_prices.subtotal');
+});
+
+
+//  ------------------------------------------------------------------------
+//  Test that estimated prices for a unit are calculated properly
+//  ------------------------------------------------------------------------
+
+test('estimated unit prices', function () {
+    var unit;
+    var root_id;
+    var full_root;
+    var top_section;
+    var bottom_section;
+    var sections_list;
+
+    unit = new app.Unit({
+        width: 62,
+        height: 96
+    });
+
+    unit.profile = new app.Profile({
+        frame_width: 70,
+        mullion_width: 92,
+        sash_frame_width: 82,
+        sash_frame_overlap: 34,
+        sash_mullion_overlap: 34
+    });
+
+    root_id = unit.get('root_section').id;
+    unit.splitSection(root_id, 'horizontal');
+    full_root = unit.generateFullRoot();
+
+    top_section = full_root.sections[0];
+    bottom_section = full_root.sections[1];
+
+    unit.setSectionSashType(top_section.id, 'fixed_in_sash');
+    unit.setSectionSashType(bottom_section.id, 'fixed_in_sash');
+
+    sections_list = unit.getFixedAndOperableSectionsList();
+
+    //  Areas should be calculated properly
+    equal(m.square_meters(sections_list[0].width, sections_list[0].height).toFixed(2), '1.92', 'First section area is expected to be 1.92');
+    equal(m.square_meters(sections_list[1].width, sections_list[1].height).toFixed(2), '1.92', 'Second section area is expected to be 1.92');
+
+    //  Types should be determined properly
+    equal(sections_list[0].type, 'fixed', 'First section type is expected to be fixed');
+    equal(sections_list[1].type, 'fixed', 'Second section type is expected to be fixed');
+
 });

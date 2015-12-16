@@ -50,6 +50,7 @@ var app = app || {};
     ];
 
     var SASH_TYPES_WITH_OPENING = _.without(SASH_TYPES, 'fixed_in_frame');
+    var OPERABLE_SASH_TYPES = _.without(SASH_TYPES, 'fixed_in_frame', 'fixed_in_sash');
 
     var SASH_TYPE_NAME_MAP = {
         'flush-turn-right': 'Flush Panel Right Hinge',
@@ -651,7 +652,7 @@ var app = app || {};
                 result = result.concat(section_result);
             }, this);
 
-            if ( _.indexOf(SASH_TYPES_WITH_OPENING, current_root.sashType) !== -1 ) {
+            if ( _.indexOf(OPERABLE_SASH_TYPES, current_root.sashType) !== -1 ) {
                 current_area.type = 'operable';
             } else {
                 current_area.type = 'fixed';
