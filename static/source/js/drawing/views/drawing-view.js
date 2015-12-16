@@ -10,7 +10,7 @@ var app = app || {};
         tagName: 'div',
         template: app.templates['drawing/drawing-view'],
         initialize: function () {
-            this.listenTo(this.model, 'all', this.updateCanvas);
+            this.listenTo(this.model, 'all', this.updateRenderedScene);
             this.on('update_rendered', this.updateRenderedScene, this);
             this.state = {
                 insideView: insideView
@@ -24,7 +24,9 @@ var app = app || {};
             '$bars_control': '#bars-control',
             '$section_control': '#section_control',
             '$vertical_bars_number': '#vertical-bars-number',
-            '$horizontal_bars_number': '#horizontal-bars-number'
+            '$horizontal_bars_number': '#horizontal-bars-number',
+            '$filling_type': '.filling-type',
+            '$filling_select': '.filling-select'
         },
 
         events: {
@@ -43,7 +45,8 @@ var app = app || {};
             'change #vertical-bars-number': 'handleBarNumberChange',
             'input #vertical-bars-number': 'handleBarNumberChange',
             'change #horizontal-bars-number': 'handleBarNumberChange',
-            'input #horizontal-bars-number': 'handleBarNumberChange'
+            'input #horizontal-bars-number': 'handleBarNumberChange',
+            'change .filling-select': 'handleFillingTypeChange'
         },
 
         onRender: function(){
@@ -88,6 +91,10 @@ var app = app || {};
                 vertical: this.ui.$vertical_bars_number.val(),
                 horizontal: this.ui.$horizontal_bars_number.val()
             });
+        },
+        handleFillingTypeChange: function() {
+            var type = this.ui.$filling_select.val();
+            this.model.setFillingType(this.state.selectedSashId, type);
         },
         setState: function(state) {
             this.state = _.assign(this.state, state);
@@ -304,56 +311,26 @@ var app = app || {};
                 y: sectionData.sashParams.y
             });
 
-            var glassX = sectionData.glassParams.x - sectionData.sashParams.x;
-            var glassY = sectionData.glassParams.y - sectionData.sashParams.y;
-            var glassWidth = sectionData.glassParams.width;
-            var glassHeight = sectionData.glassParams.height;
-            if (!sectionData.sections || !sectionData.sections.length) {
-                var glass = new Konva.Rect({
-                    x: glassX,
-                    y: glassY,
-                    width: glassWidth,
-                    height: glassHeight,
-                    fill: 'lightblue',
-                    id: sectionData.id
-                });
-                group.add(glass);
-
-                if (this.model.profile.isSolidPanelPossible() && sectionData.panelType === 'solid') {
-                    glass.fill('lightgrey');
-                }
-                glass.on('click', this.showPopup.bind(this, sectionData.id));
-
-                // if (sectionData.id === this.state.selectedSashId) {
-                //     glass.stroke('darkgreen');
-                //     glass.strokeWidth(8 / this.ratio);
-                // }
-
-                var bar;
-                var x_offset = glassWidth / (sectionData.vertical_bars_number + 1);
-                for(var i = 0; i < sectionData.vertical_bars_number; i++) {
-                    bar = new Konva.Rect({
-                        x: glassX + x_offset * (i + 1), y: glassY,
-                        width: this.model.get('glazing_bar_width'), height: glassHeight,
-                        fill: 'white'
-                    });
-                    group.add(bar);
-                }
-                var y_offset = glassHeight / (sectionData.horizontal_bars_number + 1);
-                for(i = 0; i < sectionData.horizontal_bars_number; i++) {
-                    bar = new Konva.Rect({
-                        x: glassX, y: glassY + y_offset * (i + 1),
-                        width: glassWidth, height: this.model.get('glazing_bar_width'),
-                        fill: 'white'
-                    });
-                    group.add(bar);
-                }
+            var fillX, fillY, fillWidth, fillHeight;
+            if (_.includes(['full-flush-panel', 'exterior-flush-panel'], sectionData.fillingType) && !this.state.insideView) {
+                fillX = sectionData.openingParams.x - sectionData.sashParams.x;
+                fillY = sectionData.openingParams.y - sectionData.sashParams.y;
+                fillWidth = sectionData.openingParams.width;
+                fillHeight = sectionData.openingParams.height;
+            } else if (_.includes(['full-flush-panel', 'interior-flush-panel'], sectionData.fillingType) && this.state.insideView) {
+                fillX = 0;
+                fillY = 0;
+                fillWidth = sectionData.sashParams.width;
+                fillHeight = sectionData.sashParams.height;
+            } else {
+                fillX = sectionData.glassParams.x - sectionData.sashParams.x;
+                fillY = sectionData.glassParams.y - sectionData.sashParams.y;
+                fillWidth = sectionData.glassParams.width;
+                fillHeight = sectionData.glassParams.height;
             }
-            var type = sectionData.sashType;
-
-            if (type !== 'fixed_in_frame') {
+            if (sectionData.sashType !== 'fixed_in_frame') {
                 var frameGroup;
-                if (type === 'flush-turn-right' || type === 'flush-turn-left') {
+                if (sectionData.sashType === 'flush-turn-right' || sectionData.sashType === 'flush-turn-left') {
                     frameGroup = this.createFlushFrame({
                         width: sectionData.sashParams.width,
                         height: sectionData.sashParams.height,
@@ -369,6 +346,62 @@ var app = app || {};
                     });
                 }
                 group.add(frameGroup);
+            }
+            if (!sectionData.sections || !sectionData.sections.length) {
+                var glass = new Konva.Shape({
+                    x: fillX,
+                    y: fillY,
+                    width: fillWidth,
+                    height: fillHeight,
+                    fill: 'lightblue',
+                    id: sectionData.id,
+                    stroke: 'black',
+                    sceneFunc: function(ctx) {
+                        ctx.beginPath();
+                        ctx.rect(0, 0, this.width(), this.height());
+                        if (sectionData.fillingType === 'louver') {
+                            var offset = 40;
+                            for (var i = 0; i < this.height() / offset; i++) {
+                                ctx.moveTo(0, i * offset);
+                                ctx.lineTo(this.width(), i * offset);
+                            }
+                        }
+                        ctx.fillStrokeShape(this);
+                    }
+                });
+                group.add(glass);
+
+                if (sectionData.fillingType && sectionData.fillingType !== 'glass') {
+                    glass.fill('lightgrey');
+                }
+                glass.on('click', this.showPopup.bind(this, sectionData.id));
+
+
+                if (!sectionData.fillingType || sectionData.fillingType === 'glass') {
+                    var bar;
+                    var x_offset = fillWidth / (sectionData.vertical_bars_number + 1);
+                    for(var i = 0; i < sectionData.vertical_bars_number; i++) {
+                        bar = new Konva.Rect({
+                            x: fillX + x_offset * (i + 1), y: fillY,
+                            width: this.model.get('glazing_bar_width'), height: fillHeight,
+                            fill: 'white'
+                        });
+                        group.add(bar);
+                    }
+                    var y_offset = fillHeight / (sectionData.horizontal_bars_number + 1);
+                    for(i = 0; i < sectionData.horizontal_bars_number; i++) {
+                        bar = new Konva.Rect({
+                            x: fillX, y: fillY + y_offset * (i + 1),
+                            width: fillWidth, height: this.model.get('glazing_bar_width'),
+                            fill: 'white'
+                        });
+                        group.add(bar);
+                    }
+                }
+            }
+            var type = sectionData.sashType;
+
+            if (type !== 'fixed_in_frame') {
                 var shouldDrawHandle = (this.state.insideView &&
                     (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type === 'tilt_only'))
                     || (!this.state.insideView && this.model.profile.hasOutsideHandle());
@@ -409,29 +442,43 @@ var app = app || {};
                 }
                 var directionLine = new Konva.Shape({
                     stroke: 'black',
-                    x: glassX,
-                    y: glassY,
+                    x: sectionData.glassParams.x - sectionData.sashParams.x,
+                    y: sectionData.glassParams.y - sectionData.sashParams.y,
                     sceneFunc: function(ctx) {
                         ctx.beginPath();
+                        var width = sectionData.glassParams.width;
+                        var height = sectionData.glassParams.height;
                         if (type.indexOf('right') >= 0 && (type.indexOf('slide') === -1)) {
-                            ctx.moveTo(glassWidth, glassHeight);
-                            ctx.lineTo(0, glassHeight / 2);
-                            ctx.lineTo(glassWidth, 0);
+                            ctx.moveTo(width, height);
+                            ctx.lineTo(0, height / 2);
+                            ctx.lineTo(width, 0);
                         }
                         if (type.indexOf('left') >= 0 && (type.indexOf('slide') === -1)) {
                             ctx.moveTo(0, 0);
-                            ctx.lineTo(glassWidth, glassHeight / 2);
-                            ctx.lineTo(0, glassHeight);
+                            ctx.lineTo(width, height / 2);
+                            ctx.lineTo(0, height);
                         }
                         if (type.indexOf('tilt_turn_') >= 0 || type.indexOf('slide') >= 0) {
-                            ctx.moveTo(0, glassHeight);
-                            ctx.lineTo(glassWidth / 2, 0);
-                            ctx.lineTo(glassWidth, glassHeight);
+                            ctx.moveTo(0, height);
+                            ctx.lineTo(width / 2, 0);
+                            ctx.lineTo(width, height);
                         }
                         ctx.strokeShape(this);
                     }
                 });
                 group.add(directionLine);
+            }
+            if (!sectionData.sections || !sectionData.sections.length) {
+                var number = new Konva.Text({
+                    x: sectionData.glassParams.x - sectionData.sashParams.x,
+                    y: sectionData.glassParams.height / 2,
+                    width: sectionData.glassParams.width,
+                    align: 'center',
+                    text: sectionData.id || 'HELLO!',
+                    fontSize: 15 / this.ratio,
+                    listening: false
+                });
+                group.add(number);
             }
             if (sectionData.id === this.state.selectedSashId) {
                 var selectionRect = new Konva.Rect({
@@ -943,11 +990,12 @@ var app = app || {};
             var selectedSashId = this.state.selectedSashId;
 
             var selectedSash = this.model.getSection(selectedSashId);
-            this.ui.$bars_control.toggle(!!selectedSashId);
+            this.ui.$bars_control.toggle(!!selectedSashId && selectedSash.fillingType === 'glass');
             this.ui.$vertical_bars_number.val(selectedSash && selectedSash.vertical_bars_number || 0);
             this.ui.$horizontal_bars_number.val(selectedSash && selectedSash.horizontal_bars_number || 0);
             this.ui.$section_control.toggle(!!selectedSashId);
             this.$('.sash-types').toggle(selectedSashId && this.model.canAddSashToSection(selectedSashId));
+            this.ui.$filling_select.val(selectedSash && selectedSash.fillingType);
         },
 
         splitSection: function(e) {

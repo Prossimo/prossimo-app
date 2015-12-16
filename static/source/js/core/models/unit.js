@@ -65,6 +65,20 @@ var app = app || {};
         'slide-left': 'Slide Left'
     };
 
+    var FILLING_TYPES = [
+        'glass', 'recessed',
+        'interior-flush-panel', 'exterior-flush-panel',
+        'full-flush-panel', 'louver'
+    ];
+
+    function getSectionDefaults() {
+        return {
+            id: _.uniqueId(),
+            sashType: 'fixed_in_frame',
+            fillingType: 'glass'
+        };
+    }
+
     app.Unit = Backbone.Model.extend({
         defaults: function () {
             var defaults = {};
@@ -87,10 +101,7 @@ var app = app || {};
                 conversion_rate: 1,
                 price_markup: 1,
                 quantity: 1,
-                root_section: {
-                    id: _.uniqueId(),
-                    sashType: 'fixed_in_frame'
-                }
+                root_section: getSectionDefaults()
             };
 
             if ( app.settings ) {
@@ -272,6 +283,16 @@ var app = app || {};
                 section.horizontal_bars_number = parseInt(bars.horizontal, 10);
             });
         },
+        setFillingType: function(sectionId, type) {
+            if (!_.includes(FILLING_TYPES, type)) {
+                console.error('Unknow filling type: ' + type);
+                return;
+            }
+            this._updateSection(sectionId, function(section) {
+                section.fillingType = type;
+            });
+        },
+        // TODO: remove this methid below
         setPanelType: function(sectionId, type){
             this._updateSection(sectionId, function(section) {
                 section.panelType = type;
@@ -317,13 +338,7 @@ var app = app || {};
                 var full = this.generateFullRoot();
                 var fullSection = app.Unit.findSection(full, sectionId);
                 section.divider = type;
-                section.sections = [{
-                    id: _.uniqueId(),
-                    sashType: 'fixed_in_frame'
-                }, {
-                    id: _.uniqueId(),
-                    sashType: 'fixed_in_frame'
-                }];
+                section.sections = [getSectionDefaults(), getSectionDefaults()];
                 if (type === 'vertical') {
                     section.position = fullSection.openingParams.x + fullSection.openingParams.width / 2;
                 } else {

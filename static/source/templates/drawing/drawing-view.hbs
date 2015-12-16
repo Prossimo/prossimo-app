@@ -8,7 +8,6 @@
         <img class="split-section" data-type="horizontal" src="/static/public/img/horizontalMullion.png"/>
         
         <span class="sash-types">
-        |
         Section type:
             <img class="change-sash-type" data-type="tilt_turn_left" src="/static/public/img/tilt_turn_left.png"/>
             <img class="change-sash-type" data-type="tilt_turn_right" src="/static/public/img/tilt_turn_right.png"/>
@@ -20,12 +19,24 @@
             <img class="change-sash-type" data-type="flush-turn-right" src="/static/public/img/flush-turn-right.png"/>
             <img class="change-sash-type" data-type="flush-turn-left" src="/static/public/img/flush-turn-left.png"/>
         </span>
+        <br/>
+        <span class="filling-type">
+            Filling:
+            <!-- TODO: import this valus from unit.js -->
+            <select class='filling-select'>
+                <option value="glass">Glass</option>
+                <option value="recessed">Recessed</option>
+                <option value="interior-flush-panel">Interior flush panel</option>
+                <option value="exterior-flush-panel">Exterior flush panel</option>
+                <option value="full-flush-panel">Full flush panel</option>
+                <option value="louver">Louver</option>
+            </select>
+        </span>
         <span class='panel-type' style="text-align: center">
             <img class="change-panel-type" data-type="solid" src="/static/public/img/panel-solid.png"/>
             <img class="change-panel-type" data-type="glass" src="/static/public/img/panel-glass.png"/>
         </span>
         <span id="bars-control">
-            |
             Vertical bars: <input type="number" id="vertical-bars-number" value='0'>
             Horizontal bars: <input type="number" id="horizontal-bars-number" value='0'>
         </span>
