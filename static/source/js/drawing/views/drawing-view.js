@@ -468,6 +468,18 @@ var app = app || {};
                 });
                 group.add(directionLine);
             }
+            if (!sectionData.sections || !sectionData.sections.length) {
+                var number = new Konva.Text({
+                    x: sectionData.glassParams.x - sectionData.sashParams.x,
+                    y: sectionData.glassParams.height / 2,
+                    width: sectionData.glassParams.width,
+                    align: 'center',
+                    text: sectionData.id || 'HELLO!',
+                    fontSize: 15 / this.ratio,
+                    listening: false
+                });
+                group.add(number);
+            }
             if (sectionData.id === this.state.selectedSashId) {
                 var selectionRect = new Konva.Rect({
                     width: sectionData.sashParams.width,
