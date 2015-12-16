@@ -340,7 +340,7 @@ var app = app || {};
                 group.add(glass);
 
                 if (sectionData.fillingType && sectionData.fillingType !== 'glass') {
-                    glass.fill('white');
+                    glass.fill('lightgrey');
                 }
                 glass.on('click', this.showPopup.bind(this, sectionData.id));
 
