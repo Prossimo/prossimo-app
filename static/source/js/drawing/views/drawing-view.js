@@ -311,16 +311,48 @@ var app = app || {};
                 y: sectionData.sashParams.y
             });
 
-            var glassX = sectionData.glassParams.x - sectionData.sashParams.x;
-            var glassY = sectionData.glassParams.y - sectionData.sashParams.y;
-            var glassWidth = sectionData.glassParams.width;
-            var glassHeight = sectionData.glassParams.height;
+            var fillX, fillY, fillWidth, fillHeight;
+            if (_.includes(['full-flush-panel', 'exterior-flush-panel'], sectionData.fillingType) && !this.state.insideView) {
+                fillX = sectionData.openingParams.x - sectionData.sashParams.x;
+                fillY = sectionData.openingParams.y - sectionData.sashParams.y;
+                fillWidth = sectionData.openingParams.width;
+                fillHeight = sectionData.openingParams.height;
+            } else if (_.includes(['full-flush-panel', 'interior-flush-panel'], sectionData.fillingType) && this.state.insideView) {
+                fillX = 0;
+                fillY = 0;
+                fillWidth = sectionData.sashParams.width;
+                fillHeight = sectionData.sashParams.height;
+            } else {
+                fillX = sectionData.glassParams.x - sectionData.sashParams.x;
+                fillY = sectionData.glassParams.y - sectionData.sashParams.y;
+                fillWidth = sectionData.glassParams.width;
+                fillHeight = sectionData.glassParams.height;
+            }
+            if (sectionData.sashType !== 'fixed_in_frame') {
+                var frameGroup;
+                if (sectionData.sashType === 'flush-turn-right' || sectionData.sashType === 'flush-turn-left') {
+                    frameGroup = this.createFlushFrame({
+                        width: sectionData.sashParams.width,
+                        height: sectionData.sashParams.height,
+                        frameWidth: frameWidth,
+                        sectionId: sectionData.id
+                    });
+                } else {
+                    frameGroup = this.createFrame({
+                        width: sectionData.sashParams.width,
+                        height: sectionData.sashParams.height,
+                        frameWidth: frameWidth,
+                        sectionId: sectionData.id
+                    });
+                }
+                group.add(frameGroup);
+            }
             if (!sectionData.sections || !sectionData.sections.length) {
                 var glass = new Konva.Shape({
-                    x: glassX,
-                    y: glassY,
-                    width: glassWidth,
-                    height: glassHeight,
+                    x: fillX,
+                    y: fillY,
+                    width: fillWidth,
+                    height: fillHeight,
                     fill: 'lightblue',
                     id: sectionData.id,
                     stroke: 'black',
@@ -345,22 +377,22 @@ var app = app || {};
                 glass.on('click', this.showPopup.bind(this, sectionData.id));
 
 
-                if (sectionData.fillingType === 'glass') {
+                if (!sectionData.fillingType || sectionData.fillingType === 'glass') {
                     var bar;
-                    var x_offset = glassWidth / (sectionData.vertical_bars_number + 1);
+                    var x_offset = fillWidth / (sectionData.vertical_bars_number + 1);
                     for(var i = 0; i < sectionData.vertical_bars_number; i++) {
                         bar = new Konva.Rect({
-                            x: glassX + x_offset * (i + 1), y: glassY,
-                            width: this.model.get('glazing_bar_width'), height: glassHeight,
+                            x: fillX + x_offset * (i + 1), y: fillY,
+                            width: this.model.get('glazing_bar_width'), height: fillHeight,
                             fill: 'white'
                         });
                         group.add(bar);
                     }
-                    var y_offset = glassHeight / (sectionData.horizontal_bars_number + 1);
+                    var y_offset = fillHeight / (sectionData.horizontal_bars_number + 1);
                     for(i = 0; i < sectionData.horizontal_bars_number; i++) {
                         bar = new Konva.Rect({
-                            x: glassX, y: glassY + y_offset * (i + 1),
-                            width: glassWidth, height: this.model.get('glazing_bar_width'),
+                            x: fillX, y: fillY + y_offset * (i + 1),
+                            width: fillWidth, height: this.model.get('glazing_bar_width'),
                             fill: 'white'
                         });
                         group.add(bar);
@@ -370,23 +402,6 @@ var app = app || {};
             var type = sectionData.sashType;
 
             if (type !== 'fixed_in_frame') {
-                var frameGroup;
-                if (type === 'flush-turn-right' || type === 'flush-turn-left') {
-                    frameGroup = this.createFlushFrame({
-                        width: sectionData.sashParams.width,
-                        height: sectionData.sashParams.height,
-                        frameWidth: frameWidth,
-                        sectionId: sectionData.id
-                    });
-                } else {
-                    frameGroup = this.createFrame({
-                        width: sectionData.sashParams.width,
-                        height: sectionData.sashParams.height,
-                        frameWidth: frameWidth,
-                        sectionId: sectionData.id
-                    });
-                }
-                group.add(frameGroup);
                 var shouldDrawHandle = (this.state.insideView &&
                     (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type === 'tilt_only'))
                     || (!this.state.insideView && this.model.profile.hasOutsideHandle());
@@ -427,24 +442,26 @@ var app = app || {};
                 }
                 var directionLine = new Konva.Shape({
                     stroke: 'black',
-                    x: glassX,
-                    y: glassY,
+                    x: sectionData.glassParams.x - sectionData.sashParams.x,
+                    y: sectionData.glassParams.y - sectionData.sashParams.y,
                     sceneFunc: function(ctx) {
                         ctx.beginPath();
+                        var width = sectionData.glassParams.width;
+                        var height = sectionData.glassParams.height;
                         if (type.indexOf('right') >= 0 && (type.indexOf('slide') === -1)) {
-                            ctx.moveTo(glassWidth, glassHeight);
-                            ctx.lineTo(0, glassHeight / 2);
-                            ctx.lineTo(glassWidth, 0);
+                            ctx.moveTo(width, height);
+                            ctx.lineTo(0, height / 2);
+                            ctx.lineTo(width, 0);
                         }
                         if (type.indexOf('left') >= 0 && (type.indexOf('slide') === -1)) {
                             ctx.moveTo(0, 0);
-                            ctx.lineTo(glassWidth, glassHeight / 2);
-                            ctx.lineTo(0, glassHeight);
+                            ctx.lineTo(width, height / 2);
+                            ctx.lineTo(0, height);
                         }
                         if (type.indexOf('tilt_turn_') >= 0 || type.indexOf('slide') >= 0) {
-                            ctx.moveTo(0, glassHeight);
-                            ctx.lineTo(glassWidth / 2, 0);
-                            ctx.lineTo(glassWidth, glassHeight);
+                            ctx.moveTo(0, height);
+                            ctx.lineTo(width / 2, 0);
+                            ctx.lineTo(width, height);
                         }
                         ctx.strokeShape(this);
                     }
