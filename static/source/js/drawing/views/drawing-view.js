@@ -316,7 +316,6 @@ var app = app || {};
             var glassWidth = sectionData.glassParams.width;
             var glassHeight = sectionData.glassParams.height;
             if (!sectionData.sections || !sectionData.sections.length) {
-                var ratio = this.ratio;
                 var glass = new Konva.Shape({
                     x: glassX,
                     y: glassY,
@@ -340,7 +339,7 @@ var app = app || {};
                 });
                 group.add(glass);
 
-                if (sectionData.fillingType !== 'glass') {
+                if (sectionData.fillingType && sectionData.fillingType !== 'glass') {
                     glass.fill('white');
                 }
                 glass.on('click', this.showPopup.bind(this, sectionData.id));
