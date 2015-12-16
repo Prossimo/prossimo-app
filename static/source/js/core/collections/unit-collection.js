@@ -41,9 +41,23 @@ var app = app || {};
             return total_price;
         },
         hasAtLeastOneCustomerImage: function () {
-            return this.any(function (model) {
-                return model.get('customer_image') !== '';
+            return this.any(function (item) {
+                return item.get('customer_image') !== '';
             });
+        },
+        getTotalUnitTypes: function () {
+            return this.length;
+        },
+        getTotalUnitQuantity: function () {
+            var total_quantity = 0;
+
+            this.each(function (item) {
+                if ( item.get('quantity') ) {
+                    total_quantity += parseFloat(item.get('quantity'));
+                }
+            }, this);
+
+            return total_quantity;
         }
     });
 })();
