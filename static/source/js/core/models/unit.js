@@ -283,13 +283,14 @@ var app = app || {};
                 section.horizontal_bars_number = parseInt(bars.horizontal, 10);
             });
         },
-        setFillingType: function(sectionId, type) {
+        setFillingType: function(sectionId, type, name) {
             if (!_.includes(FILLING_TYPES, type)) {
                 console.error('Unknow filling type: ' + type);
                 return;
             }
             this._updateSection(sectionId, function(section) {
                 section.fillingType = type;
+                section.fillingName = name;
             });
         },
         // TODO: remove this methid below

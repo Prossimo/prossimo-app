@@ -178,6 +178,37 @@ var app = app || {};
             Handsontable.renderers.TextRenderer.apply(this, arguments);
 
             return td;
+        },
+        //  Disable editing for base filling types
+        fillingTypeRenderer: function (instance, td, row, col) {
+            var is_base_type = instance.getSourceData().at(row) &&
+                instance.getSourceData().at(row).get('is_base_type');
+
+            if ( is_base_type ) {
+                instance.setCellMeta(row, col, 'readOnly', true);
+                $(td).addClass('htDimmed');
+            } else {
+                instance.setCellMeta(row, col, 'readOnly', false);
+            }
+
+            Handsontable.renderers.TextRenderer.apply(this, arguments);
+
+            return td;
+        },
+        fillingTypeDropdownRenderer: function (instance, td, row, col) {
+            var is_base_type = instance.getSourceData().at(row) &&
+                instance.getSourceData().at(row).get('is_base_type');
+
+            if ( is_base_type ) {
+                instance.setCellMeta(row, col, 'readOnly', true);
+                $(td).addClass('htDimmed');
+            } else {
+                instance.setCellMeta(row, col, 'readOnly', false);
+            }
+
+            Handsontable.renderers.AutocompleteRenderer.apply(this, arguments);
+
+            return td;
         }
     };
 })();

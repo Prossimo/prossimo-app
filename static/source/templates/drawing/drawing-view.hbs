@@ -6,7 +6,7 @@
         Split section:
         <img class="split-section" data-type="vertical" src="/static/public/img/verticalMullion.png"/>
         <img class="split-section" data-type="horizontal" src="/static/public/img/horizontalMullion.png"/>
-        
+
         <span class="sash-types">
         Section type:
             <img class="change-sash-type" data-type="tilt_turn_left" src="/static/public/img/tilt_turn_left.png"/>
@@ -22,14 +22,10 @@
         <br/>
         <span class="filling-type">
             Filling:
-            <!-- TODO: import this valus from unit.js -->
             <select class='filling-select'>
-                <option value="glass">Glass</option>
-                <option value="recessed">Recessed</option>
-                <option value="interior-flush-panel">Interior flush panel</option>
-                <option value="exterior-flush-panel">Exterior flush panel</option>
-                <option value="full-flush-panel">Full flush panel</option>
-                <option value="louver">Louver</option>
+            {{#each filling_types }}
+                {{#if attributes.name }}<option value="{{ cid }}">{{ attributes.name }}</option>{{/if}}
+            {{/each }}
             </select>
         </span>
         <span class='panel-type' style="text-align: center">

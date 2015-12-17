@@ -85,6 +85,10 @@ var app = app || {};
                 api_base_path: this.get('api_base_path')
             });
 
+            this.filling_types = new app.FillingTypeCollection(null, {
+                api_base_path: this.get('api_base_path')
+            });
+
             this.profiles.fetch({
                 remove: false,
                 data: {
@@ -117,6 +121,12 @@ var app = app || {};
             return this.profiles.map(function (item) {
                 return item.get('name');
             });
+        },
+        getFillingType: function (cid) {
+            return this.filling_types.get(cid);
+        },
+        getAvailableFillingTypes: function () {
+            return this.filling_types.models;
         },
         getProfileByNameOrNew: function (profile_name) {
             var profile = this.profiles.findWhere({name: profile_name});

@@ -67,6 +67,11 @@ var app = app || {};
         onDestroy: function() {
             this.stage.destroy();
         },
+        serializeData: function () {
+            return {
+                filling_types: app.settings ? app.settings.getAvailableFillingTypes() : []
+            };
+        },
 
         handleCanvasKeyDown: function(e) {
             if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
@@ -93,8 +98,13 @@ var app = app || {};
             });
         },
         handleFillingTypeChange: function() {
-            var type = this.ui.$filling_select.val();
-            this.model.setFillingType(this.state.selectedSashId, type);
+            var filling_type;
+
+            if ( app.settings ) {
+                filling_type = app.settings.getFillingType(this.ui.$filling_select.val());
+                this.model.setFillingType(this.state.selectedSashId,
+                    filling_type.get('type'), filling_type.get('name'));
+            }
         },
         setState: function(state) {
             this.state = _.assign(this.state, state);
