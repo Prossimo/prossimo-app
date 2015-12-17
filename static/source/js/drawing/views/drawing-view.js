@@ -3,9 +3,9 @@ var app = app || {};
 (function () {
     'use strict';
 
-    // global param
+    // global params
     var insideView = false;
-
+    var merticSize = 50;
     app.DrawingView = Marionette.ItemView.extend({
         tagName: 'div',
         template: app.templates['drawing/drawing-view'],
@@ -59,9 +59,9 @@ var app = app || {};
         },
         updateRenderedScene: function () {
             this.checkUnitType();
+            this.updateUI();
             this.updateSize();
             this.updateCanvas();
-            this.updateUI();
             this.$('#drawing').focus();
         },
         onDestroy: function() {
@@ -103,6 +103,7 @@ var app = app || {};
             this.$('#drawing').focus();
         },
         updateSize: function(width, height) {
+            console.log(height, this.$('#drawing').get(0).offsetHeight);
             this.stage.width(width || this.$('#drawing').get(0).offsetWidth);
             this.stage.height(height || this.$('#drawing').get(0).offsetHeight);
         },
@@ -684,7 +685,6 @@ var app = app || {};
         },
 
         createInfo: function(mullions, width, height) {
-            var merticSize = 50;
             var group = new Konva.Group();
             var verticalRows = 0;
             var horizontalRows = 0;
@@ -913,10 +913,11 @@ var app = app || {};
             var frameWidth = this.model.getInMetric('width', 'mm');
             var frameHeight = this.model.getInMetric('height', 'mm');
 
-            var wr = this.stage.width() / frameWidth;
-            var hr = this.stage.height() / frameHeight;
+            var topOffset = 10 + 0.5;
+            var wr = (this.stage.width() - merticSize * 2) / frameWidth;
+            var hr = (this.stage.height() - merticSize * 2 - topOffset) / frameHeight;
 
-            var ratio = Math.min(wr, hr) * 0.7;
+            var ratio = Math.min(wr, hr);
 
             var frameOnScreenWidth = frameWidth * ratio;
             var frameOnScreenHeight = frameHeight * ratio;
@@ -927,7 +928,7 @@ var app = app || {};
             // place unit on center
             group.x(Math.round(this.stage.width() / 2 - frameOnScreenWidth / 2) + 0.5);
             // and will small offset from top
-            group.y(10 + 0.5);
+            group.y(topOffset);
 
             this.layer.add(group);
 
