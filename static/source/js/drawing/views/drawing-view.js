@@ -929,7 +929,7 @@ var app = app || {};
             var group = new Konva.Group();
 
             // place unit on center
-            group.x(Math.round(this.stage.width() / 2 - frameOnScreenWidth / 2) + 0.5);
+            group.x(Math.round(this.stage.width() / 2 - frameOnScreenWidth / 2 + merticSize) + 0.5);
             // and will small offset from top
             group.y(topOffset);
 
