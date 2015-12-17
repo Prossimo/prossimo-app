@@ -459,7 +459,7 @@ var app = app || {};
                             ctx.lineTo(width, height / 2);
                             ctx.lineTo(0, height);
                         }
-                        if (type.indexOf('tilt_turn_') >= 0 || type.indexOf('slide') >= 0) {
+                        if (type.indexOf('tilt_turn_') >= 0 || type.indexOf('slide') >= 0 || type === 'tilt_only') {
                             ctx.moveTo(0, height);
                             ctx.lineTo(width / 2, 0);
                             ctx.lineTo(width, height);
