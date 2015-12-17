@@ -614,18 +614,24 @@ var app = app || {};
             var result = [];
 
             current_root = current_root || this.generateFullRoot();
+            current_sash.id = current_root.id;
 
-            _.each(current_root.sections, function (section) {
-                section_result = this.getSashList(section);
-                result = result.concat(section_result);
-            }, this);
+            if (current_root.sashType === 'fixed_in_frame') {
+                _.each(current_root.sections, function (section) {
+                    section_result = this.getSashList(section);
+                    result = result.concat(section_result);
+                }, this);
+            }
 
             if ( _.indexOf(SASH_TYPES_WITH_OPENING, current_root.sashType) !== -1 ) {
                 current_sash.opening.width = current_root.sashParams.width;
                 current_sash.opening.height = current_root.sashParams.height;
             }
 
-            if ( current_root.sections.length === 0 ) {
+            console.log();
+            if ( current_root.sections.length === 0 ||
+                ((current_root.sashType === 'fixed_in_frame') && (current_root.sections.length === 0)) ||
+                ((current_root.sashType !== 'fixed_in_frame') && (current_root.sections.length))) {
                 current_sash.type = this.getSashName(current_root.sashType);
                 current_sash.glass.width = current_root.glassParams.width;
                 current_sash.glass.height = current_root.glassParams.height;

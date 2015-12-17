@@ -103,7 +103,6 @@ var app = app || {};
             this.$('#drawing').focus();
         },
         updateSize: function(width, height) {
-            console.log(height, this.$('#drawing').get(0).offsetHeight);
             this.stage.width(width || this.$('#drawing').get(0).offsetWidth);
             this.stage.height(height || this.$('#drawing').get(0).offsetHeight);
         },
@@ -469,13 +468,17 @@ var app = app || {};
                 });
                 group.add(directionLine);
             }
-            if (!sectionData.sections || !sectionData.sections.length) {
+            var sashList = this.model.getSashList();
+            var index = _.findIndex(sashList, function(s) {
+                return s.id === sectionData.id;
+            });
+            if (index >= 0) {
                 var number = new Konva.Text({
                     x: sectionData.glassParams.x - sectionData.sashParams.x,
                     y: sectionData.glassParams.height / 2,
                     width: sectionData.glassParams.width,
                     align: 'center',
-                    text: sectionData.id || 'HELLO!',
+                    text: index + 1,
                     fontSize: 15 / this.ratio,
                     listening: false
                 });
