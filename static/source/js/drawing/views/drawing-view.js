@@ -108,6 +108,7 @@ var app = app || {};
         },
 
         clearFrame: function() {
+            this.deselectAll();
             this.model.clearFrame();
         },
 
