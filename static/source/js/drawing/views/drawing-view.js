@@ -920,7 +920,7 @@ var app = app || {};
             var wr = (this.stage.width() - merticSize * 2) / frameWidth;
             var hr = (this.stage.height() - merticSize * 2 - topOffset) / frameHeight;
 
-            var ratio = Math.min(wr, hr);
+            var ratio = Math.min(wr, hr) * 0.95;
 
             var frameOnScreenWidth = frameWidth * ratio;
             var frameOnScreenHeight = frameHeight * ratio;
