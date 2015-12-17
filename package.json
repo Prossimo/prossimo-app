@@ -2,7 +2,8 @@
   "name": "prossimo-app",
   "private": true,
   "scripts": {
-    "start": "grunt"
+    "start": "grunt",
+    "deploy": "grunt deploy"
   },
   "devDependencies": {
     "grunt": "~0.4.5",

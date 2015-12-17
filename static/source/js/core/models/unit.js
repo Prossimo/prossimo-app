@@ -628,7 +628,6 @@ var app = app || {};
                 current_sash.opening.height = current_root.sashParams.height;
             }
 
-            console.log();
             if ( current_root.sections.length === 0 ||
                 ((current_root.sashType === 'fixed_in_frame') && (current_root.sections.length === 0)) ||
                 ((current_root.sashType !== 'fixed_in_frame') && (current_root.sections.length))) {
