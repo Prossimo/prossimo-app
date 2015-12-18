@@ -291,7 +291,7 @@ var app = app || {};
         },
         setSectionSashType: function(sectionId, type) {
             if (!_.includes(SASH_TYPES, type)) {
-                throw new Error('Unrecognozed sash type: ' + type);
+                throw new Error('Unrecognized sash type: ' + type);
             }
             this._updateSection(sectionId, function(section) {
                 section.sashType = type;
@@ -311,7 +311,16 @@ var app = app || {};
             this._updateSection(sectionId, function(section) {
                 section.fillingType = type;
                 section.fillingName = name;
+
             });
+
+            //  We also change all nested sections recursively
+            var full = this.generateFullRoot();
+            var fullSection = app.Unit.findSection(full, sectionId);
+
+            _.each(fullSection.sections, function (childSection) {
+                this.setFillingType(childSection.id, type, name);
+            }, this);
         },
         // TODO: remove this methid below
         setPanelType: function(sectionId, type){
@@ -358,8 +367,15 @@ var app = app || {};
             this._updateSection(sectionId, function(section) {
                 var full = this.generateFullRoot();
                 var fullSection = app.Unit.findSection(full, sectionId);
+
                 section.divider = type;
                 section.sections = [getSectionDefaults(), getSectionDefaults()];
+
+                if ( section.fillingType && section.fillingName ) {
+                    section.sections[0].fillingType = section.sections[1].fillingType = section.fillingType;
+                    section.sections[0].fillingName = section.sections[1].fillingName = section.fillingName;
+                }
+
                 if (type === 'vertical') {
                     section.position = fullSection.openingParams.x + fullSection.openingParams.width / 2;
                 } else {
