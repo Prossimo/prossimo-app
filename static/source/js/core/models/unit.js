@@ -119,7 +119,6 @@ var app = app || {};
                 name_value_hash.glazing_bead = app.settings.getGlazingBeadTypes()[0];
                 name_value_hash.gasket_color = app.settings.getGasketColors()[0];
                 name_value_hash.hinge_style = app.settings.getHingeTypes()[0];
-                name_value_hash.glazing = app.settings.getGlassOrPanelTypes()[0];
                 name_value_hash.glazing_bar_width = app.settings.getGlazingBarWidths()[0];
             }
 
@@ -164,6 +163,7 @@ var app = app || {};
                 this.setProfile();
                 this.validateRootSection();
                 this.on('change:profile_name', this.setProfile, this);
+                this.on('change:glazing', this.setDefaultFillingType, this);
             }
         },
         setProfile: function () {
@@ -175,6 +175,18 @@ var app = app || {};
 
             if ( app.settings ) {
                 this.profile = app.settings.getProfileByNameOrNew(this.get('profile_name'));
+            }
+        },
+        setDefaultFillingType: function () {
+            var filling_type;
+            var glazing = this.get('glazing');
+
+            if ( glazing && app.settings ) {
+                filling_type = app.settings.getFillingTypeByName(glazing);
+
+                if ( filling_type ) {
+                    this.setFillingType(this.get('root_section').id, filling_type.get('type'), filling_type.get('name'));
+                }
             }
         },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
@@ -652,7 +664,10 @@ var app = app || {};
                 } else if ( parent_root && parent_root.fillingType && parent_root.fillingName ) {
                     current_sash.filling.type = parent_root.fillingType;
                     current_sash.filling.name = parent_root.fillingName;
-                } else if ( app.settings && app.settings.getFillingTypeByName(this.get('glazing')) ) {
+                } else if (
+                    this.get('glazing') && app.settings &&
+                    app.settings.getFillingTypeByName(this.get('glazing'))
+                ) {
                     filling_type = app.settings.getFillingTypeByName(this.get('glazing'));
                     current_sash.filling.type = filling_type.get('type');
                     current_sash.filling.name = filling_type.get('name');

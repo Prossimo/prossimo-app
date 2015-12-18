@@ -431,8 +431,10 @@ var app = app || {};
                     source: app.settings.getGlazingBeadTypes()
                 },
                 glazing: {
-                    type: 'autocomplete',
-                    source: app.settings.getGlassOrPanelTypes()
+                    type: 'dropdown',
+                    source: app.settings.getAvailableFillingTypes().map(function (item) {
+                        return item.get('name');
+                    })
                 },
                 glazing_bar_width: {
                     type: 'autocomplete',

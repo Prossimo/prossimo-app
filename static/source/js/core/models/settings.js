@@ -3,6 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
+
     //  --------------------------------------------------------------------
     //  That's what we use for Units
     //  --------------------------------------------------------------------
@@ -20,19 +21,17 @@ var app = app || {};
     ];
     var GLAZING_BEAD_TYPES = ['Rounded', 'Square'];
     var GLAZING_BAR_WIDTHS = [12, 22, 44];
-    var GLASS_OR_PANEL_TYPES = [
-        'Triple Standard - Ug=.09 SGHC=.50 LT=71%', 'Triple Tempered',
-        'Triple Low Gain', 'Triple Low Gain Tempered', 'Triple High Gain',
-        'Triple High Gain Tempered', 'Triple Standard-Outer Frosted', 'Triple Tempered-Outer Frosted'
-    ];
+
 
     //  --------------------------------------------------------------------
     //  That's what we use for Profiles
     //  --------------------------------------------------------------------
 
+
     var SYSTEMS = ['Workhorse uPVC', 'Pinnacle uPVC'];
     var SUPPLIER_SYSTEMS = ['Gaelan S8000', 'Gaelan S9000'];
     var CORNER_TYPES = ['Mitered', 'Square (Vertical)', 'Square (Horizontal)'];
+
 
     //  --------------------------------------------------------------------
     // That's what we use for settings
@@ -47,6 +46,7 @@ var app = app || {};
         { name: 'feet_and_inches', title: 'Feet + Inches' },
         { name: 'inches_only', title: 'Inches Only' }
     ];
+
 
     app.Settings = Backbone.Model.extend({
         defaults: function () {
@@ -161,9 +161,6 @@ var app = app || {};
         },
         getGlazingBarWidths: function () {
             return GLAZING_BAR_WIDTHS;
-        },
-        getGlassOrPanelTypes: function () {
-            return GLASS_OR_PANEL_TYPES;
         },
         getSystems: function () {
             return SYSTEMS;
