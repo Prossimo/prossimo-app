@@ -89,7 +89,7 @@ var app = app || {};
             return BASE_TYPES;
         },
         getTypeTitle: function (name) {
-            return _.findWhere(this.getBaseTypes(), { name: name }).get('title');
+            return _.findWhere(this.getBaseTypes(), { name: name }).title || '';
         }
     });
 })();

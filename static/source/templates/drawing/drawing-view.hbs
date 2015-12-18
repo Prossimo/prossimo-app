@@ -22,9 +22,9 @@
         <br/>
         <span class="filling-type">
             Filling:
-            <select class='filling-select'>
+            <select id="filling-select" class="selectpicker show-tick" title="Choose filling type" data-live-search="true">
             {{#each filling_types }}
-                {{#if attributes.name }}<option value="{{ cid }}">{{ attributes.name }}</option>{{/if}}
+                {{#if name }}<option value="{{ cid }}" data-subtext="{{ type }}">{{ name }}</option>{{/if}}
             {{/each }}
             </select>
         </span>

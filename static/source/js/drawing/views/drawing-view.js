@@ -25,8 +25,7 @@ var app = app || {};
             '$section_control': '#section_control',
             '$vertical_bars_number': '#vertical-bars-number',
             '$horizontal_bars_number': '#horizontal-bars-number',
-            '$filling_type': '.filling-type',
-            '$filling_select': '.filling-select'
+            '$filling_select': '#filling-select'
         },
 
         events: {
@@ -46,7 +45,7 @@ var app = app || {};
             'input #vertical-bars-number': 'handleBarNumberChange',
             'change #horizontal-bars-number': 'handleBarNumberChange',
             'input #horizontal-bars-number': 'handleBarNumberChange',
-            'change .filling-select': 'handleFillingTypeChange'
+            'change #filling-select': 'handleFillingTypeChange'
         },
 
         onRender: function(){
@@ -56,6 +55,12 @@ var app = app || {};
 
             this.layer = new Konva.Layer();
             this.stage.add(this.layer);
+
+            this.ui.$filling_select.selectpicker({
+                style: 'btn-xs',
+                showSubtext: true,
+                size: 10
+            });
         },
         updateRenderedScene: function () {
             this.checkUnitType();
@@ -69,7 +74,14 @@ var app = app || {};
         },
         serializeData: function () {
             return {
-                filling_types: app.settings ? app.settings.getAvailableFillingTypes() : []
+                filling_types: !app.settings ? [] :
+                    app.settings.getAvailableFillingTypes().map(function (item) {
+                        return {
+                            cid: item.cid,
+                            name: item.get('name'),
+                            type: item.getTypeTitle(item.get('type'))
+                        };
+                    })
             };
         },
 
@@ -101,7 +113,7 @@ var app = app || {};
             var filling_type;
 
             if ( app.settings ) {
-                filling_type = app.settings.getFillingType(this.ui.$filling_select.val());
+                filling_type = app.settings.getFillingTypeById(this.ui.$filling_select.val());
                 this.model.setFillingType(this.state.selectedSashId,
                     filling_type.get('type'), filling_type.get('name'));
             }
@@ -1010,7 +1022,14 @@ var app = app || {};
             this.ui.$horizontal_bars_number.val(selectedSash && selectedSash.horizontal_bars_number || 0);
             this.ui.$section_control.toggle(!!selectedSashId);
             this.$('.sash-types').toggle(selectedSashId && this.model.canAddSashToSection(selectedSashId));
-            this.ui.$filling_select.val(selectedSash && selectedSash.fillingType);
+
+            var selectedFillingType = selectedSash && selectedSash.fillingName &&
+                app.settings && app.settings.getFillingTypeByName(selectedSash.fillingName);
+
+            if ( selectedFillingType ) {
+                this.ui.$filling_select.val(selectedFillingType.cid);
+                this.ui.$filling_select.selectpicker('render');
+            }
         },
 
         splitSection: function(e) {

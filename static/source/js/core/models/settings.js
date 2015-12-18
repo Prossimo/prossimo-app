@@ -122,8 +122,11 @@ var app = app || {};
                 return item.get('name');
             });
         },
-        getFillingType: function (cid) {
+        getFillingTypeById: function (cid) {
             return this.filling_types.get(cid);
+        },
+        getFillingTypeByName: function (name) {
+            return this.filling_types.findWhere({ name: name });
         },
         getAvailableFillingTypes: function () {
             return this.filling_types.models;
