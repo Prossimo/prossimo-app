@@ -71,11 +71,19 @@ var app = app || {};
         'full-flush-panel', 'louver'
     ];
 
+    function getDefaultFillingType() {
+        return {
+            fillingType: 'glass',
+            fillingName: 'Glass'
+        };
+    }
+
     function getSectionDefaults() {
         return {
             id: _.uniqueId(),
             sashType: 'fixed_in_frame',
-            fillingType: 'glass'
+            fillingType: getDefaultFillingType().fillingType,
+            fillingName: getDefaultFillingType().fillingName
         };
     }
 
@@ -606,12 +614,13 @@ var app = app || {};
             }
             return res;
         },
-        getSashList: function (current_root) {
+        getSashList: function (current_root, parent_root) {
             var current_sash = {
                 opening: {},
-                glass: {}
+                filling: {}
             };
             var section_result;
+            var filling_type;
             var result = [];
 
             current_root = current_root || this.generateFullRoot();
@@ -619,7 +628,7 @@ var app = app || {};
 
             if (current_root.sashType === 'fixed_in_frame') {
                 _.each(current_root.sections, function (section) {
-                    section_result = this.getSashList(section);
+                    section_result = this.getSashList(section, current_root);
                     result = result.concat(section_result);
                 }, this);
             }
@@ -631,11 +640,27 @@ var app = app || {};
 
             if ( current_root.sections.length === 0 ||
                 ((current_root.sashType === 'fixed_in_frame') && (current_root.sections.length === 0)) ||
-                ((current_root.sashType !== 'fixed_in_frame') && (current_root.sections.length))) {
+                ((current_root.sashType !== 'fixed_in_frame') && (current_root.sections.length))
+            ) {
                 current_sash.type = this.getSashName(current_root.sashType);
-                current_sash.glass.width = current_root.glassParams.width;
-                current_sash.glass.height = current_root.glassParams.height;
-                current_sash.glass.type = this.get('glazing');
+                current_sash.filling.width = current_root.glassParams.width;
+                current_sash.filling.height = current_root.glassParams.height;
+
+                if ( current_root.fillingType && current_root.fillingName ) {
+                    current_sash.filling.type = current_root.fillingType;
+                    current_sash.filling.name = current_root.fillingName;
+                } else if ( parent_root && parent_root.fillingType && parent_root.fillingName ) {
+                    current_sash.filling.type = parent_root.fillingType;
+                    current_sash.filling.name = parent_root.fillingName;
+                } else if ( app.settings && app.settings.getFillingTypeByName(this.get('glazing')) ) {
+                    filling_type = app.settings.getFillingTypeByName(this.get('glazing'));
+                    current_sash.filling.type = filling_type.get('type');
+                    current_sash.filling.name = filling_type.get('name');
+                } else {
+                    filling_type = getDefaultFillingType();
+                    current_sash.filling.type = filling_type.fillingType;
+                    current_sash.filling.name = filling_type.fillingName;
+                }
 
                 result.push(current_sash);
             }

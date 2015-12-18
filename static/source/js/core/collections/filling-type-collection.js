@@ -42,6 +42,9 @@ var app = app || {};
         },
         getTitles: function (names) {
             return this.proxy_type.getTitles(names);
+        },
+        getTypeTitle: function (name) {
+            return this.findWhere({ name: name }).get('title') || this.proxy_type.getBaseTypeTitle(name);
         }
     });
 })();

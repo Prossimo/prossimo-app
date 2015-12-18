@@ -79,7 +79,7 @@ var app = app || {};
                         return {
                             cid: item.cid,
                             name: item.get('name'),
-                            type: item.getTypeTitle(item.get('type'))
+                            type: item.getBaseTypeTitle(item.get('type'))
                         };
                     })
             };

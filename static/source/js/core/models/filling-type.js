@@ -88,7 +88,7 @@ var app = app || {};
         getBaseTypes: function () {
             return BASE_TYPES;
         },
-        getTypeTitle: function (name) {
+        getBaseTypeTitle: function (name) {
             return _.findWhere(this.getBaseTypes(), { name: name }).title || '';
         }
     });
