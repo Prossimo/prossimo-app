@@ -31,7 +31,8 @@ var app = app || {};
                 base_types.push(new app.FillingType({
                     name: item.title,
                     type: item.name,
-                    is_base_type: true
+                    is_base_type: true,
+                    no_backend: true
                 }));
             }, this);
 

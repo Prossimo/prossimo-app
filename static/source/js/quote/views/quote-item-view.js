@@ -74,6 +74,7 @@ var app = app || {};
                 var filling_area;
                 var opening_size;
                 var opening_area;
+                var filling_type;
 
                 sash_item.name = 'Sash #' + (index + 1);
                 sash_item.type = source_item.type;
@@ -90,6 +91,15 @@ var app = app || {};
                 sash_item.filling_is_glass = source_item.filling.type === 'glass';
                 sash_item.filling_name = source_item.filling.name;
                 sash_item.filling_size = filling_size + ' (' + filling_area + ')';
+
+                //  Show supplier name for filling if it exists
+                if ( this.options.show_supplier_filling_name && app.settings && sash_item.filling_name ) {
+                    filling_type = app.settings.getFillingTypeByName(sash_item.filling_name);
+
+                    if ( filling_type && filling_type.get('supplier_name') ) {
+                        sash_item.filling_name = filling_type.get('supplier_name');
+                    }
+                }
 
                 if ( source_item.opening.height && source_item.opening.width ) {
                     opening_size = this.options.show_sizes_in_mm ?

@@ -13,7 +13,8 @@ var app = app || {};
     ];
 
     var FILLING_TYPE_PROPERTIES = [
-        { name: 'name', title: 'Name', type: 'string' },
+        { name: 'name', title: 'Prossimo Name', type: 'string' },
+        { name: 'supplier_name', title: 'Supplier Name', type: 'string' },
         { name: 'type', title: 'Type', type: 'string' },
         { name: 'is_base_type', title: 'Is Base Type', type: 'boolean' }
     ];

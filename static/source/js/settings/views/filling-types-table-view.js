@@ -21,7 +21,7 @@ var app = app || {};
         initialize: function () {
             this.table_update_timeout = null;
             this.columns = [
-                'name', 'type', 'move_item', 'remove_item'
+                'name', 'supplier_name', 'type', 'move_item', 'remove_item'
             ];
 
             this.listenTo(this.collection, 'all', this.updateTable);
@@ -100,7 +100,9 @@ var app = app || {};
 
             var properties_hash = {
                 name: {
-                    rendererName: 'fillingTypeRenderer',
+                    renderer: app.hot_renderers.fillingTypeRenderer
+                },
+                supplier_name: {
                     renderer: app.hot_renderers.fillingTypeRenderer
                 },
                 type: {
