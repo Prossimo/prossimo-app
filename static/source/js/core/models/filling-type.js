@@ -50,16 +50,16 @@ var app = app || {};
 
             return default_value;
         },
-        // save: function () {
-        //     return Backbone.Model.prototype.saveAndGetId.apply(this, arguments);
-        // },
-        // sync: function (method, model, options) {
-        //     if ( method === 'create' || method === 'update' ) {
-        //         options.attrs = { project_accessory: _.omit(model.toJSON(), ['id']) };
-        //     }
+        save: function () {
+            return Backbone.Model.prototype.saveAndGetId.apply(this, arguments);
+        },
+        sync: function (method, model, options) {
+            if ( method === 'create' || method === 'update' ) {
+                options.attrs = { filling_type: _.omit(model.toJSON(), ['id', 'is_base_type']) };
+            }
 
-        //     return Backbone.sync.call(this, method, model, options);
-        // },
+            return Backbone.sync.call(this, method, model, options);
+        },
         initialize: function (attributes, options) {
             this.options = options || {};
         },

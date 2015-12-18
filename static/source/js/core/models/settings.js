@@ -95,6 +95,13 @@ var app = app || {};
                     limit: 0
                 }
             });
+
+            this.filling_types.fetch({
+                remove: false,
+                data: {
+                    limit: 0
+                }
+            });
         },
         getNameTitleTypeHash: function (names) {
             var name_title_type_hash = {};

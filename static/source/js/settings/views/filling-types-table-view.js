@@ -72,8 +72,7 @@ var app = app || {};
             };
 
             setter = function (model, attr_name, val) {
-                // return model.persist(attr_name, val);
-                return model.set(attr_name, val);
+                return model.persist(attr_name, val);
             };
 
             return function (filling_type_model, value) {

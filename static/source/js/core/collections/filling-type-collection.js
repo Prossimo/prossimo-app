@@ -5,17 +5,17 @@ var app = app || {};
 
     app.FillingTypeCollection = Backbone.Collection.extend({
         model: app.FillingType,
-        // url: function () {
-        //     return (this.options.api_base_path ? this.options.api_base_path : '') + '/profiles';
-        // },
-        // parse: function (data) {
-        //     return _.map(data.profiles, function (profile) {
-        //         return _.omit(profile, ['units']);
-        //     });
-        // },
-        // comparator: function (item) {
-        //     return item.id;
-        // },
+        url: function () {
+            return (this.options.api_base_path ? this.options.api_base_path : '') + '/fillingtypes';
+        },
+        parse: function (data) {
+            return _.map(data.filling_types, function (filling_type) {
+                return _.omit(filling_type, ['units']);
+            });
+        },
+        comparator: function (item) {
+            return item.id;
+        },
         initialize: function (models, options) {
             this.options = options || {};
             this.proxy_type = new app.FillingType(null, { proxy: true });
