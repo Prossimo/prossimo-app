@@ -80,6 +80,7 @@ var app = app || {};
         },
         appendPopovers: function () {
             this.$el.popover('destroy');
+            $('.popover').remove();
 
             this.$el.popover({
                 container: 'body',
@@ -89,7 +90,6 @@ var app = app || {};
                     return $(this).clone();
                 },
                 trigger: 'hover',
-                placement: 'top',
                 delay: {
                     show: 300
                 }
@@ -546,6 +546,8 @@ var app = app || {};
                     self.hot.render();
                 }, 20);
             }
+
+            this.appendPopovers();
         },
         onRender: function () {
             var self = this;
