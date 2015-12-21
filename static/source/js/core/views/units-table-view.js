@@ -567,6 +567,7 @@ var app = app || {};
                     columns: self.getActiveTabColumnOptions(),
                     colHeaders: self.getActiveTabHeaders(),
                     rowHeaders: true,
+                    rowHeights: 52,
                     trimDropdown: false,
                     maxRows: function () {
                         return self.getActiveTab().collection.length;
