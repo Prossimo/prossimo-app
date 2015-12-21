@@ -47,7 +47,7 @@ var app = app || {};
                 prices: {
                     title: 'Prices',
                     collection: this.collection,
-                    columns: ['mark', 'quantity', 'original_cost', 'original_currency',
+                    columns: ['mark', 'quantity', 'drawing', 'original_cost', 'original_currency',
                         'conversion_rate', 'unit_cost', 'price_markup', 'unit_price',
                         'subtotal_price', 'discount', 'unit_price_discounted',
                         'subtotal_price_discounted', 'total_square_feet',
