@@ -275,7 +275,13 @@ var app = app || {};
                     strokeWidth: 1
                 });
                 mullion.setAttrs(rootSection.mullionParams);
-                if (this.state.selectedMullionId === rootSection.id) {
+                var isVerticalInvisible = rootSection.divider === 'vertical_invisible';
+                var isSelected = this.state.selectedMullionId === rootSection.id;
+                if (isVerticalInvisible && !isSelected) {
+                    mullion.fill('lightgreen');
+                } else if (isVerticalInvisible && isSelected) {
+                    mullion.fill('#4E993F');
+                } else if (isSelected) {
                     mullion.fill('lightgrey');
                 }
                 mullion.on('click', function() {
@@ -463,6 +469,11 @@ var app = app || {};
                             ctx.moveTo(0, height);
                             ctx.lineTo(width / 2, 0);
                             ctx.lineTo(width, height);
+                        }
+                        if (type === 'tilt_only_top_hung') {
+                            ctx.moveTo(0, 0);
+                            ctx.lineTo(width / 2, height);
+                            ctx.lineTo(width, 0);
                         }
                         ctx.strokeShape(this);
                     }
@@ -699,7 +710,7 @@ var app = app || {};
                 if (this.state.selectedMullionId && this.state.selectedMullionId !== mul.id) {
                     return;
                 }
-                if (mul.type === 'vertical') {
+                if (mul.type === 'vertical' || mul.type === 'vertical_invisible') {
                     verticalMullions.push(mul);
                 } else {
                     horizontalMullions.push(mul);
@@ -910,9 +921,7 @@ var app = app || {};
             });
             this.layer.add(back);
             back.on('click tap', function() {
-                this.setState({
-                    selectedSashId: null
-                });
+                this.deselectAll();
             }.bind(this));
             var frameWidth = this.model.getInMetric('width', 'mm');
             var frameHeight = this.model.getInMetric('height', 'mm');
