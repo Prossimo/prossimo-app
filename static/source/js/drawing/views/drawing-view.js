@@ -385,7 +385,7 @@ var app = app || {};
                         bar = new Konva.Rect({
                             x: fillX + x_offset * (i + 1), y: fillY,
                             width: this.model.get('glazing_bar_width'), height: fillHeight,
-                            fill: 'white'
+                            fill: 'white', listening: false
                         });
                         group.add(bar);
                     }
@@ -394,7 +394,7 @@ var app = app || {};
                         bar = new Konva.Rect({
                             x: fillX, y: fillY + y_offset * (i + 1),
                             width: fillWidth, height: this.model.get('glazing_bar_width'),
-                            fill: 'white'
+                            fill: 'white', listening: false
                         });
                         group.add(bar);
                     }
