@@ -71,7 +71,7 @@ test('find sash border offsets', function() {
     unit.splitSection(id, 'vertical');
     var rootSection = unit.generateFullRoot();
     var leftSection = rootSection.sections[0];
-    equal(leftSection.mullionEdges.right, true);
+    equal(leftSection.mullionEdges.right, 'vertical');
     equal(leftSection.mullionEdges.left, undefined);
     equal(leftSection.mullionEdges.top, undefined);
     equal(leftSection.mullionEdges.bottom, undefined);
@@ -84,13 +84,13 @@ test('find sash border offsets', function() {
     var bottomSection = rootSection.sections[1].sections[1];
 
     equal(topSection.mullionEdges.right, undefined);
-    equal(topSection.mullionEdges.left, true);
+    equal(topSection.mullionEdges.left, 'vertical');
     equal(topSection.mullionEdges.top, undefined);
-    equal(topSection.mullionEdges.bottom, true);
+    equal(topSection.mullionEdges.bottom, 'horizontal');
 
     equal(bottomSection.mullionEdges.right, undefined);
-    equal(bottomSection.mullionEdges.left, true);
-    equal(bottomSection.mullionEdges.top, true);
+    equal(bottomSection.mullionEdges.left, 'vertical');
+    equal(bottomSection.mullionEdges.top, 'horizontal');
     equal(bottomSection.mullionEdges.bottom, undefined);
 });
 
