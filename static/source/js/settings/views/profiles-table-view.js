@@ -28,6 +28,7 @@ var app = app || {};
                 'spacer_thermal_bridge_value', 'move_item', 'remove_item'
             ];
 
+            this.listenTo(this.collection, 'invalid', this.showValidationError);
             this.listenTo(this.collection, 'all', this.updateTable);
             this.listenTo(this.options.parent_view, 'attach', this.updateTable);
         },
@@ -103,6 +104,50 @@ var app = app || {};
                     setter(profile_model, column_name, value);
                 }
             };
+        },
+        showValidationError: function (model, error) {
+            if ( this.hot ) {
+                var hot = this.hot;
+                var self = this;
+
+                var row_index = model.collection.indexOf(model);
+                var col_index = _.indexOf(this.columns, error.attribute_name);
+                var target_cell = hot.getCell(row_index, col_index);
+                var $target_cell = $(target_cell);
+
+                $target_cell.popover({
+                    container: 'body',
+                    title: 'Validation Error',
+                    content: error.error_message,
+                    trigger: 'manual'
+                });
+
+                $target_cell.popover('show');
+
+                setTimeout(function () {
+                    $target_cell.popover('destroy');
+                    hot.setCellMeta(row_index, col_index, 'valid', true);
+                    self.updateTable();
+                }, 5000);
+            }
+        },
+        getColumnValidator: function (column_name) {
+            var validator;
+
+            validator = function (value, callback) {
+                var attributes_object = {};
+                var model = this.instance.getSourceData().at(this.row);
+
+                attributes_object[column_name] = value;
+
+                if ( !model.validate(attributes_object, { validate: true }) ) {
+                    callback(true);
+                } else {
+                    callback(false);
+                }
+            };
+
+            return validator;
         },
         getColumnExtraProperties: function (column_name) {
             var properties_obj = {};
@@ -186,10 +231,10 @@ var app = app || {};
             var columns = [];
 
             _.each(this.columns, function (column_name) {
-                var column_obj = _.extend({},
-                    { data: this.getColumnData(column_name) },
-                    this.getColumnExtraProperties(column_name)
-                );
+                var column_obj = _.extend({}, {
+                    data: this.getColumnData(column_name),
+                    validator: this.getColumnValidator(column_name)
+                }, this.getColumnExtraProperties(column_name));
 
                 columns.push(column_obj);
             }, this);
@@ -227,8 +272,14 @@ var app = app || {};
 
             return custom_column_headers_hash[column_name];
         },
-        updateTable: function () {
+        updateTable: function (e) {
             var self = this;
+
+            //  We don't want to update table on validation errors, we have
+            //  a special function for that
+            if ( e === 'invalid' ) {
+                return;
+            }
 
             if ( this.hot ) {
                 clearTimeout(this.table_update_timeout);

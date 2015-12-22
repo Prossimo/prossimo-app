@@ -88,6 +88,21 @@ var app = app || {};
                 this.on('change:unit_type', this.onTypeUpdate, this);
             }
         },
+        validate: function (attributes, options) {
+            var collection_names = this.collection && _.map(this.collection.without(this), function (item) {
+                return item.get('name');
+            });
+
+            //  We want to have unique profile names across the collection
+            if ( options.validate && collection_names &&
+                _.contains(collection_names, attributes.name)
+            ) {
+                return {
+                    attribute_name: 'name',
+                    error_message: 'Profile name "' + attributes.name + '" is already used in this collection'
+                };
+            }
+        },
         isThresholdPossible: function () {
             return _.indexOf(TYPES_WITH_POSSIBLE_THRESHOLD, this.get('unit_type')) !== -1;
         },
