@@ -569,7 +569,10 @@ var app = app || {};
                     columns: self.getActiveTabColumnOptions(),
                     colHeaders: self.getActiveTabHeaders(),
                     rowHeaders: true,
-                    rowHeights: 52,
+                    rowHeights: function () {
+                        return _.contains(self.getActiveTab().columns, 'drawing') ||
+                            _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : undefined;
+                    },
                     trimDropdown: false,
                     maxRows: function () {
                         return self.getActiveTab().collection.length;
