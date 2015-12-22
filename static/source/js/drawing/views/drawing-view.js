@@ -269,6 +269,7 @@ var app = app || {};
         createSection: function(rootSection) {
             var objects = [];
             if (rootSection.sections && rootSection.sections.length) {
+
                 var mullion = new Konva.Rect({
                     stroke: 'black',
                     fill: 'white',
@@ -277,14 +278,24 @@ var app = app || {};
                 mullion.setAttrs(rootSection.mullionParams);
                 var isVerticalInvisible = rootSection.divider === 'vertical_invisible';
                 var isSelected = this.state.selectedMullionId === rootSection.id;
+
+                // do not show mullion for type vertical_invisible
+                // and sash is added for both right and left sides
+                var hideMullion = (rootSection.divider === 'vertical_invisible') &&
+                    (rootSection.sections[0].sashType !== 'fixed_in_frame') &&
+                    (rootSection.sections[1].sashType !== 'fixed_in_frame') &&
+                    !isSelected;
                 if (isVerticalInvisible && !isSelected) {
                     mullion.fill('lightgreen');
-                    mullion.opacity(0.4);
+                    mullion.opacity(0.5);
                 } else if (isVerticalInvisible && isSelected) {
                     mullion.opacity(0.7);
                     mullion.fill('#4E993F');
                 } else if (isSelected) {
                     mullion.fill('lightgrey');
+                }
+                if (hideMullion) {
+                    mullion.opacity(0.01);
                 }
                 mullion.on('click', function() {
                     this.deselectAll();
