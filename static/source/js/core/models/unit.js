@@ -619,8 +619,13 @@ var app = app || {};
             if (current_root.sashType === 'fixed_in_frame') {
                 _.each(current_root.sections, function (section) {
                     section_result = this.getSashList(section);
-                    result = result.concat(section_result);
+                    if (current_root.divider === 'vertical') {
+                        result = section_result.concat(result);
+                    } else {
+                        result = result.concat(section_result);
+                    }
                 }, this);
+
             }
 
             if ( _.indexOf(SASH_TYPES_WITH_OPENING, current_root.sashType) !== -1 ) {
@@ -636,7 +641,7 @@ var app = app || {};
                 current_sash.glass.height = current_root.glassParams.height;
                 current_sash.glass.type = this.get('glazing');
 
-                result.push(current_sash);
+                result.unshift(current_sash);
             }
 
             return result;
