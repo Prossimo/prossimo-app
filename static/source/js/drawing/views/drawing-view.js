@@ -279,7 +279,9 @@ var app = app || {};
                 var isSelected = this.state.selectedMullionId === rootSection.id;
                 if (isVerticalInvisible && !isSelected) {
                     mullion.fill('lightgreen');
+                    mullion.opacity(0.4);
                 } else if (isVerticalInvisible && isSelected) {
+                    mullion.opacity(0.7);
                     mullion.fill('#4E993F');
                 } else if (isSelected) {
                     mullion.fill('lightgrey');
@@ -407,10 +409,11 @@ var app = app || {};
                 }
             }
             var type = sectionData.sashType;
-
+            console.log(type);
             if (type !== 'fixed_in_frame') {
                 var shouldDrawHandle = (this.state.insideView &&
-                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type === 'tilt_only'))
+                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type === 'tilt_only')) &&
+                    (type.indexOf('_hinge_hidden_latch') === -1)
                     || (!this.state.insideView && this.model.profile.hasOutsideHandle());
                 if (shouldDrawHandle) {
                     var offset = frameWidth / 2;
@@ -478,6 +481,9 @@ var app = app || {};
                         ctx.strokeShape(this);
                     }
                 });
+                if ((type.indexOf('_hinge_hidden_latch') !== -1)) {
+                    directionLine.dash([10 / this.ratio, 10 / this.ratio]);
+                }
                 group.add(directionLine);
             }
             var sashList = this.model.getSashList();

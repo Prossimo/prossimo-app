@@ -46,7 +46,8 @@ var app = app || {};
         'tilt_turn_left', 'tilt_turn_right', 'fixed_in_frame', 'tilt_only',
         'turn_only_left', 'turn_only_right', 'fixed_in_sash',
         // additional types for solid doors
-        'flush-turn-right', 'flush-turn-left', 'tilt_only_top_hung'
+        'flush-turn-right', 'flush-turn-left', 'tilt_only_top_hung',
+        'turn_only_right_hinge_hidden_latch', 'turn_only_left_hinge_hidden_latch'
     ];
 
     var SASH_TYPES_WITH_OPENING = _.without(SASH_TYPES, 'fixed_in_frame');
@@ -63,7 +64,9 @@ var app = app || {};
         'turn_only_left': 'Turn Only Left Hinge',
         'tilt_only_top_hung': 'Tilt Only Top Hung',
         'slide-right': 'Slide Right',
-        'slide-left': 'Slide Left'
+        'slide-left': 'Slide Left',
+        'turn_only_right_hinge_hidden_latch': 'Turn Only Right Hinge Hidden Latch',
+        'turn_only_left_hinge_hidden_latch': 'Turn Only Left Hinge Hidden Latch'
     };
 
     var FILLING_TYPES = [
