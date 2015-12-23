@@ -291,14 +291,33 @@ var app = app || {};
         createSection: function(rootSection) {
             var objects = [];
             if (rootSection.sections && rootSection.sections.length) {
+
                 var mullion = new Konva.Rect({
                     stroke: 'black',
                     fill: 'white',
                     strokeWidth: 1
                 });
                 mullion.setAttrs(rootSection.mullionParams);
-                if (this.state.selectedMullionId === rootSection.id) {
+                var isVerticalInvisible = rootSection.divider === 'vertical_invisible';
+                var isSelected = this.state.selectedMullionId === rootSection.id;
+
+                // do not show mullion for type vertical_invisible
+                // and sash is added for both right and left sides
+                var hideMullion = (rootSection.divider === 'vertical_invisible') &&
+                    (rootSection.sections[0].sashType !== 'fixed_in_frame') &&
+                    (rootSection.sections[1].sashType !== 'fixed_in_frame') &&
+                    !isSelected;
+                if (isVerticalInvisible && !isSelected) {
+                    mullion.fill('lightgreen');
+                    mullion.opacity(0.5);
+                } else if (isVerticalInvisible && isSelected) {
+                    mullion.opacity(0.7);
+                    mullion.fill('#4E993F');
+                } else if (isSelected) {
                     mullion.fill('lightgrey');
+                }
+                if (hideMullion) {
+                    mullion.opacity(0.01);
                 }
                 mullion.on('click', function() {
                     this.deselectAll();
@@ -407,7 +426,7 @@ var app = app || {};
                         bar = new Konva.Rect({
                             x: fillX + x_offset * (i + 1), y: fillY,
                             width: this.model.get('glazing_bar_width'), height: fillHeight,
-                            fill: 'white'
+                            fill: 'white', listening: false
                         });
                         group.add(bar);
                     }
@@ -416,17 +435,17 @@ var app = app || {};
                         bar = new Konva.Rect({
                             x: fillX, y: fillY + y_offset * (i + 1),
                             width: fillWidth, height: this.model.get('glazing_bar_width'),
-                            fill: 'white'
+                            fill: 'white', listening: false
                         });
                         group.add(bar);
                     }
                 }
             }
             var type = sectionData.sashType;
-
             if (type !== 'fixed_in_frame') {
                 var shouldDrawHandle = (this.state.insideView &&
-                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type === 'tilt_only'))
+                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type === 'tilt_only')) &&
+                    (type.indexOf('_hinge_hidden_latch') === -1)
                     || (!this.state.insideView && this.model.profile.hasOutsideHandle());
                 if (shouldDrawHandle) {
                     var offset = frameWidth / 2;
@@ -486,9 +505,17 @@ var app = app || {};
                             ctx.lineTo(width / 2, 0);
                             ctx.lineTo(width, height);
                         }
+                        if (type === 'tilt_only_top_hung') {
+                            ctx.moveTo(0, 0);
+                            ctx.lineTo(width / 2, height);
+                            ctx.lineTo(width, 0);
+                        }
                         ctx.strokeShape(this);
                     }
                 });
+                if ((type.indexOf('_hinge_hidden_latch') !== -1)) {
+                    directionLine.dash([10 / this.ratio, 10 / this.ratio]);
+                }
                 group.add(directionLine);
             }
             var sashList = this.model.getSashList();
@@ -497,14 +524,14 @@ var app = app || {};
             });
             if (index >= 0) {
                 var number = new Konva.Text({
-                    x: sectionData.glassParams.x - sectionData.sashParams.x,
-                    y: sectionData.glassParams.height / 2,
-                    width: sectionData.glassParams.width,
+                    x: sectionData.openingParams.x - sectionData.sashParams.x,
+                    width: sectionData.openingParams.width,
                     align: 'center',
                     text: index + 1,
                     fontSize: 15 / this.ratio,
                     listening: false
                 });
+                number.y(sectionData.openingParams.height / 2 + number.height() / 2 - sectionData.sashParams.y);
                 group.add(number);
             }
             if (sectionData.id === this.state.selectedSashId) {
@@ -721,7 +748,7 @@ var app = app || {};
                 if (this.state.selectedMullionId && this.state.selectedMullionId !== mul.id) {
                     return;
                 }
-                if (mul.type === 'vertical') {
+                if (mul.type === 'vertical' || mul.type === 'vertical_invisible') {
                     verticalMullions.push(mul);
                 } else {
                     horizontalMullions.push(mul);
@@ -932,9 +959,7 @@ var app = app || {};
             });
             this.layer.add(back);
             back.on('click tap', function() {
-                this.setState({
-                    selectedSashId: null
-                });
+                this.deselectAll();
             }.bind(this));
             var frameWidth = this.model.getInMetric('width', 'mm');
             var frameHeight = this.model.getInMetric('height', 'mm');

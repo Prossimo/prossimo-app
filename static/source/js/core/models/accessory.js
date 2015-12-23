@@ -11,7 +11,7 @@ var app = app || {};
     var ACCESSORY_PROPERTIES = [
         { name: 'description', title: 'Description', type: 'string' },
         { name: 'quantity', title: 'Quantity', type: 'number' },
-        { name: 'extras_type', title: 'Extras type', type: 'extras_type' },
+        { name: 'extras_type', title: 'Extras type', type: 'string' },
 
         { name: 'original_cost', title: 'Original Cost', type: 'number' },
         { name: 'original_currency', title: 'Original Currency', type: 'string' },
@@ -67,6 +67,37 @@ var app = app || {};
         },
         initialize: function (attributes, options) {
             this.options = options || {};
+        },
+        validate: function (attributes, options) {
+            var error_obj = null;
+
+            //  Simple type validation for numbers and booleans
+            _.find(attributes, function (value, key) {
+                var attribute_obj = this.getNameTitleTypeHash([key]);
+                attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
+
+                if ( attribute_obj && attribute_obj.type === 'number' &&
+                    (!_.isNumber(value) || _.isNaN(value))
+                ) {
+                    error_obj = {
+                        attribute_name: key,
+                        error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a number'
+                    };
+
+                    return false;
+                } else if ( attribute_obj && attribute_obj.type === 'boolean' && !_.isBoolean(value) ) {
+                    error_obj = {
+                        attribute_name: key,
+                        error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a boolean'
+                    };
+
+                    return false;
+                }
+            }, this);
+
+            if ( options.validate && error_obj ) {
+                return error_obj;
+            }
         },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs

@@ -88,6 +88,50 @@ var app = app || {};
                 this.on('change:unit_type', this.onTypeUpdate, this);
             }
         },
+        validate: function (attributes, options) {
+            var error_obj = null;
+            var collection_names = this.collection && _.map(this.collection.without(this), function (item) {
+                return item.get('name');
+            });
+
+            //  We want to have unique profile names across the collection
+            if ( options.validate && collection_names &&
+                _.contains(collection_names, attributes.name)
+            ) {
+                return {
+                    attribute_name: 'name',
+                    error_message: 'Profile name "' + attributes.name + '" is already used in this collection'
+                };
+            }
+
+            //  Simple type validation for numbers and booleans
+            _.find(attributes, function (value, key) {
+                var attribute_obj = this.getNameTitleTypeHash([key]);
+                attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
+
+                if ( attribute_obj && attribute_obj.type === 'number' &&
+                    (!_.isNumber(value) || _.isNaN(value))
+                ) {
+                    error_obj = {
+                        attribute_name: key,
+                        error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a number'
+                    };
+
+                    return false;
+                } else if ( attribute_obj && attribute_obj.type === 'boolean' && !_.isBoolean(value) ) {
+                    error_obj = {
+                        attribute_name: key,
+                        error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a boolean'
+                    };
+
+                    return false;
+                }
+            }, this);
+
+            if ( options.validate && error_obj ) {
+                return error_obj;
+            }
+        },
         isThresholdPossible: function () {
             return _.indexOf(TYPES_WITH_POSSIBLE_THRESHOLD, this.get('unit_type')) !== -1;
         },

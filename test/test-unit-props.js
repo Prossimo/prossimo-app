@@ -71,7 +71,7 @@ test('find sash border offsets', function() {
     unit.splitSection(id, 'vertical');
     var rootSection = unit.generateFullRoot();
     var leftSection = rootSection.sections[0];
-    equal(leftSection.mullionEdges.right, true);
+    equal(leftSection.mullionEdges.right, 'vertical');
     equal(leftSection.mullionEdges.left, undefined);
     equal(leftSection.mullionEdges.top, undefined);
     equal(leftSection.mullionEdges.bottom, undefined);
@@ -84,13 +84,13 @@ test('find sash border offsets', function() {
     var bottomSection = rootSection.sections[1].sections[1];
 
     equal(topSection.mullionEdges.right, undefined);
-    equal(topSection.mullionEdges.left, true);
+    equal(topSection.mullionEdges.left, 'vertical');
     equal(topSection.mullionEdges.top, undefined);
-    equal(topSection.mullionEdges.bottom, true);
+    equal(topSection.mullionEdges.bottom, 'horizontal');
 
     equal(bottomSection.mullionEdges.right, undefined);
-    equal(bottomSection.mullionEdges.left, true);
-    equal(bottomSection.mullionEdges.top, true);
+    equal(bottomSection.mullionEdges.left, 'vertical');
+    equal(bottomSection.mullionEdges.top, 'horizontal');
     equal(bottomSection.mullionEdges.bottom, undefined);
 });
 
@@ -226,8 +226,8 @@ test('Size calculations for Unit #001 from 377 E 10th project', function () {
     var top_right_section = full_root.sections[1].sections[0];
     var bottom_right_section = full_root.sections[1].sections[1];
 
-    unit.setSectionSashType(top_right_section.id, 'tilt_turn_left');
-    unit.setSectionSashType(bottom_right_section.id, 'turn_only_left');
+    unit.setSectionSashType(top_right_section.id, 'tilt_turn_right');
+    unit.setSectionSashType(bottom_right_section.id, 'turn_only_right');
 
     //  Glass 3
     equal(Math.abs(target_sizes.glasses[0].width - unit.getSizes().glasses[2].width) < margin_of_error,
@@ -256,19 +256,19 @@ test('Size calculations for Unit #001 from 377 E 10th project', function () {
     sash_list = unit.getSashList();
 
     equal(sash_list.length, 4, 'The number of sashes is expected to be 4');
-    equal(sash_list[0].type, 'Fixed', 'Sash type is expected to be Fixed');
+    equal(sash_list[0].type, 'Tilt-turn Right Hinge', 'Sash type is expected to be Tilt-turn Right Hinge');
     equal(sash_list[0].filling.type, 'glass', 'Sash filling type is expected to be glass');
 
     //  Sash 1 glass
-    equal(Math.abs(sash_list[0].filling.width - target_sizes.glasses[2].width) < margin_of_error,
+    equal(Math.abs(sash_list[0].filling.width - target_sizes.glasses[0].width) < margin_of_error,
         true, 'Sash 1 glass width equals calculated width');
-    equal(Math.abs(sash_list[0].filling.height - target_sizes.glasses[2].height) < margin_of_error,
+    equal(Math.abs(sash_list[0].filling.height - target_sizes.glasses[0].height) < margin_of_error,
         true, 'Sash 1 glass height equals calculated height');
 
-    //  Sash 3 opening
-    equal(Math.abs(sash_list[2].opening.width - target_sizes.openings[0].width) < margin_of_error,
+    //  Sash 1 opening
+    equal(Math.abs(sash_list[0].opening.width - target_sizes.openings[0].width) < margin_of_error,
         true, 'Sash 3 opening width equals calculated width');
-    equal(Math.abs(sash_list[2].opening.height - target_sizes.openings[0].height) < margin_of_error,
+    equal(Math.abs(sash_list[0].opening.height - target_sizes.openings[0].height) < margin_of_error,
         true, 'Sash 3 opening height equals calculated height');
 });
 

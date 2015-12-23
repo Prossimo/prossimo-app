@@ -46,7 +46,8 @@ var app = app || {};
         'tilt_turn_left', 'tilt_turn_right', 'fixed_in_frame', 'tilt_only',
         'turn_only_left', 'turn_only_right', 'fixed_in_sash',
         // additional types for solid doors
-        'flush-turn-right', 'flush-turn-left'
+        'flush-turn-right', 'flush-turn-left', 'tilt_only_top_hung',
+        'turn_only_right_hinge_hidden_latch', 'turn_only_left_hinge_hidden_latch'
     ];
 
     var SASH_TYPES_WITH_OPENING = _.without(SASH_TYPES, 'fixed_in_frame');
@@ -61,14 +62,22 @@ var app = app || {};
         'tilt_turn_left': 'Tilt-turn Left Hinge',
         'turn_only_right': 'Turn Only Right Hinge',
         'turn_only_left': 'Turn Only Left Hinge',
+        'tilt_only_top_hung': 'Tilt Only Top Hung',
         'slide-right': 'Slide Right',
-        'slide-left': 'Slide Left'
+        'slide-left': 'Slide Left',
+        'turn_only_right_hinge_hidden_latch': 'Turn Only Right Hinge Hidden Latch',
+        'turn_only_left_hinge_hidden_latch': 'Turn Only Left Hinge Hidden Latch'
     };
 
     var FILLING_TYPES = [
         'glass', 'recessed',
         'interior-flush-panel', 'exterior-flush-panel',
         'full-flush-panel', 'louver'
+    ];
+
+    var MULLION_TYPES = [
+        'vertical', 'horizontal',
+        'vertical_invisible'
     ];
 
     function getDefaultFillingType() {
@@ -144,6 +153,17 @@ var app = app || {};
 
             return Backbone.sync.call(this, method, model, options);
         },
+        initialize: function (attributes, options) {
+            this.options = options || {};
+            this.profile = null;
+
+            if ( !this.options.proxy ) {
+                this.setProfile();
+                this.validateRootSection();
+                this.on('change:profile_name', this.setProfile, this);
+                this.on('change:glazing', this.setDefaultFillingType, this);
+            }
+        },
         //  TODO: this function should be called on model init (maybe not only)
         //  and check whether root section could be used by drawing code or
         //  should it be reset to defaults.
@@ -155,15 +175,35 @@ var app = app || {};
                 this.set('root_section', this.getDefaultValue('root_section'));
             }
         },
-        initialize: function (attributes, options) {
-            this.options = options || {};
-            this.profile = null;
+        validate: function (attributes, options) {
+            var error_obj = null;
 
-            if ( !this.options.proxy ) {
-                this.setProfile();
-                this.validateRootSection();
-                this.on('change:profile_name', this.setProfile, this);
-                this.on('change:glazing', this.setDefaultFillingType, this);
+            //  Simple type validation for numbers and booleans
+            _.find(attributes, function (value, key) {
+                var attribute_obj = this.getNameTitleTypeHash([key]);
+                attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
+
+                if ( attribute_obj && attribute_obj.type === 'number' &&
+                    (!_.isNumber(value) || _.isNaN(value))
+                ) {
+                    error_obj = {
+                        attribute_name: key,
+                        error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a number'
+                    };
+
+                    return false;
+                } else if ( attribute_obj && attribute_obj.type === 'boolean' && !_.isBoolean(value) ) {
+                    error_obj = {
+                        attribute_name: key,
+                        error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a boolean'
+                    };
+
+                    return false;
+                }
+            }, this);
+
+            if ( options.validate && error_obj ) {
+                return error_obj;
             }
         },
         setProfile: function () {
@@ -291,7 +331,8 @@ var app = app || {};
         },
         setSectionSashType: function(sectionId, type) {
             if (!_.includes(SASH_TYPES, type)) {
-                throw new Error('Unrecognized sash type: ' + type);
+                console.error('Unrecognized sash type: ' + type);
+                return;
             }
             this._updateSection(sectionId, function(section) {
                 section.sashType = type;
@@ -328,21 +369,6 @@ var app = app || {};
                 section.panelType = type;
             });
         },
-        addMullion: function(sectionId, type) {
-            this._updateSection(sectionId, function(section) {
-                var full = this.generateFullRoot();
-                var fullSection = app.Unit.findSection(full, sectionId);
-                section.mullions = section.mullions || [];
-                section.mullion.push({
-
-                });
-                if (type === 'vertical') {
-                    section.position = fullSection.openingParams.x + fullSection.openingParams.width / 2;
-                } else {
-                    section.position = fullSection.openingParams.y + fullSection.openingParams.height / 2;
-                }
-            });
-        },
         setSectionMullionPosition: function(id, pos) {
             this._updateSection(id, function(section) {
                 section.position = parseFloat(pos);
@@ -351,7 +377,7 @@ var app = app || {};
         removeMullion: function(sectionId) {
             this._updateSection(sectionId, function(section) {
                 section.divider = null;
-                section.sections = null;
+                section.sections = [];
                 section.position = null;
             });
         },
@@ -359,11 +385,15 @@ var app = app || {};
             this._updateSection(sectionId, function(section) {
                 section.sashType = 'fixed_in_frame';
                 section.divider = null;
-                section.sections = null;
+                section.sections = [];
                 section.position = null;
             });
         },
         splitSection: function(sectionId, type) {
+            if (!_.includes(MULLION_TYPES, type)) {
+                console.error('Unknow mullion type', type);
+                return;
+            }
             this._updateSection(sectionId, function(section) {
                 var full = this.generateFullRoot();
                 var fullSection = app.Unit.findSection(full, sectionId);
@@ -376,10 +406,10 @@ var app = app || {};
                     section.sections[0].fillingName = section.sections[1].fillingName = section.fillingName;
                 }
 
-                if (type === 'vertical') {
-                    section.position = fullSection.openingParams.x + fullSection.openingParams.width / 2;
-                } else {
+                if (type === 'horizontal') {
                     section.position = fullSection.openingParams.y + fullSection.openingParams.height / 2;
+                } else {
+                    section.position = fullSection.openingParams.x + fullSection.openingParams.width / 2;
                 }
             }.bind(this));
         },
@@ -444,8 +474,20 @@ var app = app || {};
             if (hasFrame) {
                 topOverlap = rootSection.mullionEdges.top ? mullionOverlap : frameOverlap;
                 bottomOverlap = rootSection.mullionEdges.bottom ? mullionOverlap : frameOverlap;
-                leftOverlap = rootSection.mullionEdges.left ? mullionOverlap : frameOverlap;
-                rightOverlap = rootSection.mullionEdges.right ? mullionOverlap : frameOverlap;
+                if (rootSection.mullionEdges.left === 'vertical') {
+                    leftOverlap = mullionOverlap;
+                } else if (rootSection.mullionEdges.left === 'vertical_invisible') {
+                    leftOverlap = this.profile.get('mullion_width') / 2;
+                } else {
+                    leftOverlap = frameOverlap;
+                }
+                if (rootSection.mullionEdges.right === 'vertical') {
+                    rightOverlap = mullionOverlap;
+                } else if (rootSection.mullionEdges.right === 'vertical_invisible') {
+                    rightOverlap = this.profile.get('mullion_width') / 2;
+                } else {
+                    rightOverlap = frameOverlap;
+                }
             }
             if (hasFrame && rootSection.thresholdEdge) {
                 bottomOverlap = thresholdOverlap;
@@ -466,7 +508,7 @@ var app = app || {};
                 var mullionAttrs = {
                     x: null, y: null, width: null, height: null
                 };
-                if (rootSection.divider === 'vertical') {
+                if (rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible') {
                     mullionAttrs.x = position - this.profile.get('mullion_width') / 2;
                     mullionAttrs.y = rootSection.glassParams.y;
                     mullionAttrs.width = this.profile.get('mullion_width');
@@ -490,16 +532,16 @@ var app = app || {};
                 sectionData.mullionEdges = _.clone(rootSection.mullionEdges);
                 sectionData.thresholdEdge = rootSection.thresholdEdge;
                 sectionData.parentId = rootSection.id;
-                if (rootSection.divider === 'vertical') {
+                if (rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible') {
                     sectionParams.x = openingParams.x;
                     sectionParams.y = openingParams.y;
                     if (i === 0) {
                         sectionParams.width = position - rootSection.openingParams.x - this.profile.get('mullion_width') / 2;
-                        sectionData.mullionEdges.right = true;
+                        sectionData.mullionEdges.right = rootSection.divider;
                     } else {
                         sectionParams.x = position + this.profile.get('mullion_width') / 2;
                         sectionParams.width = openingParams.width + openingParams.x - position - this.profile.get('mullion_width') / 2;
-                        sectionData.mullionEdges.left = true;
+                        sectionData.mullionEdges.left = rootSection.divider;
                     }
                     sectionParams.height = openingParams.height;
                 } else {
@@ -507,14 +549,14 @@ var app = app || {};
                     sectionParams.y = openingParams.y;
                     sectionParams.width = openingParams.width;
                     if (i === 0) {
-                        sectionData.mullionEdges.bottom = true;
+                        sectionData.mullionEdges.bottom = rootSection.divider;
                         sectionParams.height = position - rootSection.openingParams.y - this.profile.get('mullion_width') / 2;
                         sectionData.thresholdEdge = false;
                     } else {
                         sectionParams.y = position + this.profile.get('mullion_width') / 2;
                         sectionParams.height = openingParams.height + openingParams.y - position -
                             this.profile.get('mullion_width') / 2;
-                        sectionData.mullionEdges.top = true;
+                        sectionData.mullionEdges.top = rootSection.divider;
                     }
                 }
                 return this.generateFullRoot(sectionData, sectionParams);
@@ -527,7 +569,7 @@ var app = app || {};
             rootSection.openingParams.x = width - rootSection.openingParams.x - rootSection.openingParams.width;
             rootSection.glassParams.x = width - rootSection.glassParams.x - rootSection.glassParams.width;
             rootSection.sashParams.x = width - rootSection.sashParams.x - rootSection.sashParams.width;
-            if (rootSection.divider === 'vertical') {
+            if (rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible') {
                 rootSection.position = width - rootSection.position;
                 rootSection.sections = rootSection.sections.reverse();
                 rootSection.mullionParams.x = width - rootSection.mullionParams.x - this.profile.get('mullion_width');
@@ -657,8 +699,14 @@ var app = app || {};
             if (current_root.sashType === 'fixed_in_frame') {
                 _.each(current_root.sections, function (section) {
                     section_result = this.getSashList(section, current_root);
-                    result = result.concat(section_result);
+
+                    if (current_root.divider === 'vertical' || current_root.divider === 'vertical_invisible') {
+                        result = section_result.concat(result);
+                    } else {
+                        result = result.concat(section_result);
+                    }
                 }, this);
+
             }
 
             if ( _.indexOf(SASH_TYPES_WITH_OPENING, current_root.sashType) !== -1 ) {
@@ -693,7 +741,7 @@ var app = app || {};
                     current_sash.filling.name = filling_type.fillingName;
                 }
 
-                result.push(current_sash);
+                result.unshift(current_sash);
             }
 
             return result;
