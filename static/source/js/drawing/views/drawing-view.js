@@ -503,13 +503,14 @@ var app = app || {};
             if (index >= 0) {
                 var number = new Konva.Text({
                     x: sectionData.openingParams.x - sectionData.sashParams.x,
+                    y: sectionData.openingParams.y,
                     width: sectionData.openingParams.width,
                     align: 'center',
                     text: index + 1,
                     fontSize: 15 / this.ratio,
                     listening: false
                 });
-                number.y(sectionData.openingParams.height / 2 + number.height() / 2 - sectionData.sashParams.y);
+                number.y(sectionData.openingParams.y + sectionData.openingParams.height / 2 - number.height() / 2 - sectionData.sashParams.y);
                 group.add(number);
             }
             if (sectionData.id === this.state.selectedSashId) {
