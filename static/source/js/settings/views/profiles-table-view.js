@@ -316,6 +316,7 @@ var app = app || {};
                             colHeaders: self.getColumnHeaders(),
                             rowHeaders: true,
                             trimDropdown: false,
+                            rowHeights: 25,
                             maxRows: function () {
                                 return self.collection.length;
                             },

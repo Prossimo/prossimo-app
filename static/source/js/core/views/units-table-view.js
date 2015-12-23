@@ -647,7 +647,7 @@ var app = app || {};
                     rowHeaders: true,
                     rowHeights: function () {
                         return _.contains(self.getActiveTab().columns, 'drawing') ||
-                            _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : undefined;
+                            _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
                     },
                     trimDropdown: false,
                     maxRows: function () {
