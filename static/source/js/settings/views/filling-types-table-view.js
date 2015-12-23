@@ -20,6 +20,7 @@ var app = app || {};
         },
         initialize: function () {
             this.table_update_timeout = null;
+            this.dropdown_scroll_timer = null;
             this.columns = [
                 'name', 'supplier_name', 'type', 'move_item', 'remove_item'
             ];
@@ -236,6 +237,7 @@ var app = app || {};
         },
         onRender: function () {
             var self = this;
+            var dropdown_scroll_reset = false;
 
             if ( this.collection.length ) {
                 //  We use setTimeout because we want to wait until flexbox
@@ -255,8 +257,22 @@ var app = app || {};
                     }
                 }, 50);
             }
+
+            clearInterval(this.dropdown_scroll_timer);
+            this.dropdown_scroll_timer = setInterval(function () {
+                var editor = self.hot && self.hot.getActiveEditor();
+
+                if ( editor && editor.htContainer && !dropdown_scroll_reset ) {
+                    dropdown_scroll_reset = true;
+                    editor.htContainer.scrollIntoView(false);
+                } else {
+                    dropdown_scroll_reset = false;
+                }
+            }, 100);
         },
         onDestroy: function () {
+            clearInterval(this.dropdown_scroll_timer);
+
             if ( this.hot ) {
                 this.hot.destroy();
             }
