@@ -1,0 +1,11 @@
+{{#if has_documents }}
+    <h3>Project Files</h3>
+    <ul>
+        {{#each document_list}}
+            <li><a class="type-{{ type }}" href="{{ url }}" target="_blank">{{ name }} <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span></a></li>
+        {{/each}}
+    </ul>
+{{else}}
+    <h3>No Files</h3>
+    <p>This project doesn't appear to have any attached files.</p>
+{{/if}}
