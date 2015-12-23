@@ -64,6 +64,50 @@ var app = app || {};
         initialize: function (attributes, options) {
             this.options = options || {};
         },
+        validate: function (attributes, options) {
+            var error_obj = null;
+            var collection_names = this.collection && _.map(this.collection.without(this), function (item) {
+                return item.get('name');
+            });
+
+            //  We want to have unique profile names across the collection
+            if ( options.validate && collection_names &&
+                _.contains(collection_names, attributes.name)
+            ) {
+                return {
+                    attribute_name: 'name',
+                    error_message: 'Filling type name "' + attributes.name + '" is already used in this collection'
+                };
+            }
+
+            //  Simple type validation for numbers and booleans
+            _.find(attributes, function (value, key) {
+                var attribute_obj = this.getNameTitleTypeHash([key]);
+                attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
+
+                if ( attribute_obj && attribute_obj.type === 'number' &&
+                    (!_.isNumber(value) || _.isNaN(value))
+                ) {
+                    error_obj = {
+                        attribute_name: key,
+                        error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a number'
+                    };
+
+                    return false;
+                } else if ( attribute_obj && attribute_obj.type === 'boolean' && !_.isBoolean(value) ) {
+                    error_obj = {
+                        attribute_name: key,
+                        error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a boolean'
+                    };
+
+                    return false;
+                }
+            }, this);
+
+            if ( options.validate && error_obj ) {
+                return error_obj;
+            }
+        },
         //  Return { name: 'name', title: 'Title', type: 'type' } objects for
         //  each item in `names`. If `names` is empty, return everything
         getNameTitleTypeHash: function (names) {

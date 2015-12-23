@@ -546,9 +546,7 @@ var app = app || {};
                 var column_obj = _.extend({}, {
                     data: this.getColumnData(column_name),
                     validator: this.getColumnValidator(column_name)
-                },
-                    this.getColumnExtraProperties(column_name)
-                );
+                }, this.getColumnExtraProperties(column_name));
 
                 columns.push(column_obj);
             }, this);
