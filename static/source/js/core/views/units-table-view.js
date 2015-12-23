@@ -21,6 +21,7 @@ var app = app || {};
         },
         initialize: function () {
             this.table_update_timeout = null;
+            this.dropdown_scroll_timer = null;
             this.table_visibility = this.options.is_always_visible ? 'visible' :
                 (this.options.table_visibility ? this.options.table_visibility : 'hidden');
 
@@ -624,6 +625,8 @@ var app = app || {};
         },
         onRender: function () {
             var self = this;
+            var dropdown_scroll_reset = false;
+
             var fixed_columns = ['mark', 'quantity', 'width', 'height', 'drawing'];
             var active_tab_columns = self.getActiveTab().columns;
             var fixed_columns_count = 0;
@@ -655,8 +658,21 @@ var app = app || {};
             }, 5);
 
             this.appendPopovers();
+
+            clearInterval(this.dropdown_scroll_timer);
+            this.dropdown_scroll_timer = setInterval(function () {
+                var editor = self.hot && self.hot.getActiveEditor();
+
+                if ( editor && !dropdown_scroll_reset ) {
+                    dropdown_scroll_reset = true;
+                    editor.htContainer.scrollIntoView(false);
+                } else {
+                    dropdown_scroll_reset = false;
+                }
+            }, 100);
         },
         onDestroy: function () {
+            clearInterval(this.dropdown_scroll_timer);
             this.$el.off('show.bs.popover');
             this.$el.popover('destroy');
 

@@ -20,6 +20,7 @@ var app = app || {};
         },
         initialize: function () {
             this.table_update_timeout = null;
+            this.dropdown_scroll_timer = null;
             this.columns = [
                 'name', 'unit_type', 'system', 'supplier_system', 'frame_width', 'mullion_width',
                 'sash_frame_width', 'sash_frame_overlap', 'sash_mullion_overlap',
@@ -292,6 +293,7 @@ var app = app || {};
         },
         onRender: function () {
             var self = this;
+            var dropdown_scroll_reset = false;
 
             var fixed_columns = ['name', 'unit_type', 'system'];
             var active_tab_columns = this.columns;
@@ -322,8 +324,22 @@ var app = app || {};
                     }
                 }, 50);
             }
+
+            clearInterval(this.dropdown_scroll_timer);
+            this.dropdown_scroll_timer = setInterval(function () {
+                var editor = self.hot && self.hot.getActiveEditor();
+
+                if ( editor && !dropdown_scroll_reset ) {
+                    dropdown_scroll_reset = true;
+                    editor.htContainer.scrollIntoView(false);
+                } else {
+                    dropdown_scroll_reset = false;
+                }
+            }, 100);
         },
         onDestroy: function () {
+            clearInterval(this.dropdown_scroll_timer);
+
             if ( this.hot ) {
                 this.hot.destroy();
             }
