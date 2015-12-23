@@ -275,6 +275,9 @@ var app = app || {};
                 },
                 height: function (attr_name, val) {
                     return p.dimensions(val, 'height');
+                },
+                glazing_bar_width: function (attr_name, val) {
+                    return parseFloat(val);
                 }
             };
 
@@ -496,7 +499,9 @@ var app = app || {};
                 },
                 glazing_bar_width: {
                     type: 'autocomplete',
-                    source: app.settings.getGlazingBarWidths()
+                    source: app.settings.getGlazingBarWidths().map(function (item) {
+                        return item.toString();
+                    })
                 },
                 gasket_color: {
                     type: 'autocomplete',
