@@ -128,7 +128,7 @@ var app = app || {};
                 }
             }, this);
 
-            if ( error_obj ) {
+            if ( options.validate && error_obj ) {
                 return error_obj;
             }
         },

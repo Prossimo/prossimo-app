@@ -74,7 +74,12 @@ var app = app || {};
 
             this.listenTo(this.collection, 'all', this.updateTable);
             this.listenTo(this.options.extras, 'all', this.updateTable);
+            this.listenTo(app.projects, 'all', this.updateTable);
             this.listenTo(this.options.parent_view, 'attach', this.updateTable);
+
+            this.listenTo(this.collection, 'invalid', this.showValidationError);
+            this.listenTo(this.options.extras, 'invalid', this.showValidationError);
+            this.listenTo(app.projects, 'invalid', this.showValidationError);
 
             this.listenTo(app.vent, 'paste_image', this.onPasteImage);
         },
@@ -257,29 +262,39 @@ var app = app || {};
 
             return getter.apply(this, arguments);
         },
-        getSetterFunction: function (unit_model, column_name) {
+        getSetterParser: function (column_name) {
             var p = app.utils.parseFormat;
-            var setter;
+            var parser;
 
-            var setters_hash = {
-                discount: function (model, attr_name, val) {
-                    return model.persist(attr_name, p.percent(val));
+            var parsers_hash = {
+                discount: function (attr_name, val) {
+                    return p.percent(val);
                 },
-                width: function (model, attr_name, val) {
-                    return model.persist(attr_name, p.dimensions(val, 'width'));
+                width: function (attr_name, val) {
+                    return p.dimensions(val, 'width');
                 },
-                height: function (model, attr_name, val) {
-                    return model.persist(attr_name, p.dimensions(val, 'height'));
+                height: function (attr_name, val) {
+                    return p.dimensions(val, 'height');
                 }
             };
 
-            if ( setters_hash[column_name] ) {
-                setter = setters_hash[column_name];
+            if ( parsers_hash[column_name] ) {
+                parser = parsers_hash[column_name];
             } else {
-                setter = function (model, attr_name, val) {
-                    return model.persist(attr_name, val);
+                parser = function (attr_name, val) {
+                    return val;
                 };
             }
+
+            return parser.apply(this, arguments);
+        },
+        getSetterFunction: function (unit_model, column_name) {
+            var self = this;
+            var setter;
+
+            setter = function (model, attr_name, val) {
+                return model.persist(attr_name, self.getSetterParser(column_name, val));
+            };
 
             return setter.apply(this, arguments);
         },
@@ -295,6 +310,51 @@ var app = app || {};
                     self.getSetterFunction(unit_model, column_name, value);
                 }
             };
+        },
+        showValidationError: function (model, error) {
+            if ( this.hot && model.collection === this.getActiveTab().collection ) {
+                var hot = this.hot;
+                var self = this;
+
+                var row_index = model.collection.indexOf(model);
+                var col_index = _.indexOf(this.getActiveTab().columns, error.attribute_name);
+                var target_cell = hot.getCell(row_index, col_index);
+                var $target_cell = $(target_cell);
+
+                $target_cell.popover({
+                    container: 'body',
+                    title: 'Validation Error',
+                    content: error.error_message,
+                    trigger: 'manual'
+                });
+
+                $target_cell.popover('show');
+
+                setTimeout(function () {
+                    $target_cell.popover('destroy');
+                    hot.setCellMeta(row_index, col_index, 'valid', true);
+                    self.updateTable();
+                }, 5000);
+            }
+        },
+        getColumnValidator: function (column_name) {
+            var self = this;
+            var validator;
+
+            validator = function (value, callback) {
+                var attributes_object = {};
+                var model = this.instance.getSourceData().at(this.row);
+
+                attributes_object[column_name] = self.getSetterParser(column_name, value);
+
+                if ( !model.validate || !model.validate(attributes_object, { validate: true }) ) {
+                    callback(true);
+                } else {
+                    callback(false);
+                }
+            };
+
+            return validator;
         },
         getColumnExtraProperties: function (column_name) {
             var properties_obj = {};
@@ -476,8 +536,10 @@ var app = app || {};
             var columns = [];
 
             _.each(this.getActiveTab().columns, function (column_name) {
-                var column_obj = _.extend({},
-                    { data: this.getColumnData(column_name) },
+                var column_obj = _.extend({}, {
+                    data: this.getColumnData(column_name),
+                    validator: this.getColumnValidator(column_name)
+                },
                     this.getColumnExtraProperties(column_name)
                 );
 
@@ -537,8 +599,14 @@ var app = app || {};
 
             return custom_column_headers_hash[column_name];
         },
-        updateTable: function () {
+        updateTable: function (e) {
             var self = this;
+
+            //  We don't want to update table on validation errors, we have
+            //  a special function for that
+            if ( e === 'invalid' ) {
+                return;
+            }
 
             if ( this.hot ) {
                 clearTimeout(this.table_update_timeout);

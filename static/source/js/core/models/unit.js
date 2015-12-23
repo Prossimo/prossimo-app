@@ -146,6 +146,16 @@ var app = app || {};
 
             return Backbone.sync.call(this, method, model, options);
         },
+        initialize: function (attributes, options) {
+            this.options = options || {};
+            this.profile = null;
+
+            if ( !this.options.proxy ) {
+                this.setProfile();
+                this.validateRootSection();
+                this.on('change:profile_name', this.setProfile, this);
+            }
+        },
         //  TODO: this function should be called on model init (maybe not only)
         //  and check whether root section could be used by drawing code or
         //  should it be reset to defaults.
@@ -157,14 +167,35 @@ var app = app || {};
                 this.set('root_section', this.getDefaultValue('root_section'));
             }
         },
-        initialize: function (attributes, options) {
-            this.options = options || {};
-            this.profile = null;
+        validate: function (attributes, options) {
+            var error_obj = null;
 
-            if ( !this.options.proxy ) {
-                this.setProfile();
-                this.validateRootSection();
-                this.on('change:profile_name', this.setProfile, this);
+            //  Simple type validation for numbers and booleans
+            _.find(attributes, function (value, key) {
+                var attribute_obj = this.getNameTitleTypeHash([key]);
+                attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
+
+                if ( attribute_obj && attribute_obj.type === 'number' &&
+                    (!_.isNumber(value) || _.isNaN(value))
+                ) {
+                    error_obj = {
+                        attribute_name: key,
+                        error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a number'
+                    };
+
+                    return false;
+                } else if ( attribute_obj && attribute_obj.type === 'boolean' && !_.isBoolean(value) ) {
+                    error_obj = {
+                        attribute_name: key,
+                        error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a boolean'
+                    };
+
+                    return false;
+                }
+            }, this);
+
+            if ( options.validate && error_obj ) {
+                return error_obj;
             }
         },
         setProfile: function () {

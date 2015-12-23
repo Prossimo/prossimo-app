@@ -140,7 +140,7 @@ var app = app || {};
 
                 attributes_object[column_name] = value;
 
-                if ( !model.validate(attributes_object, { validate: true }) ) {
+                if ( !model.validate || !model.validate(attributes_object, { validate: true }) ) {
                     callback(true);
                 } else {
                     callback(false);
