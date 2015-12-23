@@ -329,7 +329,7 @@ var app = app || {};
             this.dropdown_scroll_timer = setInterval(function () {
                 var editor = self.hot && self.hot.getActiveEditor();
 
-                if ( editor && !dropdown_scroll_reset ) {
+                if ( editor && editor.htContainer && !dropdown_scroll_reset ) {
                     dropdown_scroll_reset = true;
                     editor.htContainer.scrollIntoView(false);
                 } else {
