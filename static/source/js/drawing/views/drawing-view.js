@@ -510,7 +510,8 @@ var app = app || {};
                     fontSize: 15 / this.ratio,
                     listening: false
                 });
-                number.y(sectionData.openingParams.y + sectionData.openingParams.height / 2 - number.height() / 2 - sectionData.sashParams.y);
+                number.y(sectionData.openingParams.y + sectionData.openingParams.height / 2 -
+                    number.height() / 2 - sectionData.sashParams.y);
                 group.add(number);
             }
             if (sectionData.id === this.state.selectedSashId) {
