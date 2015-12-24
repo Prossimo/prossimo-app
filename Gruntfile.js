@@ -46,6 +46,7 @@ module.exports = function (grunt) {
         'units-table/views/main-units-table-view.js',
         'docs-import/views/main-docs-import-view.js',
         'docs-import/views/document-selector-view.js',
+        'docs-import/views/document-list-view.js',
         'drawing/views/main-drawing-view.js',
         'drawing/views/drawing-view.js',
         'drawing/views/drawing-sidebar-view.js',
@@ -458,14 +459,17 @@ module.exports = function (grunt) {
 
     grunt.registerTask('pdfjs', ['gitinfo', 'replace:pdfjs', 'shell:build_pdfjs', 'copy:pdfjs']);
 
+    //  README: pdf building is commented out due to this issue:
+    //  https://bitbucket.org/prossimo/prossimo-app/issues/137
+    //  This is a temporary change
     grunt.registerTask('build', [
         'gitinfo', 'clean:build', 'handlebars:build', 'copy:vendor', 'uglify:build',
-        'copy:images', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:build', 'pdfjs'
+        'copy:images', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:build'//, 'pdfjs'
     ]);
 
     grunt.registerTask('dev', [
         'clean:build', 'handlebars:dev', 'copy:dev', 'copy:vendor', 'copy:images',
-        'less:dev', 'uglify:vendor_dev', 'cssmin:vendor_dev', 'replace:dev', 'pdfjs'
+        'less:dev', 'uglify:vendor_dev', 'cssmin:vendor_dev', 'replace:dev'//, 'pdfjs'
     ]);
 
     grunt.registerTask('test', ['eslint', 'qunit']);
