@@ -106,9 +106,9 @@ var app = app || {};
             };
 
             var name_value_hash = {
-                original_currency: 'USD',
-                conversion_rate: 1,
-                price_markup: 1,
+                original_currency: 'EUR',
+                conversion_rate: 0.9,
+                price_markup: 2.3,
                 quantity: 1,
                 root_section: getSectionDefaults()
             };
