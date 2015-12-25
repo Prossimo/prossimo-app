@@ -60,6 +60,7 @@ var app = app || {};
 
                 if ( this.get('accessories') ) {
                     this.extras.set(this.get('accessories'));
+                    this.extras.trigger('loaded');
                     this.unset('accessories', { silent: true });
                 }
 
