@@ -322,12 +322,20 @@ module.exports = function (grunt) {
         },
 
         sshexec: {
-            update: {
-                command: 'cd /var/www/prossimo && ./update.sh',
+            update_staging: {
+                command: 'cd /var/www/prossimo && ./update.sh staging',
                 options: {
-                    host: '<%= credentials.host %>',
-                    username: '<%= credentials.username %>',
-                    password: '<%= credentials.password %>'
+                    host: '<%= credentials.staging.host %>',
+                    username: '<%= credentials.staging.username %>',
+                    password: '<%= credentials.staging.password %>'
+                }
+            },
+            update_production: {
+                command: 'cd /var/www/prossimo && ./update.sh production',
+                options: {
+                    host: '<%= credentials.production.host %>',
+                    username: '<%= credentials.production.username %>',
+                    password: '<%= credentials.production.password %>'
                 }
             }
         },
@@ -473,6 +481,8 @@ module.exports = function (grunt) {
     ]);
 
     grunt.registerTask('test', ['eslint', 'qunit']);
-    grunt.registerTask('deploy', ['test', 'sshexec:update']);
+    grunt.registerTask('deploy_staging', ['test', 'sshexec:update_staging']);
+    grunt.registerTask('deploy_production', ['test', 'sshexec:update_production']);
+    grunt.registerTask('deploy', ['deploy_staging']);
     grunt.registerTask('default', ['dev', 'connect', 'watch']);
 };
