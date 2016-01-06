@@ -483,5 +483,6 @@ module.exports = function (grunt) {
     grunt.registerTask('test', ['eslint', 'qunit']);
     grunt.registerTask('deploy_staging', ['test', 'sshexec:update_staging']);
     grunt.registerTask('deploy_production', ['test', 'sshexec:update_production']);
+    grunt.registerTask('deploy', ['deploy_staging']);
     grunt.registerTask('default', ['dev', 'connect', 'watch']);
 };

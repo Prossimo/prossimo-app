@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Usage: ./update.sh environment_name
+
 # This script uses environment name to select a proper update strategy:
 # - production (default): branch release, tags only
 # - staging: branch develop
@@ -41,11 +43,11 @@ else
 fi
 
 echo "Update status: fetching branch $target_branch"
-sudo -u www-deployer git checkout $target_branch
-sudo -u www-deployer git fetch
+git checkout $target_branch
+git fetch
 
 echo "Update status: updating to the latest commit in branch $target_branch"
-sudo -u www-deployer git merge --ff-only origin/$target_branch
+git merge --ff-only origin/$target_branch
 
 if $tags_required
 then
@@ -54,7 +56,7 @@ then
     if test $latest_tag
     then
         echo "Update status: latest tag in branch $target_branch is $latest_tag"
-        sudo -u www-deployer git checkout $latest_tag
+        git checkout $latest_tag
     else
         echo "Update status: no tags found in branch $target_branch, exit"
         exit
@@ -62,10 +64,10 @@ then
 fi
 
 echo "Update status: installing dependencies"
-sudo -u www-deployer npm install
-sudo -u www-deployer bower install
+npm install
+bower install
 
 echo "Update status: starting build"
-sudo -u www-deployer grunt $build_command
+grunt $build_command
 
 echo "Update status: finished at $(date)"
