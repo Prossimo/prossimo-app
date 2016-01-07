@@ -8,6 +8,7 @@ drawing/index.html
 quote/index.html
 settings/index.html
 supplier/index.html
+units/index.html
 split
 *.sublime*
 /index.html
