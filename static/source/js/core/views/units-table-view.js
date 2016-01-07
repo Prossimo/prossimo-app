@@ -514,11 +514,15 @@ var app = app || {};
                 lock_mechanism: {
                     renderer: app.hot_renderers.doorOnlyRenderer
                 },
+                opening_direction: {
+                    type: 'dropdown',
+                    source: app.settings.getOpeningDirections(),
+                    renderer: app.hot_renderers.doorOnlyDropdownRenderer
+                },
                 pipedrive_id: {
                     readOnly: true
                 }
             };
-
 
             if ( format_hash[column_name] ) {
                 properties_obj = _.extend(properties_obj, format_hash[column_name]);

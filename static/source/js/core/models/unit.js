@@ -38,9 +38,8 @@ var app = app || {};
         { name: 'discount', title: 'Discount', type: 'number' }
     ];
 
-    //  We only enable those properties for editing on units where profile
-    //  returns `true` on `hasOutsideHandle` call
-    var DOOR_ONLY_PROPERTIES = ['exterior_handle', 'lock_mechanism'];
+    //  We only enable those for editing on units where `isDoorType` is `true`
+    var DOOR_ONLY_PROPERTIES = ['exterior_handle', 'lock_mechanism', 'opening_direction'];
 
     var SASH_TYPES = [
         'tilt_turn_left', 'tilt_turn_right', 'fixed_in_frame', 'tilt_only',
@@ -122,6 +121,7 @@ var app = app || {};
                 name_value_hash.hinge_style = app.settings.getHingeTypes()[0];
                 name_value_hash.glazing = app.settings.getGlassOrPanelTypes()[0];
                 name_value_hash.glazing_bar_width = app.settings.getGlazingBarWidths()[0];
+                name_value_hash.opening_direction = app.settings.getOpeningDirections()[0];
             }
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -208,6 +208,16 @@ var app = app || {};
             if ( app.settings ) {
                 this.profile = app.settings.getProfileByNameOrNew(this.get('profile_name'));
             }
+
+            if ( app.settings && this.isDoorType() ) {
+                if ( this.get('opening_direction') === '--' ) {
+                    this.set('opening_direction', this.getDefaultValue('opening_direction'));
+                }
+            } else if ( app.settings ) {
+                if ( this.get('opening_direction') !== '--' ) {
+                    this.set('opening_direction', '--');
+                }
+            }
         },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs
@@ -280,17 +290,22 @@ var app = app || {};
         getSection: function(sectionId) {
             return app.Unit.findSection(this.generateFullRoot(), sectionId);
         },
+        //  Right now we think that door is something where profile
+        //  returns `true` on `hasOutsideHandle` call
+        isDoorType: function () {
+            var is_door_type = false;
+
+            if ( this.profile && this.profile.hasOutsideHandle() ) {
+                is_door_type = true;
+            }
+
+            return is_door_type;
+        },
         isDoorOnlyAttribute: function (attribute_name) {
             return _.indexOf(DOOR_ONLY_PROPERTIES, attribute_name) !== -1;
         },
-        areDoorOnlyAttributesEditable: function () {
-            var is_editable = false;
-
-            if ( this.profile && this.profile.hasOutsideHandle() ) {
-                is_editable = true;
-            }
-
-            return is_editable;
+        isOpeningDirectionOutward: function () {
+            return this.get('opening_direction') === 'Outward';
         },
         getSashName: function (type) {
             if ( _.indexOf(_.keys(SASH_TYPE_NAME_MAP), type) === -1 ) {
