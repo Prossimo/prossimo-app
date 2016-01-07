@@ -25,6 +25,7 @@ var app = app || {};
         'Triple Low Gain', 'Triple Low Gain Tempered', 'Triple High Gain',
         'Triple High Gain Tempered', 'Triple Standard-Outer Frosted', 'Triple Tempered-Outer Frosted'
     ];
+    var OPENING_DIRECTIONS = ['Inward', 'Outward'];
 
     //  --------------------------------------------------------------------
     //  That's what we use for Profiles
@@ -163,6 +164,9 @@ var app = app || {};
         },
         getSashCornerTypes: function () {
             return CORNER_TYPES;
+        },
+        getOpeningDirections: function () {
+            return OPENING_DIRECTIONS;
         }
     });
 })();

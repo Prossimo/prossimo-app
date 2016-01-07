@@ -153,13 +153,29 @@ var app = app || {};
         },
         doorOnlyRenderer: function (instance, td, row, col) {
             var is_editable = instance.getSourceData().at(row) &&
-                instance.getSourceData().at(row).areDoorOnlyAttributesEditable();
+                instance.getSourceData().at(row).isDoorType();
 
             if ( is_editable ) {
                 instance.setCellMeta(row, col, 'readOnly', false);
                 Handsontable.renderers.TextRenderer.apply(this, arguments);
             } else {
                 instance.setCellMeta(row, col, 'readOnly', true);
+                $(td).addClass('htDimmed').text('--');
+            }
+
+            return td;
+        },
+        // doorOnlyDropdownRenderer: function (instance, td, row, col, prop, value, cellProperties) {
+        doorOnlyDropdownRenderer: function (instance, td, row, col) {
+            var is_editable = instance.getSourceData().at(row) &&
+                instance.getSourceData().at(row).isDoorType();
+
+            if ( is_editable ) {
+                instance.setCellMeta(row, col, 'readOnly', false);
+                Handsontable.renderers.AutocompleteRenderer.apply(this, arguments);
+            } else {
+                instance.setCellMeta(row, col, 'readOnly', true);
+                Handsontable.renderers.TextRenderer.apply(this, arguments);
                 $(td).addClass('htDimmed').text('--');
             }
 
