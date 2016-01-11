@@ -383,7 +383,7 @@ var app = app || {};
                 if (isVerticalInvisible && !isSelected) {
                     mullion.fill('lightgreen');
                     mullion.opacity(0.5);
-                } else if ((isVerticalInvisible  || isHorizontalInvisible) && isSelected) {
+                } else if ((isVerticalInvisible || isHorizontalInvisible) && isSelected) {
                     mullion.opacity(0.7);
                     mullion.fill('#4E993F');
                 } else if (isSelected) {
@@ -1147,7 +1147,6 @@ var app = app || {};
             sectionsGroup.scale({x: ratio, y: ratio});
             group.add(sectionsGroup);
 
-            
             var sections = this.createSection(root);
 
             sectionsGroup.add.apply(sectionsGroup, sections);
