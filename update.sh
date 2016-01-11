@@ -3,9 +3,8 @@
 # Usage: ./update.sh environment_name
 
 # This script uses environment name to select a proper update strategy:
-# - production (default): branch release, tags only
+# - production (default): branch master, tags only
 # - staging: branch develop
-# - development: branch master
 
 update_strategy="production"
 target_branch="release"
@@ -24,17 +23,12 @@ echo "Update status: started. Env: $update_strategy. Started at $(date)"
 # Set proper values for `target_branch` and `tags_required`
 if test $update_strategy = "production"
 then
-    target_branch="release"
+    target_branch="master"
     tags_required=true
     build_command="build"
 elif test $update_strategy = "staging"
 then
     target_branch="develop"
-    tags_required=false
-    build_command="build"
-elif test $update_strategy = "development"
-then
-    target_branch="master"
     tags_required=false
     build_command="dev"
 else
