@@ -76,7 +76,7 @@ var app = app || {};
 
     var MULLION_TYPES = [
         'vertical', 'horizontal',
-        'vertical_invisible'
+        'vertical_invisible', 'horizontal_invisible'
     ];
 
     function getSectionDefaults() {
@@ -306,6 +306,60 @@ var app = app || {};
         },
         isOpeningDirectionOutward: function () {
             return this.get('opening_direction') === 'Outward';
+        },
+        isArchedPossible: function(sashId) {
+            // TODO: move function outside
+            // is it useful somewhere else ?
+            function findParent(root, childId) {
+                if (root.sections.length === 0) {
+                    return null;
+                }
+                if (root.sections[0].id === childId || root.sections[1].id === childId) {
+                    return root;
+                }
+                return findParent(root.sections[0], childId) || findParent(root.sections[1], childId);
+            }
+            var root = this.generateFullRoot();
+            var parent = findParent(root, sashId);
+            if (!parent) {
+                // console.error('Can not find parent for sash ' + sashId);
+                return false;
+            }
+
+            var childId = sashId;
+
+
+            while (parent) {
+                // var child = Unit.findSection(parent, childId);
+
+                // arched section should be only on top (index 0)
+                if (parent.sections[0].id !== childId) {
+                    return false;
+                }
+
+                // and it should be horizontal mullions only
+                if (!(parent.divider === 'horizontal' || parent.divider === 'horizontal_invisible')) {
+                    return false;
+                }
+
+                childId = parent.id;
+                parent = findParent(root, childId);
+            }
+            return true;
+        },
+        getArchedPosition: function() {
+            var root = this.get('root_section');
+            while(true) {
+                var topSection = root.sections && root.sections[0] && root.sections[0];
+                if (topSection && topSection.arched) {
+                    return root.position;
+                }
+                if (!topSection) {
+                    return null;
+                }
+                root = topSection;
+            }
+            return null;
         },
         getSashName: function (type) {
             if ( _.indexOf(_.keys(SASH_TYPE_NAME_MAP), type) === -1 ) {
