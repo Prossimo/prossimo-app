@@ -5,6 +5,7 @@
 # This script uses environment name to select a proper update strategy:
 # - production (default): branch master, tags only
 # - staging: branch develop
+# - development: branch develop, use developer's variant of build
 
 update_strategy="production"
 target_branch="release"
@@ -27,6 +28,11 @@ then
     tags_required=true
     build_command="build"
 elif test $update_strategy = "staging"
+then
+    target_branch="develop"
+    tags_required=false
+    build_command="build"
+elif test $update_strategy = "development"
 then
     target_branch="develop"
     tags_required=false
