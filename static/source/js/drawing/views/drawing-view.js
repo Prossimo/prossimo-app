@@ -6,14 +6,20 @@ var app = app || {};
     // global params
     var insideView = false;
     var merticSize = 50;
+    // var dimensionType = '';
     app.DrawingView = Marionette.ItemView.extend({
         tagName: 'div',
         template: app.templates['drawing/drawing-view'],
         initialize: function () {
             this.listenTo(this.model, 'all', this.updateRenderedScene);
             this.on('update_rendered', this.updateRenderedScene, this);
+
+            var openingView =
+                !insideView && this.model.isOpeningDirectionOutward()
+                ||
+                insideView && !this.model.isOpeningDirectionOutward();
             this.state = {
-                insideView: insideView
+                openingView: openingView
             };
         },
 
@@ -41,7 +47,8 @@ var app = app || {};
             },
             'click #clear-frame': 'clearFrame',
             'keydown #drawing': 'handleCanvasKeyDown',
-            'click #change-view': 'handleChangeView',
+            'click #change-view-button': 'handleChangeView',
+            'click .toggle-arched': 'hadnleArchedClick',
             'change #vertical-bars-number': 'handleBarNumberChange',
             'input #vertical-bars-number': 'handleBarNumberChange',
             'change #horizontal-bars-number': 'handleBarNumberChange',
@@ -82,8 +89,12 @@ var app = app || {};
         },
         handleChangeView: function() {
             insideView = !insideView;
+            var openingView =
+                !insideView && this.model.isOpeningDirectionOutward()
+                ||
+                insideView && !this.model.isOpeningDirectionOutward();
             this.setState({
-                insideView: insideView
+                openingView: openingView
             });
         },
         handleBarNumberChange: function() {
@@ -95,6 +106,17 @@ var app = app || {};
         handleFillingTypeChange: function() {
             var type = this.ui.$filling_select.val();
             this.model.setFillingType(this.state.selectedSashId, type);
+        },
+        hadnleArchedClick: function() {
+            // var type = this.ui.$filling_select.val();
+            // this.model.setFillingType(this.state.selectedSashId, type);
+            if (!this.state.selectedSashId) {
+                console.log('no sash selected');
+                return;
+            }
+            this.model._updateSection(this.state.selectedSashId, function(section) {
+                section.arched = !section.arched;
+            });
         },
         setState: function(state) {
             this.state = _.assign(this.state, state);
@@ -260,6 +282,68 @@ var app = app || {};
 
             return group;
         },
+
+        createArchedFrame: function(params) {
+            var frameWidth = params.frameWidth;
+            var width = params.width;
+            var height = params.height;
+            var archHeight = params.archHeight;
+
+            var group = new Konva.Group();
+            var top = new Konva.Shape({
+                stroke: 'black',
+                strokeWidth: 1,
+                fill: 'white',
+                sceneFunc: function(ctx) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, archHeight);
+                    ctx.quadraticCurveTo(0, 0, width / 2, 0);
+                    ctx.quadraticCurveTo(width, 0, width, archHeight);
+                    ctx.moveTo(width - frameWidth, archHeight);
+                    ctx.quadraticCurveTo(width - frameWidth, frameWidth, width / 2, frameWidth);
+                    ctx.quadraticCurveTo(frameWidth, frameWidth, frameWidth, archHeight);
+                    // ctx.closePath();
+                    ctx.fillStrokeShape(this);
+                }
+            });
+
+            var left = new Konva.Line({
+                points: [
+                    0, archHeight,
+                    frameWidth, archHeight,
+                    frameWidth, height - frameWidth,
+                    0, height
+                ]
+            });
+
+            var bottom = new Konva.Line({
+                points: [
+                    0, height,
+                    frameWidth, height - frameWidth,
+                    width - frameWidth, height - frameWidth,
+                    width, height
+                ]
+            });
+
+            var right = new Konva.Line({
+                points: [
+                    width, archHeight,
+                    width, height,
+                    width - frameWidth, height - frameWidth,
+                    width - frameWidth, archHeight
+                ]
+            });
+
+            group.add(top, left, right, bottom);
+
+            group.find('Line')
+                .closed(true)
+                .stroke('black')
+                .strokeWidth(1)
+                .fill('white');
+
+            return group;
+        },
         deselectAll: function() {
             this.setState({
                 selectedMullionId: null,
@@ -276,26 +360,40 @@ var app = app || {};
                     strokeWidth: 1
                 });
                 mullion.setAttrs(rootSection.mullionParams);
-                var isVerticalInvisible = rootSection.divider === 'vertical_invisible';
+                var isVerticalInvisible = (
+                    rootSection.divider === 'vertical_invisible'
+                );
+                var isHorizontalInvisible = (
+                    rootSection.divider === 'horizontal_invisible'
+                );
                 var isSelected = this.state.selectedMullionId === rootSection.id;
 
                 // do not show mullion for type vertical_invisible
                 // and sash is added for both right and left sides
-                var hideMullion = (rootSection.divider === 'vertical_invisible') &&
+                var hideVerticalMullion =
+                    (rootSection.divider === 'vertical_invisible') &&
                     (rootSection.sections[0].sashType !== 'fixed_in_frame') &&
-                    (rootSection.sections[1].sashType !== 'fixed_in_frame') &&
-                    !isSelected;
+                    (rootSection.sections[1].sashType !== 'fixed_in_frame') && !isSelected;
+
+                var hideHorizontalMullion =
+                    (rootSection.divider === 'horizontal_invisible') &&
+                    (rootSection.sections[0].sashType === 'fixed_in_frame') &&
+                    (rootSection.sections[1].sashType === 'fixed_in_frame') && !isSelected;
+
                 if (isVerticalInvisible && !isSelected) {
                     mullion.fill('lightgreen');
                     mullion.opacity(0.5);
-                } else if (isVerticalInvisible && isSelected) {
+                } else if ((isVerticalInvisible || isHorizontalInvisible) && isSelected) {
                     mullion.opacity(0.7);
                     mullion.fill('#4E993F');
                 } else if (isSelected) {
                     mullion.fill('lightgrey');
                 }
-                if (hideMullion) {
+                if (hideVerticalMullion) {
                     mullion.opacity(0.01);
+                }
+                if (hideHorizontalMullion) {
+                    mullion.fill('lightblue');
                 }
                 mullion.on('click', function() {
                     this.deselectAll();
@@ -303,7 +401,7 @@ var app = app || {};
                         selectedMullionId: rootSection.id
                     });
                 }.bind(this));
-                if (this.state.insideView) {
+                if (this.state.openingView) {
                     objects.push(mullion);
                 }
 
@@ -312,7 +410,7 @@ var app = app || {};
                     objects = objects.concat(this.createSection(sectionData));
                 }.bind(this));
 
-                if (!this.state.insideView) {
+                if (!this.state.openingView) {
                     objects.push(mullion);
                 }
             }
@@ -332,12 +430,12 @@ var app = app || {};
             });
 
             var fillX, fillY, fillWidth, fillHeight;
-            if (_.includes(['full-flush-panel', 'exterior-flush-panel'], sectionData.fillingType) && !this.state.insideView) {
+            if (_.includes(['full-flush-panel', 'exterior-flush-panel'], sectionData.fillingType) && !this.state.openingView) {
                 fillX = sectionData.openingParams.x - sectionData.sashParams.x;
                 fillY = sectionData.openingParams.y - sectionData.sashParams.y;
                 fillWidth = sectionData.openingParams.width;
                 fillHeight = sectionData.openingParams.height;
-            } else if (_.includes(['full-flush-panel', 'interior-flush-panel'], sectionData.fillingType) && this.state.insideView) {
+            } else if (_.includes(['full-flush-panel', 'interior-flush-panel'], sectionData.fillingType) && this.state.openingView) {
                 fillX = 0;
                 fillY = 0;
                 fillWidth = sectionData.sashParams.width;
@@ -368,33 +466,56 @@ var app = app || {};
                 group.add(frameGroup);
             }
             if (!sectionData.sections || !sectionData.sections.length) {
-                var glass = new Konva.Shape({
-                    x: fillX,
-                    y: fillY,
-                    width: fillWidth,
-                    height: fillHeight,
-                    fill: 'lightblue',
-                    id: sectionData.id,
-                    stroke: 'black',
-                    sceneFunc: function(ctx) {
-                        ctx.beginPath();
-                        ctx.rect(0, 0, this.width(), this.height());
-                        if (sectionData.fillingType === 'louver') {
-                            var offset = 40;
-                            for (var i = 0; i < this.height() / offset; i++) {
-                                ctx.moveTo(0, i * offset);
-                                ctx.lineTo(this.width(), i * offset);
+                /// create filling (glass or panel)
+                var filling;
+                if (!sectionData.arched) {
+                    filling = new Konva.Shape({
+                        x: fillX,
+                        y: fillY,
+                        width: fillWidth,
+                        height: fillHeight,
+                        fill: 'lightblue',
+                        id: sectionData.id,
+                        // stroke: 'black',
+                        sceneFunc: function(ctx) {
+                            ctx.beginPath();
+                            ctx.rect(0, 0, this.width(), this.height());
+                            if (sectionData.fillingType === 'louver') {
+                                var offset = 40;
+                                for (var i = 0; i < this.height() / offset; i++) {
+                                    ctx.moveTo(0, i * offset);
+                                    ctx.lineTo(this.width(), i * offset);
+                                }
                             }
+                            ctx.fillStrokeShape(this);
                         }
-                        ctx.fillStrokeShape(this);
+                    });
+                    if (sectionData.fillingType === 'louver') {
+                        filling.stroke('black');
                     }
-                });
-                group.add(glass);
+                } else {
+                    filling = new Konva.Shape({
+                        x: fillX,
+                        y: fillY,
+                        fill: 'lightblue',
+                        id: sectionData.id,
+                        // stroke: 'black',
+                        sceneFunc: function(ctx) {
+                            ctx.beginPath();
+                            ctx.moveTo(0, fillHeight);
+                            ctx.quadraticCurveTo(0, 0, fillWidth / 2, 0);
+                            ctx.quadraticCurveTo(fillWidth, 0, fillWidth, fillHeight);
+                            ctx.closePath();
+                            ctx.fillStrokeShape(this);
+                        }
+                    });
+                }
+                group.add(filling);
 
                 if (sectionData.fillingType && sectionData.fillingType !== 'glass') {
-                    glass.fill('lightgrey');
+                    filling.fill('lightgrey');
                 }
-                glass.on('click', this.showPopup.bind(this, sectionData.id));
+                filling.on('click', this.showPopup.bind(this, sectionData.id));
 
 
                 if (!sectionData.fillingType || sectionData.fillingType === 'glass') {
@@ -421,10 +542,10 @@ var app = app || {};
             }
             var type = sectionData.sashType;
             if (type !== 'fixed_in_frame') {
-                var shouldDrawHandle = (this.state.insideView &&
+                var shouldDrawHandle = (this.state.openingView &&
                     (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type === 'tilt_only')) &&
                     (type.indexOf('_hinge_hidden_latch') === -1)
-                    || (!this.state.insideView && this.model.profile.hasOutsideHandle());
+                    || (!this.state.openingView && this.model.profile.hasOutsideHandle());
                 if (shouldDrawHandle) {
                     var offset = frameWidth / 2;
                     var pos = {
@@ -517,12 +638,31 @@ var app = app || {};
                 group.add(number);
             }
             if (sectionData.id === this.state.selectedSashId) {
-                var selectionRect = new Konva.Rect({
-                    width: sectionData.sashParams.width,
-                    height: sectionData.sashParams.height,
-                    fill: 'rgba(0,0,0,0.2)'
-                });
-                group.add(selectionRect);
+                // usual rect
+                var selection;
+                if (!sectionData.arched) {
+                    selection = new Konva.Rect({
+                        width: sectionData.sashParams.width,
+                        height: sectionData.sashParams.height,
+                        fill: 'rgba(0,0,0,0.2)'
+                    });
+                } else {
+                    // arched shape
+                    selection = new Konva.Shape({
+                        x: fillX,
+                        y: fillY,
+                        fill: 'rgba(0,0,0,0.2)',
+                        sceneFunc: function(ctx) {
+                            ctx.beginPath();
+                            ctx.moveTo(0, fillHeight);
+                            ctx.quadraticCurveTo(0, 0, fillWidth / 2, 0);
+                            ctx.quadraticCurveTo(fillWidth, 0, fillWidth, fillHeight);
+                            ctx.closePath();
+                            ctx.fillStrokeShape(this);
+                        }
+                    });
+                }
+                group.add(selection);
             }
             return group;
         },
@@ -752,7 +892,7 @@ var app = app || {};
                     };
                     if (verticalMullions.length === 1) {
                         params.setter = function(val) {
-                            if (!this.state.insideView) {
+                            if (!this.state.openingView) {
                                 val = this.model.getInMetric('width', 'mm') - val;
                             }
                             this.model.setSectionMullionPosition(mul.id, val);
@@ -776,7 +916,7 @@ var app = app || {};
                     };
                     if (verticalMullions.length === 1) {
                         params.setter = function(val) {
-                            if (this.state.insideView) {
+                            if (this.state.openingView) {
                                 val = this.model.getInMetric('width', 'mm') - val;
                             }
                             this.model.setSectionMullionPosition(mul.id, val);
@@ -966,11 +1106,30 @@ var app = app || {};
             this.layer.add(group);
 
 
+            var root;
+            if (this.state.openingView) {
+                root = this.model.generateFullRoot();
+            } else {
+                root = this.model.generateFullReversedRoot();
+            }
+
             var frameGroup;
-            if (this.model.profile.isThresholdPossible() && this.model.profile.get('low_threshold')) {
+            var isDoorFrame = this.model.profile.isThresholdPossible() &&
+                this.model.profile.get('low_threshold');
+            var isArchedWindow = (this.model.getArchedPosition() !== null);
+
+
+            if (isDoorFrame) {
                 frameGroup = this.createDoorFrame({
                     width: this.model.getInMetric('width', 'mm'),
                     height: this.model.getInMetric('height', 'mm'),
+                    frameWidth: this.model.profile.get('frame_width')
+                });
+            } if (isArchedWindow) {
+                frameGroup = this.createArchedFrame({
+                    width: this.model.getInMetric('width', 'mm'),
+                    height: this.model.getInMetric('height', 'mm'),
+                    archHeight: this.model.getArchedPosition(),
                     frameWidth: this.model.profile.get('frame_width')
                 });
             } else {
@@ -988,22 +1147,16 @@ var app = app || {};
             sectionsGroup.scale({x: ratio, y: ratio});
             group.add(sectionsGroup);
 
-            var root;
-            if (this.state.insideView) {
-                root = this.model.generateFullRoot();
-            } else {
-                root = this.model.generateFullReversedRoot();
-            }
             var sections = this.createSection(root);
 
             sectionsGroup.add.apply(sectionsGroup, sections);
 
-            if (!this.state.insideView) {
+            if (!this.state.openingView) {
                 frameGroup.moveToTop();
             }
 
             var mullions;
-            if (this.state.insideView) {
+            if (this.state.openingView) {
                 mullions = this.model.getMullions();
             } else {
                 mullions = this.model.getRevertedMullions();
@@ -1016,20 +1169,55 @@ var app = app || {};
         },
 
         updateUI: function() {
-            var buttonText = this.state.insideView ? 'Show outside view' : 'Show inside view';
-            this.$('#change-view').text(buttonText);
-            var titleText = this.state.insideView ? 'Inside view' : 'Outside view';
+            var buttonText = insideView ? 'Show outside view' : 'Show inside view';
+            this.$('#change-view-button').text(buttonText);
+
+            var titleText = insideView ? 'Inside view' : 'Outside view';
             this.ui.$title.text(titleText);
 
-            var selectedSashId = this.state.selectedSashId;
 
+            var selectedSashId = this.state.selectedSashId;
             var selectedSash = this.model.getSection(selectedSashId);
-            this.ui.$bars_control.toggle(!!selectedSashId && selectedSash.fillingType === 'glass');
-            this.ui.$vertical_bars_number.val(selectedSash && selectedSash.vertical_bars_number || 0);
-            this.ui.$horizontal_bars_number.val(selectedSash && selectedSash.horizontal_bars_number || 0);
+            var isArched = selectedSash && selectedSash.arched;
+
+
+            this.ui.$bars_control.toggle(
+                !isArched &&
+                !!selectedSashId &&
+                selectedSash.fillingType === 'glass'
+            );
+
+            this.ui.$vertical_bars_number.val(
+                selectedSash && selectedSash.vertical_bars_number || 0
+            );
+            this.ui.$horizontal_bars_number.val(
+                selectedSash && selectedSash.horizontal_bars_number || 0
+            );
+
             this.ui.$section_control.toggle(!!selectedSashId);
-            this.$('.sash-types').toggle(selectedSashId && this.model.canAddSashToSection(selectedSashId));
+
+
+            this.$('.sash-types').toggle(
+                !isArched &&
+                selectedSashId &&
+                this.model.canAddSashToSection(selectedSashId)
+            );
+
+            this.$('.split').toggle(
+                !isArched
+            );
+
             this.ui.$filling_select.val(selectedSash && selectedSash.fillingType);
+
+            this.$('.toggle-arched').toggle(
+                selectedSashId &&
+                this.model.isArchedPossible(selectedSashId)
+            );
+
+
+            this.$('.remove-arched').toggle(!!isArched);
+            this.$('.add-arched').toggle(!isArched);
+
         },
 
         splitSection: function(e) {
@@ -1045,7 +1233,7 @@ var app = app || {};
             // revirse sash type from right to left
             // or from left to right on onside view
             // UX will be better for this case
-            if (!this.state.insideView) {
+            if (!this.state.openingView) {
                 if (type.indexOf('left') >= 0) {
                     type = type.replace('left', 'right');
                 } else if (type.indexOf('right') >= 0) {
@@ -1105,7 +1293,7 @@ var app = app || {};
 
         if ( _.indexOf(['inside', 'outside'], options.position) !== -1 ) {
             view.setState({
-                insideView: options.position === 'inside'
+                openingView: options.position === 'inside'
             });
         } else {
             view.destroy();
