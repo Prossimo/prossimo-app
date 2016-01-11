@@ -13,8 +13,13 @@ var app = app || {};
         initialize: function () {
             this.listenTo(this.model, 'all', this.updateRenderedScene);
             this.on('update_rendered', this.updateRenderedScene, this);
+
+            var openingView =
+                !insideView && this.model.isOpeningDirectionOutward()
+                ||
+                insideView && !this.model.isOpeningDirectionOutward();
             this.state = {
-                insideView: insideView
+                openingView: openingView
             };
         },
 
@@ -84,8 +89,12 @@ var app = app || {};
         },
         handleChangeView: function() {
             insideView = !insideView;
+            var openingView =
+                !insideView && this.model.isOpeningDirectionOutward()
+                ||
+                insideView && !this.model.isOpeningDirectionOutward();
             this.setState({
-                insideView: insideView
+                openingView: openingView
             });
         },
         handleBarNumberChange: function() {
@@ -392,7 +401,7 @@ var app = app || {};
                         selectedMullionId: rootSection.id
                     });
                 }.bind(this));
-                if (this.state.insideView) {
+                if (this.state.openingView) {
                     objects.push(mullion);
                 }
 
@@ -401,7 +410,7 @@ var app = app || {};
                     objects = objects.concat(this.createSection(sectionData));
                 }.bind(this));
 
-                if (!this.state.insideView) {
+                if (!this.state.openingView) {
                     objects.push(mullion);
                 }
             }
@@ -421,12 +430,12 @@ var app = app || {};
             });
 
             var fillX, fillY, fillWidth, fillHeight;
-            if (_.includes(['full-flush-panel', 'exterior-flush-panel'], sectionData.fillingType) && !this.state.insideView) {
+            if (_.includes(['full-flush-panel', 'exterior-flush-panel'], sectionData.fillingType) && !this.state.openingView) {
                 fillX = sectionData.openingParams.x - sectionData.sashParams.x;
                 fillY = sectionData.openingParams.y - sectionData.sashParams.y;
                 fillWidth = sectionData.openingParams.width;
                 fillHeight = sectionData.openingParams.height;
-            } else if (_.includes(['full-flush-panel', 'interior-flush-panel'], sectionData.fillingType) && this.state.insideView) {
+            } else if (_.includes(['full-flush-panel', 'interior-flush-panel'], sectionData.fillingType) && this.state.openingView) {
                 fillX = 0;
                 fillY = 0;
                 fillWidth = sectionData.sashParams.width;
@@ -533,10 +542,10 @@ var app = app || {};
             }
             var type = sectionData.sashType;
             if (type !== 'fixed_in_frame') {
-                var shouldDrawHandle = (this.state.insideView &&
+                var shouldDrawHandle = (this.state.openingView &&
                     (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type === 'tilt_only')) &&
                     (type.indexOf('_hinge_hidden_latch') === -1)
-                    || (!this.state.insideView && this.model.profile.hasOutsideHandle());
+                    || (!this.state.openingView && this.model.profile.hasOutsideHandle());
                 if (shouldDrawHandle) {
                     var offset = frameWidth / 2;
                     var pos = {
@@ -883,7 +892,7 @@ var app = app || {};
                     };
                     if (verticalMullions.length === 1) {
                         params.setter = function(val) {
-                            if (!this.state.insideView) {
+                            if (!this.state.openingView) {
                                 val = this.model.getInMetric('width', 'mm') - val;
                             }
                             this.model.setSectionMullionPosition(mul.id, val);
@@ -907,7 +916,7 @@ var app = app || {};
                     };
                     if (verticalMullions.length === 1) {
                         params.setter = function(val) {
-                            if (this.state.insideView) {
+                            if (this.state.openingView) {
                                 val = this.model.getInMetric('width', 'mm') - val;
                             }
                             this.model.setSectionMullionPosition(mul.id, val);
@@ -1098,7 +1107,7 @@ var app = app || {};
 
 
             var root;
-            if (this.state.insideView) {
+            if (this.state.openingView) {
                 root = this.model.generateFullRoot();
             } else {
                 root = this.model.generateFullReversedRoot();
@@ -1143,12 +1152,12 @@ var app = app || {};
 
             sectionsGroup.add.apply(sectionsGroup, sections);
 
-            if (!this.state.insideView) {
+            if (!this.state.openingView) {
                 frameGroup.moveToTop();
             }
 
             var mullions;
-            if (this.state.insideView) {
+            if (this.state.openingView) {
                 mullions = this.model.getMullions();
             } else {
                 mullions = this.model.getRevertedMullions();
@@ -1161,10 +1170,10 @@ var app = app || {};
         },
 
         updateUI: function() {
-            var buttonText = this.state.insideView ? 'Show outside view' : 'Show inside view';
+            var buttonText = insideView ? 'Show outside view' : 'Show inside view';
             this.$('#change-view-button').text(buttonText);
 
-            var titleText = this.state.insideView ? 'Inside view' : 'Outside view';
+            var titleText = insideView ? 'Inside view' : 'Outside view';
             this.ui.$title.text(titleText);
 
 
@@ -1225,7 +1234,7 @@ var app = app || {};
             // revirse sash type from right to left
             // or from left to right on onside view
             // UX will be better for this case
-            if (!this.state.insideView) {
+            if (!this.state.openingView) {
                 if (type.indexOf('left') >= 0) {
                     type = type.replace('left', 'right');
                 } else if (type.indexOf('right') >= 0) {
@@ -1285,7 +1294,7 @@ var app = app || {};
 
         if ( _.indexOf(['inside', 'outside'], options.position) !== -1 ) {
             view.setState({
-                insideView: options.position === 'inside'
+                openingView: options.position === 'inside'
             });
         } else {
             view.destroy();
