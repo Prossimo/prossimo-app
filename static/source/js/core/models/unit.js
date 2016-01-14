@@ -38,9 +38,8 @@ var app = app || {};
         { name: 'discount', title: 'Discount', type: 'number' }
     ];
 
-    //  We only enable those properties for editing on units where profile
-    //  returns `true` on `hasOutsideHandle` call
-    var DOOR_ONLY_PROPERTIES = ['exterior_handle', 'lock_mechanism'];
+    //  We only enable those for editing on units where `isDoorType` is `true`
+    var DOOR_ONLY_PROPERTIES = ['exterior_handle', 'lock_mechanism', 'opening_direction'];
 
     var SASH_TYPES = [
         'tilt_turn_left', 'tilt_turn_right', 'fixed_in_frame', 'tilt_only',
@@ -77,7 +76,7 @@ var app = app || {};
 
     var MULLION_TYPES = [
         'vertical', 'horizontal',
-        'vertical_invisible'
+        'vertical_invisible', 'horizontal_invisible'
     ];
 
     function getDefaultFillingType() {
@@ -114,9 +113,9 @@ var app = app || {};
             };
 
             var name_value_hash = {
-                original_currency: 'USD',
-                conversion_rate: 1,
-                price_markup: 1,
+                original_currency: 'EUR',
+                conversion_rate: 0.9,
+                price_markup: 2.3,
                 quantity: 1,
                 root_section: getSectionDefaults()
             };
@@ -129,6 +128,7 @@ var app = app || {};
                 name_value_hash.gasket_color = app.settings.getGasketColors()[0];
                 name_value_hash.hinge_style = app.settings.getHingeTypes()[0];
                 name_value_hash.glazing_bar_width = app.settings.getGlazingBarWidths()[0];
+                name_value_hash.opening_direction = app.settings.getOpeningDirections()[0];
             }
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -216,6 +216,16 @@ var app = app || {};
             if ( app.settings ) {
                 this.profile = app.settings.getProfileByNameOrNew(this.get('profile_name'));
             }
+
+            if ( app.settings && this.isDoorType() ) {
+                if ( this.get('opening_direction') === '--' ) {
+                    this.set('opening_direction', this.getDefaultValue('opening_direction'));
+                }
+            } else if ( app.settings ) {
+                if ( this.get('opening_direction') !== '--' ) {
+                    this.set('opening_direction', '--');
+                }
+            }
         },
         setDefaultFillingType: function () {
             var filling_type;
@@ -300,17 +310,76 @@ var app = app || {};
         getSection: function(sectionId) {
             return app.Unit.findSection(this.generateFullRoot(), sectionId);
         },
+        //  Right now we think that door is something where profile
+        //  returns `true` on `hasOutsideHandle` call
+        isDoorType: function () {
+            var is_door_type = false;
+
+            if ( this.profile && this.profile.hasOutsideHandle() ) {
+                is_door_type = true;
+            }
+
+            return is_door_type;
+        },
         isDoorOnlyAttribute: function (attribute_name) {
             return _.indexOf(DOOR_ONLY_PROPERTIES, attribute_name) !== -1;
         },
-        areDoorOnlyAttributesEditable: function () {
-            var is_editable = false;
-
-            if ( this.profile && this.profile.hasOutsideHandle() ) {
-                is_editable = true;
+        isOpeningDirectionOutward: function () {
+            return this.get('opening_direction') === 'Outward';
+        },
+        isArchedPossible: function(sashId) {
+            // TODO: move function outside
+            // is it useful somewhere else ?
+            function findParent(root, childId) {
+                if (root.sections.length === 0) {
+                    return null;
+                }
+                if (root.sections[0].id === childId || root.sections[1].id === childId) {
+                    return root;
+                }
+                return findParent(root.sections[0], childId) || findParent(root.sections[1], childId);
+            }
+            var root = this.generateFullRoot();
+            var parent = findParent(root, sashId);
+            if (!parent) {
+                // console.error('Can not find parent for sash ' + sashId);
+                return false;
             }
 
-            return is_editable;
+            var childId = sashId;
+
+
+            while (parent) {
+                // var child = Unit.findSection(parent, childId);
+
+                // arched section should be only on top (index 0)
+                if (parent.sections[0].id !== childId) {
+                    return false;
+                }
+
+                // and it should be horizontal mullions only
+                if (!(parent.divider === 'horizontal' || parent.divider === 'horizontal_invisible')) {
+                    return false;
+                }
+
+                childId = parent.id;
+                parent = findParent(root, childId);
+            }
+            return true;
+        },
+        getArchedPosition: function() {
+            var root = this.get('root_section');
+            while(true) {
+                var topSection = root.sections && root.sections[0] && root.sections[0];
+                if (topSection && topSection.arched) {
+                    return root.position;
+                }
+                if (!topSection) {
+                    return null;
+                }
+                root = topSection;
+            }
+            return null;
         },
         getSashName: function (type) {
             if ( _.indexOf(_.keys(SASH_TYPE_NAME_MAP), type) === -1 ) {

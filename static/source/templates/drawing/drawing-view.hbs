@@ -1,15 +1,28 @@
 <div class="drawing-controls">
     <button class="btn btn-xs" id="clear-frame">Clear frame</button>
-    <button class="btn btn-xs" id="change-view">Show outside view</button>
+    <button class="btn btn-xs" id="change-view-button">Show outside view</button>
     <div id="drawing-view-title">Outside view</div>
+    <!-- <div id="dim">
+        <select id='dimension-type-select'>
+            <option value="frame">Frame</option>
+            <option value="opening">Opening</option>
+            <option value="filling">Filling (Glass or Panel)</option>
+        </select>
+    </div> -->
     <div id="section_control">
-        Split section:
-        <img class="split-section" data-type="vertical" src="/static/public/img/vertical_mullion.png"/>
-        <img class="split-section" data-type="horizontal" src="/static/public/img/horizontal_mullion.png"/>
-        <img class="split-section" data-type="vertical_invisible" src="/static/public/img/vertical_invisible_mullion.png"/>
-
+        <span class="toggle-arched">
+            <img class="add-arched" src="/static/public/img/add_arched_section.png"/>
+            <img class="remove-arched" src="/static/public/img/remove_arched_section.png"/>
+        </span>
+        <span class="split">
+            Split section:
+            <img class="split-section" data-type="vertical" src="/static/public/img/vertical_mullion.png"/>
+            <img class="split-section" data-type="horizontal" src="/static/public/img/horizontal_mullion.png"/>
+            <img class="split-section" data-type="vertical_invisible" src="/static/public/img/vertical_invisible_mullion.png"/>
+            <img class="split-section" data-type="horizontal_invisible" src="/static/public/img/horizontal_invisible_mullion.png"/>
+        </span>
         <span class="sash-types">
-        Section type:
+            Section type:
             <img class="change-sash-type" data-type="tilt_turn_left" src="/static/public/img/tilt_turn_left.png"/>
             <img class="change-sash-type" data-type="tilt_turn_right" src="/static/public/img/tilt_turn_right.png"/>
             <img class="change-sash-type" data-type="fixed_in_frame" src="/static/public/img/fixed_in_frame.png"/>

@@ -21,7 +21,12 @@ var app = app || {};
     ];
     var GLAZING_BEAD_TYPES = ['Rounded', 'Square'];
     var GLAZING_BAR_WIDTHS = [12, 22, 44];
-
+    var GLASS_OR_PANEL_TYPES = [
+        'Triple Standard - Ug=.09 SGHC=.50 LT=71%', 'Triple Tempered',
+        'Triple Low Gain', 'Triple Low Gain Tempered', 'Triple High Gain',
+        'Triple High Gain Tempered', 'Triple Standard-Outer Frosted', 'Triple Tempered-Outer Frosted'
+    ];
+    var OPENING_DIRECTIONS = ['Inward', 'Outward'];
 
     //  --------------------------------------------------------------------
     //  That's what we use for Profiles
@@ -180,6 +185,9 @@ var app = app || {};
         },
         getSashCornerTypes: function () {
             return CORNER_TYPES;
+        },
+        getOpeningDirections: function () {
+            return OPENING_DIRECTIONS;
         }
     });
 })();

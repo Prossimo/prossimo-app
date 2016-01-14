@@ -15,6 +15,17 @@ var app = app || {};
         initialize: function (models, options) {
             this.options = options || {};
             this.proxy_accessory = new app.Accessory(null, { proxy: true });
+
+            this.on('loaded', this.addDefaultShipping, this);
+        },
+        //  Add new `Shipping` item if there's no shipping yet
+        addDefaultShipping: function () {
+            if ( !this.findWhere({ extras_type: 'Shipping' }) ) {
+                this.add(new app.Accessory({
+                    description: 'Shipping',
+                    extras_type: 'Shipping'
+                }));
+            }
         },
         getNameTitleTypeHash: function (names) {
             return this.proxy_accessory.getNameTitleTypeHash(names);

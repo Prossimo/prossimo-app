@@ -516,11 +516,15 @@ var app = app || {};
                 lock_mechanism: {
                     renderer: app.hot_renderers.doorOnlyRenderer
                 },
+                opening_direction: {
+                    type: 'dropdown',
+                    source: app.settings.getOpeningDirections(),
+                    renderer: app.hot_renderers.doorOnlyDropdownRenderer
+                },
                 pipedrive_id: {
                     readOnly: true
                 }
             };
-
 
             if ( format_hash[column_name] ) {
                 properties_obj = _.extend(properties_obj, format_hash[column_name]);
@@ -647,7 +651,7 @@ var app = app || {};
                     rowHeaders: true,
                     rowHeights: function () {
                         return _.contains(self.getActiveTab().columns, 'drawing') ||
-                            _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : undefined;
+                            _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
                     },
                     trimDropdown: false,
                     maxRows: function () {
@@ -663,7 +667,7 @@ var app = app || {};
             this.dropdown_scroll_timer = setInterval(function () {
                 var editor = self.hot && self.hot.getActiveEditor();
 
-                if ( editor && !dropdown_scroll_reset ) {
+                if ( editor && editor.htContainer && !dropdown_scroll_reset ) {
                     dropdown_scroll_reset = true;
                     editor.htContainer.scrollIntoView(false);
                 } else {

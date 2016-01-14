@@ -48,6 +48,7 @@ module.exports = function (grunt) {
         'units-table/views/main-units-table-view.js',
         'docs-import/views/main-docs-import-view.js',
         'docs-import/views/document-selector-view.js',
+        'docs-import/views/document-list-view.js',
         'drawing/views/main-drawing-view.js',
         'drawing/views/drawing-view.js',
         'drawing/views/drawing-sidebar-view.js',
@@ -324,12 +325,20 @@ module.exports = function (grunt) {
         },
 
         sshexec: {
-            update: {
-                command: 'cd /var/www/prossimo && ./update.sh',
+            update_staging: {
+                command: 'cd /var/www/prossimo && ./update.sh staging',
                 options: {
-                    host: '<%= credentials.host %>',
-                    username: '<%= credentials.username %>',
-                    password: '<%= credentials.password %>'
+                    host: '<%= credentials.staging.host %>',
+                    username: '<%= credentials.staging.username %>',
+                    password: '<%= credentials.staging.password %>'
+                }
+            },
+            update_production: {
+                command: 'cd /var/www/prossimo && ./update.sh production',
+                options: {
+                    host: '<%= credentials.production.host %>',
+                    username: '<%= credentials.production.username %>',
+                    password: '<%= credentials.production.password %>'
                 }
             }
         },
@@ -461,17 +470,22 @@ module.exports = function (grunt) {
 
     grunt.registerTask('pdfjs', ['gitinfo', 'replace:pdfjs', 'shell:build_pdfjs', 'copy:pdfjs']);
 
+    //  README: pdf building is commented out due to this issue:
+    //  https://bitbucket.org/prossimo/prossimo-app/issues/137
+    //  This is a temporary change
     grunt.registerTask('build', [
         'gitinfo', 'clean:build', 'handlebars:build', 'copy:vendor', 'uglify:build',
-        'copy:images', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:build', 'pdfjs'
+        'copy:images', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:build'//, 'pdfjs'
     ]);
 
     grunt.registerTask('dev', [
         'clean:build', 'handlebars:dev', 'copy:dev', 'copy:vendor', 'copy:images',
-        'less:dev', 'uglify:vendor_dev', 'cssmin:vendor_dev', 'replace:dev', 'pdfjs'
+        'less:dev', 'uglify:vendor_dev', 'cssmin:vendor_dev', 'replace:dev'//, 'pdfjs'
     ]);
 
     grunt.registerTask('test', ['eslint', 'qunit']);
-    grunt.registerTask('deploy', ['test', 'sshexec:update']);
+    grunt.registerTask('deploy_staging', ['test', 'sshexec:update_staging']);
+    grunt.registerTask('deploy_production', ['test', 'sshexec:update_production']);
+    grunt.registerTask('deploy', ['deploy_staging']);
     grunt.registerTask('default', ['dev', 'connect', 'watch']);
 };
