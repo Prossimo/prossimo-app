@@ -318,13 +318,14 @@ var app = app || {};
                 fill: 'white',
                 sceneFunc: function(ctx) {
                     ctx.beginPath();
-                    ctx.moveTo(0, archHeight);
-                    ctx.quadraticCurveTo(0, 0, width / 2, 0);
-                    ctx.quadraticCurveTo(width, 0, width, archHeight);
-                    ctx.moveTo(width - frameWidth, archHeight);
-                    ctx.quadraticCurveTo(width - frameWidth, frameWidth, width / 2, frameWidth);
-                    ctx.quadraticCurveTo(frameWidth, frameWidth, frameWidth, archHeight);
-                    // ctx.closePath();
+                    ctx._context.ellipse(width / 2, archHeight, width / 2, archHeight,
+                        Math.PI, 0, Math.PI);
+                    ctx._context.ellipse(
+                        width / 2, archHeight,
+                        width / 2 - frameWidth, archHeight - frameWidth,
+                        0, 0, Math.PI, true
+                    );
+                    ctx.lineTo(0, archHeight);
                     ctx.fillStrokeShape(this);
                 }
             });
@@ -356,7 +357,7 @@ var app = app || {};
                 ]
             });
 
-            group.add(top, left, right, bottom);
+            group.add(left, right, bottom, top);
 
             group.find('Line')
                 .closed(true)
