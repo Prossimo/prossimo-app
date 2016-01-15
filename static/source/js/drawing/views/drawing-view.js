@@ -1234,8 +1234,11 @@ var app = app || {};
 
             if ( selectedFillingType ) {
                 this.ui.$filling_select.val(selectedFillingType.cid);
-                this.ui.$filling_select.selectpicker('render');
+            } else {
+                this.ui.$filling_select.val('');
             }
+
+            this.ui.$filling_select.selectpicker('render');
 
             this.$('.toggle-arched').toggle(
                 selectedSashId &&
