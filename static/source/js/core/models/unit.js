@@ -11,6 +11,7 @@ var app = app || {};
         { name: 'type', title: 'Type', type: 'string' },
         { name: 'description', title: 'Description', type: 'string' },
         { name: 'notes', title: 'Notes', type: 'string' },
+        { name: 'exceptions', title: 'Exceptions', type: 'string' },
         { name: 'glazing_bar_width', title: 'Glazing Bar Width (mm)', type: 'number' },
 
         { name: 'profile_name', title: 'Profile', type: 'string' },
@@ -34,6 +35,7 @@ var app = app || {};
         { name: 'original_cost', title: 'Original Cost', type: 'number' },
         { name: 'original_currency', title: 'Original Currency', type: 'string' },
         { name: 'conversion_rate', title: 'Conversion Rate', type: 'number' },
+        { name: 'supplier_discount', title: 'Supplier Discount', type: 'number' },
         { name: 'price_markup', title: 'Markup', type: 'number' },
         { name: 'discount', title: 'Discount', type: 'number' }
     ];
@@ -266,8 +268,11 @@ var app = app || {};
         getUnitCost: function () {
             return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
         },
+        getUnitCostDiscounted: function () {
+            return this.getUnitCost() * (100 - parseFloat(this.get('supplier_discount'))) / 100;
+        },
         getUnitPrice: function () {
-            return this.getUnitCost() * parseFloat(this.get('price_markup'));
+            return this.getUnitCostDiscounted() * parseFloat(this.get('price_markup'));
         },
         getSubtotalPrice: function () {
             return this.getUnitPrice() * parseFloat(this.get('quantity'));
@@ -276,10 +281,10 @@ var app = app || {};
             return parseFloat(this.get('uw')) * 0.176;
         },
         getUnitPriceDiscounted: function () {
-            return this.getUnitPrice() * (100 - this.get('discount')) / 100;
+            return this.getUnitPrice() * (100 - parseFloat(this.get('discount'))) / 100;
         },
         getSubtotalPriceDiscounted: function () {
-            return this.getSubtotalPrice() * (100 - this.get('discount')) / 100;
+            return this.getSubtotalPrice() * (100 - parseFloat(this.get('discount'))) / 100;
         },
         getSquareFeetPrice: function () {
             return this.getTotalSquareFeet() ? this.getSubtotalPrice() / this.getTotalSquareFeet() : 0;

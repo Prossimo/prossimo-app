@@ -1,6 +1,7 @@
 /* global app */
 /* eslint-env qunit */
-/* eslint strict:0  */
+/* eslint strict:0 */
+/* eslint max-statements:0 */
 
 var c = app.utils.convert;
 app.no_backend = true;

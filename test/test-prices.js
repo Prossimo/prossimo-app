@@ -1,7 +1,8 @@
 /* global app */
 /* eslint-env qunit */
-/* eslint strict:0  */
-/* eslint max-len:0  */
+/* eslint strict:0 */
+/* eslint max-len:0 */
+/* eslint max-statements:0 */
 
 //  Test that QUnit is working
 test('basic test', function () {
@@ -57,7 +58,8 @@ test('single unit tests', function () {
             price_markup: 2.3,
             uw: 0.77,
             glazing: '3Std U=.09 SGHC=.5',
-            discount: 20
+            discount: 20,
+            supplier_discount: 15
         }
     ]);
 
@@ -67,14 +69,16 @@ test('single unit tests', function () {
     equal(first_unit.get('original_cost'), 399, 'Unit original cost is expected to be 399');
 
     equal(first_unit.getUnitCost().toFixed(2), '441.73', 'Unit cost converted to USD is expected to be 441.73');
-    equal(first_unit.getUnitPrice().toFixed(2), '1015.99', 'Unit end price is expected to be 1015.99');
+    equal(first_unit.getUnitCostDiscounted().toFixed(2), '375.47', 'Unit cost in USD with supplier discount is expected to be 375.47');
+    equal(first_unit.getUnitPrice().toFixed(2), '863.59', 'Unit end price is expected to be 863.59');
+
     equal(first_unit.getSubtotalPrice(), first_unit.getUnitPrice(), 'Price should be same for a single unit and for subtotal');
-    equal(first_unit.getUnitPriceDiscounted().toFixed(2), '812.79', 'Price with discount is expected to be 812.79');
+    equal(first_unit.getUnitPriceDiscounted().toFixed(2), '690.87', 'Price with discount is expected to be 690.87');
     equal(first_unit.getSubtotalPriceDiscounted(), first_unit.getUnitPriceDiscounted(), 'Discounted price should be same for a single unit and for subtotal');
 
     equal(first_unit.getAreaInSquareFeet().toFixed(2), '8.33', 'Unit area is expected to be 8.33');
-    equal(first_unit.getSquareFeetPrice().toFixed(2), '121.92', 'Price per sq.ft is expected to be 121.92');
-    equal(first_unit.getSquareFeetPriceDiscounted().toFixed(2), '97.53', 'Discounted price per sq.ft is expected to be 97.53');
+    equal(first_unit.getSquareFeetPrice().toFixed(2), '103.63', 'Price per sq.ft is expected to be 103.63');
+    equal(first_unit.getSquareFeetPriceDiscounted().toFixed(2), '82.90', 'Discounted price per sq.ft is expected to be 82.90');
 });
 
 
