@@ -345,6 +345,9 @@ var app = app || {};
                 return findParent(root.sections[0], childId) || findParent(root.sections[1], childId);
             }
             var root = this.generateFullRoot();
+            if (root.id === sashId && root.sections.length === 0) {
+                return true;
+            }
             var parent = findParent(root, sashId);
             if (!parent) {
                 // console.error('Can not find parent for sash ' + sashId);
@@ -374,6 +377,9 @@ var app = app || {};
         },
         getArchedPosition: function() {
             var root = this.get('root_section');
+            if (root.arched) {
+                return Math.min(this.getInMetric('width', 'mm') / 2, this.getInMetric('height', 'mm'));
+            }
             while(true) {
                 var topSection = root.sections && root.sections[0] && root.sections[0];
                 if (topSection && topSection.arched) {

@@ -318,14 +318,25 @@ var app = app || {};
                 fill: 'white',
                 sceneFunc: function(ctx) {
                     ctx.beginPath();
-                    ctx._context.ellipse(width / 2, archHeight, width / 2, archHeight,
-                        Math.PI, 0, Math.PI);
-                    ctx._context.ellipse(
-                        width / 2, archHeight,
-                        width / 2 - frameWidth, archHeight - frameWidth,
-                        0, 0, Math.PI, true
+                    var scale = (width / 2) / archHeight;
+                    ctx.save();
+                    ctx.scale(scale, 1);
+                    var radius = archHeight;
+                    ctx._context.arc(
+                        radius, radius, radius,
+                        0, Math.PI, true);
+                    ctx.restore();
+                    ctx.translate(width / 2, archHeight);
+                    ctx.scale(
+                        (width / 2 - frameWidth) / archHeight,
+                        (archHeight - frameWidth) / archHeight
                     );
-                    ctx.lineTo(0, archHeight);
+                    ctx._context.arc(
+                        0, 0,
+                        radius,
+                        Math.PI, 0
+                    );
+                    ctx.closePath();
                     ctx.fillStrokeShape(this);
                 }
             });
@@ -488,6 +499,7 @@ var app = app || {};
                 }
                 group.add(frameGroup);
             }
+            var arcPos = this.model.getArchedPosition();
             if (!sectionData.sections || !sectionData.sections.length) {
                 /// create filling (glass or panel)
                 var filling;
@@ -516,6 +528,24 @@ var app = app || {};
                     if (sectionData.fillingType === 'louver') {
                         filling.stroke('black');
                     }
+                } else if (sectionData.id === this.model.get('root_section').id) {
+                    filling = new Konva.Shape({
+                        x: fillX,
+                        y: fillY,
+                        fill: 'lightblue',
+                        id: sectionData.id,
+                        // stroke: 'black',
+                        sceneFunc: function(ctx) {
+                            ctx.beginPath();
+                            ctx.moveTo(0, fillHeight);
+                            ctx.lineTo(0, arcPos);
+                            ctx.quadraticCurveTo(0, 0, fillWidth / 2, 0);
+                            ctx.quadraticCurveTo(fillWidth, 0, fillWidth, arcPos);
+                            ctx.lineTo(fillWidth, fillHeight);
+                            ctx.closePath();
+                            ctx.fillStrokeShape(this);
+                        }
+                    });
                 } else {
                     filling = new Konva.Shape({
                         x: fillX,
@@ -668,6 +698,23 @@ var app = app || {};
                         width: sectionData.sashParams.width,
                         height: sectionData.sashParams.height,
                         fill: 'rgba(0,0,0,0.2)'
+                    });
+                } else if (sectionData.id === this.model.get('root_section').id) {
+                    // arched shape
+                    selection = new Konva.Shape({
+                        x: fillX,
+                        y: fillY,
+                        fill: 'rgba(0,0,0,0.2)',
+                        sceneFunc: function(ctx) {
+                            ctx.beginPath();
+                            ctx.moveTo(0, fillHeight);
+                            ctx.lineTo(0, arcPos);
+                            ctx.quadraticCurveTo(0, 0, fillWidth / 2, 0);
+                            ctx.quadraticCurveTo(fillWidth, 0, fillWidth, arcPos);
+                            ctx.lineTo(fillWidth, fillHeight);
+                            ctx.closePath();
+                            ctx.fillStrokeShape(this);
+                        }
                     });
                 } else {
                     // arched shape
