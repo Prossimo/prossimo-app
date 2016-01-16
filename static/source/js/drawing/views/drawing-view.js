@@ -31,8 +31,7 @@ var app = app || {};
             '$section_control': '#section_control',
             '$vertical_bars_number': '#vertical-bars-number',
             '$horizontal_bars_number': '#horizontal-bars-number',
-            '$filling_type': '.filling-type',
-            '$filling_select': '.filling-select'
+            '$filling_select': '#filling-select'
         },
 
         events: {
@@ -53,7 +52,7 @@ var app = app || {};
             'input #vertical-bars-number': 'handleBarNumberChange',
             'change #horizontal-bars-number': 'handleBarNumberChange',
             'input #horizontal-bars-number': 'handleBarNumberChange',
-            'change .filling-select': 'handleFillingTypeChange'
+            'change #filling-select': 'handleFillingTypeChange'
         },
 
         onRender: function(){
@@ -63,6 +62,12 @@ var app = app || {};
 
             this.layer = new Konva.Layer();
             this.stage.add(this.layer);
+
+            this.ui.$filling_select.selectpicker({
+                style: 'btn-xs',
+                showSubtext: true,
+                size: 10
+            });
         },
         updateRenderedScene: function () {
             this.checkUnitType();
@@ -73,6 +78,18 @@ var app = app || {};
         },
         onDestroy: function() {
             this.stage.destroy();
+        },
+        serializeData: function () {
+            return {
+                filling_types: !app.settings ? [] :
+                    app.settings.getAvailableFillingTypes().map(function (item) {
+                        return {
+                            cid: item.cid,
+                            name: item.get('name'),
+                            type: item.getBaseTypeTitle(item.get('type'))
+                        };
+                    })
+            };
         },
 
         handleCanvasKeyDown: function(e) {
@@ -104,8 +121,13 @@ var app = app || {};
             });
         },
         handleFillingTypeChange: function() {
-            var type = this.ui.$filling_select.val();
-            this.model.setFillingType(this.state.selectedSashId, type);
+            var filling_type;
+
+            if ( app.settings ) {
+                filling_type = app.settings.getFillingTypeById(this.ui.$filling_select.val());
+                this.model.setFillingType(this.state.selectedSashId,
+                    filling_type.get('type'), filling_type.get('name'));
+            }
         },
         hadnleArchedClick: function() {
             // var type = this.ui.$filling_select.val();
@@ -296,13 +318,25 @@ var app = app || {};
                 fill: 'white',
                 sceneFunc: function(ctx) {
                     ctx.beginPath();
-                    ctx.moveTo(0, archHeight);
-                    ctx.quadraticCurveTo(0, 0, width / 2, 0);
-                    ctx.quadraticCurveTo(width, 0, width, archHeight);
-                    ctx.moveTo(width - frameWidth, archHeight);
-                    ctx.quadraticCurveTo(width - frameWidth, frameWidth, width / 2, frameWidth);
-                    ctx.quadraticCurveTo(frameWidth, frameWidth, frameWidth, archHeight);
-                    // ctx.closePath();
+                    var scale = (width / 2) / archHeight;
+                    ctx.save();
+                    ctx.scale(scale, 1);
+                    var radius = archHeight;
+                    ctx._context.arc(
+                        radius, radius, radius,
+                        0, Math.PI, true);
+                    ctx.restore();
+                    ctx.translate(width / 2, archHeight);
+                    ctx.scale(
+                        (width / 2 - frameWidth) / archHeight,
+                        (archHeight - frameWidth) / archHeight
+                    );
+                    ctx._context.arc(
+                        0, 0,
+                        radius,
+                        Math.PI, 0
+                    );
+                    ctx.closePath();
                     ctx.fillStrokeShape(this);
                 }
             });
@@ -334,7 +368,7 @@ var app = app || {};
                 ]
             });
 
-            group.add(top, left, right, bottom);
+            group.add(left, right, bottom, top);
 
             group.find('Line')
                 .closed(true)
@@ -465,6 +499,7 @@ var app = app || {};
                 }
                 group.add(frameGroup);
             }
+            var arcPos = this.model.getArchedPosition();
             if (!sectionData.sections || !sectionData.sections.length) {
                 /// create filling (glass or panel)
                 var filling;
@@ -493,6 +528,24 @@ var app = app || {};
                     if (sectionData.fillingType === 'louver') {
                         filling.stroke('black');
                     }
+                } else if (sectionData.id === this.model.get('root_section').id) {
+                    filling = new Konva.Shape({
+                        x: fillX,
+                        y: fillY,
+                        fill: 'lightblue',
+                        id: sectionData.id,
+                        // stroke: 'black',
+                        sceneFunc: function(ctx) {
+                            ctx.beginPath();
+                            ctx.moveTo(0, fillHeight);
+                            ctx.lineTo(0, arcPos);
+                            ctx.quadraticCurveTo(0, 0, fillWidth / 2, 0);
+                            ctx.quadraticCurveTo(fillWidth, 0, fillWidth, arcPos);
+                            ctx.lineTo(fillWidth, fillHeight);
+                            ctx.closePath();
+                            ctx.fillStrokeShape(this);
+                        }
+                    });
                 } else {
                     filling = new Konva.Shape({
                         x: fillX,
@@ -645,6 +698,23 @@ var app = app || {};
                         width: sectionData.sashParams.width,
                         height: sectionData.sashParams.height,
                         fill: 'rgba(0,0,0,0.2)'
+                    });
+                } else if (sectionData.id === this.model.get('root_section').id) {
+                    // arched shape
+                    selection = new Konva.Shape({
+                        x: fillX,
+                        y: fillY,
+                        fill: 'rgba(0,0,0,0.2)',
+                        sceneFunc: function(ctx) {
+                            ctx.beginPath();
+                            ctx.moveTo(0, fillHeight);
+                            ctx.lineTo(0, arcPos);
+                            ctx.quadraticCurveTo(0, 0, fillWidth / 2, 0);
+                            ctx.quadraticCurveTo(fillWidth, 0, fillWidth, arcPos);
+                            ctx.lineTo(fillWidth, fillHeight);
+                            ctx.closePath();
+                            ctx.fillStrokeShape(this);
+                        }
                     });
                 } else {
                     // arched shape
@@ -1196,7 +1266,6 @@ var app = app || {};
 
             this.ui.$section_control.toggle(!!selectedSashId);
 
-
             this.$('.sash-types').toggle(
                 !isArched &&
                 selectedSashId &&
@@ -1207,17 +1276,24 @@ var app = app || {};
                 !isArched
             );
 
-            this.ui.$filling_select.val(selectedSash && selectedSash.fillingType);
+            var selectedFillingType = selectedSash && selectedSash.fillingName &&
+                app.settings && app.settings.getFillingTypeByName(selectedSash.fillingName);
+
+            if ( selectedFillingType ) {
+                this.ui.$filling_select.val(selectedFillingType.cid);
+            } else {
+                this.ui.$filling_select.val('');
+            }
+
+            this.ui.$filling_select.selectpicker('render');
 
             this.$('.toggle-arched').toggle(
                 selectedSashId &&
                 this.model.isArchedPossible(selectedSashId)
             );
 
-
             this.$('.remove-arched').toggle(!!isArched);
             this.$('.add-arched').toggle(!isArched);
-
         },
 
         splitSection: function(e) {

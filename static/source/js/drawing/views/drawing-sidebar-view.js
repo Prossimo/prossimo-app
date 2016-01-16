@@ -142,22 +142,23 @@ var app = app || {};
 
                 _.each(sash_list_source, function (source_item, index) {
                     var sash_item = {};
-                    var glass_size;
-                    var glass_area;
+                    var filling_size;
+                    var filling_area;
                     var opening_size;
                     var opening_area;
 
                     sash_item.name = 'Sash #' + (index + 1);
                     sash_item.type = source_item.type;
 
-                    glass_size = f.dimensions_in(c.mm_to_inches(source_item.glass.width),
-                        c.mm_to_inches(source_item.glass.height), 'fraction');
+                    filling_size = f.dimensions_in(c.mm_to_inches(source_item.filling.width),
+                        c.mm_to_inches(source_item.filling.height), 'fraction');
 
-                    glass_area = f.square_feet(m.square_feet(c.mm_to_inches(source_item.glass.width),
-                        c.mm_to_inches(source_item.glass.height)), 2, 'sup');
+                    filling_area = f.square_feet(m.square_feet(c.mm_to_inches(source_item.filling.width),
+                        c.mm_to_inches(source_item.filling.height)), 2, 'sup');
 
-                    sash_item.glazing_type = source_item.glass.type;
-                    sash_item.glazing_size = glass_size + ' (' + glass_area + ')';
+                    sash_item.filling_is_glass = source_item.filling.type === 'glass';
+                    sash_item.filling_name = source_item.filling.name;
+                    sash_item.filling_size = filling_size + ' (' + filling_area + ')';
 
                     if ( source_item.opening.height && source_item.opening.width ) {
                         opening_size = f.dimensions_in(c.mm_to_inches(source_item.opening.width),

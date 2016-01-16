@@ -22,7 +22,8 @@ var app = app || {};
                 extras: app.current_project.extras,
                 show_price: false,
                 show_sizes_in_mm: true,
-                show_supplier_system: true
+                show_supplier_system: true,
+                show_supplier_filling_name: true
             });
 
             this.ui.$header_container.append(this.request_header_view.render().el);

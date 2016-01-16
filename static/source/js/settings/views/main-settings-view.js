@@ -9,7 +9,8 @@ var app = app || {};
         template: app.templates['settings/main-settings-view'],
         ui: {
             '$profiles_container': '.profiles-container',
-            '$ui_settings_container': '.ui_settings-container'
+            '$ui_settings_container': '.ui_settings-container',
+            '$filling_types_container': '.filling_types-container'
         },
         events: {
             'click .nav-tabs a': 'onTabClick'
@@ -21,6 +22,9 @@ var app = app || {};
                 },
                 ui_settings: {
                     title: 'UI Settings'
+                },
+                filling_types: {
+                    title: 'Filling Types'
                 }
             };
             this.active_tab = 'profiles';
@@ -58,6 +62,15 @@ var app = app || {};
 
                 this.ui.$ui_settings_container.append(this.ui_settings_view.render().el);
             }
+
+            if ( this.active_tab === 'filling_types' ) {
+                this.filling_types_table_view = new app.FillingTypesTableView({
+                    collection: app.settings.filling_types,
+                    parent_view: this
+                });
+
+                this.ui.$filling_types_container.append(this.filling_types_table_view.render().el);
+            }
         },
         serializeData: function () {
             return {
@@ -74,6 +87,10 @@ var app = app || {};
 
             if ( this.ui_settings_view ) {
                 this.ui_settings_view.destroy();
+            }
+
+            if ( this.filling_types_table_view ) {
+                this.filling_types_table_view.destroy();
             }
         }
     });

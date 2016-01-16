@@ -11,6 +11,7 @@ var app = app || {};
         { name: 'type', title: 'Type', type: 'string' },
         { name: 'description', title: 'Description', type: 'string' },
         { name: 'notes', title: 'Notes', type: 'string' },
+        { name: 'exceptions', title: 'Exceptions', type: 'string' },
         { name: 'glazing_bar_width', title: 'Glazing Bar Width (mm)', type: 'number' },
 
         { name: 'profile_name', title: 'Profile', type: 'string' },
@@ -34,6 +35,7 @@ var app = app || {};
         { name: 'original_cost', title: 'Original Cost', type: 'number' },
         { name: 'original_currency', title: 'Original Currency', type: 'string' },
         { name: 'conversion_rate', title: 'Conversion Rate', type: 'number' },
+        { name: 'supplier_discount', title: 'Supplier Discount', type: 'number' },
         { name: 'price_markup', title: 'Markup', type: 'number' },
         { name: 'discount', title: 'Discount', type: 'number' }
     ];
@@ -79,11 +81,19 @@ var app = app || {};
         'vertical_invisible', 'horizontal_invisible'
     ];
 
+    function getDefaultFillingType() {
+        return {
+            fillingType: 'glass',
+            fillingName: 'Glass'
+        };
+    }
+
     function getSectionDefaults() {
         return {
             id: _.uniqueId(),
             sashType: 'fixed_in_frame',
-            fillingType: 'glass'
+            fillingType: getDefaultFillingType().fillingType,
+            fillingName: getDefaultFillingType().fillingName
         };
     }
 
@@ -119,7 +129,6 @@ var app = app || {};
                 name_value_hash.glazing_bead = app.settings.getGlazingBeadTypes()[0];
                 name_value_hash.gasket_color = app.settings.getGasketColors()[0];
                 name_value_hash.hinge_style = app.settings.getHingeTypes()[0];
-                name_value_hash.glazing = app.settings.getGlassOrPanelTypes()[0];
                 name_value_hash.glazing_bar_width = app.settings.getGlazingBarWidths()[0];
                 name_value_hash.opening_direction = app.settings.getOpeningDirections()[0];
             }
@@ -154,6 +163,7 @@ var app = app || {};
                 this.setProfile();
                 this.validateRootSection();
                 this.on('change:profile_name', this.setProfile, this);
+                this.on('change:glazing', this.setDefaultFillingType, this);
             }
         },
         //  TODO: this function should be called on model init (maybe not only)
@@ -219,6 +229,18 @@ var app = app || {};
                 }
             }
         },
+        setDefaultFillingType: function () {
+            var filling_type;
+            var glazing = this.get('glazing');
+
+            if ( glazing && app.settings ) {
+                filling_type = app.settings.getFillingTypeByName(glazing);
+
+                if ( filling_type ) {
+                    this.setFillingType(this.get('root_section').id, filling_type.get('type'), filling_type.get('name'));
+                }
+            }
+        },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs
         getNameTitleTypeHash: function (names) {
@@ -266,8 +288,11 @@ var app = app || {};
         getUnitCost: function () {
             return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
         },
+        getUnitCostDiscounted: function () {
+            return this.getUnitCost() * (100 - parseFloat(this.get('supplier_discount'))) / 100;
+        },
         getUnitPrice: function () {
-            return this.getUnitCost() * parseFloat(this.get('price_markup'));
+            return this.getUnitCostDiscounted() * parseFloat(this.get('price_markup'));
         },
         getSubtotalPrice: function () {
             return this.getUnitPrice() * parseFloat(this.get('quantity'));
@@ -276,10 +301,10 @@ var app = app || {};
             return parseFloat(this.get('uw')) * 0.176;
         },
         getUnitPriceDiscounted: function () {
-            return this.getUnitPrice() * (100 - this.get('discount')) / 100;
+            return this.getUnitPrice() * (100 - parseFloat(this.get('discount'))) / 100;
         },
         getSubtotalPriceDiscounted: function () {
-            return this.getSubtotalPrice() * (100 - this.get('discount')) / 100;
+            return this.getSubtotalPrice() * (100 - parseFloat(this.get('discount'))) / 100;
         },
         getSquareFeetPrice: function () {
             return this.getTotalSquareFeet() ? this.getSubtotalPrice() / this.getTotalSquareFeet() : 0;
@@ -320,6 +345,9 @@ var app = app || {};
                 return findParent(root.sections[0], childId) || findParent(root.sections[1], childId);
             }
             var root = this.generateFullRoot();
+            if (root.id === sashId && root.sections.length === 0) {
+                return true;
+            }
             var parent = findParent(root, sashId);
             if (!parent) {
                 // console.error('Can not find parent for sash ' + sashId);
@@ -349,6 +377,9 @@ var app = app || {};
         },
         getArchedPosition: function() {
             var root = this.get('root_section');
+            if (root.arched) {
+                return Math.min(this.getInMetric('width', 'mm') / 2, this.getInMetric('height', 'mm'));
+            }
             while(true) {
                 var topSection = root.sections && root.sections[0] && root.sections[0];
                 if (topSection && topSection.arched) {
@@ -380,7 +411,7 @@ var app = app || {};
         },
         setSectionSashType: function(sectionId, type) {
             if (!_.includes(SASH_TYPES, type)) {
-                console.error('Unrecognozed sash type: ' + type);
+                console.error('Unrecognized sash type: ' + type);
                 return;
             }
             this._updateSection(sectionId, function(section) {
@@ -393,14 +424,24 @@ var app = app || {};
                 section.horizontal_bars_number = parseInt(bars.horizontal, 10);
             });
         },
-        setFillingType: function(sectionId, type) {
+        setFillingType: function(sectionId, type, name) {
             if (!_.includes(FILLING_TYPES, type)) {
                 console.error('Unknow filling type: ' + type);
                 return;
             }
             this._updateSection(sectionId, function(section) {
                 section.fillingType = type;
+                section.fillingName = name;
+
             });
+
+            //  We also change all nested sections recursively
+            var full = this.generateFullRoot();
+            var fullSection = app.Unit.findSection(full, sectionId);
+
+            _.each(fullSection.sections, function (childSection) {
+                this.setFillingType(childSection.id, type, name);
+            }, this);
         },
         // TODO: remove this methid below
         setPanelType: function(sectionId, type){
@@ -436,8 +477,15 @@ var app = app || {};
             this._updateSection(sectionId, function(section) {
                 var full = this.generateFullRoot();
                 var fullSection = app.Unit.findSection(full, sectionId);
+
                 section.divider = type;
                 section.sections = [getSectionDefaults(), getSectionDefaults()];
+
+                if ( section.fillingType && section.fillingName ) {
+                    section.sections[0].fillingType = section.sections[1].fillingType = section.fillingType;
+                    section.sections[0].fillingName = section.sections[1].fillingName = section.fillingName;
+                }
+
                 if (type === 'horizontal') {
                     section.position = fullSection.openingParams.y + fullSection.openingParams.height / 2;
                 } else {
@@ -716,12 +764,13 @@ var app = app || {};
             }
             return res;
         },
-        getSashList: function (current_root) {
+        getSashList: function (current_root, parent_root) {
             var current_sash = {
                 opening: {},
-                glass: {}
+                filling: {}
             };
             var section_result;
+            var filling_type;
             var result = [];
 
             current_root = current_root || this.generateFullRoot();
@@ -729,7 +778,8 @@ var app = app || {};
 
             if (current_root.sashType === 'fixed_in_frame') {
                 _.each(current_root.sections, function (section) {
-                    section_result = this.getSashList(section);
+                    section_result = this.getSashList(section, current_root);
+
                     if (current_root.divider === 'vertical' || current_root.divider === 'vertical_invisible') {
                         result = section_result.concat(result);
                     } else {
@@ -746,11 +796,30 @@ var app = app || {};
 
             if ( current_root.sections.length === 0 ||
                 ((current_root.sashType === 'fixed_in_frame') && (current_root.sections.length === 0)) ||
-                ((current_root.sashType !== 'fixed_in_frame') && (current_root.sections.length))) {
+                ((current_root.sashType !== 'fixed_in_frame') && (current_root.sections.length))
+            ) {
                 current_sash.type = this.getSashName(current_root.sashType);
-                current_sash.glass.width = current_root.glassParams.width;
-                current_sash.glass.height = current_root.glassParams.height;
-                current_sash.glass.type = this.get('glazing');
+                current_sash.filling.width = current_root.glassParams.width;
+                current_sash.filling.height = current_root.glassParams.height;
+
+                if ( current_root.fillingType && current_root.fillingName ) {
+                    current_sash.filling.type = current_root.fillingType;
+                    current_sash.filling.name = current_root.fillingName;
+                } else if ( parent_root && parent_root.fillingType && parent_root.fillingName ) {
+                    current_sash.filling.type = parent_root.fillingType;
+                    current_sash.filling.name = parent_root.fillingName;
+                } else if (
+                    this.get('glazing') && app.settings &&
+                    app.settings.getFillingTypeByName(this.get('glazing'))
+                ) {
+                    filling_type = app.settings.getFillingTypeByName(this.get('glazing'));
+                    current_sash.filling.type = filling_type.get('type');
+                    current_sash.filling.name = filling_type.get('name');
+                } else {
+                    filling_type = getDefaultFillingType();
+                    current_sash.filling.type = filling_type.fillingType;
+                    current_sash.filling.name = filling_type.fillingName;
+                }
 
                 result.unshift(current_sash);
             }

@@ -31,15 +31,15 @@ var app = app || {};
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'width', 'height',
                         'drawing', 'customer_image', 'type', 'description',
-                        'notes', 'move_item', 'remove_item']
+                        'notes', 'exceptions', 'move_item', 'remove_item']
                 },
                 specs: {
                     title: 'Specs',
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'width', 'height', 'drawing',
                         'customer_image', 'width_mm', 'height_mm', 'type', 'description',
-                        'notes', 'profile_name', 'system', 'external_color', 'internal_color',
-                        'interior_handle', 'exterior_handle', 'hardware_type',
+                        'notes', 'exceptions', 'profile_name', 'system', 'external_color',
+                        'internal_color', 'interior_handle', 'exterior_handle', 'hardware_type',
                         'lock_mechanism', 'glazing_bead', 'gasket_color',
                         'hinge_style', 'opening_direction', 'threshold',
                         'internal_sill', 'external_sill', 'glazing', 'glazing_bar_width',
@@ -49,8 +49,8 @@ var app = app || {};
                     title: 'Prices',
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'drawing', 'original_cost', 'original_currency',
-                        'conversion_rate', 'unit_cost', 'price_markup', 'unit_price',
-                        'subtotal_price', 'discount', 'unit_price_discounted',
+                        'conversion_rate', 'unit_cost', 'supplier_discount', 'unit_cost_discounted',
+                        'price_markup', 'unit_price', 'subtotal_price', 'discount', 'unit_price_discounted',
                         'subtotal_price_discounted', 'total_square_feet',
                         'square_feet_price', 'square_feet_price_discounted',
                         'move_item', 'remove_item']
@@ -68,7 +68,8 @@ var app = app || {};
                     collection: app.projects,
                     columns: ['pipedrive_id', 'project_name', 'client_name',
                         'client_company_name', 'client_phone', 'client_email',
-                        'client_address', 'project_address']
+                        'client_address', 'project_address', 'quote_date',
+                        'quote_revision', 'quote_number']
                 }
             };
             this.active_tab = 'input';
@@ -211,6 +212,9 @@ var app = app || {};
                 unit_cost: function (model) {
                     return model.getUnitCost();
                 },
+                unit_cost_discounted: function (model) {
+                    return model.getUnitCostDiscounted();
+                },
                 drawing: function (model) {
                     return app.preview(model, {
                         width: 500,
@@ -250,6 +254,9 @@ var app = app || {};
                 },
                 square_feet_price_discounted: function (model) {
                     return model.getSquareFeetPriceDiscounted();
+                },
+                quote_number: function (model) {
+                    return model.getQuoteNumber();
                 }
             };
 
@@ -269,6 +276,9 @@ var app = app || {};
 
             var parsers_hash = {
                 discount: function (attr_name, val) {
+                    return p.percent(val);
+                },
+                supplier_discount: function (attr_name, val) {
                     return p.percent(val);
                 },
                 width: function (attr_name, val) {
@@ -407,6 +417,10 @@ var app = app || {};
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('price_usd')
                 },
+                unit_cost_discounted: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
+                },
                 subtotal_cost: {
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('price_usd')
@@ -448,7 +462,10 @@ var app = app || {};
                     source: this.options.extras.getExtrasTypes()
                 },
                 discount: {
-                    renderer: app.hot_renderers.getFormattedRenderer('discount')
+                    renderer: app.hot_renderers.getFormattedRenderer('percent')
+                },
+                supplier_discount: {
+                    renderer: app.hot_renderers.getFormattedRenderer('percent')
                 },
                 profile_name: {
                     type: 'dropdown',
@@ -495,8 +512,10 @@ var app = app || {};
                     source: app.settings.getGlazingBeadTypes()
                 },
                 glazing: {
-                    type: 'autocomplete',
-                    source: app.settings.getGlassOrPanelTypes()
+                    type: 'dropdown',
+                    source: app.settings.getAvailableFillingTypes().map(function (item) {
+                        return item.get('name');
+                    })
                 },
                 glazing_bar_width: {
                     type: 'autocomplete',
@@ -520,6 +539,14 @@ var app = app || {};
                     renderer: app.hot_renderers.doorOnlyDropdownRenderer
                 },
                 pipedrive_id: {
+                    readOnly: true
+                },
+                quote_date: {
+                    type: 'date',
+                    dateFormat: 'DD MMMM, YYYY',
+                    correctFormat: true
+                },
+                quote_number: {
                     readOnly: true
                 }
             };
@@ -549,9 +576,7 @@ var app = app || {};
                 var column_obj = _.extend({}, {
                     data: this.getColumnData(column_name),
                     validator: this.getColumnValidator(column_name)
-                },
-                    this.getColumnExtraProperties(column_name)
-                );
+                }, this.getColumnExtraProperties(column_name));
 
                 columns.push(column_obj);
             }, this);
@@ -591,6 +616,7 @@ var app = app || {};
                 width_mm: 'Width (mm)',
                 height_mm: 'Height (mm)',
                 unit_cost: 'Unit Cost',
+                unit_cost_discounted: 'Unit Cost w/Disc.',
                 subtotal_cost: 'Subtotal Cost',
                 unit_price: 'Unit Price',
                 subtotal_price: 'Subtotal Price',
@@ -604,7 +630,8 @@ var app = app || {};
                 square_feet_price: 'Price per Sq.Ft',
                 square_feet_price_discounted: 'Price per Sq.Ft w/Disc.',
                 move_item: 'Move',
-                remove_item: ' '
+                remove_item: ' ',
+                quote_number: 'Quote Number'
             };
 
             return custom_column_headers_hash[column_name];
