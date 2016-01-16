@@ -527,6 +527,25 @@ var app = app || {};
                     if (sectionData.fillingType === 'louver') {
                         filling.stroke('black');
                     }
+                } else if (sectionData.id === this.model.get('root_section').id) {
+                    var pos = this.model.getArchedPosition();
+                    filling = new Konva.Shape({
+                        x: fillX,
+                        y: fillY,
+                        fill: 'lightblue',
+                        id: sectionData.id,
+                        // stroke: 'black',
+                        sceneFunc: function(ctx) {
+                            ctx.beginPath();
+                            ctx.moveTo(0, fillHeight);
+                            ctx.lineTo(0, pos);
+                            ctx.quadraticCurveTo(0, 0, fillWidth / 2, 0);
+                            ctx.quadraticCurveTo(fillWidth, 0, fillWidth, pos);
+                            ctx.lineTo(fillWidth, fillHeight);
+                            ctx.closePath();
+                            ctx.fillStrokeShape(this);
+                        }
+                    });
                 } else {
                     filling = new Konva.Shape({
                         x: fillX,
@@ -679,6 +698,23 @@ var app = app || {};
                         width: sectionData.sashParams.width,
                         height: sectionData.sashParams.height,
                         fill: 'rgba(0,0,0,0.2)'
+                    });
+                } else if (sectionData.id === this.model.get('root_section').id) {
+                    // arched shape
+                    selection = new Konva.Shape({
+                        x: fillX,
+                        y: fillY,
+                        fill: 'rgba(0,0,0,0.2)',
+                        sceneFunc: function(ctx) {
+                            ctx.beginPath();
+                            ctx.moveTo(0, fillHeight);
+                            ctx.lineTo(0, pos);
+                            ctx.quadraticCurveTo(0, 0, fillWidth / 2, 0);
+                            ctx.quadraticCurveTo(fillWidth, 0, fillWidth, pos);
+                            ctx.lineTo(fillWidth, fillHeight);
+                            ctx.closePath();
+                            ctx.fillStrokeShape(this);
+                        }
                     });
                 } else {
                     // arched shape
