@@ -169,6 +169,7 @@ var app = app || {};
                 mark: this.model.get('mark'),
                 description: this.getDescription(),
                 notes: this.model.get('notes'),
+                exceptions: this.model.get('exceptions'),
                 quantity: this.model.get('quantity'),
                 price: this.getPrices(),
                 customer_image: this.getCustomerImage(),

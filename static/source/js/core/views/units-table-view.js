@@ -31,15 +31,15 @@ var app = app || {};
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'width', 'height',
                         'drawing', 'customer_image', 'type', 'description',
-                        'notes', 'move_item', 'remove_item']
+                        'notes', 'exceptions', 'move_item', 'remove_item']
                 },
                 specs: {
                     title: 'Specs',
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'width', 'height', 'drawing',
                         'customer_image', 'width_mm', 'height_mm', 'type', 'description',
-                        'notes', 'profile_name', 'system', 'external_color', 'internal_color',
-                        'interior_handle', 'exterior_handle', 'hardware_type',
+                        'notes', 'exceptions', 'profile_name', 'system', 'external_color',
+                        'internal_color', 'interior_handle', 'exterior_handle', 'hardware_type',
                         'lock_mechanism', 'glazing_bead', 'gasket_color',
                         'hinge_style', 'opening_direction', 'threshold',
                         'internal_sill', 'external_sill', 'glazing', 'glazing_bar_width',
@@ -49,8 +49,8 @@ var app = app || {};
                     title: 'Prices',
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'drawing', 'original_cost', 'original_currency',
-                        'conversion_rate', 'unit_cost', 'price_markup', 'unit_price',
-                        'subtotal_price', 'discount', 'unit_price_discounted',
+                        'conversion_rate', 'unit_cost', 'supplier_discount', 'unit_cost_discounted',
+                        'price_markup', 'unit_price', 'subtotal_price', 'discount', 'unit_price_discounted',
                         'subtotal_price_discounted', 'total_square_feet',
                         'square_feet_price', 'square_feet_price_discounted',
                         'move_item', 'remove_item']
@@ -211,6 +211,9 @@ var app = app || {};
                 unit_cost: function (model) {
                     return model.getUnitCost();
                 },
+                unit_cost_discounted: function (model) {
+                    return model.getUnitCostDiscounted();
+                },
                 drawing: function (model) {
                     return app.preview(model, {
                         width: 500,
@@ -269,6 +272,9 @@ var app = app || {};
 
             var parsers_hash = {
                 discount: function (attr_name, val) {
+                    return p.percent(val);
+                },
+                supplier_discount: function (attr_name, val) {
                     return p.percent(val);
                 },
                 width: function (attr_name, val) {
@@ -407,6 +413,10 @@ var app = app || {};
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('price_usd')
                 },
+                unit_cost_discounted: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
+                },
                 subtotal_cost: {
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('price_usd')
@@ -448,7 +458,10 @@ var app = app || {};
                     source: this.options.extras.getExtrasTypes()
                 },
                 discount: {
-                    renderer: app.hot_renderers.getFormattedRenderer('discount')
+                    renderer: app.hot_renderers.getFormattedRenderer('percent')
+                },
+                supplier_discount: {
+                    renderer: app.hot_renderers.getFormattedRenderer('percent')
                 },
                 profile_name: {
                     type: 'dropdown',
@@ -591,6 +604,7 @@ var app = app || {};
                 width_mm: 'Width (mm)',
                 height_mm: 'Height (mm)',
                 unit_cost: 'Unit Cost',
+                unit_cost_discounted: 'Unit Cost w/Disc.',
                 subtotal_cost: 'Subtotal Cost',
                 unit_price: 'Unit Price',
                 subtotal_price: 'Subtotal Price',

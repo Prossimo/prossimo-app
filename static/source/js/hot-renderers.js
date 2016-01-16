@@ -51,7 +51,7 @@ var app = app || {};
                 dimension: function () {
                     return f.dimension.apply(this, arguments);
                 },
-                discount: function () {
+                percent: function () {
                     return f.percent.apply(this, arguments);
                 },
                 fixed_minimal: function () {
@@ -74,7 +74,9 @@ var app = app || {};
 
                 Handsontable.renderers.TextRenderer.apply(this, arguments);
 
-                if ( _.indexOf(['dimension', 'discount', 'fixed_minimal', 'fixed', 'price_usd'], attr_name) !== -1 ) {
+                if ( _.indexOf(['dimension', 'percent', 'fixed_minimal', 'fixed',
+                        'price_usd'], attr_name) !== -1
+                ) {
                     $td.addClass('htNumeric');
                 }
 
