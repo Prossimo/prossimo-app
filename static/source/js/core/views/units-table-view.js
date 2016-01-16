@@ -68,7 +68,8 @@ var app = app || {};
                     collection: app.projects,
                     columns: ['pipedrive_id', 'project_name', 'client_name',
                         'client_company_name', 'client_phone', 'client_email',
-                        'client_address', 'project_address']
+                        'client_address', 'project_address', 'quote_date',
+                        'quote_revision', 'quote_number']
                 }
             };
             this.active_tab = 'input';
@@ -253,6 +254,9 @@ var app = app || {};
                 },
                 square_feet_price_discounted: function (model) {
                     return model.getSquareFeetPriceDiscounted();
+                },
+                quote_number: function (model) {
+                    return model.getQuoteNumber();
                 }
             };
 
@@ -536,6 +540,14 @@ var app = app || {};
                 },
                 pipedrive_id: {
                     readOnly: true
+                },
+                quote_date: {
+                    type: 'date',
+                    dateFormat: 'DD MMMM, YYYY',
+                    correctFormat: true
+                },
+                quote_number: {
+                    readOnly: true
                 }
             };
 
@@ -618,7 +630,8 @@ var app = app || {};
                 square_feet_price: 'Price per Sq.Ft',
                 square_feet_price_discounted: 'Price per Sq.Ft w/Disc.',
                 move_item: 'Move',
-                remove_item: ' '
+                remove_item: ' ',
+                quote_number: 'Quote Number'
             };
 
             return custom_column_headers_hash[column_name];

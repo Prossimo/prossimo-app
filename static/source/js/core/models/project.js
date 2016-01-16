@@ -11,7 +11,9 @@ var app = app || {};
         { name: 'client_email', title: 'Email', type: 'string' },
         { name: 'client_address', title: 'Client Address', type: 'string' },
         { name: 'project_name', title: 'Project Name', type: 'string' },
-        { name: 'project_address', title: 'Project Address', type: 'string' }
+        { name: 'project_address', title: 'Project Address', type: 'string' },
+        { name: 'quote_date', title: 'Quote Date', type: 'string' },
+        { name: 'quote_revision', title: 'Quote Revision', type: 'number' }
     ];
 
     app.Project = Backbone.Model.extend({
@@ -32,8 +34,16 @@ var app = app || {};
                 pipedrive_id: null
             };
 
+            var name_value_hash = {
+                quote_revision: 1
+            };
+
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
                 default_value = type_value_hash[type];
+            }
+
+            if ( _.indexOf(_.keys(name_value_hash), name) !== -1 ) {
+                default_value = name_value_hash[name];
             }
 
             return default_value;
@@ -91,6 +101,9 @@ var app = app || {};
             var name_title_hash = this.getNameTitleTypeHash(names);
 
             return _.pluck(name_title_hash, 'title');
+        },
+        getQuoteNumber: function () {
+            return this.isNew() ? '--' : this.id;
         },
         getHiddenMultiplier: function () {
             var subtotal_units_price = this.units.getSubtotalPriceDiscounted();
