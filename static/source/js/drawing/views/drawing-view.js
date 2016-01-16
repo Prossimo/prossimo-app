@@ -499,6 +499,7 @@ var app = app || {};
                 }
                 group.add(frameGroup);
             }
+            var arcPos = this.model.getArchedPosition();
             if (!sectionData.sections || !sectionData.sections.length) {
                 /// create filling (glass or panel)
                 var filling;
@@ -528,7 +529,6 @@ var app = app || {};
                         filling.stroke('black');
                     }
                 } else if (sectionData.id === this.model.get('root_section').id) {
-                    var arcPos = this.model.getArchedPosition();
                     filling = new Konva.Shape({
                         x: fillX,
                         y: fillY,
@@ -708,9 +708,9 @@ var app = app || {};
                         sceneFunc: function(ctx) {
                             ctx.beginPath();
                             ctx.moveTo(0, fillHeight);
-                            ctx.lineTo(0, pos);
+                            ctx.lineTo(0, arcPos);
                             ctx.quadraticCurveTo(0, 0, fillWidth / 2, 0);
-                            ctx.quadraticCurveTo(fillWidth, 0, fillWidth, pos);
+                            ctx.quadraticCurveTo(fillWidth, 0, fillWidth, arcPos);
                             ctx.lineTo(fillWidth, fillHeight);
                             ctx.closePath();
                             ctx.fillStrokeShape(this);
