@@ -378,7 +378,8 @@ var app = app || {};
         getArchedPosition: function() {
             var root = this.get('root_section');
             if (root.arched) {
-                return Math.min(this.getInMetric('width', 'mm') / 2, this.getInMetric('height', 'mm'));
+                return root.archPosition;
+                // return Math.min(this.getInMetric('width', 'mm') / 2, this.getInMetric('height', 'mm'));
             }
             while(true) {
                 var topSection = root.sections && root.sections[0] && root.sections[0];
@@ -391,6 +392,9 @@ var app = app || {};
                 root = topSection;
             }
             return null;
+        },
+        isRootSection: function(sectionId) {
+            return this.get('root_section').id === sectionId;
         },
         getSashName: function (type) {
             if ( _.indexOf(_.keys(SASH_TYPE_NAME_MAP), type) === -1 ) {

@@ -47,7 +47,7 @@ var app = app || {};
             'click #clear-frame': 'clearFrame',
             'keydown #drawing': 'handleCanvasKeyDown',
             'click #change-view-button': 'handleChangeView',
-            'click .toggle-arched': 'hadnleArchedClick',
+            'click .toggle-arched': 'handleArchedClick',
             'change #vertical-bars-number': 'handleBarNumberChange',
             'input #vertical-bars-number': 'handleBarNumberChange',
             'change #horizontal-bars-number': 'handleBarNumberChange',
@@ -129,16 +129,19 @@ var app = app || {};
                     filling_type.get('type'), filling_type.get('name'));
             }
         },
-        hadnleArchedClick: function() {
-            // var type = this.ui.$filling_select.val();
-            // this.model.setFillingType(this.state.selectedSashId, type);
+        handleArchedClick: function() {
             if (!this.state.selectedSashId) {
-                console.log('no sash selected');
+                console.warn('no sash selected');
                 return;
             }
             this.model._updateSection(this.state.selectedSashId, function(section) {
                 section.arched = !section.arched;
-            });
+                if (this.model.isRootSection(section.id)) {
+                    var width = this.model.getInMetric('width', 'mm');
+                    var height = this.model.getInMetric('height', 'mm')
+                    section.archPosition = Math.min(width / 2, height);
+                }
+            }.bind(this));
         },
         setState: function(state) {
             this.state = _.assign(this.state, state);
@@ -1078,6 +1081,80 @@ var app = app || {};
 
             return group;
         },
+        createArchedInfo: function(width, height) {
+            var group = new Konva.Group();
+
+            var archHeight = this.model.getArchedPosition();
+            var params = {
+                getter: function() {
+                    return archHeight;
+                },
+                setter: function(val) {
+                    var id = this.model.get('root_section').id;
+                    this.model._updateSection(id, function(section) {
+                        section.archPosition = val;
+                    });
+                }.bind(this)
+            };
+            var metric = this.createVerticalMetric(merticSize, archHeight * this.ratio, params);
+            metric.position({
+                x: -merticSize
+            });
+            group.add(metric);
+
+            var nonArchHeight = this.model.getInMetric('height', 'mm') - archHeight;
+            params = {
+                getter: function() {
+                    return nonArchHeight;
+                },
+                setter: function(val) {
+                    var id = this.model.get('root_section').id;
+                    var archPosition = this.model.getInMetric('height', 'mm') - val;
+                    this.model._updateSection(id, function(section) {
+                        section.archPosition = archPosition;
+                    });
+                }.bind(this)
+            };
+            metric = this.createVerticalMetric(merticSize, nonArchHeight * this.ratio, params);
+            metric.position({
+                x: -merticSize,
+                y: archHeight * this.ratio
+            });
+            group.add(metric);
+
+            var verticalWholeMertic = this.createVerticalMetric(merticSize, height, {
+                setter: function(val) {
+                    this.model.setInMetric('height', val, 'mm');
+                }.bind(this),
+                getter: function() {
+                    return this.model.getInMetric('height', 'mm');
+                }.bind(this)
+            });
+            verticalWholeMertic.position({
+                x: -merticSize * 2,
+                y: 0
+            });
+
+            group.add(verticalWholeMertic);
+
+            var horizontalWholeMertic = this.createHorizontalMetric(width, merticSize, {
+               setter: function(val) {
+                    this.model.setInMetric('width', val, 'mm');
+                }.bind(this),
+                getter: function() {
+                    return this.model.getInMetric('width', 'mm');
+                }.bind(this)
+            });
+            horizontalWholeMertic.position({
+                x: 0,
+                y: height
+            });
+            group.add(horizontalWholeMertic);
+
+
+
+            return group;
+        },
         createInput: function(params, pos, size) {
             var $wrap = $('<div>')
                 .addClass('popup-wrap')
@@ -1231,7 +1308,13 @@ var app = app || {};
             } else {
                 mullions = this.model.getRevertedMullions();
             }
-            var infoGroup = this.createInfo(mullions, frameOnScreenWidth, frameOnScreenHeight);
+
+            var infoGroup;
+            if (this.model.get('root_section').arched) {
+                infoGroup = this.createArchedInfo(frameOnScreenWidth, frameOnScreenHeight);
+            } else {
+                infoGroup = this.createInfo(mullions, frameOnScreenWidth, frameOnScreenHeight);
+            }
             group.add(infoGroup);
 
 
