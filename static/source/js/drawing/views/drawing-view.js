@@ -1324,7 +1324,7 @@ var app = app || {};
                     sectionId: root.id,
                     width: this.model.getInMetric('width', 'mm'),
                     height: this.model.getInMetric('height', 'mm'),
-                    frameWidth: this.model.profile.get('frame_width'),
+                    frameWidth: this.model.profile.get('frame_width')
                 });
             } if (isArchedWindow) {
                 frameGroup = this.createArchedFrame({
