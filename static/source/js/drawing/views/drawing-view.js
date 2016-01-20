@@ -16,6 +16,12 @@ var app = app || {};
 
     // starting point of all drawing is "renderCanvas" function
 
+    // main pattern for methods name
+    // this.handleSomeAction - callback on some user UI action
+    // this.createSomeObject - pure function that create some canvas UI elements
+    // TODO: as this functions are pure, so it is better to move them into separete files
+    // something like "components" directory
+
 
 
     // global params
