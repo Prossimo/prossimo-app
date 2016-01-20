@@ -26,7 +26,7 @@ var app = app || {};
 
     // global params
     var insideView = false;
-    var merticSize = 50;
+    var metricSize = 50;
 
 
     app.DrawingView = Marionette.ItemView.extend({
@@ -1045,7 +1045,7 @@ var app = app || {};
                             this.model.setSectionMullionPosition(mul.id, val);
                         }.bind(this);
                     }
-                    var metric = this.createHorizontalMetric(width_ * this.ratio, merticSize, params);
+                    var metric = this.createHorizontalMetric(width_ * this.ratio, metricSize, params);
                     metric.position({
                         x: pos * this.ratio,
                         y: height
@@ -1069,7 +1069,7 @@ var app = app || {};
                             this.model.setSectionMullionPosition(mul.id, val);
                         }.bind(this);
                     }
-                    metric = this.createHorizontalMetric(width__ * this.ratio, merticSize, params);
+                    metric = this.createHorizontalMetric(width__ * this.ratio, metricSize, params);
                     metric.position({
                         x: pos * this.ratio,
                         y: height
@@ -1092,9 +1092,9 @@ var app = app || {};
                             this.model.setSectionMullionPosition(mul.id, val);
                         }.bind(this);
                     }
-                    var metric = this.createVerticalMetric(merticSize, height_ * this.ratio, params);
+                    var metric = this.createVerticalMetric(metricSize, height_ * this.ratio, params);
                     metric.position({
-                        x: -merticSize,
+                        x: -metricSize,
                         y: pos * this.ratio
                     });
                     pos = mul.position;
@@ -1113,16 +1113,16 @@ var app = app || {};
                             this.model.setSectionMullionPosition(mul.id, this.model.getInMetric('height', 'mm') - val);
                         }.bind(this);
                     }
-                    metric = this.createVerticalMetric(merticSize, height__ * this.ratio, params);
+                    metric = this.createVerticalMetric(metricSize, height__ * this.ratio, params);
                     metric.position({
-                        x: -merticSize,
+                        x: -metricSize,
                         y: pos * this.ratio
                     });
                     group.add(metric);
                 }
             }.bind(this));
 
-            var verticalWholeMertic = this.createVerticalMetric(merticSize, height, {
+            var verticalWholeMertic = this.createVerticalMetric(metricSize, height, {
                 setter: function(val) {
                     this.model.setInMetric('height', val, 'mm');
                 }.bind(this),
@@ -1131,13 +1131,13 @@ var app = app || {};
                 }.bind(this)
             });
             verticalWholeMertic.position({
-                x: -merticSize * (verticalRows + 1),
+                x: -metricSize * (verticalRows + 1),
                 y: 0
             });
 
             group.add(verticalWholeMertic);
 
-            var horizontalWholeMertic = this.createHorizontalMetric(width, merticSize, {
+            var horizontalWholeMertic = this.createHorizontalMetric(width, metricSize, {
                setter: function(val) {
                     this.model.setInMetric('width', val, 'mm');
                 }.bind(this),
@@ -1147,7 +1147,7 @@ var app = app || {};
             });
             horizontalWholeMertic.position({
                 x: 0,
-                y: height + horizontalRows * merticSize
+                y: height + horizontalRows * metricSize
             });
             group.add(horizontalWholeMertic);
 
@@ -1170,9 +1170,9 @@ var app = app || {};
                     });
                 }.bind(this)
             };
-            var metric = this.createVerticalMetric(merticSize, archHeight * this.ratio, params);
+            var metric = this.createVerticalMetric(metricSize, archHeight * this.ratio, params);
             metric.position({
-                x: -merticSize
+                x: -metricSize
             });
             group.add(metric);
 
@@ -1189,14 +1189,14 @@ var app = app || {};
                     });
                 }.bind(this)
             };
-            metric = this.createVerticalMetric(merticSize, nonArchHeight * this.ratio, params);
+            metric = this.createVerticalMetric(metricSize, nonArchHeight * this.ratio, params);
             metric.position({
-                x: -merticSize,
+                x: -metricSize,
                 y: archHeight * this.ratio
             });
             group.add(metric);
 
-            var verticalWholeMertic = this.createVerticalMetric(merticSize, height, {
+            var verticalWholeMertic = this.createVerticalMetric(metricSize, height, {
                 setter: function(val) {
                     this.model.setInMetric('height', val, 'mm');
                 }.bind(this),
@@ -1205,13 +1205,13 @@ var app = app || {};
                 }.bind(this)
             });
             verticalWholeMertic.position({
-                x: -merticSize * 2,
+                x: -metricSize * 2,
                 y: 0
             });
 
             group.add(verticalWholeMertic);
 
-            var horizontalWholeMertic = this.createHorizontalMetric(width, merticSize, {
+            var horizontalWholeMertic = this.createHorizontalMetric(width, metricSize, {
                setter: function(val) {
                     this.model.setInMetric('width', val, 'mm');
                 }.bind(this),
@@ -1290,8 +1290,8 @@ var app = app || {};
 
             // we will add 0.5 pixel offset for better strokes
             var topOffset = 10 + 0.5;
-            var wr = (this.stage.width() - merticSize * 2) / frameWidth;
-            var hr = (this.stage.height() - merticSize * 2 - topOffset) / frameHeight;
+            var wr = (this.stage.width() - metricSize * 2) / frameWidth;
+            var hr = (this.stage.height() - metricSize * 2 - topOffset) / frameHeight;
 
             // scale ratio
             var ratio = Math.min(wr, hr) * 0.95;
@@ -1303,7 +1303,7 @@ var app = app || {};
             var group = new Konva.Group();
 
             // place unit on center
-            group.x(Math.round(this.stage.width() / 2 - frameOnScreenWidth / 2 + merticSize) + 0.5);
+            group.x(Math.round(this.stage.width() / 2 - frameOnScreenWidth / 2 + metricSize) + 0.5);
             // and will small offset from top
             group.y(topOffset);
 
@@ -1523,7 +1523,6 @@ var app = app || {};
             throw new Error('unrecognized position for preview: ' + options.position);
         }
 
-        console.log(options)
         if (options.mode === 'canvas') {
             result = view.layer.canvas._canvas;
         } else if (options.mode === 'base64') {
