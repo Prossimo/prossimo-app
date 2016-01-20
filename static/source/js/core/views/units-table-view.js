@@ -535,8 +535,7 @@ var app = app || {};
                 },
                 opening_direction: {
                     type: 'dropdown',
-                    source: app.settings.getOpeningDirections(),
-                    renderer: app.hot_renderers.doorOnlyDropdownRenderer
+                    source: app.settings.getOpeningDirections()
                 },
                 pipedrive_id: {
                     readOnly: true

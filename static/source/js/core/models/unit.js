@@ -41,7 +41,7 @@ var app = app || {};
     ];
 
     //  We only enable those for editing on units where `isDoorType` is `true`
-    var DOOR_ONLY_PROPERTIES = ['exterior_handle', 'lock_mechanism', 'opening_direction'];
+    var DOOR_ONLY_PROPERTIES = ['exterior_handle', 'lock_mechanism'];
 
     var SASH_TYPES = [
         'tilt_turn_left', 'tilt_turn_right', 'fixed_in_frame', 'tilt_only',
@@ -217,16 +217,6 @@ var app = app || {};
 
             if ( app.settings ) {
                 this.profile = app.settings.getProfileByNameOrNew(this.get('profile_name'));
-            }
-
-            if ( app.settings && this.isDoorType() ) {
-                if ( this.get('opening_direction') === '--' ) {
-                    this.set('opening_direction', this.getDefaultValue('opening_direction'));
-                }
-            } else if ( app.settings ) {
-                if ( this.get('opening_direction') !== '--' ) {
-                    this.set('opening_direction', '--');
-                }
             }
         },
         setDefaultFillingType: function () {
