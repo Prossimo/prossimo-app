@@ -107,6 +107,7 @@ var app = app || {};
             //  Simple type validation for numbers and booleans
             _.find(attributes, function (value, key) {
                 var attribute_obj = this.getNameTitleTypeHash([key]);
+
                 attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
 
                 if ( attribute_obj && attribute_obj.type === 'number' &&
@@ -147,7 +148,7 @@ var app = app || {};
         isFlushPanelPossible: function () {
             return _.indexOf(TYPES_WITH_POSSIBLE_FLUSH_PANEL, this.get('unit_type')) !== -1;
         },
-        hasOutsideHandle: function() {
+        hasOutsideHandle: function () {
             return _.indexOf(TYPES_WITH_OUTSIDE_HANDLE, this.get('unit_type')) !== -1;
         },
         getThresholdType: function () {

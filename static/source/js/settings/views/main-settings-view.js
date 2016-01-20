@@ -8,9 +8,9 @@ var app = app || {};
         className: 'screen settings-screen',
         template: app.templates['settings/main-settings-view'],
         ui: {
-            '$profiles_container': '.profiles-container',
-            '$ui_settings_container': '.ui_settings-container',
-            '$filling_types_container': '.filling_types-container'
+            $profiles_container: '.profiles-container',
+            $ui_settings_container: '.ui_settings-container',
+            $filling_types_container: '.filling_types-container'
         },
         events: {
             'click .nav-tabs a': 'onTabClick'

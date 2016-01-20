@@ -9,7 +9,7 @@ var app = app || {};
         saveAndGetId: function (key, val, options) {
             options = options || {};
 
-            function processResponse (status, model, response) {
+            function processResponse(status, model, response) {
                 var location_string = response.getResponseHeader('Location');
                 var pattern = /(\d+)$/;
                 var match;

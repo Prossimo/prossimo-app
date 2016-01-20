@@ -8,7 +8,7 @@ var app = app || {};
         className: 'screen units-table-screen',
         template: app.templates['units-table/main-units-table-view'],
         ui: {
-            '$wrapper': '.units-table-wrapper'
+            $wrapper: '.units-table-wrapper'
         },
         onRender: function () {
             this.units_table_view = new app.UnitsTableView({

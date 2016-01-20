@@ -8,8 +8,8 @@ var app = app || {};
         className: 'screen supplier-request-screen',
         template: app.templates['supplier-request/main-supplier-request-view'],
         ui: {
-            '$header_container': '.supplier-request-header-container',
-            '$table_container': '.supplier-request-table-container'
+            $header_container: '.supplier-request-header-container',
+            $table_container: '.supplier-request-table-container'
         },
         onRender: function () {
             this.request_header_view = new app.SupplierRequestHeaderView({

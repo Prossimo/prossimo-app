@@ -8,8 +8,8 @@ var app = app || {};
         className: 'screen drawing-screen',
         template: app.templates['drawing/main-drawing-view'],
         ui: {
-            '$drawing_container': '.drawing-container',
-            '$sidebar_container': '.drawing-sidebar-container'
+            $drawing_container: '.drawing-container',
+            $sidebar_container: '.drawing-sidebar-container'
         },
         events: {
             'unit-selected': 'onUnitSelected'

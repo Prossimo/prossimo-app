@@ -22,12 +22,9 @@ var app = app || {};
     // TODO: as this functions are pure, so it is better to move them into separete files
     // something like "components" directory
 
-
-
     // global params
     var insideView = false;
     var metricSize = 50;
-
 
     app.DrawingView = Marionette.ItemView.extend({
         tagName: 'div',
@@ -53,13 +50,13 @@ var app = app || {};
         },
 
         ui: {
-            '$flush_panels': '[data-type="flush-turn-right"], [data-type="flush-turn-left"]',
-            '$title': '#drawing-view-title',
-            '$bars_control': '#bars-control',
-            '$section_control': '#section_control',
-            '$vertical_bars_number': '#vertical-bars-number',
-            '$horizontal_bars_number': '#horizontal-bars-number',
-            '$filling_select': '#filling-select'
+            $flush_panels: '[data-type="flush-turn-right"], [data-type="flush-turn-left"]',
+            $title: '#drawing-view-title',
+            $bars_control: '#bars-control',
+            $section_control: '#section_control',
+            $vertical_bars_number: '#vertical-bars-number',
+            $horizontal_bars_number: '#horizontal-bars-number',
+            $filling_select: '#filling-select'
         },
 
         events: {
@@ -76,35 +73,38 @@ var app = app || {};
             'change #filling-select': 'handleFillingTypeChange'
         },
 
-        handleCanvasKeyDown: function(e) {
+        handleCanvasKeyDown: function (e) {
             if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
                 e.preventDefault();
+
                 if (this.state.selectedMullionId) {
                     this.model.removeMullion(this.state.selectedMullionId);
                 }
+
                 if (this.state.selectedSashId) {
                     this.model.removeSash(this.state.selectedSashId);
                 }
+
                 this.deselectAll();
             }
         },
-        handleChangeView: function() {
+        handleChangeView: function () {
             insideView = !insideView;
             var openingView =
-                !insideView && this.model.isOpeningDirectionOutward()
-                ||
+                !insideView && this.model.isOpeningDirectionOutward() ||
                 insideView && !this.model.isOpeningDirectionOutward();
+
             this.setState({
                 openingView: openingView
             });
         },
-        handleBarNumberChange: function() {
+        handleBarNumberChange: function () {
             this.model.setSectionBars(this.state.selectedSashId, {
                 vertical: this.ui.$vertical_bars_number.val(),
                 horizontal: this.ui.$horizontal_bars_number.val()
             });
         },
-        handleFillingTypeChange: function() {
+        handleFillingTypeChange: function () {
             var filling_type;
 
             if ( app.settings ) {
@@ -113,33 +113,37 @@ var app = app || {};
                     filling_type.get('type'), filling_type.get('name'));
             }
         },
-        handleArchedClick: function() {
+        handleArchedClick: function () {
             if (!this.state.selectedSashId) {
                 console.warn('no sash selected');
                 return;
             }
-            this.model._updateSection(this.state.selectedSashId, function(section) {
+
+            this.model._updateSection(this.state.selectedSashId, function (section) {
                 section.arched = !section.arched;
+
                 if (this.model.isRootSection(section.id)) {
                     var width = this.model.getInMetric('width', 'mm');
                     var height = this.model.getInMetric('height', 'mm');
+
                     section.archPosition = Math.min(width / 2, height);
                 }
             }.bind(this));
         },
 
-        handleClearFrameClick: function() {
+        handleClearFrameClick: function () {
             this.deselectAll();
             this.model.clearFrame();
         },
 
-        handleSplitSectionClick: function(e) {
+        handleSplitSectionClick: function (e) {
             this.$('.popup-wrap').hide();
             var divider = $(e.target).data('type');
+
             this.model.splitSection(this.state.selectedSashId, divider);
             this.deselectAll();
         },
-        handleChangeSashTypeClick: function(e) {
+        handleChangeSashTypeClick: function (e) {
             this.$('.popup-wrap').hide();
             var type = $(e.target).data('type');
 
@@ -153,13 +157,15 @@ var app = app || {};
                     type = type.replace('right', 'left');
                 }
             }
+
             this.model.setSectionSashType(this.state.selectedSashId, type);
         },
-        handleObjectClick: function(id, e) {
+        handleObjectClick: function (id, e) {
             // select on left click only
             if (e.evt.button !== 0) {
                 return;
             }
+
             this.deselectAll();
             this.setState({
                 selectedSashId: id
@@ -167,7 +173,7 @@ var app = app || {};
         },
 
         // Marrionente lifecycle method
-        onRender: function(){
+        onRender: function () {
             this.stage = new Konva.Stage({
                 container: this.$('#drawing').get(0)
             });
@@ -183,7 +189,7 @@ var app = app || {};
         },
 
         // Marrionente lifecycle method
-        onDestroy: function() {
+        onDestroy: function () {
             this.stage.destroy();
         },
 
@@ -203,7 +209,7 @@ var app = app || {};
         // common case frame
         // almost all sashes build via this frame
         // it draw just "edges"
-        createFrame: function(params) {
+        createFrame: function (params) {
             var frameWidth = params.frameWidth;  // in mm
             var width = params.width;
             var height = params.height;
@@ -255,13 +261,14 @@ var app = app || {};
                 .fill('white');
 
             var sectionId = params.sectionId;
+
             group.on('click', this.handleObjectClick.bind(this, sectionId));
 
             return group;
         },
 
         // like common frame above but fully filled
-        createFlushFrame: function(params) {
+        createFlushFrame: function (params) {
             var width = params.width;
             var height = params.height;
 
@@ -275,6 +282,7 @@ var app = app || {};
             });
 
             var sectionId = params.sectionId;
+
             group.add(rect);
             group.on('click', this.handleObjectClick.bind(this, sectionId));
 
@@ -282,7 +290,7 @@ var app = app || {};
         },
 
         // door frame have special case for threshold drawing
-        createDoorFrame: function(params) {
+        createDoorFrame: function (params) {
             var frameWidth = params.frameWidth;  // in mm
             var thresholdWidth = this.model.profile.get('threshold_width');
             var width = params.width;
@@ -324,7 +332,6 @@ var app = app || {};
                 .strokeWidth(1)
                 .fill('white');
 
-
             var bottom = new Konva.Line({
                 points: [
                     0, height - thresholdWidth,
@@ -337,13 +344,14 @@ var app = app || {};
                 strokeWidth: 1,
                 fill: 'grey'
             });
+
             group.add(bottom);
 
             return group;
         },
 
         // arched frame have special case for arched part
-        createArchedFrame: function(params) {
+        createArchedFrame: function (params) {
             var frameWidth = params.frameWidth;
             var width = params.width;
             var height = params.height;
@@ -354,12 +362,14 @@ var app = app || {};
                 stroke: 'black',
                 strokeWidth: 1,
                 fill: 'white',
-                sceneFunc: function(ctx) {
+                sceneFunc: function (ctx) {
                     ctx.beginPath();
                     var scale = (width / 2) / archHeight;
+
                     ctx.save();
                     ctx.scale(scale, 1);
                     var radius = archHeight;
+
                     ctx._context.arc(
                         radius, radius, radius,
                         0, Math.PI, true);
@@ -417,12 +427,13 @@ var app = app || {};
             return group;
         },
 
-        createMullion: function(section) {
+        createMullion: function (section) {
             var mullion = new Konva.Rect({
                 stroke: 'black',
                 fill: 'white',
                 strokeWidth: 1
             });
+
             mullion.setAttrs(section.mullionParams);
             var isVerticalInvisible = (
                 section.divider === 'vertical_invisible'
@@ -453,13 +464,16 @@ var app = app || {};
             } else if (isSelected) {
                 mullion.fill('lightgrey');
             }
+
             if (hideVerticalMullion) {
                 mullion.opacity(0.01);
             }
+
             if (hideHorizontalMullion) {
                 mullion.fill('lightblue');
             }
-            mullion.on('click', function() {
+
+            mullion.on('click', function () {
                 this.deselectAll();
                 this.setState({
                     selectedMullionId: section.id
@@ -467,17 +481,18 @@ var app = app || {};
             }.bind(this));
             return mullion;
         },
-        createSections: function(rootSection) {
+        createSections: function (rootSection) {
             var objects = [];
-            if (rootSection.sections && rootSection.sections.length) {
 
+            if (rootSection.sections && rootSection.sections.length) {
                 var mullion = this.createMullion(rootSection);
+
                 if (this.state.openingView) {
                     objects.push(mullion);
                 }
 
                 // draw each child section
-                rootSection.sections.forEach(function(sectionData) {
+                rootSection.sections.forEach(function (sectionData) {
                     objects = objects.concat(this.createSections(sectionData));
                 }.bind(this));
 
@@ -485,7 +500,9 @@ var app = app || {};
                     objects.push(mullion);
                 }
             }
+
             var sash = this.createSash(rootSection);
+
             objects.push(sash);
 
             return objects;
@@ -494,7 +511,7 @@ var app = app || {};
         // special shape on top of sash to hightlight selection
         // it is simple to draw shape with alpha on top
         // then change styles of selected object
-        createSelectionShape: function(section, params) {
+        createSelectionShape: function (section, params) {
             var fillX = params.x;
             var fillY = params.y;
             var fillWidth = params.width;
@@ -510,11 +527,12 @@ var app = app || {};
 
             // arched shape
             var arcPos = this.model.getArchedPosition();
+
             return new Konva.Shape({
                 x: fillX,
                 y: fillY,
                 fill: 'rgba(0,0,0,0.2)',
-                sceneFunc: function(ctx) {
+                sceneFunc: function (ctx) {
                     ctx.beginPath();
                     ctx.moveTo(0, fillHeight);
                     ctx.lineTo(0, arcPos);
@@ -527,12 +545,13 @@ var app = app || {};
             });
         },
 
-        createFilling: function(section, params) {
+        createFilling: function (section, params) {
             var fillX = params.x;
             var fillY = params.y;
             var fillWidth = params.width;
             var fillHeight = params.height;
             var filling;
+
             if (!section.arched) {
                 filling = new Konva.Shape({
                     x: fillX,
@@ -540,30 +559,34 @@ var app = app || {};
                     width: fillWidth,
                     height: fillHeight,
                     fill: 'lightblue',
-                    sceneFunc: function(ctx) {
+                    sceneFunc: function (ctx) {
                         ctx.beginPath();
                         ctx.rect(0, 0, this.width(), this.height());
                         // draw louver lines
                         if (section.fillingType === 'louver') {
                             var offset = 40;
+
                             for (var i = 0; i < this.height() / offset; i++) {
                                 ctx.moveTo(0, i * offset);
                                 ctx.lineTo(this.width(), i * offset);
                             }
                         }
+
                         ctx.fillStrokeShape(this);
                     }
                 });
+
                 if (section.fillingType === 'louver') {
                     filling.stroke('black');
                 }
             } else if (true) {
                 var arcPos = this.model.getArchedPosition();
+
                 filling = new Konva.Shape({
                     x: fillX,
                     y: fillY,
                     fill: 'lightblue',
-                    sceneFunc: function(ctx) {
+                    sceneFunc: function (ctx) {
                         ctx.beginPath();
                         ctx.moveTo(0, fillHeight);
                         ctx.lineTo(0, arcPos);
@@ -575,13 +598,15 @@ var app = app || {};
                     }
                 });
             }
+
             if (section.fillingType && section.fillingType !== 'glass') {
                 filling.fill('lightgrey');
             }
+
             filling.on('click', this.handleObjectClick.bind(this, section.id));
             return filling;
         },
-        createBars: function(section, params) {
+        createBars: function (section, params) {
             var fillX = params.x;
             var fillY = params.y;
             var fillWidth = params.width;
@@ -590,7 +615,8 @@ var app = app || {};
             var group = new Konva.Group();
             var bar;
             var x_offset = fillWidth / (section.vertical_bars_number + 1);
-            for(var i = 0; i < section.vertical_bars_number; i++) {
+
+            for (var i = 0; i < section.vertical_bars_number; i++) {
                 bar = new Konva.Rect({
                     x: fillX + x_offset * (i + 1), y: fillY,
                     width: this.model.get('glazing_bar_width'), height: fillHeight,
@@ -598,8 +624,10 @@ var app = app || {};
                 });
                 group.add(bar);
             }
+
             var y_offset = fillHeight / (section.horizontal_bars_number + 1);
-            for(i = 0; i < section.horizontal_bars_number; i++) {
+
+            for (i = 0; i < section.horizontal_bars_number; i++) {
                 bar = new Konva.Rect({
                     x: fillX, y: fillY + y_offset * (i + 1),
                     width: fillWidth, height: this.model.get('glazing_bar_width'),
@@ -607,9 +635,10 @@ var app = app || {};
                 });
                 group.add(bar);
             }
+
             return group;
         },
-        createHandle: function(section, params) {
+        createHandle: function (section, params) {
             var type = section.sashType;
             var offset = params.frameWidth / 2;
             var pos = {
@@ -617,26 +646,34 @@ var app = app || {};
                 y: null,
                 rotation: 0
             };
-            if (type === 'tilt_turn_right' || type === 'turn_only_right' || type === 'slide-right' || type === 'flush-turn-right') {
+
+            if (type === 'tilt_turn_right' || type === 'turn_only_right' ||
+                type === 'slide-right' || type === 'flush-turn-right'
+            ) {
                 pos.x = offset;
                 pos.y = section.sashParams.height / 2;
             }
-            if (type === 'tilt_turn_left' || type === 'turn_only_left' || type === 'slide-left' || type === 'flush-turn-left') {
+
+            if (type === 'tilt_turn_left' || type === 'turn_only_left' ||
+                type === 'slide-left' || type === 'flush-turn-left'
+            ) {
                 pos.x = section.sashParams.width - offset;
                 pos.y = section.sashParams.height / 2;
             }
+
             if (type === 'tilt_only') {
                 pos.x = section.sashParams.width / 2;
                 pos.y = offset;
                 pos.rotation = 90;
             }
+
             var handle = new Konva.Shape({
                 x: pos.x,
                 y: pos.y,
                 rotation: pos.rotation,
                 stroke: 'black',
                 fill: 'rgba(0,0,0,0.2)',
-                sceneFunc: function(ctx) {
+                sceneFunc: function (ctx) {
                     ctx.beginPath();
                     ctx.rect(-23, -23, 46, 55);
                     ctx.rect(-14, -5, 28, 90);
@@ -646,45 +683,52 @@ var app = app || {};
 
             return handle;
         },
-        createDirectionLine: function(section) {
+        createDirectionLine: function (section) {
             var type = section.sashType;
             var directionLine = new Konva.Shape({
                 stroke: 'black',
                 x: section.glassParams.x - section.sashParams.x,
                 y: section.glassParams.y - section.sashParams.y,
-                sceneFunc: function(ctx) {
+                sceneFunc: function (ctx) {
                     ctx.beginPath();
                     var width = section.glassParams.width;
                     var height = section.glassParams.height;
+
                     if (type.indexOf('right') >= 0 && (type.indexOf('slide') === -1)) {
                         ctx.moveTo(width, height);
                         ctx.lineTo(0, height / 2);
                         ctx.lineTo(width, 0);
                     }
+
                     if (type.indexOf('left') >= 0 && (type.indexOf('slide') === -1)) {
                         ctx.moveTo(0, 0);
                         ctx.lineTo(width, height / 2);
                         ctx.lineTo(0, height);
                     }
+
                     if (type.indexOf('tilt_turn_') >= 0 || type.indexOf('slide') >= 0 || type === 'tilt_only') {
                         ctx.moveTo(0, height);
                         ctx.lineTo(width / 2, 0);
                         ctx.lineTo(width, height);
                     }
+
                     if (type === 'tilt_only_top_hung') {
                         ctx.moveTo(0, 0);
                         ctx.lineTo(width / 2, height);
                         ctx.lineTo(width, 0);
                     }
+
                     ctx.strokeShape(this);
                 }
             });
+
             if ((type.indexOf('_hinge_hidden_latch') !== -1)) {
                 directionLine.dash([10 / this.ratio, 10 / this.ratio]);
             }
+
             return directionLine;
         },
-        createSash: function(sectionData) {
+        createSash: function (sectionData) {
             var hasFrame = (sectionData.sashType !== 'fixed_in_frame');
             var frameWidth = hasFrame ? this.model.profile.get('sash_frame_width') : 0;
 
@@ -693,13 +737,21 @@ var app = app || {};
                 y: sectionData.sashParams.y
             });
 
-            var fillX, fillY, fillWidth, fillHeight;
-            if (_.includes(['full-flush-panel', 'exterior-flush-panel'], sectionData.fillingType) && !this.state.openingView) {
+            var fillX;
+            var fillY;
+            var fillWidth;
+            var fillHeight;
+
+            if (_.includes(['full-flush-panel', 'exterior-flush-panel'], sectionData.fillingType) &&
+                !this.state.openingView
+            ) {
                 fillX = sectionData.openingParams.x - sectionData.sashParams.x;
                 fillY = sectionData.openingParams.y - sectionData.sashParams.y;
                 fillWidth = sectionData.openingParams.width;
                 fillHeight = sectionData.openingParams.height;
-            } else if (_.includes(['full-flush-panel', 'interior-flush-panel'], sectionData.fillingType) && this.state.openingView) {
+            } else if (_.includes(['full-flush-panel', 'interior-flush-panel'], sectionData.fillingType) &&
+                        this.state.openingView
+            ) {
                 fillX = 0;
                 fillY = 0;
                 fillWidth = sectionData.sashParams.width;
@@ -716,6 +768,7 @@ var app = app || {};
 
             if (sectionData.sashType !== 'fixed_in_frame') {
                 var frameGroup;
+
                 if (isFlushType) {
                     frameGroup = this.createFlushFrame({
                         width: sectionData.sashParams.width,
@@ -730,12 +783,15 @@ var app = app || {};
                         sectionId: sectionData.id
                     });
                 }
+
                 group.add(frameGroup);
             }
+
             var hasSubSections = sectionData.sections && sectionData.sections.length;
             var shouldDrawFilling =
                 !hasSubSections && !isFlushType ||
                 this.model.isRootSection(sectionData.id) && isFlushType;
+
             if (shouldDrawFilling) {
                 var filling = this.createFilling(sectionData, {
                     x: fillX,
@@ -743,6 +799,7 @@ var app = app || {};
                     width: fillWidth,
                     height: fillHeight
                 });
+
                 group.add(filling);
             }
 
@@ -756,6 +813,7 @@ var app = app || {};
                     width: fillWidth,
                     height: fillHeight
                 });
+
                 group.add(bars);
             }
 
@@ -772,19 +830,23 @@ var app = app || {};
                 var handle = this.createHandle(sectionData, {
                     frameWidth: frameWidth
                 });
+
                 group.add(handle);
             }
 
             var shouldDrawDirectionLine = sectionData.sashType !== 'fixed_in_frame';
+
             if (shouldDrawDirectionLine) {
                 var directionLine = this.createDirectionLine(sectionData);
+
                 group.add(directionLine);
             }
 
             var sashList = this.model.getSashList();
-            var index = _.findIndex(sashList, function(s) {
+            var index = _.findIndex(sashList, function (s) {
                 return s.id === sectionData.id;
             });
+
             if (index >= 0) {
                 var number = new Konva.Text({
                     x: sectionData.openingParams.x - sectionData.sashParams.x,
@@ -795,13 +857,16 @@ var app = app || {};
                     fontSize: 15 / this.ratio,
                     listening: false
                 });
+
                 number.y(
                     sectionData.openingParams.y - sectionData.sashParams.y +
                     sectionData.openingParams.height / 2 - number.height() / 2
                 );
                 group.add(number);
             }
+
             var isSelected = (this.state.selectedSashId === sectionData.id);
+
             if (isSelected) {
                 var selection = this.createSelectionShape(sectionData, {
                     x: fillX,
@@ -809,17 +874,19 @@ var app = app || {};
                     width: fillWidth,
                     height: fillHeight
                 });
+
                 group.add(selection);
             }
+
             return group;
         },
-        createVerticalMetric: function(width, height, params) {
+        createVerticalMetric: function (width, height, params) {
             var arrowOffset = width / 2;
             var arrowSize = 5;
             var group = new Konva.Group();
 
             var lines = new Konva.Shape({
-                sceneFunc: function(ctx) {
+                sceneFunc: function (ctx) {
                     ctx.fillStyle = 'grey';
                     ctx.lineWidth = 0.5;
 
@@ -835,7 +902,7 @@ var app = app || {};
             });
 
             var arrow = new Konva.Shape({
-                sceneFunc: function(ctx) {
+                sceneFunc: function (ctx) {
                     ctx.translate(arrowOffset, 0);
 
                     ctx.beginPath();
@@ -900,9 +967,8 @@ var app = app || {};
                 y: height / 2 - textInches.height() / 2
             });
 
-
             if (params.setter) {
-                labelInches.on('click tap', function() {
+                labelInches.on('click tap', function () {
                     this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
                 }.bind(this));
             }
@@ -911,13 +977,13 @@ var app = app || {};
             return group;
         },
 
-        createHorizontalMetric: function(width, height, params) {
+        createHorizontalMetric: function (width, height, params) {
             var arrowOffset = height / 2;
             var arrowSize = 5;
             var group = new Konva.Group();
 
             var lines = new Konva.Shape({
-                sceneFunc: function(ctx) {
+                sceneFunc: function (ctx) {
                     ctx.fillStyle = 'grey';
                     ctx.lineWidth = 0.5;
 
@@ -933,7 +999,7 @@ var app = app || {};
             });
 
             var arrow = new Konva.Shape({
-                sceneFunc: function(ctx) {
+                sceneFunc: function (ctx) {
                     // top pointer
                     ctx.translate(0, arrowOffset);
 
@@ -997,7 +1063,7 @@ var app = app || {};
             });
 
             if (params.setter) {
-                labelInches.on('click tap', function() {
+                labelInches.on('click tap', function () {
                     this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
                 }.bind(this));
             }
@@ -1006,17 +1072,18 @@ var app = app || {};
             return group;
         },
 
-        createInfo: function(mullions, width, height) {
+        createInfo: function (mullions, width, height) {
             var group = new Konva.Group();
             var verticalRows = 0;
             var horizontalRows = 0;
             var verticalMullions = [];
             var horizontalMullions = [];
 
-            mullions.forEach(function(mul) {
+            mullions.forEach(function (mul) {
                 if (this.state.selectedMullionId && this.state.selectedMullionId !== mul.id) {
                     return;
                 }
+
                 if (mul.type === 'vertical' || mul.type === 'vertical_invisible') {
                     verticalMullions.push(mul);
                 } else {
@@ -1024,28 +1091,33 @@ var app = app || {};
                 }
             }.bind(this));
 
-            verticalMullions.sort(function(a, b) {return a.position - b.position; });
-            horizontalMullions.sort(function(a, b) {return a.position - b.position; });
+            verticalMullions.sort(function (a, b) {return a.position - b.position; });
+            horizontalMullions.sort(function (a, b) {return a.position - b.position; });
 
             var pos = 0;
-            verticalMullions.forEach(function(mul, i) {
+
+            verticalMullions.forEach(function (mul, i) {
                 var width_ = mul.position - pos;
                 // do not draw very small dimension
                 if (width_ > 0) {
                     var params = {
-                        getter: function() {
+                        getter: function () {
                             return width_;
                         }
                     };
+
                     if (verticalMullions.length === 1) {
-                        params.setter = function(val) {
+                        params.setter = function (val) {
                             if (!this.state.openingView) {
                                 val = this.model.getInMetric('width', 'mm') - val;
                             }
+
                             this.model.setSectionMullionPosition(mul.id, val);
                         }.bind(this);
                     }
+
                     var metric = this.createHorizontalMetric(width_ * this.ratio, metricSize, params);
+
                     metric.position({
                         x: pos * this.ratio,
                         y: height
@@ -1053,22 +1125,27 @@ var app = app || {};
                     pos = mul.position;
                     group.add(metric);
                 }
+
                 if ( i === verticalMullions.length - 1) {
                     horizontalRows += 1;
                     var width__ = this.model.getInMetric('width', 'mm') - pos;
+
                     params = {
-                        getter: function() {
+                        getter: function () {
                             return width__;
                         }
                     };
+
                     if (verticalMullions.length === 1) {
-                        params.setter = function(val) {
+                        params.setter = function (val) {
                             if (this.state.openingView) {
                                 val = this.model.getInMetric('width', 'mm') - val;
                             }
+
                             this.model.setSectionMullionPosition(mul.id, val);
                         }.bind(this);
                     }
+
                     metric = this.createHorizontalMetric(width__ * this.ratio, metricSize, params);
                     metric.position({
                         x: pos * this.ratio,
@@ -1079,20 +1156,24 @@ var app = app || {};
             }.bind(this));
 
             pos = 0;
-            horizontalMullions.forEach(function(mul, i) {
+            horizontalMullions.forEach(function (mul, i) {
                 var height_ = mul.position - pos;
+
                 if (height_ > 0) {
                     var params = {
-                        getter: function() {
+                        getter: function () {
                             return height_;
                         }
                     };
+
                     if (horizontalMullions.length === 1) {
-                        params.setter = function(val) {
+                        params.setter = function (val) {
                             this.model.setSectionMullionPosition(mul.id, val);
                         }.bind(this);
                     }
+
                     var metric = this.createVerticalMetric(metricSize, height_ * this.ratio, params);
+
                     metric.position({
                         x: -metricSize,
                         y: pos * this.ratio
@@ -1100,19 +1181,23 @@ var app = app || {};
                     pos = mul.position;
                     group.add(metric);
                 }
+
                 if ( i === horizontalMullions.length - 1) {
                     verticalRows += 1;
                     var height__ = this.model.getInMetric('height', 'mm') - pos;
+
                     params = {
-                        getter: function() {
+                        getter: function () {
                             return height__;
                         }
                     };
+
                     if (horizontalMullions.length === 1) {
-                        params.setter = function(val) {
+                        params.setter = function (val) {
                             this.model.setSectionMullionPosition(mul.id, this.model.getInMetric('height', 'mm') - val);
                         }.bind(this);
                     }
+
                     metric = this.createVerticalMetric(metricSize, height__ * this.ratio, params);
                     metric.position({
                         x: -metricSize,
@@ -1123,13 +1208,14 @@ var app = app || {};
             }.bind(this));
 
             var verticalWholeMertic = this.createVerticalMetric(metricSize, height, {
-                setter: function(val) {
+                setter: function (val) {
                     this.model.setInMetric('height', val, 'mm');
                 }.bind(this),
-                getter: function() {
+                getter: function () {
                     return this.model.getInMetric('height', 'mm');
                 }.bind(this)
             });
+
             verticalWholeMertic.position({
                 x: -metricSize * (verticalRows + 1),
                 y: 0
@@ -1138,53 +1224,56 @@ var app = app || {};
             group.add(verticalWholeMertic);
 
             var horizontalWholeMertic = this.createHorizontalMetric(width, metricSize, {
-               setter: function(val) {
+                setter: function (val) {
                     this.model.setInMetric('width', val, 'mm');
                 }.bind(this),
-                getter: function() {
+                getter: function () {
                     return this.model.getInMetric('width', 'mm');
                 }.bind(this)
             });
+
             horizontalWholeMertic.position({
                 x: 0,
                 y: height + horizontalRows * metricSize
             });
             group.add(horizontalWholeMertic);
 
-
-
             return group;
         },
-        createArchedInfo: function(width, height) {
+        createArchedInfo: function (width, height) {
             var group = new Konva.Group();
 
             var archHeight = this.model.getArchedPosition();
             var params = {
-                getter: function() {
+                getter: function () {
                     return archHeight;
                 },
-                setter: function(val) {
+                setter: function (val) {
                     var id = this.model.get('root_section').id;
-                    this.model._updateSection(id, function(section) {
+
+                    this.model._updateSection(id, function (section) {
                         section.archPosition = val;
                     });
                 }.bind(this)
             };
             var metric = this.createVerticalMetric(metricSize, archHeight * this.ratio, params);
+
             metric.position({
                 x: -metricSize
             });
             group.add(metric);
 
             var nonArchHeight = this.model.getInMetric('height', 'mm') - archHeight;
+
             params = {
-                getter: function() {
+                getter: function () {
                     return nonArchHeight;
                 },
-                setter: function(val) {
+                setter: function (val) {
                     var id = this.model.get('root_section').id;
                     var archPosition = this.model.getInMetric('height', 'mm') - val;
-                    this.model._updateSection(id, function(section) {
+
+                    this.model._updateSection(id, function (section) {
                         section.archPosition = archPosition;
                     });
                 }.bind(this)
@@ -1197,13 +1286,14 @@ var app = app || {};
             group.add(metric);
 
             var verticalWholeMertic = this.createVerticalMetric(metricSize, height, {
-                setter: function(val) {
+                setter: function (val) {
                     this.model.setInMetric('height', val, 'mm');
                 }.bind(this),
-                getter: function() {
+                getter: function () {
                     return this.model.getInMetric('height', 'mm');
                 }.bind(this)
             });
+
             verticalWholeMertic.position({
                 x: -metricSize * 2,
                 y: 0
@@ -1212,28 +1302,27 @@ var app = app || {};
             group.add(verticalWholeMertic);
 
             var horizontalWholeMertic = this.createHorizontalMetric(width, metricSize, {
-               setter: function(val) {
+                setter: function (val) {
                     this.model.setInMetric('width', val, 'mm');
                 }.bind(this),
-                getter: function() {
+                getter: function () {
                     return this.model.getInMetric('width', 'mm');
                 }.bind(this)
             });
+
             horizontalWholeMertic.position({
                 x: 0,
                 y: height
             });
             group.add(horizontalWholeMertic);
 
-
-
             return group;
         },
-        createInput: function(params, pos, size) {
+        createInput: function (params, pos, size) {
             var $wrap = $('<div>')
                 .addClass('popup-wrap')
                 .appendTo(this.$el)
-                .on('click', function(e) {
+                .on('click', function (e) {
                     if (e.target === $wrap.get(0)) {
                         $wrap.remove();
                     }
@@ -1244,6 +1333,7 @@ var app = app || {};
             var padding = 3;
             var valInInches = app.utils.convert.mm_to_inches(params.getter());
             var val = app.utils.format.dimension(valInInches, 'fraction');
+
             $('<input>')
                 .val(val)
                 .css({
@@ -1257,20 +1347,22 @@ var app = app || {};
                 .appendTo($wrap)
                 .focus()
                 .select()
-                .on('keyup', function(e) {
+                .on('keyup', function (e) {
                     if (e.keyCode === 13) {  // enter
                         var inches = app.utils.parseFormat.dimension(this.value);
                         var mm = app.utils.convert.inches_to_mm(inches);
+
                         params.setter(mm);
                         $wrap.remove();
                     }
+
                     if (e.keyCode === 27) { // esc
                         $wrap.remove();
                     }
                 })
                 ;
         },
-        updateCanvas: function() {
+        updateCanvas: function () {
             // clear all previous objects
             this.layer.destroyChildren();
 
@@ -1279,11 +1371,11 @@ var app = app || {};
                 width: this.stage.width(),
                 height: this.stage.height()
             });
+
             this.layer.add(back);
-            back.on('click tap', function() {
+            back.on('click tap', function () {
                 this.deselectAll();
             }.bind(this));
-
 
             var frameWidth = this.model.getInMetric('width', 'mm');
             var frameHeight = this.model.getInMetric('height', 'mm');
@@ -1298,6 +1390,7 @@ var app = app || {};
 
             var frameOnScreenWidth = frameWidth * ratio;
             var frameOnScreenHeight = frameHeight * ratio;
+
             this.ratio = ratio;
 
             var group = new Konva.Group();
@@ -1309,8 +1402,8 @@ var app = app || {};
 
             this.layer.add(group);
 
-
             var root;
+
             if (this.state.openingView) {
                 root = this.model.generateFullRoot();
             } else {
@@ -1324,7 +1417,6 @@ var app = app || {};
 
             var isArchedWindow = (this.model.getArchedPosition() !== null);
 
-
             // create main frame
             if (isDoorFrame) {
                 frameGroup = this.createDoorFrame({
@@ -1333,7 +1425,7 @@ var app = app || {};
                     height: this.model.getInMetric('height', 'mm'),
                     frameWidth: this.model.profile.get('frame_width')
                 });
-            } if (isArchedWindow) {
+            } else if (isArchedWindow) {
                 frameGroup = this.createArchedFrame({
                     sectionId: root.id,
                     width: this.model.getInMetric('width', 'mm'),
@@ -1349,17 +1441,19 @@ var app = app || {};
                     frameWidth: this.model.profile.get('frame_width')
                 });
             }
+
             frameGroup.scale({x: ratio, y: ratio});
             group.add(frameGroup);
 
-
             // group for all nested elements
             var sectionsGroup = new Konva.Group();
+
             sectionsGroup.scale({x: ratio, y: ratio});
             group.add(sectionsGroup);
 
             // create sections(sashes) recursively
             var sections = this.createSections(root);
+
             sectionsGroup.add.apply(sectionsGroup, sections);
 
             // if we are not looking from opening view
@@ -1371,35 +1465,39 @@ var app = app || {};
 
             // infoGroup is group for displaying dimension information
             var infoGroup;
+
             if (this.model.get('root_section').arched) {
                 infoGroup = this.createArchedInfo(frameOnScreenWidth, frameOnScreenHeight);
             } else {
                 var mullions;
+
                 if (this.state.openingView) {
                     mullions = this.model.getMullions();
                 } else {
                     mullions = this.model.getRevertedMullions();
                 }
+
                 infoGroup = this.createInfo(mullions, frameOnScreenWidth, frameOnScreenHeight);
             }
+
             group.add(infoGroup);
 
             this.layer.draw();
         },
 
-        updateUI: function() {
+        updateUI: function () {
             // here we have to hide and should some elements in toolbar
             var buttonText = insideView ? 'Show outside view' : 'Show inside view';
+
             this.$('#change-view-button').text(buttonText);
 
             var titleText = insideView ? 'Inside view' : 'Outside view';
-            this.ui.$title.text(titleText);
 
+            this.ui.$title.text(titleText);
 
             var selectedSashId = this.state.selectedSashId;
             var selectedSash = this.model.getSection(selectedSashId);
             var isArched = selectedSash && selectedSash.arched;
-
 
             this.ui.$bars_control.toggle(
                 !isArched &&
@@ -1446,7 +1544,7 @@ var app = app || {};
             this.$('.add-arched').toggle(!isArched);
         },
 
-        updateSize: function(width, height) {
+        updateSize: function (width, height) {
             this.stage.width(width || this.$('#drawing').get(0).offsetWidth);
             this.stage.height(height || this.$('#drawing').get(0).offsetHeight);
         },
@@ -1457,13 +1555,13 @@ var app = app || {};
             this.updateCanvas();
             this.$('#drawing').focus();
         },
-        setState: function(state) {
+        setState: function (state) {
             this.state = _.assign(this.state, state);
             this.updateUI();
             this.updateCanvas();
             this.$('#drawing').focus();
         },
-        deselectAll: function() {
+        deselectAll: function () {
             this.setState({
                 selectedMullionId: null,
                 selectedSashId: null
@@ -1471,7 +1569,7 @@ var app = app || {};
         }
     });
 
-    app.preview = function(unitModel, options) {
+    app.preview = function (unitModel, options) {
         var result;
         var defaults = {
             width: 300,

@@ -3,7 +3,6 @@ var app = app || {};
 (function () {
     'use strict';
 
-
     //  --------------------------------------------------------------------
     //  That's what we use for Units
     //  --------------------------------------------------------------------
@@ -27,11 +26,9 @@ var app = app || {};
     //  That's what we use for Profiles
     //  --------------------------------------------------------------------
 
-
     var SYSTEMS = ['Workhorse uPVC', 'Pinnacle uPVC'];
     var SUPPLIER_SYSTEMS = ['Gaelan S8000', 'Gaelan S9000'];
     var CORNER_TYPES = ['Mitered', 'Square (Vertical)', 'Square (Horizontal)'];
-
 
     //  --------------------------------------------------------------------
     // That's what we use for settings
@@ -46,7 +43,6 @@ var app = app || {};
         { name: 'feet_and_inches', title: 'Feet + Inches' },
         { name: 'inches_only', title: 'Inches Only' }
     ];
-
 
     app.Settings = Backbone.Model.extend({
         defaults: function () {
@@ -140,6 +136,7 @@ var app = app || {};
         },
         getProfileByNameOrNew: function (profile_name) {
             var profile = this.profiles.findWhere({name: profile_name});
+
             return profile ? profile : new app.Profile();
         },
         getDefaultProfileName: function () {

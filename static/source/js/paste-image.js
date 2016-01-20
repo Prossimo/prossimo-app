@@ -70,6 +70,7 @@ var app = app || {};
                     if ( items[i].type.indexOf('image') !== -1 ) {
                         // We need to represent the image as a file
                         var blob = items[i].getAsFile();
+
                         this.processWithFileReader(blob);
                     }
                 }
@@ -94,7 +95,7 @@ var app = app || {};
         processImage: function (source) {
             var pastedImage = new Image();
 
-            pastedImage.onload = function() {
+            pastedImage.onload = function () {
                 app.vent.trigger('paste_image', source);
             };
 

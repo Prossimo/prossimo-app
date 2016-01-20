@@ -8,9 +8,9 @@ var app = app || {};
         className: 'drawing-sidebar',
         template: app.templates['drawing/drawing-sidebar-view'],
         ui: {
-            '$select': '.selectpicker',
-            '$prev': '.js-prev-unit',
-            '$next': '.js-next-unit'
+            $select: '.selectpicker',
+            $prev: '.js-prev-unit',
+            $next: '.js-next-unit'
         },
         events: {
             'change @ui.$select': 'onChange',

@@ -8,7 +8,7 @@ var app = app || {};
         className: 'units-table-container',
         template: app.templates['core/units-table-view'],
         ui: {
-            '$hot_container': '.handsontable-container'
+            $hot_container: '.handsontable-container'
         },
         events: {
             'click .units-table-title': 'toggleTableVisibility',

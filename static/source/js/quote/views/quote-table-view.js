@@ -9,8 +9,8 @@ var app = app || {};
         childViewContainer: '.quote-table-body',
         reorderOnSort: true,
         ui: {
-            '$extras_table_container': '.quote-extras-table-container',
-            '$optional_extras_table_container': '.quote-optional-extras-table-container'
+            $extras_table_container: '.quote-extras-table-container',
+            $optional_extras_table_container: '.quote-optional-extras-table-container'
         },
         childViewOptions: function () {
             return {

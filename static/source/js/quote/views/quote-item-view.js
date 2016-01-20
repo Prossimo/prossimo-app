@@ -81,7 +81,11 @@ var app = app || {};
 
                 filling_size = this.options.show_sizes_in_mm ?
                     f.dimensions_mm(source_item.filling.width, source_item.filling.height) :
-                    f.dimensions_in(c.mm_to_inches(source_item.filling.width), c.mm_to_inches(source_item.filling.height), 'fraction');
+                    f.dimensions_in(
+                        c.mm_to_inches(source_item.filling.width),
+                        c.mm_to_inches(source_item.filling.height),
+                        'fraction'
+                    );
 
                 filling_area = this.options.show_sizes_in_mm ?
                     f.square_meters(m.square_meters(source_item.filling.width, source_item.filling.height)) :
@@ -104,7 +108,11 @@ var app = app || {};
                 if ( source_item.opening.height && source_item.opening.width ) {
                     opening_size = this.options.show_sizes_in_mm ?
                         f.dimensions_mm(source_item.opening.width, source_item.opening.height) :
-                        f.dimensions_in(c.mm_to_inches(source_item.opening.width), c.mm_to_inches(source_item.opening.height), 'fraction');
+                        f.dimensions_in(
+                            c.mm_to_inches(source_item.opening.width),
+                            c.mm_to_inches(source_item.opening.height),
+                            'fraction'
+                        );
 
                     opening_area = this.options.show_sizes_in_mm ?
                         f.square_meters(m.square_meters(source_item.opening.width, source_item.opening.height)) :

@@ -8,7 +8,7 @@ var app = app || {};
         className: 'document-selector',
         template: app.templates['docs-import/document-selector-view'],
         ui: {
-            '$select': '.selectpicker'
+            $select: '.selectpicker'
         },
         events: {
             'change @ui.$select': 'onChange'

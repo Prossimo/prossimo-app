@@ -350,6 +350,15 @@ module.exports = function (grunt) {
             target: ['<%= sourceUrl %>/js/**/*.js']
         },
 
+        jscs: {
+            src: '<%= sourceUrl %>/js/**/*.js',
+            options: {
+                config: '.jscsrc',
+                verbose: true,
+                force: true
+            }
+        },
+
         replace: {
             //  A cheap hack to trick pdfjs building script, it comes without
             //  its own `.git` directory because it's installed via bower, so
@@ -467,6 +476,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-gitinfo');
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-shell');
+    grunt.loadNpmTasks('grunt-jscs');
 
     grunt.registerTask('pdfjs', ['gitinfo', 'replace:pdfjs', 'shell:build_pdfjs', 'copy:pdfjs']);
 
@@ -483,7 +493,7 @@ module.exports = function (grunt) {
         'less:dev', 'uglify:vendor_dev', 'cssmin:vendor_dev', 'replace:dev'//, 'pdfjs'
     ]);
 
-    grunt.registerTask('test', ['eslint', 'qunit']);
+    grunt.registerTask('test', ['jscs', 'eslint', 'qunit']);
     grunt.registerTask('deploy_staging', ['test', 'sshexec:update_staging']);
     grunt.registerTask('deploy_production', ['test', 'sshexec:update_production']);
     grunt.registerTask('deploy', ['deploy_staging']);

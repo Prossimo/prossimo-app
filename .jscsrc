@@ -1,0 +1,11 @@
+{
+    "preset": "yandex",
+    "disallowSpacesInsideParentheses": null,
+    "disallowSpacesInsideObjectBrackets": null,
+    "disallowImplicitTypeConversion": ["numeric", "binary", "string"],
+    "requirePaddingNewlinesBeforeKeywords": ["if", "for", "while", "do"],
+    "requirePaddingNewLineAfterVariableDeclaration": true,
+    "requirePaddingNewLinesAfterBlocks": {
+        "allExcept": ["inCallExpressions", "inNewExpressions", "inArrayExpressions", "inProperties"]
+    }
+}

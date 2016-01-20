@@ -74,6 +74,7 @@ var app = app || {};
             //  Simple type validation for numbers and booleans
             _.find(attributes, function (value, key) {
                 var attribute_obj = this.getNameTitleTypeHash([key]);
+
                 attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
 
                 if ( attribute_obj && attribute_obj.type === 'number' &&
