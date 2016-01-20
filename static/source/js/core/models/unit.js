@@ -54,8 +54,9 @@ var app = app || {};
     var SASH_TYPES_WITH_OPENING = _.without(SASH_TYPES, 'fixed_in_frame');
 
     var SASH_TYPE_NAME_MAP = {
-        'flush-turn-right': 'Flush Panel Right Hinge',
-        'flush-turn-left': 'Flush Panel Left Hinge',
+        // deprecated
+        // 'flush-turn-right': 'Flush Panel Right Hinge',
+        // 'flush-turn-left': 'Flush Panel Left Hinge',
         'fixed_in_frame': 'Fixed',
         'fixed_in_sash': 'Fixed in Sash',
         'tilt_only': 'Tilt Only Bottom Hung',
@@ -466,6 +467,7 @@ var app = app || {};
         removeSash: function(sectionId) {
             this._updateSection(sectionId, function(section) {
                 section.sashType = 'fixed_in_frame';
+                _.assign(section, getDefaultFillingType());
                 section.divider = null;
                 section.sections = [];
                 section.position = null;
@@ -745,6 +747,7 @@ var app = app || {};
             this.removeMullion(rootId);
             this._updateSection(rootId, function(section) {
                 section.sashType = 'fixed_in_frame';
+                _.assign(section, getDefaultFillingType());
             });
         },
         getSizes: function(root) {

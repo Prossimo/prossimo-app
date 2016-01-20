@@ -712,8 +712,7 @@ var app = app || {};
             }
 
             var isFlushType =
-                sectionData.sashType === 'flush-turn-right' ||
-                sectionData.sashType === 'flush-turn-left';
+                sectionData.fillingType.indexOf('flush') >= 0;
 
             if (sectionData.sashType !== 'fixed_in_frame') {
                 var frameGroup;
@@ -734,7 +733,9 @@ var app = app || {};
                 group.add(frameGroup);
             }
             var hasSubSections = sectionData.sections && sectionData.sections.length;
-            var shouldDrawFilling = !hasSubSections && !isFlushType;
+            var shouldDrawFilling =
+                !hasSubSections && !isFlushType ||
+                this.model.isRootSection(sectionData.id) && isFlushType;
             if (shouldDrawFilling) {
                 var filling = this.createFilling(sectionData, {
                     x: fillX,
@@ -1458,7 +1459,9 @@ var app = app || {};
         },
         setState: function(state) {
             this.state = _.assign(this.state, state);
-            this.updateRenderedScene();
+            this.updateUI();
+            this.updateCanvas();
+            this.$('#drawing').focus();
         },
         deselectAll: function() {
             this.setState({
@@ -1520,6 +1523,7 @@ var app = app || {};
             throw new Error('unrecognized position for preview: ' + options.position);
         }
 
+        console.log(options)
         if (options.mode === 'canvas') {
             result = view.layer.canvas._canvas;
         } else if (options.mode === 'base64') {
