@@ -2,18 +2,14 @@
     <button class="btn btn-xs" id="clear-frame">Clear frame</button>
     <button class="btn btn-xs" id="change-view-button">Show outside view</button>
     <div id="drawing-view-title">Outside view</div>
-    <!-- <div id="dim">
-        <select id='dimension-type-select'>
-            <option value="frame">Frame</option>
-            <option value="opening">Opening</option>
-            <option value="filling">Filling (Glass or Panel)</option>
-        </select>
-    </div> -->
+
     <div id="section_control">
+
         <span class="toggle-arched">
             <img class="add-arched" src="/static/public/img/add_arched_section.png"/>
             <img class="remove-arched" src="/static/public/img/remove_arched_section.png"/>
         </span>
+
         <span class="split">
             Split section:
             <img class="split-section" data-type="vertical" src="/static/public/img/vertical_mullion.png"/>
@@ -48,10 +44,7 @@
             {{/each }}
             </select>
         </span>
-        <span class='panel-type' style="text-align: center">
-            <img class="change-panel-type" data-type="solid" src="/static/public/img/panel_solid.png"/>
-            <img class="change-panel-type" data-type="glass" src="/static/public/img/panel_glass.png"/>
-        </span>
+
         <span id="bars-control">
             Vertical bars: <input type="number" id="vertical-bars-number" value='0'>
             Horizontal bars: <input type="number" id="horizontal-bars-number" value='0'>

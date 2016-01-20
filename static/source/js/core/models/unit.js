@@ -345,12 +345,15 @@ var app = app || {};
                 return findParent(root.sections[0], childId) || findParent(root.sections[1], childId);
             }
             var root = this.generateFullRoot();
+            if (app.Unit.findSection(root, sashId).sashType !== 'fixed_in_frame') {
+                return false;
+            }
+
             if (root.id === sashId && root.sections.length === 0) {
                 return true;
             }
             var parent = findParent(root, sashId);
             if (!parent) {
-                // console.error('Can not find parent for sash ' + sashId);
                 return false;
             }
 
@@ -358,8 +361,9 @@ var app = app || {};
 
 
             while (parent) {
-                // var child = Unit.findSection(parent, childId);
-
+                if (parent.sashType !== 'fixed_in_frame') {
+                    return false;
+                }
                 // arched section should be only on top (index 0)
                 if (parent.sections[0].id !== childId) {
                     return false;
@@ -447,12 +451,6 @@ var app = app || {};
                 this.setFillingType(childSection.id, type, name);
             }, this);
         },
-        // TODO: remove this methid below
-        setPanelType: function(sectionId, type){
-            this._updateSection(sectionId, function(section) {
-                section.panelType = type;
-            });
-        },
         setSectionMullionPosition: function(id, pos) {
             this._updateSection(id, function(section) {
                 section.position = parseFloat(pos);
@@ -490,7 +488,7 @@ var app = app || {};
                     section.sections[0].fillingName = section.sections[1].fillingName = section.fillingName;
                 }
 
-                if (type === 'horizontal') {
+                if (type === 'horizontal' || type === 'horizontal_invisible') {
                     section.position = fullSection.openingParams.y + fullSection.openingParams.height / 2;
                 } else {
                     section.position = fullSection.openingParams.x + fullSection.openingParams.width / 2;
@@ -658,7 +656,7 @@ var app = app || {};
                 rootSection.sections = rootSection.sections.reverse();
                 rootSection.mullionParams.x = width - rootSection.mullionParams.x - this.profile.get('mullion_width');
             }
-            if (rootSection.divider === 'horizontal') {
+            if (rootSection.divider === 'horizontal' || rootSection.divider === 'horizontal_invisible') {
                 rootSection.mullionParams.x = width - rootSection.mullionParams.x - rootSection.mullionParams.width;
             }
             var type = rootSection.sashType;
