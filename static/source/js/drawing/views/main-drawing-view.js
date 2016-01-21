@@ -12,10 +12,15 @@ var app = app || {};
             $sidebar_container: '.drawing-sidebar-container'
         },
         events: {
-            'unit-selected': 'onUnitSelected'
+            'unit-selected': 'onUnitSelected',
+            'sidebar-toggle': 'onSidebarToggle'
         },
         onUnitSelected: function (e) {
             this.active_unit = e.model;
+            this.updateDrawingView(true);
+        },
+        onSidebarToggle: function () {
+            this.$el.toggleClass('sidebar-hidden');
             this.updateDrawingView(true);
         },
         initialize: function () {

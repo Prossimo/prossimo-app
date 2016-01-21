@@ -10,12 +10,14 @@ var app = app || {};
         ui: {
             $select: '.selectpicker',
             $prev: '.js-prev-unit',
-            $next: '.js-next-unit'
+            $next: '.js-next-unit',
+            $sidebar_toggle: '.js-sidebar-toggle'
         },
         events: {
             'change @ui.$select': 'onChange',
             'click @ui.$prev': 'onPrevBtn',
-            'click @ui.$next': 'onNextBtn'
+            'click @ui.$next': 'onNextBtn',
+            'click @ui.$sidebar_toggle': 'onSidebarToggle'
         },
         initialize: function () {
             this.listenTo(this.options.parent_view.active_unit, 'all', this.render);
@@ -71,6 +73,9 @@ var app = app || {};
 
                 this.selectUnit(this.collection.at(prev_index));
             }
+        },
+        onSidebarToggle: function () {
+            this.$el.trigger({ type: 'sidebar-toggle' });
         },
         getActiveUnitImage: function () {
             var active_unit_image = null;

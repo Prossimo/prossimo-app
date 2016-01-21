@@ -8,6 +8,10 @@
     height: 100%;
 }
 
+.sidebar-hidden .drawing-container {
+    width: 95%;
+}
+
 .drawing-container > div {
     position: relative;
     width: 100%;
@@ -106,7 +110,25 @@
 }
 
 .drawing-sidebar {
-    padding: 2rem;
+    padding: 1rem 2rem 2rem;
+}
+
+.sidebar-hidden .drawing-sidebar-container {
+    width: 5%;
+    text-align: center;
+
+    .drawing-sidebar {
+        padding: 1rem;
+    }
+
+    .drawing-sidebar h3,
+    .drawing-sidebar div {
+        display: none;
+    }
+
+    .sidebar-toggle:before {
+        content: '\e071';
+    }
 }
 
 .drawing-sidebar h3 {
