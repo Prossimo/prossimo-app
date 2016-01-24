@@ -70,7 +70,8 @@ var app = app || {};
             'input #vertical-bars-number': 'handleBarNumberChange',
             'change #horizontal-bars-number': 'handleBarNumberChange',
             'input #horizontal-bars-number': 'handleBarNumberChange',
-            'change #filling-select': 'handleFillingTypeChange'
+            'change #filling-select': 'handleFillingTypeChange',
+            'click #glazing-bars-popup': 'handleGlazingBarsPopupClick'
         },
 
         handleCanvasKeyDown: function (e) {
@@ -103,6 +104,11 @@ var app = app || {};
                 vertical: this.ui.$vertical_bars_number.val(),
                 horizontal: this.ui.$horizontal_bars_number.val()
             });
+        },
+        handleGlazingBarsPopupClick: function () {
+            this.glazing_view
+                    .setSection( this.state.selectedSashId )
+                    .showModal();
         },
         handleFillingTypeChange: function () {
             var filling_type;
@@ -186,10 +192,13 @@ var app = app || {};
                 showSubtext: true,
                 size: 10
             });
+
+            this.createGlazingPopup();
         },
 
         // Marrionente lifecycle method
         onDestroy: function () {
+            this.glazing_view.destroy();
             this.stage.destroy();
         },
 
@@ -205,7 +214,12 @@ var app = app || {};
                     })
             };
         },
-
+        createGlazingPopup: function () {
+            this.glazing_view = new app.DrawingGlazingPopup({
+                parent_view: this,
+                model: this.model
+            });
+        },
         // common case frame
         // almost all sashes build via this frame
         // it draw just "edges"
@@ -616,6 +630,11 @@ var app = app || {};
             var bar;
             var x_offset = fillWidth / (section.vertical_bars_number + 1);
 
+            var verical_metrics_params = {
+                setter: function () { console.log('set'); },
+                getter: function () { console.log('get'); }
+            };
+
             for (var i = 0; i < section.vertical_bars_number; i++) {
                 bar = new Konva.Rect({
                     x: fillX + x_offset * (i + 1), y: fillY,
@@ -623,6 +642,13 @@ var app = app || {};
                     fill: 'white', listening: false
                 });
                 group.add(bar);
+                //Now we'll create metrics
+                var metric = this.createVerticalMetric(metricSize, fillHeight, verical_metrics_params);
+                metric.position({
+                    x: fillX + x_offset * (i + 1),
+                    y: fillY
+                });
+                group.add(metric);
             }
 
             var y_offset = fillHeight / (section.horizontal_bars_number + 1);

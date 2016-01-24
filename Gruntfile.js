@@ -11,6 +11,7 @@ module.exports = function (grunt) {
         'bootstrap/js/dropdown.js',
         'bootstrap/js/tooltip.js',
         'bootstrap/js/popover.js',
+        'bootstrap/js/modal.js',
         'bootstrap-select/dist/js/bootstrap-select.min.js',
         'konva/konva.min.js',
         'decimal.js/decimal.min.js'
@@ -52,6 +53,7 @@ module.exports = function (grunt) {
         'drawing/views/main-drawing-view.js',
         'drawing/views/drawing-view.js',
         'drawing/views/drawing-sidebar-view.js',
+        'drawing/views/drawing-glazing-view.js',
         'quote/views/main-quote-view.js',
         'quote/views/quote-item-view.js',
         'quote/views/quote-extras-item-view.js',
