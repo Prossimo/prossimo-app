@@ -128,6 +128,9 @@ var app = app || {};
         isPercentBasedType: function () {
             return _.indexOf(PERCENT_BASED_EXTRAS_TYPES, this.get('extras_type')) !== -1;
         },
+        isRegularType: function () {
+            return this.get('extras_type') === 'Regular';
+        },
         isOptionalType: function () {
             return _.indexOf(OPTIONAL_EXTRAS_TYPES, this.get('extras_type')) !== -1;
         },
@@ -164,6 +167,15 @@ var app = app || {};
         },
         getSubtotalPriceDiscounted: function () {
             return this.getSubtotalPrice() * (100 - this.get('discount')) / 100;
+        },
+        getSubtotalProfit: function () {
+            var profit = 0;
+
+            if ( this.isRegularType() ) {
+                profit = this.getSubtotalPriceDiscounted() - this.getSubtotalCost();
+            }
+
+            return profit;
         }
     });
 })();

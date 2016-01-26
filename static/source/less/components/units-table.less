@@ -76,6 +76,36 @@
 
 
 //  ------------------------------------------------------------------------
+//  Total prices below tabs
+//  ------------------------------------------------------------------------
+
+.units-table-total-prices {
+    background-color: darken(@white, 25%);
+    border-top: 1px solid darken(@white, 30%);
+    // border-bottom: none;
+    text-align: right;
+}
+
+.units-table-total-prices ul {
+    padding: 0.5rem 1rem 0.7rem;
+    margin: 0;
+}
+
+.units-table-total-prices li {
+    display: inline-block;
+    font-size: 0.9em;
+
+    & + li {
+        margin-left: 3rem;
+    }
+
+    span {
+        margin-left: 0.5rem;
+    }
+}
+
+
+//  ------------------------------------------------------------------------
 //  Table content part
 //  ------------------------------------------------------------------------
 

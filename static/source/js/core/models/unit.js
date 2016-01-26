@@ -285,8 +285,14 @@ var app = app || {};
         getUnitCost: function () {
             return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
         },
+        getSubtotalCost: function () {
+            return this.getUnitCost() * parseFloat(this.get('quantity'));
+        },
         getUnitCostDiscounted: function () {
             return this.getUnitCost() * (100 - parseFloat(this.get('supplier_discount'))) / 100;
+        },
+        getSubtotalCostDiscounted: function () {
+            return this.getUnitCostDiscounted() * parseFloat(this.get('quantity'));
         },
         getUnitPrice: function () {
             return this.getUnitCostDiscounted() * parseFloat(this.get('price_markup'));
@@ -302,6 +308,9 @@ var app = app || {};
         },
         getSubtotalPriceDiscounted: function () {
             return this.getSubtotalPrice() * (100 - parseFloat(this.get('discount'))) / 100;
+        },
+        getSubtotalProfit: function () {
+            return this.getSubtotalPriceDiscounted() - this.getSubtotalCostDiscounted();
         },
         getSquareFeetPrice: function () {
             return this.getTotalSquareFeet() ? this.getSubtotalPrice() / this.getTotalSquareFeet() : 0;

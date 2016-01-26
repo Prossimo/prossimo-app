@@ -120,7 +120,8 @@ var app = app || {};
         getExtrasPrice: function () {
             return this.extras.getRegularItemsPrice();
         },
-        //  This is what we use as tax base
+        //  This is what we use as tax base. Subtotal price for units + extras,
+        //  but no shipping or optional extras
         getSubtotalPrice: function () {
             var subtotal_units_price = this.getSubtotalUnitsPrice();
             var hidden_price = this.getHiddenPrice();
@@ -129,19 +130,51 @@ var app = app || {};
 
             return subtotal_units_with_hidden + extras_price;
         },
+        getTax: function () {
+            var total_tax_percent = this.extras.getTotalTaxPercent();
+            var subtotal = this.getSubtotalPrice();
+            var tax = (total_tax_percent / 100) * subtotal;
+
+            return tax;
+        },
+        getGrandTotal: function () {
+            var subtotal = this.getSubtotalPrice();
+            var shipping_price = this.extras.getShippingPrice();
+            var tax = this.getTax();
+
+            var grand_total = subtotal + shipping_price + tax;
+
+            return grand_total;
+        },
+        getTotalCost: function () {
+            var subtotal_units_cost = this.units.getSubtotalCostDiscounted();
+            var extras_cost = this.extras.getRegularItemsCost();
+            var shipping = this.extras.getShippingPrice();
+            var tax = this.getTax();
+
+            return subtotal_units_cost + extras_cost + shipping + tax;
+        },
+        getProfit: function () {
+            return this.getGrandTotal() - this.getTotalCost();
+        },
         getTotalPrices: function () {
             var subtotal_units_price = this.getSubtotalUnitsPrice();
-            var extras_price = this.extras.getRegularItemsPrice();
+            var extras_price = this.getExtrasPrice();
             var optional_extras_price = this.extras.getOptionalItemsPrice();
 
             var hidden_price = this.extras.getHiddenPrice();
             var shipping_price = this.extras.getShippingPrice();
             var total_tax_percent = this.extras.getTotalTaxPercent();
 
+            //  TODO: subtotal_units_with_hidden should be removed everywhere:
+            //  https://bitbucket.org/prossimo/prossimo-app/issues/147/update-how-hidden-price-is-calculated
             var subtotal_units_with_hidden = subtotal_units_price + hidden_price;
-            var subtotal = subtotal_units_with_hidden + extras_price;
-            var tax = (total_tax_percent / 100) * subtotal;
-            var grand_total = subtotal + shipping_price + tax;
+            var subtotal = this.getSubtotalPrice();
+            var tax = this.getTax();
+            var grand_total = this.getGrandTotal();
+
+            var total_cost = this.getTotalCost();
+            var profit = this.getProfit();
 
             //  TODO: this value should be customizable, not just 50% always,
             //  when it'll be customizable, it should also be tested
@@ -159,6 +192,8 @@ var app = app || {};
                 tax: tax,
                 shipping: shipping_price,
                 grand_total: grand_total,
+                total_cost: total_cost,
+                profit: profit,
                 deposit_percent: deposit_percent,
                 deposit_on_contract: deposit_on_contract,
                 balance_due_at_delivery: balance_due_at_delivery

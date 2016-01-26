@@ -3,6 +3,7 @@
 /* eslint strict:0 */
 /* eslint max-len:0 */
 /* eslint max-statements:0 */
+/* jscs:disable */
 
 //  Test that QUnit is working
 test('basic test', function () {
@@ -240,6 +241,8 @@ test('subtotal project prices', function () {
     equal(total_prices.shipping.toFixed(2), '1500.00', 'Shipping is expected to be 1500.00');
     equal(total_prices.tax.toFixed(2), '1673.62', 'Tax is expected to be 1673.62');
     equal(total_prices.grand_total.toFixed(2), '8752.35', 'Grand total is expected to be 8752.35');
+    equal(total_prices.total_cost.toFixed(2), '5294.29', 'Total cost is expected to be 5294.29');
+    equal(total_prices.profit.toFixed(2), '3458.06', 'Profit is expected to be 3458.06');
 
     //  Individual price calculation functions should match with `total_prices`
     equal(total_prices.subtotal_units, current_project.getSubtotalUnitsPrice(), 'getSubtotalUnitsPrice result should match total_prices.subtotal_units');
@@ -247,4 +250,20 @@ test('subtotal project prices', function () {
         'getSubtotalUnitsPrice + getHiddenPrice result should match total_prices.subtotal_units_with_hidden');
     equal(total_prices.subtotal_extras, current_project.getExtrasPrice(), 'getExtrasPrice result should match total_prices.subtotal_extras');
     equal(total_prices.subtotal, current_project.getSubtotalPrice(), 'getSubtotalPrice result should match total_prices.subtotal');
+
+    // Total Profit should be the same as profit for all units / extras individually
+    var subtotal_profit_units = _.reduce(current_project.units.map(function (unit) {
+        return unit.getSubtotalProfit();
+    }), function (memo, item) {
+        return memo + item;
+    }, 0);
+    var subtotal_profit_extras = _.reduce(_.map(current_project.extras.getRegularItems(), function (unit) {
+        return unit.getSubtotalProfit();
+    }), function (memo, item) {
+        return memo + item;
+    }, 0);
+    var hidden_profit = current_project.getHiddenPrice();
+    var combined_profit = subtotal_profit_units + subtotal_profit_extras + hidden_profit;
+
+    equal(total_prices.profit.toFixed(2), combined_profit.toFixed(2), 'total_prices.profit should match combined profit for units & extras');
 });

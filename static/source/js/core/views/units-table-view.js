@@ -49,9 +49,9 @@ var app = app || {};
                     title: 'Prices',
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'drawing', 'original_cost', 'original_currency',
-                        'conversion_rate', 'unit_cost', 'supplier_discount', 'unit_cost_discounted',
-                        'price_markup', 'unit_price', 'subtotal_price', 'discount', 'unit_price_discounted',
-                        'subtotal_price_discounted', 'total_square_feet',
+                        'conversion_rate', 'unit_cost', 'subtotal_cost', 'supplier_discount', 'unit_cost_discounted',
+                        'subtotal_cost_discounted', 'price_markup', 'unit_price', 'subtotal_price', 'discount',
+                        'unit_price_discounted', 'subtotal_price_discounted', 'subtotal_profit', 'total_square_feet',
                         'square_feet_price', 'square_feet_price_discounted',
                         'move_item', 'remove_item']
                 },
@@ -60,7 +60,7 @@ var app = app || {};
                     collection: this.options.extras,
                     columns: ['description', 'quantity', 'extras_type', 'original_cost',
                         'original_currency', 'conversion_rate', 'unit_cost', 'price_markup',
-                        'unit_price', 'subtotal_cost', 'subtotal_price',
+                        'unit_price', 'subtotal_cost', 'subtotal_price', 'subtotal_profit',
                         'move_item', 'remove_item']
                 },
                 project_info: {
@@ -140,6 +140,9 @@ var app = app || {};
             this.options.extras.add(new_accessory);
         },
         serializeData: function () {
+            var total_prices = app.current_project ? app.current_project.getTotalPrices() : undefined;
+            var f = app.utils.format;
+
             return {
                 tabs: _.each(this.tabs, function (item, key) {
                     item.is_active = key === this.active_tab;
@@ -148,7 +151,10 @@ var app = app || {};
                 mode: this.getActiveTab().title === 'Extras' ? 'extras' :
                     (this.getActiveTab().title === 'Project Info' ? 'none' : 'units'),
                 table_visibility: this.table_visibility,
-                is_always_visible: this.options.is_always_visible
+                is_always_visible: this.options.is_always_visible,
+                grand_total: total_prices ? f.price_usd(total_prices.grand_total) : '--',
+                total_cost: total_prices ? f.price_usd(total_prices.total_cost) : '--',
+                profit: total_prices ? f.price_usd(total_prices.profit) : '--'
             };
         },
         onRemoveItem: function (e) {
@@ -239,6 +245,12 @@ var app = app || {};
                 },
                 subtotal_price_discounted: function (model) {
                     return model.getSubtotalPriceDiscounted();
+                },
+                subtotal_cost_discounted: function (model) {
+                    return model.getSubtotalCostDiscounted();
+                },
+                subtotal_profit: function (model) {
+                    return model.getSubtotalProfit();
                 },
                 system: function (model) {
                     return model.profile.get('system');
@@ -547,6 +559,14 @@ var app = app || {};
                 },
                 quote_number: {
                     readOnly: true
+                },
+                subtotal_profit: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd', true)
+                },
+                subtotal_cost_discounted: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
                 }
             };
 
@@ -630,7 +650,9 @@ var app = app || {};
                 square_feet_price_discounted: 'Price per Sq.Ft w/Disc.',
                 move_item: 'Move',
                 remove_item: ' ',
-                quote_number: 'Quote Number'
+                quote_number: 'Quote Number',
+                subtotal_profit: 'Subtotal Profit',
+                subtotal_cost_discounted: 'Subtotal Cost w/Disc.'
             };
 
             return custom_column_headers_hash[column_name];
