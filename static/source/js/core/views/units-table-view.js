@@ -8,6 +8,7 @@ var app = app || {};
         className: 'units-table-container',
         template: app.templates['core/units-table-view'],
         ui: {
+            $total_prices_container: '.units-table-total-prices-container',
             $hot_container: '.handsontable-container'
         },
         events: {
@@ -140,9 +141,6 @@ var app = app || {};
             this.options.extras.add(new_accessory);
         },
         serializeData: function () {
-            var total_prices = app.current_project ? app.current_project.getTotalPrices() : undefined;
-            var f = app.utils.format;
-
             return {
                 tabs: _.each(this.tabs, function (item, key) {
                     item.is_active = key === this.active_tab;
@@ -151,10 +149,7 @@ var app = app || {};
                 mode: this.getActiveTab().title === 'Extras' ? 'extras' :
                     (this.getActiveTab().title === 'Project Info' ? 'none' : 'units'),
                 table_visibility: this.table_visibility,
-                is_always_visible: this.options.is_always_visible,
-                grand_total: total_prices ? f.price_usd(total_prices.grand_total) : '--',
-                total_cost: total_prices ? f.price_usd(total_prices.total_cost) : '--',
-                profit: total_prices ? f.price_usd(total_prices.profit) : '--'
+                is_always_visible: this.options.is_always_visible
             };
         },
         onRemoveItem: function (e) {
@@ -722,6 +717,18 @@ var app = app || {};
                     dropdown_scroll_reset = false;
                 }
             }, 100);
+
+            if ( this.total_prices_view ) {
+                this.total_prices_view.destroy();
+            }
+
+            this.total_prices_view = new app.UnitsTableTotalPricesView({
+                model: app.current_project,
+                units: this.collection,
+                extras: this.options.extras
+            });
+
+            this.ui.$total_prices_container.append(this.total_prices_view.render().el);
         },
         onDestroy: function () {
             clearInterval(this.dropdown_scroll_timer);
@@ -730,6 +737,10 @@ var app = app || {};
 
             if ( this.hot ) {
                 this.hot.destroy();
+            }
+
+            if ( this.total_prices_view ) {
+                this.total_prices_view.destroy();
             }
         }
     });

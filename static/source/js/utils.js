@@ -97,7 +97,8 @@ var app = app || {};
                 return this.dimension_in(width) + ' x ' + this.dimension_in(height);
             },
             price_usd: function (price) {
-                return '$' + new Decimal(parseFloat(price).toFixed(2)).toFormat(2);
+                return (parseFloat(price) < 0 ? '-' : '') + '$' +
+                    new Decimal(Math.abs(parseFloat(price)).toFixed(2)).toFormat(2);
             },
             percent: function (value) {
                 return new Decimal(parseFloat(value).toFixed(2)).toFormat() + '%';

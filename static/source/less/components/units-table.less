@@ -82,7 +82,6 @@
 .units-table-total-prices {
     background-color: darken(@white, 25%);
     border-top: 1px solid darken(@white, 30%);
-    // border-bottom: none;
     text-align: right;
 }
 
@@ -101,6 +100,10 @@
 
     span {
         margin-left: 0.5rem;
+    }
+
+    &.is-negative span {
+        color: darken(@red, 20%);
     }
 }
 

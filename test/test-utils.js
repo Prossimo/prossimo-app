@@ -2,6 +2,8 @@
 /* eslint-env qunit */
 /* eslint strict:0 */
 /* eslint max-statements:0 */
+/* jscs:disable */
+
 
 //  Test that QUnit is working
 test('basic test', function () {
@@ -82,6 +84,7 @@ test('utils.format.price_usd', function () {
     equal(f.price_usd(30.5), '$30.50', 'Expected value is $30.50');
     equal(f.price_usd('30.5'), '$30.50', 'Expected value is $30.50');
     equal(f.price_usd(0), '$0.00', 'Expected value is $0.00');
+    equal(f.price_usd(-140), '-$140.00', 'Expected value is -$140.00');
 });
 
 test('utils.format.percent', function () {
