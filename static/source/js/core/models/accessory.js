@@ -146,17 +146,18 @@ var app = app || {};
         getUnitPrice: function () {
             return this.getUnitCost() * parseFloat(this.get('price_markup'));
         },
+        //  Get subtotal price for the extras item. For regular or optional
+        //  extras it's just unit price * quantity
         getSubtotalPrice: function () {
             var subtotal_price = this.getUnitPrice() * parseFloat(this.get('quantity'));
 
             if ( app.current_project ) {
                 //  If this is percent-based optional extras, base is Unit Subtotal
-                if ( this.get('extras_type') !== 0 && this.isPercentBasedType() && this.isOptionalType() ) {
-                    subtotal_price = (this.getMarkupPercent() / 100) *
-                        (app.current_project.getSubtotalUnitsPrice() + app.current_project.getHiddenPrice() );
+                if ( this.isPercentBasedType() && this.isOptionalType() ) {
+                    subtotal_price = this.getMarkupPercent() / 100 * app.current_project.getSubtotalUnitsPrice();
                 //  If this is tax, base is everything except shipping
-                } else if ( this.get('extras_type') !== 0 && this.isPercentBasedType() ) {
-                    subtotal_price = (this.getMarkupPercent() / 100) * app.current_project.getSubtotalPrice();
+                } else if ( this.isPercentBasedType() ) {
+                    subtotal_price = this.getMarkupPercent() / 100 * app.current_project.getSubtotalPrice();
                 }
             }
 

@@ -105,17 +105,8 @@ var app = app || {};
         getQuoteNumber: function () {
             return this.isNew() ? '--' : this.id;
         },
-        getHiddenMultiplier: function () {
-            var subtotal_units_price = this.units.getSubtotalPriceDiscounted();
-            var hidden_price = this.extras.getHiddenPrice();
-
-            return subtotal_units_price ? ( 1 + hidden_price / subtotal_units_price ) : 1;
-        },
         getSubtotalUnitsPrice: function () {
             return this.units.getSubtotalPriceDiscounted();
-        },
-        getHiddenPrice: function () {
-            return this.extras.getHiddenPrice();
         },
         getExtrasPrice: function () {
             return this.extras.getRegularItemsPrice();
@@ -124,11 +115,9 @@ var app = app || {};
         //  but no shipping or optional extras
         getSubtotalPrice: function () {
             var subtotal_units_price = this.getSubtotalUnitsPrice();
-            var hidden_price = this.getHiddenPrice();
-            var subtotal_units_with_hidden = subtotal_units_price + hidden_price;
             var extras_price = this.extras.getRegularItemsPrice();
 
-            return subtotal_units_with_hidden + extras_price;
+            return subtotal_units_price + extras_price;
         },
         getTax: function () {
             var total_tax_percent = this.extras.getTotalTaxPercent();
@@ -150,9 +139,10 @@ var app = app || {};
             var subtotal_units_cost = this.units.getSubtotalCostDiscounted();
             var extras_cost = this.extras.getRegularItemsCost();
             var shipping = this.extras.getShippingPrice();
+            var hidden = this.extras.getHiddenPrice();
             var tax = this.getTax();
 
-            return subtotal_units_cost + extras_cost + shipping + tax;
+            return subtotal_units_cost + extras_cost + shipping + hidden + tax;
         },
         getProfit: function () {
             return this.getGrandTotal() - this.getTotalCost();
@@ -162,13 +152,9 @@ var app = app || {};
             var extras_price = this.getExtrasPrice();
             var optional_extras_price = this.extras.getOptionalItemsPrice();
 
-            var hidden_price = this.extras.getHiddenPrice();
             var shipping_price = this.extras.getShippingPrice();
             var total_tax_percent = this.extras.getTotalTaxPercent();
 
-            //  TODO: subtotal_units_with_hidden should be removed everywhere:
-            //  https://bitbucket.org/prossimo/prossimo-app/issues/147/update-how-hidden-price-is-calculated
-            var subtotal_units_with_hidden = subtotal_units_price + hidden_price;
             var subtotal = this.getSubtotalPrice();
             var tax = this.getTax();
             var grand_total = this.getGrandTotal();
@@ -184,7 +170,6 @@ var app = app || {};
 
             return {
                 subtotal_units: subtotal_units_price,
-                subtotal_units_with_hidden: subtotal_units_with_hidden,
                 subtotal_extras: extras_price,
                 subtotal_optional_extras: optional_extras_price,
                 subtotal: subtotal,
