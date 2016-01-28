@@ -102,8 +102,16 @@
         margin-left: 0.5rem;
     }
 
-    &.is-negative span {
+    .percent {
+        font-size: 0.9em;
+    }
+
+    &.is-negative .value {
         color: darken(@red, 20%);
+    }
+
+    &.is-good .value {
+        color: darken(@green, 15%);
     }
 }
 

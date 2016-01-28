@@ -239,6 +239,7 @@ test('subtotal project prices', function () {
     equal(total_prices.grand_total.toFixed(2), '6152.35', 'Grand total is expected to be 6152.35');
     equal(total_prices.total_cost.toFixed(2), '5694.29', 'Total cost is expected to be 5694.29');
     equal(total_prices.profit.toFixed(2), '458.06', 'Profit is expected to be 458.06');
+    equal(total_prices.profit_percent.toFixed(2), '7.45', 'Profit is expected to be 7.45% of Grand Total');
 
     //  Individual price calculation functions should match with `total_prices`
     equal(total_prices.subtotal_units, current_project.getSubtotalUnitsPrice(), 'getSubtotalUnitsPrice result should match total_prices.subtotal_units');

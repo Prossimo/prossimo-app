@@ -92,6 +92,9 @@ test('utils.format.percent', function () {
 
     equal(f.percent(20), '20%', 'Expected value is 20%');
     equal(f.percent(20.5), '20.5%', 'Expected value is 20.5%');
+    equal(f.percent(14.13), '14.13%', 'Expected value is 14.13%');
+    equal(f.percent(14.13, 1), '14.1%', 'Expected value is 14.1%');
+    equal(f.percent(14.13, 0), '14%', 'Expected value is 14%');
     equal(f.percent(0), '0%', 'Expected value is 0%');
 });
 

@@ -100,8 +100,9 @@ var app = app || {};
                 return (parseFloat(price) < 0 ? '-' : '') + '$' +
                     new Decimal(Math.abs(parseFloat(price)).toFixed(2)).toFormat(2);
             },
-            percent: function (value) {
-                return new Decimal(parseFloat(value).toFixed(2)).toFormat() + '%';
+            percent: function (value, num) {
+                num = _.isNumber(num) ? (num < MAX_SIGNIFICANT_DIGITS ? num : MAX_SIGNIFICANT_DIGITS) : 2;
+                return new Decimal(parseFloat(value).toFixed(num)).toFormat() + '%';
             },
             fixed: function (value, num) {
                 num = _.isNumber(num) ? (num < MAX_SIGNIFICANT_DIGITS ? num : MAX_SIGNIFICANT_DIGITS) : 2;

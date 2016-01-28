@@ -161,6 +161,7 @@ var app = app || {};
 
             var total_cost = this.getTotalCost();
             var profit = this.getProfit();
+            var profit_percent = profit / grand_total * 100;
 
             //  TODO: this value should be customizable, not just 50% always,
             //  when it'll be customizable, it should also be tested
@@ -179,6 +180,7 @@ var app = app || {};
                 grand_total: grand_total,
                 total_cost: total_cost,
                 profit: profit,
+                profit_percent: profit_percent,
                 deposit_percent: deposit_percent,
                 deposit_on_contract: deposit_on_contract,
                 balance_due_at_delivery: balance_due_at_delivery
