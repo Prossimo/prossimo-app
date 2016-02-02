@@ -8,7 +8,7 @@ var app = app || {};
         className: 'units-table-container',
         template: app.templates['core/units-table-view'],
         ui: {
-            '$hot_container': '.handsontable-container'
+            $hot_container: '.handsontable-container'
         },
         events: {
             'click .units-table-title': 'toggleTableVisibility',
@@ -21,6 +21,7 @@ var app = app || {};
         },
         initialize: function () {
             this.table_update_timeout = null;
+            this.dropdown_scroll_timer = null;
             this.table_visibility = this.options.is_always_visible ? 'visible' :
                 (this.options.table_visibility ? this.options.table_visibility : 'hidden');
 
@@ -30,15 +31,15 @@ var app = app || {};
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'width', 'height',
                         'drawing', 'customer_image', 'type', 'description',
-                        'notes', 'move_item', 'remove_item']
+                        'notes', 'exceptions', 'move_item', 'remove_item']
                 },
                 specs: {
                     title: 'Specs',
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'width', 'height', 'drawing',
                         'customer_image', 'width_mm', 'height_mm', 'type', 'description',
-                        'notes', 'profile_name', 'system', 'external_color', 'internal_color',
-                        'interior_handle', 'exterior_handle', 'hardware_type',
+                        'notes', 'exceptions', 'profile_name', 'system', 'external_color',
+                        'internal_color', 'interior_handle', 'exterior_handle', 'hardware_type',
                         'lock_mechanism', 'glazing_bead', 'gasket_color',
                         'hinge_style', 'opening_direction', 'threshold',
                         'internal_sill', 'external_sill', 'glazing', 'glazing_bar_width',
@@ -47,9 +48,9 @@ var app = app || {};
                 prices: {
                     title: 'Prices',
                     collection: this.collection,
-                    columns: ['mark', 'quantity', 'original_cost', 'original_currency',
-                        'conversion_rate', 'unit_cost', 'price_markup', 'unit_price',
-                        'subtotal_price', 'discount', 'unit_price_discounted',
+                    columns: ['mark', 'quantity', 'drawing', 'original_cost', 'original_currency',
+                        'conversion_rate', 'unit_cost', 'supplier_discount', 'unit_cost_discounted',
+                        'price_markup', 'unit_price', 'subtotal_price', 'discount', 'unit_price_discounted',
                         'subtotal_price_discounted', 'total_square_feet',
                         'square_feet_price', 'square_feet_price_discounted',
                         'move_item', 'remove_item']
@@ -67,19 +68,26 @@ var app = app || {};
                     collection: app.projects,
                     columns: ['pipedrive_id', 'project_name', 'client_name',
                         'client_company_name', 'client_phone', 'client_email',
-                        'client_address', 'project_address']
+                        'client_address', 'project_address', 'quote_date',
+                        'quote_revision', 'quote_number']
                 }
             };
             this.active_tab = 'input';
 
             this.listenTo(this.collection, 'all', this.updateTable);
             this.listenTo(this.options.extras, 'all', this.updateTable);
+            this.listenTo(app.projects, 'all', this.updateTable);
             this.listenTo(this.options.parent_view, 'attach', this.updateTable);
+
+            this.listenTo(this.collection, 'invalid', this.showValidationError);
+            this.listenTo(this.options.extras, 'invalid', this.showValidationError);
+            this.listenTo(app.projects, 'invalid', this.showValidationError);
 
             this.listenTo(app.vent, 'paste_image', this.onPasteImage);
         },
         appendPopovers: function () {
             this.$el.popover('destroy');
+            $('.popover').remove();
 
             this.$el.popover({
                 container: 'body',
@@ -89,7 +97,6 @@ var app = app || {};
                     return $(this).clone();
                 },
                 trigger: 'hover',
-                placement: 'top',
                 delay: {
                     show: 300
                 }
@@ -205,6 +212,9 @@ var app = app || {};
                 unit_cost: function (model) {
                     return model.getUnitCost();
                 },
+                unit_cost_discounted: function (model) {
+                    return model.getUnitCostDiscounted();
+                },
                 drawing: function (model) {
                     return app.preview(model, {
                         width: 500,
@@ -244,6 +254,9 @@ var app = app || {};
                 },
                 square_feet_price_discounted: function (model) {
                     return model.getSquareFeetPriceDiscounted();
+                },
+                quote_number: function (model) {
+                    return model.getQuoteNumber();
                 }
             };
 
@@ -257,29 +270,45 @@ var app = app || {};
 
             return getter.apply(this, arguments);
         },
-        getSetterFunction: function (unit_model, column_name) {
+        getSetterParser: function (column_name) {
             var p = app.utils.parseFormat;
-            var setter;
+            var parser;
 
-            var setters_hash = {
-                discount: function (model, attr_name, val) {
-                    return model.persist(attr_name, p.percent(val));
+            var parsers_hash = {
+                discount: function (attr_name, val) {
+                    return p.percent(val);
                 },
-                width: function (model, attr_name, val) {
-                    return model.persist(attr_name, p.dimensions(val, 'width'));
+                supplier_discount: function (attr_name, val) {
+                    return p.percent(val);
                 },
-                height: function (model, attr_name, val) {
-                    return model.persist(attr_name, p.dimensions(val, 'height'));
+                width: function (attr_name, val) {
+                    return p.dimensions(val, 'width');
+                },
+                height: function (attr_name, val) {
+                    return p.dimensions(val, 'height');
+                },
+                glazing_bar_width: function (attr_name, val) {
+                    return parseFloat(val);
                 }
             };
 
-            if ( setters_hash[column_name] ) {
-                setter = setters_hash[column_name];
+            if ( parsers_hash[column_name] ) {
+                parser = parsers_hash[column_name];
             } else {
-                setter = function (model, attr_name, val) {
-                    return model.persist(attr_name, val);
+                parser = function (attr_name, val) {
+                    return val;
                 };
             }
+
+            return parser.apply(this, arguments);
+        },
+        getSetterFunction: function (unit_model, column_name) {
+            var self = this;
+            var setter;
+
+            setter = function (model, attr_name, val) {
+                return model.persist(attr_name, self.getSetterParser(column_name, val));
+            };
 
             return setter.apply(this, arguments);
         },
@@ -295,6 +324,51 @@ var app = app || {};
                     self.getSetterFunction(unit_model, column_name, value);
                 }
             };
+        },
+        showValidationError: function (model, error) {
+            if ( this.hot && model.collection === this.getActiveTab().collection ) {
+                var hot = this.hot;
+                var self = this;
+
+                var row_index = model.collection.indexOf(model);
+                var col_index = _.indexOf(this.getActiveTab().columns, error.attribute_name);
+                var target_cell = hot.getCell(row_index, col_index);
+                var $target_cell = $(target_cell);
+
+                $target_cell.popover({
+                    container: 'body',
+                    title: 'Validation Error',
+                    content: error.error_message,
+                    trigger: 'manual'
+                });
+
+                $target_cell.popover('show');
+
+                setTimeout(function () {
+                    $target_cell.popover('destroy');
+                    hot.setCellMeta(row_index, col_index, 'valid', true);
+                    self.updateTable();
+                }, 5000);
+            }
+        },
+        getColumnValidator: function (column_name) {
+            var self = this;
+            var validator;
+
+            validator = function (value, callback) {
+                var attributes_object = {};
+                var model = this.instance.getSourceData().at(this.row);
+
+                attributes_object[column_name] = self.getSetterParser(column_name, value);
+
+                if ( !model.validate || !model.validate(attributes_object, { validate: true }) ) {
+                    callback(true);
+                } else {
+                    callback(false);
+                }
+            };
+
+            return validator;
         },
         getColumnExtraProperties: function (column_name) {
             var properties_obj = {};
@@ -343,6 +417,10 @@ var app = app || {};
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('price_usd')
                 },
+                unit_cost_discounted: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
+                },
                 subtotal_cost: {
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('price_usd')
@@ -384,7 +462,10 @@ var app = app || {};
                     source: this.options.extras.getExtrasTypes()
                 },
                 discount: {
-                    renderer: app.hot_renderers.getFormattedRenderer('discount')
+                    renderer: app.hot_renderers.getFormattedRenderer('percent')
+                },
+                supplier_discount: {
+                    renderer: app.hot_renderers.getFormattedRenderer('percent')
                 },
                 profile_name: {
                     type: 'dropdown',
@@ -431,12 +512,16 @@ var app = app || {};
                     source: app.settings.getGlazingBeadTypes()
                 },
                 glazing: {
-                    type: 'autocomplete',
-                    source: app.settings.getGlassOrPanelTypes()
+                    type: 'dropdown',
+                    source: app.settings.getAvailableFillingTypes().map(function (item) {
+                        return item.get('name');
+                    })
                 },
                 glazing_bar_width: {
                     type: 'autocomplete',
-                    source: app.settings.getGlazingBarWidths()
+                    source: app.settings.getGlazingBarWidths().map(function (item) {
+                        return item.toString();
+                    })
                 },
                 gasket_color: {
                     type: 'autocomplete',
@@ -448,11 +533,22 @@ var app = app || {};
                 lock_mechanism: {
                     renderer: app.hot_renderers.doorOnlyRenderer
                 },
+                opening_direction: {
+                    type: 'dropdown',
+                    source: app.settings.getOpeningDirections()
+                },
                 pipedrive_id: {
+                    readOnly: true
+                },
+                quote_date: {
+                    type: 'date',
+                    dateFormat: 'DD MMMM, YYYY',
+                    correctFormat: true
+                },
+                quote_number: {
                     readOnly: true
                 }
             };
-
 
             if ( format_hash[column_name] ) {
                 properties_obj = _.extend(properties_obj, format_hash[column_name]);
@@ -476,10 +572,10 @@ var app = app || {};
             var columns = [];
 
             _.each(this.getActiveTab().columns, function (column_name) {
-                var column_obj = _.extend({},
-                    { data: this.getColumnData(column_name) },
-                    this.getColumnExtraProperties(column_name)
-                );
+                var column_obj = _.extend({}, {
+                    data: this.getColumnData(column_name),
+                    validator: this.getColumnValidator(column_name)
+                }, this.getColumnExtraProperties(column_name));
 
                 columns.push(column_obj);
             }, this);
@@ -519,6 +615,7 @@ var app = app || {};
                 width_mm: 'Width (mm)',
                 height_mm: 'Height (mm)',
                 unit_cost: 'Unit Cost',
+                unit_cost_discounted: 'Unit Cost w/Disc.',
                 subtotal_cost: 'Subtotal Cost',
                 unit_price: 'Unit Price',
                 subtotal_price: 'Subtotal Price',
@@ -532,13 +629,20 @@ var app = app || {};
                 square_feet_price: 'Price per Sq.Ft',
                 square_feet_price_discounted: 'Price per Sq.Ft w/Disc.',
                 move_item: 'Move',
-                remove_item: ' '
+                remove_item: ' ',
+                quote_number: 'Quote Number'
             };
 
             return custom_column_headers_hash[column_name];
         },
-        updateTable: function () {
+        updateTable: function (e) {
             var self = this;
+
+            //  We don't want to update table on validation errors, we have
+            //  a special function for that
+            if ( e === 'invalid' ) {
+                return;
+            }
 
             if ( this.hot ) {
                 clearTimeout(this.table_update_timeout);
@@ -546,9 +650,13 @@ var app = app || {};
                     self.hot.render();
                 }, 20);
             }
+
+            this.appendPopovers();
         },
         onRender: function () {
             var self = this;
+            var dropdown_scroll_reset = false;
+
             var fixed_columns = ['mark', 'quantity', 'width', 'height', 'drawing'];
             var active_tab_columns = self.getActiveTab().columns;
             var fixed_columns_count = 0;
@@ -567,6 +675,10 @@ var app = app || {};
                     columns: self.getActiveTabColumnOptions(),
                     colHeaders: self.getActiveTabHeaders(),
                     rowHeaders: true,
+                    rowHeights: function () {
+                        return _.contains(self.getActiveTab().columns, 'drawing') ||
+                            _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
+                    },
                     trimDropdown: false,
                     maxRows: function () {
                         return self.getActiveTab().collection.length;
@@ -576,8 +688,21 @@ var app = app || {};
             }, 5);
 
             this.appendPopovers();
+
+            clearInterval(this.dropdown_scroll_timer);
+            this.dropdown_scroll_timer = setInterval(function () {
+                var editor = self.hot && self.hot.getActiveEditor();
+
+                if ( editor && editor.htContainer && !dropdown_scroll_reset ) {
+                    dropdown_scroll_reset = true;
+                    editor.htContainer.scrollIntoView(false);
+                } else {
+                    dropdown_scroll_reset = false;
+                }
+            }, 100);
         },
         onDestroy: function () {
+            clearInterval(this.dropdown_scroll_timer);
             this.$el.off('show.bs.popover');
             this.$el.popover('destroy');
 

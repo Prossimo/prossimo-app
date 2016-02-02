@@ -70,30 +70,49 @@ var app = app || {};
 
             _.each(sash_list_source, function (source_item, index) {
                 var sash_item = {};
-                var glass_size;
-                var glass_area;
+                var filling_size;
+                var filling_area;
                 var opening_size;
                 var opening_area;
+                var filling_type;
 
                 sash_item.name = 'Sash #' + (index + 1);
                 sash_item.type = source_item.type;
 
-                glass_size = this.options.show_sizes_in_mm ?
-                    f.dimensions_mm(source_item.glass.width, source_item.glass.height) :
-                    f.dimensions_in(c.mm_to_inches(source_item.glass.width), c.mm_to_inches(source_item.glass.height), 'fraction');
+                filling_size = this.options.show_sizes_in_mm ?
+                    f.dimensions_mm(source_item.filling.width, source_item.filling.height) :
+                    f.dimensions_in(
+                        c.mm_to_inches(source_item.filling.width),
+                        c.mm_to_inches(source_item.filling.height),
+                        'fraction'
+                    );
 
-                glass_area = this.options.show_sizes_in_mm ?
-                    f.square_meters(m.square_meters(source_item.glass.width, source_item.glass.height)) :
-                    f.square_feet(m.square_feet(c.mm_to_inches(source_item.glass.width),
-                        c.mm_to_inches(source_item.glass.height)), 2, 'sup');
+                filling_area = this.options.show_sizes_in_mm ?
+                    f.square_meters(m.square_meters(source_item.filling.width, source_item.filling.height)) :
+                    f.square_feet(m.square_feet(c.mm_to_inches(source_item.filling.width),
+                        c.mm_to_inches(source_item.filling.height)), 2, 'sup');
 
-                sash_item.glazing_type = source_item.glass.type;
-                sash_item.glazing_size = glass_size + ' (' + glass_area + ')';
+                sash_item.filling_is_glass = source_item.filling.type === 'glass';
+                sash_item.filling_name = source_item.filling.name;
+                sash_item.filling_size = filling_size + ' (' + filling_area + ')';
+
+                //  Show supplier name for filling if it exists
+                if ( this.options.show_supplier_filling_name && app.settings && sash_item.filling_name ) {
+                    filling_type = app.settings.getFillingTypeByName(sash_item.filling_name);
+
+                    if ( filling_type && filling_type.get('supplier_name') ) {
+                        sash_item.filling_name = filling_type.get('supplier_name');
+                    }
+                }
 
                 if ( source_item.opening.height && source_item.opening.width ) {
                     opening_size = this.options.show_sizes_in_mm ?
                         f.dimensions_mm(source_item.opening.width, source_item.opening.height) :
-                        f.dimensions_in(c.mm_to_inches(source_item.opening.width), c.mm_to_inches(source_item.opening.height), 'fraction');
+                        f.dimensions_in(
+                            c.mm_to_inches(source_item.opening.width),
+                            c.mm_to_inches(source_item.opening.height),
+                            'fraction'
+                        );
 
                     opening_area = this.options.show_sizes_in_mm ?
                         f.square_meters(m.square_meters(source_item.opening.width, source_item.opening.height)) :
@@ -158,6 +177,7 @@ var app = app || {};
                 mark: this.model.get('mark'),
                 description: this.getDescription(),
                 notes: this.model.get('notes'),
+                exceptions: this.model.get('exceptions'),
                 quantity: this.model.get('quantity'),
                 price: this.getPrices(),
                 customer_image: this.getCustomerImage(),

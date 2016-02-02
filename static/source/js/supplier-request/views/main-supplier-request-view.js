@@ -8,8 +8,8 @@ var app = app || {};
         className: 'screen supplier-request-screen',
         template: app.templates['supplier-request/main-supplier-request-view'],
         ui: {
-            '$header_container': '.supplier-request-header-container',
-            '$table_container': '.supplier-request-table-container'
+            $header_container: '.supplier-request-header-container',
+            $table_container: '.supplier-request-table-container'
         },
         onRender: function () {
             this.request_header_view = new app.SupplierRequestHeaderView({
@@ -22,7 +22,8 @@ var app = app || {};
                 extras: app.current_project.extras,
                 show_price: false,
                 show_sizes_in_mm: true,
-                show_supplier_system: true
+                show_supplier_system: true,
+                show_supplier_filling_name: true
             });
 
             this.ui.$header_container.append(this.request_header_view.render().el);

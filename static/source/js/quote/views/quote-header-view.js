@@ -10,9 +10,9 @@ var app = app || {};
         },
         serializeData: function () {
             return _.extend(this.serializeModel(this.model), {
-                quote_id: this.model.cid,
-                quote_date: '5 September, 2015',
-                quote_revision_id: '1'
+                quote_number: this.model.getQuoteNumber(),
+                quote_date: this.model.get('quote_date'),
+                quote_revision_id: this.model.get('quote_revision')
             });
         }
     });

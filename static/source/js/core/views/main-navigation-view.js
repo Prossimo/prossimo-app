@@ -7,7 +7,7 @@ var app = app || {};
         tagName: 'div',
         template: app.templates['core/main-navigation-view'],
         ui: {
-            '$list': 'ul'
+            $list: 'ul'
         },
         events: {
             'click .sidebar-nav a': 'onNavigationClick'
@@ -74,6 +74,7 @@ var app = app || {};
                     item.class_name = key;
                     var item_tpl = app.templates['core/main-navigation-item-view'](item);
                     var $item = $(item_tpl);
+
                     this.ui.$list.append($item);
                 }, this);
             }

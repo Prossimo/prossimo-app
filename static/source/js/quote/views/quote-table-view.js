@@ -9,8 +9,8 @@ var app = app || {};
         childViewContainer: '.quote-table-body',
         reorderOnSort: true,
         ui: {
-            '$extras_table_container': '.quote-extras-table-container',
-            '$optional_extras_table_container': '.quote-optional-extras-table-container'
+            $extras_table_container: '.quote-extras-table-container',
+            $optional_extras_table_container: '.quote-optional-extras-table-container'
         },
         childViewOptions: function () {
             return {
@@ -19,7 +19,8 @@ var app = app || {};
                 show_price: this.options.show_price,
                 show_outside_units_view: this.options.show_outside_units_view,
                 show_sizes_in_mm: this.options.show_sizes_in_mm,
-                show_supplier_system: this.options.show_supplier_system
+                show_supplier_system: this.options.show_supplier_system,
+                show_supplier_filling_name: this.options.show_supplier_filling_name
             };
         },
         getTotalPrices: function () {

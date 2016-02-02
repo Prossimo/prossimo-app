@@ -5,15 +5,15 @@ var app = app || {};
 
     //  See `core/views/units-table-view.js` for reference, it's similar
     //  and better commented, this file borrows a lot from there
-    app.ProfilesTableView = Marionette.ItemView.extend({
+    app.FillingTypesTableView = Marionette.ItemView.extend({
         tagName: 'div',
-        className: 'profiles-table',
-        template: app.templates['settings/profiles-table-view'],
+        className: 'filling-types-table',
+        template: app.templates['settings/filling-types-table-view'],
         ui: {
-            $hot_container: '.profiles-handsontable-container'
+            $hot_container: '.filling-types-handsontable-container'
         },
         events: {
-            'click .js-add-new-profile': 'addNewProfile',
+            'click .js-add-new-filling-type': 'addNewFillingType',
             'click .js-remove-item': 'onRemoveItem',
             'click .js-move-item-up': 'onMoveItemUp',
             'click .js-move-item-down': 'onMoveItemDown'
@@ -22,22 +22,18 @@ var app = app || {};
             this.table_update_timeout = null;
             this.dropdown_scroll_timer = null;
             this.columns = [
-                'name', 'unit_type', 'system', 'supplier_system', 'frame_width', 'mullion_width',
-                'sash_frame_width', 'sash_frame_overlap', 'sash_mullion_overlap',
-                'frame_corners', 'sash_corners', 'low_threshold', 'threshold_width',
-                'frame_u_value', 'visible_frame_width_fixed', 'visible_frame_width_operable',
-                'spacer_thermal_bridge_value', 'move_item', 'remove_item'
+                'name', 'supplier_name', 'type', 'move_item', 'remove_item'
             ];
 
             this.listenTo(this.collection, 'invalid', this.showValidationError);
             this.listenTo(this.collection, 'all', this.updateTable);
             this.listenTo(this.options.parent_view, 'attach', this.updateTable);
         },
-        addNewProfile: function (e) {
-            var new_profile = new app.Profile();
+        addNewFillingType: function (e) {
+            var new_type = new app.FillingType();
 
             e.stopPropagation();
-            this.collection.add(new_profile);
+            this.collection.add(new_type);
         },
         onRemoveItem: function (e) {
             var target_row = $(e.target).data('row');
@@ -45,7 +41,10 @@ var app = app || {};
 
             if ( this.hot ) {
                 target_object = this.hot.getSourceData().at(target_row);
-                target_object.destroy();
+
+                if ( !target_object.get('is_base_type') ) {
+                    target_object.destroy();
+                }
             }
         },
         onMoveItemUp: function (e) {
@@ -66,43 +65,25 @@ var app = app || {};
                 this.hot.getSourceData().moveItemDown(target_object);
             }
         },
-        getGetterFunction: function (profile_model, column_name) {
-            var getter;
-
-            var getters_hash = {
-                visible_frame_width_fixed: function (model) {
-                    return model.getVisibleFrameWidthFixed();
-                },
-                visible_frame_width_operable: function (model) {
-                    return model.getVisibleFrameWidthOperable();
-                }
-            };
-
-            if ( getters_hash[column_name] ) {
-                getter = getters_hash[column_name];
-            } else {
-                getter = function (model, attr_name) {
-                    return model.get(attr_name);
-                };
-            }
-
-            return getter.apply(this, arguments);
-        },
         getColumnData: function (column_name) {
-            var self = this;
+            var getter;
             var setter;
+
+            getter = function (model, attr_name) {
+                return model.get(attr_name);
+            };
 
             setter = function (model, attr_name, val) {
                 return model.persist(attr_name, val);
             };
 
-            return function (profile_model, value) {
-                if ( profile_model ) {
+            return function (filling_type_model, value) {
+                if ( filling_type_model ) {
                     if ( _.isUndefined(value) ) {
-                        return self.getGetterFunction(profile_model, column_name);
+                        return getter(filling_type_model, column_name);
                     }
 
-                    setter(profile_model, column_name, value);
+                    setter(filling_type_model, column_name, value);
                 }
             };
         },
@@ -163,26 +144,19 @@ var app = app || {};
                 }
             }
 
-            var format_hash = {
-                frame_width: { format: '0,0[.]00' },
-                mullion_width: { format: '0,0[.]00' },
-                sash_frame_width: { format: '0,0[.]00' },
-                sash_frame_overlap: { format: '0,0[.]00' },
-                sash_mullion_overlap: { format: '0,0[.]00' },
-                frame_u_value: { format: '0,0[.]00' },
-                spacer_thermal_bridge_value: { format: '0,0[.]00' }
-            };
-
             var properties_hash = {
-                unit_type: {
+                name: {
+                    renderer: app.hot_renderers.fillingTypeRenderer
+                },
+                supplier_name: {
+                    renderer: app.hot_renderers.fillingTypeRenderer
+                },
+                type: {
                     type: 'dropdown',
-                    source: this.collection.getUnitTypes()
-                },
-                low_threshold: {
-                    renderer: app.hot_renderers.thresholdCheckboxRenderer
-                },
-                threshold_width: {
-                    renderer: app.hot_renderers.thresholdWidthRenderer
+                    renderer: app.hot_renderers.fillingTypeDropdownRenderer,
+                    source: _.map(this.collection.getBaseTypes(), function (item) {
+                        return item.name;
+                    }, this)
                 },
                 move_item: {
                     readOnly: true,
@@ -191,36 +165,8 @@ var app = app || {};
                 remove_item: {
                     readOnly: true,
                     renderer: app.hot_renderers.removeItemRenderer
-                },
-                system: {
-                    type: 'autocomplete',
-                    source: app.settings.getSystems()
-                },
-                supplier_system: {
-                    type: 'autocomplete',
-                    source: app.settings.getSupplierSystems()
-                },
-                frame_corners: {
-                    type: 'autocomplete',
-                    source: app.settings.getFrameCornerTypes()
-                },
-                sash_corners: {
-                    type: 'autocomplete',
-                    source: app.settings.getSashCornerTypes()
-                },
-                visible_frame_width_fixed: {
-                    readOnly: true,
-                    renderer: app.hot_renderers.getFormattedRenderer('fixed_minimal')
-                },
-                visible_frame_width_operable: {
-                    readOnly: true,
-                    renderer: app.hot_renderers.getFormattedRenderer('fixed_minimal')
                 }
             };
-
-            if ( format_hash[column_name] ) {
-                properties_obj = _.extend(properties_obj, format_hash[column_name]);
-            }
 
             if ( properties_hash[column_name] ) {
                 properties_obj = _.extend(properties_obj, properties_hash[column_name]);
@@ -265,8 +211,6 @@ var app = app || {};
         },
         getCustomColumnHeader: function (column_name) {
             var custom_column_headers_hash = {
-                visible_frame_width_fixed: 'Visible Frame Width Fixed',
-                visible_frame_width_operable: 'Visible Frame Width Operable',
                 move_item: 'Move',
                 remove_item: ' '
             };
@@ -295,16 +239,6 @@ var app = app || {};
             var self = this;
             var dropdown_scroll_reset = false;
 
-            var fixed_columns = ['name', 'unit_type', 'system'];
-            var active_tab_columns = this.columns;
-            var fixed_columns_count = 0;
-
-            _.each(fixed_columns, function (column) {
-                if ( _.indexOf(active_tab_columns, column) !== -1 ) {
-                    fixed_columns_count += 1;
-                }
-            });
-
             if ( this.collection.length ) {
                 //  We use setTimeout because we want to wait until flexbox
                 //  sizes are calculated properly
@@ -316,11 +250,9 @@ var app = app || {};
                             colHeaders: self.getColumnHeaders(),
                             rowHeaders: true,
                             trimDropdown: false,
-                            rowHeights: 25,
                             maxRows: function () {
                                 return self.collection.length;
-                            },
-                            fixedColumnsLeft: fixed_columns_count
+                            }
                         });
                     }
                 }, 50);

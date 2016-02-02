@@ -51,7 +51,7 @@ var app = app || {};
                 dimension: function () {
                     return f.dimension.apply(this, arguments);
                 },
-                discount: function () {
+                percent: function () {
                     return f.percent.apply(this, arguments);
                 },
                 fixed_minimal: function () {
@@ -74,7 +74,9 @@ var app = app || {};
 
                 Handsontable.renderers.TextRenderer.apply(this, arguments);
 
-                if ( _.indexOf(['dimension', 'discount', 'fixed_minimal', 'fixed', 'price_usd'], attr_name) !== -1 ) {
+                if ( _.indexOf(['dimension', 'percent', 'fixed_minimal', 'fixed',
+                        'price_usd'], attr_name) !== -1
+                ) {
                     $td.addClass('htNumeric');
                 }
 
@@ -153,13 +155,29 @@ var app = app || {};
         },
         doorOnlyRenderer: function (instance, td, row, col) {
             var is_editable = instance.getSourceData().at(row) &&
-                instance.getSourceData().at(row).areDoorOnlyAttributesEditable();
+                instance.getSourceData().at(row).isDoorType();
 
             if ( is_editable ) {
                 instance.setCellMeta(row, col, 'readOnly', false);
                 Handsontable.renderers.TextRenderer.apply(this, arguments);
             } else {
                 instance.setCellMeta(row, col, 'readOnly', true);
+                $(td).addClass('htDimmed').text('--');
+            }
+
+            return td;
+        },
+        // doorOnlyDropdownRenderer: function (instance, td, row, col, prop, value, cellProperties) {
+        doorOnlyDropdownRenderer: function (instance, td, row, col) {
+            var is_editable = instance.getSourceData().at(row) &&
+                instance.getSourceData().at(row).isDoorType();
+
+            if ( is_editable ) {
+                instance.setCellMeta(row, col, 'readOnly', false);
+                Handsontable.renderers.AutocompleteRenderer.apply(this, arguments);
+            } else {
+                instance.setCellMeta(row, col, 'readOnly', true);
+                Handsontable.renderers.TextRenderer.apply(this, arguments);
                 $(td).addClass('htDimmed').text('--');
             }
 
@@ -176,6 +194,37 @@ var app = app || {};
             }
 
             Handsontable.renderers.TextRenderer.apply(this, arguments);
+
+            return td;
+        },
+        //  Disable editing for base filling types
+        fillingTypeRenderer: function (instance, td, row, col) {
+            var is_base_type = instance.getSourceData().at(row) &&
+                instance.getSourceData().at(row).get('is_base_type');
+
+            if ( is_base_type ) {
+                instance.setCellMeta(row, col, 'readOnly', true);
+                $(td).addClass('htDimmed');
+            } else {
+                instance.setCellMeta(row, col, 'readOnly', false);
+            }
+
+            Handsontable.renderers.TextRenderer.apply(this, arguments);
+
+            return td;
+        },
+        fillingTypeDropdownRenderer: function (instance, td, row, col) {
+            var is_base_type = instance.getSourceData().at(row) &&
+                instance.getSourceData().at(row).get('is_base_type');
+
+            if ( is_base_type ) {
+                instance.setCellMeta(row, col, 'readOnly', true);
+                $(td).addClass('htDimmed');
+            } else {
+                instance.setCellMeta(row, col, 'readOnly', false);
+            }
+
+            Handsontable.renderers.AutocompleteRenderer.apply(this, arguments);
 
             return td;
         }

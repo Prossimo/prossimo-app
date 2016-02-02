@@ -1,3 +1,5 @@
+<button class="js-sidebar-toggle sidebar-toggle glyphicon glyphicon-forward"></button>
+
 <h3>Select unit</h3>
 
 <div class="unit-selector-controls">
@@ -66,18 +68,20 @@
                 </tr>
                 {{#if opening_size }}
                 <tr>
-                    <td class="title">Clear Opening</td>
+                    <td class="title">Clear Opening / Ventilation Area</td>
                     <td class="value">{{{ opening_size }}}</td>
                 </tr>
                 {{/if}}
                 <tr>
-                    <td class="title">Glazing/Panel</td>
-                    <td class="value">{{ glazing_type }}</td>
+                    <td class="title">{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}</td>
+                    <td class="value">{{ filling_name }}</td>
                 </tr>
+                {{#if filling_is_glass }}
                 <tr>
-                    <td class="title">Glazing/Panel Visible Size</td>
-                    <td class="value">{{{ glazing_size }}}</td>
+                    <td class="title">Total Daylight</td>
+                    <td class="value">{{{ filling_size }}}</td>
                 </tr>
+                {{/if}}
             </tbody>
         </table>
         {{/each}}

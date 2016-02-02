@@ -20,11 +20,7 @@ var app = app || {};
     ];
     var GLAZING_BEAD_TYPES = ['Rounded', 'Square'];
     var GLAZING_BAR_WIDTHS = [12, 22, 44];
-    var GLASS_OR_PANEL_TYPES = [
-        'Triple Standard - Ug=.09 SGHC=.50 LT=71%', 'Triple Tempered',
-        'Triple Low Gain', 'Triple Low Gain Tempered', 'Triple High Gain',
-        'Triple High Gain Tempered', 'Triple Standard-Outer Frosted', 'Triple Tempered-Outer Frosted'
-    ];
+    var OPENING_DIRECTIONS = ['Inward', 'Outward'];
 
     //  --------------------------------------------------------------------
     //  That's what we use for Profiles
@@ -85,7 +81,18 @@ var app = app || {};
                 api_base_path: this.get('api_base_path')
             });
 
+            this.filling_types = new app.FillingTypeCollection(null, {
+                api_base_path: this.get('api_base_path')
+            });
+
             this.profiles.fetch({
+                remove: false,
+                data: {
+                    limit: 0
+                }
+            });
+
+            this.filling_types.fetch({
                 remove: false,
                 data: {
                     limit: 0
@@ -118,8 +125,18 @@ var app = app || {};
                 return item.get('name');
             });
         },
+        getFillingTypeById: function (cid) {
+            return this.filling_types.get(cid);
+        },
+        getFillingTypeByName: function (name) {
+            return this.filling_types.findWhere({ name: name });
+        },
+        getAvailableFillingTypes: function () {
+            return this.filling_types.models;
+        },
         getProfileByNameOrNew: function (profile_name) {
             var profile = this.profiles.findWhere({name: profile_name});
+
             return profile ? profile : new app.Profile();
         },
         getDefaultProfileName: function () {
@@ -149,9 +166,6 @@ var app = app || {};
         getGlazingBarWidths: function () {
             return GLAZING_BAR_WIDTHS;
         },
-        getGlassOrPanelTypes: function () {
-            return GLASS_OR_PANEL_TYPES;
-        },
         getSystems: function () {
             return SYSTEMS;
         },
@@ -163,6 +177,9 @@ var app = app || {};
         },
         getSashCornerTypes: function () {
             return CORNER_TYPES;
+        },
+        getOpeningDirections: function () {
+            return OPENING_DIRECTIONS;
         }
     });
 })();

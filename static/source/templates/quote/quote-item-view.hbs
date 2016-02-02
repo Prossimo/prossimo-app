@@ -27,14 +27,15 @@
                 {{/each}}
             </ul>
             {{#if notes }}<p class="notes"><strong>{{ notes }}</strong></p>{{/if}}
+            {{#if exceptions }}<p class="exceptions"><strong>{{ exceptions }}</strong></p>{{/if}}
             <ul>
                 {{#each description.sashes }}
                 <li class="opening">
                     <h6>{{ name }}:</h6>
                     <p><strong>Type:</strong> <span>{{ type }}</span></p>
-                    {{#if opening_size }}<p><strong>Clear Opening:</strong> <span>{{{ opening_size }}} </span></p>{{/if}}
-                    {{#if glazing_type }}<p><strong>Glazing/Panel:</strong> <span>{{ glazing_type }}</span></p>{{/if}}
-                    <p><strong>Glazing/Panel Visible Size:</strong> <span>{{{ glazing_size }}}</span></p>
+                    {{#if opening_size }}<p><strong>Clear Opening / Ventilation Area:</strong> <span>{{{ opening_size }}} </span></p>{{/if}}
+                    {{#if filling_name}}<p><strong>{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}:</strong> <span>{{ filling_name }}</span></p>{{/if}}
+                    {{#if filling_is_glass }}<p><strong>Total Daylight:</strong> <span>{{{ filling_size }}}</span></p>{{/if}}
                 </li>
                 {{/each}}
             </ul>

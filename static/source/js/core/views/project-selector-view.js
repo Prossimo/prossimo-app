@@ -8,7 +8,7 @@ var app = app || {};
         className: 'project-selector',
         template: app.templates['core/project-selector-view'],
         ui: {
-            '$select': '.selectpicker'
+            $select: '.selectpicker'
         },
         events: {
             'change @ui.$select': 'onChange',
@@ -34,6 +34,7 @@ var app = app || {};
         },
         onChange: function () {
             var new_id = this.ui.$select.val();
+
             this.setCurrentProject(new_id);
         },
         onAddNewLocalProject: function () {

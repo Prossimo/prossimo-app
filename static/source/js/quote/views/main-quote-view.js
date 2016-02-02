@@ -8,8 +8,8 @@ var app = app || {};
         className: 'screen quote-screen',
         template: app.templates['quote/main-quote-view'],
         ui: {
-            '$header_container': '.quote-header-container',
-            '$table_container': '.quote-table-container'
+            $header_container: '.quote-header-container',
+            $table_container: '.quote-table-container'
         },
         onRender: function () {
             this.units_table_view = new app.UnitsTableView({

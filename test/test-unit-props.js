@@ -1,6 +1,7 @@
 /* global app */
 /* eslint-env qunit */
-/* eslint strict:0  */
+/* eslint strict:0 */
+/* eslint max-statements:0 */
 
 var c = app.utils.convert;
 app.no_backend = true;
@@ -71,7 +72,7 @@ test('find sash border offsets', function() {
     unit.splitSection(id, 'vertical');
     var rootSection = unit.generateFullRoot();
     var leftSection = rootSection.sections[0];
-    equal(leftSection.mullionEdges.right, true);
+    equal(leftSection.mullionEdges.right, 'vertical');
     equal(leftSection.mullionEdges.left, undefined);
     equal(leftSection.mullionEdges.top, undefined);
     equal(leftSection.mullionEdges.bottom, undefined);
@@ -84,13 +85,13 @@ test('find sash border offsets', function() {
     var bottomSection = rootSection.sections[1].sections[1];
 
     equal(topSection.mullionEdges.right, undefined);
-    equal(topSection.mullionEdges.left, true);
+    equal(topSection.mullionEdges.left, 'vertical');
     equal(topSection.mullionEdges.top, undefined);
-    equal(topSection.mullionEdges.bottom, true);
+    equal(topSection.mullionEdges.bottom, 'horizontal');
 
     equal(bottomSection.mullionEdges.right, undefined);
-    equal(bottomSection.mullionEdges.left, true);
-    equal(bottomSection.mullionEdges.top, true);
+    equal(bottomSection.mullionEdges.left, 'vertical');
+    equal(bottomSection.mullionEdges.top, 'horizontal');
     equal(bottomSection.mullionEdges.bottom, undefined);
 });
 
@@ -98,6 +99,7 @@ test('find sash border offsets', function() {
 //  We use values in mms because that's what was used in the reference project.
 //  If we use values in inches, there's a noticeable margin of error
 test('Size calculations for Unit #010 from 377 E 10th project', function () {
+    var sash_list;
     var unit = new app.Unit({
         width: c.mm_to_inches(1067),
         height: c.mm_to_inches(1194)
@@ -120,6 +122,15 @@ test('Size calculations for Unit #010 from 377 E 10th project', function () {
     //  Glass 1
     equal(target_sizes.glasses[0].width, unit.getSizes().glasses[0].width, 'Glass 1 width equals calculated width');
     equal(target_sizes.glasses[0].height, unit.getSizes().glasses[0].height, 'Glass 1 height equals calculated height');
+
+    //  Check that list of sashes is correct
+    sash_list = unit.getSashList();
+
+    equal(sash_list.length, 1, 'The number of sashes is expected to be 1');
+    equal(sash_list[0].type, 'Fixed', 'Sash type is expected to be Fixed');
+    equal(sash_list[0].filling.type, 'glass', 'Sash filling type is expected to be glass');
+    equal(sash_list[0].filling.width, target_sizes.glasses[0].width, 'Sash filling width equals Glass 1 width');
+    equal(sash_list[0].filling.height, target_sizes.glasses[0].height, 'Sash filling height equals Glass 1 height');
 });
 
 
@@ -127,6 +138,7 @@ test('Size calculations for Unit #010 from 377 E 10th project', function () {
 test('Size calculations for Unit #001 from 377 E 10th project', function () {
     //  1 millimeter difference is possible
     var margin_of_error = 1;
+    var sash_list;
 
     var unit = new app.Unit({
         width: c.mm_to_inches(1676),
@@ -215,8 +227,8 @@ test('Size calculations for Unit #001 from 377 E 10th project', function () {
     var top_right_section = full_root.sections[1].sections[0];
     var bottom_right_section = full_root.sections[1].sections[1];
 
-    unit.setSectionSashType(top_right_section.id, 'tilt_turn_left');
-    unit.setSectionSashType(bottom_right_section.id, 'turn_only_left');
+    unit.setSectionSashType(top_right_section.id, 'tilt_turn_right');
+    unit.setSectionSashType(bottom_right_section.id, 'turn_only_right');
 
     //  Glass 3
     equal(Math.abs(target_sizes.glasses[0].width - unit.getSizes().glasses[2].width) < margin_of_error,
@@ -239,6 +251,26 @@ test('Size calculations for Unit #001 from 377 E 10th project', function () {
         true, 'Opening 2 width equals calculated width');
     equal(Math.abs(target_sizes.openings[1].height - unit.getSizes().openings[1].height) < margin_of_error,
         true, 'Opening 2 height equals calculated height');
+
+
+    //  Check that list of sashes is correct
+    sash_list = unit.getSashList();
+
+    equal(sash_list.length, 4, 'The number of sashes is expected to be 4');
+    equal(sash_list[0].type, 'Tilt-turn Right Hinge', 'Sash type is expected to be Tilt-turn Right Hinge');
+    equal(sash_list[0].filling.type, 'glass', 'Sash filling type is expected to be glass');
+
+    //  Sash 1 glass
+    equal(Math.abs(sash_list[0].filling.width - target_sizes.glasses[0].width) < margin_of_error,
+        true, 'Sash 1 glass width equals calculated width');
+    equal(Math.abs(sash_list[0].filling.height - target_sizes.glasses[0].height) < margin_of_error,
+        true, 'Sash 1 glass height equals calculated height');
+
+    //  Sash 1 opening
+    equal(Math.abs(sash_list[0].opening.width - target_sizes.openings[0].width) < margin_of_error,
+        true, 'Sash 3 opening width equals calculated width');
+    equal(Math.abs(sash_list[0].opening.height - target_sizes.openings[0].height) < margin_of_error,
+        true, 'Sash 3 opening height equals calculated height');
 });
 
 
@@ -246,6 +278,7 @@ test('Size calculations for Unit #001 from 377 E 10th project', function () {
 test('Size calculations for Unit #013 from 377 E 10th project', function () {
     //  1 millimeter difference is possible
     var margin_of_error = 1;
+    var sash_list;
 
     var unit = new app.Unit({
         width: c.mm_to_inches(711),
@@ -319,4 +352,49 @@ test('Size calculations for Unit #013 from 377 E 10th project', function () {
         true, 'Glass 2 width equals calculated width');
     equal(Math.abs(target_sizes.glasses[0].height - unit.getSizes().glasses[1].height) < margin_of_error,
         true, 'Glass 2 height equals calculated height');
+
+
+    //  Check that list of sashes is correct
+    sash_list = unit.getSashList();
+
+    equal(sash_list.length, 2, 'The number of sashes is expected to be 2');
+
+    //  Sash 1
+    equal(sash_list[0].type, 'Tilt-turn Left Hinge', 'Sash type is expected to be Tilt-turn Left Hinge');
+    equal(sash_list[0].filling.type, 'glass', 'Sash filling type is expected to be glass');
+
+    //  Sash 1 glass
+    equal(Math.abs(sash_list[0].filling.width - target_sizes.glasses[1].width) < margin_of_error,
+        true, 'Sash 1 glass width equals calculated width');
+    equal(Math.abs(sash_list[0].filling.height - target_sizes.glasses[1].height) < margin_of_error,
+        true, 'Sash 1 glass height equals calculated height');
+
+    //  Sash 1 opening
+    equal(Math.abs(sash_list[0].opening.width - target_sizes.openings[1].width) < margin_of_error,
+        true, 'Sash 1 opening width equals calculated width');
+    equal(Math.abs(sash_list[0].opening.height - target_sizes.openings[1].height) < margin_of_error,
+        true, 'Sash 1 opening height equals calculated height');
+
+    //  Sash 2
+    equal(sash_list[1].type, 'Turn Only Left Hinge', 'Sash type is expected to be Turn Only Left Hinge');
+    equal(sash_list[1].filling.type, 'glass', 'Sash filling type is expected to be glass');
+
+    //  Sash 2 glass
+    equal(Math.abs(sash_list[1].filling.width - target_sizes.glasses[0].width) < margin_of_error,
+        true, 'Sash 1 glass width equals calculated width');
+    equal(Math.abs(sash_list[1].filling.height - target_sizes.glasses[0].height) < margin_of_error,
+        true, 'Sash 1 glass height equals calculated height');
+
+    //  Sash 2 opening
+    equal(Math.abs(sash_list[1].opening.width - target_sizes.openings[0].width) < margin_of_error,
+        true, 'Sash 1 opening width equals calculated width');
+    equal(Math.abs(sash_list[1].opening.height - target_sizes.openings[0].height) < margin_of_error,
+        true, 'Sash 1 opening height equals calculated height');
+
+    //  Now check that default filling type could be changed successfully
+    unit.setFillingType(unit.get('root_section').id, 'recessed', 'Recessed');
+    sash_list = unit.getSashList();
+
+    equal(sash_list[0].filling.type, 'recessed', 'Sash filling type is expected to be recessed');
+    equal(sash_list[1].filling.type, 'recessed', 'Sash filling type is expected to be recessed');
 });
