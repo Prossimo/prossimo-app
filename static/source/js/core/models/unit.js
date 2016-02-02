@@ -167,16 +167,34 @@ var app = app || {};
                 this.on('change:glazing', this.setDefaultFillingType, this);
             }
         },
-        //  TODO: this function should be called on model init (maybe not only)
+        //  TODO: this function should be improved
+        //  The idea is to call this function on model init (maybe not only)
         //  and check whether root section could be used by drawing code or
         //  should it be reset to defaults.
-        //  TODO: It doesn't validate anything currently, we have to fix it
         validateRootSection: function () {
             if ( _.isString(this.get('root_section')) ) {
                 this.set('root_section', JSON.parse(this.get('root_section')));
+                this.set('root_section', this.validateSection(this.get('root_section')));
             } else if ( !_.isObject(this.get('root_section')) ) {
                 this.set('root_section', this.getDefaultValue('root_section'));
             }
+        },
+        //  Check if some of the section values aren't valid and try to fix that
+        validateSection: function (current_section) {
+            //  Replace deprecated sash types with more adequate values
+            if ( current_section.sashType === 'flush-turn-left' ) {
+                current_section.sashType = 'turn_only_left';
+                current_section.fillingType = 'full-flush-panel';
+            } else if ( current_section.sashType === 'flush-turn-right' ) {
+                current_section.sashType = 'turn_only_right';
+                current_section.fillingType = 'full-flush-panel';
+            }
+
+            _.each(current_section.sections, function (section) {
+                section = this.validateSection(section);
+            }, this);
+
+            return current_section;
         },
         validate: function (attributes, options) {
             var error_obj = null;
