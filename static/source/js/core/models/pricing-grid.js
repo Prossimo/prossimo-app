@@ -3,17 +3,17 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var PRICING_TABLE_PROPERTIES = [
+    var PRICING_GRID_PROPERTIES = [
         // { name: 'name', title: 'Name', type: 'string' },
         { name: 'rows_number', title: 'Number of Rows', type: 'number' },
         { name: 'columns_number', title: 'Number of Columns', type: 'number' }
     ];
 
-    app.Profile = Backbone.Model.extend({
+    app.PricingGrid = Backbone.Model.extend({
         defaults: function () {
             var defaults = {};
 
-            _.each(PRICING_TABLE_PROPERTIES, function (item) {
+            _.each(PRICING_GRID_PROPERTIES, function (item) {
                 defaults[item.name] = this.getDefaultValue(item.name, item.type);
             }, this);
 
@@ -70,10 +70,10 @@ var app = app || {};
             var name_title_hash = [];
 
             if ( !names ) {
-                names = _.pluck( PRICING_TABLE_PROPERTIES, 'name' );
+                names = _.pluck( PRICING_GRID_PROPERTIES, 'name' );
             }
 
-            _.each(PRICING_TABLE_PROPERTIES, function (item) {
+            _.each(PRICING_GRID_PROPERTIES, function (item) {
                 if ( _.indexOf(names, item.name) !== -1 ) {
                     name_title_hash.push({ name: item.name, title: item.title, type: item.type });
                 }
