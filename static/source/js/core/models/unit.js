@@ -951,78 +951,50 @@ var app = app || {};
             return result;
         },
         getSecionsListWithEstimatedPrices: function () {
-            //  TODO: obtain pricing tier data from profile
-            //  Not sorted by size
-            var fixed_area_pricing_tiers = [
-                {
-                    size: 100 * 100,
-                    price_per_square_meter: 50
-                },
-                {
-                    size: 3000 * 3000,
-                    price_per_square_meter: 75
-                },
-                {
-                    size: 914 * 1514,
-                    price_per_square_meter: 60
-                }
-            ];
-
-            //  Not sorted by size
-            var operable_area_pricing_tiers = [
-                {
-                    size: 914 * 1514,
-                    price_per_square_meter: 68
-                },
-                {
-                    size: 100 * 100,
-                    price_per_square_meter: 55
-                },
-                {
-                    size: 3000 * 3000,
-                    price_per_square_meter: 90
-                }
-            ];
-
+            var pricing_grids = this.profile.getPricingGrids();
             var sections_list = this.getFixedAndOperableSectionsList();
 
+            function getArea(item) {
+                return item.height * item.width;
+            }
+
             //  How this algorithm works:
-            //  1. sort pricing grid by area size value
+            //  1. grids are already sorted by area size
             //  2. if our size < lowest size, price = lowest size price
             //  3. if our size > largest size, price = largest size price
             //  4. if our size === some size, price = some size price
             //  5. if our size > some size and < some other size, price is
             //  linear interpolation between prices for these sizes
             _.each(sections_list, function (section) {
-                var section_area = section.width * section.height;
+                var section_area = getArea(section);
                 var pricing_grid;
 
                 section.price_per_square_meter = 0;
 
                 if ( section.type === 'operable' ) {
-                    pricing_grid = _.sortBy(operable_area_pricing_tiers, 'size');
+                    pricing_grid = pricing_grids.operable;
                 } else {
-                    pricing_grid = _.sortBy(fixed_area_pricing_tiers, 'size');
+                    pricing_grid = pricing_grids.fixed;
                 }
 
                 if ( pricing_grid.length ) {
-                    if ( section_area < pricing_grid[0].size ) {
+                    if ( section_area < getArea(pricing_grid[0]) ) {
                         section.price_per_square_meter = pricing_grid[0].price_per_square_meter;
-                    } else if ( section_area > pricing_grid[pricing_grid.length - 1].size ) {
+                    } else if ( section_area > getArea(pricing_grid[pricing_grid.length - 1]) ) {
                         section.price_per_square_meter = pricing_grid[pricing_grid.length - 1].price_per_square_meter;
                     } else {
                         _.some(pricing_grid, function (pricing_tier, tier_index) {
-                            if ( section_area === pricing_tier.size ) {
+                            if ( section_area === getArea(pricing_tier) ) {
                                 section.price_per_square_meter = pricing_tier.price_per_square_meter;
                                 return true;
                             } else if ( pricing_grid[tier_index + 1] &&
-                                section_area < pricing_grid[tier_index + 1].size &&
-                                section_area > pricing_tier.size
+                                section_area < getArea(pricing_grid[tier_index + 1]) &&
+                                section_area > getArea(pricing_tier)
                             ) {
                                 section.price_per_square_meter = app.utils.math.linear_interpolation(
                                     section_area,
-                                    pricing_tier.size,
-                                    pricing_grid[tier_index + 1].size,
+                                    getArea(pricing_tier),
+                                    getArea(pricing_grid[tier_index + 1]),
                                     pricing_tier.price_per_square_meter,
                                     pricing_grid[tier_index + 1].price_per_square_meter
                                 );

@@ -202,6 +202,55 @@ var app = app || {};
         getVisibleFrameWidthOperable: function () {
             return parseFloat(this.get('frame_width')) + parseFloat(this.get('sash_frame_width')) -
                 parseFloat(this.get('sash_frame_overlap'));
+        },
+        //  Returns grids sorted by area size
+        getPricingGrids: function () {
+            return {
+                fixed: _.sortBy([
+                    {
+                        title: 'Small',
+                        height: 100,
+                        width: 100,
+                        price_per_square_meter: 50
+                    },
+                    {
+                        title: 'Large',
+                        height: 3000,
+                        width: 3000,
+                        price_per_square_meter: 75
+                    },
+                    {
+                        title: 'Medium',
+                        height: 914,
+                        width: 1514,
+                        price_per_square_meter: 60
+                    }
+                ], function (item) {
+                    return item.width * item.height;
+                }),
+                operable: _.sortBy([
+                    {
+                        title: 'Medium',
+                        height: 914,
+                        width: 1514,
+                        price_per_square_meter: 68
+                    },
+                    {
+                        title: 'Small',
+                        height: 100,
+                        width: 100,
+                        price_per_square_meter: 55
+                    },
+                    {
+                        title: 'Large',
+                        height: 3000,
+                        width: 3000,
+                        price_per_square_meter: 90
+                    }
+                ], function (item) {
+                    return item.width * item.height;
+                })
+            };
         }
     });
 })();
