@@ -796,7 +796,7 @@ var app = app || {};
                 fillHeight = sectionData.glassParams.height;
             }
 
-            var isFlushType =
+            var isFlushType = sectionData.fillingType &&
                 sectionData.fillingType.indexOf('flush') >= 0;
 
             if (sectionData.sashType !== 'fixed_in_frame') {

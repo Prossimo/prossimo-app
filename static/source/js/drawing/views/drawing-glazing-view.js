@@ -5,6 +5,7 @@ var app = app || {};
 
     // global variables
     var metricSize = 50;
+    var minimalGap = 10; // minimal gap between bars
 
     app.DrawingGlazingPopup = Marionette.ItemView.extend({
         className: 'drawing-glazing-popup',
@@ -20,41 +21,39 @@ var app = app || {};
             $drawing: '.modal-drawing',
             $bar_controlls: '.glazing-bars-controlls',
             $bar_vertical: '#vertical-bars-number',
-            $bar_horizontal: '#horizontal-bars-number',
-            $btn_save: '#glazing-save'
+            $bar_horizontal: '#horizontal-bars-number'
         },
         events: {
-            'change @ui.$bar_vertical': 'handleBarsNumberChange',
-            'change @ui.$bar_horizontal': 'handleBarsNumberChange',
-            'click @ui.$btn_save': 'handleSaveClick'
+            'change @ui.$bar_vertical': 'handleVBarsNumberChange',
+            'change @ui.$bar_horizontal': 'handleHBarsNumberChange'
         },
-        handleSaveClick: function () {
-            this.hideModal();
+        handleVBarsNumberChange: function () {
+            this.handleBarsNumberChange( 'vertical' );
         },
-        handleBarsNumberChange: function () {
-            if ( this.ui.$bar_vertical.val() < 0 ) {
-                this.ui.$bar_vertical.val(0);
+        handleHBarsNumberChange: function () {
+            this.handleBarsNumberChange( 'horizontal' );
+        },
+        handleBarsNumberChange: function ( type ) {
+            if ( this.ui['$bar_' + type].val() < 0 ) {
+                this.ui['$bar_' + type].val(0);
                 return;
             }
 
-            if ( this.ui.$bar_horizontal.val() < 0 ) {
-                this.ui.$bar_horizontal.val(0);
-                return;
-            }
-
-            var bars = this.changeBarsNumber();
+            var bars = this.changeBarsNumber( type );
 
             this.model.setCustomBars(this.section.id, bars);
 
             this.setSection( this.section.id );
         },
         onRender: function () {
+            // Drop values of inputs
+            this.ui.$bar_vertical.val(0);
+            this.ui.$bar_horizontal.val(0);
+
             this.stage = new Konva.Stage({
                 container: this.ui.$drawing.get(0)
             });
-
-            // @TODO: Define best size of modal window for user's screen
-            var stageSize = [600, 600];
+            var stageSize = [570, window.innerHeight - 200];
 
             this.callDrawer('updateSize', stageSize);
 
@@ -82,25 +81,27 @@ var app = app || {};
             section.add( this.createSection() );
             this.layer.add( section );
 
+            section.setAbsolutePosition({
+                x: (this.stage.width() / 2) - (this.getSize().width * this.ratio / 2) - metricSize,
+                y: 0
+            });
+
             this.layer.draw();
         },
         createSection: function () {
-            var sectionData = this.section;
-
             // we will add 0.5 pixel offset for better strokes
             var topOffset = 10 + 0.5;
-
             var group = new Konva.Group({
                 x: 20,
                 y: 20
             });
 
-            var fillWidth = sectionData.glassParams.width;
-            var fillHeight = sectionData.glassParams.height;
+            var fillWidth = this.getSize().width;
+            var fillHeight = this.getSize().height;
 
             // calculate ratio
             var wr = (this.stage.width() - metricSize) / fillWidth;
-            var hr = (this.stage.height() - metricSize  - topOffset) / fillHeight;
+            var hr = (this.stage.height() - metricSize - topOffset) / fillHeight;
             var ratio = Math.min(wr, hr) * 0.95;
 
             // zero position for children graphics
@@ -206,6 +207,7 @@ var app = app || {};
         },
         createMetrics: function ( params ) {
             // @TODO: Add "lock" control to metrics
+            var view = this;
             var metrics = new Konva.Group();
             var vertical = new Konva.Group();
             var horizontal = new Konva.Group();
@@ -231,12 +233,47 @@ var app = app || {};
                 h_getter: function () {
                     return (typeof this === 'object' && 'space' in this) ? this.space : hSpaceLeft;
                 },
-                setter: function ( val ) {
+                v_setter: function ( val ) {
+                    var mm = app.utils.parseFormat.dimension(val);
+
+                    if ( mm > params.height - minimalGap ) { return; }
+
                     this.space = val;
                 },
-                gap_setter: function ( ) {
-                    // @TODO: Дать возможность изменения последнего промежутка между рейками,
-                    //        чтобы это изменение влияло на позицию предыдущей рейки.
+                h_setter: function ( val ) {
+                    var mm = app.utils.parseFormat.dimension(val);
+
+                    if ( mm > params.width - minimalGap ) { return; }
+
+                    this.space = val;
+                },
+                gap_v_setter: function ( val ) {
+                    var mm = app.utils.parseFormat.dimension(val);
+                    var lastBar = view.section.bars.horizontal[view.section.bars.horizontal.length - 2];
+                    var freeSpace = this.space + lastBar.space;
+
+                    if ( mm > params.height - minimalGap ) { return; }
+
+                    if ( mm <= (this.space + lastBar.space - minimalGap) ) {
+                        lastBar.space = freeSpace - val;
+                        this.space = val;
+                    } else {
+                        return; // Not enough free space to do this
+                    }
+                },
+                gap_h_setter: function ( val ) {
+                    var mm = app.utils.parseFormat.dimension(val);
+                    var lastBar = view.section.bars.vertical[view.section.bars.vertical.length - 2];
+                    var freeSpace = this.space + lastBar.space;
+
+                    if ( mm > params.height ) { return; }
+
+                    if ( mm <= (this.space + lastBar.space - minimalGap) ) {
+                        lastBar.space = freeSpace - val;
+                        this.space = val;
+                    } else {
+                        return; // Not enough free space to do this
+                    }
                 }
             };
 
@@ -249,9 +286,13 @@ var app = app || {};
 
                 if (self.id !== 'gap') {
                     space = self.space;
-                    methods.setter = defaultMethods.setter.bind( self );
+                    methods.setter = defaultMethods.v_setter.bind( self );
                 } else {
                     space = vSpaceLeft;
+
+                    if ( hBarCount > 1 ) {
+                        methods.setter = defaultMethods.gap_v_setter.bind( self );
+                    }
                 }
 
                 _.extend( vParams, params, {
@@ -280,9 +321,13 @@ var app = app || {};
 
                 if (self.id !== 'gap') {
                     space = self.space;
-                    methods.setter = defaultMethods.setter.bind( self );
+                    methods.setter = defaultMethods.h_setter.bind( self );
                 } else {
                     space = hSpaceLeft;
+
+                    if ( vBarCount > 1 ) {
+                        methods.setter = defaultMethods.gap_h_setter.bind( self );
+                    }
                 }
 
                 _.extend( hParams, params, {
@@ -356,6 +401,7 @@ var app = app || {};
                         var mm = app.utils.convert.inches_to_mm(inches);
 
                         params.setter(mm);
+                        view.recalculateSpaces();
                         view.saveBars();
                         view.updateCanvas();
 
@@ -371,7 +417,7 @@ var app = app || {};
                 })
                 ;
         },
-        changeBarsNumber: function () {
+        changeBarsNumber: function ( type ) {
             var defaultBar = {
                 space: 0, // space to next bar. in mm
                 lock: false    // lock space param, to prevent change when add/remove bars
@@ -389,43 +435,50 @@ var app = app || {};
                 bars: this.section.bars
             };
 
-            // get count from ui
-            var vertical_count = parseInt(this.ui.$bar_vertical.val());
-            var horizontal_count = parseInt(this.ui.$bar_horizontal.val());
+            if ( type === 'vertical' || type === 'both' ) {
+                var vBarWidth = 0;
+                var vertical_count = parseInt(this.ui.$bar_vertical.val());
+                var vSpace = section.width / (vertical_count + 1) - vBarWidth;
 
-            // calculate space between bars
-            var vBarWidth = 0; // (this.model.get('glazing_bar_width') / 2 * vertical_count);
-            var hBarWidth = 0; // (this.model.get('glazing_bar_width') / 2 * horizontal_count);
-            var vSpace = section.width / (vertical_count + 1) - vBarWidth;
-            var hSpace = section.height / (horizontal_count + 1) - hBarWidth;
+                _.extend(defaultVBar, defaultBar, {space: vSpace});
 
-            // write spaces into bar parms
-            _.extend(defaultVBar, defaultBar, {space: vSpace});
-            _.extend(defaultHBar, defaultBar, {space: hSpace});
+                // Just push all as default bars!
+                // @TODO: change bar spaces accordingly with already added bar spaces (lock param)
 
-            // Just push all as default bars!
-            // @TODO: change bars accordingly with already added bars (look to lock)
+                for (var i = 0; i < vertical_count; i++) {
+                    var vbar = JSON.parse( JSON.stringify( defaultVBar ) );
 
-            for (var i = 0; i < vertical_count; i++) {
-                var vbar = JSON.parse( JSON.stringify( defaultVBar ) );
+                    vbar.id = i;
+                    vertical.push(vbar);
+                }
 
-                vbar.id = i;
-                vertical.push(vbar);
+                var vGap = {id: 'gap', space: vSpace, lock: false};
+
+                vertical.push( vGap );
+            } else {
+                vertical = this.section.bars.vertical;
             }
 
-            for (var j = 0; j < horizontal_count; j++) {
-                var hbar = JSON.parse( JSON.stringify( defaultHBar ) );
+            if ( type === 'horizontal' || type === 'both' ) {
+                var hBarWidth = 0;
+                var horizontal_count = parseInt(this.ui.$bar_horizontal.val());
+                var hSpace = section.height / (horizontal_count + 1) - hBarWidth;
 
-                hbar.id = j;
-                horizontal.push(hbar);
+                _.extend(defaultHBar, defaultBar, {space: hSpace});
+
+                for (var j = 0; j < horizontal_count; j++) {
+                    var hbar = JSON.parse( JSON.stringify( defaultHBar ) );
+
+                    hbar.id = j;
+                    horizontal.push(hbar);
+                }
+
+                var hGap = {id: 'gap', space: hSpace, lock: false};
+
+                horizontal.push( hGap );
+            } else {
+                horizontal = this.section.bars.horizontal;
             }
-
-            // Add gaps in the end of each array
-            var vGap = {id: 'gap', space: vSpace, lock: false};
-            var hGap = {id: 'gap', space: hSpace, lock: false};
-
-            vertical.push( vGap );
-            horizontal.push( hGap );
 
             var bars = {
                 vertical: vertical,
@@ -433,6 +486,40 @@ var app = app || {};
             };
 
             return bars;
+        },
+        recalculateSpaces: function () {
+            // @TODO: Take into account "lock" param in this calculation
+            // Always change space in a "gap"
+            var width = this.getSize().width;
+            var height = this.getSize().height;
+            var sum = 0;
+            var gap;
+            var gap_space;
+
+            this.section.bars.vertical.forEach(function ( bar ) {
+                sum += bar.space;
+            });
+
+            if ( sum < this.getSize().height ) {
+                gap = this.section.bars.vertical[this.section.bars.vertical.length - 1];
+
+                gap_space = gap.space;
+
+                gap.space = width - (sum - gap_space);
+            }
+
+            sum = 0;
+            this.section.bars.horizontal.forEach(function ( bar ) {
+                sum += bar.space;
+            });
+
+            if ( sum < this.getSize().height ) {
+                gap = this.section.bars.horizontal[this.section.bars.horizontal.length - 1];
+
+                gap_space = gap.space;
+
+                gap.space = height - (sum - gap_space);
+            }
         },
         saveBars: function () {
             this.model.setCustomBars( this.section.id, this.section.bars );
@@ -446,7 +533,7 @@ var app = app || {};
             this.section = this.model.getSection(section_id);
 
             if (this.section.bars.vertical.length === 0 && this.section.bars.horizontal.length === 0) {
-                this.section.bars = this.changeBarsNumber();
+                this.section.bars = this.changeBarsNumber( 'both' );
             }
 
             this.trigger('updateSection');
@@ -464,6 +551,12 @@ var app = app || {};
             return {
                 horizontal: this.section.bars.horizontal.length,
                 vertical: this.section.bars.vertical.length
+            };
+        },
+        getSize: function () {
+            return {
+                width: this.section.glassParams.width,
+                height: this.section.glassParams.height,
             };
         },
         callDrawer: function ( method, args ) {
