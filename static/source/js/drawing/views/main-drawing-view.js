@@ -32,7 +32,7 @@ var app = app || {};
             if ( this.drawing_view ) {
                 this.drawing_view.destroy();
             }
-            console.log('!');
+
             if ( this.active_unit ) {
                 this.drawing_view = new app.DrawingView({
                     parent_view: this,

@@ -6,11 +6,20 @@
         <h4 class="modal-title" id="glazingPopupLabel">Glazing Bars Settings</h4>
       </div>
       <div class="modal-body">
-        Draw here
+        <div class="glazing-bars-controlls">
+          <label>
+            Vertical bars: <input type="number" id="vertical-bars-number" value='0'>
+          </label>
+          <label>
+            Horizontal bars: <input type="number" id="horizontal-bars-number" value='0'>
+          </label>
+        </div>
+        <div class="modal-drawing">
+          Draw here
+        </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Discard changes</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
+        <button type="button" class="btn btn-primary" id="glazing-save">Close</button>
       </div>
     </div>
   </div>

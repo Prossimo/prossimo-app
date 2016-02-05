@@ -106,6 +106,10 @@ var app = app || {};
             });
         },
         handleGlazingBarsPopupClick: function () {
+            if ( !(this.glazing_view instanceof app.DrawingGlazingPopup) ) {
+                this.createGlazingPopup();
+            }
+
             this.glazing_view
                     .setSection( this.state.selectedSashId )
                     .showModal();
@@ -192,8 +196,6 @@ var app = app || {};
                 showSubtext: true,
                 size: 10
             });
-
-            this.createGlazingPopup();
         },
 
         // Marrionente lifecycle method
@@ -276,7 +278,9 @@ var app = app || {};
 
             var sectionId = params.sectionId;
 
-            group.on('click', this.handleObjectClick.bind(this, sectionId));
+            if ( params.nobind !== true ) {
+                group.on('click', this.handleObjectClick.bind(this, sectionId));
+            }
 
             return group;
         },
@@ -628,38 +632,41 @@ var app = app || {};
 
             var group = new Konva.Group();
             var bar;
-            var x_offset = fillWidth / (section.vertical_bars_number + 1);
 
-            var verical_metrics_params = {
-                setter: function () { console.log('set'); },
-                getter: function () { console.log('get'); }
-            };
+            var hBarCount = section.bars.horizontal.length;
+            var vSpaceUsed = 0;
+            var vBarCount = section.bars.vertical.length;
+            var hSpaceUsed = 0;
+            var space;
 
-            for (var i = 0; i < section.vertical_bars_number; i++) {
+            for (var i = 0; i < vBarCount; i++) {
+                if (section.bars.vertical[i].id === 'gap') { continue; }
+
+                space = section.bars.vertical[i].space;
+
                 bar = new Konva.Rect({
-                    x: fillX + x_offset * (i + 1), y: fillY,
+                    x: fillX + (vSpaceUsed + space) - (this.model.get('glazing_bar_width') / 2), y: fillY,
                     width: this.model.get('glazing_bar_width'), height: fillHeight,
                     fill: 'white', listening: false
                 });
                 group.add(bar);
-                //Now we'll create metrics
-                var metric = this.createVerticalMetric(metricSize, fillHeight, verical_metrics_params);
-                metric.position({
-                    x: fillX + x_offset * (i + 1),
-                    y: fillY
-                });
-                group.add(metric);
+
+                vSpaceUsed += space;
             }
 
-            var y_offset = fillHeight / (section.horizontal_bars_number + 1);
+            for (i = 0; i < hBarCount; i++) {
+                if (section.bars.horizontal[i].id === 'gap') { continue; }
 
-            for (i = 0; i < section.horizontal_bars_number; i++) {
+                space = section.bars.horizontal[i].space;
+
                 bar = new Konva.Rect({
-                    x: fillX, y: fillY + y_offset * (i + 1),
+                    x: fillX, y: fillY + (hSpaceUsed + space) - (this.model.get('glazing_bar_width') / 2),
                     width: fillWidth, height: this.model.get('glazing_bar_width'),
                     fill: 'white', listening: false
                 });
                 group.add(bar);
+
+                hSpaceUsed += space;
             }
 
             return group;
