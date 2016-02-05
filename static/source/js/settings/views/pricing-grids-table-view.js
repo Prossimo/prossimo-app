@@ -10,13 +10,12 @@ var app = app || {};
         className: 'pricing-grids-table',
         template: app.templates['settings/pricing-grids-table-view'],
         ui: {
-            $hot_container: '.pricing-grids-handsontable-container'
+            $hot_container: '.pricing-grids-handsontable-container',
+            $select: '.selectpicker'
         },
         events: {
-            // 'click .js-add-new-profile': 'addNewProfile',
-            // 'click .js-remove-item': 'onRemoveItem',
-            // 'click .js-move-item-up': 'onMoveItemUp',
-            // 'click .js-move-item-down': 'onMoveItemDown'
+            'change @ui.$select': 'onSelectProfile',
+            'click .nav-tabs a': 'onTabClick'
         },
         initialize: function () {
             this.table_update_timeout = null;
@@ -24,63 +23,75 @@ var app = app || {};
             this.columns = [
                 'title', 'area', 'width', 'height', 'price_per_square_meter'
             ];
+            this.current_profile = undefined;
 
-            this.grid_mode = 'fixed';
-            this.current_profile = app.settings.getProfileByNameOrNew('Default');
+            this.tabs = {
+                fixed: {
+                    title: 'Fixed'
+                },
+                operable: {
+                    title: 'Operable'
+                }
+            };
+            this.active_tab = 'fixed';
 
             // this.listenTo(this.collection, 'invalid', this.showValidationError);
             // this.listenTo(this.collection, 'all', this.updateTable);
             // this.listenTo(this.options.parent_view, 'attach', this.updateTable);
         },
-        // addNewProfile: function (e) {
-        //     var new_profile = new app.Profile();
+        serializeData: function () {
+            return {
+                profile_list: this.collection.map(function (item) {
+                    return {
+                        is_selected: this.current_profile && item.id === this.current_profile.id,
+                        id: item.id,
+                        profile_name: item.get('name')
+                    };
+                }, this),
+                tabs: _.each(this.tabs, function (item, key) {
+                    item.is_active = key === this.active_tab;
+                    return item;
+                }, this)
+            };
+        },
+        onSelectProfile: function () {
+            var new_id = this.ui.$select.val();
 
-        //     e.stopPropagation();
-        //     this.collection.add(new_profile);
-        // },
-        // onRemoveItem: function (e) {
-        //     var target_row = $(e.target).data('row');
-        //     var target_object;
+            if ( new_id ) {
+                this.setCurrentProfile(new_id);
+            }
+        },
+        setCurrentProfile: function (new_id) {
+            this.current_profile = this.collection.get(new_id);
+            this.render();
+        },
+        setActiveTab: function (tab_name) {
+            if ( _.contains(_.keys(this.tabs), tab_name) ) {
+                this.active_tab = tab_name;
+            }
+        },
+        onTabClick: function (e) {
+            var target = $(e.target).attr('href').replace('#', '');
 
-        //     if ( this.hot ) {
-        //         target_object = this.hot.getSourceData().at(target_row);
-        //         target_object.destroy();
-        //     }
-        // },
-        // onMoveItemUp: function (e) {
-        //     var target_row = $(e.target).data('row');
-        //     var target_object;
-
-        //     if ( this.hot && $(e.target).hasClass('disabled') === false ) {
-        //         target_object = this.hot.getSourceData().at(target_row);
-        //         this.hot.getSourceData().moveItemUp(target_object);
-        //     }
-        // },
-        // onMoveItemDown: function (e) {
-        //     var target_row = $(e.target).data('row');
-        //     var target_object;
-
-        //     if ( this.hot && $(e.target).hasClass('disabled') === false ) {
-        //         target_object = this.hot.getSourceData().at(target_row);
-        //         this.hot.getSourceData().moveItemDown(target_object);
-        //     }
-        // },
-        getGetterFunction: function (profile_model, column_name) {
+            e.preventDefault();
+            this.setActiveTab(target);
+            this.render();
+        },
+        getGetterFunction: function (pricing_tier, column_name) {
             var m = app.utils.math;
             var getter;
 
             var getters_hash = {
-                area: function (model) {
-                    return m.square_meters(model.width, model.height);
+                area: function (tier) {
+                    return m.square_meters(tier.width, tier.height);
                 }
             };
 
             if ( getters_hash[column_name] ) {
                 getter = getters_hash[column_name];
             } else {
-                getter = function (model, attr_name) {
-                    // return model.get(attr_name);
-                    return model[attr_name];
+                getter = function (tier, attr_name) {
+                    return tier[attr_name];
                 };
             }
 
@@ -90,24 +101,23 @@ var app = app || {};
             var self = this;
             var setter;
 
-            setter = function (model, attr_name, val) {
-                // return model.persist(attr_name, val);
-                model[attr_name] = val;
-                return model;
+            setter = function (tier, attr_name, val) {
+                self.current_profile._updatePricingGrids(self.active_tab, tier, function (item) {
+                    item[attr_name] = val;
+                });
+
+                return tier;
             };
 
-            return function (profile_model, value) {
-                // console.log( 'profile_model', profile_model );
-
-                if ( profile_model ) {
+            return function (pricing_tier, value) {
+                if ( pricing_tier ) {
                     if ( _.isUndefined(value) ) {
-                        return self.getGetterFunction(profile_model, column_name);
+                        return self.getGetterFunction(pricing_tier, column_name);
                     }
 
-                    setter(profile_model, column_name, value);
+                    setter(pricing_tier, column_name, value);
                 }
             };
-            // return column_name;
         },
         // showValidationError: function (model, error) {
         //     if ( this.hot ) {
@@ -248,27 +258,24 @@ var app = app || {};
         // },
         onRender: function () {
             var self = this;
+
+            this.ui.$select.selectpicker({
+                style: 'btn-xs',
+                size: 10
+            });
+
             // var dropdown_scroll_reset = false;
 
-            // console.log( this.current_profile.getPricingGrids() );
+            if ( this.current_profile ) {
+                console.log( this.active_tab );
 
-            // var fixed_columns = ['name', 'unit_type', 'system'];
-            // var active_tab_columns = this.columns;
-            // var fixed_columns_count = 0;
+                var dataObject = this.current_profile.getPricingGrids()[this.active_tab];
 
-            // _.each(fixed_columns, function (column) {
-            //     if ( _.indexOf(active_tab_columns, column) !== -1 ) {
-            //         fixed_columns_count += 1;
-            //     }
-            // });
-
-            var dataObject = this.current_profile.getPricingGrids()[this.grid_mode];
-
-            // if ( this.collection.length ) {
-            //  We use setTimeout because we want to wait until flexbox
-            //  sizes are calculated properly
-            setTimeout(function () {
-                if ( !self.hot ) {
+                // if ( this.collection.length ) {
+                //  We use setTimeout because we want to wait until flexbox
+                //  sizes are calculated properly
+                setTimeout(function () {
+                    // if ( !self.hot ) {
                     self.hot = new Handsontable(self.ui.$hot_container[0], {
                         // data: self.collection,
                         columns: self.getColumnOptions(),
@@ -282,9 +289,13 @@ var app = app || {};
                         // }// ,
                         // fixedColumnsLeft: fixed_columns_count
                     });
-                }
-            }, 50);
-            // }
+                    // }
+                }, 50);
+                // }
+            } else {
+                this.ui.$hot_container.empty().append('<p class="no-current-profile-message">' +
+                    'Please select a profile from the list at the top</p>');
+            }
 
             // clearInterval(this.dropdown_scroll_timer);
             // this.dropdown_scroll_timer = setInterval(function () {

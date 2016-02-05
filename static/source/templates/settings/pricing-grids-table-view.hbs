@@ -1,8 +1,20 @@
 <div class="pricing-grids-table-title">
+    <div class="profile-selector-container">
+        <h4>Current Profile</h4>
+        <select name="profile-selector-dropdown" id="profile-selector-dropdown" class="selectpicker show-tick" title="Choose a profile" data-live-search="true">
+            {{#each profile_list}}
+                <option {{#if is_selected }}selected{{/if}} value="{{ id }}">{{ profile_name }}</option>
+            {{/each}}
+        </select>
+    </div>
     <h3>Pricing Grids</h3>
-    {{!-- <div class="profiles-table-controls">
-        <button class="btn add-new-profile js-add-new-profile">Add new profile</button>
-    </div> --}}
+    <div class="tab-container">
+        <ul class="nav nav-tabs">
+        {{#each tabs }}
+            <li class="{{ @key }}{{#if is_active }} active{{/if}}"><a href="#{{ @key }}">{{ title }}</a></li>
+        {{/each}}
+        </ul>
+    </div>
 </div>
 <div class="pricing-grids-table-scroll-wrapper">
     <div class="pricing-grids-handsontable-container"></div>

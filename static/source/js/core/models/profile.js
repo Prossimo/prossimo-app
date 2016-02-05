@@ -31,6 +31,38 @@ var app = app || {};
         { name: 'spacer_thermal_bridge_value', title: 'Spacer Thermal Bridge Value', type: 'number' }
     ];
 
+    function getDefaultPricingGrids() {
+        var default_set = [
+            {
+                title: 'Small',
+                height: 300,
+                width: 300,
+                price_per_square_meter: 0
+            },
+            {
+                title: 'Medium',
+                height: 914,
+                width: 1514,
+                price_per_square_meter: 0
+            },
+            {
+                title: 'Large',
+                height: 3000,
+                width: 3000,
+                price_per_square_meter: 0
+            }
+        ];
+
+        return {
+            fixed: _.map(default_set, function (item) {
+                return _.extend({}, item);
+            }),
+            operable: _.map(default_set, function (item) {
+                return _.extend({}, item);
+            })
+        };
+    }
+
     app.Profile = Backbone.Model.extend({
         defaults: function () {
             var defaults = {};
@@ -51,7 +83,8 @@ var app = app || {};
             var name_value_hash = {
                 unit_type: DEFAULT_UNIT_TYPE,
                 low_threshold: false,
-                threshold_width: 20
+                threshold_width: 20,
+                pricing_grids: getDefaultPricingGrids()
             };
 
             if ( app.settings ) {
@@ -76,7 +109,9 @@ var app = app || {};
         },
         sync: function (method, model, options) {
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { profile: _.omit(model.toJSON(), ['id']) };
+                options.attrs = { profile: _.extendOwn(_.omit(model.toJSON(), ['id']), {
+                    pricing_grids: JSON.stringify(model.get('pricing_grids'))
+                }) };
             }
 
             return Backbone.sync.call(this, method, model, options);
@@ -85,7 +120,26 @@ var app = app || {};
             this.options = options || {};
 
             if ( !this.options.proxy ) {
+                this.validatePricingGrids();
                 this.on('change:unit_type', this.onTypeUpdate, this);
+            }
+        },
+        validatePricingGrids: function () {
+            if ( _.isString(this.get('pricing_grids')) ) {
+                this.set('pricing_grids', JSON.parse(this.get('pricing_grids')));
+            } else if ( !_.isObject(this.get('pricing_grids')) ) {
+                this.set('pricing_grids', this.getDefaultValue('pricing_grids'));
+            }
+        },
+        _updatePricingGrids: function (grid, tier, func) {
+            var pricing_grids = this.get('pricing_grids');
+            var target_tier = _.find(pricing_grids[grid], function (item) {
+                return item === tier;
+            });
+
+            if ( target_tier ) {
+                func(target_tier);
+                this.persist('pricing_grids', pricing_grids);
             }
         },
         validate: function (attributes, options) {
@@ -206,50 +260,12 @@ var app = app || {};
         //  Returns grids sorted by area size
         getPricingGrids: function () {
             return {
-                fixed: _.sortBy([
-                    {
-                        title: 'Small',
-                        height: 100,
-                        width: 100,
-                        price_per_square_meter: 50
-                    },
-                    {
-                        title: 'Large',
-                        height: 3000,
-                        width: 3000,
-                        price_per_square_meter: 75
-                    },
-                    {
-                        title: 'Medium',
-                        height: 914,
-                        width: 1514,
-                        price_per_square_meter: 60
-                    }
-                ], function (item) {
+                fixed: _.sortBy(this.get('pricing_grids').fixed, function (item) {
                     return item.width * item.height;
-                }),
-                operable: _.sortBy([
-                    {
-                        title: 'Medium',
-                        height: 914,
-                        width: 1514,
-                        price_per_square_meter: 68
-                    },
-                    {
-                        title: 'Small',
-                        height: 100,
-                        width: 100,
-                        price_per_square_meter: 55
-                    },
-                    {
-                        title: 'Large',
-                        height: 3000,
-                        width: 3000,
-                        price_per_square_meter: 90
-                    }
-                ], function (item) {
+                }, this),
+                operable: _.sortBy(this.get('pricing_grids').operable, function (item) {
                     return item.width * item.height;
-                })
+                }, this)
             };
         }
     });
