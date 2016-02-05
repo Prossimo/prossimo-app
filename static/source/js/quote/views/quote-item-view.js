@@ -18,7 +18,8 @@ var app = app || {};
                     (this.options.show_outside_units_view ? ': <small>View from Exterior</small>' : ''),
                 product_description: 'Product Description',
                 quantity: 'Qty',
-                price: 'Price'
+                price: app.settings.get('pricing_mode') === 'estimates' ?
+                    'Estimated Price' : 'Price'
             };
 
             if ( this.model.collection &&

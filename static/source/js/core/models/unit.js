@@ -301,8 +301,19 @@ var app = app || {};
 
             return app.utils.math.square_meters(c.inches_to_mm(this.get('width')), c.inches_to_mm(this.get('height')));
         },
+        //  We either get a value from model, or get get estimated unit cost
+        //  when special toggle is enabled in settings
+        getOriginalCost: function () {
+            var original_cost = this.get('original_cost');
+
+            if ( app.settings && app.settings.get('pricing_mode') === 'estimates' ) {
+                original_cost = this.getEstimatedUnitCost();
+            }
+
+            return original_cost;
+        },
         getUnitCost: function () {
-            return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
+            return parseFloat(this.getOriginalCost()) / parseFloat(this.get('conversion_rate'));
         },
         getUnitCostDiscounted: function () {
             return this.getUnitCost() * (100 - parseFloat(this.get('supplier_discount'))) / 100;
@@ -1009,6 +1020,16 @@ var app = app || {};
             }, this);
 
             return sections_list;
+        },
+        getEstimatedUnitCost: function () {
+            var sections_list = this.getSecionsListWithEstimatedPrices();
+            var price = _.reduce(_.map(sections_list, function (item) {
+                return item.estimated_price;
+            }), function (memo, number) {
+                return memo + number;
+            }, 0);
+
+            return price;
         }
     });
 

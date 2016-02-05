@@ -267,8 +267,6 @@ var app = app || {};
             // var dropdown_scroll_reset = false;
 
             if ( this.current_profile ) {
-                console.log( this.active_tab );
-
                 var dataObject = this.current_profile.getPricingGrids()[this.active_tab];
 
                 // if ( this.collection.length ) {

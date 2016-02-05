@@ -257,6 +257,9 @@ var app = app || {};
                 },
                 quote_number: function (model) {
                     return model.getQuoteNumber();
+                },
+                original_cost: function (model) {
+                    return model.getOriginalCost();
                 }
             };
 
@@ -547,6 +550,9 @@ var app = app || {};
                 },
                 quote_number: {
                     readOnly: true
+                },
+                original_cost: {
+                    readOnly: app.settings.get('pricing_mode') === 'estimates'
                 }
             };
 
@@ -630,7 +636,9 @@ var app = app || {};
                 square_feet_price_discounted: 'Price per Sq.Ft w/Disc.',
                 move_item: 'Move',
                 remove_item: ' ',
-                quote_number: 'Quote Number'
+                quote_number: 'Quote Number',
+                original_cost: app.settings.get('pricing_mode') === 'estimates' ?
+                    'Original Cost (est.)' : 'Original Cost'
             };
 
             return custom_column_headers_hash[column_name];

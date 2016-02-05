@@ -87,3 +87,40 @@
         {{/each}}
     </div>
 {{/if}}
+
+{{#if active_unit_estimated_section_prices }}
+    <div class="active-unit-estimated-section-prices">
+        <h4>Estimated Section Prices</h4>
+        {{#each active_unit_estimated_section_prices }}
+        <h5>{{ name }}</h5>
+        <table>
+            <tbody>
+                <tr>
+                    <td class="title">Type</td>
+                    <td class="value">{{ type }}</td>
+                </tr>
+                <tr>
+                    <td class="title">Height</td>
+                    <td class="value">{{{ height }}}</td>
+                </tr>
+                <tr>
+                    <td class="title">Width</td>
+                    <td class="value">{{{ width }}}</td>
+                </tr>
+                <tr>
+                    <td class="title">Area</td>
+                    <td class="value">{{{ area }}}</td>
+                </tr>
+                <tr>
+                    <td class="title">Price / m<sup>2</sup></td>
+                    <td class="value">{{{ price_per_square_meter }}}</td>
+                </tr>
+                <tr>
+                    <td class="title">Price</td>
+                    <td class="value">{{{ price }}}</td>
+                </tr>
+            </tbody>
+        </table>
+        {{/each}}
+    </div>
+{{/if}}
