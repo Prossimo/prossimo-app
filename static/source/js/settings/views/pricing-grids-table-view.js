@@ -19,7 +19,6 @@ var app = app || {};
         },
         initialize: function () {
             this.table_update_timeout = null;
-            this.dropdown_scroll_timer = null;
             this.columns = [
                 'title', 'area', 'width', 'height', 'price_per_square_meter'
             ];
@@ -35,9 +34,8 @@ var app = app || {};
             };
             this.active_tab = 'fixed';
 
-            // this.listenTo(this.collection, 'invalid', this.showValidationError);
-            // this.listenTo(this.collection, 'all', this.updateTable);
-            // this.listenTo(this.options.parent_view, 'attach', this.updateTable);
+            this.listenTo(this.collection, 'all', this.updateTable);
+            this.listenTo(this.options.parent_view, 'attach', this.updateTable);
         },
         serializeData: function () {
             return {
@@ -119,50 +117,6 @@ var app = app || {};
                 }
             };
         },
-        // showValidationError: function (model, error) {
-        //     if ( this.hot ) {
-        //         var hot = this.hot;
-        //         var self = this;
-
-        //         var row_index = model.collection.indexOf(model);
-        //         var col_index = _.indexOf(this.columns, error.attribute_name);
-        //         var target_cell = hot.getCell(row_index, col_index);
-        //         var $target_cell = $(target_cell);
-
-        //         $target_cell.popover({
-        //             container: 'body',
-        //             title: 'Validation Error',
-        //             content: error.error_message,
-        //             trigger: 'manual'
-        //         });
-
-        //         $target_cell.popover('show');
-
-        //         setTimeout(function () {
-        //             $target_cell.popover('destroy');
-        //             hot.setCellMeta(row_index, col_index, 'valid', true);
-        //             self.updateTable();
-        //         }, 5000);
-        //     }
-        // },
-        // getColumnValidator: function (column_name) {
-        //     var validator;
-
-        //     validator = function (value, callback) {
-        //         var attributes_object = {};
-        //         var model = this.instance.getSourceData().at(this.row);
-
-        //         attributes_object[column_name] = value;
-
-        //         if ( !model.validate || !model.validate(attributes_object, { validate: true }) ) {
-        //             callback(true);
-        //         } else {
-        //             callback(false);
-        //         }
-        //     };
-
-        //     return validator;
-        // },
         getColumnExtraProperties: function (column_name) {
             var properties_obj = {};
 
@@ -200,8 +154,7 @@ var app = app || {};
 
             _.each(this.columns, function (column_name) {
                 var column_obj = _.extend({}, {
-                    data: this.getColumnData(column_name)// ,
-                    // validator: this.getColumnValidator(column_name)
+                    data: this.getColumnData(column_name)
                 }, this.getColumnExtraProperties(column_name));
 
                 columns.push(column_obj);
@@ -238,24 +191,24 @@ var app = app || {};
 
             return custom_column_headers_hash[column_name];
         },
-        // updateTable: function (e) {
-        //     var self = this;
+        updateTable: function (e) {
+            var self = this;
 
-        //     //  We don't want to update table on validation errors, we have
-        //     //  a special function for that
-        //     if ( e === 'invalid' ) {
-        //         return;
-        //     }
+            //  We don't want to update table on validation errors, we have
+            //  a special function for that
+            if ( e === 'invalid' ) {
+                return;
+            }
 
-        //     if ( this.hot ) {
-        //         clearTimeout(this.table_update_timeout);
-        //         this.table_update_timeout = setTimeout(function () {
-        //             self.hot.render();
-        //         }, 20);
-        //     } else {
-        //         this.render();
-        //     }
-        // },
+            if ( this.hot ) {
+                clearTimeout(this.table_update_timeout);
+                this.table_update_timeout = setTimeout(function () {
+                    self.hot.render();
+                }, 20);
+            } else {
+                this.render();
+            }
+        },
         onRender: function () {
             var self = this;
 
@@ -264,52 +217,25 @@ var app = app || {};
                 size: 10
             });
 
-            // var dropdown_scroll_reset = false;
-
             if ( this.current_profile ) {
                 var dataObject = this.current_profile.getPricingGrids()[this.active_tab];
 
-                // if ( this.collection.length ) {
                 //  We use setTimeout because we want to wait until flexbox
                 //  sizes are calculated properly
                 setTimeout(function () {
-                    // if ( !self.hot ) {
                     self.hot = new Handsontable(self.ui.$hot_container[0], {
-                        // data: self.collection,
                         columns: self.getColumnOptions(),
                         colHeaders: self.getColumnHeaders(),
                         data: dataObject,
-                        // rowHeaders: true,
-                        trimDropdown: false,
-                        rowHeights: 25 // ,
-                        // maxRows: function () {
-                        //     return self.collection.length;
-                        // }// ,
-                        // fixedColumnsLeft: fixed_columns_count
+                        rowHeights: 25
                     });
-                    // }
-                }, 50);
-                // }
+                }, 5);
             } else {
                 this.ui.$hot_container.empty().append('<p class="no-current-profile-message">' +
                     'Please select a profile from the list at the top</p>');
             }
-
-            // clearInterval(this.dropdown_scroll_timer);
-            // this.dropdown_scroll_timer = setInterval(function () {
-            //     var editor = self.hot && self.hot.getActiveEditor();
-
-            //     if ( editor && editor.htContainer && !dropdown_scroll_reset ) {
-            //         dropdown_scroll_reset = true;
-            //         editor.htContainer.scrollIntoView(false);
-            //     } else {
-            //         dropdown_scroll_reset = false;
-            //     }
-            // }, 100);
         },
         onDestroy: function () {
-            clearInterval(this.dropdown_scroll_timer);
-
             if ( this.hot ) {
                 this.hot.destroy();
             }

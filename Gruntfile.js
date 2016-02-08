@@ -35,7 +35,6 @@ module.exports = function (grunt) {
         'core/models/project-file.js',
         'core/models/filling-type.js',
         'core/models/settings.js',
-        'core/models/pricing-grid.js',
         'core/collections/unit-collection.js',
         'core/collections/accessory-collection.js',
         'core/collections/profile-collection.js',
