@@ -39,17 +39,10 @@ var app = app || {};
                 return;
             }
 
-            var bars = this.changeBarsNumber( type );
-
-            this.model.setCustomBars(this.section.id, bars);
-
-            this.setSection( this.section.id );
+            this.section.bars = this.changeBarsNumber( type );
+            this.saveBars();
         },
         onRender: function () {
-            // Drop values of inputs
-            this.ui.$bar_vertical.val(0);
-            this.ui.$bar_horizontal.val(0);
-
             this.stage = new Konva.Stage({
                 container: this.ui.$drawing.get(0)
             });
@@ -59,7 +52,6 @@ var app = app || {};
 
             this.layer = new Konva.Layer();
             this.stage.add(this.layer);
-
         },
         onUpdate: function () {
             this.updateCanvas();
@@ -403,7 +395,6 @@ var app = app || {};
                         params.setter(mm);
                         view.recalculateSpaces();
                         view.saveBars();
-                        view.updateCanvas();
 
                         $wrap.remove();
                     }
@@ -522,7 +513,8 @@ var app = app || {};
             }
         },
         saveBars: function () {
-            this.model.setCustomBars( this.section.id, this.section.bars );
+            this.model.setSectionBars( this.section.id, this.section.bars );
+            this.updateCanvas();
             this.options.parent_view.updateCanvas();
         },
         destroy: function () {
@@ -531,6 +523,9 @@ var app = app || {};
         },
         setSection: function (section_id) {
             this.section = this.model.getSection(section_id);
+
+            this.ui.$bar_vertical.val( this.getBarsCount().vertical );
+            this.ui.$bar_horizontal.val( this.getBarsCount().horizontal );
 
             if (this.section.bars.vertical.length === 0 && this.section.bars.horizontal.length === 0) {
                 this.section.bars = this.changeBarsNumber( 'both' );

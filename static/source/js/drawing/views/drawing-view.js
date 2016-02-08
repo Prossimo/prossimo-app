@@ -54,8 +54,6 @@ var app = app || {};
             $title: '#drawing-view-title',
             $bars_control: '#bars-control',
             $section_control: '#section_control',
-            $vertical_bars_number: '#vertical-bars-number',
-            $horizontal_bars_number: '#horizontal-bars-number',
             $filling_select: '#filling-select'
         },
 
@@ -97,12 +95,6 @@ var app = app || {};
 
             this.setState({
                 openingView: openingView
-            });
-        },
-        handleBarNumberChange: function () {
-            this.model.setSectionBars(this.state.selectedSashId, {
-                vertical: this.ui.$vertical_bars_number.val(),
-                horizontal: this.ui.$horizontal_bars_number.val()
             });
         },
         handleGlazingBarsPopupClick: function () {
@@ -1539,13 +1531,6 @@ var app = app || {};
                 !isArched &&
                 !!selectedSashId &&
                 selectedSash.fillingType === 'glass'
-            );
-
-            this.ui.$vertical_bars_number.val(
-                selectedSash && selectedSash.vertical_bars_number || 0
-            );
-            this.ui.$horizontal_bars_number.val(
-                selectedSash && selectedSash.horizontal_bars_number || 0
             );
 
             this.ui.$section_control.toggle(!!selectedSashId);
