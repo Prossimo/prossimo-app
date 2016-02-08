@@ -98,7 +98,7 @@ var app = app || {};
             });
         },
         handleGlazingBarsPopupClick: function () {
-            if ( !(this.glazing_view instanceof app.DrawingGlazingPopup) ) {
+            if ( !this.glazing_view ) {
                 this.createGlazingPopup();
             }
 
