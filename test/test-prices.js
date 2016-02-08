@@ -265,6 +265,8 @@ test('estimated unit prices', function () {
     var top_section;
     var bottom_section;
     var sections_list;
+    var estimated_list;
+    var pricing_grids;
 
     unit = new app.Unit({
         width: 62,
@@ -277,6 +279,60 @@ test('estimated unit prices', function () {
         sash_frame_width: 82,
         sash_frame_overlap: 34,
         sash_mullion_overlap: 34
+    });
+
+    pricing_grids = unit.profile.getPricingGrids();
+
+    //  Check that areas of default pricing grid tiers are calculated properly
+    equal(m.square_meters(pricing_grids.fixed[0].width, pricing_grids.fixed[0].height).toFixed(2), '0.25', 'Fixed small tier area is expected to be 0.25');
+    equal(m.square_meters(pricing_grids.fixed[1].width, pricing_grids.fixed[1].height).toFixed(2), '1.38', 'Fixed medium tier area is expected to be 1.38');
+    equal(m.square_meters(pricing_grids.fixed[2].width, pricing_grids.fixed[2].height).toFixed(2), '7.20', 'Fixed large tier area is expected to be 7.20');
+
+    equal(m.square_meters(pricing_grids.operable[0].width, pricing_grids.operable[0].height).toFixed(2), '0.25', 'Operable small tier area is expected to be 0.25');
+    equal(m.square_meters(pricing_grids.operable[1].width, pricing_grids.operable[1].height).toFixed(2), '1.38', 'Operable medium tier area is expected to be 1.38');
+    equal(m.square_meters(pricing_grids.operable[2].width, pricing_grids.operable[2].height).toFixed(2), '2.88', 'Operable large tier area is expected to be 2.88');
+
+    unit.profile.set('pricing_grids', {
+        fixed: [
+            {
+                title: 'Small',
+                height: 500,
+                width: 500,
+                price_per_square_meter: 100
+            },
+            {
+                title: 'Medium',
+                height: 914,
+                width: 1514,
+                price_per_square_meter: 150
+            },
+            {
+                title: 'Large',
+                height: 2400,
+                width: 3000,
+                price_per_square_meter: 300
+            }
+        ],
+        operable: [
+            {
+                title: 'Small',
+                height: 500,
+                width: 500,
+                price_per_square_meter: 120
+            },
+            {
+                title: 'Medium',
+                height: 914,
+                width: 1514,
+                price_per_square_meter: 180
+            },
+            {
+                title: 'Large',
+                height: 1200,
+                width: 2400,
+                price_per_square_meter: 350
+            }
+        ]
     });
 
     root_id = unit.get('root_section').id;
@@ -299,4 +355,23 @@ test('estimated unit prices', function () {
     equal(sections_list[0].type, 'fixed', 'First section type is expected to be fixed');
     equal(sections_list[1].type, 'fixed', 'Second section type is expected to be fixed');
 
+    pricing_grids = unit.profile.getPricingGrids();
+    estimated_list = unit.getSectionsListWithEstimatedPrices();
+
+    //  Areas of pricing grid tiers should be calculated properly
+    equal(m.square_meters(pricing_grids.fixed[0].width, pricing_grids.fixed[0].height).toFixed(2), '0.25', 'Fixed small tier area is expected to be 0.25');
+    equal(m.square_meters(pricing_grids.fixed[1].width, pricing_grids.fixed[1].height).toFixed(2), '1.38', 'Fixed medium tier area is expected to be 1.38');
+    equal(m.square_meters(pricing_grids.fixed[2].width, pricing_grids.fixed[2].height).toFixed(2), '7.20', 'Fixed large tier area is expected to be 7.20');
+
+    equal(m.square_meters(pricing_grids.operable[0].width, pricing_grids.operable[0].height).toFixed(2), '0.25', 'Operable small tier area is expected to be 0.25');
+    equal(m.square_meters(pricing_grids.operable[1].width, pricing_grids.operable[1].height).toFixed(2), '1.38', 'Operable medium tier area is expected to be 1.38');
+    equal(m.square_meters(pricing_grids.operable[2].width, pricing_grids.operable[2].height).toFixed(2), '2.88', 'Operable large tier area is expected to be 2.88');
+
+    //  Price per square meter should be calculated properly
+    equal(estimated_list[0].price_per_square_meter.toFixed(2), '163.83', 'First section: price / square meter');
+    equal(estimated_list[1].price_per_square_meter.toFixed(2), '163.83', 'Second section: price / square meter');
+
+    //  Estimated prices should be calculated properly
+    equal(estimated_list[0].estimated_price.toFixed(2), '314.55', 'First section: estimated price');
+    equal(estimated_list[1].estimated_price.toFixed(2), '314.55', 'Second section: estimated price');
 });

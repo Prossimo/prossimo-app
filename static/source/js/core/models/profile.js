@@ -32,34 +32,26 @@ var app = app || {};
     ];
 
     function getDefaultPricingGrids() {
-        var default_set = [
-            {
-                title: 'Small',
-                height: 300,
-                width: 300,
-                price_per_square_meter: 0
-            },
-            {
-                title: 'Medium',
-                height: 914,
-                width: 1514,
-                price_per_square_meter: 0
-            },
-            {
-                title: 'Large',
-                height: 3000,
-                width: 3000,
-                price_per_square_meter: 0
-            }
-        ];
+        function getTier(title, height, width, price_per_square_meter) {
+            return _.extend({}, {
+                title: title,
+                height: height,
+                width: width,
+                price_per_square_meter: price_per_square_meter
+            });
+        }
 
         return {
-            fixed: _.map(default_set, function (item) {
-                return _.extend({}, item);
-            }),
-            operable: _.map(default_set, function (item) {
-                return _.extend({}, item);
-            })
+            fixed: [
+                getTier('Small', 500, 500, 0),
+                getTier('Medium', 914, 1514, 0),
+                getTier('Large', 2400, 3000, 0)
+            ],
+            operable: [
+                getTier('Small', 500, 500, 0),
+                getTier('Medium', 914, 1514, 0),
+                getTier('Large', 1200, 2400, 0)
+            ]
         };
     }
 

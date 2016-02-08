@@ -188,7 +188,7 @@ var app = app || {};
             var sections = [];
 
             if ( this.options.parent_view.active_unit && app.settings.get('pricing_mode') === 'estimates' ) {
-                section_list_source = this.options.parent_view.active_unit.getSecionsListWithEstimatedPrices();
+                section_list_source = this.options.parent_view.active_unit.getSectionsListWithEstimatedPrices();
 
                 _.each(section_list_source, function (source_item, index) {
                     var section_item = {};

@@ -954,14 +954,20 @@ var app = app || {};
                     } else {
                         current_area[measurement] += profile.get('frame_width');
                     }
+
                 }, this);
+
+                if ( current_root.thresholdEdge ) {
+                    current_area.height -= profile.get('frame_width');
+                    current_area.height += profile.get('threshold_width');
+                }
 
                 result.push(current_area);
             }
 
             return result;
         },
-        getSecionsListWithEstimatedPrices: function () {
+        getSectionsListWithEstimatedPrices: function () {
             var pricing_grids = this.profile.getPricingGrids();
             var sections_list = this.getFixedAndOperableSectionsList();
 
@@ -1022,7 +1028,7 @@ var app = app || {};
             return sections_list;
         },
         getEstimatedUnitCost: function () {
-            var sections_list = this.getSecionsListWithEstimatedPrices();
+            var sections_list = this.getSectionsListWithEstimatedPrices();
             var price = _.reduce(_.map(sections_list, function (item) {
                 return item.estimated_price;
             }), function (memo, number) {
