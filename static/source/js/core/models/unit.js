@@ -932,7 +932,12 @@ var app = app || {};
 
             _.each(current_root.sections, function (section) {
                 section_result = this.getFixedAndOperableSectionsList(section);
-                result = result.concat(section_result);
+
+                if (current_root.divider === 'vertical' || current_root.divider === 'vertical_invisible') {
+                    result = section_result.concat(result);
+                } else {
+                    result = result.concat(section_result);
+                }
             }, this);
 
             if ( _.indexOf(OPERABLE_SASH_TYPES, current_root.sashType) !== -1 ) {
@@ -962,7 +967,7 @@ var app = app || {};
                     current_area.height += profile.get('threshold_width');
                 }
 
-                result.push(current_area);
+                result.unshift(current_area);
             }
 
             return result;
