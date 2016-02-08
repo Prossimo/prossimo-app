@@ -194,6 +194,13 @@ var app = app || {};
                 current_section.fillingType = 'full-flush-panel';
             }
 
+            if ( !current_section.bars ) {
+                current_section.bars = {
+                    vertical: [],
+                    horizontal: []
+                };
+            }
+
             _.each(current_section.sections, function (section) {
                 section = this.validateSection(section);
             }, this);
@@ -522,10 +529,6 @@ var app = app || {};
 
                 section.divider = type;
                 section.sections = [getSectionDefaults(), getSectionDefaults()];
-                section.bars = {
-                    vertical: [],
-                    horizontal: []
-                };
 
                 if ( section.fillingType && section.fillingName ) {
                     section.sections[0].fillingType = section.sections[1].fillingType = section.fillingType;

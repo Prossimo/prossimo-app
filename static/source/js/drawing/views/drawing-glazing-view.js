@@ -556,18 +556,18 @@ var app = app || {};
         getSize: function () {
             return {
                 width: this.section.glassParams.width,
-                height: this.section.glassParams.height,
+                height: this.section.glassParams.height
             };
         },
         callDrawer: function ( method, args ) {
             var parent = this.options.parent_view;
             var _args = args || [];
 
-            if ( parent instanceof app.DrawingView && method in parent ) {
-                return parent[method].apply(this, _args);
-            } else {
+            if ( !(parent instanceof app.DrawingView && method in parent) ) {
                 throw new Error('There is no method `' + method + '` in parent Drawing_view');
             }
+
+            return parent[method].apply(this, _args);
         }
     });
 

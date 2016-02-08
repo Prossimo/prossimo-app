@@ -24,7 +24,7 @@ var app = app || {};
 
             this.collection.fetch({
                 remove: false,
-                success: function() {
+                success: function () {
                     self.getLastProject();
                 },
                 error: function () {
@@ -38,6 +38,7 @@ var app = app || {};
         },
         onChange: function () {
             var new_id = this.ui.$select.val();
+
             this.setCurrentProject(new_id);
             this.setLastProject(new_id);
         },
@@ -72,7 +73,9 @@ var app = app || {};
             if ( 'localStorage' in window && 'getItem' in window.localStorage ) {
                 var last_id = window.localStorage.getItem('app_currentProject');
 
-                this.ui.$select.val(last_id).trigger('change');
+                if ( last_id ) {
+                    this.ui.$select.val(last_id).trigger('change');
+                }
             }
         },
         onRender: function () {

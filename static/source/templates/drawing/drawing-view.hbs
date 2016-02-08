@@ -34,9 +34,10 @@
             <img class="change-sash-type" data-type="turn_only_right_hinge_hidden_latch" src="/static/public/img/turn_only_right_hinge_hidden_latch.png"/>
 
             <img class="change-sash-type" data-type="turn_only_left_hinge_hidden_latch" src="/static/public/img/turn_only_left_hinge_hidden_latch.png"/>
-
         </span>
-        <br/>
+
+        <br class="drawing-ui-divider">
+
         <span class="filling-type">
             Filling:
             <select id="filling-select" class="selectpicker show-tick" title="Choose filling type" data-live-search="true">
@@ -46,10 +47,8 @@
             </select>
         </span>
 
-        <span id="bars-control">
-{{!--             Vertical bars: <input type="number" id="vertical-bars-number" value='0'>
-            Horizontal bars: <input type="number" id="horizontal-bars-number" value='0'> --}}
-            <button id="glazing-bars-popup">Set Glazing Bars</button>
+        <span id="bars-control" class="bars-control">
+            <button class="btn btn-xs" id="glazing-bars-popup">Set Glazing Bars</button>
         </span>
     </div>
 </div>

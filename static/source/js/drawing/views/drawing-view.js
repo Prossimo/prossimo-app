@@ -200,8 +200,11 @@ var app = app || {};
 
         // Marrionente lifecycle method
         onDestroy: function () {
-            this.glazing_view.destroy();
             this.stage.destroy();
+
+            if ( this.glazing_view ) {
+                this.glazing_view.destroy();
+            }
         },
 
         serializeData: function () {
