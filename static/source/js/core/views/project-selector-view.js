@@ -54,6 +54,10 @@ var app = app || {};
         setCurrentProject: function (new_id) {
             app.current_project = this.collection.get(new_id);
 
+            if ( !app.current_project ) {
+                return;
+            }
+
             if ( app.current_project.get('no_backend') === true ) {
                 app.no_backend = true;
             } else {
@@ -73,9 +77,7 @@ var app = app || {};
             if ( 'localStorage' in window && 'getItem' in window.localStorage ) {
                 var last_id = window.localStorage.getItem('app_currentProject');
 
-                if ( last_id ) {
-                    this.ui.$select.val(last_id).trigger('change');
-                }
+                this.ui.$select.val(last_id).trigger('change');
             }
         },
         onRender: function () {
