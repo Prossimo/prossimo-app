@@ -193,125 +193,107 @@ var app = app || {};
             // @TODO: Add "lock" control to metrics
             var view = this;
             var metrics = new Konva.Group();
-            var vertical = new Konva.Group();
-            var horizontal = new Konva.Group();
+            var max = {
+                vertical: params.width,
+                horizontal: params.height
+            };
+            var paramName = {
+                vertical: 'width',
+                horizontal: 'height'
+            };
+            var groups = {
+                vertical: new Konva.Group(),
+                horizontal: new Konva.Group()
+            };
+            var methods = {
+                vertical: this.createHorizontalMetrics.bind(view),
+                horizontal: this.createVerticalMetrics.bind(view)
+            };
             var barMetric;
-            var space;
-            var self;
-            var methods;
 
-            var vParams = {};
-            var hBarCount = this.getBarsCount().horizontal;
-            var vSpaceUsed = 0;
-
-            var hParams = {};
-            var vBarCount = this.getBarsCount().vertical;
-            var hSpaceUsed = 0;
+            var bars = this.callDrawer( 'getBarsWithSpaces', [this.section] );
 
             var defaultMethods = {
                 getter: function () {
                     return this.space;
                 },
-                setter: function ( val ) {
-                    var delta = val - this.space;
+                setter: function ( type, space, val ) {
+                    var delta = val - space;
                     var sign = Math.sign( val );
                     var mm = app.utils.parseFormat.dimension( this.position + delta ) * sign;
 
-                    if ( mm >= params.height - minimalGap || (this.position + delta) < 0 + minimalGap ) {
+                    if ( mm >= max[type] - minimalGap || (this.position + delta) < 0 + minimalGap ) {
                         view.showError();
                         return;
                     }
 
-                    this.space = val;
                     this.position = this.position + delta;
                 },
-                gap_v_setter: function ( val ) {
-                    var mm = app.utils.parseFormat.dimension(val);
-                    var lastBar = view.section.bars.horizontal[view.section.bars.horizontal.length - 2];
-                    var freeSpace = this.position + lastBar.position;
-
-                    if ( mm > params.height - minimalGap ) { return; }
-
-                    if ( mm <= (this.position + lastBar.position - minimalGap) ) {
-                        lastBar.position = freeSpace - val;
-                        this.position = val;
-                    } else {
-                        return; // Not enough free space to do this
-                    }
+                gap_getter: function ( ) {
+                    return this.space;
                 },
-                gap_h_setter: function ( val ) {
+                gap_setter: function ( type, val ) {
                     var mm = app.utils.parseFormat.dimension(val);
-                    var lastBar = view.section.bars.vertical[view.section.bars.vertical.length - 2];
-                    var freeSpace = this.position + lastBar.position;
+                    var lastBar = view.section.bars[type][view.section.bars[type].length - 1];
+                    var freeSpace = max[type] - lastBar.position;
+                    var delta = freeSpace - val;
 
-                    if ( mm > params.height ) { return; }
-
-                    if ( mm <= (this.position + lastBar.position - minimalGap) ) {
-                        lastBar.position = freeSpace - val;
-                        this.position = val;
-                    } else {
-                        return; // Not enough free space to do this
+                    if ( mm > max[type] - minimalGap || val < 0 + minimalGap ) {
+                        view.showError();
+                        return;
                     }
+
+                    lastBar.position = lastBar.position + delta;
                 }
             };
 
-            // Make metrics for horizontal bars
-            for (var vb = 0; vb < hBarCount; vb++) {
-                self = this.section.bars.horizontal[vb];
-                methods = {
-                    getter: defaultMethods.getter.bind( self )
-                };
+            _.each(bars, function ( group, type ) {
+                var spaceUsed = 0;
+                var gap;
 
-                if (self.id !== 'gap') {
-                    space = self.space;
-                    methods.setter = defaultMethods.setter.bind( self );
+                group.forEach(function ( bar, i ) {
+                    var p = {
+                        methods: {
+                            getter: defaultMethods.getter.bind( bar ),
+                            setter: defaultMethods.setter.bind( view.section.bars[type][i], type, bar.space )
+                        }
+                    };
+                    var position = view.getBarPosition( type, bar );
+
+                    _.extend(p, params);
+                    p[paramName[type]] = bar.space;
+
+                    barMetric = methods[type]( p );
+                    barMetric.position(position);
+                    groups[type].add(barMetric);
+
+                    spaceUsed += bar.space;
+                });
+                // Add gap
+                var gapObject = {
+                    position: max[type],
+                    space: max[type] - spaceUsed
+                };
+                var p = {
+                    methods: {
+                        getter: defaultMethods.gap_getter.bind( gapObject )
+                    }
+                };
+                var position = view.getBarPosition( type, gapObject );
+
+                if (group.length > 0) {
+                    p.methods.setter = defaultMethods.gap_setter.bind( gapObject, type );
                 }
 
-                _.extend( vParams, params, {
-                    height: space,
-                    methods: methods
-                });
+                _.extend(p, params);
+                p[paramName[type]] = gapObject.space;
 
-                barMetric = this.createVerticalMetrics( vParams );
-                barMetric.position({
-                    x: 0,
-                    y: (self.position - self.space) * this.ratio
-                });
+                gap = methods[type]( p );
+                gap.position(position);
+                groups[type].add(gap);
+            });
 
-                vertical.add(barMetric);
-
-                vSpaceUsed += space;
-            }
-
-            // Make metrics for vertical bars
-            for (var hb = 0; hb < vBarCount; hb++) {
-                self = this.section.bars.vertical[hb];
-                methods = {
-                    getter: defaultMethods.getter.bind( self )
-                };
-
-                if (self.id !== 'gap') {
-                    space = self.space;
-                    methods.setter = defaultMethods.setter.bind( self );
-                }
-
-                _.extend( hParams, params, {
-                    width: space,
-                    methods: methods
-                } );
-
-                barMetric = this.createHorizontalMetrics( hParams );
-                barMetric.position({
-                    x: metricSize + ((self.position - self.space) * this.ratio),
-                    y: params.height * this.ratio
-                });
-
-                horizontal.add(barMetric);
-
-                hSpaceUsed += space;
-            }
-
-            metrics.add( vertical, horizontal );
+            metrics.add( groups.vertical, groups.horizontal );
 
             return metrics;
         },
@@ -364,7 +346,7 @@ var app = app || {};
                         var mm = app.utils.convert.inches_to_mm(inches);
 
                         params.setter(mm);
-                        view.recalculateSpaces();
+                        view.sortBars();
                         view.saveBars();
 
                         $wrap.remove();
@@ -398,8 +380,7 @@ var app = app || {};
                 for (var i = 0; i < vertical_count; i++) {
                     var vbar = {
                         id: i,
-                        position: vSpace * (i + 1),
-                        space: vSpace
+                        position: vSpace * (i + 1)
                     };
 
                     vertical.push(vbar);
@@ -416,8 +397,7 @@ var app = app || {};
                 for (var j = 0; j < horizontal_count; j++) {
                     var hbar = {
                         id: j,
-                        position: hSpace * (j + 1),
-                        space: hSpace
+                        position: hSpace * (j + 1)
                     };
 
                     horizontal.push(hbar);
@@ -433,32 +413,11 @@ var app = app || {};
 
             return bars;
         },
-        recalculateSpaces: function () {
-            // @TODO: Take into account "lock" param in this calculation
-            // Always change space in a "gap"
-            var max = {
-                vertical: this.getSize().width,
-                horizontal: this.getSize().height
-            };
-
-            _.each(this.section.bars, function ( group, type ) {
-                var sum = 0;
-                var gap_space = 0;
-
+        sortBars: function () {
+            _.each(this.section.bars, function ( group ) {
                 group.sort(function ( a, b ) {
                     return a.position > b.position;
                 });
-
-                group.forEach(function ( bar ) {
-                    bar.space = bar.position - sum;
-                    sum += bar.space;
-                });
-
-                if ( sum < max[type] ) {
-                    gap_space = max[type] - sum;
-                    console.log( 'gap', type, gap_space );
-                }
-
             });
         },
         saveBars: function () {
@@ -476,10 +435,6 @@ var app = app || {};
             this.ui.$bar_vertical.val( this.getBarsCount().vertical );
             this.ui.$bar_horizontal.val( this.getBarsCount().horizontal );
 
-            if (this.section.bars.vertical.length === 0 && this.section.bars.horizontal.length === 0) {
-                this.section.bars = this.changeBarsNumber( 'both' );
-            }
-
             this.trigger('updateSection');
             return this;
         },
@@ -496,6 +451,30 @@ var app = app || {};
                 horizontal: this.section.bars.horizontal.length,
                 vertical: this.section.bars.vertical.length
             };
+        },
+        getBarPosition: function ( type, bar ) {
+            var position = {
+                x: 0,
+                y: 0
+            };
+
+            if ( typeof bar === 'object' && 'position' in bar && 'space' in bar) {
+                if (type === 'horizontal') {
+                    position = {
+                        x: 0,
+                        y: (bar.position - bar.space) * this.ratio
+                    };
+                }
+
+                if (type === 'vertical') {
+                    position = {
+                        x: metricSize + ((bar.position - bar.space) * this.ratio),
+                        y: this.getSize().height * this.ratio
+                    };
+                }
+            }
+
+            return position;
         },
         getSize: function () {
             return {

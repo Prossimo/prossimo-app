@@ -629,42 +629,47 @@ var app = app || {};
             var bar;
 
             var hBarCount = section.bars.horizontal.length;
-            var vSpaceUsed = 0;
             var vBarCount = section.bars.vertical.length;
-            var hSpaceUsed = 0;
+            var glazing_bar_width = this.model.get('glazing_bar_width');
             var space;
 
             for (var i = 0; i < vBarCount; i++) {
-                if (section.bars.vertical[i].id === 'gap') { continue; }
-
-                space = section.bars.vertical[i].space;
+                space = section.bars.vertical[i].position;
 
                 bar = new Konva.Rect({
-                    x: fillX + (vSpaceUsed + space) - (this.model.get('glazing_bar_width') / 2), y: fillY,
-                    width: this.model.get('glazing_bar_width'), height: fillHeight,
+                    x: fillX + space - (glazing_bar_width / 2), y: fillY,
+                    width: glazing_bar_width, height: fillHeight,
                     fill: 'white', listening: false
                 });
                 group.add(bar);
-
-                vSpaceUsed += space;
             }
 
             for (i = 0; i < hBarCount; i++) {
-                if (section.bars.horizontal[i].id === 'gap') { continue; }
-
-                space = section.bars.horizontal[i].space;
+                space = section.bars.horizontal[i].position;
 
                 bar = new Konva.Rect({
-                    x: fillX, y: fillY + (hSpaceUsed + space) - (this.model.get('glazing_bar_width') / 2),
-                    width: fillWidth, height: this.model.get('glazing_bar_width'),
+                    x: fillX, y: fillY + space - (glazing_bar_width / 2),
+                    width: fillWidth, height: glazing_bar_width,
                     fill: 'white', listening: false
                 });
                 group.add(bar);
-
-                hSpaceUsed += space;
             }
 
             return group;
+        },
+        getBarsWithSpaces: function ( section ) {
+            var bars = JSON.parse( JSON.stringify( section.bars ) );
+
+            _.each(bars, function ( group ) {
+                var spaceUsed = 0;
+
+                group.forEach(function ( bar ) {
+                    bar.space = bar.position - spaceUsed;
+                    spaceUsed += bar.space;
+                });
+            });
+
+            return bars;
         },
         createHandle: function (section, params) {
             var type = section.sashType;
