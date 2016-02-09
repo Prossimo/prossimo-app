@@ -10,11 +10,6 @@ var app = app || {};
     app.DrawingGlazingPopup = Marionette.ItemView.extend({
         className: 'drawing-glazing-popup',
         template: app.templates['drawing/drawing-glazing-view'],
-        initialize: function () {
-            $('body').append( this.render().el );
-
-            this.on('updateSection', this.onUpdate, this);
-        },
         ui: {
             $modal: '#glazingPopup',
             $body: '.modal-body',
@@ -26,6 +21,15 @@ var app = app || {};
         events: {
             'change @ui.$bar_vertical': 'handleVBarsNumberChange',
             'change @ui.$bar_horizontal': 'handleHBarsNumberChange'
+        },
+        initialize: function () {
+            $('body').append( this.render().el );
+
+            this.ui.$modal.modal({
+                keyboard: false
+            });
+
+            this.on('updateSection', this.onUpdate, this);
         },
         handleVBarsNumberChange: function () {
             this.handleBarsNumberChange( 'vertical' );
@@ -219,8 +223,7 @@ var app = app || {};
                 },
                 setter: function ( type, space, val ) {
                     var delta = val - space;
-                    var sign = Math.sign( val );
-                    var mm = app.utils.parseFormat.dimension( this.position + delta ) * sign;
+                    var mm = app.utils.parseFormat.dimension( this.position + delta );
 
                     if ( mm >= max[type] - minimalGap || (this.position + delta) < 0 + minimalGap ) {
                         view.showError();
@@ -341,9 +344,16 @@ var app = app || {};
                 .select()
                 .on('keyup', function (e) {
                     if (e.keyCode === 13) {  // enter
-                        var sign = Math.sign(this.value);
-                        var inches = app.utils.parseFormat.dimension(this.value) * sign;
-                        var mm = app.utils.convert.inches_to_mm(inches);
+                        var _value = this.value;
+                        var sign = 1;
+
+                        if (_value[0] === '-') {
+                            sign = -1;
+                            _value = _value.slice(1);
+                        }
+
+                        var inches = app.utils.parseFormat.dimension(_value);
+                        var mm = app.utils.convert.inches_to_mm(inches) * sign;
 
                         params.setter(mm);
                         view.sortBars();
@@ -379,7 +389,6 @@ var app = app || {};
 
                 for (var i = 0; i < vertical_count; i++) {
                     var vbar = {
-                        id: i,
                         position: vSpace * (i + 1)
                     };
 
@@ -396,7 +405,6 @@ var app = app || {};
 
                 for (var j = 0; j < horizontal_count; j++) {
                     var hbar = {
-                        id: j,
                         position: hSpace * (j + 1)
                     };
 
