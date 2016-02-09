@@ -24,8 +24,12 @@ var app = app || {};
 
             this.collection.fetch({
                 remove: false,
+                success: function () {
+                    self.getLastProject();
+                },
                 error: function () {
                     self.no_backend = true;
+                    self.getLastProject();
                 },
                 data: {
                     limit: 0
@@ -36,6 +40,7 @@ var app = app || {};
             var new_id = this.ui.$select.val();
 
             this.setCurrentProject(new_id);
+            this.setLastProject(new_id);
         },
         onAddNewLocalProject: function () {
             var new_id = this.collection.length + 1;
@@ -49,6 +54,10 @@ var app = app || {};
         setCurrentProject: function (new_id) {
             app.current_project = this.collection.get(new_id);
 
+            if ( !app.current_project ) {
+                return;
+            }
+
             if ( app.current_project.get('no_backend') === true ) {
                 app.no_backend = true;
             } else {
@@ -56,6 +65,20 @@ var app = app || {};
             }
 
             app.vent.trigger('current_project_changed');
+        },
+        setLastProject: function (new_id) {
+            // Save selected project into a localStorage
+            if ( 'localStorage' in window && 'setItem' in window.localStorage ) {
+                window.localStorage.setItem('app_currentProject', new_id);
+            }
+        },
+        getLastProject: function () {
+            // Get selected project from a localStorage
+            if ( 'localStorage' in window && 'getItem' in window.localStorage ) {
+                var last_id = window.localStorage.getItem('app_currentProject');
+
+                this.ui.$select.val(last_id).trigger('change');
+            }
         },
         onRender: function () {
             this.ui.$select.selectpicker({

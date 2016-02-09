@@ -17,6 +17,8 @@ $(document).ready(function () {
         collection: app.projects
     });
 
+    app.$container = $('body');
+
     app.main_region = new Marionette.Region({
         el: '#main'
     });

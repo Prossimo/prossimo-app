@@ -54,8 +54,6 @@ var app = app || {};
             $title: '#drawing-view-title',
             $bars_control: '#bars-control',
             $section_control: '#section_control',
-            $vertical_bars_number: '#vertical-bars-number',
-            $horizontal_bars_number: '#horizontal-bars-number',
             $filling_select: '#filling-select'
         },
 
@@ -70,7 +68,8 @@ var app = app || {};
             'input #vertical-bars-number': 'handleBarNumberChange',
             'change #horizontal-bars-number': 'handleBarNumberChange',
             'input #horizontal-bars-number': 'handleBarNumberChange',
-            'change #filling-select': 'handleFillingTypeChange'
+            'change #filling-select': 'handleFillingTypeChange',
+            'click #glazing-bars-popup': 'handleGlazingBarsPopupClick'
         },
 
         handleCanvasKeyDown: function (e) {
@@ -98,11 +97,14 @@ var app = app || {};
                 openingView: openingView
             });
         },
-        handleBarNumberChange: function () {
-            this.model.setSectionBars(this.state.selectedSashId, {
-                vertical: this.ui.$vertical_bars_number.val(),
-                horizontal: this.ui.$horizontal_bars_number.val()
-            });
+        handleGlazingBarsPopupClick: function () {
+            if ( !this.glazing_view ) {
+                this.createGlazingPopup();
+            }
+
+            this.glazing_view
+                    .setSection( this.state.selectedSashId )
+                    .showModal();
         },
         handleFillingTypeChange: function () {
             var filling_type;
@@ -191,6 +193,10 @@ var app = app || {};
         // Marrionente lifecycle method
         onDestroy: function () {
             this.stage.destroy();
+
+            if ( this.glazing_view ) {
+                this.glazing_view.destroy();
+            }
         },
 
         serializeData: function () {
@@ -205,7 +211,12 @@ var app = app || {};
                     })
             };
         },
-
+        createGlazingPopup: function () {
+            this.glazing_view = new app.DrawingGlazingPopup({
+                parent_view: this,
+                model: this.model
+            });
+        },
         // common case frame
         // almost all sashes build via this frame
         // it draw just "edges"
@@ -262,7 +273,9 @@ var app = app || {};
 
             var sectionId = params.sectionId;
 
-            group.on('click', this.handleObjectClick.bind(this, sectionId));
+            if ( params.nobind !== true ) {
+                group.on('click', this.handleObjectClick.bind(this, sectionId));
+            }
 
             return group;
         },
@@ -614,29 +627,49 @@ var app = app || {};
 
             var group = new Konva.Group();
             var bar;
-            var x_offset = fillWidth / (section.vertical_bars_number + 1);
 
-            for (var i = 0; i < section.vertical_bars_number; i++) {
+            var hBarCount = section.bars.horizontal.length;
+            var vBarCount = section.bars.vertical.length;
+            var glazing_bar_width = this.model.get('glazing_bar_width');
+            var space;
+
+            for (var i = 0; i < vBarCount; i++) {
+                space = section.bars.vertical[i].position;
+
                 bar = new Konva.Rect({
-                    x: fillX + x_offset * (i + 1), y: fillY,
-                    width: this.model.get('glazing_bar_width'), height: fillHeight,
+                    x: fillX + space - (glazing_bar_width / 2), y: fillY,
+                    width: glazing_bar_width, height: fillHeight,
                     fill: 'white', listening: false
                 });
                 group.add(bar);
             }
 
-            var y_offset = fillHeight / (section.horizontal_bars_number + 1);
+            for (i = 0; i < hBarCount; i++) {
+                space = section.bars.horizontal[i].position;
 
-            for (i = 0; i < section.horizontal_bars_number; i++) {
                 bar = new Konva.Rect({
-                    x: fillX, y: fillY + y_offset * (i + 1),
-                    width: fillWidth, height: this.model.get('glazing_bar_width'),
+                    x: fillX, y: fillY + space - (glazing_bar_width / 2),
+                    width: fillWidth, height: glazing_bar_width,
                     fill: 'white', listening: false
                 });
                 group.add(bar);
             }
 
             return group;
+        },
+        getBarsWithSpaces: function ( section ) {
+            var bars = JSON.parse( JSON.stringify( section.bars ) );
+
+            _.each(bars, function ( group ) {
+                var spaceUsed = 0;
+
+                group.forEach(function ( bar ) {
+                    bar.space = bar.position - spaceUsed;
+                    spaceUsed += bar.space;
+                });
+            });
+
+            return bars;
         },
         createHandle: function (section, params) {
             var type = section.sashType;
@@ -1503,13 +1536,6 @@ var app = app || {};
                 !isArched &&
                 !!selectedSashId &&
                 selectedSash.fillingType === 'glass'
-            );
-
-            this.ui.$vertical_bars_number.val(
-                selectedSash && selectedSash.vertical_bars_number || 0
-            );
-            this.ui.$horizontal_bars_number.val(
-                selectedSash && selectedSash.horizontal_bars_number || 0
             );
 
             this.ui.$section_control.toggle(!!selectedSashId);
