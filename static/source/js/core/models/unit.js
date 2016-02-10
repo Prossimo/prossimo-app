@@ -89,12 +89,20 @@ var app = app || {};
         };
     }
 
+    function getDefaultBars() {
+        return {
+            vertical: [],
+            horizontal: []
+        };
+    }
+
     function getSectionDefaults() {
         return {
             id: _.uniqueId(),
             sashType: 'fixed_in_frame',
             fillingType: getDefaultFillingType().fillingType,
-            fillingName: getDefaultFillingType().fillingName
+            fillingName: getDefaultFillingType().fillingName,
+            bars: getDefaultBars()
         };
     }
 
@@ -188,6 +196,10 @@ var app = app || {};
             } else if ( current_section.sashType === 'flush-turn-right' ) {
                 current_section.sashType = 'turn_only_right';
                 current_section.fillingType = 'full-flush-panel';
+            }
+
+            if ( !current_section.bars ) {
+                current_section.bars = getDefaultBars();
             }
 
             _.each(current_section.sections, function (section) {
@@ -456,8 +468,7 @@ var app = app || {};
         },
         setSectionBars: function (sectionId, bars) {
             this._updateSection(sectionId, function (section) {
-                section.vertical_bars_number = parseInt(bars.vertical, 10);
-                section.horizontal_bars_number = parseInt(bars.horizontal, 10);
+                section.bars = bars;
             });
         },
         setFillingType: function (sectionId, type, name) {
@@ -513,6 +524,9 @@ var app = app || {};
 
                 section.divider = type;
                 section.sections = [getSectionDefaults(), getSectionDefaults()];
+
+                // Reset bars parameter
+                section.bars = getDefaultBars();
 
                 if ( section.fillingType && section.fillingName ) {
                     section.sections[0].fillingType = section.sections[1].fillingType = section.fillingType;

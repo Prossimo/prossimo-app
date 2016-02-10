@@ -22,6 +22,8 @@ $(document).ready(function () {
     });
     app.status_panel = new app.StatusPanelView();
 
+    app.$container = $('body');
+
     app.main_region = new Marionette.Region({
         el: '#main'
     });
