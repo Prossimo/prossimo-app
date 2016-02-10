@@ -28,6 +28,8 @@ module.exports = function (grunt) {
         'utils.js',
         'paste-image.js',
         'hot-renderers.js',
+        'core/models/user.js',
+        'core/models/session.js',
         'core/models/unit.js',
         'core/models/accessory.js',
         'core/models/profile.js',
@@ -45,6 +47,7 @@ module.exports = function (grunt) {
         'core/views/units-table-view.js',
         'core/views/project-selector-view.js',
         'core/views/no-project-selected-view.js',
+        'core/views/status-panel-view.js',
         'units-table/views/main-units-table-view.js',
         'docs-import/views/main-docs-import-view.js',
         'docs-import/views/document-selector-view.js',
@@ -397,7 +400,7 @@ module.exports = function (grunt) {
                         },
                         {
                             match: 'api_base_path',
-                            replacement: 'http://127.0.0.1:8000'
+                            replacement: 'http://127.0.0.1:8000/api'
                         }
                     ]
                 },

@@ -1,7 +1,9 @@
+//  ------------------------------------------------------------------------
 //  Header
 //  ------------------------------------------------------------------------
 
 .header {
+    .clearfix();
     position: fixed;
     z-index: 300;
     top: 0;
@@ -13,10 +15,12 @@
 }
 
 
+//  ------------------------------------------------------------------------
 //  Project selector
 //  ------------------------------------------------------------------------
 
 .project-selector {
+    float: left;
     padding: 1rem 3rem;
 }
 
@@ -26,4 +30,28 @@
     color: darken(@white, 10%);
     font-size: 1em;
     vertical-align: middle;
+}
+
+
+//  ------------------------------------------------------------------------
+//  Status panel
+//  ------------------------------------------------------------------------
+
+.status-panel {
+    float: right;
+    padding: 1rem 3rem;
+    color: darken(@white, 10%);
+}
+
+.status-panel p,
+.status-panel ul {
+    display: inline-block;
+}
+
+.status-panel ul {
+    list-style-type: none;
+}
+
+.status-panel a {
+    color: inherit;
 }

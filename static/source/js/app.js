@@ -3,8 +3,6 @@ var app = app || {};
 $(document).ready(function () {
     'use strict';
 
-    app.router = new app.AppRouter();
-
     //  Register a communication channel for all events in the app
     app.vent = {};
     _.extend(app.vent, Backbone.Events);
@@ -12,10 +10,17 @@ $(document).ready(function () {
     //  Object to hold project-independent properties
     app.settings = new app.Settings();
 
+    app.session = new app.Session();
+    //  TODO: check auth on load
+    // app.session.checkAuthInitial();
+
+    app.router = new app.AppRouter();
+
     app.projects = new app.ProjectCollection();
     app.project_selector = new app.ProjectSelectorView({
         collection: app.projects
     });
+    app.status_panel = new app.StatusPanelView();
 
     app.main_region = new Marionette.Region({
         el: '#main'
