@@ -4,14 +4,14 @@ var app = app || {};
     'use strict';
 
     //  Monkey-patch Backbone.Sync to include auth token with every request
+    //  TODO: is this a good place to store this function? What if we move it
+    //  to a separate file or something
     var backboneSync = Backbone.sync;
 
     Backbone.sync = function (method, model, options) {
         //  TODO: do we need conditional loading from localStorage? Do we need
         //  to use cookies as a fallback?
-        // var token = window.localStorage.getItem('authToken');
-        var token = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXUyJ9.eyJleHAiOjE0NTUwODQ1NDAsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOiIxNDU0OTk4MTQwIn0.c-Ioa0o2af4ssiHEFAFYDEkiDjj8aJB_RP-aWUNVPTzPBeB8wIHwM7PENj0A0fOVrtmIrLNKALfB874esP61lHeJ5i0fXPsmEFWceNxo9Ps9lHF7ioKAAaPVECUtNGPPJmt-R6_AOOr6re4Zlp_W-I7jyMJINZedX_lMs5C7p4JWH2oevsE_FlNv7c76NQjVxcdE9fsiihx0nDhYokeQoaTG0YiDfZRZydhLNbklM_RQHbTgPFznxe4BnwHRP6FsF_FSFWWLGEoId9ri99aitHdO4Jwqw9iCjAccSNw5KGdMfRWoWAwIm0m22uT3lZkYzU8EQpVvXcDPruiHDZhIGaQ4uZpSbhoBWZa3YdSC0uQCiq78YOU6o7YestkKNagxmaxzGDk4tNWWSHyenjb9FsQAzLMuGe3FroJtjzOiGtiqwToPFpPYs4_z1eQ_9byV-7EVGwgPSheK6F9Ie7ePh5tgExy4mildoMoNgARnCSGPWL97BF73h2k9Pd5h0jpO4xgZxV7JAVVk0J_TDVJrzg_4tr_NktS47RoNMvGNy2UlTr3CR6SF18QUETBkY8SdAKZwNVYqSCSN0XMaFKd_2AOBd5_S06BDkfwxZ9ZoHV2IdrNU9pOCqBJv2ZTs_3KpqICddBuw2Bqx_xwrj1-cKazrznYXAZN6WAYQmSQ9q2M';
-        token = '123';
+        var token = window.localStorage.getItem('authToken');
 
         var errorCallback = options.error;
 
@@ -25,11 +25,12 @@ var app = app || {};
 
             //  We just received an 401 Unauthorized response
             if ( textStatus === 'error' && xhr.status === 401 ) {
-                app.vent.trigger('auth-error');
+                app.vent.trigger('auth:error');
             }
 
             //  This is the same thing they do in the original Backbone.Sync
-            if ( options.errorCallback ) {
+            // if ( options.errorCallback ) {
+            if ( errorCallback ) {
                 options.textStatus = textStatus;
                 options.errorThrown = errorThrown;
                 errorCallback.call(options.context, xhr, textStatus, errorThrown);
@@ -53,31 +54,65 @@ var app = app || {};
         initialize: function () {
             this.user = new app.User();
 
-            this.listenTo(app.vent, 'auth-error', this.onAuthError);
+            this.listenTo(app.vent, 'auth:error', this.onAuthError);
+            this.listenTo(app.vent, 'auth:login', this.onAuthLogin);
+            this.listenTo(app.vent, 'auth:logout', this.onAuthLogout);
         },
         updateSessionUser: function (user_data) {
             this.user.set(_.pick(user_data, _.keys(this.user.defaults)));
         },
         onAuthError: function () {
-            console.log( 'just received an auth error from vent' );
+            console.log( 'just received an auth error event from vent' );
 
             window.localStorage.removeItem('authToken');
         },
-        // Contact server to see if it thinks that user is still logged in.
-        checkAuth: function () {
+        onAuthLogin: function () {
+            console.log( 'just received an auth login event from vent' );
+        },
+        onAuthLogout: function () {
+            console.log( 'just received an auth logout event from vent' );
+        },
+        // Contact server to see if it thinks that user is logged in
+        checkAuth: function (callback) {
             var self = this;
 
+            console.log( 'checkAuth' );
+
             this.fetch({
-                url: app.settings.get('api_base_path') + '/login_check',
+                url: app.settings.get('api_base_path') + '/users/current',
+                // success: function (response, textStatus, jqXHR) {
                 success: function (model, response) {
+                    console.log( 'checkAuth success' );
+                    console.log( 'model', model );
+                    console.log( 'response', response );
+                    // console.log( 'textStatus', textStatus );
+                    // console.log( 'jqXHR', jqXHR );
+
                     if ( !response.error && response.user ) {
                         self.updateSessionUser(response.user);
                         self.set({ is_logged_in: true });
                     } else {
                         self.set({ is_logged_in: false });
                     }
-                }, error: function () {
+
+                    if ( callback && 'success' in callback) {
+                        callback.success(response);
+                    }
+                // }, error: function () {
+                // }, error: function (response, jqXHR, textStatus) {
+                }, error: function (model, response) {
+                    console.log( 'checkAuth error' );
+                    console.log( 'model', model );
+                    console.log( 'response', response );
+                    // console.log( 'textStatus', textStatus );
+                    // console.log( 'jqXHR', jqXHR );
+
                     self.set({ is_logged_in: false });
+
+                    if ( callback && 'error' in callback ) {
+                        // callback.error(response, jqXHR, textStatus);
+                        callback.error(response);
+                    }
                 }
             });
         },
@@ -85,31 +120,59 @@ var app = app || {};
             var self = this;
 
             $.ajax({
-                url: '/api/auth/' + opts.method,
+                // url: '/api/auth/' + opts.method,
+                // url: '/api/auth/' + opts.method,
+                url: app.settings.get('api_base_path') + '/login_check',
                 contentType: 'application/json',
                 dataType: 'json',
                 type: 'POST',
-                beforeSend: function (xhr) {
-                    // Set the CSRF Token in the header for security
-                    var token = $('meta[name="csrf-token"]').attr('content');
+                // beforeSend: function (xhr) {
+                //     // Set the CSRF Token in the header for security
+                //     var token = $('meta[name="csrf-token"]').attr('content');
 
-                    if ( token ) {
-                        xhr.setRequestHeader('X-CSRF-Token', token);
-                    }
-                },
-                data: JSON.stringify(_.omit(opts, 'method')),
+                //     if ( token ) {
+                //         xhr.setRequestHeader('X-CSRF-Token', token);
+                //     }
+                // },
+                data: JSON.stringify({
+                    _username: opts.username,
+                    _password: opts.password
+                }),
                 success: function (response, textStatus, jqXHR) {
-                    if ( !response.error ) {
-                        if ( _.indexOf(['login', 'signup', 'signup-with-domain'], opts.method) !== -1 ) {
-                            self.updateSessionUser( response.user || {} );
-                            self.set({ is_logged_in: true });
+                    console.log( 'postAuth success' );
+                    console.log( 'response', response );
+                    console.log( 'textStatus', textStatus );
+                    console.log( 'jqXHR', jqXHR );
+
+                    //  TODO: save token to localstorage && call check auth
+                    if ( !response.error && 'token' in response ) {
+                        // if ( _.indexOf(['login', 'signup', 'signup-with-domain'], opts.method) !== -1 ) {
+
+                        if ( opts.method === 'login' ) {
+                            // if (  )
+                            // self.checkAuth(function () {
+                            //     console.log( 'succsess callback inside checkAuth' );
+                            //     console.log( 'callback', callback );
+
+                            //     if ( callback && 'success' in callback) {
+                            //         callback.success(response);
+                            //     }
+                            // });
+
+                            window.localStorage.setItem('authToken', response.token);
+
+                            self.checkAuth(callback);
+
+                            // self.updateSessionUser( response.user || {} );
+                            // self.set({ is_logged_in: true });
                         } else {
                             self.set({ is_logged_in: false });
+
+                            if ( callback && 'success' in callback) {
+                                callback.success(response);
+                            }
                         }
 
-                        if ( callback && 'success' in callback) {
-                            callback.success(response);
-                        }
                     } else {
                         if ( callback && 'error' in callback ) {
                             callback.error(response, jqXHR, textStatus);
@@ -117,11 +180,21 @@ var app = app || {};
                     }
                 },
                 error: function (jqXHR, textStatus) {
+                    console.log( 'postAuth error' );
+                    // console.log( 'response', response );
+                    console.log( 'textStatus', textStatus );
+                    console.log( 'jqXHR', jqXHR );
+
                     if ( callback && 'error' in callback ) {
                         callback.error(undefined, jqXHR, textStatus);
                     }
                 }
             }).complete(function (jqXHR, textStatus) {
+                // console.log( 'postAuth complete' );
+                // console.log( 'response', response );
+                // console.log( 'textStatus', textStatus );
+                // console.log( 'jqXHR', jqXHR );
+
                 if ( callback && 'complete' in callback ) {
                     callback.complete(jqXHR, textStatus);
                 }

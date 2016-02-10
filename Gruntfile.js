@@ -26,6 +26,7 @@ module.exports = function (grunt) {
         'backbone-extensions.js',
         'backbone-safesync.js',
         'router.js',
+        'dialogs.js',
         'utils.js',
         'paste-image.js',
         'hot-renderers.js',
@@ -69,6 +70,8 @@ module.exports = function (grunt) {
         'settings/views/ui-settings-view.js',
         'supplier-request/views/main-supplier-request-view.js',
         'supplier-request/views/supplier-request-header-view.js',
+        'dialogs/views/base-dialog-view.js',
+        'dialogs/views/login-dialog-view.js',
         'app.js'
     ];
 

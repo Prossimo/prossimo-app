@@ -1,5 +1,7 @@
 var app = app || {};
 
+window.ENTER_KEY = 13;
+
 $(document).ready(function () {
     'use strict';
 
@@ -17,16 +19,11 @@ $(document).ready(function () {
     app.router = new app.AppRouter();
 
     app.projects = new app.ProjectCollection();
-    app.project_selector = new app.ProjectSelectorView({
-        collection: app.projects
-    });
+    app.project_selector = new app.ProjectSelectorView({ collection: app.projects });
     app.status_panel = new app.StatusPanelView();
 
-    app.$container = $('body');
-
-    app.main_region = new Marionette.Region({
-        el: '#main'
-    });
+    app.main_region = new Marionette.Region({ el: '#main' });
+    app.dialogs = new app.Dialogs();
 
     app.main_navigation = new app.MainNavigationView({
         units_table: {

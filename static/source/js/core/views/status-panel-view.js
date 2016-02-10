@@ -19,10 +19,13 @@ var app = app || {};
         onLogin: function (e) {
             e.preventDefault();
             console.log( 'trigger login event' );
+            app.vent.trigger('auth:login');
+            app.dialogs.showDialog('login');
         },
         onLogout: function (e) {
             e.preventDefault();
             console.log( 'trigger logout event' );
+            app.vent.trigger('auth:logout');
         },
         onRender: function () {
 
