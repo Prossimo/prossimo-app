@@ -91,6 +91,11 @@ var app = app || {};
                 this.ui.$error_container.html('<p>' + message + '</p>');
             }
         },
+        serializeData: function () {
+            return {
+                token_expired: app.session.get('token_expired')
+            };
+        },
         onRender: function () {
             this.$el.find('.modal-header').remove();
             this.toggleError();

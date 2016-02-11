@@ -43,13 +43,23 @@ var app = app || {};
         defaults: {
             no_backend: false,
             is_initial: true,
-            is_logged_in: false
+            is_logged_in: false,
+            token_expired: false
         },
         initialize: function () {
+            var self = this;
+
             this.user = new app.User();
 
             this.listenTo(app.vent, 'auth:error', this.onAuthError);
             this.listenTo(app.vent, 'auth:logout', this.onAuthLogout);
+
+            //  Check auth status each 15 minutes
+            setInterval(function () {
+                if ( self.get('is_logged_in') === true && self.get('no_backend') === false ) {
+                    self.checkAuth();
+                }
+            }, 1000 * 60 * 15);
         },
         updateSessionUser: function (user_data) {
             this.user.set(_.pick(user_data, _.keys(this.user.defaults)));
@@ -59,6 +69,11 @@ var app = app || {};
         },
         onAuthError: function () {
             window.localStorage.removeItem('authToken');
+
+            if ( this.get('is_initial') === false ) {
+                this.set('token_expired', true);
+            }
+
             app.dialogs.showDialog('login');
         },
         onAuthLogout: function () {
@@ -74,7 +89,10 @@ var app = app || {};
                 success: function (model, response) {
                     if ( !response.error && response.user ) {
                         self.updateSessionUser(response.user);
-                        self.set({ is_logged_in: true });
+                        self.set({
+                            is_logged_in: true,
+                            token_expired: false
+                        });
 
                         if ( self.get('is_initial') === true ) {
                             self.set('is_initial', false);
