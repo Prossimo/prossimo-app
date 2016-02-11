@@ -41,6 +41,7 @@ var app = app || {};
 
     app.Session = Backbone.Model.extend({
         defaults: {
+            no_backend: false,
             is_initial: true,
             is_logged_in: false
         },
@@ -92,6 +93,12 @@ var app = app || {};
                     d.resolve(model, response);
                 }, error: function (model, response) {
                     self.set({ is_logged_in: false });
+
+                    //  Status === 0 means no connection
+                    if ( response.status === 0 && self.get('is_initial') === true ) {
+                        self.set('no_backend', true);
+                        app.vent.trigger('auth:no_backend');
+                    }
 
                     if ( callback && 'error' in callback ) {
                         callback.error(response);

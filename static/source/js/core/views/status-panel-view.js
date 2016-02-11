@@ -15,6 +15,7 @@ var app = app || {};
             $('#header').append( this.render().el );
 
             this.listenTo(app.session, 'change:is_logged_in', this.render);
+            this.listenTo(app.vent, 'auth:no_backend', this.render);
         },
         onLogin: function (e) {
             e.preventDefault();
@@ -26,6 +27,7 @@ var app = app || {};
         },
         serializeData: function () {
             return {
+                no_backend: app.session.get('no_backend'),
                 is_logged_in: app.session.get('is_logged_in'),
                 user: app.session.user.get('username')
             };

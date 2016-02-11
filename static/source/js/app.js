@@ -75,7 +75,7 @@ $(document).ready(function () {
     app.paste_image_helper = new app.PasteImageHelper();
     app.session.checkAuth();
 
-    app.vent.on('auth:initial_login', function () {
+    app.vent.on('auth:initial_login auth:no_backend', function () {
         Backbone.history.start({ pushState: true });
 
         if ( Backbone.history.fragment === '' ) {
