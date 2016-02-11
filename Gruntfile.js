@@ -427,7 +427,7 @@ module.exports = function (grunt) {
                         },
                         {
                             match: 'api_base_path',
-                            replacement: '/api'
+                            replacement: '/api/api'
                         }
 
                     ]
