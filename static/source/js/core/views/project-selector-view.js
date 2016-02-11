@@ -15,12 +15,17 @@ var app = app || {};
             'click .js-add-new-local-project': 'onAddNewLocalProject'
         },
         initialize: function () {
-            var self = this;
-
-            this.no_backend = false;
-            this.listenTo(this.collection, 'all', this.render);
-
             $('#header').append( this.render().el );
+
+            this.listenTo(this.collection, 'all', this.render);
+            this.listenTo(app.vent, 'auth:initial_login', this.onInitialLogin);
+            this.listenTo(app.vent, 'auth:no_backend', this.onNoBackend);
+        },
+        onInitialLogin: function () {
+            this.fetchData();
+        },
+        fetchData: function () {
+            var self = this;
 
             this.collection.fetch({
                 remove: false,
@@ -28,13 +33,15 @@ var app = app || {};
                     self.getLastProject();
                 },
                 error: function () {
-                    self.no_backend = true;
                     self.getLastProject();
                 },
                 data: {
                     limit: 0
                 }
             });
+        },
+        onNoBackend: function () {
+            this.getLastProject();
         },
         onChange: function () {
             var new_id = this.ui.$select.val();
@@ -59,9 +66,10 @@ var app = app || {};
             }
 
             if ( app.current_project.get('no_backend') === true ) {
-                app.no_backend = true;
-            } else {
-                delete app.no_backend;
+                app.session.set('no_backend', true);
+            } else if ( app.session.get('no_backend') === true ) {
+                app.session.set('no_backend', false);
+                this.render();
             }
 
             app.vent.trigger('current_project_changed');
@@ -88,7 +96,7 @@ var app = app || {};
         },
         serializeData: function () {
             return {
-                no_backend: this.no_backend,
+                no_backend: app.session.get('no_backend'),
                 project_list: this.collection.map(function (item) {
                     return {
                         is_selected: app.current_project && item.id === app.current_project.id,

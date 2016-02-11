@@ -1,9 +1,9 @@
 var app = app || {};
 
+window.ENTER_KEY = 13;
+
 $(document).ready(function () {
     'use strict';
-
-    app.router = new app.AppRouter();
 
     //  Register a communication channel for all events in the app
     app.vent = {};
@@ -11,17 +11,15 @@ $(document).ready(function () {
 
     //  Object to hold project-independent properties
     app.settings = new app.Settings();
+    app.session = new app.Session();
+    app.router = new app.AppRouter();
 
     app.projects = new app.ProjectCollection();
-    app.project_selector = new app.ProjectSelectorView({
-        collection: app.projects
-    });
+    app.project_selector = new app.ProjectSelectorView({ collection: app.projects });
+    app.status_panel = new app.StatusPanelView();
 
-    app.$container = $('body');
-
-    app.main_region = new Marionette.Region({
-        el: '#main'
-    });
+    app.main_region = new Marionette.Region({ el: '#main' });
+    app.dialogs = new app.Dialogs();
 
     app.main_navigation = new app.MainNavigationView({
         units_table: {
@@ -74,10 +72,14 @@ $(document).ready(function () {
         }
     });
 
-    Backbone.history.start({ pushState: true });
     app.paste_image_helper = new app.PasteImageHelper();
+    app.session.checkAuth();
 
-    if ( Backbone.history.fragment === '' ) {
-        app.router.navigate('/units/', { trigger: true });
-    }
+    app.vent.on('auth:initial_login auth:no_backend', function () {
+        Backbone.history.start({ pushState: true });
+
+        if ( Backbone.history.fragment === '' ) {
+            app.router.navigate('/units/', { trigger: true });
+        }
+    });
 });

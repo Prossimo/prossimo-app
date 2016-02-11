@@ -19,5 +19,6 @@
     <aside id="sidebar" class="sidebar"></aside>
     <header id="header" class="header"></header>
     <main id="main" class="main"></main>
+    <div id="dialogs" class="dialog-container"></div>
 </body>
 </html>

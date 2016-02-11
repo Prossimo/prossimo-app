@@ -26,9 +26,12 @@ module.exports = function (grunt) {
         'backbone-extensions.js',
         'backbone-safesync.js',
         'router.js',
+        'dialogs.js',
         'utils.js',
         'paste-image.js',
         'hot-renderers.js',
+        'core/models/user.js',
+        'core/models/session.js',
         'core/models/unit.js',
         'core/models/accessory.js',
         'core/models/profile.js',
@@ -46,6 +49,7 @@ module.exports = function (grunt) {
         'core/views/units-table-view.js',
         'core/views/project-selector-view.js',
         'core/views/no-project-selected-view.js',
+        'core/views/status-panel-view.js',
         'units-table/views/main-units-table-view.js',
         'docs-import/views/main-docs-import-view.js',
         'docs-import/views/document-selector-view.js',
@@ -66,6 +70,8 @@ module.exports = function (grunt) {
         'settings/views/ui-settings-view.js',
         'supplier-request/views/main-supplier-request-view.js',
         'supplier-request/views/supplier-request-header-view.js',
+        'dialogs/views/base-dialog-view.js',
+        'dialogs/views/login-dialog-view.js',
         'app.js'
     ];
 
@@ -94,8 +100,7 @@ module.exports = function (grunt) {
                 },
                 files: {
                     '<%= buildUrl %>/css/styles.dev.css': '<%= sourceUrl %>/less/styles.less',
-                    '<%= buildUrl %>/css/print.dev.css': '<%= sourceUrl %>/less/print.less',
-                    '<%= buildUrl %>/css/login.dev.css': '<%= sourceUrl %>/less/login.less'
+                    '<%= buildUrl %>/css/print.dev.css': '<%= sourceUrl %>/less/print.less'
                 }
             },
             build: {
@@ -106,8 +111,7 @@ module.exports = function (grunt) {
                 },
                 files: {
                     '<%= buildUrl %>/css/styles.<%= hash %>.css': '<%= sourceUrl %>/less/styles.less',
-                    '<%= buildUrl %>/css/print.<%= hash %>.css': '<%= sourceUrl %>/less/print.less',
-                    '<%= buildUrl %>/css/login.<%= hash %>.css': '<%= sourceUrl %>/less/login.less'
+                    '<%= buildUrl %>/css/print.<%= hash %>.css': '<%= sourceUrl %>/less/print.less'
                 }
             }
         },
@@ -399,7 +403,7 @@ module.exports = function (grunt) {
                         },
                         {
                             match: 'api_base_path',
-                            replacement: 'http://127.0.0.1:8000'
+                            replacement: 'http://127.0.0.1:8000/api'
                         }
                     ]
                 },
@@ -407,10 +411,6 @@ module.exports = function (grunt) {
                     {
                         src: '<%= sourceUrl %>/index.html.tpl',
                         dest: './index.html'
-                    },
-                    {
-                        src: '<%= sourceUrl %>/login.html.tpl',
-                        dest: './login.html'
                     }
                 ]
             },
@@ -436,10 +436,6 @@ module.exports = function (grunt) {
                     {
                         src: '<%= sourceUrl %>/index.html.tpl',
                         dest: './index.html'
-                    },
-                    {
-                        src: '<%= sourceUrl %>/login.html.tpl',
-                        dest: './login.html'
                     }
                 ]
             }
