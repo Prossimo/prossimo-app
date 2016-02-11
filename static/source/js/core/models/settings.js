@@ -85,6 +85,13 @@ var app = app || {};
                 api_base_path: this.get('api_base_path')
             });
 
+            this.listenTo(app.vent, 'auth:initial_login', this.onInitialLogin);
+        },
+        onInitialLogin: function () {
+            this.fetchData();
+        },
+        //  TODO: we might want to fetch projects only after we fetched this
+        fetchData: function () {
             this.profiles.fetch({
                 remove: false,
                 data: {

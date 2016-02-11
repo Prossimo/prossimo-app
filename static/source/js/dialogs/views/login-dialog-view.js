@@ -4,8 +4,6 @@ var app = app || {};
 (function () {
     'use strict';
 
-    //  TODO: user shouldn't be able to close this dialog unless they're
-    //  logged in successhully
     app.LoginDialogView = app.BaseDialogView.extend({
         className: 'login-modal modal fade',
         template: app.templates['dialogs/login-dialog-view'],
@@ -35,8 +33,6 @@ var app = app || {};
             }
         },
         attemptToLogin: function () {
-            console.log( 'attempt to login' );
-
             var username = this.ui.$username_input.val().trim();
             var password = this.ui.$password_input.val().trim();
 
@@ -56,26 +52,15 @@ var app = app || {};
                 password: password
             }, {
                 success: function (response) {
-                    console.log( 'post-auth success callback' );
                     self.processResponse(response);
                 },
-                // error: function (response, jqXHR, textStatus) {
-                error: function (response) {
-                    console.log( 'post-auth error callback' );
-                    // self.processResponse(response, jqXHR, textStatus);
-                    self.processResponse(response);
+                error: function (response, jqXHR, textStatus) {
+                    self.processResponse(response, jqXHR, textStatus);
                 }
             });
         },
-        // processResponse: function (response, jqXHR, textStatus) {
-        processResponse: function (response) {
+        processResponse: function (response, jqXHR) {
             var error_message = 'Server error. Please try again or contact support';
-
-            console.log( 'processResponse' );
-
-            console.log( 'response', response );
-            // console.log( 'jqXHR', jqXHR );
-            // console.log( 'textStatus', textStatus );
 
             this.unfreezeUI();
 
@@ -87,11 +72,11 @@ var app = app || {};
                 return;
             }
 
-            // if ( textStatus === 'error' && jqXHR.responseJSON && jqXHR.responseJSON.message ) {
-            //     error_message = jqXHR.responseJSON.message;
-            // }
-
-            if ( response.error && response.statusText === 'Unauthorized' ) {
+            if ( jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.message &&
+                jqXHR.responseJSON.message === 'Bad credentials'
+            ) {
+                error_message = 'Bad credentials';
+            } else if ( response && response.error && response.statusText === 'Unauthorized' ) {
                 error_message = 'Authorization error. Please try again or contact support';
             }
 
@@ -107,6 +92,7 @@ var app = app || {};
             }
         },
         onRender: function () {
+            this.$el.find('.modal-header').remove();
             this.toggleError();
         }
     });

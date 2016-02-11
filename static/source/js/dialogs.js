@@ -23,8 +23,15 @@ var app = app || {};
                     forceShow: true
                 });
 
+                //  TODO: we only want to set keyboard and show options like
+                //  this for login modal, all other possible modals shoulm't
+                //  have them (but we only have login modal currenlty)
                 if ( this.currentView ) {
-                    this.currentView.$el.modal('show');
+                    this.currentView.$el.modal({
+                        backdrop: 'static',
+                        keyboard: false,
+                        show: true
+                    });
                 }
             }
         },

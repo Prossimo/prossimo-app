@@ -11,11 +11,7 @@ $(document).ready(function () {
 
     //  Object to hold project-independent properties
     app.settings = new app.Settings();
-
     app.session = new app.Session();
-    //  TODO: check auth on load
-    // app.session.checkAuthInitial();
-
     app.router = new app.AppRouter();
 
     app.projects = new app.ProjectCollection();
@@ -76,10 +72,14 @@ $(document).ready(function () {
         }
     });
 
-    Backbone.history.start({ pushState: true });
     app.paste_image_helper = new app.PasteImageHelper();
+    app.session.checkAuth();
 
-    if ( Backbone.history.fragment === '' ) {
-        app.router.navigate('/units/', { trigger: true });
-    }
+    app.vent.on('auth:initial_login', function () {
+        Backbone.history.start({ pushState: true });
+
+        if ( Backbone.history.fragment === '' ) {
+            app.router.navigate('/units/', { trigger: true });
+        }
+    });
 });

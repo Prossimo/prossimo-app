@@ -15,12 +15,17 @@ var app = app || {};
             'click .js-add-new-local-project': 'onAddNewLocalProject'
         },
         initialize: function () {
-            var self = this;
-
             this.no_backend = false;
-            this.listenTo(this.collection, 'all', this.render);
-
             $('#header').append( this.render().el );
+
+            this.listenTo(this.collection, 'all', this.render);
+            this.listenTo(app.vent, 'auth:initial_login', this.onInitialLogin);
+        },
+        onInitialLogin: function () {
+            this.fetchData();
+        },
+        fetchData: function () {
+            var self = this;
 
             this.collection.fetch({
                 remove: false,
