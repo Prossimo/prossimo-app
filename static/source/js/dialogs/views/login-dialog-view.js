@@ -13,7 +13,6 @@ var app = app || {};
             $button: 'button'
         },
         events: {
-            'click button': 'attemptToLogin',
             'keypress input': 'confirmOnEnter',
             'submit form': 'onSubmit'
         },

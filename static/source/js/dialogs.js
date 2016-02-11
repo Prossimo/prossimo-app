@@ -8,6 +8,7 @@ var app = app || {};
         initialize: function () {
             this.registered_dialogs = {};
 
+            //  TODO: should belong somewhere else
             this.login_dialog = new app.LoginDialogView();
             this.registerDialog('login', this.login_dialog);
         },
