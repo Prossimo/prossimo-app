@@ -1,4 +1,3 @@
-/* global ENTER_KEY */
 var app = app || {};
 
 (function () {
@@ -13,11 +12,10 @@ var app = app || {};
             $error_container: '.error-container',
             $button: 'button'
         },
-        // TODO: try to extend events from base form
         events: {
             'click button': 'attemptToLogin',
             'keypress input': 'confirmOnEnter',
-            'submit form': 'returnFalse'
+            'submit form': 'onSubmit'
         },
         freezeUI: function () {
             this.$el.addClass('request-active');
@@ -27,10 +25,9 @@ var app = app || {};
             this.$el.removeClass('request-active');
             this.ui.$button.removeClass('disabled').attr('disabled', false);
         },
-        confirmOnEnter: function (e) {
-            if ( e.which === ENTER_KEY ) {
-                this.attemptToLogin();
-            }
+        onSubmit: function (e) {
+            e.preventDefault();
+            this.attemptToLogin();
         },
         attemptToLogin: function () {
             var username = this.ui.$username_input.val().trim();

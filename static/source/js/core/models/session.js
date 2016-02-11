@@ -13,7 +13,6 @@ var app = app || {};
         var token = window.localStorage.getItem('authToken');
         var errorCallback = options.error;
 
-        //  TODO: should this be inside if ( token ) {} condition?
         options.error = function (xhr, textStatus, errorThrown) {
             //  We just received an 401 Unauthorized response. This means our
             //  current token does not work any longer
