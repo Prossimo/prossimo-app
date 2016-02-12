@@ -15,27 +15,39 @@ var app = app || {};
             'click .js-add-new-local-project': 'onAddNewLocalProject'
         },
         initialize: function () {
-            var self = this;
-
-            this.no_backend = false;
-            this.listenTo(this.collection, 'all', this.render);
-
             $('#header').append( this.render().el );
+
+            this.listenTo(this.collection, 'all', this.render);
+            this.listenTo(app.vent, 'auth:initial_login', this.onInitialLogin);
+            this.listenTo(app.vent, 'auth:no_backend', this.onNoBackend);
+        },
+        onInitialLogin: function () {
+            this.fetchData();
+        },
+        fetchData: function () {
+            var self = this;
 
             this.collection.fetch({
                 remove: false,
+                success: function () {
+                    self.getLastProject();
+                },
                 error: function () {
-                    self.no_backend = true;
+                    self.getLastProject();
                 },
                 data: {
                     limit: 0
                 }
             });
         },
+        onNoBackend: function () {
+            this.getLastProject();
+        },
         onChange: function () {
             var new_id = this.ui.$select.val();
 
             this.setCurrentProject(new_id);
+            this.setLastProject(new_id);
         },
         onAddNewLocalProject: function () {
             var new_id = this.collection.length + 1;
@@ -49,13 +61,32 @@ var app = app || {};
         setCurrentProject: function (new_id) {
             app.current_project = this.collection.get(new_id);
 
+            if ( !app.current_project ) {
+                return;
+            }
+
             if ( app.current_project.get('no_backend') === true ) {
-                app.no_backend = true;
-            } else {
-                delete app.no_backend;
+                app.session.set('no_backend', true);
+            } else if ( app.session.get('no_backend') === true ) {
+                app.session.set('no_backend', false);
+                this.render();
             }
 
             app.vent.trigger('current_project_changed');
+        },
+        setLastProject: function (new_id) {
+            // Save selected project into a localStorage
+            if ( 'localStorage' in window && 'setItem' in window.localStorage ) {
+                window.localStorage.setItem('app_currentProject', new_id);
+            }
+        },
+        getLastProject: function () {
+            // Get selected project from a localStorage
+            if ( 'localStorage' in window && 'getItem' in window.localStorage ) {
+                var last_id = window.localStorage.getItem('app_currentProject');
+
+                this.ui.$select.val(last_id).trigger('change');
+            }
         },
         onRender: function () {
             this.ui.$select.selectpicker({
@@ -65,7 +96,7 @@ var app = app || {};
         },
         serializeData: function () {
             return {
-                no_backend: this.no_backend,
+                no_backend: app.session.get('no_backend'),
                 project_list: this.collection.map(function (item) {
                     return {
                         is_selected: app.current_project && item.id === app.current_project.id,

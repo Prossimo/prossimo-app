@@ -4,7 +4,9 @@
 /* eslint max-statements:0 */
 
 var c = app.utils.convert;
-app.no_backend = true;
+
+app.session = new app.Session();
+app.session.set('no_backend', true);
 
 test('project basic tests', function () {
     var unit = new app.Unit({

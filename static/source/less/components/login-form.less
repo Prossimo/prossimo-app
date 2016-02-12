@@ -1,3 +1,7 @@
+//  ------------------------------------------------------------------------
+//  Only applies when it's inside main page container (not dialog)
+//  ------------------------------------------------------------------------
+
 .main .login-box {
     padding: 4rem;
     width: 40rem;
@@ -7,9 +11,27 @@
     box-shadow: 0 0 3px 0 fadeout(@black, 80%);
 }
 
+
+//  ------------------------------------------------------------------------
+//  Only applies when it's inside a modal dialog
+//  ------------------------------------------------------------------------
+
+.modal .login-box {
+    padding: 1rem 2rem;
+}
+
+
+//  ------------------------------------------------------------------------
+//  Generic login box styles
+//  ------------------------------------------------------------------------
+
 .login-box h4 {
     margin-top: 0;
-    margin-bottom: 4rem;
+    margin-bottom: 3rem;
+}
+
+.login-box form {
+    margin-top: 4rem;
 }
 
 .login-box input {
@@ -23,13 +45,17 @@
 }
 
 .login-box .error-container {
-    // display: none;
+    display: none;
     margin: 3rem 0 1rem;
     padding: 1.5rem;
     border: 1px solid lighten(@red, 15%);
     background-color: fadeout(lighten(@red, 20%), 60%);
     color: darken(@red, 40%);
     border-radius: 0.2em;
+}
+
+.has-error .error-container {
+    display: block;
 }
 
 .login-box .error-container p {

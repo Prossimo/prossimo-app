@@ -1,0 +1,12 @@
+{{> 'dialogs/partials/base-dialog-start-wrapper' }}
+    <div class="login-box">
+        <h4>Sign In to Prossimo App</h4>
+        {{#if token_expired }}<h5>Your previous session has expired. For security reasons, we ask you to re-login</h5>{{/if}}
+        <form action="">
+            <input id="pa_username" name="pa_username" type="text" class="form-control" placeholder="Username">
+            <input id="pa_password" name="pa_password" type="password" class="form-control" placeholder="Password">
+            <div class="error-container"></div>
+            <button class="btn btn-login">Sign In</button>
+        </form>
+    </div>
+{{> 'dialogs/partials/base-dialog-end-wrapper' }}
