@@ -264,6 +264,9 @@ module.exports = function (grunt) {
                 }
             },
             build: {
+                options: {
+                    screwIE8: true
+                },
                 files: {
                     '<%= buildUrl %>/js/application.<%= hash %>.min.js':
                         js_files.map(function (component) {
