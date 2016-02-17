@@ -1,3 +1,3 @@
 Sales web app for Prossimo LLC.
 
-Looking for something? Check our [Wiki](https://bitbucket.org/prossimo/prossimo-app/wiki/Home) and [Slack team chat](https://prossimo.slack.com/).
+Looking for something? Check our [Wiki](https://github.com/prossimo-ben/prossimo-app/wiki) and [Slack team chat](https://prossimo.slack.com/).
