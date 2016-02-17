@@ -8,7 +8,7 @@
     "backbone.marionette": "marionette#~2.4.3",
     "bootstrap": "~3.3.5",
     "pdfjs": "git://github.com/mozilla/pdf.js#v1.1.366",
-    "handsontable": "~0.20.2",
+    "handsontable": "~0.21.0",
     "bootstrap-select": "~1.7.4",
     "konva": "~0.10.0",
     "decimal.js": "~4.0.3"

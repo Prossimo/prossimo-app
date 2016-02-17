@@ -9,8 +9,8 @@ var app = app || {};
         childViewContainer: '.quote-table-body',
         reorderOnSort: true,
         ui: {
-            '$extras_table_container': '.quote-extras-table-container',
-            '$optional_extras_table_container': '.quote-optional-extras-table-container'
+            $extras_table_container: '.quote-extras-table-container',
+            $optional_extras_table_container: '.quote-optional-extras-table-container'
         },
         childViewOptions: function () {
             return {
@@ -29,7 +29,6 @@ var app = app || {};
 
             return {
                 subtotal_units: f.price_usd(total_prices.subtotal_units),
-                subtotal_units_with_hidden: f.price_usd(total_prices.subtotal_units_with_hidden),
                 subtotal_extras: f.price_usd(total_prices.subtotal_extras),
                 subtotal_optional_extras: f.price_usd(total_prices.subtotal_optional_extras),
                 subtotal: f.price_usd(total_prices.subtotal),

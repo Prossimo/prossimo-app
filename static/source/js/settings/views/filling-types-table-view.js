@@ -10,7 +10,7 @@ var app = app || {};
         className: 'filling-types-table',
         template: app.templates['settings/filling-types-table-view'],
         ui: {
-            '$hot_container': '.filling-types-handsontable-container'
+            $hot_container: '.filling-types-handsontable-container'
         },
         events: {
             'click .js-add-new-filling-type': 'addNewFillingType',

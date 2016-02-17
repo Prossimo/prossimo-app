@@ -97,10 +97,12 @@ var app = app || {};
                 return this.dimension_in(width) + ' x ' + this.dimension_in(height);
             },
             price_usd: function (price) {
-                return '$' + new Decimal(parseFloat(price).toFixed(2)).toFormat(2);
+                return (parseFloat(price) < 0 ? '-' : '') + '$' +
+                    new Decimal(Math.abs(parseFloat(price)).toFixed(2)).toFormat(2);
             },
-            percent: function (value) {
-                return new Decimal(parseFloat(value).toFixed(2)).toFormat() + '%';
+            percent: function (value, num) {
+                num = _.isNumber(num) ? (num < MAX_SIGNIFICANT_DIGITS ? num : MAX_SIGNIFICANT_DIGITS) : 2;
+                return new Decimal(parseFloat(value).toFixed(num)).toFormat() + '%';
             },
             fixed: function (value, num) {
                 num = _.isNumber(num) ? (num < MAX_SIGNIFICANT_DIGITS ? num : MAX_SIGNIFICANT_DIGITS) : 2;
@@ -224,6 +226,9 @@ var app = app || {};
             },
             square_meters: function (width_mm, height_mm) {
                 return parseFloat(width_mm) / 1000 * parseFloat(height_mm) / 1000;
+            },
+            linear_interpolation: function (x, x0, x1, y0, y1) {
+                return y0 + (y1 - y0) * ((x - x0) / (x1 - x0));
             }
         },
         convert: {

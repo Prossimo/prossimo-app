@@ -12,9 +12,9 @@ var app = app || {};
         className: 'screen docs-import-screen',
         template: app.templates['docs-import/main-docs-import-view'],
         ui: {
-            '$selection_area': '.docs-selection-area',
-            '$iframe': 'iframe',
-            '$document_list_container': '.document-list-container'
+            $selection_area: '.docs-selection-area',
+            $iframe: 'iframe',
+            $document_list_container: '.document-list-container'
         },
         // events: {
         //     'document-selected': 'onDocumentSelected'

@@ -2,18 +2,14 @@
     <button class="btn btn-xs" id="clear-frame">Clear frame</button>
     <button class="btn btn-xs" id="change-view-button">Show outside view</button>
     <div id="drawing-view-title">Outside view</div>
-    <!-- <div id="dim">
-        <select id='dimension-type-select'>
-            <option value="frame">Frame</option>
-            <option value="opening">Opening</option>
-            <option value="filling">Filling (Glass or Panel)</option>
-        </select>
-    </div> -->
+
     <div id="section_control">
+
         <span class="toggle-arched">
             <img class="add-arched" src="/static/public/img/add_arched_section.png"/>
             <img class="remove-arched" src="/static/public/img/remove_arched_section.png"/>
         </span>
+
         <span class="split">
             Split section:
             <img class="split-section" data-type="vertical" src="/static/public/img/vertical_mullion.png"/>
@@ -31,15 +27,17 @@
             <img class="change-sash-type" data-type="turn_only_left" src="/static/public/img/turn_only_left.png"/>
             <img class="change-sash-type" data-type="turn_only_right" src="/static/public/img/turn_only_right.png"/>
             <img class="change-sash-type" data-type="fixed_in_sash" src="/static/public/img/fixed_in_sash.png"/>
-            <img class="change-sash-type" data-type="flush-turn-right" src="/static/public/img/flush_turn_right.png"/>
-            <img class="change-sash-type" data-type="flush-turn-left" src="/static/public/img/flush_turn_left.png"/>
+            <!-- deprecated -->
+            <!-- <img class="change-sash-type" data-type="flush-turn-right" src="/static/public/img/flush_turn_right.png"/>
+            <img class="change-sash-type" data-type="flush-turn-left" src="/static/public/img/flush_turn_left.png"/> -->
 
             <img class="change-sash-type" data-type="turn_only_right_hinge_hidden_latch" src="/static/public/img/turn_only_right_hinge_hidden_latch.png"/>
 
             <img class="change-sash-type" data-type="turn_only_left_hinge_hidden_latch" src="/static/public/img/turn_only_left_hinge_hidden_latch.png"/>
-
         </span>
-        <br/>
+
+        <br class="drawing-ui-divider">
+
         <span class="filling-type">
             Filling:
             <select id="filling-select" class="selectpicker show-tick" title="Choose filling type" data-live-search="true">
@@ -48,13 +46,9 @@
             {{/each }}
             </select>
         </span>
-        <span class='panel-type' style="text-align: center">
-            <img class="change-panel-type" data-type="solid" src="/static/public/img/panel_solid.png"/>
-            <img class="change-panel-type" data-type="glass" src="/static/public/img/panel_glass.png"/>
-        </span>
-        <span id="bars-control">
-            Vertical bars: <input type="number" id="vertical-bars-number" value='0'>
-            Horizontal bars: <input type="number" id="horizontal-bars-number" value='0'>
+
+        <span id="bars-control" class="bars-control">
+            <button class="btn btn-xs" id="glazing-bars-popup">Set Glazing Bars</button>
         </span>
     </div>
 </div>

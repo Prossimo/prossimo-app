@@ -3,6 +3,13 @@
 /* eslint strict:0 */
 /* eslint max-len:0 */
 /* eslint max-statements:0 */
+/* jscs:disable */
+
+var m = app.utils.math;
+
+app.session = new app.Session();
+app.session.set('no_backend', true);
+
 
 //  Test that QUnit is working
 test('basic test', function () {
@@ -191,9 +198,9 @@ test('subtotal project prices', function () {
             extras_type: 'Optional'
         },
         {
-            description: 'Hidden costs for dealing with annoying client',
+            description: 'Hidden costs for freelancers',
             quantity: 1,
-            original_cost: 2000,
+            original_cost: 1000,
             original_currency: 'USD',
             conversion_rate: 1,
             price_markup: 1,
@@ -225,26 +232,162 @@ test('subtotal project prices', function () {
     //  End prices for accessories
     equal(current_project.extras.getRegularItemsPrice().toFixed(2), '1629.26', 'Subtotal for regular extras is expected to be 1629.26');
     equal(current_project.extras.getOptionalItemsPrice().toFixed(2), '900.00', 'Subtotal for optional extras is expected to be 900.00');
-    equal(current_project.extras.getHiddenPrice().toFixed(2), '2000.00', 'Subtotal for hidden extras is expected to be 2000.00');
+    equal(current_project.extras.getHiddenPrice().toFixed(2), '1000.00', 'Subtotal for hidden extras is expected to be 1000.00');
     equal(current_project.extras.getShippingPrice().toFixed(2), '1500.00', 'Subtotal for shipping is expected to be 1500.00');
-
-    //  Hidden multiplier
-    equal(current_project.getHiddenMultiplier().toFixed(5), '2.02592', 'Hidden multiplier is expected to be 2.02592');
 
     //  End prices for the whole project
     var total_prices = current_project.getTotalPrices();
     equal(total_prices.subtotal_units.toFixed(2), '1949.47', 'Subtotal price for units is expected to be 1949.47');
-    equal(total_prices.subtotal_units_with_hidden.toFixed(2), '3949.47', 'Subtotal price for units with hidden cost is expected to be 3949.47');
     equal(total_prices.subtotal_extras.toFixed(2), '1629.26', 'Subtotal price for extras is expected to be 1629.26');
-    equal(total_prices.subtotal.toFixed(2), '5578.73', 'Subtotal price for the whole order is expected to be 5578.73');
+    equal(total_prices.subtotal.toFixed(2), '3578.73', 'Subtotal price for the whole order is expected to be 3578.73');
     equal(total_prices.shipping.toFixed(2), '1500.00', 'Shipping is expected to be 1500.00');
-    equal(total_prices.tax.toFixed(2), '1673.62', 'Tax is expected to be 1673.62');
-    equal(total_prices.grand_total.toFixed(2), '8752.35', 'Grand total is expected to be 8752.35');
+    equal(total_prices.tax.toFixed(2), '1073.62', 'Tax is expected to be 1073.62');
+    equal(total_prices.grand_total.toFixed(2), '6152.35', 'Grand total is expected to be 6152.35');
+    equal(total_prices.total_cost.toFixed(2), '5694.29', 'Total cost is expected to be 5694.29');
+    equal(total_prices.profit.toFixed(2), '458.06', 'Profit is expected to be 458.06');
+    equal(total_prices.profit_percent.toFixed(2), '7.45', 'Profit is expected to be 7.45% of Grand Total');
 
     //  Individual price calculation functions should match with `total_prices`
     equal(total_prices.subtotal_units, current_project.getSubtotalUnitsPrice(), 'getSubtotalUnitsPrice result should match total_prices.subtotal_units');
-    equal(total_prices.subtotal_units_with_hidden, current_project.getSubtotalUnitsPrice() + current_project.getHiddenPrice(),
-        'getSubtotalUnitsPrice + getHiddenPrice result should match total_prices.subtotal_units_with_hidden');
     equal(total_prices.subtotal_extras, current_project.getExtrasPrice(), 'getExtrasPrice result should match total_prices.subtotal_extras');
     equal(total_prices.subtotal, current_project.getSubtotalPrice(), 'getSubtotalPrice result should match total_prices.subtotal');
+
+    // Total Profit should be the same as profit for all units / extras individually
+    var subtotal_profit_units = _.reduce(current_project.units.map(function (unit) {
+        return unit.getSubtotalProfit();
+    }), function (memo, item) {
+        return memo + item;
+    }, 0);
+    var subtotal_profit_extras = _.reduce(_.map(current_project.extras.getRegularItems(), function (unit) {
+        return unit.getSubtotalProfit();
+    }), function (memo, item) {
+        return memo + item;
+    }, 0);
+    var hidden_cost = current_project.extras.getHiddenPrice();
+    var combined_profit = subtotal_profit_units + subtotal_profit_extras - hidden_cost;
+
+    equal(total_prices.profit.toFixed(2), combined_profit.toFixed(2), 'total_prices.profit should match combined profit for units & extras');
+});
+
+
+//  ------------------------------------------------------------------------
+//  Test that estimated prices for a unit are calculated properly
+//  ------------------------------------------------------------------------
+
+test('estimated unit prices', function () {
+    var unit;
+    var root_id;
+    var full_root;
+    var top_section;
+    var bottom_section;
+    var sections_list;
+    var estimated_list;
+    var pricing_grids;
+
+    unit = new app.Unit({
+        width: 62,
+        height: 96
+    });
+
+    unit.profile = new app.Profile({
+        frame_width: 70,
+        mullion_width: 92,
+        sash_frame_width: 82,
+        sash_frame_overlap: 34,
+        sash_mullion_overlap: 34
+    });
+
+    pricing_grids = unit.profile.getPricingGrids();
+
+    //  Check that areas of default pricing grid tiers are calculated properly
+    equal(m.square_meters(pricing_grids.fixed[0].width, pricing_grids.fixed[0].height).toFixed(2), '0.25', 'Fixed small tier area is expected to be 0.25');
+    equal(m.square_meters(pricing_grids.fixed[1].width, pricing_grids.fixed[1].height).toFixed(2), '1.38', 'Fixed medium tier area is expected to be 1.38');
+    equal(m.square_meters(pricing_grids.fixed[2].width, pricing_grids.fixed[2].height).toFixed(2), '7.20', 'Fixed large tier area is expected to be 7.20');
+
+    equal(m.square_meters(pricing_grids.operable[0].width, pricing_grids.operable[0].height).toFixed(2), '0.25', 'Operable small tier area is expected to be 0.25');
+    equal(m.square_meters(pricing_grids.operable[1].width, pricing_grids.operable[1].height).toFixed(2), '1.38', 'Operable medium tier area is expected to be 1.38');
+    equal(m.square_meters(pricing_grids.operable[2].width, pricing_grids.operable[2].height).toFixed(2), '2.88', 'Operable large tier area is expected to be 2.88');
+
+    unit.profile.set('pricing_grids', {
+        fixed: [
+            {
+                title: 'Small',
+                height: 500,
+                width: 500,
+                price_per_square_meter: 100
+            },
+            {
+                title: 'Medium',
+                height: 914,
+                width: 1514,
+                price_per_square_meter: 150
+            },
+            {
+                title: 'Large',
+                height: 2400,
+                width: 3000,
+                price_per_square_meter: 300
+            }
+        ],
+        operable: [
+            {
+                title: 'Small',
+                height: 500,
+                width: 500,
+                price_per_square_meter: 120
+            },
+            {
+                title: 'Medium',
+                height: 914,
+                width: 1514,
+                price_per_square_meter: 180
+            },
+            {
+                title: 'Large',
+                height: 1200,
+                width: 2400,
+                price_per_square_meter: 350
+            }
+        ]
+    });
+
+    root_id = unit.get('root_section').id;
+    unit.splitSection(root_id, 'horizontal');
+    full_root = unit.generateFullRoot();
+
+    top_section = full_root.sections[0];
+    bottom_section = full_root.sections[1];
+
+    unit.setSectionSashType(top_section.id, 'fixed_in_sash');
+    unit.setSectionSashType(bottom_section.id, 'fixed_in_sash');
+
+    sections_list = unit.getFixedAndOperableSectionsList();
+
+    //  Areas should be calculated properly
+    equal(m.square_meters(sections_list[0].width, sections_list[0].height).toFixed(2), '1.92', 'First section area is expected to be 1.92');
+    equal(m.square_meters(sections_list[1].width, sections_list[1].height).toFixed(2), '1.92', 'Second section area is expected to be 1.92');
+
+    //  Types should be determined properly
+    equal(sections_list[0].type, 'fixed', 'First section type is expected to be fixed');
+    equal(sections_list[1].type, 'fixed', 'Second section type is expected to be fixed');
+
+    pricing_grids = unit.profile.getPricingGrids();
+    estimated_list = unit.getSectionsListWithEstimatedPrices();
+
+    //  Areas of pricing grid tiers should be calculated properly
+    equal(m.square_meters(pricing_grids.fixed[0].width, pricing_grids.fixed[0].height).toFixed(2), '0.25', 'Fixed small tier area is expected to be 0.25');
+    equal(m.square_meters(pricing_grids.fixed[1].width, pricing_grids.fixed[1].height).toFixed(2), '1.38', 'Fixed medium tier area is expected to be 1.38');
+    equal(m.square_meters(pricing_grids.fixed[2].width, pricing_grids.fixed[2].height).toFixed(2), '7.20', 'Fixed large tier area is expected to be 7.20');
+
+    equal(m.square_meters(pricing_grids.operable[0].width, pricing_grids.operable[0].height).toFixed(2), '0.25', 'Operable small tier area is expected to be 0.25');
+    equal(m.square_meters(pricing_grids.operable[1].width, pricing_grids.operable[1].height).toFixed(2), '1.38', 'Operable medium tier area is expected to be 1.38');
+    equal(m.square_meters(pricing_grids.operable[2].width, pricing_grids.operable[2].height).toFixed(2), '2.88', 'Operable large tier area is expected to be 2.88');
+
+    //  Price per square meter should be calculated properly
+    equal(estimated_list[0].price_per_square_meter.toFixed(2), '163.83', 'First section: price / square meter');
+    equal(estimated_list[1].price_per_square_meter.toFixed(2), '163.83', 'Second section: price / square meter');
+
+    //  Estimated prices should be calculated properly
+    equal(estimated_list[0].estimated_price.toFixed(2), '314.55', 'First section: estimated price');
+    equal(estimated_list[1].estimated_price.toFixed(2), '314.55', 'Second section: estimated price');
 });

@@ -1,0 +1,14 @@
+{{#if no_backend }}
+    <p>No Backend Mode</p>
+{{else}}
+    {{#if is_logged_in }}
+        <p>Logged in as {{ user }}</p>
+        <ul>
+            <li><a class="js-logout" href="/logout/">Logout</a></li>
+        </ul>
+    {{else}}
+        <ul>
+            <li><a class="js-login" href="/login/">Login</a></li>
+        </ul>
+    {{/if}}
+{{/if}}

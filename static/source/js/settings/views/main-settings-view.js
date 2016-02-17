@@ -8,9 +8,10 @@ var app = app || {};
         className: 'screen settings-screen',
         template: app.templates['settings/main-settings-view'],
         ui: {
-            '$profiles_container': '.profiles-container',
-            '$ui_settings_container': '.ui_settings-container',
-            '$filling_types_container': '.filling_types-container'
+            $profiles_container: '.profiles-container',
+            $ui_settings_container: '.ui_settings-container',
+            $filling_types_container: '.filling_types-container',
+            $pricing_grids_container: '.pricing_grids-container'
         },
         events: {
             'click .nav-tabs a': 'onTabClick'
@@ -25,6 +26,9 @@ var app = app || {};
                 },
                 filling_types: {
                     title: 'Filling Types'
+                },
+                pricing_grids: {
+                    title: 'Pricing Grids'
                 }
             };
             this.active_tab = 'profiles';
@@ -71,6 +75,15 @@ var app = app || {};
 
                 this.ui.$filling_types_container.append(this.filling_types_table_view.render().el);
             }
+
+            if ( this.active_tab === 'pricing_grids' ) {
+                this.pricing_grids_table_view = new app.PricingGridsTableView({
+                    collection: app.settings.profiles,
+                    parent_view: this
+                });
+
+                this.ui.$pricing_grids_container.append(this.pricing_grids_table_view.render().el);
+            }
         },
         serializeData: function () {
             return {
@@ -91,6 +104,10 @@ var app = app || {};
 
             if ( this.filling_types_table_view ) {
                 this.filling_types_table_view.destroy();
+            }
+
+            if ( this.pricing_grids_table_view ) {
+                this.pricing_grids_table_view.destroy();
             }
         }
     });

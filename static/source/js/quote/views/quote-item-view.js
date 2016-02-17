@@ -18,7 +18,8 @@ var app = app || {};
                     (this.options.show_outside_units_view ? ': <small>View from Exterior</small>' : ''),
                 product_description: 'Product Description',
                 quantity: 'Qty',
-                price: 'Price'
+                price: app.settings.get('pricing_mode') === 'estimates' ?
+                    'Estimated Price' : 'Price'
             };
 
             if ( this.model.collection &&
@@ -44,14 +45,11 @@ var app = app || {};
             var discount = this.model.get('discount');
             var subtotal_price_discounted = this.model.getSubtotalPriceDiscounted();
 
-            //  We split "hidden" extras equally between all units
-            var hidden_multiplier = this.options.project ? this.options.project.getHiddenMultiplier() : 1;
-
             return {
-                unit: f.price_usd(unit_price * hidden_multiplier),
-                subtotal: f.price_usd(subtotal_price * hidden_multiplier),
+                unit: f.price_usd(unit_price),
+                subtotal: f.price_usd(subtotal_price),
                 discount: discount ? f.percent(discount) : null,
-                subtotal_discounted: discount ? f.price_usd(subtotal_price_discounted * hidden_multiplier) : null
+                subtotal_discounted: discount ? f.price_usd(subtotal_price_discounted) : null
             };
         },
         getDescription: function () {
@@ -81,7 +79,11 @@ var app = app || {};
 
                 filling_size = this.options.show_sizes_in_mm ?
                     f.dimensions_mm(source_item.filling.width, source_item.filling.height) :
-                    f.dimensions_in(c.mm_to_inches(source_item.filling.width), c.mm_to_inches(source_item.filling.height), 'fraction');
+                    f.dimensions_in(
+                        c.mm_to_inches(source_item.filling.width),
+                        c.mm_to_inches(source_item.filling.height),
+                        'fraction'
+                    );
 
                 filling_area = this.options.show_sizes_in_mm ?
                     f.square_meters(m.square_meters(source_item.filling.width, source_item.filling.height)) :
@@ -104,7 +106,11 @@ var app = app || {};
                 if ( source_item.opening.height && source_item.opening.width ) {
                     opening_size = this.options.show_sizes_in_mm ?
                         f.dimensions_mm(source_item.opening.width, source_item.opening.height) :
-                        f.dimensions_in(c.mm_to_inches(source_item.opening.width), c.mm_to_inches(source_item.opening.height), 'fraction');
+                        f.dimensions_in(
+                            c.mm_to_inches(source_item.opening.width),
+                            c.mm_to_inches(source_item.opening.height),
+                            'fraction'
+                        );
 
                     opening_area = this.options.show_sizes_in_mm ?
                         f.square_meters(m.square_meters(source_item.opening.width, source_item.opening.height)) :

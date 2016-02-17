@@ -11,6 +11,7 @@ module.exports = function (grunt) {
         'bootstrap/js/dropdown.js',
         'bootstrap/js/tooltip.js',
         'bootstrap/js/popover.js',
+        'bootstrap/js/modal.js',
         'bootstrap-select/dist/js/bootstrap-select.min.js',
         'konva/konva.min.js',
         'decimal.js/decimal.min.js'
@@ -25,9 +26,12 @@ module.exports = function (grunt) {
         'backbone-extensions.js',
         'backbone-safesync.js',
         'router.js',
+        'dialogs.js',
         'utils.js',
         'paste-image.js',
         'hot-renderers.js',
+        'core/models/user.js',
+        'core/models/session.js',
         'core/models/unit.js',
         'core/models/accessory.js',
         'core/models/profile.js',
@@ -43,8 +47,10 @@ module.exports = function (grunt) {
         'core/collections/filling-type-collection.js',
         'core/views/main-navigation-view.js',
         'core/views/units-table-view.js',
+        'core/views/units-table-total-prices-view.js',
         'core/views/project-selector-view.js',
         'core/views/no-project-selected-view.js',
+        'core/views/status-panel-view.js',
         'units-table/views/main-units-table-view.js',
         'docs-import/views/main-docs-import-view.js',
         'docs-import/views/document-selector-view.js',
@@ -52,6 +58,7 @@ module.exports = function (grunt) {
         'drawing/views/main-drawing-view.js',
         'drawing/views/drawing-view.js',
         'drawing/views/drawing-sidebar-view.js',
+        'drawing/views/drawing-glazing-view.js',
         'quote/views/main-quote-view.js',
         'quote/views/quote-item-view.js',
         'quote/views/quote-extras-item-view.js',
@@ -61,9 +68,12 @@ module.exports = function (grunt) {
         'settings/views/main-settings-view.js',
         'settings/views/profiles-table-view.js',
         'settings/views/filling-types-table-view.js',
+        'settings/views/pricing-grids-table-view.js',
         'settings/views/ui-settings-view.js',
         'supplier-request/views/main-supplier-request-view.js',
         'supplier-request/views/supplier-request-header-view.js',
+        'dialogs/views/base-dialog-view.js',
+        'dialogs/views/login-dialog-view.js',
         'app.js'
     ];
 
@@ -92,8 +102,7 @@ module.exports = function (grunt) {
                 },
                 files: {
                     '<%= buildUrl %>/css/styles.dev.css': '<%= sourceUrl %>/less/styles.less',
-                    '<%= buildUrl %>/css/print.dev.css': '<%= sourceUrl %>/less/print.less',
-                    '<%= buildUrl %>/css/login.dev.css': '<%= sourceUrl %>/less/login.less'
+                    '<%= buildUrl %>/css/print.dev.css': '<%= sourceUrl %>/less/print.less'
                 }
             },
             build: {
@@ -104,8 +113,7 @@ module.exports = function (grunt) {
                 },
                 files: {
                     '<%= buildUrl %>/css/styles.<%= hash %>.css': '<%= sourceUrl %>/less/styles.less',
-                    '<%= buildUrl %>/css/print.<%= hash %>.css': '<%= sourceUrl %>/less/print.less',
-                    '<%= buildUrl %>/css/login.<%= hash %>.css': '<%= sourceUrl %>/less/login.less'
+                    '<%= buildUrl %>/css/print.<%= hash %>.css': '<%= sourceUrl %>/less/print.less'
                 }
             }
         },
@@ -257,6 +265,9 @@ module.exports = function (grunt) {
                 }
             },
             build: {
+                options: {
+                    screwIE8: true
+                },
                 files: {
                     '<%= buildUrl %>/js/application.<%= hash %>.min.js':
                         js_files.map(function (component) {
@@ -350,6 +361,15 @@ module.exports = function (grunt) {
             target: ['<%= sourceUrl %>/js/**/*.js']
         },
 
+        jscs: {
+            src: '<%= sourceUrl %>/js/**/*.js',
+            options: {
+                config: '.jscsrc',
+                verbose: true,
+                force: true
+            }
+        },
+
         replace: {
             //  A cheap hack to trick pdfjs building script, it comes without
             //  its own `.git` directory because it's installed via bower, so
@@ -388,7 +408,7 @@ module.exports = function (grunt) {
                         },
                         {
                             match: 'api_base_path',
-                            replacement: 'http://127.0.0.1:8000'
+                            replacement: 'http://127.0.0.1:8000/api'
                         }
                     ]
                 },
@@ -396,10 +416,6 @@ module.exports = function (grunt) {
                     {
                         src: '<%= sourceUrl %>/index.html.tpl',
                         dest: './index.html'
-                    },
-                    {
-                        src: '<%= sourceUrl %>/login.html.tpl',
-                        dest: './login.html'
                     }
                 ]
             },
@@ -416,7 +432,7 @@ module.exports = function (grunt) {
                         },
                         {
                             match: 'api_base_path',
-                            replacement: '/api'
+                            replacement: '/api/api'
                         }
 
                     ]
@@ -425,10 +441,6 @@ module.exports = function (grunt) {
                     {
                         src: '<%= sourceUrl %>/index.html.tpl',
                         dest: './index.html'
-                    },
-                    {
-                        src: '<%= sourceUrl %>/login.html.tpl',
-                        dest: './login.html'
                     }
                 ]
             }
@@ -467,6 +479,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-gitinfo');
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-shell');
+    grunt.loadNpmTasks('grunt-jscs');
 
     grunt.registerTask('pdfjs', ['gitinfo', 'replace:pdfjs', 'shell:build_pdfjs', 'copy:pdfjs']);
 
@@ -483,7 +496,7 @@ module.exports = function (grunt) {
         'less:dev', 'uglify:vendor_dev', 'cssmin:vendor_dev', 'replace:dev'//, 'pdfjs'
     ]);
 
-    grunt.registerTask('test', ['eslint', 'qunit']);
+    grunt.registerTask('test', ['jscs', 'eslint', 'qunit']);
     grunt.registerTask('deploy_staging', ['test', 'sshexec:update_staging']);
     grunt.registerTask('deploy_production', ['test', 'sshexec:update_production']);
     grunt.registerTask('deploy', ['deploy_staging']);

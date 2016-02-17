@@ -74,6 +74,7 @@ var app = app || {};
             //  Simple type validation for numbers and booleans
             _.find(attributes, function (value, key) {
                 var attribute_obj = this.getNameTitleTypeHash([key]);
+
                 attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
 
                 if ( attribute_obj && attribute_obj.type === 'number' &&
@@ -127,14 +128,20 @@ var app = app || {};
         isPercentBasedType: function () {
             return _.indexOf(PERCENT_BASED_EXTRAS_TYPES, this.get('extras_type')) !== -1;
         },
+        isRegularType: function () {
+            return this.get('extras_type') === 'Regular';
+        },
         isOptionalType: function () {
             return _.indexOf(OPTIONAL_EXTRAS_TYPES, this.get('extras_type')) !== -1;
         },
         getMarkupPercent: function () {
             return (parseFloat(this.get('price_markup')) - 1) * 100;
         },
+        getOriginalCost: function () {
+            return parseFloat(this.get('original_cost'));
+        },
         getUnitCost: function () {
-            return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
+            return this.getOriginalCost() / parseFloat(this.get('conversion_rate'));
         },
         getSubtotalCost: function () {
             return this.getUnitCost() * parseFloat(this.get('quantity'));
@@ -142,17 +149,18 @@ var app = app || {};
         getUnitPrice: function () {
             return this.getUnitCost() * parseFloat(this.get('price_markup'));
         },
+        //  Get subtotal price for the extras item. For regular or optional
+        //  extras it's just unit price * quantity
         getSubtotalPrice: function () {
             var subtotal_price = this.getUnitPrice() * parseFloat(this.get('quantity'));
 
             if ( app.current_project ) {
                 //  If this is percent-based optional extras, base is Unit Subtotal
-                if ( this.get('extras_type') !== 0 && this.isPercentBasedType() && this.isOptionalType() ) {
-                    subtotal_price = (this.getMarkupPercent() / 100) *
-                        (app.current_project.getSubtotalUnitsPrice() + app.current_project.getHiddenPrice() );
+                if ( this.isPercentBasedType() && this.isOptionalType() ) {
+                    subtotal_price = this.getMarkupPercent() / 100 * app.current_project.getSubtotalUnitsPrice();
                 //  If this is tax, base is everything except shipping
-                } else if ( this.get('extras_type') !== 0 && this.isPercentBasedType() ) {
-                    subtotal_price = (this.getMarkupPercent() / 100) * app.current_project.getSubtotalPrice();
+                } else if ( this.isPercentBasedType() ) {
+                    subtotal_price = this.getMarkupPercent() / 100 * app.current_project.getSubtotalPrice();
                 }
             }
 
@@ -163,6 +171,15 @@ var app = app || {};
         },
         getSubtotalPriceDiscounted: function () {
             return this.getSubtotalPrice() * (100 - this.get('discount')) / 100;
+        },
+        getSubtotalProfit: function () {
+            var profit = 0;
+
+            if ( this.isRegularType() ) {
+                profit = this.getSubtotalPriceDiscounted() - this.getSubtotalCost();
+            }
+
+            return profit;
         }
     });
 })();

@@ -105,43 +105,63 @@ var app = app || {};
         getQuoteNumber: function () {
             return this.isNew() ? '--' : this.id;
         },
-        getHiddenMultiplier: function () {
-            var subtotal_units_price = this.units.getSubtotalPriceDiscounted();
-            var hidden_price = this.extras.getHiddenPrice();
-
-            return subtotal_units_price ? ( 1 + hidden_price / subtotal_units_price ) : 1;
-        },
         getSubtotalUnitsPrice: function () {
             return this.units.getSubtotalPriceDiscounted();
-        },
-        getHiddenPrice: function () {
-            return this.extras.getHiddenPrice();
         },
         getExtrasPrice: function () {
             return this.extras.getRegularItemsPrice();
         },
-        //  This is what we use as tax base
+        //  This is what we use as tax base. Subtotal price for units + extras,
+        //  but no shipping or optional extras
         getSubtotalPrice: function () {
             var subtotal_units_price = this.getSubtotalUnitsPrice();
-            var hidden_price = this.getHiddenPrice();
-            var subtotal_units_with_hidden = subtotal_units_price + hidden_price;
             var extras_price = this.extras.getRegularItemsPrice();
 
-            return subtotal_units_with_hidden + extras_price;
+            return subtotal_units_price + extras_price;
+        },
+        getTax: function () {
+            var total_tax_percent = this.extras.getTotalTaxPercent();
+            var subtotal = this.getSubtotalPrice();
+            var tax = (total_tax_percent / 100) * subtotal;
+
+            return tax;
+        },
+        getGrandTotal: function () {
+            var subtotal = this.getSubtotalPrice();
+            var shipping_price = this.extras.getShippingPrice();
+            var tax = this.getTax();
+
+            var grand_total = subtotal + shipping_price + tax;
+
+            return grand_total;
+        },
+        getTotalCost: function () {
+            var subtotal_units_cost = this.units.getSubtotalCostDiscounted();
+            var extras_cost = this.extras.getRegularItemsCost();
+            var shipping = this.extras.getShippingPrice();
+            var hidden = this.extras.getHiddenPrice();
+            var tax = this.getTax();
+
+            return subtotal_units_cost + extras_cost + shipping + hidden + tax;
+        },
+        getProfit: function () {
+            return this.getGrandTotal() - this.getTotalCost();
         },
         getTotalPrices: function () {
             var subtotal_units_price = this.getSubtotalUnitsPrice();
-            var extras_price = this.extras.getRegularItemsPrice();
+            var extras_price = this.getExtrasPrice();
             var optional_extras_price = this.extras.getOptionalItemsPrice();
 
-            var hidden_price = this.extras.getHiddenPrice();
             var shipping_price = this.extras.getShippingPrice();
             var total_tax_percent = this.extras.getTotalTaxPercent();
 
-            var subtotal_units_with_hidden = subtotal_units_price + hidden_price;
-            var subtotal = subtotal_units_with_hidden + extras_price;
-            var tax = (total_tax_percent / 100) * subtotal;
-            var grand_total = subtotal + shipping_price + tax;
+            var subtotal = this.getSubtotalPrice();
+            var tax = this.getTax();
+            var grand_total = this.getGrandTotal();
+
+            var total_cost = this.getTotalCost();
+            var profit = this.getProfit();
+            var profit_percent = profit / grand_total * 100;
 
             //  TODO: this value should be customizable, not just 50% always,
             //  when it'll be customizable, it should also be tested
@@ -151,7 +171,6 @@ var app = app || {};
 
             return {
                 subtotal_units: subtotal_units_price,
-                subtotal_units_with_hidden: subtotal_units_with_hidden,
                 subtotal_extras: extras_price,
                 subtotal_optional_extras: optional_extras_price,
                 subtotal: subtotal,
@@ -159,6 +178,9 @@ var app = app || {};
                 tax: tax,
                 shipping: shipping_price,
                 grand_total: grand_total,
+                total_cost: total_cost,
+                profit: profit,
+                profit_percent: profit_percent,
                 deposit_percent: deposit_percent,
                 deposit_on_contract: deposit_on_contract,
                 balance_due_at_delivery: balance_due_at_delivery

@@ -2,6 +2,8 @@
 /* eslint-env qunit */
 /* eslint strict:0 */
 /* eslint max-statements:0 */
+/* jscs:disable */
+
 
 //  Test that QUnit is working
 test('basic test', function () {
@@ -82,6 +84,7 @@ test('utils.format.price_usd', function () {
     equal(f.price_usd(30.5), '$30.50', 'Expected value is $30.50');
     equal(f.price_usd('30.5'), '$30.50', 'Expected value is $30.50');
     equal(f.price_usd(0), '$0.00', 'Expected value is $0.00');
+    equal(f.price_usd(-140), '-$140.00', 'Expected value is -$140.00');
 });
 
 test('utils.format.percent', function () {
@@ -89,6 +92,9 @@ test('utils.format.percent', function () {
 
     equal(f.percent(20), '20%', 'Expected value is 20%');
     equal(f.percent(20.5), '20.5%', 'Expected value is 20.5%');
+    equal(f.percent(14.13), '14.13%', 'Expected value is 14.13%');
+    equal(f.percent(14.13, 1), '14.1%', 'Expected value is 14.1%');
+    equal(f.percent(14.13, 0), '14%', 'Expected value is 14%');
     equal(f.percent(0), '0%', 'Expected value is 0%');
 });
 
@@ -237,6 +243,15 @@ test('utils.math.square_meters', function () {
     equal(m.square_meters(200, 200), 0.04, 'Expected value is 0.04');
     equal(m.square_meters(1000, 1000), 1, 'Expected value is 1');
     equal(m.square_meters(0, 0), 0, 'Expected value is 0');
+});
+
+
+test('utils.math.linear_interpolation', function () {
+    var m = app.utils.math;
+
+    equal(m.linear_interpolation(20, 10, 30, 50, 70), 60, 'Expected value is 60');
+    equal(m.linear_interpolation(1.2, 1, 2.3, 235, 342).toFixed(2), '251.46', 'Expected value is 251.46');
+    equal(m.linear_interpolation(2.2, 1, 2.3, 235, 342).toFixed(2), '333.77', 'Expected value is 333.77');
 });
 
 

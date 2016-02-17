@@ -40,6 +40,24 @@ var app = app || {};
 
             return total_price;
         },
+        getSubtotalCost: function () {
+            var total_cost = 0;
+
+            this.each(function (item) {
+                total_cost += item.getSubtotalCost();
+            });
+
+            return total_cost;
+        },
+        getSubtotalCostDiscounted: function () {
+            var total_cost = 0;
+
+            this.each(function (item) {
+                total_cost += item.getSubtotalCostDiscounted();
+            });
+
+            return total_cost;
+        },
         hasAtLeastOneCustomerImage: function () {
             return this.any(function (item) {
                 return item.get('customer_image') !== '';

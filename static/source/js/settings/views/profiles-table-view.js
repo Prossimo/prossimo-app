@@ -10,7 +10,7 @@ var app = app || {};
         className: 'profiles-table',
         template: app.templates['settings/profiles-table-view'],
         ui: {
-            '$hot_container': '.profiles-handsontable-container'
+            $hot_container: '.profiles-handsontable-container'
         },
         events: {
             'click .js-add-new-profile': 'addNewProfile',
