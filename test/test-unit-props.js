@@ -400,3 +400,38 @@ test('Size calculations for Unit #013 from 377 E 10th project', function () {
     equal(sash_list[0].filling.type, 'recessed', 'Sash filling type is expected to be recessed');
     equal(sash_list[1].filling.type, 'recessed', 'Sash filling type is expected to be recessed');
 });
+
+
+//  ------------------------------------------------------------------------
+//  Size calculations for unit with threshold (bugfix test case)
+//  ------------------------------------------------------------------------
+
+test('Size calculations for unit with threshold (bugfix test case)', function () {
+    var unit;
+    var full_root;
+    var root_id;
+    var estimated_list;
+
+    unit = new app.Unit({
+        width: 41,
+        height: 78
+    });
+
+    unit.profile = new app.Profile({
+        frame_width: 90,
+        mullion_width: 112,
+        sash_frame_width: 102,
+        sash_frame_overlap: 36,
+        sash_mullion_overlap: 14,
+        low_threshold: true,
+        unit_type: 'Patio Door'
+    });
+
+    full_root = unit.generateFullRoot();
+    root_id = full_root.id;
+    unit.setSectionSashType(root_id, 'tilt_only');
+    estimated_list = unit.getSectionsListWithEstimatedPrices();
+
+    equal(estimated_list[0].height.toFixed(2), '1981.20', 'Section height');
+    equal(estimated_list[0].width.toFixed(2), '1041.40', 'Section width');
+});
