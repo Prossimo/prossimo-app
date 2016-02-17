@@ -5,7 +5,9 @@
 /* eslint max-statements:0 */
 
 var m = app.utils.math;
-app.no_backend = true;
+
+app.session = new app.Session();
+app.session.set('no_backend', true);
 
 
 //  Test that QUnit is working

@@ -322,10 +322,10 @@ var app = app || {};
                 original_cost = this.getEstimatedUnitCost();
             }
 
-            return original_cost;
+            return parseFloat(original_cost);
         },
         getUnitCost: function () {
-            return parseFloat(this.getOriginalCost()) / parseFloat(this.get('conversion_rate'));
+            return this.getOriginalCost() / parseFloat(this.get('conversion_rate'));
         },
         getUnitCostDiscounted: function () {
             return this.getUnitCost() * (100 - parseFloat(this.get('supplier_discount'))) / 100;
