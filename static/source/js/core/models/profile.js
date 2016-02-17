@@ -31,6 +31,30 @@ var app = app || {};
         { name: 'spacer_thermal_bridge_value', title: 'Spacer Thermal Bridge Value', type: 'number' }
     ];
 
+    function getDefaultPricingGrids() {
+        function getTier(title, height, width, price_per_square_meter) {
+            return _.extend({}, {
+                title: title,
+                height: height,
+                width: width,
+                price_per_square_meter: price_per_square_meter
+            });
+        }
+
+        return {
+            fixed: [
+                getTier('Small', 500, 500, 0),
+                getTier('Medium', 914, 1514, 0),
+                getTier('Large', 2400, 3000, 0)
+            ],
+            operable: [
+                getTier('Small', 500, 500, 0),
+                getTier('Medium', 914, 1514, 0),
+                getTier('Large', 1200, 2400, 0)
+            ]
+        };
+    }
+
     app.Profile = Backbone.Model.extend({
         defaults: function () {
             var defaults = {};
@@ -51,7 +75,8 @@ var app = app || {};
             var name_value_hash = {
                 unit_type: DEFAULT_UNIT_TYPE,
                 low_threshold: false,
-                threshold_width: 20
+                threshold_width: 20,
+                pricing_grids: getDefaultPricingGrids()
             };
 
             if ( app.settings ) {
@@ -76,7 +101,9 @@ var app = app || {};
         },
         sync: function (method, model, options) {
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { profile: _.omit(model.toJSON(), ['id']) };
+                options.attrs = { profile: _.extendOwn(_.omit(model.toJSON(), ['id']), {
+                    pricing_grids: JSON.stringify(model.get('pricing_grids'))
+                }) };
             }
 
             return Backbone.sync.call(this, method, model, options);
@@ -85,7 +112,26 @@ var app = app || {};
             this.options = options || {};
 
             if ( !this.options.proxy ) {
+                this.validatePricingGrids();
                 this.on('change:unit_type', this.onTypeUpdate, this);
+            }
+        },
+        validatePricingGrids: function () {
+            if ( _.isString(this.get('pricing_grids')) ) {
+                this.set('pricing_grids', JSON.parse(this.get('pricing_grids')));
+            } else if ( !_.isObject(this.get('pricing_grids')) ) {
+                this.set('pricing_grids', this.getDefaultValue('pricing_grids'));
+            }
+        },
+        _updatePricingGrids: function (grid, tier, func) {
+            var pricing_grids = this.get('pricing_grids');
+            var target_tier = _.find(pricing_grids[grid], function (item) {
+                return item === tier;
+            });
+
+            if ( target_tier ) {
+                func(target_tier);
+                this.persist('pricing_grids', pricing_grids);
             }
         },
         validate: function (attributes, options) {
@@ -202,6 +248,17 @@ var app = app || {};
         getVisibleFrameWidthOperable: function () {
             return parseFloat(this.get('frame_width')) + parseFloat(this.get('sash_frame_width')) -
                 parseFloat(this.get('sash_frame_overlap'));
+        },
+        //  Returns grids sorted by area size
+        getPricingGrids: function () {
+            return {
+                fixed: _.sortBy(this.get('pricing_grids').fixed, function (item) {
+                    return item.width * item.height;
+                }, this),
+                operable: _.sortBy(this.get('pricing_grids').operable, function (item) {
+                    return item.width * item.height;
+                }, this)
+            };
         }
     });
 })();

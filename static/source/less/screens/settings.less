@@ -178,3 +178,67 @@
 .ui-settings ul button {
     border: 1px solid darken(@white, 30%);
 }
+
+
+//  ------------------------------------------------------------------------
+//  Pricing Grids
+//  ------------------------------------------------------------------------
+
+.pricing_grids-container {
+    &:extend(.profiles-container all);
+}
+
+.pricing-grids-table {
+    &:extend(.profiles-table all);
+}
+
+.pricing-grids-table-title {
+    &:extend(.profiles-table-title all);
+}
+
+.pricing-grids-table-scroll-wrapper {
+    &:extend(.profiles-table-scroll-wrapper all);
+}
+
+.pricing-grids-table-title {
+    &:extend(.profiles-table-title all);
+}
+
+.pricing-grids-table-controls {
+    &:extend(.profiles-table-controls all);
+}
+
+.pricing-grids-table-controls .btn {
+    &:extend(.profiles-table-controls .btn all);
+}
+
+.profile-selector-container {
+    // position: relative;
+    // top: -4rem;
+    float: right;
+}
+
+.profile-selector-container .btn {
+    border: 1px solid darken(@white, 30%);
+}
+
+.no-current-profile-message {
+    position: absolute;
+    font-size: 1.2em;
+    text-align: center;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    transform: translateY(-50%);
+}
+
+.pricing-grids-table-title .tab-container {
+    flex: none;
+    padding: 2rem 0 1rem;
+    background-color: transparent;
+    border: none;
+}
+
+.pricing-grids-table-title .nav > li > a {
+    border-color: darken(@white, 30%);
+}

@@ -52,6 +52,7 @@ var app = app || {};
     ];
 
     var SASH_TYPES_WITH_OPENING = _.without(SASH_TYPES, 'fixed_in_frame');
+    var OPERABLE_SASH_TYPES = _.without(SASH_TYPES, 'fixed_in_frame', 'fixed_in_sash');
 
     var SASH_TYPE_NAME_MAP = {
         // deprecated
@@ -89,12 +90,20 @@ var app = app || {};
         };
     }
 
+    function getDefaultBars() {
+        return {
+            vertical: [],
+            horizontal: []
+        };
+    }
+
     function getSectionDefaults() {
         return {
             id: _.uniqueId(),
             sashType: 'fixed_in_frame',
             fillingType: getDefaultFillingType().fillingType,
-            fillingName: getDefaultFillingType().fillingName
+            fillingName: getDefaultFillingType().fillingName,
+            bars: getDefaultBars()
         };
     }
 
@@ -188,6 +197,10 @@ var app = app || {};
             } else if ( current_section.sashType === 'flush-turn-right' ) {
                 current_section.sashType = 'turn_only_right';
                 current_section.fillingType = 'full-flush-panel';
+            }
+
+            if ( !current_section.bars ) {
+                current_section.bars = getDefaultBars();
             }
 
             _.each(current_section.sections, function (section) {
@@ -300,8 +313,19 @@ var app = app || {};
 
             return app.utils.math.square_meters(c.inches_to_mm(this.get('width')), c.inches_to_mm(this.get('height')));
         },
+        //  We either get a value from model, or get get estimated unit cost
+        //  when special toggle is enabled in settings
+        getOriginalCost: function () {
+            var original_cost = this.get('original_cost');
+
+            if ( app.settings && app.settings.get('pricing_mode') === 'estimates' ) {
+                original_cost = this.getEstimatedUnitCost();
+            }
+
+            return parseFloat(original_cost);
+        },
         getUnitCost: function () {
-            return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
+            return this.getOriginalCost() / parseFloat(this.get('conversion_rate'));
         },
         getSubtotalCost: function () {
             return this.getUnitCost() * parseFloat(this.get('quantity'));
@@ -465,8 +489,7 @@ var app = app || {};
         },
         setSectionBars: function (sectionId, bars) {
             this._updateSection(sectionId, function (section) {
-                section.vertical_bars_number = parseInt(bars.vertical, 10);
-                section.horizontal_bars_number = parseInt(bars.horizontal, 10);
+                section.bars = bars;
             });
         },
         setFillingType: function (sectionId, type, name) {
@@ -522,6 +545,9 @@ var app = app || {};
 
                 section.divider = type;
                 section.sections = [getSectionDefaults(), getSectionDefaults()];
+
+                // Reset bars parameter
+                section.bars = getDefaultBars();
 
                 if ( section.fillingType && section.fillingName ) {
                     section.sections[0].fillingType = section.sections[1].fillingType = section.fillingType;
@@ -856,6 +882,7 @@ var app = app || {};
 
             return res;
         },
+        //  Returns sizes in mms
         getSashList: function (current_root, parent_root) {
             var current_sash = {
                 opening: {},
@@ -916,6 +943,127 @@ var app = app || {};
             }
 
             return result;
+        },
+        //  Returns sizes in mms
+        getFixedAndOperableSectionsList: function (current_root) {
+            var profile = this.profile;
+            var current_area = {};
+            var section_result;
+            var result = [];
+
+            current_root = current_root || this.generateFullRoot();
+
+            _.each(current_root.sections, function (section) {
+                section_result = this.getFixedAndOperableSectionsList(section);
+
+                if (current_root.divider === 'vertical' || current_root.divider === 'vertical_invisible') {
+                    result = section_result.concat(result);
+                } else {
+                    result = result.concat(section_result);
+                }
+            }, this);
+
+            if ( _.indexOf(OPERABLE_SASH_TYPES, current_root.sashType) !== -1 ) {
+                current_area.type = 'operable';
+            } else {
+                current_area.type = 'fixed';
+            }
+
+            if ( current_root.sections.length === 0 ) {
+                current_area.width = current_root.openingParams.width;
+                current_area.height = current_root.openingParams.height;
+
+                _.each(['top', 'right', 'bottom', 'left'], function (position) {
+                    var measurement = position === 'top' || position === 'bottom' ?
+                        'height' : 'width';
+
+                    if ( current_root.mullionEdges[position] ) {
+                        current_area[measurement] += profile.get('mullion_width') / 2;
+                    } else {
+                        current_area[measurement] += profile.get('frame_width');
+                    }
+
+                }, this);
+
+                if ( current_root.thresholdEdge ) {
+                    current_area.height -= profile.get('frame_width');
+                    current_area.height += profile.get('threshold_width');
+                }
+
+                result.unshift(current_area);
+            }
+
+            return result;
+        },
+        getSectionsListWithEstimatedPrices: function () {
+            var pricing_grids = this.profile.getPricingGrids();
+            var sections_list = this.getFixedAndOperableSectionsList();
+
+            function getArea(item) {
+                return item.height * item.width;
+            }
+
+            //  How this algorithm works:
+            //  1. grids are already sorted by area size
+            //  2. if our size < lowest size, price = lowest size price
+            //  3. if our size > largest size, price = largest size price
+            //  4. if our size === some size, price = some size price
+            //  5. if our size > some size and < some other size, price is
+            //  linear interpolation between prices for these sizes
+            _.each(sections_list, function (section) {
+                var section_area = getArea(section);
+                var pricing_grid;
+
+                section.price_per_square_meter = 0;
+
+                if ( section.type === 'operable' ) {
+                    pricing_grid = pricing_grids.operable;
+                } else {
+                    pricing_grid = pricing_grids.fixed;
+                }
+
+                if ( pricing_grid.length ) {
+                    if ( section_area < getArea(pricing_grid[0]) ) {
+                        section.price_per_square_meter = pricing_grid[0].price_per_square_meter;
+                    } else if ( section_area > getArea(pricing_grid[pricing_grid.length - 1]) ) {
+                        section.price_per_square_meter = pricing_grid[pricing_grid.length - 1].price_per_square_meter;
+                    } else {
+                        _.some(pricing_grid, function (pricing_tier, tier_index) {
+                            if ( section_area === getArea(pricing_tier) ) {
+                                section.price_per_square_meter = pricing_tier.price_per_square_meter;
+                                return true;
+                            } else if ( pricing_grid[tier_index + 1] &&
+                                section_area < getArea(pricing_grid[tier_index + 1]) &&
+                                section_area > getArea(pricing_tier)
+                            ) {
+                                section.price_per_square_meter = app.utils.math.linear_interpolation(
+                                    section_area,
+                                    getArea(pricing_tier),
+                                    getArea(pricing_grid[tier_index + 1]),
+                                    pricing_tier.price_per_square_meter,
+                                    pricing_grid[tier_index + 1].price_per_square_meter
+                                );
+                                return true;
+                            }
+                        }, this);
+                    }
+                }
+
+                section.estimated_price = app.utils.math.square_meters(section.width, section.height) *
+                    section.price_per_square_meter;
+            }, this);
+
+            return sections_list;
+        },
+        getEstimatedUnitCost: function () {
+            var sections_list = this.getSectionsListWithEstimatedPrices();
+            var price = _.reduce(_.map(sections_list, function (item) {
+                return item.estimated_price;
+            }), function (memo, number) {
+                return memo + number;
+            }, 0);
+
+            return price;
         }
     });
 

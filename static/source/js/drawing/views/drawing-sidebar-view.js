@@ -181,6 +181,36 @@ var app = app || {};
 
             return sashes;
         },
+        getActiveUnitEstimatedSectionPrices: function () {
+            var f = app.utils.format;
+            var m = app.utils.math;
+            var section_list_source;
+            var sections = [];
+
+            if ( this.options.parent_view.active_unit && app.settings.get('pricing_mode') === 'estimates' ) {
+                section_list_source = this.options.parent_view.active_unit.getSectionsListWithEstimatedPrices();
+
+                _.each(section_list_source, function (source_item, index) {
+                    var section_item = {};
+
+                    section_item.name = 'Section #' + (index + 1);
+                    section_item.type = source_item.type === 'fixed' ? 'Fixed' : 'Operable';
+
+                    section_item.height = f.dimension_mm(source_item.height);
+                    section_item.width = f.dimension_mm(source_item.width);
+                    section_item.area = f.square_meters(
+                        m.square_meters(source_item.width, source_item.height),
+                        2, 'sup');
+
+                    section_item.price_per_square_meter = f.price_usd(source_item.price_per_square_meter);
+                    section_item.price = f.price_usd(source_item.estimated_price);
+
+                    sections.push(section_item);
+                }, this);
+            }
+
+            return sections;
+        },
         serializeData: function () {
             return {
                 unit_list: this.collection.map(function (item) {
@@ -196,7 +226,8 @@ var app = app || {};
                 active_unit_properties: this.getActiveUnitProperties(),
                 active_unit_profile_properties: this.getActiveUnitProfileProperties(),
                 active_unit_sashes: this.getActiveUnitSashList(),
-                active_unit_image: this.getActiveUnitImage()
+                active_unit_image: this.getActiveUnitImage(),
+                active_unit_estimated_section_prices: this.getActiveUnitEstimatedSectionPrices()
             };
         },
         onRender: function () {

@@ -246,6 +246,15 @@ test('utils.math.square_meters', function () {
 });
 
 
+test('utils.math.linear_interpolation', function () {
+    var m = app.utils.math;
+
+    equal(m.linear_interpolation(20, 10, 30, 50, 70), 60, 'Expected value is 60');
+    equal(m.linear_interpolation(1.2, 1, 2.3, 235, 342).toFixed(2), '251.46', 'Expected value is 251.46');
+    equal(m.linear_interpolation(2.2, 1, 2.3, 235, 342).toFixed(2), '333.77', 'Expected value is 333.77');
+});
+
+
 //  ------------------------------------------------------------------------
 //  Test convert functions from utils.js
 //  ------------------------------------------------------------------------

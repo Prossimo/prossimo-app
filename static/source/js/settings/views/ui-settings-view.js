@@ -26,7 +26,8 @@ var app = app || {};
             var name_title_type_hash = this.model.getNameTitleTypeHash();
 
             var params_data_hash = {
-                inches_display_mode: this.model.getInchesDisplayModes()
+                inches_display_mode: this.model.getInchesDisplayModes(),
+                pricing_mode: this.model.getPricingModes()
             };
 
             //  TODO: depending on length of a values_list for a given item,

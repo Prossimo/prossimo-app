@@ -226,6 +226,9 @@ var app = app || {};
             },
             square_meters: function (width_mm, height_mm) {
                 return parseFloat(width_mm) / 1000 * parseFloat(height_mm) / 1000;
+            },
+            linear_interpolation: function (x, x0, x1, y0, y1) {
+                return y0 + (y1 - y0) * ((x - x0) / (x1 - x0));
             }
         },
         convert: {

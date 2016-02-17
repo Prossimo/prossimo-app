@@ -264,6 +264,9 @@ var app = app || {};
                 },
                 quote_number: function (model) {
                     return model.getQuoteNumber();
+                },
+                original_cost: function (model) {
+                    return model.getOriginalCost();
                 }
             };
 
@@ -562,6 +565,9 @@ var app = app || {};
                 subtotal_cost_discounted: {
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('price_usd')
+                },
+                original_cost: {
+                    readOnly: app.settings.get('pricing_mode') === 'estimates'
                 }
             };
 
@@ -647,7 +653,9 @@ var app = app || {};
                 remove_item: ' ',
                 quote_number: 'Quote Number',
                 subtotal_profit: 'Subtotal Profit',
-                subtotal_cost_discounted: 'Subtotal Cost w/Disc.'
+                subtotal_cost_discounted: 'Subtotal Cost w/Disc.',
+                original_cost: app.settings.get('pricing_mode') === 'estimates' ?
+                    'Original Cost (est.)' : 'Original Cost'
             };
 
             return custom_column_headers_hash[column_name];
