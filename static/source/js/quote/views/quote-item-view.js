@@ -45,14 +45,11 @@ var app = app || {};
             var discount = this.model.get('discount');
             var subtotal_price_discounted = this.model.getSubtotalPriceDiscounted();
 
-            //  We split "hidden" extras equally between all units
-            var hidden_multiplier = this.options.project ? this.options.project.getHiddenMultiplier() : 1;
-
             return {
-                unit: f.price_usd(unit_price * hidden_multiplier),
-                subtotal: f.price_usd(subtotal_price * hidden_multiplier),
+                unit: f.price_usd(unit_price),
+                subtotal: f.price_usd(subtotal_price),
                 discount: discount ? f.percent(discount) : null,
-                subtotal_discounted: discount ? f.price_usd(subtotal_price_discounted * hidden_multiplier) : null
+                subtotal_discounted: discount ? f.price_usd(subtotal_price_discounted) : null
             };
         },
         getDescription: function () {

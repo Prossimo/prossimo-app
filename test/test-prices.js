@@ -3,6 +3,7 @@
 /* eslint strict:0 */
 /* eslint max-len:0 */
 /* eslint max-statements:0 */
+/* jscs:disable */
 
 var m = app.utils.math;
 
@@ -197,9 +198,9 @@ test('subtotal project prices', function () {
             extras_type: 'Optional'
         },
         {
-            description: 'Hidden costs for dealing with annoying client',
+            description: 'Hidden costs for freelancers',
             quantity: 1,
-            original_cost: 2000,
+            original_cost: 1000,
             original_currency: 'USD',
             conversion_rate: 1,
             price_markup: 1,
@@ -231,28 +232,41 @@ test('subtotal project prices', function () {
     //  End prices for accessories
     equal(current_project.extras.getRegularItemsPrice().toFixed(2), '1629.26', 'Subtotal for regular extras is expected to be 1629.26');
     equal(current_project.extras.getOptionalItemsPrice().toFixed(2), '900.00', 'Subtotal for optional extras is expected to be 900.00');
-    equal(current_project.extras.getHiddenPrice().toFixed(2), '2000.00', 'Subtotal for hidden extras is expected to be 2000.00');
+    equal(current_project.extras.getHiddenPrice().toFixed(2), '1000.00', 'Subtotal for hidden extras is expected to be 1000.00');
     equal(current_project.extras.getShippingPrice().toFixed(2), '1500.00', 'Subtotal for shipping is expected to be 1500.00');
-
-    //  Hidden multiplier
-    equal(current_project.getHiddenMultiplier().toFixed(5), '2.02592', 'Hidden multiplier is expected to be 2.02592');
 
     //  End prices for the whole project
     var total_prices = current_project.getTotalPrices();
     equal(total_prices.subtotal_units.toFixed(2), '1949.47', 'Subtotal price for units is expected to be 1949.47');
-    equal(total_prices.subtotal_units_with_hidden.toFixed(2), '3949.47', 'Subtotal price for units with hidden cost is expected to be 3949.47');
     equal(total_prices.subtotal_extras.toFixed(2), '1629.26', 'Subtotal price for extras is expected to be 1629.26');
-    equal(total_prices.subtotal.toFixed(2), '5578.73', 'Subtotal price for the whole order is expected to be 5578.73');
+    equal(total_prices.subtotal.toFixed(2), '3578.73', 'Subtotal price for the whole order is expected to be 3578.73');
     equal(total_prices.shipping.toFixed(2), '1500.00', 'Shipping is expected to be 1500.00');
-    equal(total_prices.tax.toFixed(2), '1673.62', 'Tax is expected to be 1673.62');
-    equal(total_prices.grand_total.toFixed(2), '8752.35', 'Grand total is expected to be 8752.35');
+    equal(total_prices.tax.toFixed(2), '1073.62', 'Tax is expected to be 1073.62');
+    equal(total_prices.grand_total.toFixed(2), '6152.35', 'Grand total is expected to be 6152.35');
+    equal(total_prices.total_cost.toFixed(2), '5694.29', 'Total cost is expected to be 5694.29');
+    equal(total_prices.profit.toFixed(2), '458.06', 'Profit is expected to be 458.06');
+    equal(total_prices.profit_percent.toFixed(2), '7.45', 'Profit is expected to be 7.45% of Grand Total');
 
     //  Individual price calculation functions should match with `total_prices`
     equal(total_prices.subtotal_units, current_project.getSubtotalUnitsPrice(), 'getSubtotalUnitsPrice result should match total_prices.subtotal_units');
-    equal(total_prices.subtotal_units_with_hidden, current_project.getSubtotalUnitsPrice() + current_project.getHiddenPrice(),
-        'getSubtotalUnitsPrice + getHiddenPrice result should match total_prices.subtotal_units_with_hidden');
     equal(total_prices.subtotal_extras, current_project.getExtrasPrice(), 'getExtrasPrice result should match total_prices.subtotal_extras');
     equal(total_prices.subtotal, current_project.getSubtotalPrice(), 'getSubtotalPrice result should match total_prices.subtotal');
+
+    // Total Profit should be the same as profit for all units / extras individually
+    var subtotal_profit_units = _.reduce(current_project.units.map(function (unit) {
+        return unit.getSubtotalProfit();
+    }), function (memo, item) {
+        return memo + item;
+    }, 0);
+    var subtotal_profit_extras = _.reduce(_.map(current_project.extras.getRegularItems(), function (unit) {
+        return unit.getSubtotalProfit();
+    }), function (memo, item) {
+        return memo + item;
+    }, 0);
+    var hidden_cost = current_project.extras.getHiddenPrice();
+    var combined_profit = subtotal_profit_units + subtotal_profit_extras - hidden_cost;
+
+    equal(total_prices.profit.toFixed(2), combined_profit.toFixed(2), 'total_prices.profit should match combined profit for units & extras');
 });
 
 

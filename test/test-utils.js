@@ -2,6 +2,8 @@
 /* eslint-env qunit */
 /* eslint strict:0 */
 /* eslint max-statements:0 */
+/* jscs:disable */
+
 
 //  Test that QUnit is working
 test('basic test', function () {
@@ -82,6 +84,7 @@ test('utils.format.price_usd', function () {
     equal(f.price_usd(30.5), '$30.50', 'Expected value is $30.50');
     equal(f.price_usd('30.5'), '$30.50', 'Expected value is $30.50');
     equal(f.price_usd(0), '$0.00', 'Expected value is $0.00');
+    equal(f.price_usd(-140), '-$140.00', 'Expected value is -$140.00');
 });
 
 test('utils.format.percent', function () {
@@ -89,6 +92,9 @@ test('utils.format.percent', function () {
 
     equal(f.percent(20), '20%', 'Expected value is 20%');
     equal(f.percent(20.5), '20.5%', 'Expected value is 20.5%');
+    equal(f.percent(14.13), '14.13%', 'Expected value is 14.13%');
+    equal(f.percent(14.13, 1), '14.1%', 'Expected value is 14.1%');
+    equal(f.percent(14.13, 0), '14%', 'Expected value is 14%');
     equal(f.percent(0), '0%', 'Expected value is 0%');
 });
 

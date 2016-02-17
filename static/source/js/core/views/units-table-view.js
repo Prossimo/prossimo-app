@@ -8,6 +8,7 @@ var app = app || {};
         className: 'units-table-container',
         template: app.templates['core/units-table-view'],
         ui: {
+            $total_prices_container: '.units-table-total-prices-container',
             $hot_container: '.handsontable-container'
         },
         events: {
@@ -49,9 +50,9 @@ var app = app || {};
                     title: 'Prices',
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'drawing', 'original_cost', 'original_currency',
-                        'conversion_rate', 'unit_cost', 'supplier_discount', 'unit_cost_discounted',
-                        'price_markup', 'unit_price', 'subtotal_price', 'discount', 'unit_price_discounted',
-                        'subtotal_price_discounted', 'total_square_feet',
+                        'conversion_rate', 'unit_cost', 'subtotal_cost', 'supplier_discount', 'unit_cost_discounted',
+                        'subtotal_cost_discounted', 'price_markup', 'unit_price', 'subtotal_price', 'discount',
+                        'unit_price_discounted', 'subtotal_price_discounted', 'subtotal_profit', 'total_square_feet',
                         'square_feet_price', 'square_feet_price_discounted',
                         'move_item', 'remove_item']
                 },
@@ -60,7 +61,7 @@ var app = app || {};
                     collection: this.options.extras,
                     columns: ['description', 'quantity', 'extras_type', 'original_cost',
                         'original_currency', 'conversion_rate', 'unit_cost', 'price_markup',
-                        'unit_price', 'subtotal_cost', 'subtotal_price',
+                        'unit_price', 'subtotal_cost', 'subtotal_price', 'subtotal_profit',
                         'move_item', 'remove_item']
                 },
                 project_info: {
@@ -239,6 +240,12 @@ var app = app || {};
                 },
                 subtotal_price_discounted: function (model) {
                     return model.getSubtotalPriceDiscounted();
+                },
+                subtotal_cost_discounted: function (model) {
+                    return model.getSubtotalCostDiscounted();
+                },
+                subtotal_profit: function (model) {
+                    return model.getSubtotalProfit();
                 },
                 system: function (model) {
                     return model.profile.get('system');
@@ -551,6 +558,14 @@ var app = app || {};
                 quote_number: {
                     readOnly: true
                 },
+                subtotal_profit: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd', true)
+                },
+                subtotal_cost_discounted: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
+                },
                 original_cost: {
                     readOnly: app.settings.get('pricing_mode') === 'estimates'
                 }
@@ -637,6 +652,8 @@ var app = app || {};
                 move_item: 'Move',
                 remove_item: ' ',
                 quote_number: 'Quote Number',
+                subtotal_profit: 'Subtotal Profit',
+                subtotal_cost_discounted: 'Subtotal Cost w/Disc.',
                 original_cost: app.settings.get('pricing_mode') === 'estimates' ?
                     'Original Cost (est.)' : 'Original Cost'
             };
@@ -708,6 +725,18 @@ var app = app || {};
                     dropdown_scroll_reset = false;
                 }
             }, 100);
+
+            if ( this.total_prices_view ) {
+                this.total_prices_view.destroy();
+            }
+
+            this.total_prices_view = new app.UnitsTableTotalPricesView({
+                model: app.current_project,
+                units: this.collection,
+                extras: this.options.extras
+            });
+
+            this.ui.$total_prices_container.append(this.total_prices_view.render().el);
         },
         onDestroy: function () {
             clearInterval(this.dropdown_scroll_timer);
@@ -716,6 +745,10 @@ var app = app || {};
 
             if ( this.hot ) {
                 this.hot.destroy();
+            }
+
+            if ( this.total_prices_view ) {
+                this.total_prices_view.destroy();
             }
         }
     });

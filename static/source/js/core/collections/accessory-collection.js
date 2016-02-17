@@ -66,6 +66,16 @@ var app = app || {};
                 return item.get('extras_type') === 'Tax';
             });
         },
+        getRegularItemsCost: function () {
+            var total_cost = 0;
+
+            _.each(this.getRegularItems(), function (item) {
+                total_cost += item.getSubtotalCost();
+            });
+
+            return total_cost;
+        },
+        //  Helper function
         getPrice: function (collection) {
             var total_price = 0;
 

@@ -43,7 +43,7 @@ var app = app || {};
             return td;
         },
         //  Format value with the help of formatters from `utils.js`
-        getFormattedRenderer: function (attr_name) {
+        getFormattedRenderer: function (attr_name, is_highlighted) {
             var args = _.toArray(arguments).slice(1);
 
             var f = app.utils.format;
@@ -78,6 +78,10 @@ var app = app || {};
                         'price_usd'], attr_name) !== -1
                 ) {
                     $td.addClass('htNumeric');
+                }
+
+                if ( is_highlighted ) {
+                    $td.css('background-color', '#FFF0DE');
                 }
 
                 return td;

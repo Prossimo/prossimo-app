@@ -47,6 +47,7 @@ module.exports = function (grunt) {
         'core/collections/filling-type-collection.js',
         'core/views/main-navigation-view.js',
         'core/views/units-table-view.js',
+        'core/views/units-table-total-prices-view.js',
         'core/views/project-selector-view.js',
         'core/views/no-project-selected-view.js',
         'core/views/status-panel-view.js',

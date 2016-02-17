@@ -105,9 +105,9 @@ $(document).ready(function () {
             extras_type: 'Optional'
         },
         {
-            description: 'Hidden costs for dealing with annoying client',
+            description: 'Hidden costs for freelancers',
             quantity: 1,
-            original_cost: 2000,
+            original_cost: 1000,
             original_currency: 'USD',
             conversion_rate: 1,
             price_markup: 1,
@@ -131,7 +131,6 @@ $(document).ready(function () {
             extras_type: 'Tax'
         }
     ]);
-
 
     app.projects.add(test_project);
 });
