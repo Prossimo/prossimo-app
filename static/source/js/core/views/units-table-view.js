@@ -27,13 +27,6 @@ var app = app || {};
                 (this.options.table_visibility ? this.options.table_visibility : 'hidden');
 
             this.tabs = {
-                input: {
-                    title: 'Input',
-                    collection: this.collection,
-                    columns: ['mark', 'quantity', 'width', 'height',
-                        'drawing', 'customer_image', 'type', 'description',
-                        'notes', 'exceptions', 'move_item', 'remove_item']
-                },
                 specs: {
                     title: 'Specs',
                     collection: this.collection,
@@ -49,12 +42,12 @@ var app = app || {};
                 prices: {
                     title: 'Prices',
                     collection: this.collection,
-                    columns: ['mark', 'quantity', 'drawing', 'original_cost', 'original_currency',
-                        'conversion_rate', 'unit_cost', 'subtotal_cost', 'supplier_discount', 'unit_cost_discounted',
-                        'subtotal_cost_discounted', 'price_markup', 'unit_price', 'subtotal_price', 'discount',
-                        'unit_price_discounted', 'subtotal_price_discounted', 'subtotal_profit', 'total_square_feet',
-                        'square_feet_price', 'square_feet_price_discounted',
-                        'move_item', 'remove_item']
+                    columns: ['mark', 'quantity', 'width', 'height', 'drawing', 'width_mm', 'height_mm',
+                        'original_cost', 'original_currency', 'conversion_rate', 'unit_cost', 'subtotal_cost',
+                        'supplier_discount', 'unit_cost_discounted', 'subtotal_cost_discounted', 'price_markup',
+                        'unit_price', 'subtotal_price', 'discount', 'unit_price_discounted',
+                        'subtotal_price_discounted', 'subtotal_profit', 'total_square_feet', 'square_feet_price',
+                        'square_feet_price_discounted', 'move_item', 'remove_item']
                 },
                 extras: {
                     title: 'Extras',
@@ -73,7 +66,7 @@ var app = app || {};
                         'quote_revision', 'quote_number']
                 }
             };
-            this.active_tab = 'input';
+            this.active_tab = 'specs';
 
             this.listenTo(this.collection, 'all', this.updateTable);
             this.listenTo(this.options.extras, 'all', this.updateTable);
