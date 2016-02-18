@@ -87,8 +87,6 @@ module.exports = function (grunt) {
         sourceUrl: 'static/source',
         buildUrl: 'static/public',
         bowerUrl: 'bower_components',
-        credentials: grunt.file.readJSON('credentials.json'),
-        // hash: '<%= ((new Date()).valueOf().toString()) + (Math.floor((Math.random()*1000000)+1).toString()) %>',
 
         gitinfo: {},
         hash: '<%= gitinfo.local.branch.current.shortSHA %>',
@@ -335,25 +333,6 @@ module.exports = function (grunt) {
             }
         },
 
-        sshexec: {
-            update_staging: {
-                command: 'cd /var/www/prossimo && ./update.sh staging',
-                options: {
-                    host: '<%= credentials.staging.host %>',
-                    username: '<%= credentials.staging.username %>',
-                    password: '<%= credentials.staging.password %>'
-                }
-            },
-            update_production: {
-                command: 'cd /var/www/prossimo && ./update.sh production',
-                options: {
-                    host: '<%= credentials.production.host %>',
-                    username: '<%= credentials.production.username %>',
-                    password: '<%= credentials.production.password %>'
-                }
-            }
-        },
-
         eslint: {
             options: {
                 configFile: '.eslintrc'
@@ -451,6 +430,22 @@ module.exports = function (grunt) {
         },
 
         shell: {
+            deploy_staging: {
+                options: {
+                    execOptions: {
+                        cwd: '../prossimo-deployment/'
+                    }
+                },
+                command: 'ansible-playbook --private-key=files/id_rsa_root --inventory-file=hosts deploy.yml -e env=staging'
+            },
+            deploy_production: {
+                options: {
+                    execOptions: {
+                        cwd: '../prossimo-deployment/'
+                    }
+                },
+                command: 'ansible-playbook --private-key=files/id_rsa_root --inventory-file=hosts deploy.yml -e env=production'
+            },
             build_pdfjs: {
                 options: {
                     execOptions: {
@@ -473,7 +468,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
-    grunt.loadNpmTasks('grunt-ssh');
     grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-replace');
     grunt.loadNpmTasks('grunt-gitinfo');
@@ -497,8 +491,8 @@ module.exports = function (grunt) {
     ]);
 
     grunt.registerTask('test', ['jscs', 'eslint', 'qunit']);
-    grunt.registerTask('deploy_staging', ['test', 'sshexec:update_staging']);
-    grunt.registerTask('deploy_production', ['test', 'sshexec:update_production']);
+    grunt.registerTask('deploy_staging', ['test', 'shell:deploy_staging']);
+    grunt.registerTask('deploy_production', ['test', 'shell:deploy_production']);
     grunt.registerTask('deploy', ['deploy_staging']);
     grunt.registerTask('default', ['dev', 'connect', 'watch']);
 };
