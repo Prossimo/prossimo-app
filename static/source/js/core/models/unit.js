@@ -861,15 +861,17 @@ var app = app || {};
         getSizes: function (root) {
             root = root || this.generateFullRoot();
             var res = {
-                openings: [],
-                glasses: []
+                sashes: [],
+                glasses: [],
+                openings: []
             };
 
             _.each(root.sections, function (sec) {
                 var subSizes = this.getSizes(sec);
 
-                res.openings = res.openings.concat(subSizes.openings);
+                res.sashes = res.sashes.concat(subSizes.sashes);
                 res.glasses = res.glasses.concat(subSizes.glasses);
+                res.openings = res.openings.concat(subSizes.openings);
             }, this);
 
             if (root.sections.length === 0) {
@@ -877,7 +879,8 @@ var app = app || {};
             }
 
             if (root.sashType !== 'fixed_in_frame') {
-                res.openings.push(root.sashParams);
+                res.sashes.push(root.sashParams);
+                res.openings.push(root.openingParams);
             }
 
             return res;
@@ -886,6 +889,7 @@ var app = app || {};
         getSashList: function (current_root, parent_root) {
             var current_sash = {
                 opening: {},
+                sash_frame: {},
                 filling: {}
             };
             var section_result;
@@ -908,8 +912,10 @@ var app = app || {};
             }
 
             if ( _.indexOf(SASH_TYPES_WITH_OPENING, current_root.sashType) !== -1 ) {
-                current_sash.opening.width = current_root.sashParams.width;
-                current_sash.opening.height = current_root.sashParams.height;
+                current_sash.opening.width = current_root.openingParams.width;
+                current_sash.opening.height = current_root.openingParams.height;
+                current_sash.sash_frame.width = current_root.sashParams.width;
+                current_sash.sash_frame.height = current_root.sashParams.height;
             }
 
             if ( current_root.sections.length === 0 ||
