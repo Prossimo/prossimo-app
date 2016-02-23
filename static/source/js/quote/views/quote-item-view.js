@@ -66,6 +66,7 @@ var app = app || {};
                 'opening_direction', 'internal_sill', 'external_sill'];
             var source_hash = this.model.getNameTitleTypeHash(params_list);
 
+            //  Add section for each sash (Sash #N title + sash properties)
             _.each(sash_list_source, function (source_item, index) {
                 var sash_item = {};
                 var filling_size;
@@ -142,7 +143,14 @@ var app = app || {};
                     f.dimensions(this.model.get('width'), this.model.get('height'), 'fraction'),
                 threshold: this.model.profile.isThresholdPossible() ?
                     this.model.profile.getThresholdType() : false,
-                u_value: this.model.get('uw') ? f.fixed(this.model.getUValue(), 3) : false
+                u_value: this.model.get('uw') ? f.fixed(this.model.getUValue(), 3) : false,
+                glazing: this.options.show_supplier_filling_name && app.settings && this.model.get('glazing') ?
+                    (
+                        app.settings.getFillingTypeByName(this.model.get('glazing')) ?
+                        app.settings.getFillingTypeByName(this.model.get('glazing')).get('supplier_name') :
+                        this.model.get('glazing')
+                    ) :
+                    this.model.get('glazing')
             };
 
             var params = _.map(name_title_hash, function (item, key) {
