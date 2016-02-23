@@ -17,13 +17,24 @@
     </div>
 </div>
 
+<div class="tab-container">
+    <ul class="nav nav-tabs">
+    {{#each tabs }}
+        {{#if is_visible }}<li class="{{ @key }}{{#if is_active }} active{{/if}}"><a href="#{{ @key }}">{{ title }}</a></li>{{/if}}
+    {{/each}}
+    </ul>
+</div>
+
 {{#if active_unit_image }}
+{{#if tabs.active_unit_image.is_active }}
     <div class="active-unit-image">
         <img src="{{ active_unit_image }}" alt="">
     </div>
 {{/if}}
+{{/if}}
 
 {{#if active_unit_properties }}
+{{#if tabs.active_unit_properties.is_active }}
     <div class="active-unit-properties">
         <h4>Unit properties</h4>
         <table>
@@ -38,8 +49,10 @@
         </table>
     </div>
 {{/if}}
+{{/if}}
 
 {{#if active_unit_profile_properties }}
+{{#if tabs.active_unit_profile_properties.is_active }}
     <div class="active-unit-profile-properties">
         <h4>Profile properties</h4>
         <table>
@@ -54,8 +67,10 @@
         </table>
     </div>
 {{/if}}
+{{/if}}
 
 {{#if active_unit_sashes }}
+{{#if tabs.active_unit_sashes.is_active }}
     <div class="active-unit-openings-glasses-properties">
         <h4>Sash List</h4>
         {{#each active_unit_sashes }}
@@ -87,8 +102,10 @@
         {{/each}}
     </div>
 {{/if}}
+{{/if}}
 
 {{#if active_unit_estimated_section_prices }}
+{{#if tabs.active_unit_estimated_section_prices.is_active }}
     <div class="active-unit-estimated-section-prices">
         <h4>Estimated Section Prices</h4>
         {{#each active_unit_estimated_section_prices }}
@@ -123,4 +140,5 @@
         </table>
         {{/each}}
     </div>
+{{/if}}
 {{/if}}

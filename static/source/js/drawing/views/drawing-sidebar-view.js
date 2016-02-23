@@ -17,10 +17,42 @@ var app = app || {};
             'change @ui.$select': 'onChange',
             'click @ui.$prev': 'onPrevBtn',
             'click @ui.$next': 'onNextBtn',
+            'click .nav-tabs a': 'onTabClick',
             'click @ui.$sidebar_toggle': 'onSidebarToggle'
         },
         initialize: function () {
+            this.tabs = {
+                active_unit_properties: {
+                    title: 'Unit'
+                },
+                active_unit_profile_properties: {
+                    title: 'Profile'
+                },
+                active_unit_sashes: {
+                    title: 'Sashes'
+                },
+                active_unit_image: {
+                    title: 'Image'
+                },
+                active_unit_estimated_section_prices: {
+                    title: 'Est. Prices'
+                }
+            };
+            this.active_tab = 'active_unit_properties';
+
             this.listenTo(this.options.parent_view.active_unit, 'all', this.render);
+        },
+        setActiveTab: function (tab_name) {
+            if ( _.contains(_.keys(this.tabs), tab_name) ) {
+                this.active_tab = tab_name;
+            }
+        },
+        onTabClick: function (e) {
+            var target = $(e.target).attr('href').replace('#', '');
+
+            e.preventDefault();
+            this.setActiveTab(target);
+            this.render();
         },
         selectUnit: function (model) {
             this.$el.trigger({
@@ -212,6 +244,14 @@ var app = app || {};
             return sections;
         },
         serializeData: function () {
+            var tab_contents = {
+                active_unit_properties: this.getActiveUnitProperties(),
+                active_unit_profile_properties: this.getActiveUnitProfileProperties(),
+                active_unit_sashes: this.getActiveUnitSashList(),
+                active_unit_image: this.getActiveUnitImage(),
+                active_unit_estimated_section_prices: this.getActiveUnitEstimatedSectionPrices()
+            };
+
             return {
                 unit_list: this.collection.map(function (item) {
                     return {
@@ -223,11 +263,16 @@ var app = app || {};
                         dimensions: app.utils.format.dimensions(item.get('width'), item.get('height'), 'fraction')
                     };
                 }, this),
-                active_unit_properties: this.getActiveUnitProperties(),
-                active_unit_profile_properties: this.getActiveUnitProfileProperties(),
-                active_unit_sashes: this.getActiveUnitSashList(),
-                active_unit_image: this.getActiveUnitImage(),
-                active_unit_estimated_section_prices: this.getActiveUnitEstimatedSectionPrices()
+                active_unit_properties: tab_contents.active_unit_properties,
+                active_unit_profile_properties: tab_contents.active_unit_profile_properties,
+                active_unit_sashes: tab_contents.active_unit_sashes,
+                active_unit_image: tab_contents.active_unit_image,
+                active_unit_estimated_section_prices: tab_contents.active_unit_estimated_section_prices,
+                tabs: _.each(this.tabs, function (item, key) {
+                    item.is_active = key === this.active_tab;
+                    item.is_visible = tab_contents[key] && tab_contents[key].length;
+                    return item;
+                }, this)
             };
         },
         onRender: function () {

@@ -172,6 +172,46 @@
     border: none;
 }
 
+//  Tabs
+
+.drawing-sidebar .nav-tabs {
+    border-bottom: none;
+    margin: 3rem 0;
+}
+
+.drawing-sidebar .nav > li > a {
+    padding: 0.5rem 1.3rem;
+    border: 1px solid darken(@white, 30%);
+    border-radius: 0;
+    color: lighten(@black, 30%);
+    margin: 0;
+    background-color: #ccc;
+    font-size: 0.9em;
+
+    &:hover,
+    &:active {
+        background-color: #efefef;
+    }
+}
+
+.drawing-sidebar .nav > li + li > a,
+.drawing-sidebar .nav > li + li.active > a {
+    border-left: none;
+}
+
+.drawing-sidebar .nav > li.active {
+    > a {
+        background-color: #fff;
+    }
+
+    > a:hover,
+    > a:active {
+        border-color: darken(@white, 30%);
+        background-color: #fff;
+    }
+}
+
+
 //  Image
 
 .active-unit-image {
