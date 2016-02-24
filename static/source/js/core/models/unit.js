@@ -178,13 +178,26 @@ var app = app || {};
         },
         //  TODO: this function should be improved
         //  The idea is to call this function on model init (maybe not only)
-        //  and check whether root section could be used by drawing code or
+        //  and check whether root section could be used by our drawing code or
         //  should it be reset to defaults.
         validateRootSection: function () {
-            if ( _.isString(this.get('root_section')) ) {
-                this.set('root_section', JSON.parse(this.get('root_section')));
-                this.set('root_section', this.validateSection(this.get('root_section')));
-            } else if ( !_.isObject(this.get('root_section')) ) {
+            var root_section = this.get('root_section');
+            var root_section_parsed;
+
+            if ( _.isString(root_section) ) {
+                try {
+                    root_section_parsed = JSON.parse(root_section);
+                } catch (error) {
+                    // Do nothing
+                }
+
+                if ( root_section_parsed ) {
+                    this.set('root_section', this.validateSection(root_section_parsed));
+                    return;
+                }
+            }
+
+            if ( !_.isObject(root_section) ) {
                 this.set('root_section', this.getDefaultValue('root_section'));
             }
         },
