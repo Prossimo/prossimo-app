@@ -3,7 +3,8 @@
 <ul>
 {{#each params }}
     <li class="{{ @key }}" data-param="{{ @key }}">
-        <h6>{{ title }}</h6>
+        <h6 class="title">{{ title }}</h6>
+        <div class="value">
         {{#each values_list }}
             {{#if is_active }}
                 <p class="{{ name }}">{{ title }}</p>
@@ -11,6 +12,7 @@
                 <button class="btn btn-xs js-change-value" data-value="{{ name }}">Change to {{ title }}</button>
             {{/if}}
         {{/each}}
+        </div>
     </li>
 {{/each}}
 </ul>

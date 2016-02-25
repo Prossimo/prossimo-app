@@ -13,6 +13,7 @@ module.exports = function (grunt) {
         'bootstrap/js/popover.js',
         'bootstrap/js/modal.js',
         'bootstrap-select/dist/js/bootstrap-select.min.js',
+        'bootstrap-toggle/js/bootstrap-toggle.min.js',
         'konva/konva.min.js',
         'decimal.js/decimal.min.js'
     ];

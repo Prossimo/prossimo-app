@@ -53,6 +53,13 @@ var app = app || {};
             return {
                 params: this.getParamsSourceData()
             };
+        },
+        onRender: function () {
+            // console.log( 'rendered' );
+
+            var $demo_toggle = $('<input type="checkbox" />').appendTo(this.$el);
+            // <input id="toggle-one" checked type="checkbox">
+            $demo_toggle.bootstrapToggle();
         }
     });
 })();
