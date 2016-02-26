@@ -157,34 +157,9 @@ var app = app || {};
 
             return td;
         },
-        doorOnlyRenderer: function (instance, td, row, col) {
-            var is_editable = instance.getSourceData().at(row) &&
-                instance.getSourceData().at(row).isDoorType();
-
-            if ( is_editable ) {
-                instance.setCellMeta(row, col, 'readOnly', false);
-                Handsontable.renderers.TextRenderer.apply(this, arguments);
-            } else {
-                instance.setCellMeta(row, col, 'readOnly', true);
-                $(td).addClass('htDimmed').text('--');
-            }
-
-            return td;
-        },
-        // doorOnlyDropdownRenderer: function (instance, td, row, col, prop, value, cellProperties) {
-        doorOnlyDropdownRenderer: function (instance, td, row, col) {
-            var is_editable = instance.getSourceData().at(row) &&
-                instance.getSourceData().at(row).isDoorType();
-
-            if ( is_editable ) {
-                instance.setCellMeta(row, col, 'readOnly', false);
-                Handsontable.renderers.AutocompleteRenderer.apply(this, arguments);
-            } else {
-                instance.setCellMeta(row, col, 'readOnly', true);
-                Handsontable.renderers.TextRenderer.apply(this, arguments);
-                $(td).addClass('htDimmed').text('--');
-            }
-
+        //  Just replace visible cell value with "--"
+        disabledPropertyRenderer: function (instance, td) {
+            $(td).addClass('htDimmed').text('--');
             return td;
         },
         //  Disable currently inactive projects in Project info tab
@@ -198,37 +173,6 @@ var app = app || {};
             }
 
             Handsontable.renderers.TextRenderer.apply(this, arguments);
-
-            return td;
-        },
-        //  Disable editing for base filling types
-        fillingTypeRenderer: function (instance, td, row, col) {
-            var is_base_type = instance.getSourceData().at(row) &&
-                instance.getSourceData().at(row).get('is_base_type');
-
-            if ( is_base_type ) {
-                instance.setCellMeta(row, col, 'readOnly', true);
-                $(td).addClass('htDimmed');
-            } else {
-                instance.setCellMeta(row, col, 'readOnly', false);
-            }
-
-            Handsontable.renderers.TextRenderer.apply(this, arguments);
-
-            return td;
-        },
-        fillingTypeDropdownRenderer: function (instance, td, row, col) {
-            var is_base_type = instance.getSourceData().at(row) &&
-                instance.getSourceData().at(row).get('is_base_type');
-
-            if ( is_base_type ) {
-                instance.setCellMeta(row, col, 'readOnly', true);
-                $(td).addClass('htDimmed');
-            } else {
-                instance.setCellMeta(row, col, 'readOnly', false);
-            }
-
-            Handsontable.renderers.AutocompleteRenderer.apply(this, arguments);
 
             return td;
         }

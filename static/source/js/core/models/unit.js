@@ -42,6 +42,8 @@ var app = app || {};
 
     //  We only enable those for editing on units where `isDoorType` is `true`
     var DOOR_ONLY_PROPERTIES = ['exterior_handle', 'lock_mechanism'];
+    //  Same as above, for `hasOperableSections`
+    var OPERABLE_ONLY_PROPERTIES = ['interior_handle', 'exterior_handle', 'hardware_type', 'hinge_style'];
 
     var SASH_TYPES = [
         'tilt_turn_left', 'tilt_turn_right', 'fixed_in_frame', 'tilt_only',
@@ -178,13 +180,26 @@ var app = app || {};
         },
         //  TODO: this function should be improved
         //  The idea is to call this function on model init (maybe not only)
-        //  and check whether root section could be used by drawing code or
+        //  and check whether root section could be used by our drawing code or
         //  should it be reset to defaults.
         validateRootSection: function () {
-            if ( _.isString(this.get('root_section')) ) {
-                this.set('root_section', JSON.parse(this.get('root_section')));
-                this.set('root_section', this.validateSection(this.get('root_section')));
-            } else if ( !_.isObject(this.get('root_section')) ) {
+            var root_section = this.get('root_section');
+            var root_section_parsed;
+
+            if ( _.isString(root_section) ) {
+                try {
+                    root_section_parsed = JSON.parse(root_section);
+                } catch (error) {
+                    // Do nothing
+                }
+
+                if ( root_section_parsed ) {
+                    this.set('root_section', this.validateSection(root_section_parsed));
+                    return;
+                }
+            }
+
+            if ( !_.isObject(root_section) ) {
                 this.set('root_section', this.getDefaultValue('root_section'));
             }
         },
@@ -861,15 +876,17 @@ var app = app || {};
         getSizes: function (root) {
             root = root || this.generateFullRoot();
             var res = {
-                openings: [],
-                glasses: []
+                sashes: [],
+                glasses: [],
+                openings: []
             };
 
             _.each(root.sections, function (sec) {
                 var subSizes = this.getSizes(sec);
 
-                res.openings = res.openings.concat(subSizes.openings);
+                res.sashes = res.sashes.concat(subSizes.sashes);
                 res.glasses = res.glasses.concat(subSizes.glasses);
+                res.openings = res.openings.concat(subSizes.openings);
             }, this);
 
             if (root.sections.length === 0) {
@@ -877,7 +894,8 @@ var app = app || {};
             }
 
             if (root.sashType !== 'fixed_in_frame') {
-                res.openings.push(root.sashParams);
+                res.sashes.push(root.sashParams);
+                res.openings.push(root.openingParams);
             }
 
             return res;
@@ -886,6 +904,7 @@ var app = app || {};
         getSashList: function (current_root, parent_root) {
             var current_sash = {
                 opening: {},
+                sash_frame: {},
                 filling: {}
             };
             var section_result;
@@ -908,8 +927,10 @@ var app = app || {};
             }
 
             if ( _.indexOf(SASH_TYPES_WITH_OPENING, current_root.sashType) !== -1 ) {
-                current_sash.opening.width = current_root.sashParams.width;
-                current_sash.opening.height = current_root.sashParams.height;
+                current_sash.opening.width = current_root.openingParams.width;
+                current_sash.opening.height = current_root.openingParams.height;
+                current_sash.sash_frame.width = current_root.sashParams.width;
+                current_sash.sash_frame.height = current_root.sashParams.height;
             }
 
             if ( current_root.sections.length === 0 ||
@@ -1064,6 +1085,30 @@ var app = app || {};
             }, 0);
 
             return price;
+        },
+        //  Check if unit has at least one operable section. This could be used
+        //  to determine whether we should allow editing handles and such stuff
+        hasOperableSections: function (current_root) {
+            var has_operable_sections = false;
+
+            current_root = current_root || this.generateFullRoot();
+
+            if ( _.contains(OPERABLE_SASH_TYPES, current_root.sashType) ) {
+                has_operable_sections = true;
+            } else {
+                _.each(current_root.sections, function (section) {
+                    var section_is_operable = has_operable_sections || this.hasOperableSections(section);
+
+                    if ( section_is_operable ) {
+                        has_operable_sections = true;
+                    }
+                }, this);
+            }
+
+            return has_operable_sections;
+        },
+        isOperableOnlyAttribute: function (attribute_name) {
+            return _.indexOf(OPERABLE_ONLY_PROPERTIES, attribute_name) !== -1;
         }
     });
 

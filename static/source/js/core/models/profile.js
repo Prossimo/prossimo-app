@@ -117,9 +117,23 @@ var app = app || {};
             }
         },
         validatePricingGrids: function () {
-            if ( _.isString(this.get('pricing_grids')) ) {
-                this.set('pricing_grids', JSON.parse(this.get('pricing_grids')));
-            } else if ( !_.isObject(this.get('pricing_grids')) ) {
+            var grids = this.get('pricing_grids');
+            var grids_parsed;
+
+            if ( _.isString(grids) ) {
+                try {
+                    grids_parsed = JSON.parse(grids);
+                } catch (error) {
+                    // Do nothing
+                }
+
+                if ( grids_parsed ) {
+                    this.set('pricing_grids', grids_parsed);
+                    return;
+                }
+            }
+
+            if ( !_.isObject(grids) ) {
                 this.set('pricing_grids', this.getDefaultValue('pricing_grids'));
             }
         },

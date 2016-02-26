@@ -60,12 +60,27 @@ var app = app || {};
             var sash_list_source = this.model.getSashList();
             var sashes = [];
 
-            var params_list = ['type', 'glazing', 'internal_color', 'external_color',
+            //  This is the list of params that we want to see in the quote. We
+            //  throw out attributes that don't apply to the current unit
+            var params_list = _.filter(
+                ['type', 'glazing', 'internal_color', 'external_color',
                 'interior_handle', 'exterior_handle', 'description', 'hardware_type',
                 'lock_mechanism', 'glazing_bead', 'gasket_color', 'hinge_style',
-                'opening_direction', 'internal_sill', 'external_sill'];
+                'opening_direction', 'internal_sill', 'external_sill'],
+            function (param) {
+                var condition = true;
+
+                if ( this.model.isDoorOnlyAttribute(param) && !this.model.isDoorType() ) {
+                    condition = false;
+                } else if ( this.model.isOperableOnlyAttribute(param) && !this.model.hasOperableSections() ) {
+                    condition = false;
+                }
+
+                return condition;
+            }, this);
             var source_hash = this.model.getNameTitleTypeHash(params_list);
 
+            //  Add section for each sash (Sash #N title + sash properties)
             _.each(sash_list_source, function (source_item, index) {
                 var sash_item = {};
                 var filling_size;
@@ -142,7 +157,14 @@ var app = app || {};
                     f.dimensions(this.model.get('width'), this.model.get('height'), 'fraction'),
                 threshold: this.model.profile.isThresholdPossible() ?
                     this.model.profile.getThresholdType() : false,
-                u_value: this.model.get('uw') ? f.fixed(this.model.getUValue(), 3) : false
+                u_value: this.model.get('uw') ? f.fixed(this.model.getUValue(), 3) : false,
+                glazing: this.options.show_supplier_filling_name && app.settings && this.model.get('glazing') ?
+                    (
+                        app.settings.getFillingTypeByName(this.model.get('glazing')) ?
+                        app.settings.getFillingTypeByName(this.model.get('glazing')).get('supplier_name') :
+                        this.model.get('glazing')
+                    ) :
+                    this.model.get('glazing')
             };
 
             var params = _.map(name_title_hash, function (item, key) {

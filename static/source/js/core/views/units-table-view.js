@@ -27,13 +27,6 @@ var app = app || {};
                 (this.options.table_visibility ? this.options.table_visibility : 'hidden');
 
             this.tabs = {
-                input: {
-                    title: 'Input',
-                    collection: this.collection,
-                    columns: ['mark', 'quantity', 'width', 'height',
-                        'drawing', 'customer_image', 'type', 'description',
-                        'notes', 'exceptions', 'move_item', 'remove_item']
-                },
                 specs: {
                     title: 'Specs',
                     collection: this.collection,
@@ -49,12 +42,12 @@ var app = app || {};
                 prices: {
                     title: 'Prices',
                     collection: this.collection,
-                    columns: ['mark', 'quantity', 'drawing', 'original_cost', 'original_currency',
-                        'conversion_rate', 'unit_cost', 'subtotal_cost', 'supplier_discount', 'unit_cost_discounted',
-                        'subtotal_cost_discounted', 'price_markup', 'unit_price', 'subtotal_price', 'discount',
-                        'unit_price_discounted', 'subtotal_price_discounted', 'subtotal_profit', 'total_square_feet',
-                        'square_feet_price', 'square_feet_price_discounted',
-                        'move_item', 'remove_item']
+                    columns: ['mark', 'quantity', 'width', 'height', 'drawing', 'width_mm', 'height_mm',
+                        'original_cost', 'original_currency', 'conversion_rate', 'unit_cost', 'subtotal_cost',
+                        'supplier_discount', 'unit_cost_discounted', 'subtotal_cost_discounted', 'price_markup',
+                        'unit_price', 'subtotal_price', 'discount', 'unit_price_discounted',
+                        'subtotal_price_discounted', 'subtotal_profit', 'total_square_feet', 'square_feet_price',
+                        'square_feet_price_discounted', 'move_item', 'remove_item']
                 },
                 extras: {
                     title: 'Extras',
@@ -73,7 +66,7 @@ var app = app || {};
                         'quote_revision', 'quote_number']
                 }
             };
-            this.active_tab = 'input';
+            this.active_tab = 'specs';
 
             this.listenTo(this.collection, 'all', this.updateTable);
             this.listenTo(this.options.extras, 'all', this.updateTable);
@@ -220,7 +213,8 @@ var app = app || {};
                     return app.preview(model, {
                         width: 500,
                         height: 500,
-                        mode: 'base64'
+                        mode: 'base64',
+                        position: 'outside'
                     });
                 },
                 subtotal_cost: function (model) {
@@ -537,12 +531,6 @@ var app = app || {};
                     type: 'autocomplete',
                     source: app.settings.getGasketColors()
                 },
-                exterior_handle: {
-                    renderer: app.hot_renderers.doorOnlyRenderer
-                },
-                lock_mechanism: {
-                    renderer: app.hot_renderers.doorOnlyRenderer
-                },
                 opening_direction: {
                     type: 'dropdown',
                     source: app.settings.getOpeningDirections()
@@ -602,6 +590,31 @@ var app = app || {};
             }, this);
 
             return columns;
+        },
+        //  Redefine some cell-specific properties. This is mostly used to
+        //  prevent editing of some attributes that shouldn't be editable for
+        //  a certain unit / accessory / project
+        getActiveTabCellsSpecificOptions: function () {
+            var self = this;
+
+            return function (row, col) {
+                var cell_properties = {};
+                var item = this.instance.getSourceData().at(row);
+                var property = self.getActiveTab().columns[col];
+
+                if ( item && item instanceof app.Unit ) {
+                    //  Gray out attrs that don't apply to the current unit
+                    if ( item.isDoorOnlyAttribute(property) && !item.isDoorType() ) {
+                        cell_properties.readOnly = true;
+                        cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
+                    } else if ( item.isOperableOnlyAttribute(property) && !item.hasOperableSections() ) {
+                        cell_properties.readOnly = true;
+                        cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
+                    }
+                }
+
+                return cell_properties;
+            };
         },
         //  We try to get a proper heading for all columns in our active tab
         //  - first we check if we have some custom headings (mainly to
@@ -698,6 +711,7 @@ var app = app || {};
                 self.hot = new Handsontable(self.ui.$hot_container[0], {
                     data: self.getActiveTab().collection,
                     columns: self.getActiveTabColumnOptions(),
+                    cells: self.getActiveTabCellsSpecificOptions(),
                     colHeaders: self.getActiveTabHeaders(),
                     rowHeaders: true,
                     rowHeights: function () {

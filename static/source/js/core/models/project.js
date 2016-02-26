@@ -161,7 +161,7 @@ var app = app || {};
 
             var total_cost = this.getTotalCost();
             var profit = this.getProfit();
-            var profit_percent = profit / grand_total * 100;
+            var profit_percent = grand_total ? profit / grand_total * 100 : 0;
 
             //  TODO: this value should be customizable, not just 50% always,
             //  when it'll be customizable, it should also be tested
