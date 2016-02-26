@@ -33,17 +33,8 @@ var app = app || {};
             this.listenTo(this.model, 'all', this.updateRenderedScene);
             this.on('update_rendered', this.updateRenderedScene, this);
 
-            // is we a looking to unit from opening side?
-            // so for windows it is usually true for inside view
-            // but some door are opening outward
-            // so if we are looking into such door from outside openingView will be true
-            var openingView =
-                !insideView && this.model.isOpeningDirectionOutward()
-                ||
-                insideView && !this.model.isOpeningDirectionOutward();
-
             this.state = {
-                openingView: openingView,
+                openingView: insideView,
                 selectedSashId: null,
                 selectedMullionId: null
             };
@@ -89,12 +80,9 @@ var app = app || {};
         },
         handleChangeView: function () {
             insideView = !insideView;
-            var openingView =
-                !insideView && this.model.isOpeningDirectionOutward() ||
-                insideView && !this.model.isOpeningDirectionOutward();
 
             this.setState({
-                openingView: openingView
+                openingView: insideView
             });
         },
         handleGlazingBarsPopupClick: function () {
@@ -865,13 +853,25 @@ var app = app || {};
             }
 
             var type = sectionData.sashType;
-            var shouldDrawHandle =
-                sectionData.sashType !== 'fixed_in_frame' &&
-                ((this.state.openingView &&
-                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type === 'tilt_only')
+            var shouldDrawHandle = false;
+
+            if (
+                (
+                    sectionData.sashType !== 'fixed_in_frame' &&
+                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type === 'tilt_only') &&
+                    (type.indexOf('_hinge_hidden_latch') === -1)
                 ) &&
-                (type.indexOf('_hinge_hidden_latch') === -1)
-                || (!this.state.openingView && this.model.profile.hasOutsideHandle()));
+                (
+                    (
+                        !this.state.openingView && this.model.profile.hasOutsideHandle()
+                    ) ||
+                    (
+                        this.state.openingView
+                    )
+                )
+            ) {
+                shouldDrawHandle = true;
+            }
 
             if (shouldDrawHandle) {
                 var handle = this.createHandle(sectionData, {
@@ -1505,9 +1505,26 @@ var app = app || {};
 
             // if we are not looking from opening view
             // we should see MAIN frame first
-            if (!this.state.openingView) {
+            if (
+                (
+                    !this.state.openingView && !this.model.isOpeningDirectionOutward()
+                ) ||
+                (
+                    !this.state.openingview && this.model.isOpeningDirectionOutward()
+                )
+            ) {
                 // so we move it to top
                 frameGroup.moveToTop();
+            }
+
+            // if we are looking from inside view
+            // and unit is outward opening
+            // we should see windows behind frames
+            if (
+                this.state.openingView && this.model.isOpeningDirectionOutward()
+            ) {
+                // so we move it to bottom
+                frameGroup.moveToBottom();
             }
 
             // infoGroup is group for displaying dimension information
