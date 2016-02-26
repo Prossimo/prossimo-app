@@ -97,13 +97,27 @@ var app = app || {};
         };
     }
 
-    function getSectionDefaults() {
+    function getDefaultMeasurements(type) {
+        var defaultMeasurements = ['max', 'max'];
+
+        if (type === 'section') {
+            defaultMeasurements = ['center', 'center'];
+        }
+
+        return {
+            vertical: defaultMeasurements,
+            horizontal: defaultMeasurements
+        };
+    }
+
+    function getSectionDefaults(type) {
         return {
             id: _.uniqueId(),
             sashType: 'fixed_in_frame',
             fillingType: getDefaultFillingType().fillingType,
             fillingName: getDefaultFillingType().fillingName,
-            bars: getDefaultBars()
+            bars: getDefaultBars(),
+            measurements: getDefaultMeasurements(type)
         };
     }
 
@@ -557,7 +571,7 @@ var app = app || {};
                 var fullSection = app.Unit.findSection(full, sectionId);
 
                 section.divider = type;
-                section.sections = [getSectionDefaults(), getSectionDefaults()];
+                section.sections = [getSectionDefaults('section'), getSectionDefaults('section')];
 
                 // Reset bars parameter
                 section.bars = getDefaultBars();
