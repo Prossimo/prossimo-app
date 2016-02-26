@@ -42,6 +42,8 @@ var app = app || {};
 
     //  We only enable those for editing on units where `isDoorType` is `true`
     var DOOR_ONLY_PROPERTIES = ['exterior_handle', 'lock_mechanism'];
+    //  Same as above, for `hasOperableSections`
+    var OPERABLE_ONLY_PROPERTIES = ['interior_handle', 'exterior_handle', 'hardware_type', 'hinge_style'];
 
     var SASH_TYPES = [
         'tilt_turn_left', 'tilt_turn_right', 'fixed_in_frame', 'tilt_only',
@@ -1097,6 +1099,30 @@ var app = app || {};
             }, 0);
 
             return price;
+        },
+        //  Check if unit has at least one operable section. This could be used
+        //  to determine whether we should allow editing handles and such stuff
+        hasOperableSections: function (current_root) {
+            var has_operable_sections = false;
+
+            current_root = current_root || this.generateFullRoot();
+
+            if ( _.contains(OPERABLE_SASH_TYPES, current_root.sashType) ) {
+                has_operable_sections = true;
+            } else {
+                _.each(current_root.sections, function (section) {
+                    var section_is_operable = has_operable_sections || this.hasOperableSections(section);
+
+                    if ( section_is_operable ) {
+                        has_operable_sections = true;
+                    }
+                }, this);
+            }
+
+            return has_operable_sections;
+        },
+        isOperableOnlyAttribute: function (attribute_name) {
+            return _.indexOf(OPERABLE_ONLY_PROPERTIES, attribute_name) !== -1;
         }
     });
 

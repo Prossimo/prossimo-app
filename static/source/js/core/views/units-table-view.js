@@ -530,12 +530,6 @@ var app = app || {};
                     type: 'autocomplete',
                     source: app.settings.getGasketColors()
                 },
-                exterior_handle: {
-                    renderer: app.hot_renderers.doorOnlyRenderer
-                },
-                lock_mechanism: {
-                    renderer: app.hot_renderers.doorOnlyRenderer
-                },
                 opening_direction: {
                     type: 'dropdown',
                     source: app.settings.getOpeningDirections()
@@ -595,6 +589,31 @@ var app = app || {};
             }, this);
 
             return columns;
+        },
+        //  Redefine some cell-specific properties. This is mostly used to
+        //  prevent editing of some attributes that shouldn't be editable for
+        //  a certain unit / accessory / project
+        getActiveTabCellsSpecificOptions: function () {
+            var self = this;
+
+            return function (row, col) {
+                var cell_properties = {};
+                var item = this.instance.getSourceData().at(row);
+                var property = self.getActiveTab().columns[col];
+
+                if ( item && item instanceof app.Unit ) {
+                    //  Gray out attrs that don't apply to the current unit
+                    if ( item.isDoorOnlyAttribute(property) && !item.isDoorType() ) {
+                        cell_properties.readOnly = true;
+                        cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
+                    } else if ( item.isOperableOnlyAttribute(property) && !item.hasOperableSections() ) {
+                        cell_properties.readOnly = true;
+                        cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
+                    }
+                }
+
+                return cell_properties;
+            };
         },
         //  We try to get a proper heading for all columns in our active tab
         //  - first we check if we have some custom headings (mainly to
@@ -691,6 +710,7 @@ var app = app || {};
                 self.hot = new Handsontable(self.ui.$hot_container[0], {
                     data: self.getActiveTab().collection,
                     columns: self.getActiveTabColumnOptions(),
+                    cells: self.getActiveTabCellsSpecificOptions(),
                     colHeaders: self.getActiveTabHeaders(),
                     rowHeaders: true,
                     rowHeights: function () {
