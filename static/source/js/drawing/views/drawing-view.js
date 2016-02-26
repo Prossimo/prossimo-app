@@ -1173,8 +1173,8 @@ var app = app || {};
                     group.add(metric);
                 }
 
-                if ( i === mullions.vertical.length - 1) {
-                    rows.horizontal += 1;
+                if ( i === verticalMullions.length - 1) {
+                    horizontalRows += 1;
                     var width__ = this.model.getInMetric('width', 'mm') - pos;
 
                     params = {
