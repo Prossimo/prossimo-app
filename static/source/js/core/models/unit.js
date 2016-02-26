@@ -37,7 +37,9 @@ var app = app || {};
         { name: 'conversion_rate', title: 'Conversion Rate', type: 'number' },
         { name: 'supplier_discount', title: 'Supplier Discount', type: 'number' },
         { name: 'price_markup', title: 'Markup', type: 'number' },
-        { name: 'discount', title: 'Discount', type: 'number' }
+        { name: 'discount', title: 'Discount', type: 'number' },
+
+        { name: 'position', title: 'Position', type: 'number' }
     ];
 
     //  We only enable those for editing on units where `isDoorType` is `true`
@@ -131,7 +133,8 @@ var app = app || {};
                 conversion_rate: 0.9,
                 price_markup: 2.3,
                 quantity: 1,
-                root_section: getSectionDefaults()
+                root_section: getSectionDefaults(),
+                position: this.collection && this.collection.length ? this.collection.getMaxPosition() + 1 : 0
             };
 
             if ( app.settings ) {
@@ -159,8 +162,11 @@ var app = app || {};
             return Backbone.Model.prototype.saveAndGetId.apply(this, arguments);
         },
         sync: function (method, model, options) {
+            //  TODO: is this the correct way?
+            var properties_to_omit = method === 'update' ? ['id', 'position'] : ['id'];
+
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { project_unit: _.extendOwn(_.omit(model.toJSON(), ['id']), {
+                options.attrs = { project_unit: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
                     root_section: JSON.stringify(model.get('root_section'))
                 }) };
             }
