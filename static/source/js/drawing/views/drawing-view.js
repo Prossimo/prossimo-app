@@ -1119,7 +1119,10 @@ var app = app || {};
             return group;
         },
 
-        sortMullions: function (mullions) {
+        createInfo: function (mullions, width, height) {
+            var group = new Konva.Group();
+            var verticalRows = 0;
+            var horizontalRows = 0;
             var verticalMullions = [];
             var horizontalMullions = [];
 
@@ -1138,23 +1141,9 @@ var app = app || {};
             verticalMullions.sort(function (a, b) {return a.position - b.position; });
             horizontalMullions.sort(function (a, b) {return a.position - b.position; });
 
-            return {
-                vertical: verticalMullions,
-                horizontal: horizontalMullions
-            }
-        },
-        createInfo: function (mullions, width, height) {
-            var group = new Konva.Group();
-
-            var rows = {
-                vertical: 0,
-                horizontal: 0
-            };
-
-            mullions = this.sortMullions(mullions);
             var pos = 0;
 
-            mullions.vertical.forEach(function (mul, i) {
+            verticalMullions.forEach(function (mul, i) {
                 var width_ = mul.position - pos;
                 // do not draw very small dimension
                 if (width_ > 0) {
@@ -1164,7 +1153,7 @@ var app = app || {};
                         }
                     };
 
-                    if (mullions.vertical.length === 1) {
+                    if (verticalMullions.length === 1) {
                         params.setter = function (val) {
                             if (!this.state.openingView) {
                                 val = this.model.getInMetric('width', 'mm') - val;
@@ -1194,7 +1183,7 @@ var app = app || {};
                         }
                     };
 
-                    if (mullions.vertical.length === 1) {
+                    if (verticalMullions.length === 1) {
                         params.setter = function (val) {
                             if (this.state.openingView) {
                                 val = this.model.getInMetric('width', 'mm') - val;
@@ -1214,7 +1203,7 @@ var app = app || {};
             }.bind(this));
 
             pos = 0;
-            mullions.horizontal.forEach(function (mul, i) {
+            horizontalMullions.forEach(function (mul, i) {
                 var height_ = mul.position - pos;
 
                 if (height_ > 0) {
@@ -1224,7 +1213,7 @@ var app = app || {};
                         }
                     };
 
-                    if (mullions.horizontal.length === 1) {
+                    if (horizontalMullions.length === 1) {
                         params.setter = function (val) {
                             this.model.setSectionMullionPosition(mul.id, val);
                         }.bind(this);
@@ -1240,8 +1229,8 @@ var app = app || {};
                     group.add(metric);
                 }
 
-                if ( i === mullions.horizontal.length - 1) {
-                    rows.vertical += 1;
+                if ( i === horizontalMullions.length - 1) {
+                    verticalRows += 1;
                     var height__ = this.model.getInMetric('height', 'mm') - pos;
 
                     params = {
@@ -1250,7 +1239,7 @@ var app = app || {};
                         }
                     };
 
-                    if (mullions.horizontal.length === 1) {
+                    if (horizontalMullions.length === 1) {
                         params.setter = function (val) {
                             this.model.setSectionMullionPosition(mul.id, this.model.getInMetric('height', 'mm') - val);
                         }.bind(this);
@@ -1275,7 +1264,7 @@ var app = app || {};
             });
 
             verticalWholeMertic.position({
-                x: -metricSize * (rows.vertical + 1),
+                x: -metricSize * (verticalRows + 1),
                 y: 0
             });
 
@@ -1292,7 +1281,7 @@ var app = app || {};
 
             horizontalWholeMertic.position({
                 x: 0,
-                y: height + rows.horizontal * metricSize
+                y: height + horizontalRows * metricSize
             });
             group.add(horizontalWholeMertic);
 
