@@ -152,6 +152,7 @@ var app = app || {};
             // revirse sash type from right to left
             // or from left to right on onside view
             // UX will be better for this case
+            /*
             if (!this.state.openingView) {
                 if (type.indexOf('left') >= 0) {
                     type = type.replace('left', 'right');
@@ -159,6 +160,8 @@ var app = app || {};
                     type = type.replace('right', 'left');
                 }
             }
+            */
+            // @INFO: Canceled this reversing because of issues #192, #196
 
             this.model.setSectionSashType(this.state.selectedSashId, type);
         },
@@ -717,6 +720,7 @@ var app = app || {};
             return handle;
         },
         createDirectionLine: function (section) {
+            var view = this;
             var type = section.sashType;
             var directionLine = new Konva.Shape({
                 stroke: 'black',
@@ -757,6 +761,16 @@ var app = app || {};
 
             if ((type.indexOf('_hinge_hidden_latch') !== -1)) {
                 directionLine.dash([10 / this.ratio, 10 / this.ratio]);
+            }
+
+            // #192: Reverse hinge indicator for outside view
+            if ( !view.state.openingView ) {
+                directionLine.scale({
+                    x: -1
+                });
+                directionLine.move({
+                    x: section.glassParams.width
+                });
             }
 
             return directionLine;
