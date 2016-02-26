@@ -152,6 +152,7 @@ var app = app || {};
             // revirse sash type from right to left
             // or from left to right on onside view
             // UX will be better for this case
+            /*
             if (!this.state.openingView) {
                 if (type.indexOf('left') >= 0) {
                     type = type.replace('left', 'right');
@@ -159,6 +160,8 @@ var app = app || {};
                     type = type.replace('right', 'left');
                 }
             }
+            */
+            // @INFO: Canceled this reversing because of issues #192, #196
 
             this.model.setSectionSashType(this.state.selectedSashId, type);
         },
