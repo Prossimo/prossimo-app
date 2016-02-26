@@ -213,7 +213,8 @@ var app = app || {};
                     return app.preview(model, {
                         width: 500,
                         height: 500,
-                        mode: 'base64'
+                        mode: 'base64',
+                        position: 'outside'
                     });
                 },
                 subtotal_cost: function (model) {
