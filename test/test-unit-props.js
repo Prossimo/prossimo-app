@@ -606,3 +606,13 @@ test('hasOperableSections function', function () {
     equal(unit_1.hasOperableSections(), false, 'Unit 1 is not expected to have operable sections');
     equal(unit_2.hasOperableSections(), true, 'Unit 2 is expected to have operable sections');
 });
+
+test('getSashName function', function () {
+    var unit = new app.Unit();
+
+    equal(unit.getSashName('tilt_turn_right'), 'Tilt-turn Right Hinge', 'Name for tilt_turn_right type in normal hinges mode');
+    equal(unit.getSashName('tilt_turn_right', true), 'Tilt-turn Left Hinge', 'Name for tilt_turn_right type in reversed hinges mode');
+
+    equal(unit.getSashName('tilt_turn_left'), 'Tilt-turn Left Hinge', 'Name for tilt_turn_left type in normal hinges mode');
+    equal(unit.getSashName('tilt_turn_left', true), 'Tilt-turn Right Hinge', 'Name for tilt_turn_left type in reversed hinges mode');
+});

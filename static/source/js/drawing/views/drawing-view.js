@@ -1600,6 +1600,7 @@ var app = app || {};
             this.updateUI();
             this.updateCanvas();
             this.$('#drawing').focus();
+            this.trigger('onSetState');
         },
         deselectAll: function () {
             this.setState({

@@ -41,6 +41,7 @@ var app = app || {};
             this.active_tab = 'active_unit_properties';
 
             this.listenTo(this.options.parent_view.active_unit, 'all', this.render);
+            this.listenTo(this.options.parent_view, 'drawing_view:onSetState', this.render);
         },
         setActiveTab: function (tab_name) {
             if ( _.contains(_.keys(this.tabs), tab_name) ) {
@@ -175,7 +176,10 @@ var app = app || {};
             var sashes = [];
 
             if ( this.options.parent_view.active_unit ) {
-                sash_list_source = this.options.parent_view.active_unit.getSashList();
+                //  TODO: this doesn't look very nice, we have to rewrite it
+                //  see https://github.com/prossimo-ben/prossimo-app/issues/201
+                sash_list_source = this.options.parent_view.active_unit.getSashList(null, null,
+                    !this.options.parent_view.drawing_view.state.openingView);
 
                 _.each(sash_list_source, function (source_item, index) {
                     var sash_item = {};
