@@ -475,12 +475,26 @@ var app = app || {};
         isRootSection: function (sectionId) {
             return this.get('root_section').id === sectionId;
         },
-        getSashName: function (type) {
+        //  If reverse_hinges is true, we replace "Left" with "Right" and
+        //  "Right" with "Left" in sash name
+        getSashName: function (type, reverse_hinges) {
+            reverse_hinges = reverse_hinges || false;
+
             if ( _.indexOf(_.keys(SASH_TYPE_NAME_MAP), type) === -1 ) {
                 throw new Error('Unrecognized sash type: ' + type);
             }
 
-            return SASH_TYPE_NAME_MAP[type];
+            var string = SASH_TYPE_NAME_MAP[type];
+
+            if ( reverse_hinges ) {
+                if ( /Right/.test(string) ) {
+                    string = string.replace(/Right/g, 'Left');
+                } else if ( /Left/.test(string) ) {
+                    string = string.replace(/Left/g, 'Right');
+                }
+            }
+
+            return string;
         },
         _updateSection: function (sectionId, func) {
             // HAH, dirty deep clone, rewrite when you have good mood for it
@@ -901,7 +915,7 @@ var app = app || {};
             return res;
         },
         //  Returns sizes in mms
-        getSashList: function (current_root, parent_root) {
+        getSashList: function (current_root, parent_root, reverse_hinges) {
             var current_sash = {
                 opening: {},
                 sash_frame: {},
@@ -916,7 +930,7 @@ var app = app || {};
 
             if (current_root.sashType === 'fixed_in_frame') {
                 _.each(current_root.sections, function (section) {
-                    section_result = this.getSashList(section, current_root);
+                    section_result = this.getSashList(section, current_root, reverse_hinges);
 
                     if (current_root.divider === 'vertical' || current_root.divider === 'vertical_invisible') {
                         result = section_result.concat(result);
@@ -937,7 +951,7 @@ var app = app || {};
                 ((current_root.sashType === 'fixed_in_frame') && (current_root.sections.length === 0)) ||
                 ((current_root.sashType !== 'fixed_in_frame') && (current_root.sections.length))
             ) {
-                current_sash.type = this.getSashName(current_root.sashType);
+                current_sash.type = this.getSashName(current_root.sashType, reverse_hinges);
                 current_sash.filling.width = current_root.glassParams.width;
                 current_sash.filling.height = current_root.glassParams.height;
 
