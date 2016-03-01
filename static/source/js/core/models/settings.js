@@ -102,6 +102,10 @@ var app = app || {};
                 remove: false,
                 data: {
                     limit: 0
+                },
+                //  Validate positions on load
+                success: function (collection) {
+                    collection.validatePositions();
                 }
             });
 
@@ -109,6 +113,10 @@ var app = app || {};
                 remove: false,
                 data: {
                     limit: 0
+                },
+                //  Validate positions on load
+                success: function (collection) {
+                    collection.validatePositions();
                 }
             });
         },
