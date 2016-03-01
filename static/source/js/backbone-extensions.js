@@ -102,7 +102,7 @@ var app = app || {};
             for ( var i = 0; i < this.length; i++ ) {
                 var current_model = this.models[i];
 
-                if ( current_model.get('position') !== i ) {
+                if ( current_model.id && current_model.get('position') !== i ) {
                     invalid_flag = true;
                     current_model.set('position', i, { silent: true });
                 }
