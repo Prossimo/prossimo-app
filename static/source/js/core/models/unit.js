@@ -161,7 +161,6 @@ var app = app || {};
             return Backbone.Model.prototype.saveAndGetId.apply(this, arguments);
         },
         sync: function (method, model, options) {
-            //  TODO: is this the correct way?
             var properties_to_omit = method === 'update' ? ['id', 'position'] : ['id'];
 
             if ( method === 'create' || method === 'update' ) {
