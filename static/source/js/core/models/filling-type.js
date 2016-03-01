@@ -16,7 +16,8 @@ var app = app || {};
         { name: 'name', title: 'Prossimo Name', type: 'string' },
         { name: 'supplier_name', title: 'Supplier Name', type: 'string' },
         { name: 'type', title: 'Type', type: 'string' },
-        { name: 'is_base_type', title: 'Is Base Type', type: 'boolean' }
+        { name: 'is_base_type', title: 'Is Base Type', type: 'boolean' },
+        { name: 'position', title: 'Position', type: 'number' }
     ];
 
     app.FillingType = Backbone.Model.extend({
@@ -55,8 +56,10 @@ var app = app || {};
             return Backbone.Model.prototype.saveAndGetId.apply(this, arguments);
         },
         sync: function (method, model, options) {
+            var properties_to_omit = ['id', 'is_base_type'];
+
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { filling_type: _.omit(model.toJSON(), ['id', 'is_base_type']) };
+                options.attrs = { filling_type: _.omit(model.toJSON(), properties_to_omit) };
             }
 
             return Backbone.sync.call(this, method, model, options);

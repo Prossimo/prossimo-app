@@ -107,12 +107,17 @@ var app = app || {};
                     current_model.set('position', i, { silent: true });
                 }
 
-                proper_order.push(current_model.id);
+                if ( current_model.id ) {
+                    proper_order.push(current_model.id);
+                }
             }
 
             if ( invalid_flag ) {
                 this.trigger('sort');
-                this.savePositions(proper_order);
+
+                if ( proper_order.length ) {
+                    this.savePositions(proper_order);
+                }
             }
         },
         //  Item at index N is moved before item with index M
