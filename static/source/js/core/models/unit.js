@@ -133,8 +133,7 @@ var app = app || {};
                 conversion_rate: 0.9,
                 price_markup: 2.3,
                 quantity: 1,
-                root_section: getSectionDefaults(),
-                position: this.collection && this.collection.length ? this.collection.getMaxPosition() + 1 : 0
+                root_section: getSectionDefaults()
             };
 
             if ( app.settings ) {

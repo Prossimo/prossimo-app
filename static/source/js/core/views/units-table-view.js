@@ -122,7 +122,11 @@ var app = app || {};
             }
         },
         addNewUnit: function (e) {
-            var new_unit = new app.Unit();
+            var new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
+            var new_unit = new app.Unit({
+                // position: this.collection.length ? this.collection.getMaxPosition() + 1 : 0
+                position: new_position
+            });
 
             e.stopPropagation();
             this.collection.add(new_unit);

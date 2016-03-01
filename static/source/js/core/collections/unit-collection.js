@@ -5,6 +5,8 @@ var app = app || {};
 
     app.UnitCollection = Backbone.Collection.extend({
         model: app.Unit,
+        //  TODO: rename this prop
+        property_name: 'units',
         url: function () {
             return app.settings.get('api_base_path') +
                 '/projects/' + this.options.project.get('id') + '/units';
@@ -13,67 +15,28 @@ var app = app || {};
             return app.settings.get('api_base_path') +
                 '/projects/' + this.options.project.get('id') + '/reorder_units';
         },
+        // comparator: function (item) {
+        //     //  Special case is when multiple units with `position` = 0 exist
+        //     //  which means our project was created before sorting features
+        //     //  were introduced, so units had no `position` set
+        //     var no_positions_state_flag = this.length > 0 && this.getMaxPosition() === 0;
+
+        //     return no_positions_state_flag ? item.id : item.get('position');
+        // },
+        //  TODO: could call generic comparator from extensions
         comparator: function (item) {
             //  Special case is when multiple units with `position` = 0 exist
             //  which means our project was created before sorting features
             //  were introduced, so units had no `position` set
-            var no_positions_state_flag = this.length > 0 && this.getMaxPosition() === 0;
+            // var no_positions_state_flag = this.length > 0 && this.getMaxPosition() === 0;
+            // var no_positions_state_flag = this.length > 0 && this.getMaxPosition() === 0;
+            console.log( 'comparator', item );
 
-            // console.log( 'no_positions_state_flag', no_positions_state_flag );
+            var no_positions_state_flag = item.collection.length > 0 && item.collection.getMaxPosition() === 0;
+
+            console.log( 'no positions state', no_positions_state_flag );
 
             return no_positions_state_flag ? item.id : item.get('position');
-        },
-        //  TODO: this could be moved to backbone-extensions probably
-        getMaxPosition: function () {
-            console.log( 'getmaxposition' );
-            var max = _.max(this.pluck('position'), this);
-
-            console.log( 'collection length', this.length );
-
-            return max > 0 ? max : 0;
-        },
-        //  TODO: how to deal with the existing order of units in projects? It
-        //  could be messy after we roll out this feature initially
-        validatePositions: function () {
-            console.log( 'validate positions for collection', this );
-            var invalid_flag = false;
-            var proper_order = [];
-
-            this.each(function (item) {
-                console.log( 'id', item.id );
-                console.log( 'position', item.get('position') );
-            }, this);
-
-            // var no_positions_state_flag = this.length > 0 && this.getMaxPosition() === 0;
-
-            // console.log( 'no_positions_state_flag', no_positions_state_flag );
-
-            //  TODO: what to do with items that has no id yet? In which cases
-            //  this could possibly happen?
-            for ( var i = 0; i < this.length; i++ ) {
-                var current_model = this.models[i];
-
-                if ( current_model.get('position') !== i ) {
-                    console.log( 'model ' + current_model.id + ' position is ' + current_model.get('position') +
-                        ' while it should be ' + i );
-                    invalid_flag = true;
-                    current_model.set('position', i, { silent: true });
-                }
-
-                proper_order.push(current_model.id);
-            }
-
-            // proper_order.push(current_model.id);
-
-            console.log( 'invalid flag', invalid_flag );
-
-            if ( invalid_flag ) {
-                console.log( 'positions were invalid, force new order', proper_order );
-                this.trigger('sort');
-
-                //  TODO: add sync call here or use jquery ajax
-                // this.sync('reorder', this, {});
-            }
         },
         initialize: function (models, options) {
             this.options = options || {};
@@ -81,6 +44,12 @@ var app = app || {};
 
             //  When parent project is set active, we validate unit positions
             this.listenTo(this.options.project, 'set_active', this.validatePositions);
+
+            // this.on('add', this.setNewItemPosition, this);
+
+            this.on('all', function (e) {
+                console.log( e );
+            }, this);
         },
         getNameTitleTypeHash: function (names) {
             return this.proxy_unit.getNameTitleTypeHash(names);
