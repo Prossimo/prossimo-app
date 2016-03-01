@@ -516,9 +516,23 @@ var app = app || {};
                 return;
             }
 
+            var full = this.generateFullRoot();
+            var fullSection = app.Unit.findSection(full, sectionId);
+
+            // Prevent from unnecessary updating
+            if ( fullSection.sashType === type ) {
+                return;
+            }
+
+            // Update section
             this._updateSection(sectionId, function (section) {
                 section.sashType = type;
             });
+
+            //  Change all nested sections recursively
+            _.each(fullSection.sections, function (childSection) {
+                this.setSectionSashType(childSection.id, 'fixed_in_frame');
+            }, this);
         },
         setSectionBars: function (sectionId, bars) {
             this._updateSection(sectionId, function (section) {
