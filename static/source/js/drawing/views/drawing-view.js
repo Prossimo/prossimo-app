@@ -289,7 +289,7 @@ var app = app || {};
             var rect = new Konva.Rect({
                 width: width,
                 height: height,
-                fill: 'white',
+                fill: 'lightgrey',
                 stroke: 'black',
                 strokeWidth: 1
             });
@@ -807,34 +807,36 @@ var app = app || {};
                 fillHeight = sectionData.glassParams.height;
             }
 
+            var hasSubSections = sectionData.sections && sectionData.sections.length;
             var isFlushType = sectionData.fillingType &&
                 sectionData.fillingType.indexOf('flush') >= 0;
 
-            if (sectionData.sashType !== 'fixed_in_frame') {
-                var frameGroup;
+            var frameGroup;
 
-                if (isFlushType) {
-                    frameGroup = this.createFlushFrame({
-                        width: sectionData.sashParams.width,
-                        height: sectionData.sashParams.height,
-                        sectionId: sectionData.id
-                    });
-                } else {
-                    frameGroup = this.createFrame({
-                        width: sectionData.sashParams.width,
-                        height: sectionData.sashParams.height,
-                        frameWidth: frameWidth,
-                        sectionId: sectionData.id
-                    });
-                }
+            if (isFlushType && !hasSubSections) {
+                frameGroup = this.createFlushFrame({
+                    width: sectionData.sashParams.width,
+                    height: sectionData.sashParams.height,
+                    sectionId: sectionData.id
+                });
+                group.add(frameGroup);
+            }
+
+            if (sectionData.sashType !== 'fixed_in_frame') {
+
+                frameGroup = this.createFrame({
+                    width: sectionData.sashParams.width,
+                    height: sectionData.sashParams.height,
+                    frameWidth: frameWidth,
+                    sectionId: sectionData.id
+                });
 
                 group.add(frameGroup);
             }
 
-            var hasSubSections = sectionData.sections && sectionData.sections.length;
             var shouldDrawFilling =
                 !hasSubSections && !isFlushType ||
-                this.model.isRootSection(sectionData.id) && isFlushType;
+                !hasSubSections && this.model.isRootSection(sectionData.id) && isFlushType;
 
             if (shouldDrawFilling) {
                 var filling = this.createFilling(sectionData, {
