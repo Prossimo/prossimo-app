@@ -87,15 +87,33 @@
                     <td class="value">{{{ opening_size }}}</td>
                 </tr>
                 {{/if}}
-                <tr>
-                    <td class="title">{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}</td>
-                    <td class="value">{{ filling_name }}</td>
-                </tr>
-                {{#if filling_is_glass }}
-                <tr>
-                    <td class="title">Total Daylight</td>
-                    <td class="value">{{{ filling_size }}}</td>
-                </tr>
+                {{#if sections}}
+                    {{#each sections}}
+                    <tr>
+                        <td class="title" colspan="2"><strong> {{ name }} </strong></td>
+                    </tr>
+                    <tr>
+                        <td class="title">{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}</td>
+                        <td class="value">{{ filling_name }}</td>
+                    </tr>
+                    {{#if filling_is_glass }}
+                    <tr>
+                        <td class="title">Total Daylight</td>
+                        <td class="value">{{{ filling_size }}}</td>
+                    </tr>
+                    {{/if}}
+                    {{/each}}
+                {{else}}
+                    <tr>
+                        <td class="title">{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}</td>
+                        <td class="value">{{ filling_name }}</td>
+                    </tr>
+                    {{#if filling_is_glass }}
+                    <tr>
+                        <td class="title">Total Daylight</td>
+                        <td class="value">{{{ filling_size }}}</td>
+                    </tr>
+                    {{/if}}
                 {{/if}}
             </tbody>
         </table>

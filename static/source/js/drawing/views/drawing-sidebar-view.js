@@ -175,6 +175,22 @@ var app = app || {};
             var sash_list_source;
             var sashes = [];
 
+            function getSectionInfo(source) {
+                var result = {};
+
+                var filling_size = f.dimensions_in(c.mm_to_inches(source.filling.width),
+                        c.mm_to_inches(source.filling.height), 'fraction');
+
+                var filling_area = f.square_feet(m.square_feet(c.mm_to_inches(source.filling.width),
+                        c.mm_to_inches(source.filling.height)), 2, 'sup');
+
+                result.filling_is_glass = source.filling.type === 'glass';
+                result.filling_name = source.filling.name;
+                result.filling_size = filling_size + ' (' + filling_area + ')';
+
+                return result;
+            }
+
             if ( this.options.parent_view.active_unit ) {
                 //  TODO: this doesn't look very nice, we have to rewrite it
                 //  see https://github.com/prossimo-ben/prossimo-app/issues/201
@@ -183,23 +199,12 @@ var app = app || {};
 
                 _.each(sash_list_source, function (source_item, index) {
                     var sash_item = {};
-                    var filling_size;
-                    var filling_area;
                     var opening_size;
                     var opening_area;
+                    var section_info;
 
                     sash_item.name = 'Sash #' + (index + 1);
                     sash_item.type = source_item.type;
-
-                    filling_size = f.dimensions_in(c.mm_to_inches(source_item.filling.width),
-                        c.mm_to_inches(source_item.filling.height), 'fraction');
-
-                    filling_area = f.square_feet(m.square_feet(c.mm_to_inches(source_item.filling.width),
-                        c.mm_to_inches(source_item.filling.height)), 2, 'sup');
-
-                    sash_item.filling_is_glass = source_item.filling.type === 'glass';
-                    sash_item.filling_name = source_item.filling.name;
-                    sash_item.filling_size = filling_size + ' (' + filling_area + ')';
 
                     if ( source_item.opening.height && source_item.opening.width ) {
                         opening_size = f.dimensions_in(c.mm_to_inches(source_item.opening.width),
@@ -209,6 +214,25 @@ var app = app || {};
                             c.mm_to_inches(source_item.opening.height)), 2, 'sup');
 
                         sash_item.opening_size = opening_size + ' (' + opening_area + ')';
+                    }
+
+                    // Children sections
+                    if ( source_item.sections.length ) {
+                        sash_item.sections = [];
+
+                        _.each(source_item.sections, function (section, s_index) {
+                            var section_item = {};
+
+                            section_item.name = 'Section #' + (index + 1) + '.' + (s_index + 1);
+
+                            section_info = getSectionInfo(section);
+                            _.extend(section_item, section_info);
+
+                            sash_item.sections.push(section_item);
+                        });
+                    } else {
+                        section_info = getSectionInfo(source_item);
+                        _.extend(sash_item, section_info);
                     }
 
                     sashes.push(sash_item);

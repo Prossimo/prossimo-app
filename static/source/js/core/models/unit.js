@@ -937,26 +937,33 @@ var app = app || {};
             var current_sash = {
                 opening: {},
                 sash_frame: {},
-                filling: {}
+                filling: {},
+                sections: []
             };
             var section_result;
             var filling_type;
-            var result = [];
+            var result = {
+                sashes: [],
+                sections: []
+            };
+            var type = 'sashes';
 
             current_root = current_root || this.generateFullRoot();
             current_sash.id = current_root.id;
 
-            if (current_root.sashType === 'fixed_in_frame') {
-                _.each(current_root.sections, function (section) {
-                    section_result = this.getSashList(section, current_root, reverse_hinges);
-
-                    if (current_root.divider === 'vertical' || current_root.divider === 'vertical_invisible') {
-                        result = section_result.concat(result);
-                    } else {
-                        result = result.concat(section_result);
-                    }
-                }, this);
+            if (current_root.sashType !== 'fixed_in_frame') {
+                type = 'sections';
             }
+
+            _.each(current_root.sections, function (section) {
+                section_result = this.getSashList(section, current_root, reverse_hinges);
+
+                if (current_root.divider === 'vertical' || current_root.divider === 'vertical_invisible') {
+                    result[type] = section_result.concat(result[type]);
+                } else {
+                    result[type] = result[type].concat(section_result);
+                }
+            }, this);
 
             if ( _.indexOf(SASH_TYPES_WITH_OPENING, current_root.sashType) !== -1 ) {
                 current_sash.opening.width = current_root.openingParams.width;
@@ -992,10 +999,14 @@ var app = app || {};
                     current_sash.filling.name = filling_type.fillingName;
                 }
 
-                result.unshift(current_sash);
+                if ( current_root.sections.length ) {
+                    current_sash.sections = result.sections;
+                }
+
+                result.sashes.unshift(current_sash);
             }
 
-            return result;
+            return result.sashes;
         },
         //  Returns sizes in mms
         getFixedAndOperableSectionsList: function (current_root) {

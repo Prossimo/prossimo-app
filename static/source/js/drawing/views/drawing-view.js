@@ -869,8 +869,8 @@ var app = app || {};
                 ((this.state.openingView &&
                     (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type === 'tilt_only')
                 ) &&
-                (type.indexOf('_hinge_hidden_latch') === -1)
-                || (!this.state.openingView && this.model.profile.hasOutsideHandle()));
+                (type.indexOf('_hinge_hidden_latch') === -1) ||
+                (!this.state.openingView && this.model.profile.hasOutsideHandle()));
 
             if (shouldDrawHandle) {
                 var handle = this.createHandle(sectionData, {
