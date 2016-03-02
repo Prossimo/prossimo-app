@@ -33,6 +33,8 @@ var app = app || {};
             this.listenTo(this.model, 'all', this.updateRenderedScene);
             this.on('update_rendered', this.updateRenderedScene, this);
 
+            this.createGlazingPopup();
+
             // is we a looking to unit from opening side?
             // so for windows it is usually true for inside view
             // but some door are opening outward
@@ -161,6 +163,8 @@ var app = app || {};
             }
 
             this.model.setSectionSashType(this.state.selectedSashId, type);
+
+            this.updateSection(this.state.selectedSashId, 'both');
         },
         handleObjectClick: function (id, e) {
             // select on left click only
@@ -1159,6 +1163,7 @@ var app = app || {};
                             }
 
                             this.model.setSectionMullionPosition(mul.id, val);
+                            this.updateSection(mul.id);
                         }.bind(this);
                     }
 
@@ -1189,6 +1194,7 @@ var app = app || {};
                             }
 
                             this.model.setSectionMullionPosition(mul.id, val);
+                            this.updateSection(mul.id);
                         }.bind(this);
                     }
 
@@ -1215,6 +1221,7 @@ var app = app || {};
                     if (horizontalMullions.length === 1) {
                         params.setter = function (val) {
                             this.model.setSectionMullionPosition(mul.id, val);
+                            this.updateSection(mul.id);
                         }.bind(this);
                     }
 
@@ -1241,6 +1248,7 @@ var app = app || {};
                     if (horizontalMullions.length === 1) {
                         params.setter = function (val) {
                             this.model.setSectionMullionPosition(mul.id, this.model.getInMetric('height', 'mm') - val);
+                            this.updateSection(mul.id);
                         }.bind(this);
                     }
 
@@ -1253,9 +1261,12 @@ var app = app || {};
                 }
             }.bind(this));
 
+            var root = this.model.generateFullRoot();
+
             var verticalWholeMertic = this.createVerticalMetric(metricSize, height, {
                 setter: function (val) {
                     this.model.setInMetric('height', val, 'mm');
+                    this.updateSection( root.id, 'horizontal' );
                 }.bind(this),
                 getter: function () {
                     return this.model.getInMetric('height', 'mm');
@@ -1272,6 +1283,7 @@ var app = app || {};
             var horizontalWholeMertic = this.createHorizontalMetric(width, metricSize, {
                 setter: function (val) {
                     this.model.setInMetric('width', val, 'mm');
+                    this.updateSection( root.id, 'vertical' );
                 }.bind(this),
                 getter: function () {
                     return this.model.getInMetric('width', 'mm');
@@ -1586,6 +1598,31 @@ var app = app || {};
         updateSize: function (width, height) {
             this.stage.width(width || this.$('#drawing').get(0).offsetWidth);
             this.stage.height(height || this.$('#drawing').get(0).offsetHeight);
+        },
+        updateSection: function (sectionId, type) {
+            var view = this;
+            var section = this.model.getSection(sectionId);
+
+            type = type || section.divider;
+
+            if (type === 'both') {
+                view.updateSection( sectionId, 'vertical');
+                view.updateSection( sectionId, 'horizontal');
+            }
+
+            // Update glazing bars
+            if ( section.bars && section.bars[type] && section.bars[type].length ) {
+                view.glazing_view
+                    .setSection( section.id )
+                    .handleBarsNumberChange( type );
+            }
+
+            // If section has children — update them recursively
+            if ( section.sections && section.sections.length ) {
+                section.sections.forEach(function (child) {
+                    view.updateSection( child.id, type );
+                });
+            }
         },
 
         updateRenderedScene: function () {
