@@ -149,19 +149,16 @@ var app = app || {};
             this.$('.popup-wrap').hide();
             var type = $(e.target).data('type');
 
-            // revirse sash type from right to left
-            // or from left to right on onside view
-            // UX will be better for this case
-            /*
-            if (!this.state.openingView) {
+            // if Unit is Outward opening or it's outside view:
+            // reverse sash type
+            // from right to left or from left to right
+            if ( !this.state.openingView || this.model.isOpeningDirectionOutward() ) {
                 if (type.indexOf('left') >= 0) {
                     type = type.replace('left', 'right');
                 } else if (type.indexOf('right') >= 0) {
                     type = type.replace('right', 'left');
                 }
             }
-            */
-            // @INFO: Canceled this reversing because of issues #192, #196
 
             this.model.setSectionSashType(this.state.selectedSashId, type);
         },
@@ -764,7 +761,7 @@ var app = app || {};
             }
 
             // #192: Reverse hinge indicator for outside view
-            if ( !view.state.openingView ) {
+            if ( view.state.openingView && this.model.isOpeningDirectionOutward() ) {
                 directionLine.scale({
                     x: -1
                 });
