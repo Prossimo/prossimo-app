@@ -858,7 +858,7 @@ var app = app || {};
             if (
                 (
                     sectionData.sashType !== 'fixed_in_frame' &&
-                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type === 'tilt_only') &&
+                    (type.indexOf('left') !== -1 || type.indexOf('right') !== -1 || type === 'tilt_only') &&
                     (type.indexOf('_hinge_hidden_latch') === -1)
                 ) &&
                 (
@@ -1503,28 +1503,14 @@ var app = app || {};
 
             sectionsGroup.add.apply(sectionsGroup, sections);
 
-            // if we are not looking from opening view
-            // we should see MAIN frame first
+            // if we are looking from inside & it's outward or
+            //    we are looking from outside & it's inward
+            // move frame to top
             if (
-                (
-                    !this.state.openingView && !this.model.isOpeningDirectionOutward()
-                ) ||
-                (
-                    !this.state.openingview && this.model.isOpeningDirectionOutward()
-                )
+                ( this.state.openingView && this.model.isOpeningDirectionOutward() ) ||
+                ( !this.state.openingView && !this.model.isOpeningDirectionOutward() )
             ) {
-                // so we move it to top
                 frameGroup.moveToTop();
-            }
-
-            // if we are looking from inside view
-            // and unit is outward opening
-            // we should see windows behind frames
-            if (
-                this.state.openingView && this.model.isOpeningDirectionOutward()
-            ) {
-                // so we move it to bottom
-                frameGroup.moveToBottom();
             }
 
             // infoGroup is group for displaying dimension information
