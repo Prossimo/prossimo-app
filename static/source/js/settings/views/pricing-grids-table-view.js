@@ -203,11 +203,20 @@ var app = app || {};
             if ( this.hot ) {
                 clearTimeout(this.table_update_timeout);
                 this.table_update_timeout = setTimeout(function () {
-                    self.hot.render();
+                    self.hot.loadData(self.getDataObject());
                 }, 20);
             } else {
                 this.render();
             }
+        },
+        getDataObject: function () {
+            var data_object;
+
+            if ( this.current_profile ) {
+                data_object = this.current_profile.getPricingGrids()[this.active_tab];
+            }
+
+            return data_object;
         },
         onRender: function () {
             var self = this;
@@ -218,15 +227,13 @@ var app = app || {};
             });
 
             if ( this.current_profile ) {
-                var dataObject = this.current_profile.getPricingGrids()[this.active_tab];
-
                 //  We use setTimeout because we want to wait until flexbox
                 //  sizes are calculated properly
                 setTimeout(function () {
                     self.hot = new Handsontable(self.ui.$hot_container[0], {
                         columns: self.getColumnOptions(),
                         colHeaders: self.getColumnHeaders(),
-                        data: dataObject,
+                        data: self.getDataObject(),
                         rowHeights: 25
                     });
                 }, 5);

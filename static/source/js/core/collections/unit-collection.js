@@ -9,12 +9,17 @@ var app = app || {};
             return app.settings.get('api_base_path') +
                 '/projects/' + this.options.project.get('id') + '/units';
         },
-        comparator: function (item) {
-            return item.id;
+        reorder_url: function () {
+            return app.settings.get('api_base_path') +
+                '/projects/' + this.options.project.get('id') + '/reorder_units';
         },
+        reorder_property_name: 'units',
         initialize: function (models, options) {
             this.options = options || {};
             this.proxy_unit = new app.Unit(null, { proxy: true });
+
+            //  When parent project is set active, we validate unit positions
+            this.listenTo(this.options.project, 'set_active', this.validatePositions);
         },
         getNameTitleTypeHash: function (names) {
             return this.proxy_unit.getNameTitleTypeHash(names);

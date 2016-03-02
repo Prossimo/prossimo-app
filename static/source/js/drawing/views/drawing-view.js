@@ -149,10 +149,10 @@ var app = app || {};
             this.$('.popup-wrap').hide();
             var type = $(e.target).data('type');
 
-            // revirse sash type from right to left
-            // or from left to right on onside view
-            // UX will be better for this case
-            if (!this.state.openingView) {
+            // if Unit is Outward opening or it's outside view:
+            // reverse sash type
+            // from right to left or from left to right
+            if ( !this.state.openingView || this.model.isOpeningDirectionOutward() ) {
                 if (type.indexOf('left') >= 0) {
                     type = type.replace('left', 'right');
                 } else if (type.indexOf('right') >= 0) {
@@ -289,7 +289,7 @@ var app = app || {};
             var rect = new Konva.Rect({
                 width: width,
                 height: height,
-                fill: 'white',
+                fill: 'lightgrey',
                 stroke: 'black',
                 strokeWidth: 1
             });
@@ -717,6 +717,7 @@ var app = app || {};
             return handle;
         },
         createDirectionLine: function (section) {
+            var view = this;
             var type = section.sashType;
             var directionLine = new Konva.Shape({
                 stroke: 'black',
@@ -759,6 +760,16 @@ var app = app || {};
                 directionLine.dash([10 / this.ratio, 10 / this.ratio]);
             }
 
+            // #192: Reverse hinge indicator for outside view
+            if ( view.state.openingView && this.model.isOpeningDirectionOutward() ) {
+                directionLine.scale({
+                    x: -1
+                });
+                directionLine.move({
+                    x: section.glassParams.width
+                });
+            }
+
             return directionLine;
         },
         createSash: function (sectionData) {
@@ -796,34 +807,36 @@ var app = app || {};
                 fillHeight = sectionData.glassParams.height;
             }
 
+            var hasSubSections = sectionData.sections && sectionData.sections.length;
             var isFlushType = sectionData.fillingType &&
                 sectionData.fillingType.indexOf('flush') >= 0;
 
-            if (sectionData.sashType !== 'fixed_in_frame') {
-                var frameGroup;
+            var frameGroup;
 
-                if (isFlushType) {
-                    frameGroup = this.createFlushFrame({
-                        width: sectionData.sashParams.width,
-                        height: sectionData.sashParams.height,
-                        sectionId: sectionData.id
-                    });
-                } else {
-                    frameGroup = this.createFrame({
-                        width: sectionData.sashParams.width,
-                        height: sectionData.sashParams.height,
-                        frameWidth: frameWidth,
-                        sectionId: sectionData.id
-                    });
-                }
+            if (isFlushType && !hasSubSections) {
+                frameGroup = this.createFlushFrame({
+                    width: sectionData.sashParams.width,
+                    height: sectionData.sashParams.height,
+                    sectionId: sectionData.id
+                });
+                group.add(frameGroup);
+            }
+
+            if (sectionData.sashType !== 'fixed_in_frame') {
+
+                frameGroup = this.createFrame({
+                    width: sectionData.sashParams.width,
+                    height: sectionData.sashParams.height,
+                    frameWidth: frameWidth,
+                    sectionId: sectionData.id
+                });
 
                 group.add(frameGroup);
             }
 
-            var hasSubSections = sectionData.sections && sectionData.sections.length;
             var shouldDrawFilling =
                 !hasSubSections && !isFlushType ||
-                this.model.isRootSection(sectionData.id) && isFlushType;
+                !hasSubSections && this.model.isRootSection(sectionData.id) && isFlushType;
 
             if (shouldDrawFilling) {
                 var filling = this.createFilling(sectionData, {
@@ -1597,6 +1610,7 @@ var app = app || {};
             this.updateUI();
             this.updateCanvas();
             this.$('#drawing').focus();
+            this.trigger('onSetState');
         },
         deselectAll: function () {
             this.setState({

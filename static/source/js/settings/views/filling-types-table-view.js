@@ -30,7 +30,10 @@ var app = app || {};
             this.listenTo(this.options.parent_view, 'attach', this.updateTable);
         },
         addNewFillingType: function (e) {
-            var new_type = new app.FillingType();
+            var new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
+            var new_type = new app.FillingType({
+                position: new_position
+            });
 
             e.stopPropagation();
             this.collection.add(new_type);
@@ -247,7 +250,7 @@ var app = app || {};
             if ( this.hot ) {
                 clearTimeout(this.table_update_timeout);
                 this.table_update_timeout = setTimeout(function () {
-                    self.hot.render();
+                    self.hot.loadData(self.collection);
                 }, 20);
             } else {
                 this.render();

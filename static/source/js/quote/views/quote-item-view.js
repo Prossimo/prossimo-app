@@ -57,7 +57,7 @@ var app = app || {};
             var c = app.utils.convert;
             var m = app.utils.math;
 
-            var sash_list_source = this.model.getSashList();
+            var sash_list_source = this.model.getSashList(null, null, this.options.show_outside_units_view);
             var sashes = [];
 
             //  This is the list of params that we want to see in the quote. We
