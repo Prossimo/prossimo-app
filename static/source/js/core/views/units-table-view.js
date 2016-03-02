@@ -122,13 +122,19 @@ var app = app || {};
             }
         },
         addNewUnit: function (e) {
-            var new_unit = new app.Unit();
+            var new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
+            var new_unit = new app.Unit({
+                position: new_position
+            });
 
             e.stopPropagation();
             this.collection.add(new_unit);
         },
         addNewAccessory: function (e) {
-            var new_accessory = new app.Accessory();
+            var new_position = this.options.extras.length ? this.options.extras.getMaxPosition() + 1 : 0;
+            var new_accessory = new app.Accessory({
+                position: new_position
+            });
 
             e.stopPropagation();
             this.options.extras.add(new_accessory);
@@ -685,7 +691,7 @@ var app = app || {};
             if ( this.hot ) {
                 clearTimeout(this.table_update_timeout);
                 this.table_update_timeout = setTimeout(function () {
-                    self.hot.render();
+                    self.hot.loadData(self.getActiveTab().collection);
                 }, 20);
             }
 

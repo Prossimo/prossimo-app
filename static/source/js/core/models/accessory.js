@@ -17,7 +17,9 @@ var app = app || {};
         { name: 'original_currency', title: 'Original Currency', type: 'string' },
         { name: 'conversion_rate', title: 'Conversion Rate', type: 'number' },
         { name: 'price_markup', title: 'Markup', type: 'number' },
-        { name: 'discount', title: 'Discount', type: 'number' }
+        { name: 'discount', title: 'Discount', type: 'number' },
+
+        { name: 'position', title: 'Position', type: 'number' }
     ];
 
     app.Accessory = Backbone.Model.extend({
@@ -59,8 +61,10 @@ var app = app || {};
             return Backbone.Model.prototype.saveAndGetId.apply(this, arguments);
         },
         sync: function (method, model, options) {
+            var properties_to_omit = ['id'];
+
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { project_accessory: _.omit(model.toJSON(), ['id']) };
+                options.attrs = { project_accessory: _.omit(model.toJSON(), properties_to_omit) };
             }
 
             return Backbone.sync.call(this, method, model, options);

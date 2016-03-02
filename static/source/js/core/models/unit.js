@@ -37,7 +37,9 @@ var app = app || {};
         { name: 'conversion_rate', title: 'Conversion Rate', type: 'number' },
         { name: 'supplier_discount', title: 'Supplier Discount', type: 'number' },
         { name: 'price_markup', title: 'Markup', type: 'number' },
-        { name: 'discount', title: 'Discount', type: 'number' }
+        { name: 'discount', title: 'Discount', type: 'number' },
+
+        { name: 'position', title: 'Position', type: 'number' }
     ];
 
     //  We only enable those for editing on units where `isDoorType` is `true`
@@ -159,8 +161,10 @@ var app = app || {};
             return Backbone.Model.prototype.saveAndGetId.apply(this, arguments);
         },
         sync: function (method, model, options) {
+            var properties_to_omit = ['id'];
+
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { project_unit: _.extendOwn(_.omit(model.toJSON(), ['id']), {
+                options.attrs = { project_unit: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
                     root_section: JSON.stringify(model.get('root_section'))
                 }) };
             }
@@ -512,9 +516,23 @@ var app = app || {};
                 return;
             }
 
+            var full = this.generateFullRoot();
+            var fullSection = app.Unit.findSection(full, sectionId);
+
+            // Prevent from unnecessary updating
+            if ( fullSection.sashType === type ) {
+                return;
+            }
+
+            // Update section
             this._updateSection(sectionId, function (section) {
                 section.sashType = type;
             });
+
+            //  Change all nested sections recursively
+            _.each(fullSection.sections, function (childSection) {
+                this.setSectionSashType(childSection.id, 'fixed_in_frame');
+            }, this);
         },
         setSectionBars: function (sectionId, bars) {
             this._updateSection(sectionId, function (section) {
