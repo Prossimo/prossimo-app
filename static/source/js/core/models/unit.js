@@ -110,7 +110,9 @@ var app = app || {};
 
         return {
             vertical: defaultMeasurements,
-            horizontal: defaultMeasurements
+            horizontal: defaultMeasurements,
+            opening: [true, true],
+            glass: [true, true]
         };
     }
 
@@ -871,7 +873,8 @@ var app = app || {};
                 mullions.push({
                     type: rootSection.divider,
                     position: rootSection.position,
-                    id: rootSection.id
+                    id: rootSection.id,
+                    data: rootSection.measurement
                 });
 
                 var submullions = _.map(rootSection.sections, function (s) {
