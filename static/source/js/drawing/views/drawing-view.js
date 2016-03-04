@@ -1140,7 +1140,7 @@ var app = app || {};
             return {
                 vertical: verticalMullions,
                 horizontal: horizontalMullions
-            }
+            };
         },
         createInfo: function (mullions, width, height) {
             var group = new Konva.Group();
