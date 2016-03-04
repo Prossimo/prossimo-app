@@ -1451,7 +1451,12 @@ var app = app || {};
 
             var root;
 
-            if (this.state.openingView) {
+            console.log( this.state.openingView, this.model.isOpeningDirectionOutward() );
+
+            if (
+                ( this.state.openingView && !this.model.isOpeningDirectionOutward() ) ||
+                ( !this.state.openingView && this.model.isOpeningDirectionOutward() )
+            ) {
                 root = this.model.generateFullRoot();
             } else {
                 root = this.model.generateFullReversedRoot();
