@@ -1185,10 +1185,14 @@ var app = app || {};
 
                 if ( mulGroup.length ) {
                     // smart hack to draw last measurement in a loop with rest of mullions
+                    var lastMulId = mulGroup[ mulGroup.length - 1].id;
+
+                    // @TODO: Decide where to store data for last metrics in a row
                     mulGroup.push({
                         gap: true,
-                        id: mulGroup[ mulGroup.length - 1].id,
-                        position: view.model.getInMetric( sizeAccordance[type], 'mm')
+                        id: lastMulId,
+                        position: view.model.getInMetric( sizeAccordance[type], 'mm'),
+                        data: {}
                     });
                 }
                 // Draw measurements

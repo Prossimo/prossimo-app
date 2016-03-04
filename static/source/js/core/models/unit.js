@@ -874,7 +874,7 @@ var app = app || {};
                     type: rootSection.divider,
                     position: rootSection.position,
                     id: rootSection.id,
-                    data: rootSection.measurement
+                    data: rootSection.measurements
                 });
 
                 var submullions = _.map(rootSection.sections, function (s) {
