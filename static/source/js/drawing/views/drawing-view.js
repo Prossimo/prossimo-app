@@ -491,7 +491,7 @@ var app = app || {};
             if (rootSection.sections && rootSection.sections.length) {
                 var mullion = this.createMullion(rootSection);
 
-                if (this.state.openingView) {
+                if ( this.state.openingView || this.model.isOpeningDirectionOutward() ) {
                     objects.push(mullion);
                 }
 
@@ -500,7 +500,7 @@ var app = app || {};
                     objects = objects.concat(this.createSections(sectionData));
                 }.bind(this));
 
-                if (!this.state.openingView) {
+                if ( !this.state.openingView && !this.model.isOpeningDirectionOutward() ) {
                     objects.push(mullion);
                 }
             }
