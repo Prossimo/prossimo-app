@@ -1142,127 +1142,111 @@ var app = app || {};
                 horizontal: horizontalMullions
             };
         },
-        createInfo: function (mullions, width, height) {
+        createMullionMetrics: function (mullions, height) {
+            var view = this;
             var group = new Konva.Group();
 
-            var rows = {
-                vertical: 0,
-                horizontal: 0
+            var methods = {
+                getter: function () {
+                    return this.space;
+                },
+                setter_vertical: function (val) {
+                    if (!this.openingView) {
+                        val = this.model.getInMetric('width', 'mm') - val;
+                    }
+
+                    this.model.setSectionMullionPosition(this.id, val);
+                },
+                setter_vertical_gap: function (val) {
+                    if (this.openingView) {
+                        val = this.model.getInMetric('width', 'mm') - val;
+                    }
+
+                    this.model.setSectionMullionPosition(this.id, val);
+                },
+                setter_horizontal: function (val) {
+                    this.model.setSectionMullionPosition(this.id, val);
+                },
+                setter_horizontal_gap: function (val) {
+                    this.model.setSectionMullionPosition(this.id, this.model.getInMetric('height', 'mm') - val);
+                }
+            };
+            var drawingAccordance = {
+                vertical: 'createHorizontalMetric',
+                horizontal: 'createVerticalMetric'
+            };
+            var sizeAccordance = {
+                vertical: 'width',
+                horizontal: 'height'
             };
 
-            mullions = this.sortMullions(mullions);
-            var pos = 0;
+            _.each(mullions, function (mulGroup, type) {
+                var pos = 0;
 
-            mullions.vertical.forEach(function (mul, i) {
-                var width_ = mul.position - pos;
-                // do not draw very small dimension
-                if (width_ > 0) {
-                    var params = {
-                        getter: function () {
-                            return width_;
-                        }
-                    };
-
-                    if (mullions.vertical.length === 1) {
-                        params.setter = function (val) {
-                            if (!this.state.openingView) {
-                                val = this.model.getInMetric('width', 'mm') - val;
-                            }
-
-                            this.model.setSectionMullionPosition(mul.id, val);
-                        }.bind(this);
-                    }
-
-                    var metric = this.createHorizontalMetric(width_ * this.ratio, metricSize, params);
-
-                    metric.position({
-                        x: pos * this.ratio,
-                        y: height
+                if ( mulGroup.length ) {
+                    // smart hack to draw last measurement in a loop with rest of mullions
+                    mulGroup.push({
+                        gap: true,
+                        id: mulGroup[ mulGroup.length - 1].id,
+                        position: view.model.getInMetric( sizeAccordance[type], 'mm')
                     });
-                    pos = mul.position;
-                    group.add(metric);
                 }
+                // Draw measurements
+                mulGroup.forEach(function (mullion) {
+                    var width_ = mullion.position - pos;
+                    var gap = mullion.gap ? '_gap' : '';
+                    var params = [];
+                    var methodName = 'setter_' + type + gap;
+                    var position = {};
 
-                if ( i === mullions.vertical.length - 1) {
-                    rows.horizontal += 1;
-                    var width__ = this.model.getInMetric('width', 'mm') - pos;
+                    if (width_ > 0) {
+                        if (type === 'vertical') {
+                            params.push(width_ * view.ratio);
+                            params.push(metricSize);
+                            params.push({});
 
-                    params = {
-                        getter: function () {
-                            return width__;
+                            position = {
+                                x: pos * view.ratio,
+                                y: height
+                            };
+                        } else {
+                            params.push(metricSize);
+                            params.push(width_ * view.ratio);
+                            params.push({});
+
+                            position = {
+                                x: -metricSize,
+                                y: pos * view.ratio
+                            };
                         }
-                    };
 
-                    if (mullions.vertical.length === 1) {
-                        params.setter = function (val) {
-                            if (this.state.openingView) {
-                                val = this.model.getInMetric('width', 'mm') - val;
-                            }
+                        params[2].getter = methods.getter.bind({space: width_});
 
-                            this.model.setSectionMullionPosition(mul.id, val);
-                        }.bind(this);
-                    }
-
-                    metric = this.createHorizontalMetric(width__ * this.ratio, metricSize, params);
-                    metric.position({
-                        x: pos * this.ratio,
-                        y: height
-                    });
-                    group.add(metric);
-                }
-            }.bind(this));
-
-            pos = 0;
-            mullions.horizontal.forEach(function (mul, i) {
-                var height_ = mul.position - pos;
-
-                if (height_ > 0) {
-                    var params = {
-                        getter: function () {
-                            return height_;
+                        if (mullions[type].length === 2) {
+                            params[2].setter = methods[methodName].bind({
+                                openingView: view.state.openingView,
+                                id: mullion.id,
+                                model: view.model
+                            });
                         }
-                    };
 
-                    if (mullions.horizontal.length === 1) {
-                        params.setter = function (val) {
-                            this.model.setSectionMullionPosition(mul.id, val);
-                        }.bind(this);
+                        var metric = view[ drawingAccordance[type] ].apply(view, params);
+
+                        metric.position(position);
+                        pos = mullion.position;
+                        group.add(metric);
                     }
+                });
+            });
 
-                    var metric = this.createVerticalMetric(metricSize, height_ * this.ratio, params);
-
-                    metric.position({
-                        x: -metricSize,
-                        y: pos * this.ratio
-                    });
-                    pos = mul.position;
-                    group.add(metric);
-                }
-
-                if ( i === mullions.horizontal.length - 1) {
-                    rows.vertical += 1;
-                    var height__ = this.model.getInMetric('height', 'mm') - pos;
-
-                    params = {
-                        getter: function () {
-                            return height__;
-                        }
-                    };
-
-                    if (mullions.horizontal.length === 1) {
-                        params.setter = function (val) {
-                            this.model.setSectionMullionPosition(mul.id, this.model.getInMetric('height', 'mm') - val);
-                        }.bind(this);
-                    }
-
-                    metric = this.createVerticalMetric(metricSize, height__ * this.ratio, params);
-                    metric.position({
-                        x: -metricSize,
-                        y: pos * this.ratio
-                    });
-                    group.add(metric);
-                }
-            }.bind(this));
+            return group;
+        },
+        createWholeMetrics: function (mullions, width, height) {
+            var group = new Konva.Group();
+            var rows = {
+                vertical: mullions.vertical.length ? 1 : 0,
+                horizontal: mullions.horizontal.length ? 1 : 0
+            };
 
             var verticalWholeMertic = this.createVerticalMetric(metricSize, height, {
                 setter: function (val) {
@@ -1274,7 +1258,7 @@ var app = app || {};
             });
 
             verticalWholeMertic.position({
-                x: -metricSize * (rows.vertical + 1),
+                x: -metricSize * (rows.horizontal + 1),
                 y: 0
             });
 
@@ -1291,9 +1275,25 @@ var app = app || {};
 
             horizontalWholeMertic.position({
                 x: 0,
-                y: height + rows.horizontal * metricSize
+                y: height + rows.vertical * metricSize
             });
             group.add(horizontalWholeMertic);
+
+            return group;
+        },
+        createInfo: function (mullions, width, height) {
+            var group = new Konva.Group();
+
+            // Draw mullion metrics
+            mullions = this.sortMullions(mullions);
+            group.add( this.createMullionMetrics(mullions, height) );
+
+            // Draw whole metrics
+            group.add( this.createWholeMetrics(mullions, width, height) );
+
+            // Draw opening size metrics
+
+            // Draw glass size metrics
 
             return group;
         },
