@@ -20,7 +20,8 @@ module.exports = function (grunt) {
 
     var vendor_css_files = [
         'handsontable/dist/handsontable.full.min.css',
-        'bootstrap-select/dist/css/bootstrap-select.min.css'
+        'bootstrap-select/dist/css/bootstrap-select.min.css',
+        'bootstrap-toggle/css/bootstrap-toggle.min.css'
     ];
 
     var js_files = [
@@ -46,6 +47,7 @@ module.exports = function (grunt) {
         'core/collections/project-collection.js',
         'core/collections/project-file-collection.js',
         'core/collections/filling-type-collection.js',
+        'core/views/base/base-toggle-view.js',
         'core/views/main-navigation-view.js',
         'core/views/units-table-view.js',
         'core/views/units-table-total-prices-view.js',

@@ -10,6 +10,15 @@ var app = app || {};
         events: {
             'click .js-change-value': 'onChangeValueClick'
         },
+        initialize: function () {
+            var params = this.serializeData().params;
+
+            this.toggles = {};
+
+            _.each(params, function (param_options, key) {
+                this.toggles[key] = new app.BaseToggleView(param_options);
+            }, this);
+        },
         onChangeValueClick: function (e) {
             var $button = $(e.target);
             var target_param = $button.closest('li').data('param');
@@ -47,6 +56,8 @@ var app = app || {};
                 };
             }, this);
 
+            console.log( 'ui settings params obj', params_obj );
+
             return params_obj;
         },
         serializeData: function () {
@@ -57,9 +68,18 @@ var app = app || {};
         onRender: function () {
             // console.log( 'rendered' );
 
-            var $demo_toggle = $('<input type="checkbox" />').appendTo(this.$el);
-            // <input id="toggle-one" checked type="checkbox">
-            $demo_toggle.bootstrapToggle();
+            // var $demo_toggle = $('<input type="checkbox" />').appendTo(this.$el);
+            // // <input id="toggle-one" checked type="checkbox">
+            // $demo_toggle.bootstrapToggle();
+
+            var params = this.serializeData().params;
+
+            _.each(params, function (param_options, key) {
+                // console.log( param_options );
+                this.$el.find('li[data-param="' + key + '"] .value').append(this.toggles[key].render().el);
+            }, this);
+
+            // this.$el.append(this.some_toggle_view.render().el);
         }
     });
 })();
