@@ -33,22 +33,12 @@ var app = app || {};
             this.listenTo(this.model, 'all', this.updateRenderedScene);
             this.on('update_rendered', this.updateRenderedScene, this);
 
-            // is we a looking to unit from opening side?
-            // so for windows it is usually true for inside view
-            // but some door are opening outward
-            // so if we are looking into such door from outside openingView will be true
-            var openingView =
-                !insideView && this.model.isOpeningDirectionOutward()
-                ||
-                insideView && !this.model.isOpeningDirectionOutward();
-
             this.state = {
-                openingView: openingView,
+                openingView: this.isOpeningView(),
                 selectedSashId: null,
                 selectedMullionId: null
             };
         },
-
         ui: {
             $flush_panels: '[data-type="flush-turn-right"], [data-type="flush-turn-left"]',
             $title: '#drawing-view-title',
@@ -56,7 +46,6 @@ var app = app || {};
             $section_control: '#section_control',
             $filling_select: '#filling-select'
         },
-
         events: {
             'click .split-section': 'handleSplitSectionClick',
             'click .change-sash-type': 'handleChangeSashTypeClick',
@@ -71,7 +60,11 @@ var app = app || {};
             'change #filling-select': 'handleFillingTypeChange',
             'click #glazing-bars-popup': 'handleGlazingBarsPopupClick'
         },
-
+        // Are we looking at unit from the opening side?
+        isOpeningView: function () {
+            return !insideView && this.model.isOpeningDirectionOutward() ||
+                insideView && !this.model.isOpeningDirectionOutward();
+        },
         handleCanvasKeyDown: function (e) {
             if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
                 e.preventDefault();
@@ -89,12 +82,9 @@ var app = app || {};
         },
         handleChangeView: function () {
             insideView = !insideView;
-            var openingView =
-                !insideView && this.model.isOpeningDirectionOutward() ||
-                insideView && !this.model.isOpeningDirectionOutward();
 
             this.setState({
-                openingView: openingView
+                openingView: this.isOpeningView()
             });
         },
         handleGlazingBarsPopupClick: function () {
@@ -132,12 +122,10 @@ var app = app || {};
                 }
             }.bind(this));
         },
-
         handleClearFrameClick: function () {
             this.deselectAll();
             this.model.clearFrame();
         },
-
         handleSplitSectionClick: function (e) {
             this.$('.popup-wrap').hide();
             var divider = $(e.target).data('type');
@@ -761,7 +749,7 @@ var app = app || {};
             }
 
             // #192: Reverse hinge indicator for outside view
-            if ( view.state.openingView && this.model.isOpeningDirectionOutward() ) {
+            if ( !insideView ) {
                 directionLine.scale({
                     x: -1
                 });
