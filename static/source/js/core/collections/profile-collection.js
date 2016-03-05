@@ -8,13 +8,14 @@ var app = app || {};
         url: function () {
             return (this.options.api_base_path ? this.options.api_base_path : '') + '/profiles';
         },
+        reorder_url: function () {
+            return (this.options.api_base_path ? this.options.api_base_path : '') + '/reorder_profiles';
+        },
+        reorder_property_name: 'profiles',
         parse: function (data) {
             return _.map(data.profiles, function (profile) {
                 return _.omit(profile, ['units']);
             });
-        },
-        comparator: function (item) {
-            return item.id;
         },
         initialize: function (models, options) {
             this.options = options || {};

@@ -28,7 +28,8 @@ var app = app || {};
         { name: 'threshold_width', title: 'Threshold Height (mm)', type: 'number' },
         { name: 'low_threshold', title: 'Low Threshold', type: 'boolean' },
         { name: 'frame_u_value', title: 'Frame U Value', type: 'number' },
-        { name: 'spacer_thermal_bridge_value', title: 'Spacer Thermal Bridge Value', type: 'number' }
+        { name: 'spacer_thermal_bridge_value', title: 'Spacer Thermal Bridge Value', type: 'number' },
+        { name: 'position', title: 'Position', type: 'number' }
     ];
 
     function getDefaultPricingGrids() {
@@ -100,8 +101,10 @@ var app = app || {};
             return Backbone.Model.prototype.saveAndGetId.apply(this, arguments);
         },
         sync: function (method, model, options) {
+            var properties_to_omit = ['id'];
+
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { profile: _.extendOwn(_.omit(model.toJSON(), ['id']), {
+                options.attrs = { profile: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
                     pricing_grids: JSON.stringify(model.get('pricing_grids'))
                 }) };
             }

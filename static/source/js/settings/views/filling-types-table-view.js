@@ -30,7 +30,10 @@ var app = app || {};
             this.listenTo(this.options.parent_view, 'attach', this.updateTable);
         },
         addNewFillingType: function (e) {
-            var new_type = new app.FillingType();
+            var new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
+            var new_type = new app.FillingType({
+                position: new_position
+            });
 
             e.stopPropagation();
             this.collection.add(new_type);
@@ -145,15 +148,8 @@ var app = app || {};
             }
 
             var properties_hash = {
-                name: {
-                    renderer: app.hot_renderers.fillingTypeRenderer
-                },
-                supplier_name: {
-                    renderer: app.hot_renderers.fillingTypeRenderer
-                },
                 type: {
                     type: 'dropdown',
-                    renderer: app.hot_renderers.fillingTypeDropdownRenderer,
                     source: _.map(this.collection.getBaseTypes(), function (item) {
                         return item.name;
                     }, this)
@@ -187,6 +183,31 @@ var app = app || {};
             }, this);
 
             return columns;
+        },
+        //  Redefine some cell-specific properties. This is mostly used to
+        //  prevent editing of some attributes that shouldn't be editable for
+        //  a certain filling type
+        getCellsSpecificOptions: function () {
+            var self = this;
+
+            return function (row, col) {
+                var cell_properties = {};
+                var item = this.instance.getSourceData().at(row);
+                var property = self.columns[col];
+
+                if ( item && item instanceof app.FillingType ) {
+                    //  Gray out all attrs for base types
+                    if ( item.get('is_base_type') ) {
+                        cell_properties.readOnly = true;
+
+                        if ( _.contains(['name', 'type'], property) === false ) {
+                            cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
+                        }
+                    }
+                }
+
+                return cell_properties;
+            };
         },
         getColumnHeaders: function () {
             var headers = [];
@@ -229,7 +250,7 @@ var app = app || {};
             if ( this.hot ) {
                 clearTimeout(this.table_update_timeout);
                 this.table_update_timeout = setTimeout(function () {
-                    self.hot.render();
+                    self.hot.loadData(self.collection);
                 }, 20);
             } else {
                 this.render();
@@ -247,6 +268,7 @@ var app = app || {};
                         self.hot = new Handsontable(self.ui.$hot_container[0], {
                             data: self.collection,
                             columns: self.getColumnOptions(),
+                            cells: self.getCellsSpecificOptions(),
                             colHeaders: self.getColumnHeaders(),
                             rowHeaders: true,
                             trimDropdown: false,

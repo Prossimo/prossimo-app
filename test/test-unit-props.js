@@ -550,3 +550,69 @@ test('Clear opening size calculations (bugfix test case #2)', function () {
     equal(sash_list[3].filling.height.toFixed(), '455', 'Section 4 glass height');
     equal(sash_list[3].filling.width.toFixed(), '722', 'Section 4 glass width');
 });
+
+test('hasOperableSections function', function () {
+    var unit_1;
+    var unit_2;
+    var full_root;
+    var root_id;
+    var profile;
+    var target_section;
+
+    profile = new app.Profile({
+        frame_width: 70,
+        mullion_width: 92,
+        sash_frame_width: 82,
+        sash_frame_overlap: 34,
+        sash_mullion_overlap: 12,
+        unit_type: 'Window'
+    });
+
+    unit_1 = new app.Unit({
+        width: 5 * 12 + 6,
+        height: 6 * 12 + 10
+    });
+
+    unit_2 = new app.Unit({
+        width: 8 * 12 + 5,
+        height: 9 * 12 + 2
+    });
+
+    unit_1.profile = profile;
+    unit_2.profile = profile;
+
+    full_root = unit_2.generateFullRoot();
+    root_id = full_root.id;
+
+    //  Now split sections as in the reference unit
+    unit_2.splitSection(root_id, 'vertical');
+    full_root = unit_2.generateFullRoot();
+    target_section = full_root.sections[1];
+
+    unit_2.splitSection(target_section.id, 'horizontal');
+    full_root = unit_2.generateFullRoot();
+    target_section = full_root.sections[1].sections[1];
+
+    unit_2.splitSection(target_section.id, 'vertical');
+    full_root = unit_2.generateFullRoot();
+    target_section = full_root.sections[1].sections[1].sections[0];
+
+    unit_2.splitSection(target_section.id, 'horizontal');
+    full_root = unit_2.generateFullRoot();
+    target_section = full_root.sections[1].sections[1].sections[0].sections[0];
+
+    unit_2.setSectionSashType(target_section.id, 'tilt_turn_right');
+
+    equal(unit_1.hasOperableSections(), false, 'Unit 1 is not expected to have operable sections');
+    equal(unit_2.hasOperableSections(), true, 'Unit 2 is expected to have operable sections');
+});
+
+test('getSashName function', function () {
+    var unit = new app.Unit();
+
+    equal(unit.getSashName('tilt_turn_right'), 'Tilt-turn Right Hinge', 'Name for tilt_turn_right type in normal hinges mode');
+    equal(unit.getSashName('tilt_turn_right', true), 'Tilt-turn Left Hinge', 'Name for tilt_turn_right type in reversed hinges mode');
+
+    equal(unit.getSashName('tilt_turn_left'), 'Tilt-turn Left Hinge', 'Name for tilt_turn_left type in normal hinges mode');
+    equal(unit.getSashName('tilt_turn_left', true), 'Tilt-turn Right Hinge', 'Name for tilt_turn_left type in reversed hinges mode');
+});

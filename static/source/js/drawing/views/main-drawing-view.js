@@ -30,6 +30,7 @@ var app = app || {};
         },
         updateDrawingView: function (update_rendered_flag) {
             if ( this.drawing_view ) {
+                this.stopListening(this.drawing_view);
                 this.drawing_view.destroy();
             }
 
@@ -39,12 +40,17 @@ var app = app || {};
                     model: this.active_unit
                 });
 
+                this.listenTo(this.drawing_view, 'all', this.onDrawingViewEvents);
+
                 this.ui.$drawing_container.empty().append(this.drawing_view.render().el);
 
                 if ( this._isShown && update_rendered_flag ) {
                     this.drawing_view.trigger('update_rendered');
                 }
             }
+        },
+        onDrawingViewEvents: function (e) {
+            this.trigger('drawing_view:' + e);
         },
         onRender: function () {
             this.updateDrawingView();

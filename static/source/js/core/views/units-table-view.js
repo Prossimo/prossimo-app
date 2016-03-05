@@ -122,13 +122,19 @@ var app = app || {};
             }
         },
         addNewUnit: function (e) {
-            var new_unit = new app.Unit();
+            var new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
+            var new_unit = new app.Unit({
+                position: new_position
+            });
 
             e.stopPropagation();
             this.collection.add(new_unit);
         },
         addNewAccessory: function (e) {
-            var new_accessory = new app.Accessory();
+            var new_position = this.options.extras.length ? this.options.extras.getMaxPosition() + 1 : 0;
+            var new_accessory = new app.Accessory({
+                position: new_position
+            });
 
             e.stopPropagation();
             this.options.extras.add(new_accessory);
@@ -213,7 +219,8 @@ var app = app || {};
                     return app.preview(model, {
                         width: 500,
                         height: 500,
-                        mode: 'base64'
+                        mode: 'base64',
+                        position: 'outside'
                     });
                 },
                 subtotal_cost: function (model) {
@@ -530,12 +537,6 @@ var app = app || {};
                     type: 'autocomplete',
                     source: app.settings.getGasketColors()
                 },
-                exterior_handle: {
-                    renderer: app.hot_renderers.doorOnlyRenderer
-                },
-                lock_mechanism: {
-                    renderer: app.hot_renderers.doorOnlyRenderer
-                },
                 opening_direction: {
                     type: 'dropdown',
                     source: app.settings.getOpeningDirections()
@@ -595,6 +596,31 @@ var app = app || {};
             }, this);
 
             return columns;
+        },
+        //  Redefine some cell-specific properties. This is mostly used to
+        //  prevent editing of some attributes that shouldn't be editable for
+        //  a certain unit / accessory / project
+        getActiveTabCellsSpecificOptions: function () {
+            var self = this;
+
+            return function (row, col) {
+                var cell_properties = {};
+                var item = this.instance.getSourceData().at(row);
+                var property = self.getActiveTab().columns[col];
+
+                if ( item && item instanceof app.Unit ) {
+                    //  Gray out attrs that don't apply to the current unit
+                    if ( item.isDoorOnlyAttribute(property) && !item.isDoorType() ) {
+                        cell_properties.readOnly = true;
+                        cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
+                    } else if ( item.isOperableOnlyAttribute(property) && !item.hasOperableSections() ) {
+                        cell_properties.readOnly = true;
+                        cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
+                    }
+                }
+
+                return cell_properties;
+            };
         },
         //  We try to get a proper heading for all columns in our active tab
         //  - first we check if we have some custom headings (mainly to
@@ -665,7 +691,7 @@ var app = app || {};
             if ( this.hot ) {
                 clearTimeout(this.table_update_timeout);
                 this.table_update_timeout = setTimeout(function () {
-                    self.hot.render();
+                    self.hot.loadData(self.getActiveTab().collection);
                 }, 20);
             }
 
@@ -691,6 +717,7 @@ var app = app || {};
                 self.hot = new Handsontable(self.ui.$hot_container[0], {
                     data: self.getActiveTab().collection,
                     columns: self.getActiveTabColumnOptions(),
+                    cells: self.getActiveTabCellsSpecificOptions(),
                     colHeaders: self.getActiveTabHeaders(),
                     rowHeaders: true,
                     rowHeights: function () {

@@ -73,6 +73,7 @@ var app = app || {};
             }
 
             app.vent.trigger('current_project_changed');
+            app.current_project.trigger('set_active');
         },
         setLastProject: function (new_id) {
             // Save selected project into a localStorage
