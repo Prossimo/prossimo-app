@@ -705,7 +705,6 @@ var app = app || {};
             return handle;
         },
         createDirectionLine: function (section) {
-            var view = this;
             var type = section.sashType;
             var directionLine = new Konva.Shape({
                 stroke: 'black',
