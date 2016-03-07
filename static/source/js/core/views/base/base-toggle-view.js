@@ -13,16 +13,10 @@ var app = app || {};
         ui: {
             $checkbox: 'input[type="checkbox"]'
         },
-        // initialize: function () {
-        //     console.log( 'init toggle with options', this.options );
-        // },
         onChange: function (e) {
             var is_checked = $(e.currentTarget).is(':checked');
             var equal_choices = this.options.possible_values_number === 2;
             var new_value;
-
-            // console.log( e );
-            // console.log( is_checked );
 
             if ( is_checked ) {
                 new_value = equal_choices ? this.options.values_list[0].name : true;
@@ -33,8 +27,6 @@ var app = app || {};
             this.model.set(this.options.property_name, new_value);
         },
         isChecked: function () {
-            // console.log( 'is checked', this.options.current_value === this.options.values_list[0].is_current );
-            // return this.options.current_value === this.options.values_list[0].is_current;
             return this.options.values_list[0].is_current;
         },
         serializeData: function () {

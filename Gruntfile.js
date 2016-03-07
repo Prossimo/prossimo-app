@@ -38,6 +38,7 @@ module.exports = function (grunt) {
         'core/models/accessory.js',
         'core/models/profile.js',
         'core/models/project.js',
+        'core/models/project-settings.js',
         'core/models/project-file.js',
         'core/models/filling-type.js',
         'core/models/settings.js',

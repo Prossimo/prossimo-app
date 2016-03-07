@@ -218,12 +218,13 @@ var app = app || {};
             return sashes;
         },
         getActiveUnitEstimatedSectionPrices: function () {
+            var project_settings = app.settings.getProjectSettings();
             var f = app.utils.format;
             var m = app.utils.math;
             var section_list_source;
             var sections = [];
 
-            if ( this.options.parent_view.active_unit && app.settings.get('pricing_mode') === 'estimates' ) {
+            if ( this.options.parent_view.active_unit && project_settings.get('pricing_mode') === 'estimates' ) {
                 section_list_source = this.options.parent_view.active_unit.getSectionsListWithEstimatedPrices();
 
                 _.each(section_list_source, function (source_item, index) {

@@ -381,6 +381,7 @@ var app = app || {};
             return validator;
         },
         getColumnExtraProperties: function (column_name) {
+            var project_settings = app.settings.getProjectSettings();
             var properties_obj = {};
 
             var names_title_type_hash = this.getActiveTab()
@@ -405,11 +406,11 @@ var app = app || {};
             var properties_hash = {
                 width: {
                     renderer: app.hot_renderers.getFormattedRenderer('dimension', null,
-                        app.settings.get('inches_display_mode') || null)
+                        project_settings.get('inches_display_mode') || null)
                 },
                 height: {
                     renderer: app.hot_renderers.getFormattedRenderer('dimension', null,
-                        app.settings.get('inches_display_mode') || null)
+                        project_settings.get('inches_display_mode') || null)
                 },
                 width_mm: {
                     readOnly: true,
@@ -561,7 +562,7 @@ var app = app || {};
                     renderer: app.hot_renderers.getFormattedRenderer('price_usd')
                 },
                 original_cost: {
-                    readOnly: app.settings.get('pricing_mode') === 'estimates'
+                    readOnly: project_settings && project_settings.get('pricing_mode') === 'estimates'
                 }
             };
 
@@ -650,6 +651,8 @@ var app = app || {};
             return headers;
         },
         getCustomColumnHeader: function (column_name) {
+            var project_settings = app.settings.getProjectSettings();
+
             var custom_column_headers_hash = {
                 dimensions: 'Dimensions',
                 width_mm: 'Width (mm)',
@@ -673,7 +676,7 @@ var app = app || {};
                 quote_number: 'Quote Number',
                 subtotal_profit: 'Subtotal Profit',
                 subtotal_cost_discounted: 'Subtotal Cost w/Disc.',
-                original_cost: app.settings.get('pricing_mode') === 'estimates' ?
+                original_cost: project_settings && project_settings.get('pricing_mode') === 'estimates' ?
                     'Original Cost (est.)' : 'Original Cost'
             };
 

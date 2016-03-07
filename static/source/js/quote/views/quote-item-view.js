@@ -11,6 +11,8 @@ var app = app || {};
             this.listenTo(this.model, 'change', this.render);
         },
         getQuoteTableAttributes: function () {
+            var project_settings = app.settings.getProjectSettings();
+
             var name_title_hash = {
                 mark: 'Mark',
                 customer_image: 'Customer Image',
@@ -18,7 +20,7 @@ var app = app || {};
                     (this.options.show_outside_units_view ? ': <small>View from Exterior</small>' : ''),
                 product_description: 'Product Description',
                 quantity: 'Qty',
-                price: app.settings.get('pricing_mode') === 'estimates' ?
+                price: project_settings && project_settings.get('pricing_mode') === 'estimates' ?
                     'Estimated Price' : 'Price'
             };
 

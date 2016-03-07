@@ -10,6 +10,7 @@ var app = app || {};
         events: {
             'click .js-change-value': 'onChangeValueClick'
         },
+        //  TODO: reload on project change?
         initialize: function () {
             var params = this.serializeData().params;
 
@@ -33,36 +34,38 @@ var app = app || {};
         getParamsSourceData: function () {
             var params_obj = {};
 
-            //  TODO: iterate over ui_settings_list actually
-            // var ui_settings_list = this.model.getUISettingsList();
-            var name_title_type_hash = this.model.getNameTitleTypeHash();
+            if ( this.model ) {
+                var name_title_type_hash = this.model.getNameTitleTypeHash();
 
-            var params_data_hash = {
-                inches_display_mode: this.model.getInchesDisplayModes(),
-                pricing_mode: this.model.getPricingModes()
-            };
-
-            _.each(params_data_hash, function (item, key) {
-                params_obj[key] = {
-                    model: this.model,
-                    title: name_title_type_hash[key].title,
-                    property_name: key,
-                    current_value: this.model.get(key),
-                    values_list: _.map(item, function (value) {
-                        return {
-                            is_current: this.model.get(key) === value.name,
-                            name: value.name,
-                            title: value.title
-                        };
-                    }, this),
-                    possible_values_number: item.length
+                //  TODO: move this mapping to project-settings model
+                var params_data_hash = {
+                    inches_display_mode: this.model.getInchesDisplayModes(),
+                    pricing_mode: this.model.getPricingModes()
                 };
-            }, this);
+
+                _.each(params_data_hash, function (item, key) {
+                    params_obj[key] = {
+                        model: this.model,
+                        title: _.findWhere(name_title_type_hash, key).title,
+                        property_name: key,
+                        current_value: this.model.get(key),
+                        values_list: _.map(item, function (value) {
+                            return {
+                                is_current: this.model.get(key) === value.name,
+                                name: value.name,
+                                title: value.title
+                            };
+                        }, this),
+                        possible_values_number: item.length
+                    };
+                }, this);
+            }
 
             return params_obj;
         },
         serializeData: function () {
             return {
+                is_model_set: this.model,
                 params: this.getParamsSourceData()
             };
         },

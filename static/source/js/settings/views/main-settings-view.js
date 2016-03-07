@@ -60,7 +60,7 @@ var app = app || {};
 
             if ( this.active_tab === 'ui_settings' ) {
                 this.ui_settings_view = new app.UISettingsView({
-                    model: app.settings,
+                    model: app.settings.project_settings,
                     parent_view: this
                 });
 
