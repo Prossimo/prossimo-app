@@ -15,8 +15,11 @@ var app = app || {};
 
             this.toggles = {};
 
+            //  TODO: we probably want to treat other numbers as well!
             _.each(params, function (param_options, key) {
-                this.toggles[key] = new app.BaseToggleView(param_options);
+                if ( param_options.possible_values_number === 2 ) {
+                    this.toggles[key] = new app.BaseToggleView(param_options);
+                }
             }, this);
         },
         onChangeValueClick: function (e) {
@@ -39,24 +42,22 @@ var app = app || {};
                 pricing_mode: this.model.getPricingModes()
             };
 
-            //  TODO: depending on length of a values_list for a given item,
-            //  we should decide how we want to represent it (either a switch
-            //  or a dropdown select)
             _.each(params_data_hash, function (item, key) {
                 params_obj[key] = {
+                    model: this.model,
                     title: name_title_type_hash[key].title,
-                    value: this.model.get(key),
+                    property_name: key,
+                    current_value: this.model.get(key),
                     values_list: _.map(item, function (value) {
                         return {
-                            is_active: this.model.get(key) === value.name,
+                            is_current: this.model.get(key) === value.name,
                             name: value.name,
                             title: value.title
                         };
-                    }, this)
+                    }, this),
+                    possible_values_number: item.length
                 };
             }, this);
-
-            console.log( 'ui settings params obj', params_obj );
 
             return params_obj;
         },
@@ -66,20 +67,13 @@ var app = app || {};
             };
         },
         onRender: function () {
-            // console.log( 'rendered' );
-
-            // var $demo_toggle = $('<input type="checkbox" />').appendTo(this.$el);
-            // // <input id="toggle-one" checked type="checkbox">
-            // $demo_toggle.bootstrapToggle();
-
             var params = this.serializeData().params;
 
             _.each(params, function (param_options, key) {
-                // console.log( param_options );
-                this.$el.find('li[data-param="' + key + '"] .value').append(this.toggles[key].render().el);
+                if ( param_options.possible_values_number === 2 ) {
+                    this.$el.find('li[data-param="' + key + '"] .value').append(this.toggles[key].render().el);
+                }
             }, this);
-
-            // this.$el.append(this.some_toggle_view.render().el);
         }
     });
 })();
