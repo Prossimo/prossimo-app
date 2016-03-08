@@ -55,6 +55,7 @@ var app = app || {};
             };
         },
         getDescription: function () {
+            var project_settings = app.settings.getProjectSettings();
             var f = app.utils.format;
             var c = app.utils.convert;
             var m = app.utils.math;
@@ -96,10 +97,11 @@ var app = app || {};
 
                 filling_size = this.options.show_sizes_in_mm ?
                     f.dimensions_mm(source_item.filling.width, source_item.filling.height) :
-                    f.dimensions_in(
+                    f.dimensions(
                         c.mm_to_inches(source_item.filling.width),
                         c.mm_to_inches(source_item.filling.height),
-                        'fraction'
+                        'fraction',
+                        project_settings && project_settings.get('inches_display_mode')
                     );
 
                 filling_area = this.options.show_sizes_in_mm ?
@@ -123,10 +125,11 @@ var app = app || {};
                 if ( source_item.opening.height && source_item.opening.width ) {
                     opening_size = this.options.show_sizes_in_mm ?
                         f.dimensions_mm(source_item.opening.width, source_item.opening.height) :
-                        f.dimensions_in(
+                        f.dimensions(
                             c.mm_to_inches(source_item.opening.width),
                             c.mm_to_inches(source_item.opening.height),
-                            'fraction'
+                            'fraction',
+                            project_settings && project_settings.get('inches_display_mode')
                         );
 
                     opening_area = this.options.show_sizes_in_mm ?
@@ -156,7 +159,8 @@ var app = app || {};
                     this.model.profile.get('system'),
                 size: this.options.show_sizes_in_mm ?
                     f.dimensions_mm(c.inches_to_mm(this.model.get('width')), c.inches_to_mm(this.model.get('height'))) :
-                    f.dimensions(this.model.get('width'), this.model.get('height'), 'fraction'),
+                    f.dimensions(this.model.get('width'), this.model.get('height'), 'fraction',
+                        project_settings && project_settings.get('inches_display_mode')),
                 threshold: this.model.profile.isThresholdPossible() ?
                     this.model.profile.getThresholdType() : false,
                 u_value: this.model.get('uw') ? f.fixed(this.model.getUValue(), 3) : false,

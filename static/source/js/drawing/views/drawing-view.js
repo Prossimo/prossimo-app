@@ -30,13 +30,16 @@ var app = app || {};
         tagName: 'div',
         template: app.templates['drawing/drawing-view'],
         initialize: function () {
+            var project_settings = app.settings.getProjectSettings();
+
             this.listenTo(this.model, 'all', this.updateRenderedScene);
             this.on('update_rendered', this.updateRenderedScene, this);
 
             this.state = {
                 openingView: this.isOpeningView(),
                 selectedSashId: null,
-                selectedMullionId: null
+                selectedMullionId: null,
+                inchesDisplayMode: project_settings && project_settings.get('inches_display_mode')
             };
         },
         ui: {
@@ -987,7 +990,7 @@ var app = app || {};
                 stroke: 'grey'
             }));
             var inches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(inches, 'fraction');
+            var val = app.utils.format.dimension(inches, 'fraction', this.state.inchesDisplayMode);
             var textInches = new Konva.Text({
                 text: val,
                 padding: 2,
@@ -1082,7 +1085,7 @@ var app = app || {};
                 stroke: 'grey'
             }));
             var inches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(inches, 'fraction');
+            var val = app.utils.format.dimension(inches, 'fraction', this.state.inchesDisplayMode);
             var textInches = new Konva.Text({
                 text: val,
                 padding: 2,
@@ -1365,7 +1368,7 @@ var app = app || {};
 
             var padding = 3;
             var valInInches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(valInInches, 'fraction');
+            var val = app.utils.format.dimension(valInInches, 'fraction', this.state.inchesDisplayMode);
 
             $('<input>')
                 .val(val)
@@ -1598,11 +1601,13 @@ var app = app || {};
 
     app.preview = function (unitModel, options) {
         var result;
+        var project_settings = app.settings && app.settings.getProjectSettings();
         var defaults = {
             width: 300,
             height: 300,
             mode: 'base64',
-            position: 'inside'
+            position: 'inside',
+            inchesDisplayMode: project_settings && project_settings.get('inches_display_mode')
         };
 
         options = _.defaults({}, options, defaults);
@@ -1640,7 +1645,8 @@ var app = app || {};
 
         if ( _.indexOf(['inside', 'outside'], options.position) !== -1 ) {
             view.setState({
-                openingView: options.position === 'inside'
+                openingView: options.position === 'inside',
+                inchesDisplayMode: options.inchesDisplayMode
             });
         } else {
             view.destroy();
