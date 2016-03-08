@@ -20,7 +20,8 @@ var app = app || {};
                 show_outside_units_view: this.options.show_outside_units_view,
                 show_sizes_in_mm: this.options.show_sizes_in_mm,
                 show_supplier_system: this.options.show_supplier_system,
-                show_supplier_filling_name: this.options.show_supplier_filling_name
+                show_supplier_filling_name: this.options.show_supplier_filling_name,
+                force_european_hinge_indicators: this.options.force_european_hinge_indicators
             };
         },
         getTotalPrices: function () {

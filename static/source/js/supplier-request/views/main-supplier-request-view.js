@@ -23,7 +23,8 @@ var app = app || {};
                 show_price: false,
                 show_sizes_in_mm: true,
                 show_supplier_system: true,
-                show_supplier_filling_name: true
+                show_supplier_filling_name: true,
+                force_european_hinge_indicators: true
             });
 
             this.ui.$header_container.append(this.request_header_view.render().el);

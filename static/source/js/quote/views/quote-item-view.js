@@ -186,6 +186,7 @@ var app = app || {};
             return this.model.get('customer_image');
         },
         getProductImage: function () {
+            var project_settings = app.settings && app.settings.getProjectSettings();
             var preview_height = 400;
             var preview_width = this.model.collection &&
                 this.model.collection.hasAtLeastOneCustomerImage() ? 400 : 450;
@@ -194,7 +195,9 @@ var app = app || {};
                 width: preview_width,
                 height: preview_height,
                 mode: 'base64',
-                position: this.options.show_outside_units_view ? 'outside' : 'inside'
+                position: this.options.show_outside_units_view ? 'outside' : 'inside',
+                hingeIndicatorMode: this.options.force_european_hinge_indicators ? 'european' :
+                    project_settings && project_settings.get('hinge_indicator_mode')
             });
         },
         serializeData: function () {

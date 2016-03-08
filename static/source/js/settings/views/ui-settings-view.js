@@ -36,17 +36,12 @@ var app = app || {};
 
             if ( this.model ) {
                 var name_title_type_hash = this.model.getNameTitleTypeHash();
+                var possible_values_hash = this.model.getPossibleValuesHash();
 
-                //  TODO: move this mapping to project-settings model
-                var params_data_hash = {
-                    inches_display_mode: this.model.getInchesDisplayModes(),
-                    pricing_mode: this.model.getPricingModes()
-                };
-
-                _.each(params_data_hash, function (item, key) {
+                _.each(possible_values_hash, function (item, key) {
                     params_obj[key] = {
                         model: this.model,
-                        title: _.findWhere(name_title_type_hash, key).title,
+                        title: _.findWhere(name_title_type_hash, { name: key }).title,
                         property_name: key,
                         current_value: this.model.get(key),
                         values_list: _.map(item, function (value) {

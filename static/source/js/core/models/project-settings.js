@@ -5,12 +5,18 @@ var app = app || {};
 
     var PROJECT_SETTINGS_PROPERTIES = [
         { name: 'inches_display_mode', title: 'Inches Display Mode', type: 'string' },
+        { name: 'hinge_indicator_mode', title: 'Hinge Indicator Mode', type: 'string' },
         { name: 'pricing_mode', title: 'Pricing Mode', type: 'string' }
     ];
 
     var INCHES_DISPLAY_MODES = [
         { name: 'feet_and_inches', title: 'Feet + Inches' },
         { name: 'inches_only', title: 'Inches Only' }
+    ];
+
+    var HINGE_INDICATOR_MODES = [
+        { name: 'american', title: 'American' },
+        { name: 'european', title: 'European' }
     ];
 
     var PRICING_MODES = [
@@ -37,6 +43,7 @@ var app = app || {};
 
             var name_value_hash = {
                 inches_display_mode: INCHES_DISPLAY_MODES[0].name,
+                hinge_indicator_mode: HINGE_INDICATOR_MODES[0].name,
                 pricing_mode: PRICING_MODES[0].name
             };
 
@@ -70,6 +77,13 @@ var app = app || {};
 
             return name_title_hash;
         },
+        getPossibleValuesHash: function () {
+            return {
+                inches_display_mode: this.getInchesDisplayModes(),
+                hinge_indicator_mode: this.getHingeIndicatorModes(),
+                pricing_mode: this.getPricingModes()
+            };
+        },
         getTitles: function (names) {
             var name_title_hash = this.getNameTitleTypeHash(names);
 
@@ -77,6 +91,9 @@ var app = app || {};
         },
         getInchesDisplayModes: function () {
             return INCHES_DISPLAY_MODES;
+        },
+        getHingeIndicatorModes: function () {
+            return HINGE_INDICATOR_MODES;
         },
         getPricingModes: function () {
             return PRICING_MODES;

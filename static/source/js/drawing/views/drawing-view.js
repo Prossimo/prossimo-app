@@ -39,7 +39,8 @@ var app = app || {};
                 openingView: this.isOpeningView(),
                 selectedSashId: null,
                 selectedMullionId: null,
-                inchesDisplayMode: project_settings && project_settings.get('inches_display_mode')
+                inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
+                hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode')
             };
         },
         ui: {
@@ -751,7 +752,7 @@ var app = app || {};
             }
 
             // #192: Reverse hinge indicator for outside view
-            if ( !insideView ) {
+            if ( this.state.hingeIndicatorMode === 'american' ) {
                 directionLine.scale({
                     x: -1
                 });
@@ -1607,7 +1608,8 @@ var app = app || {};
             height: 300,
             mode: 'base64',
             position: 'inside',
-            inchesDisplayMode: project_settings && project_settings.get('inches_display_mode')
+            inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
+            hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode')
         };
 
         options = _.defaults({}, options, defaults);
@@ -1646,7 +1648,8 @@ var app = app || {};
         if ( _.indexOf(['inside', 'outside'], options.position) !== -1 ) {
             view.setState({
                 openingView: options.position === 'inside',
-                inchesDisplayMode: options.inchesDisplayMode
+                inchesDisplayMode: options.inchesDisplayMode,
+                hingeIndicatorMode: options.hingeIndicatorMode
             });
         } else {
             view.destroy();
