@@ -30,13 +30,17 @@ var app = app || {};
         tagName: 'div',
         template: app.templates['drawing/drawing-view'],
         initialize: function () {
+            var project_settings = app.settings.getProjectSettings();
+
             this.listenTo(this.model, 'all', this.updateRenderedScene);
             this.on('update_rendered', this.updateRenderedScene, this);
 
             this.state = {
                 openingView: this.isOpeningView(),
                 selectedSashId: null,
-                selectedMullionId: null
+                selectedMullionId: null,
+                inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
+                hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode')
             };
         },
         ui: {
@@ -139,7 +143,9 @@ var app = app || {};
 
             // if Unit is Outward opening, reverse sash type
             // from right to left or from left to right
-            if ( this.model.isOpeningDirectionOutward() ) {
+            if ( this.state.hingeIndicatorMode === 'european' && !this.state.openingView ||
+                this.state.hingeIndicatorMode === 'american' && this.state.openingView
+            ) {
                 if (type.indexOf('left') >= 0) {
                     type = type.replace('left', 'right');
                 } else if (type.indexOf('right') >= 0) {
@@ -747,7 +753,7 @@ var app = app || {};
             }
 
             // #192: Reverse hinge indicator for outside view
-            if ( !insideView ) {
+            if ( this.state.hingeIndicatorMode === 'american' ) {
                 directionLine.scale({
                     x: -1
                 });
@@ -986,7 +992,7 @@ var app = app || {};
                 stroke: 'grey'
             }));
             var inches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(inches, 'fraction');
+            var val = app.utils.format.dimension(inches, 'fraction', this.state.inchesDisplayMode);
             var textInches = new Konva.Text({
                 text: val,
                 padding: 2,
@@ -1081,7 +1087,7 @@ var app = app || {};
                 stroke: 'grey'
             }));
             var inches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(inches, 'fraction');
+            var val = app.utils.format.dimension(inches, 'fraction', this.state.inchesDisplayMode);
             var textInches = new Konva.Text({
                 text: val,
                 padding: 2,
@@ -1364,7 +1370,7 @@ var app = app || {};
 
             var padding = 3;
             var valInInches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(valInInches, 'fraction');
+            var val = app.utils.format.dimension(valInInches, 'fraction', this.state.inchesDisplayMode);
 
             $('<input>')
                 .val(val)
@@ -1597,11 +1603,14 @@ var app = app || {};
 
     app.preview = function (unitModel, options) {
         var result;
+        var project_settings = app.settings && app.settings.getProjectSettings();
         var defaults = {
             width: 300,
             height: 300,
             mode: 'base64',
-            position: 'inside'
+            position: 'inside',
+            inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
+            hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode')
         };
 
         options = _.defaults({}, options, defaults);
@@ -1639,7 +1648,9 @@ var app = app || {};
 
         if ( _.indexOf(['inside', 'outside'], options.position) !== -1 ) {
             view.setState({
-                openingView: options.position === 'inside'
+                openingView: options.position === 'inside',
+                inchesDisplayMode: options.inchesDisplayMode,
+                hingeIndicatorMode: options.hingeIndicatorMode
             });
         } else {
             view.destroy();

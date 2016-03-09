@@ -1,0 +1,14 @@
+<div class="project-settings-container">
+    {{#if is_model_set }}
+        <ul>
+        {{#each params }}
+            <li class="{{ @key }}" data-param="{{ @key }}">
+                <h6 class="title">{{ title }}</h6>
+                <div class="value"></div>
+            </li>
+        {{/each}}
+        </ul>
+    {{else}}
+        <p>Please select a project to see project-wide settings.</p>
+    {{/if}}
+</div>

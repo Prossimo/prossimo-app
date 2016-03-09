@@ -35,18 +35,7 @@ var app = app || {};
     //  --------------------------------------------------------------------
 
     var SETTINGS_PROPERTIES = [
-        { name: 'api_base_path', title: 'API Base Path', type: 'string' },
-        { name: 'inches_display_mode', title: 'Inches Display Mode', type: 'string' },
-        { name: 'pricing_mode', title: 'Pricing Mode', type: 'string' }
-    ];
-    var UI_SETTINGS = ['inches_display_mode', 'pricing_mode'];
-    var INCHES_DISPLAY_MODES = [
-        { name: 'feet_and_inches', title: 'Feet + Inches' },
-        { name: 'inches_only', title: 'Inches Only' }
-    ];
-    var PRICING_MODES = [
-        { name: 'normal', title: 'Normal' },
-        { name: 'estimates', title: 'Estimates' }
+        { name: 'api_base_path', title: 'API Base Path', type: 'string' }
     ];
 
     app.Settings = Backbone.Model.extend({
@@ -67,9 +56,7 @@ var app = app || {};
             };
 
             var name_value_hash = {
-                api_base_path: $('meta[name="api-base-path"]').attr('value') || '/api',
-                inches_display_mode: INCHES_DISPLAY_MODES[0].name,
-                pricing_mode: PRICING_MODES[0].name
+                api_base_path: $('meta[name="api-base-path"]').attr('value') || '/api'
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -91,7 +78,16 @@ var app = app || {};
                 api_base_path: this.get('api_base_path')
             });
 
+            this.project_settings = null;
+
             this.listenTo(app.vent, 'auth:initial_login', this.onInitialLogin);
+            this.listenTo(app.vent, 'current_project_changed', this.setProjectSettings);
+        },
+        setProjectSettings: function () {
+            this.project_settings = app.current_project.settings;
+        },
+        getProjectSettings: function () {
+            return this.project_settings ? this.project_settings : null;
         },
         onInitialLogin: function () {
             this.fetchData();
@@ -134,15 +130,6 @@ var app = app || {};
             });
 
             return name_title_type_hash;
-        },
-        getUISettingsList: function () {
-            return UI_SETTINGS;
-        },
-        getInchesDisplayModes: function () {
-            return INCHES_DISPLAY_MODES;
-        },
-        getPricingModes: function () {
-            return PRICING_MODES;
         },
         getAvailableProfileNames: function () {
             return this.profiles.map(function (item) {
