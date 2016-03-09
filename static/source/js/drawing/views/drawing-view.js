@@ -1648,7 +1648,8 @@ var app = app || {};
 
         if ( _.indexOf(['inside', 'outside'], options.position) !== -1 ) {
             view.setState({
-                openingView: options.position === 'inside',
+                openingView: options.position === 'inside' && !unitModel.isOpeningDirectionOutward() ||
+                    options.position === 'outside' && unitModel.isOpeningDirectionOutward(),
                 inchesDisplayMode: options.inchesDisplayMode,
                 hingeIndicatorMode: options.hingeIndicatorMode
             });
