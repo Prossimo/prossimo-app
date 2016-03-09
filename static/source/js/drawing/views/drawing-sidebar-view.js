@@ -42,6 +42,7 @@ var app = app || {};
 
             this.listenTo(this.options.parent_view.active_unit, 'all', this.render);
             this.listenTo(this.options.parent_view, 'drawing_view:onSetState', this.render);
+            this.listenTo(app.current_project.settings, 'change', this.render);
         },
         setActiveTab: function (tab_name) {
             if ( _.contains(_.keys(this.tabs), tab_name) ) {
@@ -122,7 +123,10 @@ var app = app || {};
             return active_unit_image;
         },
         getActiveUnitProperties: function () {
+            var f = app.utils.format;
             var active_unit_properties = [];
+            var params_source = {};
+            var project_settings = app.settings.getProjectSettings();
             var active_unit;
 
             var relevant_properties = [
@@ -134,12 +138,20 @@ var app = app || {};
 
             if ( this.options.parent_view.active_unit ) {
                 active_unit = this.options.parent_view.active_unit;
-                _.each(relevant_properties, function (item) {
-                    active_unit_properties.push({
-                        title: active_unit.getTitles([item]),
-                        value: active_unit.get(item)
-                    });
-                });
+
+                params_source = {
+                    width: f.dimension(active_unit.get('width'), null,
+                        project_settings && project_settings.get('inches_display_mode')),
+                    height: f.dimension(active_unit.get('height'), null,
+                        project_settings && project_settings.get('inches_display_mode'))
+                };
+
+                active_unit_properties = _.map(relevant_properties, function (prop_name) {
+                    return {
+                        title: active_unit.getTitles([prop_name]),
+                        value: params_source[prop_name] || active_unit.get(prop_name)
+                    };
+                }, this);
             }
 
             return active_unit_properties;
@@ -169,6 +181,7 @@ var app = app || {};
             return active_unit_profile_properties;
         },
         getActiveUnitSashList: function () {
+            var project_settings = app.settings.getProjectSettings();
             var f = app.utils.format;
             var c = app.utils.convert;
             var m = app.utils.math;
@@ -192,10 +205,8 @@ var app = app || {};
             }
 
             if ( this.options.parent_view.active_unit ) {
-                //  TODO: this doesn't look very nice, we have to rewrite it
-                //  see https://github.com/prossimo-ben/prossimo-app/issues/201
                 sash_list_source = this.options.parent_view.active_unit.getSashList(null, null,
-                    !this.options.parent_view.drawing_view.state.openingView);
+                    project_settings && project_settings.get('hinge_indicator_mode') === 'american');
 
                 _.each(sash_list_source, function (source_item, index) {
                     var sash_item = {};
@@ -206,9 +217,24 @@ var app = app || {};
                     sash_item.name = 'Sash #' + (index + 1);
                     sash_item.type = source_item.type;
 
+<<<<<<< HEAD
+=======
+                    filling_size = f.dimensions(c.mm_to_inches(source_item.filling.width),
+                        c.mm_to_inches(source_item.filling.height), 'fraction',
+                        project_settings && project_settings.get('inches_display_mode'));
+
+                    filling_area = f.square_feet(m.square_feet(c.mm_to_inches(source_item.filling.width),
+                        c.mm_to_inches(source_item.filling.height)), 2, 'sup');
+
+                    sash_item.filling_is_glass = source_item.filling.type === 'glass';
+                    sash_item.filling_name = source_item.filling.name;
+                    sash_item.filling_size = filling_size + ' (' + filling_area + ')';
+
+>>>>>>> aa83314fc46a951c9e154bdb66bbf01bd614e2f7
                     if ( source_item.opening.height && source_item.opening.width ) {
-                        opening_size = f.dimensions_in(c.mm_to_inches(source_item.opening.width),
-                            c.mm_to_inches(source_item.opening.height), 'fraction');
+                        opening_size = f.dimensions(c.mm_to_inches(source_item.opening.width),
+                            c.mm_to_inches(source_item.opening.height), 'fraction',
+                            project_settings && project_settings.get('inches_display_mode'));
 
                         opening_area = f.square_feet(m.square_feet(c.mm_to_inches(source_item.opening.width),
                             c.mm_to_inches(source_item.opening.height)), 2, 'sup');
@@ -242,12 +268,13 @@ var app = app || {};
             return sashes;
         },
         getActiveUnitEstimatedSectionPrices: function () {
+            var project_settings = app.settings.getProjectSettings();
             var f = app.utils.format;
             var m = app.utils.math;
             var section_list_source;
             var sections = [];
 
-            if ( this.options.parent_view.active_unit && app.settings.get('pricing_mode') === 'estimates' ) {
+            if ( this.options.parent_view.active_unit && project_settings.get('pricing_mode') === 'estimates' ) {
                 section_list_source = this.options.parent_view.active_unit.getSectionsListWithEstimatedPrices();
 
                 _.each(section_list_source, function (source_item, index) {

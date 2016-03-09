@@ -15,8 +15,7 @@ $(document).ready(function () {
     app.router = new app.AppRouter();
 
     app.projects = new app.ProjectCollection();
-    app.project_selector = new app.ProjectSelectorView({ collection: app.projects });
-    app.status_panel = new app.StatusPanelView();
+    app.top_bar_view = new app.TopBarView({ collection: app.projects });
 
     app.main_region = new Marionette.Region({ el: '#main' });
     app.dialogs = new app.Dialogs();
@@ -65,7 +64,7 @@ $(document).ready(function () {
         settings: {
             title: 'Settings',
             path: 'settings',
-            icon_name: 'cog',
+            icon_name: 'wrench',
             onShow: function () {
                 app.main_region.show(new app.MainSettingsView());
             }

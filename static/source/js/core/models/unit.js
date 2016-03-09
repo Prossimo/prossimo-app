@@ -336,8 +336,9 @@ var app = app || {};
         //  when special toggle is enabled in settings
         getOriginalCost: function () {
             var original_cost = this.get('original_cost');
+            var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
 
-            if ( app.settings && app.settings.get('pricing_mode') === 'estimates' ) {
+            if ( project_settings && project_settings.get('pricing_mode') === 'estimates' ) {
                 original_cost = this.getEstimatedUnitCost();
             }
 

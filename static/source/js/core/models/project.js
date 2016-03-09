@@ -49,8 +49,12 @@ var app = app || {};
             return default_value;
         },
         sync: function (method, model, options) {
+            var properties_to_omit = ['id', 'sync_datetime'];
+
             if ( method === 'update' ) {
-                options.attrs = { project: _.omit(model.toJSON(), ['id']) };
+                options.attrs = { project: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
+                    settings: JSON.stringify(model.settings.toJSON())
+                }) };
             }
 
             return Backbone.sync.call(this, method, model, options);
@@ -62,6 +66,7 @@ var app = app || {};
                 this.units = new app.UnitCollection(null, { project: this });
                 this.extras = new app.AccessoryCollection(null, { project: this });
                 this.files = new app.ProjectFileCollection(null, { project: this });
+                this.settings = new app.ProjectSettings(null, { project: this });
 
                 if ( this.get('units') ) {
                     this.units.set(this.get('units'));
@@ -78,7 +83,37 @@ var app = app || {};
                     this.files.set(this.get('files'));
                     this.unset('files', { silent: true });
                 }
+
+                if ( this.get('settings') ) {
+                    this.settings.set(this.parseSettings(this.get('settings')));
+                    this.unset('settings', { silent: true });
+                }
+
+                this.listenTo(this.settings, 'change', this.updateSettings);
             }
+        },
+        parseSettings: function (source_data) {
+            var settings_object = {};
+            var source_data_parsed;
+
+            if ( _.isString(source_data) ) {
+                try {
+                    source_data_parsed = JSON.parse(source_data);
+                } catch (error) {
+                    // Do nothing
+                }
+
+                if ( source_data_parsed ) {
+                    settings_object = source_data_parsed;
+                }
+            }
+
+            return settings_object;
+        },
+        //  TODO: We persist settings, but we don't necessarily need it to be
+        //  set as a property on our model. Or do we?
+        updateSettings: function () {
+            this.persist('settings', this.settings.toJSON());
         },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs
@@ -164,7 +199,8 @@ var app = app || {};
             var profit_percent = grand_total ? profit / grand_total * 100 : 0;
 
             //  TODO: this value should be customizable, not just 50% always,
-            //  when it'll be customizable, it should also be tested
+            //  when it'll be customizable, it should also be tested. Maybe it
+            //  could be a special type of accessory? Or just a project attr?
             var deposit_percent = 50;
             var deposit_on_contract = (deposit_percent / 100) * grand_total;
             var balance_due_at_delivery = grand_total - deposit_on_contract;

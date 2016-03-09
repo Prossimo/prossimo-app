@@ -90,6 +90,9 @@ var app = app || {};
             dimensions_mm: function (width, height) {
                 return this.fixed_minimal(width, 0) + ' x ' + this.fixed_minimal(height, 0);
             },
+            //  TODO: why do we have these dimension_in and dimensions_in
+            //  functions and why do we use fixed_minimal instead of dimension
+            //  inside? To show stuff like square footage?
             dimension_in: function (value) {
                 return this.fixed_minimal(value, 2) + '″';
             },
