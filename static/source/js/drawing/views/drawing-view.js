@@ -143,7 +143,9 @@ var app = app || {};
 
             // if Unit is Outward opening, reverse sash type
             // from right to left or from left to right
-            if ( this.model.isOpeningDirectionOutward() ) {
+            if ( this.state.hingeIndicatorMode === 'european' && !this.state.openingView ||
+                this.state.hingeIndicatorMode === 'american' && this.state.openingView
+            ) {
                 if (type.indexOf('left') >= 0) {
                     type = type.replace('left', 'right');
                 } else if (type.indexOf('right') >= 0) {
