@@ -27,6 +27,8 @@ var app = app || {};
             //  Select first unit by default
             this.active_unit = app.current_project.units.length ?
                 app.current_project.units.first() : null;
+
+            this.listenTo(app.current_project.settings, 'change', this.updateDrawingView);
         },
         updateDrawingView: function (update_rendered_flag) {
             if ( this.drawing_view ) {

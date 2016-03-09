@@ -1,0 +1,10 @@
+<input type="checkbox"
+    {{#if is_checked }}checked{{/if}}
+    data-size="{{ size }}"
+    data-toggle="toggle"
+    data-onstyle="primary"
+    {{#if equal_choices }}data-offstyle="info"{{/if}}
+    {{#if on_text }}data-on="{{ on_text }}"{{/if}}
+    {{#if off_text }}data-off="{{ off_text }}"{{/if}}
+/>
+{{#if label_text }}<span>{{ label_text }}</span>{{/if}}

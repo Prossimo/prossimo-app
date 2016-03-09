@@ -15,8 +15,6 @@ var app = app || {};
             'click .js-add-new-local-project': 'onAddNewLocalProject'
         },
         initialize: function () {
-            $('#header').append( this.render().el );
-
             this.listenTo(this.collection, 'all', this.render);
             this.listenTo(app.vent, 'auth:initial_login', this.onInitialLogin);
             this.listenTo(app.vent, 'auth:no_backend', this.onNoBackend);

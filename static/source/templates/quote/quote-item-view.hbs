@@ -15,11 +15,13 @@
             {{/if}}
         </td>
         {{/if}}
+        {{#if show_drawings }}
         <td class="product_image">
             {{#if product_image }}
             <div class="image-wrapper"><img src="{{ product_image }}" alt=""></div>
             {{/if}}
         </td>
+        {{/if}}
         <td class="product_description">
             <ul>
                 {{#each description.params }}
