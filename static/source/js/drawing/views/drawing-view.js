@@ -1177,14 +1177,17 @@ var app = app || {};
 
                 if ( mulGroup.length ) {
                     // smart hack to draw last measurement in a loop with rest of mullions
-                    var lastMulId = mulGroup[ mulGroup.length - 1].id;
+                    var lastMul = mulGroup[ mulGroup.length - 1];
 
-                    // @TODO: Decide where to store data for last metrics in a row
+                    // @TODO:   Store data in a section data!
+                    //          Make controls.
+                    //          Gap get/set data from sections[1], others — sections[0].
+
                     mulGroup.push({
                         gap: true,
-                        id: lastMulId,
+                        id: lastMul.id,
                         position: view.model.getInMetric( sizeAccordance[type], 'mm'),
-                        data: {}
+                        sections: lastMul.sections
                     });
                 }
                 // Draw measurements
