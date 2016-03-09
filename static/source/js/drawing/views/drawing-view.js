@@ -137,10 +137,9 @@ var app = app || {};
             this.$('.popup-wrap').hide();
             var type = $(e.target).data('type');
 
-            // if Unit is Outward opening or it's outside view:
-            // reverse sash type
+            // if Unit is Outward opening, reverse sash type
             // from right to left or from left to right
-            if ( !this.state.openingView || this.model.isOpeningDirectionOutward() ) {
+            if ( this.model.isOpeningDirectionOutward() ) {
                 if (type.indexOf('left') >= 0) {
                     type = type.replace('left', 'right');
                 } else if (type.indexOf('right') >= 0) {
