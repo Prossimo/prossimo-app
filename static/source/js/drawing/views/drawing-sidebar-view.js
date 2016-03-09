@@ -191,8 +191,9 @@ var app = app || {};
             function getSectionInfo(source) {
                 var result = {};
 
-                var filling_size = f.dimensions_in(c.mm_to_inches(source.filling.width),
-                        c.mm_to_inches(source.filling.height), 'fraction');
+                var filling_size = f.dimensions(c.mm_to_inches(source.filling.width),
+                        c.mm_to_inches(source.filling.height), 'fraction',
+                        project_settings && project_settings.get('inches_display_mode'));
 
                 var filling_area = f.square_feet(m.square_feet(c.mm_to_inches(source.filling.width),
                         c.mm_to_inches(source.filling.height)), 2, 'sup');
@@ -217,20 +218,6 @@ var app = app || {};
                     sash_item.name = 'Sash #' + (index + 1);
                     sash_item.type = source_item.type;
 
-<<<<<<< HEAD
-=======
-                    filling_size = f.dimensions(c.mm_to_inches(source_item.filling.width),
-                        c.mm_to_inches(source_item.filling.height), 'fraction',
-                        project_settings && project_settings.get('inches_display_mode'));
-
-                    filling_area = f.square_feet(m.square_feet(c.mm_to_inches(source_item.filling.width),
-                        c.mm_to_inches(source_item.filling.height)), 2, 'sup');
-
-                    sash_item.filling_is_glass = source_item.filling.type === 'glass';
-                    sash_item.filling_name = source_item.filling.name;
-                    sash_item.filling_size = filling_size + ' (' + filling_area + ')';
-
->>>>>>> aa83314fc46a951c9e154bdb66bbf01bd614e2f7
                     if ( source_item.opening.height && source_item.opening.width ) {
                         opening_size = f.dimensions(c.mm_to_inches(source_item.opening.width),
                             c.mm_to_inches(source_item.opening.height), 'fraction',

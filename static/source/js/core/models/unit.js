@@ -520,11 +520,6 @@ var app = app || {};
             var full = this.generateFullRoot();
             var fullSection = app.Unit.findSection(full, sectionId);
 
-            // Prevent from unnecessary updating
-            if ( fullSection.sashType === type ) {
-                return;
-            }
-
             // Update section
             this._updateSection(sectionId, function (section) {
                 section.sashType = type;
