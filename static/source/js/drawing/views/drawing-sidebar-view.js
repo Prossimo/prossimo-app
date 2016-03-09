@@ -189,7 +189,8 @@ var app = app || {};
             var sashes = [];
 
             if ( this.options.parent_view.active_unit ) {
-                sash_list_source = this.options.parent_view.active_unit.getSashList(null, null);
+                sash_list_source = this.options.parent_view.active_unit.getSashList(null, null,
+                    project_settings && project_settings.get('hinge_indicator_mode') === 'american');
 
                 _.each(sash_list_source, function (source_item, index) {
                     var sash_item = {};
