@@ -9,7 +9,6 @@ var app = app || {};
         template: app.templates['settings/main-settings-view'],
         ui: {
             $profiles_container: '.profiles-container',
-            $ui_settings_container: '.ui_settings-container',
             $filling_types_container: '.filling_types-container',
             $pricing_grids_container: '.pricing_grids-container'
         },
@@ -20,9 +19,6 @@ var app = app || {};
             this.tabs = {
                 profiles: {
                     title: 'Profiles'
-                },
-                ui_settings: {
-                    title: 'UI Settings'
                 },
                 filling_types: {
                     title: 'Filling Types'
@@ -58,15 +54,6 @@ var app = app || {};
                 this.ui.$profiles_container.append(this.profiles_table_view.render().el);
             }
 
-            if ( this.active_tab === 'ui_settings' ) {
-                this.ui_settings_view = new app.UISettingsView({
-                    model: app.settings.project_settings,
-                    parent_view: this
-                });
-
-                this.ui.$ui_settings_container.append(this.ui_settings_view.render().el);
-            }
-
             if ( this.active_tab === 'filling_types' ) {
                 this.filling_types_table_view = new app.FillingTypesTableView({
                     collection: app.settings.filling_types,
@@ -96,10 +83,6 @@ var app = app || {};
         onDestroy: function () {
             if ( this.profiles_table_view ) {
                 this.profiles_table_view.destroy();
-            }
-
-            if ( this.ui_settings_view ) {
-                this.ui_settings_view.destroy();
             }
 
             if ( this.filling_types_table_view ) {

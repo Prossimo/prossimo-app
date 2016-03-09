@@ -12,6 +12,9 @@ var app = app || {};
             $extras_table_container: '.quote-extras-table-container',
             $optional_extras_table_container: '.quote-optional-extras-table-container'
         },
+        initialize: function () {
+            this.listenTo(app.current_project.settings, 'change', this.render);
+        },
         childViewOptions: function () {
             return {
                 extras: this.options.extras,

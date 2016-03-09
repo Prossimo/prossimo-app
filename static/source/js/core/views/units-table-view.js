@@ -73,6 +73,8 @@ var app = app || {};
             this.listenTo(app.projects, 'all', this.updateTable);
             this.listenTo(this.options.parent_view, 'attach', this.updateTable);
 
+            this.listenTo(app.current_project.settings, 'change', this.render);
+
             this.listenTo(this.collection, 'invalid', this.showValidationError);
             this.listenTo(this.options.extras, 'invalid', this.showValidationError);
             this.listenTo(app.projects, 'invalid', this.showValidationError);

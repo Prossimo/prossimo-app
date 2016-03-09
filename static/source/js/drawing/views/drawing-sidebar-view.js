@@ -42,6 +42,7 @@ var app = app || {};
 
             this.listenTo(this.options.parent_view.active_unit, 'all', this.render);
             this.listenTo(this.options.parent_view, 'drawing_view:onSetState', this.render);
+            this.listenTo(app.current_project.settings, 'change', this.render);
         },
         setActiveTab: function (tab_name) {
             if ( _.contains(_.keys(this.tabs), tab_name) ) {

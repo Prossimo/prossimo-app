@@ -12,8 +12,6 @@ var app = app || {};
             'click .js-logout': 'onLogout'
         },
         initialize: function () {
-            $('#header').append( this.render().el );
-
             this.listenTo(app.session, 'change:is_logged_in', this.render);
             this.listenTo(app.vent, 'auth:no_backend', this.render);
         },

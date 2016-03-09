@@ -3,25 +3,25 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.UISettingsView = Marionette.ItemView.extend({
+    app.ProjectSettingsPanelView = Marionette.ItemView.extend({
         tagName: 'div',
-        className: 'ui-settings',
-        template: app.templates['settings/ui-settings-view'],
+        className: 'project-settings-panel',
+        template: app.templates['core/project-settings-panel-view'],
+        ui: {
+            $container: '.project-settings-container'
+        },
         events: {
             'click .js-change-value': 'onChangeValueClick'
         },
-        //  TODO: reload on project change?
         initialize: function () {
-            var params = this.serializeData().params;
+            this.setToggles();
 
-            this.toggles = {};
-
-            //  TODO: we probably want to treat other numbers as well!
-            _.each(params, function (param_options, key) {
-                if ( param_options.possible_values_number === 2 ) {
-                    this.toggles[key] = new app.BaseToggleView(param_options);
-                }
-            }, this);
+            this.listenTo(app.vent, 'current_project_changed', this.onProjectChanged);
+        },
+        onProjectChanged: function () {
+            this.model = app.settings.getProjectSettings();
+            this.setToggles();
+            this.render();
         },
         onChangeValueClick: function (e) {
             var $button = $(e.target);
@@ -30,6 +30,20 @@ var app = app || {};
 
             this.model.set(target_param, target_value);
             this.render();
+        },
+        setToggles: function () {
+            var data = this.serializeData();
+
+            if ( data.is_model_set ) {
+                this.toggles = {};
+
+                //  TODO: we probably want to treat other numbers as well!
+                _.each(data.params, function (param_options, key) {
+                    if ( param_options.possible_values_number === 2 ) {
+                        this.toggles[key] = new app.BaseToggleView(param_options);
+                    }
+                }, this);
+            }
         },
         getParamsSourceData: function () {
             var params_obj = {};
@@ -65,13 +79,15 @@ var app = app || {};
             };
         },
         onRender: function () {
-            var params = this.serializeData().params;
+            var data = this.serializeData();
 
-            _.each(params, function (param_options, key) {
-                if ( param_options.possible_values_number === 2 ) {
-                    this.$el.find('li[data-param="' + key + '"] .value').append(this.toggles[key].render().el);
-                }
-            }, this);
+            if ( data.is_model_set ) {
+                _.each(data.params, function (param_options, key) {
+                    if ( param_options.possible_values_number === 2 ) {
+                        this.$el.find('li[data-param="' + key + '"] .value').append(this.toggles[key].render().el);
+                    }
+                }, this);
+            }
         }
     });
 })();
