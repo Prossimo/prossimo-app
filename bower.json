@@ -11,9 +11,7 @@
     "handsontable": "~0.21.0",
     "bootstrap-select": "~1.7.4",
     "konva": "~0.10.0",
-    "decimal.js": "~4.0.3"
-  },
-  "devDependencies": {
+    "decimal.js": "~4.0.3",
     "bootstrap-toggle": "~2.2.1"
   }
 }
