@@ -886,21 +886,10 @@ var app = app || {};
             });
 
             if (index >= 0) {
-                var number = new Konva.Text({
-                    x: sectionData.openingParams.x - sectionData.sashParams.x,
-                    y: sectionData.openingParams.y,
-                    width: sectionData.openingParams.width,
-                    align: 'center',
-                    text: index + 1,
-                    fontSize: 15 / this.ratio,
-                    listening: false
-                });
+                var indexes = this.createSectionIndexes(sectionData, {main: index, add: null});
 
-                number.y(
-                    sectionData.openingParams.y - sectionData.sashParams.y +
-                    sectionData.openingParams.height / 2 - number.height() / 2
-                );
-                group.add(number);
+                console.log('result', indexes);
+                group.add( this.createIndexes(indexes) );
             }
 
             var isSelected = (this.state.selectedSashId === sectionData.id);
@@ -915,6 +904,120 @@ var app = app || {};
 
                 group.add(selection);
             }
+
+            return group;
+        },
+        createSectionIndexes: function (mainSection, indexes) {
+            var view = this;
+            var result = [];
+
+            indexes = indexes || {
+                main: 0,
+                add: null,
+                parent: null
+            };
+
+            // If section have a children — create Indexes for them recursively
+            if (mainSection.sections.length) {
+
+                if (insideView && mainSection.divider === 'vertical') {
+                    mainSection.sections.reverse();
+                }
+
+                mainSection.sections.forEach(function (section) {
+
+                    if (mainSection.sashType !== 'fixed_in_frame') {
+                        indexes.parent = mainSection;
+                    }
+
+                    if (!section.sections.length) {
+                        indexes.add += 1;
+
+                    }
+
+                    result = result.concat( view.createSectionIndexes(section, indexes) );
+                });
+
+            // If section haven't a children sections — create Index for it
+            } else {
+                var text = (indexes.main + 1);
+                // @TODO: Fix position of nested indexes (now not centered)
+                // You can see it if do a few nested sections
+                var position = {
+                    x: (
+                        mainSection.glassParams.x - mainSection.sashParams.x
+                    ),
+                    y: (
+                        mainSection.glassParams.y - mainSection.sashParams.y
+                    )
+                };
+                var size = {
+                    width: mainSection.glassParams.width,
+                    height: mainSection.glassParams.height
+                };
+
+                if (indexes.add !== null) {
+                    text += '.' + indexes.add;
+
+                    if (indexes.parent) {
+                        position = {
+                            x: (
+                                mainSection.glassParams.x - indexes.parent.sashParams.x
+                            ),
+                            y: (
+                                mainSection.glassParams.y - indexes.parent.sashParams.y
+                            )
+                        };
+
+                        // For debug:
+                        // console.log('>>', text);
+                        // console.log('x', mainSection.glassParams.x, '-', indexes.parent.sashParams.x);
+                        // console.log('y', mainSection.glassParams.y, '-', indexes.parent.sashParams.y);
+                        // console.log('=', position);
+                    }
+                }
+
+                result.push({
+                    text: text,
+                    position: position,
+                    size: size
+                });
+
+            }
+
+            return result;
+        },
+        createIndexes: function (indexes) {
+            var view = this;
+            var group = new Konva.Group();
+
+            var number;
+            var box;
+
+            indexes.forEach(function (section) {
+                number = new Konva.Text({
+                        width: section.size.width,
+                        align: 'center',
+                        text: section.text,
+                        fontSize: 15 / view.ratio,
+                        listening: false
+                    });
+                number.position( section.position );
+                number.y( number.y() + section.size.height / 2 - number.height() / 2 );
+                group.add( number );
+
+                // For debug:
+                // box = new Konva.Rect({
+                //         width: section.size.width,
+                //         height: section.size.height,
+                //         fill: 'red',
+                //         opacity: 0.2,
+                //         listening: false
+                //     });
+                // box.position( section.position );
+                // group.add( box );
+
+            });
 
             return group;
         },
