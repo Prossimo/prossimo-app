@@ -202,6 +202,9 @@ var app = app || {};
             });
         },
         serializeData: function () {
+            var project_settings = app.settings && app.settings.getProjectSettings();
+            var show_drawings = !project_settings || project_settings.get('show_drawings_in_quote');
+
             return {
                 table_attributes: this.getQuoteTableAttributes(),
                 mark: this.model.get('mark'),
@@ -211,10 +214,11 @@ var app = app || {};
                 quantity: this.model.get('quantity'),
                 price: this.getPrices(),
                 customer_image: this.getCustomerImage(),
-                product_image: this.getProductImage(),
+                product_image: show_drawings ? this.getProductImage() : '',
                 show_price: this.options.show_price !== false,
                 show_customer_image: this.model.collection &&
-                    this.model.collection.hasAtLeastOneCustomerImage()
+                    this.model.collection.hasAtLeastOneCustomerImage(),
+                show_drawings: show_drawings
             };
         }
     });

@@ -6,22 +6,28 @@ var app = app || {};
     var PROJECT_SETTINGS_PROPERTIES = [
         { name: 'inches_display_mode', title: 'Inches Display Mode', type: 'string' },
         { name: 'hinge_indicator_mode', title: 'Hinge Indicator Mode', type: 'string' },
-        { name: 'pricing_mode', title: 'Pricing Mode', type: 'string' }
+        { name: 'pricing_mode', title: 'Pricing Mode', type: 'string' },
+        { name: 'show_drawings_in_quote', title: 'Show Drawings in Quote', type: 'string' }
     ];
 
     var INCHES_DISPLAY_MODES = [
-        { name: 'feet_and_inches', title: 'Feet + Inches' },
-        { name: 'inches_only', title: 'Inches Only' }
+        { value: 'feet_and_inches', title: 'Feet + Inches' },
+        { value: 'inches_only', title: 'Inches Only' }
     ];
 
     var HINGE_INDICATOR_MODES = [
-        { name: 'american', title: 'American' },
-        { name: 'european', title: 'European' }
+        { value: 'american', title: 'American' },
+        { value: 'european', title: 'European' }
     ];
 
     var PRICING_MODES = [
-        { name: 'normal', title: 'Normal' },
-        { name: 'estimates', title: 'Estimates' }
+        { value: 'normal', title: 'Normal' },
+        { value: 'estimates', title: 'Estimates' }
+    ];
+
+    var SHOW_DRAWINGS_IN_QUOTE_OPTIONS = [
+        { value: true, title: 'Yes' },
+        { value: false, title: 'No' }
     ];
 
     app.ProjectSettings = Backbone.Model.extend({
@@ -42,9 +48,10 @@ var app = app || {};
             };
 
             var name_value_hash = {
-                inches_display_mode: INCHES_DISPLAY_MODES[0].name,
-                hinge_indicator_mode: HINGE_INDICATOR_MODES[0].name,
-                pricing_mode: PRICING_MODES[0].name
+                inches_display_mode: INCHES_DISPLAY_MODES[0].value,
+                hinge_indicator_mode: HINGE_INDICATOR_MODES[0].value,
+                pricing_mode: PRICING_MODES[0].value,
+                show_drawings_in_quote: SHOW_DRAWINGS_IN_QUOTE_OPTIONS[0].value
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -79,24 +86,16 @@ var app = app || {};
         },
         getPossibleValuesHash: function () {
             return {
-                inches_display_mode: this.getInchesDisplayModes(),
-                hinge_indicator_mode: this.getHingeIndicatorModes(),
-                pricing_mode: this.getPricingModes()
+                inches_display_mode: INCHES_DISPLAY_MODES,
+                hinge_indicator_mode: HINGE_INDICATOR_MODES,
+                pricing_mode: PRICING_MODES,
+                show_drawings_in_quote: SHOW_DRAWINGS_IN_QUOTE_OPTIONS
             };
         },
         getTitles: function (names) {
             var name_title_hash = this.getNameTitleTypeHash(names);
 
             return _.pluck(name_title_hash, 'title');
-        },
-        getInchesDisplayModes: function () {
-            return INCHES_DISPLAY_MODES;
-        },
-        getHingeIndicatorModes: function () {
-            return HINGE_INDICATOR_MODES;
-        },
-        getPricingModes: function () {
-            return PRICING_MODES;
         }
     });
 })();

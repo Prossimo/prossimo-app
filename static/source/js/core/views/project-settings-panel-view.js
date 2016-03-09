@@ -58,11 +58,11 @@ var app = app || {};
                         title: _.findWhere(name_title_type_hash, { name: key }).title,
                         property_name: key,
                         current_value: this.model.get(key),
-                        values_list: _.map(item, function (value) {
+                        values_list: _.map(item, function (list_item) {
                             return {
-                                is_current: this.model.get(key) === value.name,
-                                name: value.name,
-                                title: value.title
+                                is_current: this.model.get(key) === list_item.value,
+                                value: list_item.value,
+                                title: list_item.title
                             };
                         }, this),
                         possible_values_number: item.length

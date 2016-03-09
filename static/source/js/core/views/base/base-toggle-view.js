@@ -19,9 +19,9 @@ var app = app || {};
             var new_value;
 
             if ( is_checked ) {
-                new_value = equal_choices ? this.options.values_list[0].name : true;
+                new_value = equal_choices ? this.options.values_list[0].value : true;
             } else {
-                new_value = equal_choices ? this.options.values_list[1].name : false;
+                new_value = equal_choices ? this.options.values_list[1].value : false;
             }
 
             this.model.set(this.options.property_name, new_value);
