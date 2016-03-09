@@ -189,10 +189,7 @@ var app = app || {};
             var sashes = [];
 
             if ( this.options.parent_view.active_unit ) {
-                //  TODO: this doesn't look very nice, we have to rewrite it
-                //  see https://github.com/prossimo-ben/prossimo-app/issues/201
-                sash_list_source = this.options.parent_view.active_unit.getSashList(null, null,
-                    !this.options.parent_view.drawing_view.state.openingView);
+                sash_list_source = this.options.parent_view.active_unit.getSashList(null, null);
 
                 _.each(sash_list_source, function (source_item, index) {
                     var sash_item = {};
