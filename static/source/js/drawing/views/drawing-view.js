@@ -856,13 +856,7 @@ var app = app || {};
             }
 
             var type = sectionData.sashType;
-            var shouldDrawHandle =
-                sectionData.sashType !== 'fixed_in_frame' &&
-                ((this.state.openingView &&
-                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type === 'tilt_only')
-                ) &&
-                (type.indexOf('_hinge_hidden_latch') === -1)
-                || (!this.state.openingView && this.model.profile.hasOutsideHandle()));
+            var shouldDrawHandle = this.shouldDrawHandle(type);
 
             if (shouldDrawHandle) {
                 var handle = this.createHandle(sectionData, {
@@ -1598,6 +1592,36 @@ var app = app || {};
                 selectedMullionId: null,
                 selectedSashId: null
             });
+        },
+        shouldDrawHandle: function (type) {
+            var result = false;
+            var typeResult = false;
+
+            if (
+                    type !== 'fixed_in_frame' &&
+                    (
+                        type.indexOf('left') >= 0 ||
+                        type.indexOf('right') >= 0 ||
+                        type === 'tilt_only'
+                    ) &&
+                    (type.indexOf('_hinge_hidden_latch') === -1)
+            ) {
+                typeResult = true;
+            }
+
+            // Draw handle if:
+            // 1). type of sash has handle
+            // 2a). it's inside view
+            // 2b). it's outside view & profile hasOutsideHandle (for example, door)
+            result = (
+                        typeResult &&
+                        (
+                            (insideView) ||
+                            (!insideView && this.model.profile.hasOutsideHandle())
+                        )
+                );
+
+            return result;
         }
     });
 
