@@ -888,7 +888,6 @@ var app = app || {};
             if (index >= 0) {
                 var indexes = this.createSectionIndexes(sectionData, {main: index, add: null});
 
-                console.log('result', indexes);
                 group.add( this.createIndexes(indexes) );
             }
 
@@ -907,7 +906,7 @@ var app = app || {};
 
             return group;
         },
-        createSectionIndexes: function (mainSection, indexes) {
+        createSectionIndexes: function (mainSection, indexes, i) {
             var view = this;
             var result = [];
 
@@ -917,6 +916,8 @@ var app = app || {};
                 parent: null
             };
 
+            i = i || 0;
+
             // If section have a children — create Indexes for them recursively
             if (mainSection.sections.length) {
 
@@ -924,7 +925,7 @@ var app = app || {};
                     mainSection.sections.reverse();
                 }
 
-                mainSection.sections.forEach(function (section) {
+                mainSection.sections.forEach(function (section, i) {
 
                     if (mainSection.sashType !== 'fixed_in_frame') {
                         indexes.parent = mainSection;
@@ -935,7 +936,7 @@ var app = app || {};
 
                     }
 
-                    result = result.concat( view.createSectionIndexes(section, indexes) );
+                    result = result.concat( view.createSectionIndexes(section, indexes, i) );
                 });
 
             // If section haven't a children sections — create Index for it
@@ -960,6 +961,7 @@ var app = app || {};
                     text += '.' + indexes.add;
 
                     if (indexes.parent) {
+
                         position = {
                             x: (
                                 mainSection.glassParams.x - indexes.parent.sashParams.x
@@ -968,12 +970,10 @@ var app = app || {};
                                 mainSection.glassParams.y - indexes.parent.sashParams.y
                             )
                         };
-
-                        // For debug:
-                        // console.log('>>', text);
-                        // console.log('x', mainSection.glassParams.x, '-', indexes.parent.sashParams.x);
-                        // console.log('y', mainSection.glassParams.y, '-', indexes.parent.sashParams.y);
-                        // console.log('=', position);
+                        size = {
+                            width: size.width,
+                            height: size.height
+                        };
                     }
                 }
 
@@ -1007,15 +1007,15 @@ var app = app || {};
                 group.add( number );
 
                 // For debug:
-                // box = new Konva.Rect({
-                //         width: section.size.width,
-                //         height: section.size.height,
-                //         fill: 'red',
-                //         opacity: 0.2,
-                //         listening: false
-                //     });
-                // box.position( section.position );
-                // group.add( box );
+                box = new Konva.Rect({
+                        width: section.size.width,
+                        height: section.size.height,
+                        fill: 'red',
+                        opacity: 0.2,
+                        listening: false
+                    });
+                box.position( section.position );
+                group.add( box );
 
             });
 

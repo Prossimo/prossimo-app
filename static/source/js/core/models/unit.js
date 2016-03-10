@@ -739,6 +739,38 @@ var app = app || {};
                 sectionData.thresholdEdge = rootSection.thresholdEdge;
                 sectionData.parentId = rootSection.id;
 
+                // Correction params. Needed for sections in operable sash
+                var corr = -1 * (this.profile.get('sash_frame_width') - this.profile.get('sash_frame_overlap'));
+                var correction = {
+                    x: 0,
+                    y: 0,
+                    width: 0,
+                    height: 0
+                };
+
+                // Calculate correction params
+                if (rootSection.sashType !== 'fixed_in_frame') {
+                    if (rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible') {
+                        // correction for vertical sections
+                        if (i === 0) {
+                            correction.x = -1 * corr;
+                        }
+
+                        correction.y = -1 * corr;
+                        correction.width = corr;
+                        correction.height = corr * 2;
+                    } else {
+                        // correction for horizontal sections
+                        if (i === 0) {
+                            correction.y = -1 * corr;
+                        }
+
+                        correction.x = -1 * corr;
+                        correction.width = corr * 2;
+                        correction.height = corr;
+                    }
+                }
+
                 if (rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible') {
                     sectionParams.x = openingParams.x;
                     sectionParams.y = openingParams.y;
@@ -772,6 +804,12 @@ var app = app || {};
                         sectionData.mullionEdges.top = rootSection.divider;
                     }
                 }
+
+                // Apply corrections
+                sectionParams.x += correction.x;
+                sectionParams.y += correction.y;
+                sectionParams.width += correction.width;
+                sectionParams.height += correction.height;
 
                 return this.generateFullRoot(sectionData, sectionParams);
             }.bind(this));
