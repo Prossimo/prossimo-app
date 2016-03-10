@@ -11,7 +11,7 @@ var app = app || {};
     // 2. this.state - UI state of view.
     // Take a look to constructor to see what is possible in state
     //
-    // 3. and insideView variable. This variable is not part of this.state
+    // 3. and globalInsideView variable. This variable is not part of this.state
     // as we need to keep it the same for any view
 
     // starting point of all drawing is "renderCanvas" function
@@ -23,7 +23,7 @@ var app = app || {};
     // something like "components" directory
 
     // global params
-    var insideView = false;
+    var globalInsideView = false;
     var metricSize = 50;
 
     app.DrawingView = Marionette.ItemView.extend({
@@ -36,6 +36,7 @@ var app = app || {};
             this.on('update_rendered', this.updateRenderedScene, this);
 
             this.state = {
+                insideView: this.isInsideView(),
                 openingView: this.isOpeningView(),
                 selectedSashId: null,
                 selectedMullionId: null,
@@ -64,10 +65,13 @@ var app = app || {};
             'change #filling-select': 'handleFillingTypeChange',
             'click #glazing-bars-popup': 'handleGlazingBarsPopupClick'
         },
+        isInsideView: function () {
+            return globalInsideView;
+        },
         // Are we looking at unit from the opening side?
         isOpeningView: function () {
-            return !insideView && this.model.isOpeningDirectionOutward() ||
-                insideView && !this.model.isOpeningDirectionOutward();
+            return !globalInsideView && this.model.isOpeningDirectionOutward() ||
+                globalInsideView && !this.model.isOpeningDirectionOutward();
         },
         handleCanvasKeyDown: function (e) {
             if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
@@ -85,9 +89,10 @@ var app = app || {};
             }
         },
         handleChangeView: function () {
-            insideView = !insideView;
+            globalInsideView = !globalInsideView;
 
             this.setState({
+                insideView: this.isInsideView(),
                 openingView: this.isOpeningView()
             });
         },
@@ -1519,11 +1524,11 @@ var app = app || {};
 
         updateUI: function () {
             // here we have to hide and should some elements in toolbar
-            var buttonText = insideView ? 'Show outside view' : 'Show inside view';
+            var buttonText = globalInsideView ? 'Show outside view' : 'Show inside view';
 
             this.$('#change-view-button').text(buttonText);
 
-            var titleText = insideView ? 'Inside view' : 'Outside view';
+            var titleText = globalInsideView ? 'Inside view' : 'Outside view';
 
             this.ui.$title.text(titleText);
 
@@ -1616,8 +1621,8 @@ var app = app || {};
             result = (
                         typeResult &&
                         (
-                            (insideView) ||
-                            (!insideView && this.model.profile.hasOutsideHandle())
+                            (this.state.insideView) ||
+                            (!this.state.insideView && this.model.profile.hasOutsideHandle())
                         )
                 );
 
@@ -1672,6 +1677,7 @@ var app = app || {};
 
         if ( _.indexOf(['inside', 'outside'], options.position) !== -1 ) {
             view.setState({
+                insideView: options.position === 'inside',
                 openingView: options.position === 'inside' && !unitModel.isOpeningDirectionOutward() ||
                     options.position === 'outside' && unitModel.isOpeningDirectionOutward(),
                 inchesDisplayMode: options.inchesDisplayMode,
