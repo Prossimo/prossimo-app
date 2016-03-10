@@ -88,6 +88,10 @@
                 </tr>
                 {{/if}}
                 {{#if sections}}
+                <tr>
+                    <td class="title">Total Daylight</td>
+                    <td class="value">{{{ daylight_sum }}}</td>
+                </tr>
                     {{#each sections}}
                     <tr>
                         <td class="title" colspan="2"><strong> {{ name }} </strong></td>
@@ -98,7 +102,7 @@
                     </tr>
                     {{#if filling_is_glass }}
                     <tr>
-                        <td class="title">Total Daylight</td>
+                        <td class="title">Daylight</td>
                         <td class="value">{{{ filling_size }}}</td>
                     </tr>
                     {{/if}}

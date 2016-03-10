@@ -188,19 +188,23 @@ var app = app || {};
             var sash_list_source;
             var sashes = [];
 
+            function getFillingSize(width, height) {
+                var filling_size = f.dimensions(c.mm_to_inches(width),
+                        c.mm_to_inches(height), 'fraction',
+                        project_settings && project_settings.get('inches_display_mode'));
+
+                var filling_area = f.square_feet(m.square_feet(c.mm_to_inches(width),
+                        c.mm_to_inches(height)), 2, 'sup');
+
+                return filling_size + '(' + filling_area + ')';
+            }
+
             function getSectionInfo(source) {
                 var result = {};
 
-                var filling_size = f.dimensions(c.mm_to_inches(source.filling.width),
-                        c.mm_to_inches(source.filling.height), 'fraction',
-                        project_settings && project_settings.get('inches_display_mode'));
-
-                var filling_area = f.square_feet(m.square_feet(c.mm_to_inches(source.filling.width),
-                        c.mm_to_inches(source.filling.height)), 2, 'sup');
-
                 result.filling_is_glass = source.filling.type === 'glass';
                 result.filling_name = source.filling.name;
-                result.filling_size = filling_size + ' (' + filling_area + ')';
+                result.filling_size = getFillingSize( source.filling.width, source.filling.height );
 
                 return result;
             }
@@ -231,6 +235,9 @@ var app = app || {};
 
                     // Children sections
                     if ( source_item.sections.length ) {
+
+                        var sum = { width: 0, height: 0 };
+
                         sash_item.sections = [];
 
                         _.each(source_item.sections, function (section, s_index) {
@@ -241,8 +248,20 @@ var app = app || {};
                             section_info = getSectionInfo(section);
                             _.extend(section_item, section_info);
 
+                            if (source_item.divider) {
+                                if (source_item.divider === 'vertical' ) {
+                                    sum.width += section.filling.width;
+                                    sum.height = source_item.filling.height;
+                                } else {
+                                    sum.height += section.filling.height;
+                                    sum.width = source_item.filling.width;
+                                }
+                            }
+
                             sash_item.sections.push(section_item);
                         });
+
+                        sash_item.daylight_sum = getFillingSize( sum.width, sum.height );
                     } else {
                         section_info = getSectionInfo(source_item);
                         _.extend(sash_item, section_info);

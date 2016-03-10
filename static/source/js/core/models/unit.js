@@ -1014,6 +1014,8 @@ var app = app || {};
                 current_sash.filling.width = current_root.glassParams.width;
                 current_sash.filling.height = current_root.glassParams.height;
 
+                current_sash.divider = current_root.divider;
+
                 if ( current_root.fillingType && current_root.fillingName ) {
                     current_sash.filling.type = current_root.fillingType;
                     current_sash.filling.name = current_root.fillingName;
