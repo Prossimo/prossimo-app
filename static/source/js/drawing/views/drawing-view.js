@@ -992,7 +992,6 @@ var app = app || {};
             var group = new Konva.Group();
 
             var number;
-            var box;
 
             indexes.forEach(function (section) {
                 number = new Konva.Text({
@@ -1007,15 +1006,16 @@ var app = app || {};
                 group.add( number );
 
                 // For debug:
-                box = new Konva.Rect({
-                        width: section.size.width,
-                        height: section.size.height,
-                        fill: 'red',
-                        opacity: 0.2,
-                        listening: false
-                    });
-                box.position( section.position );
-                group.add( box );
+                // var box = new Konva.Rect({
+                //         width: section.size.width,
+                //         height: section.size.height,
+                //         fill: 'red',
+                //         opacity: 0.2,
+                //         listening: false
+                //     });
+                //
+                // box.position( section.position );
+                // group.add( box );
 
             });
 
