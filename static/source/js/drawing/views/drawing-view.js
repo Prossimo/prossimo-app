@@ -1166,10 +1166,6 @@ var app = app || {};
                 vertical: 'createHorizontalMetric',
                 horizontal: 'createVerticalMetric'
             };
-            var controlsAccordance = {
-                vertical: 'createHorizontalControls',
-                horizontal: 'createVerticalControls'
-            };
             var sizeAccordance = {
                 vertical: 'width',
                 horizontal: 'height'
@@ -1233,9 +1229,6 @@ var app = app || {};
                         }
 
                         var metric = view[ drawingAccordance[type] ].apply(view, params);
-                        // var controls = view[ controlsAccordance[type] ].apply(view,
-                        //     [mullion.sections[i], params[0], params[1]]
-                        // );
                         var controls = view.createControls(mullion.sections[i], params[0], params[1], type);
 
                         metric.position(position);
@@ -1366,11 +1359,19 @@ var app = app || {};
         },
         createWholeMetrics: function (mullions, width, height) {
             var group = new Konva.Group();
+
+            var root_section = this.model.generateFullRoot();
+            var section_data = {
+                id: root_section.id,
+                data: root_section.measurements
+            };
+
             var rows = {
                 vertical: mullions.vertical.length ? 1 : 0,
                 horizontal: mullions.horizontal.length ? 1 : 0
             };
 
+            // Vertical
             var verticalWholeMertic = this.createVerticalMetric(metricSize, height, {
                 setter: function (val) {
                     this.model.setInMetric('height', val, 'mm');
@@ -1379,14 +1380,17 @@ var app = app || {};
                     return this.model.getInMetric('height', 'mm');
                 }.bind(this)
             });
-
-            verticalWholeMertic.position({
+            var vPosition = {
                 x: -metricSize * (rows.horizontal + 1),
                 y: 0
-            });
+            };
+            var vControls = this.createControls(section_data, metricSize, height, 'horizontal');
 
-            group.add(verticalWholeMertic);
+            verticalWholeMertic.position(vPosition);
+            vControls.position(vPosition);
+            group.add(verticalWholeMertic, vControls);
 
+            // Horizontal
             var horizontalWholeMertic = this.createHorizontalMetric(width, metricSize, {
                 setter: function (val) {
                     this.model.setInMetric('width', val, 'mm');
@@ -1395,13 +1399,15 @@ var app = app || {};
                     return this.model.getInMetric('width', 'mm');
                 }.bind(this)
             });
-
-            horizontalWholeMertic.position({
+            var hPosition = {
                 x: 0,
                 y: height + rows.vertical * metricSize
-            });
-            group.add(horizontalWholeMertic);
+            };
+            var hControls = this.createControls(section_data, width, metricSize, 'vertical');
 
+            horizontalWholeMertic.position(hPosition);
+            hControls.position(hPosition);
+            group.add(horizontalWholeMertic, hControls);
 
             return group;
         },
