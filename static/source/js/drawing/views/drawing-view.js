@@ -925,7 +925,7 @@ var app = app || {};
                     mainSection.sections.reverse();
                 }
 
-                mainSection.sections.forEach(function (section, i) {
+                mainSection.sections.forEach(function (section, j) {
 
                     if (mainSection.sashType !== 'fixed_in_frame') {
                         indexes.parent = mainSection;
@@ -936,14 +936,12 @@ var app = app || {};
 
                     }
 
-                    result = result.concat( view.createSectionIndexes(section, indexes, i) );
+                    result = result.concat( view.createSectionIndexes(section, indexes, j) );
                 });
 
             // If section haven't a children sections — create Index for it
             } else {
                 var text = (indexes.main + 1);
-                // @TODO: Fix position of nested indexes (now not centered)
-                // You can see it if do a few nested sections
                 var position = {
                     x: (
                         mainSection.glassParams.x - mainSection.sashParams.x
