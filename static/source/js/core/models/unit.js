@@ -556,6 +556,11 @@ var app = app || {};
                 section.bars = bars;
             });
         },
+        setSectionMeasurements: function (sectionId, measurements) {
+            this._updateSection(sectionId, function (section) {
+                section.measurements = measurements;
+            });
+        },
         setFillingType: function (sectionId, type, name) {
             if (!_.includes(FILLING_TYPES, type)) {
                 console.error('Unknow filling type: ' + type);

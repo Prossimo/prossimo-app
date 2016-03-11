@@ -1166,6 +1166,10 @@ var app = app || {};
                 vertical: 'createHorizontalMetric',
                 horizontal: 'createVerticalMetric'
             };
+            var controlsAccordance = {
+                vertical: 'createHorizontalControls',
+                horizontal: 'createVerticalControls'
+            };
             var sizeAccordance = {
                 vertical: 'width',
                 horizontal: 'height'
@@ -1229,13 +1233,51 @@ var app = app || {};
                         }
 
                         var metric = view[ drawingAccordance[type] ].apply(view, params);
+                        var controls = view[ controlsAccordance[type] ].apply(view, [mullion, params[0], params[1]]);
 
                         metric.position(position);
+                        controls.position(position);
                         pos = mullion.position;
-                        group.add(metric);
+                        group.add(metric, controls);
                     }
                 });
             });
+
+            return group;
+        },
+        createControl: function (section, width, height) {
+            var control = new Konva.Rect({
+                width: width,
+                height: height,
+                fill: 'red',
+                opacity: 0.5
+            });
+
+            control.on('click', function () {
+                // this.model.setSectionMeasurements( section.id, 1 );
+            }.bind(this));
+
+            return control;
+        },
+        createHorizontalControls: function (mullion, width, height) {
+            var group = new Konva.Group();
+            var size = metricSize / 3;
+            var top = this.createControl( mullion.sections[0], size, height );
+            var bottom = this.createControl( mullion.sections[1], size, height );
+
+            bottom.x( width - size );
+            group.add( top, bottom );
+
+            return group;
+        },
+        createVerticalControls: function (mullion, width, height) {
+            var group = new Konva.Group();
+            var size = metricSize / 3;
+            var top = this.createControl( mullion.sections[0], width, size );
+            var bottom = this.createControl( mullion.sections[1], width, size );
+
+            bottom.y( height - size );
+            group.add( top, bottom );
 
             return group;
         },
