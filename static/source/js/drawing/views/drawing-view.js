@@ -1194,7 +1194,7 @@ var app = app || {};
                     });
                 }
                 // Draw measurements
-                mulGroup.forEach(function (mullion) {
+                mulGroup.forEach(function (mullion, i) {
                     var width_ = mullion.position - pos;
                     var gap = mullion.gap ? '_gap' : '';
                     var params = [];
@@ -1233,7 +1233,10 @@ var app = app || {};
                         }
 
                         var metric = view[ drawingAccordance[type] ].apply(view, params);
-                        var controls = view[ controlsAccordance[type] ].apply(view, [mullion, params[0], params[1]]);
+                        // var controls = view[ controlsAccordance[type] ].apply(view,
+                        //     [mullion.sections[i], params[0], params[1]]
+                        // );
+                        var controls = view.createControls(mullion.sections[i], params[0], params[1], type);
 
                         metric.position(position);
                         controls.position(position);
@@ -1253,33 +1256,113 @@ var app = app || {};
                 opacity: 0.5
             });
 
-            control.on('click', function () {
-                // this.model.setSectionMeasurements( section.id, 1 );
-            }.bind(this));
-
             return control;
         },
-        createHorizontalControls: function (mullion, width, height) {
+        createControls: function (section, width, height, type) {
             var group = new Konva.Group();
-            var size = metricSize / 3;
-            var top = this.createControl( mullion.sections[0], size, height );
-            var bottom = this.createControl( mullion.sections[1], size, height );
+            var controlSize = metricSize / 3;
+            var size_1 = 0;
+            var size_2 = 0;
+            var position = {};
 
-            bottom.x( width - size );
+            if (type === 'horizontal') {
+                size_1 = width;
+                size_2 = controlSize;
+
+                position.y = height - controlSize;
+            } else {
+                size_1 = controlSize;
+                size_2 = height;
+
+                position.x = width - controlSize;
+            }
+
+            var top = this.createControl( section, size_1, size_2 );
+            var bottom = this.createControl( section, size_1, size_2 );
+
+            top.on('click', this.createMeasurementSelect.bind(this, section, type, 0));
+            bottom.on('click', this.createMeasurementSelect.bind(this, section, type, 1));
+
+            bottom.position( position );
             group.add( top, bottom );
 
             return group;
         },
-        createVerticalControls: function (mullion, width, height) {
-            var group = new Konva.Group();
-            var size = metricSize / 3;
-            var top = this.createControl( mullion.sections[0], width, size );
-            var bottom = this.createControl( mullion.sections[1], width, size );
+        createMeasurementSelect: function (section, type, index, event) {
+            var view = this;
 
-            bottom.y( height - size );
-            group.add( top, bottom );
+            // Logic
+            var edges = this.getMeasurementEdges(section.id, type);
+            var states = this.getMeasurementStates( edges[index] );
+            var state = section.data[type][index];
+            var anyStateSelected = false;
+            var defaultState = null;
 
-            return group;
+            // View
+            var $wrap = $('<div>', {class: 'dimension-point-wrapper'});
+            var containerPos = this.$('#drawing').position();
+
+            $wrap
+                .css({
+                    position: 'absolute',
+                    top: event.target.getAbsolutePosition().y + containerPos.top,
+                    left: event.target.getAbsolutePosition().x + containerPos.left
+                })
+                .appendTo(this.$el);
+
+            states.forEach(function (opt) {
+                var selected = false;
+
+                if (state === opt.value) {
+                    selected = true;
+                    anyStateSelected = true;
+                }
+
+                if (opt.default) {
+                    defaultState = opt;
+                }
+
+                var $label = $('<label>', {text: opt.viewname}).appendTo($wrap);
+
+                $('<input>', {
+                    type: 'radio',
+                    name: 'dimension-point-' + section.id,
+                    id: 'dimension-point-' + section.id + '-' + opt.value,
+                    value: opt.value,
+                    checked: selected
+                })
+                .prependTo($label)
+                .on('change blur', function () {
+                    section.data[type][index] = $(this).val();
+                    view.model.setSectionMeasurements( section.id, section.data );
+                    $wrap.remove();
+                });
+            });
+
+            // If no option wasn't selected — select default option
+            if (anyStateSelected === false && defaultState !== null) {
+                section.data[type][index] = defaultState.value;
+                view.model.setSectionMeasurements( section.id, section.data );
+
+                $('#dimension-point-' + section.id + '-' + defaultState.value).prop('checked', true);
+            }
+
+            // Close it with click everywhere
+            function cancelIt( evt ) {
+                if (
+                    evt.keyCode === 27 ||
+                    $(evt.target).hasClass('dimension-point-wrapper') === false &&
+                    $(evt.target).parents('.dimension-point-wrapper').length === 0
+                ) {
+                    $wrap.remove();
+                    $('body').off('click', cancelIt);
+                }
+            }
+
+            // hack to prevent
+            setTimeout( function () {
+                $('body').on('click tap keyup', cancelIt);
+            }, 50);
         },
         createWholeMetrics: function (mullions, width, height) {
             var group = new Konva.Group();
@@ -1318,6 +1401,7 @@ var app = app || {};
                 y: height + rows.vertical * metricSize
             });
             group.add(horizontalWholeMertic);
+
 
             return group;
         },
@@ -1687,6 +1771,54 @@ var app = app || {};
                 );
 
             return result;
+        },
+
+        getMeasurementStates: function (type) {
+            var defaults = {
+                mullion: [{
+                    value: 'min',
+                    viewname: 'Without mullion'
+                }, {
+                    value: 'center',
+                    viewname: 'Center of mullion',
+                    default: true
+                }, {
+                    value: 'max',
+                    viewname: 'With mullion'
+                }],
+                frame: [{
+                    value: 'max',
+                    viewname: 'With frame',
+                    default: true
+                }, {
+                    value: 'min',
+                    viewname: 'Without frame'
+                }]
+            };
+
+            return defaults[type];
+        },
+        getMeasurementEdges: function (section_id, type) {
+            var section_data = this.model.getSection(section_id);
+            var edges = { top: 'frame', right: 'frame', bottom: 'frame', left: 'frame' };
+            var edgeTypes = [];
+
+            _.each(section_data.mullionEdges, function (edge, key) {
+                edges[key] = 'mullion';
+            });
+
+            if (type === 'vertical') {
+                edgeTypes = [edges.left, edges.right];
+
+                if (!this.state.insideView) {
+                    edgeTypes.reverse();
+                }
+
+            } else {
+                edgeTypes = [edges.top, edges.bottom];
+            }
+
+            return edgeTypes;
         }
     });
 

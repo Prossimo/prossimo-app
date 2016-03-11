@@ -101,12 +101,8 @@ var app = app || {};
         };
     }
 
-    function getDefaultMeasurements(type) {
-        var defaultMeasurements = ['max', 'max'];
-
-        if (type === 'section') {
-            defaultMeasurements = ['center', 'center'];
-        }
+    function getDefaultMeasurements() {
+        var defaultMeasurements = ['center', 'center'];
 
         return {
             vertical: defaultMeasurements,
@@ -116,14 +112,14 @@ var app = app || {};
         };
     }
 
-    function getSectionDefaults(type) {
+    function getSectionDefaults() {
         return {
             id: _.uniqueId(),
             sashType: 'fixed_in_frame',
             fillingType: getDefaultFillingType().fillingType,
             fillingName: getDefaultFillingType().fillingName,
             bars: getDefaultBars(),
-            measurements: getDefaultMeasurements(type)
+            measurements: getDefaultMeasurements()
         };
     }
 
@@ -613,7 +609,7 @@ var app = app || {};
                 var fullSection = app.Unit.findSection(full, sectionId);
 
                 section.divider = type;
-                section.sections = [getSectionDefaults('section'), getSectionDefaults('section')];
+                section.sections = [getSectionDefaults(), getSectionDefaults()];
 
                 // Reset bars parameter
                 section.bars = getDefaultBars();
