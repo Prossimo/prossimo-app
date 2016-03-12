@@ -1,4 +1,3 @@
-/* eslint new-cap: [2, {"capIsNewExceptions": ["Deferred"]}] */
 var app = app || {};
 
 (function () {

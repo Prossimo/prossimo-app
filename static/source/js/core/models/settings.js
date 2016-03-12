@@ -92,8 +92,16 @@ var app = app || {};
         onInitialLogin: function () {
             this.fetchData();
         },
-        //  TODO: we might want to fetch projects only after we fetched this
+        //  We use deferred to wait for 2 requests (profiles and filling types)
+        //  to finish before triggering event (and starting to load projects)
         fetchData: function () {
+            var d1 = $.Deferred();
+            var d2 = $.Deferred();
+
+            $.when(d1, d2).done(function () {
+                app.vent.trigger('settings:fetched_data');
+            });
+
             this.profiles.fetch({
                 remove: false,
                 data: {
@@ -101,6 +109,7 @@ var app = app || {};
                 },
                 //  Validate positions on load
                 success: function (collection) {
+                    d1.resolve('Loaded profiles');
                     collection.validatePositions();
                 }
             });
@@ -112,6 +121,7 @@ var app = app || {};
                 },
                 //  Validate positions on load
                 success: function (collection) {
+                    d2.resolve('Loaded filling types');
                     collection.validatePositions();
                 }
             });
