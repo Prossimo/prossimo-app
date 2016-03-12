@@ -66,6 +66,7 @@ var app = app || {};
         //  etc.). If it wasn't fetched, we want to fetch it first
         setCurrentProject: function (new_id) {
             var d = $.Deferred();
+            var self = this;
 
             app.current_project = this.collection.get(new_id);
 
@@ -73,7 +74,13 @@ var app = app || {};
                 return;
             }
 
-            if ( app.current_project._wasFetched ) {
+            if ( app.current_project.get('no_backend') === true ) {
+                app.session.set('no_backend', true);
+            } else if ( app.session.get('no_backend') === true ) {
+                app.session.set('no_backend', false);
+            }
+
+            if ( app.current_project._wasFetched || app.session.get('no_backend') ) {
                 d.resolve('Project was already fetched');
             } else {
                 app.current_project.fetch({
@@ -84,15 +91,9 @@ var app = app || {};
             }
 
             $.when(d).done(function () {
-                if ( app.current_project.get('no_backend') === true ) {
-                    app.session.set('no_backend', true);
-                } else if ( app.session.get('no_backend') === true ) {
-                    app.session.set('no_backend', false);
-                    this.render();
-                }
-
                 app.vent.trigger('current_project_changed');
                 app.current_project.trigger('set_active');
+                self.render();
             });
         },
         storeLastProject: function (new_id) {
