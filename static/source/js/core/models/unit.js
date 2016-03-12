@@ -557,6 +557,65 @@ var app = app || {};
                 section.measurements = measurements;
             });
         },
+        getMeasurementStates: function (type) {
+            var defaults = {
+                mullion: [{
+                    value: 'min',
+                    viewname: 'Without mullion'
+                }, {
+                    value: 'center',
+                    viewname: 'Center of mullion',
+                    default: true
+                }, {
+                    value: 'max',
+                    viewname: 'With mullion'
+                }],
+                frame: [{
+                    value: 'max',
+                    viewname: 'With frame',
+                    default: true
+                }, {
+                    value: 'min',
+                    viewname: 'Without frame'
+                }]
+            };
+
+            return defaults[type];
+        },
+        getMeasurementEdges: function (section_id) {
+            var section_data = this.getSection(section_id);
+            var edges = { top: 'frame', right: 'frame', bottom: 'frame', left: 'frame' };
+
+            _.each(section_data.mullionEdges, function (edge, key) {
+                edges[key] = 'mullion';
+            });
+
+            return edges;
+        },
+        // @TODO: Check for correct values or drop to default
+        // checkMeasurements: function (section_id) {
+        //     var section = this.getSection(section_id);
+        //     var measurements = section.measurements;
+        //     var edges = this.getMeasurementEdges( section_id );
+        //     var result = {};
+
+        //     _.each(edges, function (edge, key) {
+        //         var type;
+        //         result[key] = this.getMeasurementStates( edge );
+
+        //         if (key === 'left' || key === 'right') {
+        //             type = 'horizontal';
+        //         } else {
+        //             type = 'vertical';
+        //         }
+
+        //         measurements[type].forEach(function (state, i) {
+
+        //         });
+        //     });
+
+
+        // },
         setFillingType: function (sectionId, type, name) {
             if (!_.includes(FILLING_TYPES, type)) {
                 console.error('Unknow filling type: ' + type);

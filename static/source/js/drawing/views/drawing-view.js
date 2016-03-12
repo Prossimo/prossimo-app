@@ -1182,6 +1182,7 @@ var app = app || {};
                     //          Make controls.
                     //          Gap get/set data from sections[1], others — sections[0].
 
+                    // @TODO: Find neighbor sections %)
                     mulGroup.push({
                         gap: true,
                         id: lastMul.id,
@@ -1190,7 +1191,7 @@ var app = app || {};
                     });
                 }
                 // Draw measurements
-                mulGroup.forEach(function (mullion, i) {
+                mulGroup.forEach(function (mullion) {
                     var width_ = mullion.position - pos;
                     var gap = mullion.gap ? '_gap' : '';
                     var params = [];
@@ -1228,8 +1229,10 @@ var app = app || {};
                             });
                         }
 
+                        var mullion_section = (mullion.gap) ? mullion.sections[1] : mullion.sections[0];
                         var metric = view[ drawingAccordance[type] ].apply(view, params);
-                        var controls = view.createControls(mullion.sections[i], params[0], params[1], type);
+                        var invertedType = (type === 'vertical') ? 'horizontal' : 'vertical';
+                        var controls = view.createControls(mullion_section, params[0], params[1], invertedType);
 
                         metric.position(position);
                         controls.position(position);
@@ -1259,15 +1262,15 @@ var app = app || {};
             var position = {};
 
             if (type === 'horizontal') {
-                size_1 = width;
-                size_2 = controlSize;
-
-                position.y = height - controlSize;
-            } else {
                 size_1 = controlSize;
                 size_2 = height;
 
                 position.x = width - controlSize;
+            } else {
+                size_1 = width;
+                size_2 = controlSize;
+
+                position.y = height - controlSize;
             }
 
             var top = this.createControl( section, size_1, size_2 );
@@ -1283,10 +1286,9 @@ var app = app || {};
         },
         createMeasurementSelect: function (section, type, index, event) {
             var view = this;
-
             // Logic
             var edges = this.getMeasurementEdges(section.id, type);
-            var states = this.getMeasurementStates( edges[index] );
+            var states = this.model.getMeasurementStates( edges[index] );
             var state = section.data[type][index];
             var anyStateSelected = false;
             var defaultState = null;
@@ -1384,7 +1386,7 @@ var app = app || {};
                 x: -metricSize * (rows.horizontal + 1),
                 y: 0
             };
-            var vControls = this.createControls(section_data, metricSize, height, 'horizontal');
+            var vControls = this.createControls(section_data, metricSize, height, 'vertical');
 
             verticalWholeMertic.position(vPosition);
             vControls.position(vPosition);
@@ -1403,7 +1405,7 @@ var app = app || {};
                 x: 0,
                 y: height + rows.vertical * metricSize
             };
-            var hControls = this.createControls(section_data, width, metricSize, 'vertical');
+            var hControls = this.createControls(section_data, width, metricSize, 'horizontal');
 
             horizontalWholeMertic.position(hPosition);
             hControls.position(hPosition);
@@ -1779,41 +1781,11 @@ var app = app || {};
             return result;
         },
 
-        getMeasurementStates: function (type) {
-            var defaults = {
-                mullion: [{
-                    value: 'min',
-                    viewname: 'Without mullion'
-                }, {
-                    value: 'center',
-                    viewname: 'Center of mullion',
-                    default: true
-                }, {
-                    value: 'max',
-                    viewname: 'With mullion'
-                }],
-                frame: [{
-                    value: 'max',
-                    viewname: 'With frame',
-                    default: true
-                }, {
-                    value: 'min',
-                    viewname: 'Without frame'
-                }]
-            };
-
-            return defaults[type];
-        },
         getMeasurementEdges: function (section_id, type) {
-            var section_data = this.model.getSection(section_id);
-            var edges = { top: 'frame', right: 'frame', bottom: 'frame', left: 'frame' };
+            var edges = this.model.getMeasurementEdges( section_id );
             var edgeTypes = [];
 
-            _.each(section_data.mullionEdges, function (edge, key) {
-                edges[key] = 'mullion';
-            });
-
-            if (type === 'vertical') {
+            if (type === 'horizontal') {
                 edgeTypes = [edges.left, edges.right];
 
                 if (!this.state.insideView) {
