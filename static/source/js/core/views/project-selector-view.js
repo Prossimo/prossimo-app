@@ -16,22 +16,26 @@ var app = app || {};
         },
         initialize: function () {
             this.listenTo(this.collection, 'all', this.render);
-            this.listenTo(app.vent, 'auth:initial_login', this.onInitialLogin);
+            this.listenTo(app.vent, 'settings:fetched_data', this.onInitialLogin);
             this.listenTo(app.vent, 'auth:no_backend', this.onNoBackend);
         },
+        //  This is called after we're done fetching profiles and filling types
         onInitialLogin: function () {
             this.fetchData();
         },
         fetchData: function () {
+            this.fetchProjectList();
+        },
+        fetchProjectList: function () {
             var self = this;
 
             this.collection.fetch({
                 remove: false,
                 success: function () {
-                    self.getLastProject();
+                    self.loadLastProject();
                 },
                 error: function () {
-                    self.getLastProject();
+                    self.loadLastProject();
                 },
                 data: {
                     limit: 0
@@ -39,13 +43,13 @@ var app = app || {};
             });
         },
         onNoBackend: function () {
-            this.getLastProject();
+            this.loadLastProject();
         },
         onChange: function () {
             var new_id = this.ui.$select.val();
 
             this.setCurrentProject(new_id);
-            this.setLastProject(new_id);
+            this.storeLastProject(new_id);
         },
         onAddNewLocalProject: function () {
             var new_id = this.collection.length + 1;
@@ -56,7 +60,14 @@ var app = app || {};
                 no_backend: true
             });
         },
+        //  On project change we check if project with this id was already
+        //  fetched from the server (which means it already has units, files
+        //  and accessories, otherwise it only has simple properties like name
+        //  etc.). If it wasn't fetched, we want to fetch it first
         setCurrentProject: function (new_id) {
+            var d = $.Deferred();
+            var self = this;
+
             app.current_project = this.collection.get(new_id);
 
             if ( !app.current_project ) {
@@ -67,19 +78,31 @@ var app = app || {};
                 app.session.set('no_backend', true);
             } else if ( app.session.get('no_backend') === true ) {
                 app.session.set('no_backend', false);
-                this.render();
             }
 
-            app.vent.trigger('current_project_changed');
-            app.current_project.trigger('set_active');
+            if ( app.current_project._wasFetched || app.session.get('no_backend') ) {
+                d.resolve('Project was already fetched');
+            } else {
+                app.current_project.fetch({
+                    success: function () {
+                        d.resolve('Fetched project');
+                    }
+                });
+            }
+
+            $.when(d).done(function () {
+                app.vent.trigger('current_project_changed');
+                app.current_project.trigger('set_active');
+                self.render();
+            });
         },
-        setLastProject: function (new_id) {
+        storeLastProject: function (new_id) {
             // Save selected project into a localStorage
             if ( 'localStorage' in window && 'setItem' in window.localStorage ) {
                 window.localStorage.setItem('app_currentProject', new_id);
             }
         },
-        getLastProject: function () {
+        loadLastProject: function () {
             // Get selected project from a localStorage
             if ( 'localStorage' in window && 'getItem' in window.localStorage ) {
                 var last_id = window.localStorage.getItem('app_currentProject');

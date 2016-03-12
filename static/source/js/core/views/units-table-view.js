@@ -696,7 +696,9 @@ var app = app || {};
             if ( this.hot ) {
                 clearTimeout(this.table_update_timeout);
                 this.table_update_timeout = setTimeout(function () {
-                    self.hot.loadData(self.getActiveTab().collection);
+                    if ( !self.isDestroyed ) {
+                        self.hot.loadData(self.getActiveTab().collection);
+                    }
                 }, 20);
             }
 
