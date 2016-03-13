@@ -101,26 +101,45 @@ var app = app || {};
         };
     }
 
-    function getDefaultMeasurements() {
-        var defaultMeasurements = ['center', 'center'];
+    function getDefaultMeasurements(hasFrame) {
+        var result = {};
 
-        return {
-            vertical: defaultMeasurements,
-            horizontal: defaultMeasurements,
-            opening: [true, true],
-            glass: [true, true]
-        };
+        hasFrame = hasFrame || false;
+
+        if (hasFrame) {
+            result.frame = {
+                vertical: ['max', 'max'],
+                horizontal: ['max', 'max']
+            };
+        }
+
+        result.opening = null;
+        result.glass = null;
+
+        return result;
     }
 
-    function getSectionDefaults() {
+    function getSectionDefaults(type) {
+        var isRootSection = ( type === 'root_section' );
+
         return {
             id: _.uniqueId(),
             sashType: 'fixed_in_frame',
             fillingType: getDefaultFillingType().fillingType,
             fillingName: getDefaultFillingType().fillingName,
             bars: getDefaultBars(),
-            measurements: getDefaultMeasurements()
+            measurements: getDefaultMeasurements(isRootSection)
         };
+    }
+
+    function getInvertedDivider(type) {
+        if ( /vertical/.test(type) ) {
+            type = type.replace(/vertical/g, 'horizontal');
+        } else if ( /horizontal/.test(type) ) {
+            type = type.replace(/horizontal/g, 'vertical');
+        }
+
+        return type;
     }
 
     app.Unit = Backbone.Model.extend({
@@ -145,7 +164,7 @@ var app = app || {};
                 conversion_rate: 0.9,
                 price_markup: 2.3,
                 quantity: 1,
-                root_section: getSectionDefaults()
+                root_section: getSectionDefaults(name)
             };
 
             if ( app.settings ) {
@@ -540,6 +559,8 @@ var app = app || {};
             // Update section
             this._updateSection(sectionId, function (section) {
                 section.sashType = type;
+                section.measurements.opening = false;
+                section.measurements.glass = false;
             });
 
             //  Change all nested sections recursively
@@ -592,30 +613,8 @@ var app = app || {};
 
             return edges;
         },
-        // @TODO: Check for correct values or drop to default
-        // checkMeasurements: function (section_id) {
-        //     var section = this.getSection(section_id);
-        //     var measurements = section.measurements;
-        //     var edges = this.getMeasurementEdges( section_id );
-        //     var result = {};
-
-        //     _.each(edges, function (edge, key) {
-        //         var type;
-        //         result[key] = this.getMeasurementStates( edge );
-
-        //         if (key === 'left' || key === 'right') {
-        //             type = 'horizontal';
-        //         } else {
-        //             type = 'vertical';
-        //         }
-
-        //         measurements[type].forEach(function (state, i) {
-
-        //         });
-        //     });
-
-
-        // },
+        // @TODO: Add method, that checks for correct values of measurement data
+        // @TODO: Add method, that drops measurement data to default
         setFillingType: function (sectionId, type, name) {
             if (!_.includes(FILLING_TYPES, type)) {
                 console.error('Unknow filling type: ' + type);
@@ -666,9 +665,12 @@ var app = app || {};
             this._updateSection(sectionId, function (section) {
                 var full = this.generateFullRoot();
                 var fullSection = app.Unit.findSection(full, sectionId);
+                var measurementType = getInvertedDivider(type).replace(/_invisible/, '');
 
                 section.divider = type;
                 section.sections = [getSectionDefaults(), getSectionDefaults()];
+                section.measurements.mullion = {};
+                section.measurements.mullion[measurementType] = ['center', 'center'];
 
                 // Reset bars parameter
                 section.bars = getDefaultBars();
@@ -935,13 +937,7 @@ var app = app || {};
                     type: rootSection.divider,
                     position: rootSection.position,
                     id: rootSection.id,
-                    sections: [{
-                        id: rootSection.sections[0].id,
-                        data: rootSection.sections[0].measurements
-                    }, {
-                        id: rootSection.sections[1].id,
-                        data: rootSection.sections[1].measurements
-                    }]
+                    sections: [rootSection.sections[0].id, rootSection.sections[1].id]
                 });
 
                 var submullions = _.map(rootSection.sections, function (s) {
@@ -1225,6 +1221,9 @@ var app = app || {};
         },
         isOperableOnlyAttribute: function (attribute_name) {
             return _.indexOf(OPERABLE_ONLY_PROPERTIES, attribute_name) !== -1;
+        },
+        getInvertedDivider: function (type) {
+            return getInvertedDivider(type);
         }
     });
 
