@@ -35,6 +35,7 @@ var app = app || {};
         },
         initialize: function () {
             this.active_document_url = '';
+            this.listenTo(app.current_project, 'set_dependencies', this.render);
         },
         onRender: function () {
             // this.units_table_view = new app.UnitsTableView({
