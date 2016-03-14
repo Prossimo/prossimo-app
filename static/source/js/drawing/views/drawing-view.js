@@ -1140,7 +1140,7 @@ var app = app || {};
 
             var methods = {
                 getter: function () {
-                    return this.space;
+                    return this.space + this.correction;
                 },
                 setter_vertical: function (val) {
                     if (!this.openingView) {
@@ -1174,6 +1174,8 @@ var app = app || {};
 
             _.each(mullions, function (mulGroup, type) {
                 var pos = 0;
+                var savedSection = null;
+                var savedIndex = null;
 
                 if ( mulGroup.length ) {
                     // smart hack to draw last measurement in a loop with rest of mullions
@@ -1183,7 +1185,7 @@ var app = app || {};
                         gap: true,
                         id: lastMul.id,
                         position: view.model.getInMetric( sizeAccordance[type], 'mm'),
-                        sections: null
+                        sections: lastMul.sections
                     });
                 }
                 // Draw measurements & controls
@@ -1194,15 +1196,58 @@ var app = app || {};
                     var methodName = 'setter_' + type + gap;
                     var position = {};
                     var controlPosition = {};
+                    var mullion_section = view.model.getSection(mullion.id);
+                    var current_section = mullion_section;
+                    var current_index = 0;
+
+                    if (mullion.sections.length) {
+
+                        current_index = (mullion.gap) ? 1 : 0;
+
+                        if (mullion.sections[0].sections.length && savedSection !== null) {
+                            current_section = savedSection;
+                            current_index = savedIndex;
+                            savedSection = null;
+                        } else if ( !(mullion.sections[1].sections.length) ) {
+                            savedSection = mullion_section;
+                            savedIndex = 1;
+                        }
+                    }
 
                     if (width_ > 0) {
+                        var invertedType = view.model.getInvertedDivider( type );
+                        // Correction parameters for metrics
+                        var measurementData = current_section.measurements.mullion;
+                        var measurementValue = measurementData[invertedType][current_index];
+
+                        // @TODO: Here we have a bug. The complexity of solution in another two sections,
+                        // that contains measurement data, that relate to one section (and one metrics).
+                        // I think we need to move this data from mullion_section into child_section.
+
+                        var correction = {
+                            mullion_width: view.model.profile.get('mullion_width') / 2,
+                            size: 0,
+                            pos: 0
+                        };
+
+                        if (measurementValue === 'min') {
+                            correction.size -= correction.mullion_width;
+                            correction.pos += (current_index === 1) ? correction.mullion_width : 0;
+                        }
+
+                        if (measurementValue === 'max') {
+                            correction.size += correction.mullion_width;
+                            correction.pos -= (current_index === 1) ? correction.mullion_width : 0;
+                        }
+
+                        // Params
                         if (type === 'vertical' || type === 'vertical_invisible') {
-                            params.push(width_ * view.ratio);
+                            params.push((width_ + correction.size) * view.ratio);
                             params.push(metricSize);
                             params.push({});
 
                             position = {
-                                x: pos * view.ratio,
+                                x: (pos + correction.pos) * view.ratio,
                                 y: height
                             };
                             controlPosition = {
@@ -1211,12 +1256,11 @@ var app = app || {};
                             };
                         } else {
                             params.push(metricSize);
-                            params.push(width_ * view.ratio);
+                            params.push((width_ + correction.size) * view.ratio);
                             params.push({});
-
                             position = {
                                 x: -metricSize,
-                                y: pos * view.ratio
+                                y: (pos + correction.pos) * view.ratio
                             };
                             controlPosition = {
                                 x: -metricSize,
@@ -1224,7 +1268,7 @@ var app = app || {};
                             };
                         }
 
-                        params[2].getter = methods.getter.bind({space: width_});
+                        params[2].getter = methods.getter.bind({space: width_, correction: correction.size});
 
                         if (mullions[type].length === 2) {
                             params[2].setter = methods[methodName].bind({
@@ -1242,9 +1286,8 @@ var app = app || {};
                         group.add(metric);
 
                         // Draw controls
-                        if (mullion.sections !== null) {
-                            var invertedType = view.model.getInvertedDivider( type );
-                            var controls = view.createMullionControls(mullion, invertedType);
+                        if (!mullion.gap) {
+                            var controls = view.createMullionControls(mullion_section, invertedType);
 
                             controls.position(controlPosition);
                             group.add(controls);
@@ -1253,6 +1296,7 @@ var app = app || {};
                     }
                 });
 
+                // Draw frame controls
                 if (mulGroup.length) {
                     var size_1;
                     var size_2;
@@ -1338,32 +1382,47 @@ var app = app || {};
             // prepare size and position
             var size_1 = 0;
             var size_2 = 0;
-            var position = {};
-
-            if (type === 'vertical' || type === 'vertical_invisible') {
-                size_1 = metricSize;
-                size_2 = controlSize;
-
-                position.y = -controlSize;
-            } else {
-                size_1 = controlSize;
-                size_2 = metricSize;
-
-                position.x = -controlSize;
-            }
 
             // Make both controls recursively
             mullion.sections.forEach(function (mul, i) {
+                var position = [{}, {}];
+                var measurementData = mullion.measurements.mullion;
+                var measurementValue = measurementData[type][i];
+                var cor = {
+                    mullion_width: view.model.profile.get('mullion_width') / 2,
+                    pos: 0
+                };
+
+                if (measurementValue === 'min') {
+                    cor.pos = (i === 0) ? cor.mullion_width * -1 : cor.mullion_width;
+                }
+
+                if (measurementValue === 'max') {
+                    cor.pos = (i === 1) ? cor.mullion_width * -1 : cor.mullion_width;
+                }
+
+                if (type === 'vertical' || type === 'vertical_invisible') {
+                    size_1 = metricSize;
+                    size_2 = controlSize;
+
+                    position[0].y = -controlSize + (cor.pos * view.ratio);
+                    position[1].y = cor.pos * view.ratio;
+                } else {
+                    size_1 = controlSize;
+                    size_2 = metricSize;
+
+                    position[0].x = -controlSize + (cor.pos * view.ratio);
+                    position[1].x = cor.pos * view.ratio;
+                }
+
                 // Create control
                 var control = view.createControl( size_1, size_2 );
 
                 // Attach event
                 control.on('click', view.createMeasurementSelect.bind(view, mullion.id, 'mullion', type, i));
 
-                // Position left/top control
-                if ( i === 0 ) {
-                    control.position( position );
-                }
+                // Position
+                control.position( position[i] );
 
                 group.add( control );
             });
@@ -1371,6 +1430,7 @@ var app = app || {};
             return group;
         },
         createMeasurementSelect: function (section_id, mType, type, index, event) {
+            console.log('>', section_id, mType, type, index);
             var view = this;
             var section = this.model.getSection( section_id );
             // Get available states
@@ -1458,39 +1518,64 @@ var app = app || {};
                 horizontal: mullions.horizontal.length ? 1 : 0
             };
 
+            // Correction parameters for metrics
+            var measurementData = root_section.measurements.frame;
+            var correction = {
+                frame_width: this.model.profile.get('frame_width'),
+                width: 0,
+                height: 0,
+                x: 0,
+                y: 0
+            };
+
+            measurementData.vertical.forEach(function (value, i) {
+                if (value === 'min') {
+                    correction.height -= correction.frame_width;
+                    correction.y += (i === 0) ? correction.frame_width : 0;
+                }
+            });
+            measurementData.horizontal.forEach(function (value, i) {
+                if (value === 'min') {
+                    correction.width -= correction.frame_width;
+                    correction.x += (i === 0) ? correction.frame_width : 0;
+                }
+            });
+
             // Vertical
-            var verticalWholeMertic = this.createVerticalMetric(metricSize, height, {
+            var vHeight = height + (correction.height * this.ratio);
+            var verticalWholeMertic = this.createVerticalMetric(metricSize, vHeight, {
                 setter: function (val) {
                     this.model.setInMetric('height', val, 'mm');
                 }.bind(this),
                 getter: function () {
-                    return this.model.getInMetric('height', 'mm');
+                    return this.model.getInMetric('height', 'mm') + correction.height;
                 }.bind(this)
             });
             var vPosition = {
                 x: -metricSize * (rows.horizontal + 1),
-                y: 0
+                y: 0 + (correction.y * this.ratio)
             };
-            var vControls = this.createWholeControls(root_section.id, metricSize, height, 'vertical');
+            var vControls = this.createWholeControls(root_section.id, metricSize, vHeight, 'vertical');
 
             verticalWholeMertic.position(vPosition);
             vControls.position(vPosition);
             group.add(verticalWholeMertic, vControls);
 
             // Horizontal
-            var horizontalWholeMertic = this.createHorizontalMetric(width, metricSize, {
+            var hWidth = width + (correction.width * this.ratio);
+            var horizontalWholeMertic = this.createHorizontalMetric(hWidth, metricSize, {
                 setter: function (val) {
                     this.model.setInMetric('width', val, 'mm');
                 }.bind(this),
                 getter: function () {
-                    return this.model.getInMetric('width', 'mm');
+                    return this.model.getInMetric('width', 'mm') + correction.width;
                 }.bind(this)
             });
             var hPosition = {
-                x: 0,
+                x: 0 + (correction.x * this.ratio),
                 y: height + rows.vertical * metricSize
             };
-            var hControls = this.createWholeControls(root_section.id, width, metricSize, 'horizontal');
+            var hControls = this.createWholeControls(root_section.id, hWidth, metricSize, 'horizontal');
 
             horizontalWholeMertic.position(hPosition);
             hControls.position(hPosition);
