@@ -24,10 +24,12 @@ var app = app || {};
                     'Estimated Price' : 'Price'
             };
 
-            if ( this.model.collection &&
-                 this.model.collection.hasAtLeastOneCustomerImage() === false
-            ) {
+            if ( !this.shouldShowCustomerImage() ) {
                 delete name_title_hash.customer_image;
+            }
+
+            if ( !this.shouldShowDrawings() ) {
+                delete name_title_hash.product_image;
             }
 
             if ( this.options.show_price === false ) {
@@ -201,9 +203,19 @@ var app = app || {};
                     project_settings && project_settings.get('hinge_indicator_mode')
             });
         },
-        serializeData: function () {
+        shouldShowCustomerImage: function () {
+            return this.model.collection &&
+                 this.model.collection.hasAtLeastOneCustomerImage();
+        },
+        shouldShowDrawings: function () {
             var project_settings = app.settings && app.settings.getProjectSettings();
             var show_drawings = !project_settings || project_settings.get('show_drawings_in_quote');
+
+            return show_drawings;
+        },
+        serializeData: function () {
+            var show_customer_image = this.shouldShowCustomerImage();
+            var show_drawings = this.shouldShowDrawings();
 
             return {
                 table_attributes: this.getQuoteTableAttributes(),
@@ -216,8 +228,7 @@ var app = app || {};
                 customer_image: this.getCustomerImage(),
                 product_image: show_drawings ? this.getProductImage() : '',
                 show_price: this.options.show_price !== false,
-                show_customer_image: this.model.collection &&
-                    this.model.collection.hasAtLeastOneCustomerImage(),
+                show_customer_image: show_customer_image,
                 show_drawings: show_drawings
             };
         }
