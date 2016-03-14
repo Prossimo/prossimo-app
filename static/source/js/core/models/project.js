@@ -78,7 +78,37 @@ var app = app || {};
             return Backbone.sync.call(this, method, model, options);
         },
         parse: function (data) {
-            return data && data.project ? data.project : data;
+            var project_data = data && data.project ? data.project : data;
+
+            var filtered_data = _.pick(project_data, function (value, key) {
+                var keys_to_omit = ['sync_datetime'];
+
+                return !_.isNull(value) && !_.contains(keys_to_omit, key);
+            });
+
+            filtered_data.files = _.map(filtered_data.files, function (file) {
+                return _.pick(file, function (value) {
+                    return !_.isNull(value);
+                });
+            });
+
+            filtered_data.accessories = _.map(filtered_data.accessories, function (accessory) {
+                var keys_to_omit = ['sync_datetime'];
+
+                return _.pick(accessory, function (value, key) {
+                    return !_.isNull(value) && !_.contains(keys_to_omit, key);
+                });
+            });
+
+            filtered_data.units = _.map(filtered_data.units, function (unit) {
+                var keys_to_omit = ['project', 'profile'];
+
+                return _.pick(unit, function (value, key) {
+                    return !_.isNull(value) && !_.contains(keys_to_omit, key);
+                });
+            });
+
+            return filtered_data;
         },
         initialize: function (attributes, options) {
             this.options = options || {};
