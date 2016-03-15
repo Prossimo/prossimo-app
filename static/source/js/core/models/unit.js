@@ -9,7 +9,7 @@ var app = app || {};
         { name: 'height', title: 'Height (inches)', type: 'number' },
         { name: 'quantity', title: 'Quantity', type: 'number' },
         { name: 'type', title: 'Type', type: 'string' },
-        { name: 'description', title: 'Description', type: 'string' },
+        { name: 'description', title: 'Customer Description', type: 'string' },
         { name: 'notes', title: 'Notes', type: 'string' },
         { name: 'exceptions', title: 'Exceptions', type: 'string' },
         { name: 'glazing_bar_width', title: 'Glazing Bar Width (mm)', type: 'number' },
@@ -320,6 +320,12 @@ var app = app || {};
         },
         getHeightMM: function () {
             return app.utils.convert.inches_to_mm(this.get('height'));
+        },
+        getRoughOpeningWidth: function () {
+            return parseFloat(this.get('width')) + 1;
+        },
+        getRoughOpeningHeight: function () {
+            return parseFloat(this.get('height')) + 1;
         },
         getAreaInSquareFeet: function () {
             return app.utils.math.square_feet(this.get('width'), this.get('height'));

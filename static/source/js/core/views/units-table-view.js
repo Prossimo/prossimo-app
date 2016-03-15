@@ -31,7 +31,7 @@ var app = app || {};
                     title: 'Specs',
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'width', 'height', 'drawing',
-                        'customer_image', 'width_mm', 'height_mm', 'type', 'description',
+                        'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'type', 'description',
                         'notes', 'exceptions', 'profile_name', 'system', 'external_color',
                         'internal_color', 'interior_handle', 'exterior_handle', 'hardware_type',
                         'lock_mechanism', 'glazing_bead', 'gasket_color',
@@ -198,6 +198,7 @@ var app = app || {};
             }
         },
         getGetterFunction: function (unit_model, column_name) {
+            var project_settings = app.settings.getProjectSettings();
             var f = app.utils.format;
             var getter;
 
@@ -209,7 +210,8 @@ var app = app || {};
                     return model.getHeightMM();
                 },
                 dimensions: function (model) {
-                    return f.dimensions(model.get('width'), model.get('height'));
+                    return f.dimensions(model.get('width'), model.get('height'), null,
+                        project_settings.get('inches_display_mode') || null);
                 },
                 unit_cost: function (model) {
                     return model.getUnitCost();
@@ -269,6 +271,10 @@ var app = app || {};
                 },
                 original_cost: function (model) {
                     return model.getOriginalCost();
+                },
+                rough_opening: function (model) {
+                    return f.dimensions(model.getRoughOpeningWidth(), model.getRoughOpeningHeight(), null,
+                        project_settings.get('inches_display_mode') || null);
                 }
             };
 
@@ -424,7 +430,7 @@ var app = app || {};
                 },
                 dimensions: {
                     readOnly: true,
-                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
+                    renderer: app.hot_renderers.getFormattedRenderer('align_right')
                 },
                 unit_cost: {
                     readOnly: true,
@@ -565,6 +571,10 @@ var app = app || {};
                 },
                 original_cost: {
                     readOnly: project_settings && project_settings.get('pricing_mode') === 'estimates'
+                },
+                rough_opening: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('align_right')
                 }
             };
 
@@ -679,7 +689,8 @@ var app = app || {};
                 subtotal_profit: 'Subtotal Profit',
                 subtotal_cost_discounted: 'Subtotal Cost w/Disc.',
                 original_cost: project_settings && project_settings.get('pricing_mode') === 'estimates' ?
-                    'Original Cost (est.)' : 'Original Cost'
+                    'Original Cost (est.)' : 'Original Cost',
+                rough_opening: 'Rough Opening'
             };
 
             return custom_column_headers_hash[column_name];
