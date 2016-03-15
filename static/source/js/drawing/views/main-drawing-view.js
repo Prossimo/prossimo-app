@@ -24,9 +24,12 @@ var app = app || {};
             this.updateDrawingView(true);
         },
         initialize: function () {
-            //  Select first unit by default
-            this.active_unit = app.current_project.units.length ?
-                app.current_project.units.first() : null;
+            this.listenTo(app.current_project.settings, 'change', this.updateDrawingView);
+            this.listenTo(app.current_project, 'set_dependencies', this.onSetDependencies);
+        },
+        onSetDependencies: function () {
+            this.render();
+            this.updateDrawingView(true);
         },
         updateDrawingView: function (update_rendered_flag) {
             if ( this.drawing_view ) {
@@ -53,6 +56,9 @@ var app = app || {};
             this.trigger('drawing_view:' + e);
         },
         onRender: function () {
+            this.active_unit = app.current_project.units.length ?
+                app.current_project.units.first() : null;
+
             this.updateDrawingView();
 
             this.sidebar_view = new app.DrawingSidebarView({

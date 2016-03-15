@@ -11,7 +11,7 @@ var app = app || {};
     // 2. this.state - UI state of view.
     // Take a look to constructor to see what is possible in state
     //
-    // 3. and insideView variable. This variable is not part of this.state
+    // 3. and globalInsideView variable. This variable is not part of this.state
     // as we need to keep it the same for any view
 
     // starting point of all drawing is "renderCanvas" function
@@ -23,20 +23,25 @@ var app = app || {};
     // something like "components" directory
 
     // global params
-    var insideView = false;
+    var globalInsideView = false;
     var metricSize = 50;
 
     app.DrawingView = Marionette.ItemView.extend({
         tagName: 'div',
         template: app.templates['drawing/drawing-view'],
         initialize: function () {
+            var project_settings = app.settings.getProjectSettings();
+
             this.listenTo(this.model, 'all', this.updateRenderedScene);
             this.on('update_rendered', this.updateRenderedScene, this);
 
             this.state = {
+                insideView: this.isInsideView(),
                 openingView: this.isOpeningView(),
                 selectedSashId: null,
-                selectedMullionId: null
+                selectedMullionId: null,
+                inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
+                hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode')
             };
         },
         ui: {
@@ -60,10 +65,13 @@ var app = app || {};
             'change #filling-select': 'handleFillingTypeChange',
             'click #glazing-bars-popup': 'handleGlazingBarsPopupClick'
         },
+        isInsideView: function () {
+            return globalInsideView;
+        },
         // Are we looking at unit from the opening side?
         isOpeningView: function () {
-            return !insideView && this.model.isOpeningDirectionOutward() ||
-                insideView && !this.model.isOpeningDirectionOutward();
+            return !globalInsideView && this.model.isOpeningDirectionOutward() ||
+                globalInsideView && !this.model.isOpeningDirectionOutward();
         },
         handleCanvasKeyDown: function (e) {
             if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
@@ -81,9 +89,10 @@ var app = app || {};
             }
         },
         handleChangeView: function () {
-            insideView = !insideView;
+            globalInsideView = !globalInsideView;
 
             this.setState({
+                insideView: this.isInsideView(),
                 openingView: this.isOpeningView()
             });
         },
@@ -139,7 +148,9 @@ var app = app || {};
 
             // if Unit is Outward opening, reverse sash type
             // from right to left or from left to right
-            if ( this.model.isOpeningDirectionOutward() ) {
+            if ( this.state.hingeIndicatorMode === 'european' && !this.state.openingView ||
+                this.state.hingeIndicatorMode === 'american' && this.state.openingView
+            ) {
                 if (type.indexOf('left') >= 0) {
                     type = type.replace('left', 'right');
                 } else if (type.indexOf('right') >= 0) {
@@ -747,7 +758,7 @@ var app = app || {};
             }
 
             // #192: Reverse hinge indicator for outside view
-            if ( !insideView ) {
+            if ( this.state.hingeIndicatorMode === 'american' ) {
                 directionLine.scale({
                     x: -1
                 });
@@ -850,13 +861,7 @@ var app = app || {};
             }
 
             var type = sectionData.sashType;
-            var shouldDrawHandle =
-                sectionData.sashType !== 'fixed_in_frame' &&
-                ((this.state.openingView &&
-                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type === 'tilt_only')
-                ) &&
-                (type.indexOf('_hinge_hidden_latch') === -1)
-                || (!this.state.openingView && this.model.profile.hasOutsideHandle()));
+            var shouldDrawHandle = this.shouldDrawHandle(type);
 
             if (shouldDrawHandle) {
                 var handle = this.createHandle(sectionData, {
@@ -986,7 +991,7 @@ var app = app || {};
                 stroke: 'grey'
             }));
             var inches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(inches, 'fraction');
+            var val = app.utils.format.dimension(inches, 'fraction', this.state && this.state.inchesDisplayMode);
             var textInches = new Konva.Text({
                 text: val,
                 padding: 2,
@@ -1081,7 +1086,7 @@ var app = app || {};
                 stroke: 'grey'
             }));
             var inches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(inches, 'fraction');
+            var val = app.utils.format.dimension(inches, 'fraction', this.state && this.state.inchesDisplayMode);
             var textInches = new Konva.Text({
                 text: val,
                 padding: 2,
@@ -1364,7 +1369,7 @@ var app = app || {};
 
             var padding = 3;
             var valInInches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(valInInches, 'fraction');
+            var val = app.utils.format.dimension(valInInches, 'fraction', this.state.inchesDisplayMode);
 
             $('<input>')
                 .val(val)
@@ -1519,11 +1524,11 @@ var app = app || {};
 
         updateUI: function () {
             // here we have to hide and should some elements in toolbar
-            var buttonText = insideView ? 'Show outside view' : 'Show inside view';
+            var buttonText = globalInsideView ? 'Show outside view' : 'Show inside view';
 
             this.$('#change-view-button').text(buttonText);
 
-            var titleText = insideView ? 'Inside view' : 'Outside view';
+            var titleText = globalInsideView ? 'Inside view' : 'Outside view';
 
             this.ui.$title.text(titleText);
 
@@ -1592,16 +1597,49 @@ var app = app || {};
                 selectedMullionId: null,
                 selectedSashId: null
             });
+        },
+        shouldDrawHandle: function (type) {
+            var result = false;
+            var typeResult = false;
+
+            if (
+                    type !== 'fixed_in_frame' &&
+                    (
+                        type.indexOf('left') >= 0 ||
+                        type.indexOf('right') >= 0 ||
+                        type === 'tilt_only'
+                    ) &&
+                    (type.indexOf('_hinge_hidden_latch') === -1)
+            ) {
+                typeResult = true;
+            }
+
+            // Draw handle if:
+            // 1). type of sash has handle
+            // 2a). it's inside view
+            // 2b). it's outside view & profile hasOutsideHandle (for example, door)
+            result = (
+                        typeResult &&
+                        (
+                            (this.state.insideView) ||
+                            (!this.state.insideView && this.model.profile.hasOutsideHandle())
+                        )
+                );
+
+            return result;
         }
     });
 
     app.preview = function (unitModel, options) {
         var result;
+        var project_settings = app.settings && app.settings.getProjectSettings();
         var defaults = {
             width: 300,
             height: 300,
             mode: 'base64',
-            position: 'inside'
+            position: 'inside',
+            inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
+            hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode')
         };
 
         options = _.defaults({}, options, defaults);
@@ -1639,7 +1677,11 @@ var app = app || {};
 
         if ( _.indexOf(['inside', 'outside'], options.position) !== -1 ) {
             view.setState({
-                openingView: options.position === 'inside'
+                insideView: options.position === 'inside',
+                openingView: options.position === 'inside' && !unitModel.isOpeningDirectionOutward() ||
+                    options.position === 'outside' && unitModel.isOpeningDirectionOutward(),
+                inchesDisplayMode: options.inchesDisplayMode,
+                hingeIndicatorMode: options.hingeIndicatorMode
             });
         } else {
             view.destroy();

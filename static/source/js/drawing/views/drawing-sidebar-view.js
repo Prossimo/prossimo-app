@@ -11,7 +11,8 @@ var app = app || {};
             $select: '.selectpicker',
             $prev: '.js-prev-unit',
             $next: '.js-next-unit',
-            $sidebar_toggle: '.js-sidebar-toggle'
+            $sidebar_toggle: '.js-sidebar-toggle',
+            $tab_container: '.tab-container'
         },
         events: {
             'change @ui.$select': 'onChange',
@@ -28,12 +29,6 @@ var app = app || {};
                 active_unit_profile_properties: {
                     title: 'Profile'
                 },
-                active_unit_sashes: {
-                    title: 'Sashes'
-                },
-                active_unit_image: {
-                    title: 'Image'
-                },
                 active_unit_estimated_section_prices: {
                     title: 'Est. Prices'
                 }
@@ -42,6 +37,7 @@ var app = app || {};
 
             this.listenTo(this.options.parent_view.active_unit, 'all', this.render);
             this.listenTo(this.options.parent_view, 'drawing_view:onSetState', this.render);
+            this.listenTo(app.current_project.settings, 'change', this.render);
         },
         setActiveTab: function (tab_name) {
             if ( _.contains(_.keys(this.tabs), tab_name) ) {
@@ -71,13 +67,23 @@ var app = app || {};
                 return;
             }
 
+            //  Left
             if ( e.keyCode === 37 ) {
                 this.onPrevBtn();
+            //  Right
+            } else if ( e.keyCode === 39 ) {
+                this.onNextBtn();
+            //  Page Up
+            } else if ( e.keyCode === 33 ) {
+                this.goToPrevTab();
+            //  Page Down
+            } else if ( e.keyCode === 34 ) {
+                this.goToNextTab();
+            } else {
+                return;
             }
 
-            if ( e.keyCode === 39 ) {
-                this.onNextBtn();
-            }
+            e.preventDefault();
         },
         onNextBtn: function () {
             var collection_size = this.serializeData().unit_list.length;
@@ -107,6 +113,20 @@ var app = app || {};
                 this.selectUnit(this.collection.at(prev_index));
             }
         },
+        //  This is not very cool because it breaks "don't store state in html"
+        //  rule, but it's better than rewriting everything
+        goToNextTab: function () {
+            var $active_tab = this.ui.$tab_container.find('.active');
+            var $next_tab = $active_tab.next().length ? $active_tab.next() : $active_tab.siblings().first();
+
+            $next_tab.find('a').trigger('click');
+        },
+        goToPrevTab: function () {
+            var $active_tab = this.ui.$tab_container.find('.active');
+            var $prev_tab = $active_tab.prev().length ? $active_tab.prev() : $active_tab.siblings().last();
+
+            $prev_tab.find('a').trigger('click');
+        },
         onSidebarToggle: function () {
             this.$el.trigger({ type: 'sidebar-toggle' });
         },
@@ -122,24 +142,35 @@ var app = app || {};
             return active_unit_image;
         },
         getActiveUnitProperties: function () {
+            var f = app.utils.format;
             var active_unit_properties = [];
+            var params_source = {};
+            var project_settings = app.settings.getProjectSettings();
             var active_unit;
 
             var relevant_properties = [
-                'mark', 'width', 'height', 'type', 'description', 'notes',
+                'mark', 'width', 'height', 'description', 'notes',
                 'internal_color', 'external_color', 'gasket_color', 'uw',
                 'glazing', 'hinge_style', 'opening_direction', 'internal_sill',
-                'external_sill', 'glazing_bar_width'
+                'external_sill', 'glazing_bar_type', 'glazing_bar_width'
             ];
 
             if ( this.options.parent_view.active_unit ) {
                 active_unit = this.options.parent_view.active_unit;
-                _.each(relevant_properties, function (item) {
-                    active_unit_properties.push({
-                        title: active_unit.getTitles([item]),
-                        value: active_unit.get(item)
-                    });
-                });
+
+                params_source = {
+                    width: f.dimension(active_unit.get('width'), null,
+                        project_settings && project_settings.get('inches_display_mode')),
+                    height: f.dimension(active_unit.get('height'), null,
+                        project_settings && project_settings.get('inches_display_mode'))
+                };
+
+                active_unit_properties = _.map(relevant_properties, function (prop_name) {
+                    return {
+                        title: active_unit.getTitles([prop_name]),
+                        value: params_source[prop_name] || active_unit.get(prop_name)
+                    };
+                }, this);
             }
 
             return active_unit_properties;
@@ -169,6 +200,7 @@ var app = app || {};
             return active_unit_profile_properties;
         },
         getActiveUnitSashList: function () {
+            var project_settings = app.settings.getProjectSettings();
             var f = app.utils.format;
             var c = app.utils.convert;
             var m = app.utils.math;
@@ -176,10 +208,8 @@ var app = app || {};
             var sashes = [];
 
             if ( this.options.parent_view.active_unit ) {
-                //  TODO: this doesn't look very nice, we have to rewrite it
-                //  see https://github.com/prossimo-ben/prossimo-app/issues/201
                 sash_list_source = this.options.parent_view.active_unit.getSashList(null, null,
-                    !this.options.parent_view.drawing_view.state.openingView);
+                    project_settings && project_settings.get('hinge_indicator_mode') === 'american');
 
                 _.each(sash_list_source, function (source_item, index) {
                     var sash_item = {};
@@ -191,8 +221,9 @@ var app = app || {};
                     sash_item.name = 'Sash #' + (index + 1);
                     sash_item.type = source_item.type;
 
-                    filling_size = f.dimensions_in(c.mm_to_inches(source_item.filling.width),
-                        c.mm_to_inches(source_item.filling.height), 'fraction');
+                    filling_size = f.dimensions(c.mm_to_inches(source_item.filling.width),
+                        c.mm_to_inches(source_item.filling.height), 'fraction',
+                        project_settings && project_settings.get('inches_display_mode'));
 
                     filling_area = f.square_feet(m.square_feet(c.mm_to_inches(source_item.filling.width),
                         c.mm_to_inches(source_item.filling.height)), 2, 'sup');
@@ -202,8 +233,9 @@ var app = app || {};
                     sash_item.filling_size = filling_size + ' (' + filling_area + ')';
 
                     if ( source_item.opening.height && source_item.opening.width ) {
-                        opening_size = f.dimensions_in(c.mm_to_inches(source_item.opening.width),
-                            c.mm_to_inches(source_item.opening.height), 'fraction');
+                        opening_size = f.dimensions(c.mm_to_inches(source_item.opening.width),
+                            c.mm_to_inches(source_item.opening.height), 'fraction',
+                            project_settings && project_settings.get('inches_display_mode'));
 
                         opening_area = f.square_feet(m.square_feet(c.mm_to_inches(source_item.opening.width),
                             c.mm_to_inches(source_item.opening.height)), 2, 'sup');
@@ -218,12 +250,13 @@ var app = app || {};
             return sashes;
         },
         getActiveUnitEstimatedSectionPrices: function () {
+            var project_settings = app.settings.getProjectSettings();
             var f = app.utils.format;
             var m = app.utils.math;
             var section_list_source;
             var sections = [];
 
-            if ( this.options.parent_view.active_unit && app.settings.get('pricing_mode') === 'estimates' ) {
+            if ( this.options.parent_view.active_unit && project_settings.get('pricing_mode') === 'estimates' ) {
                 section_list_source = this.options.parent_view.active_unit.getSectionsListWithEstimatedPrices();
 
                 _.each(section_list_source, function (source_item, index) {
@@ -251,8 +284,6 @@ var app = app || {};
             var tab_contents = {
                 active_unit_properties: this.getActiveUnitProperties(),
                 active_unit_profile_properties: this.getActiveUnitProfileProperties(),
-                active_unit_sashes: this.getActiveUnitSashList(),
-                active_unit_image: this.getActiveUnitImage(),
                 active_unit_estimated_section_prices: this.getActiveUnitEstimatedSectionPrices()
             };
 
@@ -267,10 +298,10 @@ var app = app || {};
                         dimensions: app.utils.format.dimensions(item.get('width'), item.get('height'), 'fraction')
                     };
                 }, this),
+                active_unit_image: this.getActiveUnitImage(),
+                active_unit_sashes: this.getActiveUnitSashList(),
                 active_unit_properties: tab_contents.active_unit_properties,
                 active_unit_profile_properties: tab_contents.active_unit_profile_properties,
-                active_unit_sashes: tab_contents.active_unit_sashes,
-                active_unit_image: tab_contents.active_unit_image,
                 active_unit_estimated_section_prices: tab_contents.active_unit_estimated_section_prices,
                 tabs: _.each(this.tabs, function (item, key) {
                     item.is_active = key === this.active_tab;
