@@ -31,12 +31,12 @@ var app = app || {};
                     title: 'Specs',
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'width', 'height', 'drawing',
-                        'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'type', 'description',
+                        'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'description',
                         'notes', 'exceptions', 'profile_name', 'system', 'external_color',
                         'internal_color', 'interior_handle', 'exterior_handle', 'hardware_type',
                         'lock_mechanism', 'glazing_bead', 'gasket_color',
                         'hinge_style', 'opening_direction', 'threshold',
-                        'internal_sill', 'external_sill', 'glazing', 'glazing_bar_width',
+                        'internal_sill', 'external_sill', 'glazing', 'glazing_bar_type', 'glazing_bar_width',
                         'uw', 'u_value', 'move_item', 'remove_item']
                 },
                 prices: {
@@ -536,6 +536,10 @@ var app = app || {};
                         return item.get('name');
                     })
                 },
+                glazing_bar_type: {
+                    type: 'autocomplete',
+                    source: app.settings.getGlazingBarTypes()
+                },
                 glazing_bar_width: {
                     type: 'autocomplete',
                     source: app.settings.getGlazingBarWidths().map(function (item) {
@@ -627,6 +631,9 @@ var app = app || {};
                         cell_properties.readOnly = true;
                         cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
                     } else if ( item.isOperableOnlyAttribute(property) && !item.hasOperableSections() ) {
+                        cell_properties.readOnly = true;
+                        cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
+                    } else if ( item.isGlazingBarProperty(property) && !item.hasGlazingBars() ) {
                         cell_properties.readOnly = true;
                         cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
                     }

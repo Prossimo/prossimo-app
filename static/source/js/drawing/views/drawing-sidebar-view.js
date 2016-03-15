@@ -149,10 +149,10 @@ var app = app || {};
             var active_unit;
 
             var relevant_properties = [
-                'mark', 'width', 'height', 'type', 'description', 'notes',
+                'mark', 'width', 'height', 'description', 'notes',
                 'internal_color', 'external_color', 'gasket_color', 'uw',
                 'glazing', 'hinge_style', 'opening_direction', 'internal_sill',
-                'external_sill', 'glazing_bar_width'
+                'external_sill', 'glazing_bar_type', 'glazing_bar_width'
             ];
 
             if ( this.options.parent_view.active_unit ) {

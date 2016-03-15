@@ -69,16 +69,18 @@ var app = app || {};
             //  This is the list of params that we want to see in the quote. We
             //  throw out attributes that don't apply to the current unit
             var params_list = _.filter(
-                ['type', 'glazing', 'internal_color', 'external_color',
+                ['glazing', 'internal_color', 'external_color',
                 'interior_handle', 'exterior_handle', 'description', 'hardware_type',
                 'lock_mechanism', 'glazing_bead', 'gasket_color', 'hinge_style',
-                'opening_direction', 'internal_sill', 'external_sill'],
+                'opening_direction', 'internal_sill', 'external_sill', 'glazing_bar_type'],
             function (param) {
                 var condition = true;
 
                 if ( this.model.isDoorOnlyAttribute(param) && !this.model.isDoorType() ) {
                     condition = false;
                 } else if ( this.model.isOperableOnlyAttribute(param) && !this.model.hasOperableSections() ) {
+                    condition = false;
+                } else if ( this.model.isGlazingBarProperty(param) && !this.model.hasGlazingBars() ) {
                     condition = false;
                 }
 

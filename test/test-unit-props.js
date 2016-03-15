@@ -610,9 +610,55 @@ test('hasOperableSections function', function () {
 test('getSashName function', function () {
     var unit = new app.Unit();
 
-    equal(unit.getSashName('tilt_turn_right'), 'Tilt-turn Right Hinge', 'Name for tilt_turn_right type in normal hinges mode');
-    equal(unit.getSashName('tilt_turn_right', true), 'Tilt-turn Left Hinge', 'Name for tilt_turn_right type in reversed hinges mode');
+    equal(unit.getSashName('tilt_turn_right'), 'Tilt-turn Right Hinge',
+        'Name for tilt_turn_right type in normal hinges mode');
+    equal(unit.getSashName('tilt_turn_right', true), 'Tilt-turn Left Hinge',
+        'Name for tilt_turn_right type in reversed hinges mode');
 
-    equal(unit.getSashName('tilt_turn_left'), 'Tilt-turn Left Hinge', 'Name for tilt_turn_left type in normal hinges mode');
-    equal(unit.getSashName('tilt_turn_left', true), 'Tilt-turn Right Hinge', 'Name for tilt_turn_left type in reversed hinges mode');
+    equal(unit.getSashName('tilt_turn_left'), 'Tilt-turn Left Hinge',
+        'Name for tilt_turn_left type in normal hinges mode');
+    equal(unit.getSashName('tilt_turn_left', true), 'Tilt-turn Right Hinge',
+        'Name for tilt_turn_left type in reversed hinges mode');
+});
+
+test('hasGlazingBars function', function () {
+    var unit_1 = new app.Unit({
+        width: 5 * 12 + 6,
+        height: 6 * 12 + 10
+    });
+
+    var unit_2 = new app.Unit({
+        width: 5 * 12 + 6,
+        height: 6 * 12 + 10
+    });
+
+    var profile = new app.Profile({
+        frame_width: 70,
+        mullion_width: 92,
+        sash_frame_width: 82,
+        sash_frame_overlap: 34,
+        sash_mullion_overlap: 12,
+        unit_type: 'Window'
+    });
+
+    unit_1.profile = profile;
+    unit_2.profile = profile;
+
+    var root_id = unit_2.generateFullRoot().id;
+
+    unit_2.setSectionBars(root_id, {
+        vertical: [
+            {
+                position: 300
+            }
+        ],
+        horizontal: [
+            {
+                position: 300
+            }
+        ]
+    });
+
+    equal(unit_1.hasGlazingBars(), false, 'Unit 1 is not expected to have bars');
+    equal(unit_2.hasGlazingBars(), true, 'Unit 2 is expected to have bars');
 });
