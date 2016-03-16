@@ -1248,14 +1248,18 @@ var app = app || {};
                     var size_2;
                     var position = {};
 
+                    var correction = view.getFrameCorrection();
+
                     if (type === 'vertical' || type === 'vertical_invisible') {
-                        size_1 = view.model.getInMetric('width', 'mm') * view.ratio;
+                        size_1 = view.model.getInMetric('width', 'mm') * view.ratio + (correction.width * view.ratio);
                         size_2 = metricSize;
+                        position.x = (correction.x * view.ratio);
                         position.y = height;
                         type = view.model.getInvertedDivider(type);
                     } else {
                         size_1 = metricSize;
-                        size_2 = height;
+                        size_2 = height + (correction.height * view.ratio);
+                        position.y = (correction.y * view.ratio);
                         position.x = -metricSize;
                         type = view.model.getInvertedDivider(type);
                     }
@@ -1271,12 +1275,9 @@ var app = app || {};
             return group;
         },
         createMetric: function ( section, params, type ) {
-
-            console.log('>', section.id, type, '[' + section.index + ']');
-
             var view = this;
             var group = new Konva.Group();
-            var gap = section.gap ? '_gap' : '';
+            var gap = (section.index === 1) ? '_gap' : '';
             var methodName = 'setter_' + type + gap;
 
             var methods = {
@@ -1313,7 +1314,7 @@ var app = app || {};
             var sectionEdges = view.model.getMeasurementEdges( section.id, type );
             var correction = view.getCorrection();
             var root_section = view.model.get('root_section');
-            var parent_section = (section.parentId) ? view.model.getSection( section.parentId ) : null;
+            var parent_section = view.model.getSection( section.parentId );
             var invertedType = view.model.getInvertedDivider( type );
 
             _.each(sectionEdges, function (edge, key) {
@@ -1337,18 +1338,13 @@ var app = app || {};
                         var grandparent_section = view.model.getSection( parent_section.parentId );
 
                         index = (section.index + 1) % 2;
-
-                        console.log('grandpa!', grandparent_section.id, '/', index);
                         value = grandparent_section.measurements.mullion[invertedType][ index ];
                     } else {
-                        console.log('not grandpa!');
                         value = parent_section.measurements.mullion[invertedType][ index ];
                     }
                 }
 
-                console.log( edge, key, value, index);
                 correction = view.getCorrection( edge, value, index, correction );
-                console.log('a', correction);
             });
 
             // Apply corrections to sizes
@@ -1369,7 +1365,7 @@ var app = app || {};
             if (params.setter) {
                 params.methods.setter = methods[methodName].bind({
                     openingView: view.state.openingView,
-                    id: section.id,
+                    id: parent_section.id,
                     model: view.model
                 });
             }
@@ -1415,6 +1411,32 @@ var app = app || {};
 
                 // Center is default
             }
+
+            return correction;
+        },
+        getFrameCorrection: function () {
+            var root_section = this.model.get('root_section');
+            var measurementData = root_section.measurements.frame;
+            var correction = {
+                frame_width: this.model.profile.get('frame_width'),
+                width: 0,
+                height: 0,
+                x: 0,
+                y: 0
+            };
+
+            measurementData.vertical.forEach(function (value, i) {
+                if (value === 'min') {
+                    correction.height -= correction.frame_width;
+                    correction.y += (i === 0) ? correction.frame_width : 0;
+                }
+            });
+            measurementData.horizontal.forEach(function (value, i) {
+                if (value === 'min') {
+                    correction.width -= correction.frame_width;
+                    correction.x += (i === 0) ? correction.frame_width : 0;
+                }
+            });
 
             return correction;
         },
@@ -1612,27 +1634,7 @@ var app = app || {};
             };
 
             // Correction parameters for metrics
-            var measurementData = root_section.measurements.frame;
-            var correction = {
-                frame_width: this.model.profile.get('frame_width'),
-                width: 0,
-                height: 0,
-                x: 0,
-                y: 0
-            };
-
-            measurementData.vertical.forEach(function (value, i) {
-                if (value === 'min') {
-                    correction.height -= correction.frame_width;
-                    correction.y += (i === 0) ? correction.frame_width : 0;
-                }
-            });
-            measurementData.horizontal.forEach(function (value, i) {
-                if (value === 'min') {
-                    correction.width -= correction.frame_width;
-                    correction.x += (i === 0) ? correction.frame_width : 0;
-                }
-            });
+            var correction = this.getFrameCorrection();
 
             // Vertical
             var vHeight = height + (correction.height * this.ratio);
