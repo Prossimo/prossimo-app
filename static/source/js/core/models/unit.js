@@ -603,13 +603,23 @@ var app = app || {};
 
             return defaults[type];
         },
-        getMeasurementEdges: function (section_id) {
+        getMeasurementEdges: function (section_id, type) {
             var section_data = this.getSection(section_id);
             var edges = { top: 'frame', right: 'frame', bottom: 'frame', left: 'frame' };
 
             _.each(section_data.mullionEdges, function (edge, key) {
                 edges[key] = 'mullion';
             });
+
+            if (type) {
+                if (type === 'vertical' || type === 'vertical_invisible') {
+                    delete edges.top;
+                    delete edges.bottom;
+                } else {
+                    delete edges.left;
+                    delete edges.right;
+                }
+            }
 
             return edges;
         },
