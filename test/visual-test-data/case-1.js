@@ -33,7 +33,6 @@ var case_data_array = case_data_array || [];
             "vertical": [
                 {
                     "position": 478.26666666666665
-                    // "position": 500
                 },
                 {
                     "position": 956.5333333333333

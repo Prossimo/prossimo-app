@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Visual test case #1</title>
+    <title>Visual test viewer</title>
     <!-- Test library files -->
     <script src="../../node_modules/resemblejs/resemble.js"></script>
     <!-- Vendor files -->
@@ -19,75 +19,15 @@
     <script src="../../static/public/js/core/models/filling-type.js"></script>
     <script src="../../static/public/js/core/collections/filling-type-collection.js"></script>
     <script src="../../static/public/js/core/collections/profile-collection.js"></script>
-    <!-- Test files -->
-    <script src="../visual-test-data/case-1.js"></script>
+    <!-- Test viewer files -->
+    <link rel="stylesheet" href="visual-test-viewer.css">
     <script src="visual-test-runner.js"></script>
-
-    <style>
-        *,
-        *:before,
-        *:after {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: sans-serif;
-        }
-
-        .case-contents {
-            width: 1550px;
-            overflow: hidden;
-        }
-
-        .case-contents > div {
-            float: left;
-            width: 33%;
-            border: 1px solid #ccc;
-        }
-
-        .case-contents > div + div {
-            border-left: none;
-        }
-
-        .case-contents > div h4 {
-            text-align: center;
-        }
-
-        .case-contents > div img {
-            outline: 1px dotted #ddd;
-        }
-
-        .success {
-            color: green;
-        }
-
-        .error {
-            color: red;
-        }
-
-        .diff-data p {
-            margin: 0;
-        }
-
-        .case-data {
-            margin: 2rem 0;
-        }
-
-        .unit-properties,
-        .profile-properties,
-        .preview-settings {
-            font-size: 0.8em;
-        }
-
-        .unit-properties p,
-        .unit-properties ul,
-        .profile-properties p,
-        .profile-properties ul,
-        .preview-settings p,
-        .preview-settings ul {
-            margin: 0;
-        }
-    </style>
+    <!-- Test cases -->
+    <script src="../visual-test-data/case-1.js"></script>
+    <script src="../visual-test-data/case-2.js"></script>
+    <script src="../visual-test-data/case-3.js"></script>
+    <script src="../visual-test-data/case-4.js"></script>
+    <script src="../visual-test-data/case-5.js"></script>
 </head>
 <body>
 
