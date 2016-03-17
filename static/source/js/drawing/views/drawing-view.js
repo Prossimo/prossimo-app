@@ -1281,12 +1281,13 @@ var app = app || {};
             var gap = (section.index === 1) ? '_gap' : '';
             var methodName = 'setter_' + type + gap;
 
+            var correction = view.getTotalCorrection( section, type );
             var methods = {
                 getter: function () {
                     return this.space;
                 },
                 setter_vertical: function (val) {
-                    val -= view.getTotalCorrection(this.section, 'vertical').size;
+                    val -= correction.size;
 
                     if (!this.openingView) {
                         val = this.model.getInMetric('width', 'mm') - val;
@@ -1295,7 +1296,7 @@ var app = app || {};
                     this.model.setSectionMullionPosition(this.id, val);
                 },
                 setter_vertical_gap: function (val) {
-                    val -= view.getTotalCorrection(this.section, 'vertical').size;
+                    val -= correction.size;
 
                     if (this.openingView) {
                         val = this.model.getInMetric('width', 'mm') - val;
@@ -1304,11 +1305,11 @@ var app = app || {};
                     this.model.setSectionMullionPosition(this.id, val);
                 },
                 setter_horizontal: function (val) {
-                    val -= view.getTotalCorrection(this.section, 'horizontal').size;
+                    val -= correction.size;
                     this.model.setSectionMullionPosition(this.id, val);
                 },
                 setter_horizontal_gap: function (val) {
-                    val -= view.getTotalCorrection(this.section, 'horizontal').size;
+                    val -= correction.size;
                     this.model.setSectionMullionPosition(this.id, this.model.getInMetric('height', 'mm') - val);
                 }
             };
@@ -1318,7 +1319,6 @@ var app = app || {};
             };
 
             // Calculate corrections of dimension-point
-            var correction = view.getTotalCorrection( section, type );
             var parent_section = view.model.getSection( section.parentId );
 
             // Apply corrections to sizes
@@ -1408,12 +1408,17 @@ var app = app || {};
             return correction;
         },
         getTotalCorrection: function (section, type ) {
+            // @TODO: Fix bug with nested sections with different type!
+            // I have an idea the problem is that I do invertedType for some purpose.
+            // Maybe I should remove it and everything will be okay :)
+            // console.log('>', section.id, type);
             var view = this;
             var sectionEdges = view.model.getMeasurementEdges( section.id, type );
             var correction = view.getMullionCorrection();
             var root_section = view.model.get('root_section');
             var parent_section = view.model.getSection( section.parentId );
             var invertedType = view.model.getInvertedDivider( type );
+            var error = false;
 
             _.each(sectionEdges, function (edge, key) {
                 var value;
@@ -1435,14 +1440,20 @@ var app = app || {};
                     ) {
                         var grandparent_section = view.model.getSection( parent_section.parentId );
 
-                        index = (section.index + 1) % 2;
-                        value = grandparent_section.measurements.mullion[invertedType][ index ];
+                        if ( invertedType in grandparent_section.measurements.mullion) {
+                            index = (section.index + 1) % 2;
+                            value = grandparent_section.measurements.mullion[type][ index ];
+                        } else {
+                            error = true;
+                        }
                     } else {
                         value = parent_section.measurements.mullion[invertedType][ index ];
                     }
                 }
 
-                correction = view.getMullionCorrection( edge, value, index, correction );
+                if (!error) {
+                    correction = view.getMullionCorrection( edge, value, index, correction );
+                }
             });
 
             return correction;
