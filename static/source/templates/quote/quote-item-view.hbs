@@ -36,8 +36,19 @@
                     <h6>{{ name }}:</h6>
                     <p><strong>Type:</strong> <span>{{ type }}</span></p>
                     {{#if opening_size }}<p><strong>Clear Opening / Ventilation Area:</strong> <span>{{{ opening_size }}} </span></p>{{/if}}
-                    {{#if filling_name}}<p><strong>{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}:</strong> <span>{{ filling_name }}</span></p>{{/if}}
-                    {{#if filling_is_glass }}<p><strong>Total Daylight:</strong> <span>{{{ filling_size }}}</span></p>{{/if}}
+                    {{#if sections}}
+                        <p><strong>Total Daylight:</strong> <span>{{{ daylight_sum }}}</span></p>
+                        {{#each sections}}
+                        <p>
+                            <strong>{{ name }}</strong><br>
+                            {{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}: {{ filling_name }}<br>
+                            Daylight: {{{ filling_size }}}
+                        </p>
+                        {{/each}}
+                    {{else}}
+                        {{#if filling_name}}<p><strong>{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}:</strong> <span>{{ filling_name }}</span></p>{{/if}}
+                        {{#if filling_is_glass }}<p><strong>Total Daylight:</strong> <span>{{{ filling_size }}}</span></p>{{/if}}
+                    {{/if}}
                 </li>
                 {{/each}}
             </ul>
