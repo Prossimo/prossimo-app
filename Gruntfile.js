@@ -13,13 +13,15 @@ module.exports = function (grunt) {
         'bootstrap/js/popover.js',
         'bootstrap/js/modal.js',
         'bootstrap-select/dist/js/bootstrap-select.min.js',
+        'bootstrap-toggle/js/bootstrap-toggle.min.js',
         'konva/konva.min.js',
         'decimal.js/decimal.min.js'
     ];
 
     var vendor_css_files = [
         'handsontable/dist/handsontable.full.min.css',
-        'bootstrap-select/dist/css/bootstrap-select.min.css'
+        'bootstrap-select/dist/css/bootstrap-select.min.css',
+        'bootstrap-toggle/css/bootstrap-toggle.min.css'
     ];
 
     var js_files = [
@@ -36,6 +38,7 @@ module.exports = function (grunt) {
         'core/models/accessory.js',
         'core/models/profile.js',
         'core/models/project.js',
+        'core/models/project-settings.js',
         'core/models/project-file.js',
         'core/models/filling-type.js',
         'core/models/settings.js',
@@ -45,12 +48,15 @@ module.exports = function (grunt) {
         'core/collections/project-collection.js',
         'core/collections/project-file-collection.js',
         'core/collections/filling-type-collection.js',
+        'core/views/base/base-toggle-view.js',
         'core/views/main-navigation-view.js',
         'core/views/units-table-view.js',
         'core/views/units-table-total-prices-view.js',
         'core/views/project-selector-view.js',
         'core/views/no-project-selected-view.js',
         'core/views/status-panel-view.js',
+        'core/views/project-settings-panel-view.js',
+        'core/views/top-bar-view.js',
         'units-table/views/main-units-table-view.js',
         'docs-import/views/main-docs-import-view.js',
         'docs-import/views/document-selector-view.js',
@@ -69,7 +75,6 @@ module.exports = function (grunt) {
         'settings/views/profiles-table-view.js',
         'settings/views/filling-types-table-view.js',
         'settings/views/pricing-grids-table-view.js',
-        'settings/views/ui-settings-view.js',
         'supplier-request/views/main-supplier-request-view.js',
         'supplier-request/views/supplier-request-header-view.js',
         'dialogs/views/base-dialog-view.js',
@@ -426,7 +431,8 @@ module.exports = function (grunt) {
         },
 
         qunit: {
-            all: ['test/**/*.html']
+            basic: ['test/*.html'],
+            visual: ['test/visual-test-runner/test-visual.html']
         },
 
         shell: {
@@ -490,7 +496,10 @@ module.exports = function (grunt) {
         'less:dev', 'uglify:vendor_dev', 'cssmin:vendor_dev', 'replace:dev'//, 'pdfjs'
     ]);
 
-    grunt.registerTask('test', ['jscs', 'eslint', 'qunit']);
+    grunt.registerTask('test', ['jscs', 'eslint', 'qunit:basic']);
+    grunt.registerTask('test_visual', ['qunit:visual']);
+    grunt.registerTask('test_all', ['test', 'test_visual']);
+
     grunt.registerTask('deploy_staging', ['test', 'shell:deploy_staging']);
     grunt.registerTask('deploy_production', ['test', 'shell:deploy_production']);
     grunt.registerTask('deploy', ['deploy_staging']);

@@ -49,36 +49,149 @@ var app = app || {};
             return default_value;
         },
         sync: function (method, model, options) {
+            var properties_to_omit = ['id', 'sync_datetime'];
+
             if ( method === 'update' ) {
-                options.attrs = { project: _.omit(model.toJSON(), ['id']) };
+                options.attrs = { project: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
+                    settings: JSON.stringify(model.settings.toJSON())
+                }) };
+            }
+
+            //  If we're fetching a specific project from the server, we want
+            //  to remember that fact and don't fetch again in the future. This
+            //  could be counter-productive in multi-user setup though, as we
+            //  need to constantly monitor changes made by other users, but
+            //  that should be a separate concern
+            if ( method === 'read' ) {
+                var successCallback = options.success;
+
+                //  This is similar to what they do in the original Model.fetch
+                options.success = function (response) {
+                    model._wasFetched = true;
+
+                    if ( successCallback ) {
+                        successCallback.call(model, response, options);
+                    }
+                };
             }
 
             return Backbone.sync.call(this, method, model, options);
         },
+        parse: function (data) {
+            var project_data = data && data.project ? data.project : data;
+
+            var filtered_data = project_data ?
+                _.pick(project_data, function (value, key) {
+                    var keys_to_omit = ['sync_datetime'];
+
+                    return !_.isNull(value) && !_.contains(keys_to_omit, key);
+                }) : project_data;
+
+            if ( filtered_data && filtered_data.files ) {
+                filtered_data.files = _.map(filtered_data.files, function (file) {
+                    return _.pick(file, function (value) {
+                        return !_.isNull(value);
+                    });
+                });
+            }
+
+            if ( filtered_data && filtered_data.accessories ) {
+                filtered_data.accessories = _.map(filtered_data.accessories, function (accessory) {
+                    var keys_to_omit = ['sync_datetime'];
+
+                    return _.pick(accessory, function (value, key) {
+                        return !_.isNull(value) && !_.contains(keys_to_omit, key);
+                    });
+                });
+            }
+
+            if ( filtered_data && filtered_data.units ) {
+                filtered_data.units = _.map(filtered_data.units, function (unit) {
+                    var keys_to_omit = ['project', 'profile'];
+
+                    return _.pick(unit, function (value, key) {
+                        return !_.isNull(value) && !_.contains(keys_to_omit, key);
+                    });
+                });
+            }
+
+            return filtered_data;
+        },
         initialize: function (attributes, options) {
             this.options = options || {};
+            this._wasFetched = false;
 
             if ( !this.options.proxy ) {
                 this.units = new app.UnitCollection(null, { project: this });
                 this.extras = new app.AccessoryCollection(null, { project: this });
                 this.files = new app.ProjectFileCollection(null, { project: this });
+                this.settings = new app.ProjectSettings(null, { project: this });
 
-                if ( this.get('units') ) {
-                    this.units.set(this.get('units'));
-                    this.unset('units', { silent: true });
+                this.setDependencies();
+
+                this.on('sync', this.setDependencies, this);
+                this.listenTo(this.settings, 'change', this.updateSettings);
+            }
+        },
+        setDependencies: function (model, response, options) {
+            var changed_flag = false;
+
+            //  If response is empty or there was an error
+            if ( !response || options && options.xhr && options.xhr.status && options.xhr.status !== 200 ) {
+                return;
+            }
+
+            if ( this.get('units') ) {
+                this.units.set(this.get('units'));
+                this.unset('units', { silent: true });
+                changed_flag = true;
+            }
+
+            if ( this.get('accessories') ) {
+                this.extras.set(this.get('accessories'));
+                this.extras.trigger('loaded');
+                this.unset('accessories', { silent: true });
+                changed_flag = true;
+            }
+
+            if ( this.get('files') ) {
+                this.files.set(this.get('files'));
+                this.unset('files', { silent: true });
+                changed_flag = true;
+            }
+
+            if ( this.get('settings') ) {
+                this.settings.set(this.parseSettings(this.get('settings')), { silent: true });
+                this.unset('settings', { silent: true });
+                changed_flag = true;
+            }
+
+            if ( changed_flag ) {
+                this.trigger('set_dependencies');
+            }
+        },
+        parseSettings: function (source_data) {
+            var settings_object = {};
+            var source_data_parsed;
+
+            if ( _.isString(source_data) ) {
+                try {
+                    source_data_parsed = JSON.parse(source_data);
+                } catch (error) {
+                    // Do nothing
                 }
 
-                if ( this.get('accessories') ) {
-                    this.extras.set(this.get('accessories'));
-                    this.extras.trigger('loaded');
-                    this.unset('accessories', { silent: true });
-                }
-
-                if ( this.get('files') ) {
-                    this.files.set(this.get('files'));
-                    this.unset('files', { silent: true });
+                if ( source_data_parsed ) {
+                    settings_object = source_data_parsed;
                 }
             }
+
+            return settings_object;
+        },
+        //  TODO: We persist settings, but we don't necessarily need it to be
+        //  set as a property on our model. Or do we (it gives change event)?
+        updateSettings: function () {
+            this.persist('settings', this.settings.toJSON());
         },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs
@@ -164,7 +277,8 @@ var app = app || {};
             var profit_percent = grand_total ? profit / grand_total * 100 : 0;
 
             //  TODO: this value should be customizable, not just 50% always,
-            //  when it'll be customizable, it should also be tested
+            //  when it'll be customizable, it should also be tested. Maybe it
+            //  could be a special type of accessory? Or just a project attr?
             var deposit_percent = 50;
             var deposit_on_contract = (deposit_percent / 100) * grand_total;
             var balance_due_at_delivery = grand_total - deposit_on_contract;

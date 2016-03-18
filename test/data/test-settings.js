@@ -3,7 +3,7 @@ var app = app || {};
 $(document).ready(function () {
     'use strict';
 
-     app.settings.profiles.add([
+    app.settings.profiles.add([
         {
             name: 'Default Profile (test)',
             frame_width: 70,

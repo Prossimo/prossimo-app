@@ -154,12 +154,34 @@
 }
 
 .ui-settings ul {
-    margin-top: 4rem;
+    display: table;
+    margin-top: 3rem;
     padding-left: 0;
     list-style-type: none;
 }
 
-.ui-settings ul h6,
+.ui-settings li {
+    display: table-row;
+}
+
+.ui-settings ul .title,
+.ui-settings ul .value {
+    display: table-cell;
+    padding: 1rem 1.5rem 0.5rem;
+    border: 1px solid darken(@white, 15%);
+}
+
+.ui-settings ul .title + .value {
+    border-left: none;
+}
+
+.ui-settings li + li {
+    .value,
+    .title {
+        border-top: none;
+    }
+}
+
 .ui-settings ul p,
 .ui-settings ul button {
     display: inline-block;
@@ -169,10 +191,6 @@
 .ui-settings ul h6 {
     font-size: 1em;
     font-weight: 700;
-}
-
-.ui-settings ul h6:after {
-    content: ':';
 }
 
 .ui-settings ul button {

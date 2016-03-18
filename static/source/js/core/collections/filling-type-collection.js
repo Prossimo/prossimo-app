@@ -14,7 +14,11 @@ var app = app || {};
         reorder_property_name: 'filling_types',
         parse: function (data) {
             return _.map(data.filling_types, function (filling_type) {
-                return _.omit(filling_type, ['units']);
+                var keys_to_omit = ['units'];
+
+                return _.pick(filling_type, function (value, key) {
+                    return !_.isNull(value) && !_.contains(keys_to_omit, key);
+                });
             });
         },
         getMaxPosition: function () {

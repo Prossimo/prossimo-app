@@ -21,6 +21,7 @@
     "grunt-jscs": "^2.6.0",
     "grunt-replace": "~0.11.0",
     "grunt-shell": "~1.1.2",
-    "qunitjs": "^1.21.0"
+    "qunitjs": "^1.21.0",
+    "resemblejs": "^2.2.0"
   }
 }

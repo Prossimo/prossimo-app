@@ -11,7 +11,7 @@ var app = app || {};
     // 2. this.state - UI state of view.
     // Take a look to constructor to see what is possible in state
     //
-    // 3. and insideView variable. This variable is not part of this.state
+    // 3. and globalInsideView variable. This variable is not part of this.state
     // as we need to keep it the same for any view
 
     // starting point of all drawing is "renderCanvas" function
@@ -23,34 +23,29 @@ var app = app || {};
     // something like "components" directory
 
     // global params
-    var insideView = false;
+    var globalInsideView = false;
     var metricSize = 50;
 
     app.DrawingView = Marionette.ItemView.extend({
         tagName: 'div',
         template: app.templates['drawing/drawing-view'],
         initialize: function () {
+            var project_settings = app.settings.getProjectSettings();
+
             this.listenTo(this.model, 'all', this.updateRenderedScene);
             this.on('update_rendered', this.updateRenderedScene, this);
 
             this.createGlazingPopup();
 
-            // is we a looking to unit from opening side?
-            // so for windows it is usually true for inside view
-            // but some door are opening outward
-            // so if we are looking into such door from outside openingView will be true
-            var openingView =
-                !insideView && this.model.isOpeningDirectionOutward()
-                ||
-                insideView && !this.model.isOpeningDirectionOutward();
-
             this.state = {
-                openingView: openingView,
+                insideView: this.isInsideView(),
+                openingView: this.isOpeningView(),
                 selectedSashId: null,
-                selectedMullionId: null
+                selectedMullionId: null,
+                inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
+                hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode')
             };
         },
-
         ui: {
             $flush_panels: '[data-type="flush-turn-right"], [data-type="flush-turn-left"]',
             $title: '#drawing-view-title',
@@ -58,7 +53,6 @@ var app = app || {};
             $section_control: '#section_control',
             $filling_select: '#filling-select'
         },
-
         events: {
             'click .split-section': 'handleSplitSectionClick',
             'click .change-sash-type': 'handleChangeSashTypeClick',
@@ -73,7 +67,14 @@ var app = app || {};
             'change #filling-select': 'handleFillingTypeChange',
             'click #glazing-bars-popup': 'handleGlazingBarsPopupClick'
         },
-
+        isInsideView: function () {
+            return globalInsideView;
+        },
+        // Are we looking at unit from the opening side?
+        isOpeningView: function () {
+            return !globalInsideView && this.model.isOpeningDirectionOutward() ||
+                globalInsideView && !this.model.isOpeningDirectionOutward();
+        },
         handleCanvasKeyDown: function (e) {
             if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
                 e.preventDefault();
@@ -90,13 +91,11 @@ var app = app || {};
             }
         },
         handleChangeView: function () {
-            insideView = !insideView;
-            var openingView =
-                !insideView && this.model.isOpeningDirectionOutward() ||
-                insideView && !this.model.isOpeningDirectionOutward();
+            globalInsideView = !globalInsideView;
 
             this.setState({
-                openingView: openingView
+                insideView: this.isInsideView(),
+                openingView: this.isOpeningView()
             });
         },
         handleGlazingBarsPopupClick: function () {
@@ -134,12 +133,10 @@ var app = app || {};
                 }
             }.bind(this));
         },
-
         handleClearFrameClick: function () {
             this.deselectAll();
             this.model.clearFrame();
         },
-
         handleSplitSectionClick: function (e) {
             this.$('.popup-wrap').hide();
             var divider = $(e.target).data('type');
@@ -151,10 +148,11 @@ var app = app || {};
             this.$('.popup-wrap').hide();
             var type = $(e.target).data('type');
 
-            // if Unit is Outward opening or it's outside view:
-            // reverse sash type
+            // if Unit is Outward opening, reverse sash type
             // from right to left or from left to right
-            if ( !this.state.openingView || this.model.isOpeningDirectionOutward() ) {
+            if ( this.state.hingeIndicatorMode === 'european' && !this.state.openingView ||
+                this.state.hingeIndicatorMode === 'american' && this.state.openingView
+            ) {
                 if (type.indexOf('left') >= 0) {
                     type = type.replace('left', 'right');
                 } else if (type.indexOf('right') >= 0) {
@@ -721,7 +719,6 @@ var app = app || {};
             return handle;
         },
         createDirectionLine: function (section) {
-            var view = this;
             var type = section.sashType;
             var directionLine = new Konva.Shape({
                 stroke: 'black',
@@ -765,7 +762,7 @@ var app = app || {};
             }
 
             // #192: Reverse hinge indicator for outside view
-            if ( view.state.openingView && this.model.isOpeningDirectionOutward() ) {
+            if ( this.state.hingeIndicatorMode === 'american' ) {
                 directionLine.scale({
                     x: -1
                 });
@@ -868,13 +865,7 @@ var app = app || {};
             }
 
             var type = sectionData.sashType;
-            var shouldDrawHandle =
-                sectionData.sashType !== 'fixed_in_frame' &&
-                ((this.state.openingView &&
-                    (type.indexOf('left') >= 0 || type.indexOf('right') >= 0 || type === 'tilt_only')
-                ) &&
-                (type.indexOf('_hinge_hidden_latch') === -1)
-                || (!this.state.openingView && this.model.profile.hasOutsideHandle()));
+            var shouldDrawHandle = this.shouldDrawHandle(type);
 
             if (shouldDrawHandle) {
                 var handle = this.createHandle(sectionData, {
@@ -898,21 +889,9 @@ var app = app || {};
             });
 
             if (index >= 0) {
-                var number = new Konva.Text({
-                    x: sectionData.openingParams.x - sectionData.sashParams.x,
-                    y: sectionData.openingParams.y,
-                    width: sectionData.openingParams.width,
-                    align: 'center',
-                    text: index + 1,
-                    fontSize: 15 / this.ratio,
-                    listening: false
-                });
+                var indexes = this.createSectionIndexes(sectionData, {main: index, add: null});
 
-                number.y(
-                    sectionData.openingParams.y - sectionData.sashParams.y +
-                    sectionData.openingParams.height / 2 - number.height() / 2
-                );
-                group.add(number);
+                group.add( this.createIndexes(indexes) );
             }
 
             var isSelected = (this.state.selectedSashId === sectionData.id);
@@ -927,6 +906,119 @@ var app = app || {};
 
                 group.add(selection);
             }
+
+            return group;
+        },
+        createSectionIndexes: function (mainSection, indexes, i) {
+            var view = this;
+            var result = [];
+
+            indexes = indexes || {
+                main: 0,
+                add: null,
+                parent: null
+            };
+
+            i = i || 0;
+
+            // If section have a children — create Indexes for them recursively
+            if (mainSection.sections.length) {
+
+                if (this.state.insideView && mainSection.divider === 'vertical') {
+                    mainSection.sections.reverse();
+                }
+
+                mainSection.sections.forEach(function (section, j) {
+
+                    if (mainSection.sashType !== 'fixed_in_frame') {
+                        indexes.parent = mainSection;
+                    }
+
+                    if (!section.sections.length) {
+                        indexes.add += 1;
+
+                    }
+
+                    result = result.concat( view.createSectionIndexes(section, indexes, j) );
+                });
+
+            // If section haven't a children sections — create Index for it
+            } else {
+                var text = (indexes.main + 1);
+                var position = {
+                    x: (
+                        mainSection.glassParams.x - mainSection.sashParams.x
+                    ),
+                    y: (
+                        mainSection.glassParams.y - mainSection.sashParams.y
+                    )
+                };
+                var size = {
+                    width: mainSection.glassParams.width,
+                    height: mainSection.glassParams.height
+                };
+
+                if (indexes.add !== null) {
+                    text += '.' + indexes.add;
+
+                    if (indexes.parent) {
+
+                        position = {
+                            x: (
+                                mainSection.glassParams.x - indexes.parent.sashParams.x
+                            ),
+                            y: (
+                                mainSection.glassParams.y - indexes.parent.sashParams.y
+                            )
+                        };
+                        size = {
+                            width: size.width,
+                            height: size.height
+                        };
+                    }
+                }
+
+                result.push({
+                    text: text,
+                    position: position,
+                    size: size
+                });
+
+            }
+
+            return result;
+        },
+        createIndexes: function (indexes) {
+            var view = this;
+            var group = new Konva.Group();
+
+            var number;
+
+            indexes.forEach(function (section) {
+                number = new Konva.Text({
+                        width: section.size.width,
+                        align: 'center',
+                        text: section.text,
+                        fontSize: 15 / view.ratio,
+                        listening: false
+                    });
+                number.position( section.position );
+                number.y( number.y() + section.size.height / 2 - number.height() / 2 );
+                group.add( number );
+
+                // For debug:
+                // var box = new Konva.Rect({
+                //         width: section.size.width,
+                //         height: section.size.height,
+                //         fill: 'red',
+                //         opacity: 0.2,
+                //         listening: false
+                //     });
+                //
+                // box.position( section.position );
+                // group.add( box );
+
+            });
 
             return group;
         },
@@ -1004,7 +1096,7 @@ var app = app || {};
                 stroke: 'grey'
             }));
             var inches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(inches, 'fraction');
+            var val = app.utils.format.dimension(inches, 'fraction', this.state && this.state.inchesDisplayMode);
             var textInches = new Konva.Text({
                 text: val,
                 padding: 2,
@@ -1099,7 +1191,7 @@ var app = app || {};
                 stroke: 'grey'
             }));
             var inches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(inches, 'fraction');
+            var val = app.utils.format.dimension(inches, 'fraction', this.state && this.state.inchesDisplayMode);
             var textInches = new Konva.Text({
                 text: val,
                 padding: 2,
@@ -1390,7 +1482,7 @@ var app = app || {};
 
             var padding = 3;
             var valInInches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(valInInches, 'fraction');
+            var val = app.utils.format.dimension(valInInches, 'fraction', this.state.inchesDisplayMode);
 
             $('<input>')
                 .val(val)
@@ -1545,11 +1637,11 @@ var app = app || {};
 
         updateUI: function () {
             // here we have to hide and should some elements in toolbar
-            var buttonText = insideView ? 'Show outside view' : 'Show inside view';
+            var buttonText = globalInsideView ? 'Show outside view' : 'Show inside view';
 
             this.$('#change-view-button').text(buttonText);
 
-            var titleText = insideView ? 'Inside view' : 'Outside view';
+            var titleText = globalInsideView ? 'Inside view' : 'Outside view';
 
             this.ui.$title.text(titleText);
 
@@ -1643,16 +1735,50 @@ var app = app || {};
                 selectedMullionId: null,
                 selectedSashId: null
             });
+        },
+
+        shouldDrawHandle: function (type) {
+            var result = false;
+            var typeResult = false;
+
+            if (
+                    type !== 'fixed_in_frame' &&
+                    (
+                        type.indexOf('left') >= 0 ||
+                        type.indexOf('right') >= 0 ||
+                        type === 'tilt_only'
+                    ) &&
+                    (type.indexOf('_hinge_hidden_latch') === -1)
+            ) {
+                typeResult = true;
+            }
+
+            // Draw handle if:
+            // 1). type of sash has handle
+            // 2a). it's inside view
+            // 2b). it's outside view & profile hasOutsideHandle (for example, door)
+            result = (
+                        typeResult &&
+                        (
+                            (this.state.insideView) ||
+                            (!this.state.insideView && this.model.profile.hasOutsideHandle())
+                        )
+                );
+
+            return result;
         }
     });
 
     app.preview = function (unitModel, options) {
         var result;
+        var project_settings = app.settings && app.settings.getProjectSettings();
         var defaults = {
             width: 300,
             height: 300,
             mode: 'base64',
-            position: 'inside'
+            position: 'inside',
+            inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
+            hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode')
         };
 
         options = _.defaults({}, options, defaults);
@@ -1690,7 +1816,11 @@ var app = app || {};
 
         if ( _.indexOf(['inside', 'outside'], options.position) !== -1 ) {
             view.setState({
-                openingView: options.position === 'inside'
+                insideView: options.position === 'inside',
+                openingView: options.position === 'inside' && !unitModel.isOpeningDirectionOutward() ||
+                    options.position === 'outside' && unitModel.isOpeningDirectionOutward(),
+                inchesDisplayMode: options.inchesDisplayMode,
+                hingeIndicatorMode: options.hingeIndicatorMode
             });
         } else {
             view.destroy();

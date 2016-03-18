@@ -10,6 +10,17 @@
     left: 0;
     right: 0;
     height: @header-height;
+}
+
+.top-bar {
+    height: 100%;
+    border-bottom: 1px solid fadeout(@black, 50%);
+}
+
+.top-bar-container {
+    position: relative;
+    z-index: 200;
+    height: 100%;
     background-color: lighten(@black, 28%);
     box-shadow: 0 0 3px 0 fadeout(@black, 50%);
 }
@@ -21,7 +32,7 @@
 
 .project-selector {
     float: left;
-    padding: 1rem 3rem;
+    padding: 0.75rem 2rem;
 }
 
 .project-selector h3 {
@@ -34,12 +45,88 @@
 
 
 //  ------------------------------------------------------------------------
+//  Project settings
+//  ------------------------------------------------------------------------
+
+.project-settings-toggle-container {
+    float: left;
+    height: 100%;
+}
+
+.project-settings-toggle-container button {
+    display: block;
+    height: 100%;
+    width: 5rem;
+    background-color: lighten(@black, 30%);
+    border-radius: 0;
+    border: none;
+    border-right: 1px solid lighten(@black, 25%);
+    border-left: 1px solid lighten(@black, 25%);
+    color: darken(@white, 25%);
+
+    &:focus {
+        color: darken(@white, 25%);
+        outline: none;
+    }
+
+    &:hover,
+    &:active {
+        background-color: lighten(@black, 40%);
+        color: darken(@white, 10%);
+        outline: none;
+    }
+}
+
+.project-settings-panel {
+    position: absolute;
+    left: 0;
+    top: -100%;
+    z-index: 100;
+    width: 100%;
+    padding: 0.8rem 2rem;
+    border: 1px solid darken(@white, 65%);
+    background-color: darken(@white, 60%);
+    color: darken(@white, 5%);
+    box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+
+.is-project-settings-panel-open .project-settings-panel {
+    top: 100%;
+}
+
+.project-settings-panel p {
+    margin-bottom: 0;
+}
+
+.project-settings-panel ul {
+    display: inline-block;
+    list-style-type: none;
+    margin-bottom: 0;
+}
+
+.project-settings-panel li {
+    display: inline-block;
+}
+
+.project-settings-panel li + li {
+    margin-left: 2rem;
+    padding-left: 2rem;
+    border-left: 1px solid darken(@white, 50%);
+}
+
+.project-settings-panel li h6 {
+    margin-top: 0;
+}
+
+
+//  ------------------------------------------------------------------------
 //  Status panel
 //  ------------------------------------------------------------------------
 
 .status-panel {
     float: right;
-    padding: 1.2rem 3rem;
+    padding: 0.9rem 3rem;
     color: darken(@white, 10%);
 }
 
