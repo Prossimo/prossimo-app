@@ -8,10 +8,10 @@ var app = app || {};
         { name: 'width', title: 'Width (inches)', type: 'number' },
         { name: 'height', title: 'Height (inches)', type: 'number' },
         { name: 'quantity', title: 'Quantity', type: 'number' },
-        { name: 'type', title: 'Type', type: 'string' },
-        { name: 'description', title: 'Description', type: 'string' },
+        { name: 'description', title: 'Customer Description', type: 'string' },
         { name: 'notes', title: 'Notes', type: 'string' },
         { name: 'exceptions', title: 'Exceptions', type: 'string' },
+        { name: 'glazing_bar_type', title: 'Muntin (Glazing Bar) Type', type: 'string' },
         { name: 'glazing_bar_width', title: 'Glazing Bar Width (mm)', type: 'number' },
 
         { name: 'profile_name', title: 'Profile', type: 'string' },
@@ -46,6 +46,8 @@ var app = app || {};
     var DOOR_ONLY_PROPERTIES = ['exterior_handle', 'lock_mechanism'];
     //  Same as above, for `hasOperableSections`
     var OPERABLE_ONLY_PROPERTIES = ['interior_handle', 'exterior_handle', 'hardware_type', 'hinge_style'];
+    //  Same as above, for `hasGlazingBars`
+    var GLAZING_BAR_PROPERTIES = ['glazing_bar_type', 'glazing_bar_width'];
 
     var SASH_TYPES = [
         'tilt_turn_left', 'tilt_turn_right', 'fixed_in_frame', 'tilt_only',
@@ -143,6 +145,7 @@ var app = app || {};
                 name_value_hash.glazing_bead = app.settings.getGlazingBeadTypes()[0];
                 name_value_hash.gasket_color = app.settings.getGasketColors()[0];
                 name_value_hash.hinge_style = app.settings.getHingeTypes()[0];
+                name_value_hash.glazing_bar_type = app.settings.getGlazingBarTypes()[0];
                 name_value_hash.glazing_bar_width = app.settings.getGlazingBarWidths()[0];
                 name_value_hash.opening_direction = app.settings.getOpeningDirections()[0];
             }
@@ -320,6 +323,12 @@ var app = app || {};
         },
         getHeightMM: function () {
             return app.utils.convert.inches_to_mm(this.get('height'));
+        },
+        getRoughOpeningWidth: function () {
+            return parseFloat(this.get('width')) + 1;
+        },
+        getRoughOpeningHeight: function () {
+            return parseFloat(this.get('height')) + 1;
         },
         getAreaInSquareFeet: function () {
             return app.utils.math.square_feet(this.get('width'), this.get('height'));
@@ -1188,6 +1197,30 @@ var app = app || {};
         },
         isOperableOnlyAttribute: function (attribute_name) {
             return _.indexOf(OPERABLE_ONLY_PROPERTIES, attribute_name) !== -1;
+        },
+        //  Check if any of unit sections has glazing bars. This could be used
+        //  to determine whether we should allow editing related properties
+        hasGlazingBars: function (current_root) {
+            var has_glazing_bars = false;
+
+            current_root = current_root || this.generateFullRoot();
+
+            if ( current_root.bars.horizontal.length > 0 || current_root.bars.vertical.length > 0 ) {
+                has_glazing_bars = true;
+            } else {
+                _.each(current_root.sections, function (section) {
+                    var section_has_glazing_bars = has_glazing_bars || this.hasGlazingBars(section);
+
+                    if ( section_has_glazing_bars ) {
+                        has_glazing_bars = true;
+                    }
+                }, this);
+            }
+
+            return has_glazing_bars;
+        },
+        isGlazingBarProperty: function (attribute_name) {
+            return _.indexOf(GLAZING_BAR_PROPERTIES, attribute_name) !== -1;
         }
     });
 

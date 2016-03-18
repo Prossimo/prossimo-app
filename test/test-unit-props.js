@@ -676,3 +676,45 @@ test('Total daylight calculations for sections of an operable sash', function ()
     equal(sash_list[0].sections[1].filling.width.toFixed(), 2355, 'Bottom section glazing width');
     equal(sash_list[0].sections[1].filling.height.toFixed(), 852, 'Bottom section glazing height');
 });
+
+test('hasGlazingBars function', function () {
+    var unit_1 = new app.Unit({
+        width: 5 * 12 + 6,
+        height: 6 * 12 + 10
+    });
+
+    var unit_2 = new app.Unit({
+        width: 5 * 12 + 6,
+        height: 6 * 12 + 10
+    });
+
+    var profile = new app.Profile({
+        frame_width: 70,
+        mullion_width: 92,
+        sash_frame_width: 82,
+        sash_frame_overlap: 34,
+        sash_mullion_overlap: 12,
+        unit_type: 'Window'
+    });
+
+    unit_1.profile = profile;
+    unit_2.profile = profile;
+
+    var root_id = unit_2.generateFullRoot().id;
+
+    unit_2.setSectionBars(root_id, {
+        vertical: [
+            {
+                position: 300
+            }
+        ],
+        horizontal: [
+            {
+                position: 300
+            }
+        ]
+    });
+
+    equal(unit_1.hasGlazingBars(), false, 'Unit 1 is not expected to have bars');
+    equal(unit_2.hasGlazingBars(), true, 'Unit 2 is expected to have bars');
+});

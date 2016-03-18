@@ -1,6 +1,6 @@
 <button class="js-sidebar-toggle sidebar-toggle glyphicon glyphicon-forward"></button>
 
-<h3>Select unit</h3>
+<h3>Select Unit</h3>
 
 <div class="unit-selector-controls">
     <div class="unit-selector-select">
@@ -17,6 +17,13 @@
     </div>
 </div>
 
+{{#if active_unit_image }}
+    <div class="active-unit-image">
+        <h4>Customer Image</h4>
+        <img src="{{ active_unit_image }}" alt="">
+    </div>
+{{/if}}
+
 <div class="tab-container">
     <ul class="nav nav-tabs">
     {{#each tabs }}
@@ -25,18 +32,10 @@
     </ul>
 </div>
 
-{{#if active_unit_image }}
-{{#if tabs.active_unit_image.is_active }}
-    <div class="active-unit-image">
-        <img src="{{ active_unit_image }}" alt="">
-    </div>
-{{/if}}
-{{/if}}
-
 {{#if active_unit_properties }}
 {{#if tabs.active_unit_properties.is_active }}
     <div class="active-unit-properties">
-        <h4>Unit properties</h4>
+        <h4>Unit Properties</h4>
         <table>
             <tbody>
                 {{#each active_unit_properties }}
@@ -47,6 +46,58 @@
                 {{/each}}
             </tbody>
         </table>
+        {{#if active_unit_sashes }}
+            <h4>Sash List</h4>
+            {{#each active_unit_sashes }}
+            <h5>{{ name }}</h5>
+            <table>
+                <tbody>
+                    <tr>
+                        <td class="title">Type</td>
+                        <td class="value">{{ type }}</td>
+                    </tr>
+                    {{#if opening_size }}
+                    <tr>
+                        <td class="title">Clear Opening / Ventilation Area</td>
+                        <td class="value">{{{ opening_size }}}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if sections}}
+                        <tr>
+                            <td class="title">Total Daylight</td>
+                            <td class="value">{{{ daylight_sum }}}</td>
+                        </tr>
+                        {{#each sections}}
+                        <tr>
+                            <td class="title" colspan="2"><strong> {{ name }} </strong></td>
+                        </tr>
+                        <tr>
+                            <td class="title">{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}</td>
+                            <td class="value">{{ filling_name }}</td>
+                        </tr>
+                        {{#if filling_is_glass }}
+                        <tr>
+                            <td class="title">Daylight</td>
+                            <td class="value">{{{ filling_size }}}</td>
+                        </tr>
+                        {{/if}}
+                        {{/each}}
+                    {{else}}
+                        <tr>
+                            <td class="title">{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}</td>
+                            <td class="value">{{ filling_name }}</td>
+                        </tr>
+                        {{#if filling_is_glass }}
+                        <tr>
+                            <td class="title">Total Daylight</td>
+                            <td class="value">{{{ filling_size }}}</td>
+                        </tr>
+                        {{/if}}
+                    {{/if}}
+                </tbody>
+            </table>
+            {{/each}}
+        {{/if}}
     </div>
 {{/if}}
 {{/if}}
@@ -54,7 +105,7 @@
 {{#if active_unit_profile_properties }}
 {{#if tabs.active_unit_profile_properties.is_active }}
     <div class="active-unit-profile-properties">
-        <h4>Profile properties</h4>
+        <h4>Profile Properties</h4>
         <table>
             <tbody>
                 {{#each active_unit_profile_properties }}
@@ -65,63 +116,6 @@
                 {{/each}}
             </tbody>
         </table>
-    </div>
-{{/if}}
-{{/if}}
-
-{{#if active_unit_sashes }}
-{{#if tabs.active_unit_sashes.is_active }}
-    <div class="active-unit-openings-glasses-properties">
-        <h4>Sash List</h4>
-        {{#each active_unit_sashes }}
-        <h5>{{ name }}</h5>
-        <table>
-            <tbody>
-                <tr>
-                    <td class="title">Type</td>
-                    <td class="value">{{ type }}</td>
-                </tr>
-                {{#if opening_size }}
-                <tr>
-                    <td class="title">Clear Opening / Ventilation Area</td>
-                    <td class="value">{{{ opening_size }}}</td>
-                </tr>
-                {{/if}}
-                {{#if sections}}
-                <tr>
-                    <td class="title">Total Daylight</td>
-                    <td class="value">{{{ daylight_sum }}}</td>
-                </tr>
-                    {{#each sections}}
-                    <tr>
-                        <td class="title" colspan="2"><strong> {{ name }} </strong></td>
-                    </tr>
-                    <tr>
-                        <td class="title">{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}</td>
-                        <td class="value">{{ filling_name }}</td>
-                    </tr>
-                    {{#if filling_is_glass }}
-                    <tr>
-                        <td class="title">Daylight</td>
-                        <td class="value">{{{ filling_size }}}</td>
-                    </tr>
-                    {{/if}}
-                    {{/each}}
-                {{else}}
-                    <tr>
-                        <td class="title">{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}</td>
-                        <td class="value">{{ filling_name }}</td>
-                    </tr>
-                    {{#if filling_is_glass }}
-                    <tr>
-                        <td class="title">Total Daylight</td>
-                        <td class="value">{{{ filling_size }}}</td>
-                    </tr>
-                    {{/if}}
-                {{/if}}
-            </tbody>
-        </table>
-        {{/each}}
     </div>
 {{/if}}
 {{/if}}

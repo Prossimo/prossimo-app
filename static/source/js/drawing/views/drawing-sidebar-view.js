@@ -11,7 +11,8 @@ var app = app || {};
             $select: '.selectpicker',
             $prev: '.js-prev-unit',
             $next: '.js-next-unit',
-            $sidebar_toggle: '.js-sidebar-toggle'
+            $sidebar_toggle: '.js-sidebar-toggle',
+            $tab_container: '.tab-container'
         },
         events: {
             'change @ui.$select': 'onChange',
@@ -27,12 +28,6 @@ var app = app || {};
                 },
                 active_unit_profile_properties: {
                     title: 'Profile'
-                },
-                active_unit_sashes: {
-                    title: 'Sashes'
-                },
-                active_unit_image: {
-                    title: 'Image'
                 },
                 active_unit_estimated_section_prices: {
                     title: 'Est. Prices'
@@ -72,13 +67,23 @@ var app = app || {};
                 return;
             }
 
+            //  Left
             if ( e.keyCode === 37 ) {
                 this.onPrevBtn();
+            //  Right
+            } else if ( e.keyCode === 39 ) {
+                this.onNextBtn();
+            //  Page Up
+            } else if ( e.keyCode === 33 ) {
+                this.goToPrevTab();
+            //  Page Down
+            } else if ( e.keyCode === 34 ) {
+                this.goToNextTab();
+            } else {
+                return;
             }
 
-            if ( e.keyCode === 39 ) {
-                this.onNextBtn();
-            }
+            e.preventDefault();
         },
         onNextBtn: function () {
             var collection_size = this.serializeData().unit_list.length;
@@ -108,6 +113,20 @@ var app = app || {};
                 this.selectUnit(this.collection.at(prev_index));
             }
         },
+        //  This is not very cool because it breaks "don't store state in html"
+        //  rule, but it's better than rewriting everything
+        goToNextTab: function () {
+            var $active_tab = this.ui.$tab_container.find('.active');
+            var $next_tab = $active_tab.next().length ? $active_tab.next() : $active_tab.siblings().first();
+
+            $next_tab.find('a').trigger('click');
+        },
+        goToPrevTab: function () {
+            var $active_tab = this.ui.$tab_container.find('.active');
+            var $prev_tab = $active_tab.prev().length ? $active_tab.prev() : $active_tab.siblings().last();
+
+            $prev_tab.find('a').trigger('click');
+        },
         onSidebarToggle: function () {
             this.$el.trigger({ type: 'sidebar-toggle' });
         },
@@ -130,10 +149,10 @@ var app = app || {};
             var active_unit;
 
             var relevant_properties = [
-                'mark', 'width', 'height', 'type', 'description', 'notes',
+                'mark', 'width', 'height', 'description', 'notes',
                 'internal_color', 'external_color', 'gasket_color', 'uw',
                 'glazing', 'hinge_style', 'opening_direction', 'internal_sill',
-                'external_sill', 'glazing_bar_width'
+                'external_sill', 'glazing_bar_type', 'glazing_bar_width'
             ];
 
             if ( this.options.parent_view.active_unit ) {
@@ -312,8 +331,6 @@ var app = app || {};
             var tab_contents = {
                 active_unit_properties: this.getActiveUnitProperties(),
                 active_unit_profile_properties: this.getActiveUnitProfileProperties(),
-                active_unit_sashes: this.getActiveUnitSashList(),
-                active_unit_image: this.getActiveUnitImage(),
                 active_unit_estimated_section_prices: this.getActiveUnitEstimatedSectionPrices()
             };
 
@@ -328,10 +345,10 @@ var app = app || {};
                         dimensions: app.utils.format.dimensions(item.get('width'), item.get('height'), 'fraction')
                     };
                 }, this),
+                active_unit_image: this.getActiveUnitImage(),
+                active_unit_sashes: this.getActiveUnitSashList(),
                 active_unit_properties: tab_contents.active_unit_properties,
                 active_unit_profile_properties: tab_contents.active_unit_profile_properties,
-                active_unit_sashes: tab_contents.active_unit_sashes,
-                active_unit_image: tab_contents.active_unit_image,
                 active_unit_estimated_section_prices: tab_contents.active_unit_estimated_section_prices,
                 tabs: _.each(this.tabs, function (item, key) {
                     item.is_active = key === this.active_tab;

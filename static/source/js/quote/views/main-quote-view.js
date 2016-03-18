@@ -11,6 +11,9 @@ var app = app || {};
             $header_container: '.quote-header-container',
             $table_container: '.quote-table-container'
         },
+        initialize: function () {
+            this.listenTo(app.current_project, 'set_dependencies', this.render);
+        },
         onRender: function () {
             this.units_table_view = new app.UnitsTableView({
                 collection: app.current_project.units,
