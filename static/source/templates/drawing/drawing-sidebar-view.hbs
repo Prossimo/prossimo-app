@@ -63,10 +63,12 @@
                     </tr>
                     {{/if}}
                     {{#if sections}}
+                        {{#if daylight_sum }}
                         <tr>
                             <td class="title">Total Daylight</td>
                             <td class="value">{{{ daylight_sum }}}</td>
                         </tr>
+                        {{/if}}
                         {{#each sections}}
                         <tr>
                             <td class="title" colspan="2"><strong> {{ name }} </strong></td>

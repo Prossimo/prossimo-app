@@ -224,10 +224,9 @@ var app = app || {};
 
             function getFillingSize(width, height) {
                 var filling_size = getFillingPerimeter(width, height);
-
                 var filling_area = getFillingArea(width, height);
 
-                return filling_size + '(' + filling_area + ')';
+                return filling_size + ' (' + filling_area + ')';
             }
 
             function getSectionInfo(source) {
@@ -264,9 +263,8 @@ var app = app || {};
                         sash_item.opening_size = opening_size + ' (' + opening_area + ')';
                     }
 
-                    // Children sections
+                    //  Child sections
                     if ( source_item.sections.length ) {
-
                         var sum = 0;
 
                         sash_item.sections = [];
@@ -275,16 +273,18 @@ var app = app || {};
                             var section_item = {};
 
                             section_item.name = 'Section #' + (index + 1) + '.' + (s_index + 1);
-
                             section_info = getSectionInfo(section);
                             _.extend(section_item, section_info);
 
-                            sum += parseFloat(getFillingArea(section.filling.width, section.filling.height, 'numeric'));
+                            if ( section_info.filling_is_glass ) {
+                                sum += parseFloat(getFillingArea(section.filling.width,
+                                    section.filling.height, 'numeric'));
+                            }
 
                             sash_item.sections.push(section_item);
                         });
 
-                        sash_item.daylight_sum = f.square_feet( sum, 2, 'sup');
+                        sash_item.daylight_sum = sum ? f.square_feet(sum, 2, 'sup') : false;
                     } else {
                         section_info = getSectionInfo(source_item);
                         _.extend(sash_item, section_info);
