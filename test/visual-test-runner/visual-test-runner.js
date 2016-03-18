@@ -3,104 +3,47 @@
 /* global resemble */
 
 var app = app || {};
-var case_data_array = case_data_array || [];
 
-app.settings = new app.Settings();
-app.session = new app.Session();
-app.session.set('no_backend', true);
-
-
-$(document).ready(function () {
+(function () {
     'use strict';
 
-    var diff_threshold = 0;
+    function getExpectedFilename (basic_name) {
+        var user_agent = navigator.userAgent;
+        var postfix = '-chrome.png';
 
-    function renderNested (data_object, is_nested) {
-        var normal_sting_template = _.template('<<%= wrpr %>><strong><%= key %></strong>: <span><%= value %></span></<%= wrpr %>>');
-        var nested_sting_template = _.template('<<%= wrpr %>><strong><%= key %></strong>: <ul><%= list_content %></ul></<%= wrpr %>>');
-        var result_html = '';
-        var wrapper = is_nested ? 'li' : 'p';
+        if ( user_agent.indexOf('PhantomJS') !== -1 ) {
+            postfix = '-phantom.png';
+        } else if ( user_agent.indexOf('Firefox') !== -1 ) {
+            postfix = '-firefox.png';
+        }
 
-        _.each(data_object, function (value, key) {
-            //  This is true for objects and arrays
-            if ( _.isObject(value) ) {
-                result_html += nested_sting_template({ key: key, list_content: renderNested(value, true), wrpr: wrapper});
-            } else {
-                result_html += normal_sting_template({ value: value, key: key, wrpr: wrapper});
-            }
-        });
-
-        return result_html;
+        return '../visual-test-data/' + basic_name.replace('.png', postfix);
     }
 
-    function renderTestCase(processed_data) {
-        var test_case_template = _.template(
-            '<div class="case-wrapper">' +
-                '<h2><%= case_title %></h2>' +
-                '<div class="case-contents">' +
-                    '<div class="expected-image">' +
-                        '<h4>Expected image</h4>' +
-                        '<img src="<%= expected_image %>">' +
-                    '</div>' +
-                    '<div class="result-image">' +
-                        '<h4>Generated image</h4>' +
-                        '<img src="<%= generated_image %>">' +
-                    '</div>' +
-                    '<div class="diff-image">' +
-                        '<h4>Diff image</h4>' +
-                        '<img src="<%= diff_image %>">' +
-                    '</div>' +
-                '</div>' +
-                '<div class="diff-data">' +
-                    '<h4>Diff Status: <span class="<%= status %>"><%= status_text %></span></h4>' +
-                    '<h5>Execution time: <%= execution_time %></h5>' +
-                    '<p>Mismatch: <%= mismatch_percentage %>%</p>' +
-                    '<p>Images have same dimensions: <%= same_dimensions %></p>' +
-                '</div>' +
-                '<div class="case-data">' +
-                    '<h4>Unit properties</h4>' +
-                    '<div class="unit-properties"><%= unit_properties %></div>' +
-                    '<h4>Profile properties</h4>' +
-                    '<div class="profile-properties"><%= profile_properties %></div>' +
-                    '<h4>Preview settings</h4>' +
-                    '<div class="preview-settings"><%= preview_settings %></div>' +
-                '</div>' +
-            '</div>'
-        );
+    app.runVisualTest = function (options) {
+        var defaults = {
+            diff_threshold: 0,
+            test_case: {},
+            callback: undefined
+        };
 
-        $('body').append(test_case_template({
-            case_title: processed_data.test_case.title || '',
-            expected_image: processed_data.expected_filename,
-            generated_image: processed_data.preview,
-            diff_image: processed_data.diff_output.diff_image_src,
-            status: processed_data.diff_output.status,
-            status_text: processed_data.diff_output.status_text,
-            mismatch_percentage: processed_data.diff_output.mismatch_percentage,
-            same_dimensions: processed_data.diff_output.same_dimensions,
-            unit_properties: renderNested(processed_data.unit.toJSON()),
-            profile_properties: renderNested(processed_data.profile.toJSON()),
-            preview_settings: renderNested(processed_data.test_case.preview_settings),
-            execution_time: parseInt(processed_data.execution_time, 10) + ' ms'
-        }));
-    }
+        options = _.defaults({}, options, defaults);
 
-    function processTestCase(test_case) {
         var time_started = performance.now();
 
-        var profile = new app.Profile(test_case.profile_data);
-
-        var unit = new app.Unit(_.extend({}, test_case.unit_data, {
-            root_section: test_case.root_section_json_string
+        var profile = new app.Profile(options.test_case.profile_data);
+        var unit = new app.Unit(_.extend({}, options.test_case.unit_data, {
+            root_section: options.test_case.root_section_json_string
         }));
 
         unit.profile = profile;
 
         var preview = app.preview(unit, {
-            width: test_case.preview_settings.width,
-            height: test_case.preview_settings.height,
+            width: options.test_case.preview_settings.width,
+            height: options.test_case.preview_settings.height,
             mode: 'base64',
-            position: test_case.preview_settings.position,
-            hingeIndicatorMode: test_case.preview_settings.hingeIndicatorMode
+            position: options.test_case.preview_settings.position,
+            hingeIndicatorMode: options.test_case.preview_settings.hingeIndicatorMode
         });
 
         resemble.outputSettings({
@@ -114,15 +57,14 @@ $(document).ready(function () {
             largeImageThreshold: 1200
         });
 
-        var expected_filename = '../visual-test-data/' + test_case.expected_image_filename;
+        var expected_filename = getExpectedFilename(options.test_case.expected_image_filename);
 
-        // resemble(expected_filename).compareTo(preview).ignoreAntialiasing().onComplete(function (data) {
-        resemble(expected_filename).compareTo(preview).onComplete(function (data) {
+        resemble(expected_filename).compareTo(preview).ignoreAntialiasing().onComplete(function (data) {
             var diff_output = {};
 
             diff_output.diff_image_src = data.getImageDataUrl();
 
-            if ( data.rawMisMatchPercentage <= diff_threshold ) {
+            if ( data.rawMisMatchPercentage <= options.diff_threshold ) {
                 diff_output.status = 'success';
                 diff_output.status_text = 'Images are identical';
             } else {
@@ -140,20 +82,19 @@ $(document).ready(function () {
 
             var time_ended = performance.now();
 
-            renderTestCase({
+            var visual_test_result = {
                 unit: unit,
                 profile: profile,
-                test_case: test_case,
+                test_case: options.test_case,
                 preview: preview,
                 diff_output: diff_output,
                 execution_time: time_ended - time_started,
                 expected_filename: expected_filename
-            });
-        });
-    }
+            };
 
-    //  Main rendering loop
-    _.each(case_data_array, function (test_case) {
-        processTestCase(test_case);
-    });
-});
+            if ( options.callback && _.isFunction(options.callback) ) {
+                options.callback.call(this, visual_test_result);
+            }
+        });
+    };
+})();
