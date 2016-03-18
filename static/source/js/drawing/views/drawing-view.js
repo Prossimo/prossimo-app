@@ -920,7 +920,7 @@ var app = app || {};
             // If section have a children — create Indexes for them recursively
             if (mainSection.sections.length) {
 
-                if (insideView && mainSection.divider === 'vertical') {
+                if (this.state.insideView && mainSection.divider === 'vertical') {
                     mainSection.sections.reverse();
                 }
 
