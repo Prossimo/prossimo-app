@@ -25,6 +25,7 @@ var app = app || {};
     // global params
     var globalInsideView = false;
     var metricSize = 50;
+    var fontFamily = 'pt-sans';
 
     app.DrawingView = Marionette.ItemView.extend({
         tagName: 'div',
@@ -999,6 +1000,7 @@ var app = app || {};
                         width: section.size.width,
                         align: 'center',
                         text: section.text,
+                        fontFamily: fontFamily,
                         fontSize: 15 / view.ratio,
                         listening: false
                     });
@@ -1073,18 +1075,20 @@ var app = app || {};
 
             labelMM.add(new Konva.Tag({
                 fill: 'white',
-                stroke: 'grey'
+                stroke: 'grey',
+                strokeWidth: 0.5
             }));
             var textMM = new Konva.Text({
                 text: app.utils.format.dimension_mm(params.getter()),
-                padding: 2,
+                padding: 4,
+                fontFamily: fontFamily,
                 fontSize: 11,
                 fill: 'black'
             });
 
             labelMM.add(textMM);
             labelMM.position({
-                x: width - textMM.width() - 5,
+                x: width - textMM.width() - 2,
                 y: height / 2 + textMM.height() / 2
             });
 
@@ -1093,14 +1097,16 @@ var app = app || {};
 
             labelInches.add(new Konva.Tag({
                 fill: 'white',
-                stroke: 'grey'
+                stroke: 'grey',
+                strokeWidth: 0.5
             }));
             var inches = app.utils.convert.mm_to_inches(params.getter());
             var val = app.utils.format.dimension(inches, 'fraction', this.state && this.state.inchesDisplayMode);
             var textInches = new Konva.Text({
                 text: val,
-                padding: 2,
-                fill: 'black'
+                padding: 4,
+                fill: 'black',
+                fontFamily: fontFamily
             });
 
             labelInches.add(textInches);
@@ -1169,11 +1175,13 @@ var app = app || {};
 
             labelMM.add(new Konva.Tag({
                 fill: 'white',
-                stroke: 'grey'
+                stroke: 'grey',
+                strokeWidth: 0.5
             }));
             var textMM = new Konva.Text({
                 text: app.utils.format.dimension_mm(params.getter()),
-                padding: 2,
+                padding: 4,
+                fontFamily: fontFamily,
                 fontSize: 11,
                 fill: 'black'
             });
@@ -1188,14 +1196,16 @@ var app = app || {};
 
             labelInches.add(new Konva.Tag({
                 fill: 'white',
-                stroke: 'grey'
+                stroke: 'grey',
+                strokeWidth: 0.5
             }));
             var inches = app.utils.convert.mm_to_inches(params.getter());
             var val = app.utils.format.dimension(inches, 'fraction', this.state && this.state.inchesDisplayMode);
             var textInches = new Konva.Text({
                 text: val,
-                padding: 2,
-                fill: 'black'
+                padding: 4,
+                fill: 'black',
+                fontFamily: fontFamily
             });
 
             labelInches.add(textInches);

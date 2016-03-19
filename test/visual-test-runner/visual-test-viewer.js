@@ -1,4 +1,5 @@
 /* eslint quotes:0 */
+/* eslint max-nested-callbacks:0 */
 /* jscs:disable */
 
 var app = app || {};
@@ -84,13 +85,15 @@ $(document).ready(function () {
     }
 
     //  Main rendering loop
-    _.each(case_data_array, function (test_case) {
-        app.runVisualTest({
-            test_case: test_case,
-            diff_threshold: diff_threshold,
-            callback: function (result) {
-                renderTestCase(result);
-            }
+    $(window).on('load', function () {
+        _.each(case_data_array, function (test_case) {
+            app.runVisualTest({
+                test_case: test_case,
+                diff_threshold: diff_threshold,
+                callback: function (result) {
+                    renderTestCase(result);
+                }
+            });
         });
     });
 });
