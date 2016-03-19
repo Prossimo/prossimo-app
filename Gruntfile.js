@@ -113,6 +113,7 @@ module.exports = function (grunt) {
             build: {
                 options: {
                     modifyVars: {
+                        fontsPath: '"../../<%= fontsUrl %>"',
                         bowerPath: '"../../<%= bowerUrl %>"'
                     }
                 },
