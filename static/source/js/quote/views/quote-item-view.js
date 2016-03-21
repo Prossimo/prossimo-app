@@ -87,10 +87,9 @@ var app = app || {};
 
             function getFillingSize(width, height) {
                 var filling_size = getFillingPerimeter(width, height);
-
                 var filling_area = getFillingArea(width, height);
 
-                return filling_size + '(' + filling_area + ')';
+                return filling_size + ' (' + filling_area + ')';
             }
 
             function getSectionInfo(source) {
@@ -110,7 +109,7 @@ var app = app || {};
             //  This is the list of params that we want to see in the quote. We
             //  throw out attributes that don't apply to the current unit
             var params_list = _.filter(
-                ['glazing', 'internal_color', 'external_color',
+                ['rough_opening', 'glazing', 'internal_color', 'external_color',
                 'interior_handle', 'exterior_handle', 'description', 'hardware_type',
                 'lock_mechanism', 'glazing_bead', 'gasket_color', 'hinge_style',
                 'opening_direction', 'internal_sill', 'external_sill', 'glazing_bar_type'],
@@ -199,6 +198,7 @@ var app = app || {};
 
             var name_title_hash = _.extend({
                 size: 'Size',
+                rough_opening: 'Rough Opening',
                 system: 'System'
             }, _.object( _.pluck(source_hash, 'name'), _.pluck(source_hash, 'title') ), {
                 glazing: this.model.profile.isSolidPanelPossible() ||
@@ -224,7 +224,12 @@ var app = app || {};
                         app.settings.getFillingTypeByName(this.model.get('glazing')).get('supplier_name') :
                         this.model.get('glazing')
                     ) :
-                    this.model.get('glazing')
+                    this.model.get('glazing'),
+                rough_opening: this.options.show_sizes_in_mm ?
+                    f.dimensions_mm(c.inches_to_mm(this.model.getRoughOpeningWidth()),
+                        c.inches_to_mm(this.model.getRoughOpeningHeight())) :
+                    f.dimensions(this.model.getRoughOpeningWidth(), this.model.getRoughOpeningHeight(),
+                        null, project_settings.get('inches_display_mode') || null)
             };
 
             var params = _.map(name_title_hash, function (item, key) {
