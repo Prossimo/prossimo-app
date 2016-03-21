@@ -992,7 +992,6 @@ var app = app || {};
         createIndexes: function (indexes) {
             var view = this;
             var group = new Konva.Group();
-
             var number;
 
             indexes.forEach(function (section) {
@@ -1007,19 +1006,6 @@ var app = app || {};
                 number.position( section.position );
                 number.y( number.y() + section.size.height / 2 - number.height() / 2 );
                 group.add( number );
-
-                // For debug:
-                // var box = new Konva.Rect({
-                //         width: section.size.width,
-                //         height: section.size.height,
-                //         fill: 'red',
-                //         opacity: 0.2,
-                //         listening: false
-                //     });
-                //
-                // box.position( section.position );
-                // group.add( box );
-
             });
 
             return group;
