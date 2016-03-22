@@ -196,20 +196,32 @@ var app = app || {};
                     renderer: app.hot_renderers.removeItemRenderer
                 },
                 system: {
-                    type: 'autocomplete',
-                    source: app.settings.getSystems()
+                    type: 'dropdown',
+                    source: _.union(
+                        app.settings.getSystems(),
+                        app.settings.profiles.pluck('system')
+                    ).sort()
                 },
                 supplier_system: {
-                    type: 'autocomplete',
-                    source: app.settings.getSupplierSystems()
+                    type: 'dropdown',
+                    source: _.union(
+                        app.settings.getSupplierSystems(),
+                        app.settings.profiles.pluck('supplier_system')
+                    ).sort()
                 },
                 frame_corners: {
                     type: 'dropdown',
-                    source: app.settings.getFrameCornerTypes()
+                    source: _.union(
+                        app.settings.getFrameCornerTypes(),
+                        app.settings.profiles.pluck('frame_corners')
+                    ).sort()
                 },
                 sash_corners: {
                     type: 'dropdown',
-                    source: app.settings.getSashCornerTypes()
+                    source: _.union(
+                        app.settings.getSashCornerTypes(),
+                        app.settings.profiles.pluck('sash_corners')
+                    ).sort()
                 },
                 visible_frame_width_fixed: {
                     readOnly: true,

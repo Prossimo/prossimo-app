@@ -512,23 +512,38 @@ var app = app || {};
                 },
                 internal_color: {
                     type: 'dropdown',
-                    source: app.settings.getColors()
+                    source: _.union(
+                        app.settings.getColors(),
+                        this.getActiveTab().collection.pluck('internal_color')
+                    ).sort()
                 },
                 external_color: {
                     type: 'dropdown',
-                    source: app.settings.getColors()
+                    source: _.union(
+                        app.settings.getColors(),
+                        this.getActiveTab().collection.pluck('external_color')
+                    ).sort()
                 },
                 interior_handle: {
                     type: 'dropdown',
-                    source: app.settings.getInteriorHandleTypes()
+                    source: _.union(
+                        app.settings.getInteriorHandleTypes(),
+                        this.getActiveTab().collection.pluck('interior_handle')
+                    ).sort()
                 },
                 hinge_style: {
                     type: 'dropdown',
-                    source: app.settings.getHingeTypes()
+                    source: _.union(
+                        app.settings.getHingeTypes(),
+                        this.getActiveTab().collection.pluck('hinge_style')
+                    ).sort()
                 },
                 glazing_bead: {
                     type: 'dropdown',
-                    source: app.settings.getGlazingBeadTypes()
+                    source: _.union(
+                        app.settings.getGlazingBeadTypes(),
+                        this.getActiveTab().collection.pluck('glazing_bead')
+                    ).sort()
                 },
                 glazing: {
                     type: 'dropdown',
@@ -538,7 +553,10 @@ var app = app || {};
                 },
                 glazing_bar_type: {
                     type: 'dropdown',
-                    source: app.settings.getGlazingBarTypes()
+                    source: _.union(
+                        app.settings.getGlazingBarTypes(),
+                        this.getActiveTab().collection.pluck('glazing_bar_type')
+                    ).sort()
                 },
                 glazing_bar_width: {
                     type: 'dropdown',
@@ -548,7 +566,10 @@ var app = app || {};
                 },
                 gasket_color: {
                     type: 'dropdown',
-                    source: app.settings.getGasketColors()
+                    source: _.union(
+                        app.settings.getGasketColors(),
+                        this.getActiveTab().collection.pluck('gasket_color')
+                    ).sort()
                 },
                 opening_direction: {
                     type: 'dropdown',
