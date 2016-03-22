@@ -547,9 +547,7 @@ var app = app || {};
                 },
                 glazing: {
                     type: 'dropdown',
-                    source: app.settings.getAvailableFillingTypes().map(function (item) {
-                        return item.get('name');
-                    })
+                    source: app.settings.getAvailableFillingTypeNames()
                 },
                 glazing_bar_type: {
                     type: 'dropdown',

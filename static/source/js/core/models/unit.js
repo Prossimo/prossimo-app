@@ -148,6 +148,7 @@ var app = app || {};
                 name_value_hash.glazing_bar_type = app.settings.getGlazingBarTypes()[0];
                 name_value_hash.glazing_bar_width = app.settings.getGlazingBarWidths()[0];
                 name_value_hash.opening_direction = app.settings.getOpeningDirections()[0];
+                name_value_hash.glazing = app.settings.getAvailableFillingTypeNames()[0];
             }
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
