@@ -511,23 +511,23 @@ var app = app || {};
                     renderer: app.hot_renderers.removeItemRenderer
                 },
                 internal_color: {
-                    type: 'autocomplete',
+                    type: 'dropdown',
                     source: app.settings.getColors()
                 },
                 external_color: {
-                    type: 'autocomplete',
+                    type: 'dropdown',
                     source: app.settings.getColors()
                 },
                 interior_handle: {
-                    type: 'autocomplete',
+                    type: 'dropdown',
                     source: app.settings.getInteriorHandleTypes()
                 },
                 hinge_style: {
-                    type: 'autocomplete',
+                    type: 'dropdown',
                     source: app.settings.getHingeTypes()
                 },
                 glazing_bead: {
-                    type: 'autocomplete',
+                    type: 'dropdown',
                     source: app.settings.getGlazingBeadTypes()
                 },
                 glazing: {
@@ -537,17 +537,17 @@ var app = app || {};
                     })
                 },
                 glazing_bar_type: {
-                    type: 'autocomplete',
+                    type: 'dropdown',
                     source: app.settings.getGlazingBarTypes()
                 },
                 glazing_bar_width: {
-                    type: 'autocomplete',
+                    type: 'dropdown',
                     source: app.settings.getGlazingBarWidths().map(function (item) {
                         return item.toString();
                     })
                 },
                 gasket_color: {
-                    type: 'autocomplete',
+                    type: 'dropdown',
                     source: app.settings.getGasketColors()
                 },
                 opening_direction: {

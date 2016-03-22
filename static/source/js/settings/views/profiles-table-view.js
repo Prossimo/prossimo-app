@@ -204,11 +204,11 @@ var app = app || {};
                     source: app.settings.getSupplierSystems()
                 },
                 frame_corners: {
-                    type: 'autocomplete',
+                    type: 'dropdown',
                     source: app.settings.getFrameCornerTypes()
                 },
                 sash_corners: {
-                    type: 'autocomplete',
+                    type: 'dropdown',
                     source: app.settings.getSashCornerTypes()
                 },
                 visible_frame_width_fixed: {
