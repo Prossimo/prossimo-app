@@ -890,7 +890,7 @@ var app = app || {};
                     y: sectionData.openingParams.y,
                     width: sectionData.openingParams.width,
                     align: 'center',
-                    text: index + 1,
+                    text: index + 1 + '(' + sectionData.id + ')', // !debug
                     fontSize: 15 / this.ratio,
                     listening: false
                 });
@@ -1157,6 +1157,7 @@ var app = app || {};
                         sections: lastMul.sections
                     });
                 }
+
                 // Draw measurements & controls
                 mulGroup.forEach(function (mullion) {
                     var width_ = mullion.position - pos;
@@ -1169,10 +1170,15 @@ var app = app || {};
                     var invertedType = view.model.getInvertedDivider( type );
 
                     if (width_ > 0) {
-
                         // Check out is it the first section with children sections
                         // that has the same divider type.
                         // If yes — change current_section to second child.
+                        //
+                        // Вот этот блок надо переписать, чтобы он не только выбирал правильную секцию,
+                        // но и находил ближайшую секцию (сверху), для случая 3.
+                        // Таким образом решится проблема вложенных секций с различными дивайдерами.
+                        // А затем еще нужно придумать что делать если такой фигни будет две и больше в ряд %)
+                        //
                         if ( mullion_section.sections[0].sections.length &&
                              invertedType === view.model.getInvertedDivider( mullion_section.sections[0].divider ) &&
                              !mullion.gap
@@ -1366,7 +1372,7 @@ var app = app || {};
             };
         },
         getMullionCorrection: function (type, value, index, correction) {
-
+            value = value || 0;
             correction = correction || this.getCorrection();
 
             if (type === 'frame') {
@@ -1408,17 +1414,39 @@ var app = app || {};
             return correction;
         },
         getTotalCorrection: function (section, type ) {
-            // @TODO: Fix bug with nested sections with different type!
-            // I have an idea the problem is that I do invertedType for some purpose.
-            // Maybe I should remove it and everything will be okay :)
-            // console.log('>', section.id, type);
             var view = this;
             var sectionEdges = view.model.getMeasurementEdges( section.id, type );
             var correction = view.getMullionCorrection();
             var root_section = view.model.get('root_section');
             var parent_section = view.model.getSection( section.parentId );
             var invertedType = view.model.getInvertedDivider( type );
-            var error = false;
+
+            function findParentByMeasurementType( section_, type_, key_, index_ ) {
+                var result = {
+                    section: section_,
+                    index: index_
+                };
+                var parent_section_;
+                var find_index = (key_ === 'top' || key_ === 'left') ? 1 : 0;
+                var cur_index = index_;
+
+                if (
+                        section_.parentId &&
+                        (
+                            index_ !== find_index ||
+                            !(
+                                'mullion' in section_.measurements &&
+                                type_ in section_.measurements.mullion
+                            )
+                        )
+                ) {
+                    parent_section_ = view.model.getSection( section_.parentId );
+                    cur_index = (parent_section_.sections[0].id === section_.id) ? 0 : 1;
+                    result = findParentByMeasurementType( parent_section_, type_, key_, cur_index );
+                }
+
+                return result;
+            }
 
             _.each(sectionEdges, function (edge, key) {
                 var value;
@@ -1429,31 +1457,14 @@ var app = app || {};
 
                     value = root_section.measurements.frame[invertedType][index];
                 } else if ( parent_section !== null && edge === 'mullion') {
-                    if (
-                        (
-                            section.index === 0 && key === 'top' ||
-                            section.index === 1 && key === 'bottom'
-                        ) &&
-                        (
-                            parent_section.parentId
-                        )
-                    ) {
-                        var grandparent_section = view.model.getSection( parent_section.parentId );
+                    var grandparent = findParentByMeasurementType( parent_section, invertedType, key, index );
 
-                        if ( invertedType in grandparent_section.measurements.mullion) {
-                            index = (section.index + 1) % 2;
-                            value = grandparent_section.measurements.mullion[type][ index ];
-                        } else {
-                            error = true;
-                        }
-                    } else {
-                        value = parent_section.measurements.mullion[invertedType][ index ];
-                    }
+                    index = grandparent.index;
+                    value = grandparent.section.measurements.mullion[invertedType][ index ];
                 }
 
-                if (!error) {
-                    correction = view.getMullionCorrection( edge, value, index, correction );
-                }
+                console.log(section.id, key, edge);
+                correction = view.getMullionCorrection( edge, value, index, correction );
             });
 
             return correction;
