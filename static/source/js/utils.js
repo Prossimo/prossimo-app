@@ -132,8 +132,10 @@ var app = app || {};
             square_feet: function (value, num, format) {
                 format = (format && _.indexOf(['normal', 'sup'], format) !== -1) ?
                     format : 'normal';
-                return this.fixed_minimal(value, num) + (format === 'sup' ?
-                    ' ft<sup>2</sup>' : ' sq.ft');
+                return this.fixed_minimal(value, num) +
+                       (format === 'sup' ? ' ft<sup>2</sup>' :
+                       (format === 'normal') ? ' sq.ft' :
+                       '');
             },
             square_meters: function (value, num, format) {
                 format = (format && _.indexOf(['normal', 'sup'], format) !== -1) ?

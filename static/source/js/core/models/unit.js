@@ -148,6 +148,7 @@ var app = app || {};
                 name_value_hash.glazing_bar_type = app.settings.getGlazingBarTypes()[0];
                 name_value_hash.glazing_bar_width = app.settings.getGlazingBarWidths()[0];
                 name_value_hash.opening_direction = app.settings.getOpeningDirections()[0];
+                name_value_hash.glazing = app.settings.getAvailableFillingTypeNames()[0];
             }
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -529,11 +530,6 @@ var app = app || {};
             var full = this.generateFullRoot();
             var fullSection = app.Unit.findSection(full, sectionId);
 
-            // Prevent from unnecessary updating
-            if ( fullSection.sashType === type ) {
-                return;
-            }
-
             // Update section
             this._updateSection(sectionId, function (section) {
                 section.sashType = type;
@@ -753,6 +749,38 @@ var app = app || {};
                 sectionData.thresholdEdge = rootSection.thresholdEdge;
                 sectionData.parentId = rootSection.id;
 
+                // Correction params. Needed for sections in operable sash
+                var corr = -1 * (this.profile.get('sash_frame_width') - this.profile.get('sash_frame_overlap'));
+                var correction = {
+                    x: 0,
+                    y: 0,
+                    width: 0,
+                    height: 0
+                };
+
+                // Calculate correction params
+                if (rootSection.sashType !== 'fixed_in_frame') {
+                    if (rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible') {
+                        // correction for vertical sections
+                        if (i === 0) {
+                            correction.x = -1 * corr;
+                        }
+
+                        correction.y = -1 * corr;
+                        correction.width = corr;
+                        correction.height = corr * 2;
+                    } else {
+                        // correction for horizontal sections
+                        if (i === 0) {
+                            correction.y = -1 * corr;
+                        }
+
+                        correction.x = -1 * corr;
+                        correction.width = corr * 2;
+                        correction.height = corr;
+                    }
+                }
+
                 if (rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible') {
                     sectionParams.x = openingParams.x;
                     sectionParams.y = openingParams.y;
@@ -786,6 +814,12 @@ var app = app || {};
                         sectionData.mullionEdges.top = rootSection.divider;
                     }
                 }
+
+                // Apply corrections
+                sectionParams.x += correction.x;
+                sectionParams.y += correction.y;
+                sectionParams.width += correction.width;
+                sectionParams.height += correction.height;
 
                 return this.generateFullRoot(sectionData, sectionParams);
             }.bind(this));
@@ -947,26 +981,33 @@ var app = app || {};
             var current_sash = {
                 opening: {},
                 sash_frame: {},
-                filling: {}
+                filling: {},
+                sections: []
             };
             var section_result;
             var filling_type;
-            var result = [];
+            var result = {
+                sashes: [],
+                sections: []
+            };
+            var type = 'sashes';
 
             current_root = current_root || this.generateFullRoot();
             current_sash.id = current_root.id;
 
-            if (current_root.sashType === 'fixed_in_frame') {
-                _.each(current_root.sections, function (section) {
-                    section_result = this.getSashList(section, current_root, reverse_hinges);
-
-                    if (current_root.divider === 'vertical' || current_root.divider === 'vertical_invisible') {
-                        result = section_result.concat(result);
-                    } else {
-                        result = result.concat(section_result);
-                    }
-                }, this);
+            if (current_root.sashType !== 'fixed_in_frame') {
+                type = 'sections';
             }
+
+            _.each(current_root.sections, function (section) {
+                section_result = this.getSashList(section, current_root, reverse_hinges);
+
+                if (current_root.divider === 'vertical' || current_root.divider === 'vertical_invisible') {
+                    result[type] = section_result.concat(result[type]);
+                } else {
+                    result[type] = result[type].concat(section_result);
+                }
+            }, this);
 
             if ( _.indexOf(SASH_TYPES_WITH_OPENING, current_root.sashType) !== -1 ) {
                 current_sash.opening.width = current_root.openingParams.width;
@@ -982,6 +1023,8 @@ var app = app || {};
                 current_sash.type = this.getSashName(current_root.sashType, reverse_hinges);
                 current_sash.filling.width = current_root.glassParams.width;
                 current_sash.filling.height = current_root.glassParams.height;
+
+                current_sash.divider = current_root.divider;
 
                 if ( current_root.fillingType && current_root.fillingName ) {
                     current_sash.filling.type = current_root.fillingType;
@@ -1002,10 +1045,14 @@ var app = app || {};
                     current_sash.filling.name = filling_type.fillingName;
                 }
 
-                result.unshift(current_sash);
+                if ( current_root.sections.length ) {
+                    current_sash.sections = result.sections;
+                }
+
+                result.sashes.unshift(current_sash);
             }
 
-            return result;
+            return result.sashes;
         },
         //  Returns sizes in mms
         getFixedAndOperableSectionsList: function (current_root) {

@@ -25,6 +25,7 @@ var app = app || {};
     // global params
     var globalInsideView = false;
     var metricSize = 50;
+    var fontFamily = 'pt-sans';
 
     app.DrawingView = Marionette.ItemView.extend({
         tagName: 'div',
@@ -34,6 +35,8 @@ var app = app || {};
 
             this.listenTo(this.model, 'all', this.updateRenderedScene);
             this.on('update_rendered', this.updateRenderedScene, this);
+
+            this.createGlazingPopup();
 
             this.state = {
                 insideView: this.isInsideView(),
@@ -159,6 +162,8 @@ var app = app || {};
             }
 
             this.model.setSectionSashType(this.state.selectedSashId, type);
+
+            this.updateSection(this.state.selectedSashId, 'both');
         },
         handleObjectClick: function (id, e) {
             // select on left click only
@@ -885,21 +890,9 @@ var app = app || {};
             });
 
             if (index >= 0) {
-                var number = new Konva.Text({
-                    x: sectionData.openingParams.x - sectionData.sashParams.x,
-                    y: sectionData.openingParams.y,
-                    width: sectionData.openingParams.width,
-                    align: 'center',
-                    text: index + 1,
-                    fontSize: 15 / this.ratio,
-                    listening: false
-                });
+                var indexes = this.createSectionIndexes(sectionData, {main: index, add: null});
 
-                number.y(
-                    sectionData.openingParams.y - sectionData.sashParams.y +
-                    sectionData.openingParams.height / 2 - number.height() / 2
-                );
-                group.add(number);
+                group.add( this.createIndexes(indexes) );
             }
 
             var isSelected = (this.state.selectedSashId === sectionData.id);
@@ -914,6 +907,106 @@ var app = app || {};
 
                 group.add(selection);
             }
+
+            return group;
+        },
+        createSectionIndexes: function (mainSection, indexes, i) {
+            var view = this;
+            var result = [];
+
+            indexes = indexes || {
+                main: 0,
+                add: null,
+                parent: null
+            };
+
+            i = i || 0;
+
+            // If section have a children — create Indexes for them recursively
+            if (mainSection.sections.length) {
+
+                if (this.state.insideView && mainSection.divider === 'vertical') {
+                    mainSection.sections.reverse();
+                }
+
+                mainSection.sections.forEach(function (section, j) {
+
+                    if (mainSection.sashType !== 'fixed_in_frame') {
+                        indexes.parent = mainSection;
+                    }
+
+                    if (!section.sections.length) {
+                        indexes.add += 1;
+
+                    }
+
+                    result = result.concat( view.createSectionIndexes(section, indexes, j) );
+                });
+
+            // If section haven't a children sections — create Index for it
+            } else {
+                var text = (indexes.main + 1);
+                var position = {
+                    x: (
+                        mainSection.glassParams.x - mainSection.sashParams.x
+                    ),
+                    y: (
+                        mainSection.glassParams.y - mainSection.sashParams.y
+                    )
+                };
+                var size = {
+                    width: mainSection.glassParams.width,
+                    height: mainSection.glassParams.height
+                };
+
+                if (indexes.add !== null) {
+                    text += '.' + indexes.add;
+
+                    if (indexes.parent) {
+
+                        position = {
+                            x: (
+                                mainSection.glassParams.x - indexes.parent.sashParams.x
+                            ),
+                            y: (
+                                mainSection.glassParams.y - indexes.parent.sashParams.y
+                            )
+                        };
+                        size = {
+                            width: size.width,
+                            height: size.height
+                        };
+                    }
+                }
+
+                result.push({
+                    text: text,
+                    position: position,
+                    size: size
+                });
+
+            }
+
+            return result;
+        },
+        createIndexes: function (indexes) {
+            var view = this;
+            var group = new Konva.Group();
+            var number;
+
+            indexes.forEach(function (section) {
+                number = new Konva.Text({
+                        width: section.size.width,
+                        align: 'center',
+                        text: section.text,
+                        fontFamily: fontFamily,
+                        fontSize: 15 / view.ratio,
+                        listening: false
+                    });
+                number.position( section.position );
+                number.y( number.y() + section.size.height / 2 - number.height() / 2 );
+                group.add( number );
+            });
 
             return group;
         },
@@ -968,18 +1061,20 @@ var app = app || {};
 
             labelMM.add(new Konva.Tag({
                 fill: 'white',
-                stroke: 'grey'
+                stroke: 'grey',
+                strokeWidth: 0.5
             }));
             var textMM = new Konva.Text({
                 text: app.utils.format.dimension_mm(params.getter()),
-                padding: 2,
+                padding: 4,
+                fontFamily: fontFamily,
                 fontSize: 11,
                 fill: 'black'
             });
 
             labelMM.add(textMM);
             labelMM.position({
-                x: width - textMM.width() - 5,
+                x: width - textMM.width() - 2,
                 y: height / 2 + textMM.height() / 2
             });
 
@@ -988,14 +1083,16 @@ var app = app || {};
 
             labelInches.add(new Konva.Tag({
                 fill: 'white',
-                stroke: 'grey'
+                stroke: 'grey',
+                strokeWidth: 0.5
             }));
             var inches = app.utils.convert.mm_to_inches(params.getter());
             var val = app.utils.format.dimension(inches, 'fraction', this.state && this.state.inchesDisplayMode);
             var textInches = new Konva.Text({
                 text: val,
-                padding: 2,
-                fill: 'black'
+                padding: 4,
+                fill: 'black',
+                fontFamily: fontFamily
             });
 
             labelInches.add(textInches);
@@ -1064,11 +1161,13 @@ var app = app || {};
 
             labelMM.add(new Konva.Tag({
                 fill: 'white',
-                stroke: 'grey'
+                stroke: 'grey',
+                strokeWidth: 0.5
             }));
             var textMM = new Konva.Text({
                 text: app.utils.format.dimension_mm(params.getter()),
-                padding: 2,
+                padding: 4,
+                fontFamily: fontFamily,
                 fontSize: 11,
                 fill: 'black'
             });
@@ -1083,14 +1182,16 @@ var app = app || {};
 
             labelInches.add(new Konva.Tag({
                 fill: 'white',
-                stroke: 'grey'
+                stroke: 'grey',
+                strokeWidth: 0.5
             }));
             var inches = app.utils.convert.mm_to_inches(params.getter());
             var val = app.utils.format.dimension(inches, 'fraction', this.state && this.state.inchesDisplayMode);
             var textInches = new Konva.Text({
                 text: val,
-                padding: 2,
-                fill: 'black'
+                padding: 4,
+                fill: 'black',
+                fontFamily: fontFamily
             });
 
             labelInches.add(textInches);
@@ -1150,6 +1251,7 @@ var app = app || {};
                             }
 
                             this.model.setSectionMullionPosition(mul.id, val);
+                            this.updateSection(mul.id);
                         }.bind(this);
                     }
 
@@ -1180,6 +1282,7 @@ var app = app || {};
                             }
 
                             this.model.setSectionMullionPosition(mul.id, val);
+                            this.updateSection(mul.id);
                         }.bind(this);
                     }
 
@@ -1206,6 +1309,7 @@ var app = app || {};
                     if (horizontalMullions.length === 1) {
                         params.setter = function (val) {
                             this.model.setSectionMullionPosition(mul.id, val);
+                            this.updateSection(mul.id);
                         }.bind(this);
                     }
 
@@ -1232,6 +1336,7 @@ var app = app || {};
                     if (horizontalMullions.length === 1) {
                         params.setter = function (val) {
                             this.model.setSectionMullionPosition(mul.id, this.model.getInMetric('height', 'mm') - val);
+                            this.updateSection(mul.id);
                         }.bind(this);
                     }
 
@@ -1244,9 +1349,12 @@ var app = app || {};
                 }
             }.bind(this));
 
+            var root = this.model.generateFullRoot();
+
             var verticalWholeMertic = this.createVerticalMetric(metricSize, height, {
                 setter: function (val) {
                     this.model.setInMetric('height', val, 'mm');
+                    this.updateSection( root.id, 'horizontal' );
                 }.bind(this),
                 getter: function () {
                     return this.model.getInMetric('height', 'mm');
@@ -1263,6 +1371,7 @@ var app = app || {};
             var horizontalWholeMertic = this.createHorizontalMetric(width, metricSize, {
                 setter: function (val) {
                     this.model.setInMetric('width', val, 'mm');
+                    this.updateSection( root.id, 'vertical' );
                 }.bind(this),
                 getter: function () {
                     return this.model.getInMetric('width', 'mm');
@@ -1578,6 +1687,31 @@ var app = app || {};
             this.stage.width(width || this.$('#drawing').get(0).offsetWidth);
             this.stage.height(height || this.$('#drawing').get(0).offsetHeight);
         },
+        updateSection: function (sectionId, type) {
+            var view = this;
+            var section = this.model.getSection(sectionId);
+
+            type = type || section.divider;
+
+            if (type === 'both') {
+                view.updateSection( sectionId, 'vertical');
+                view.updateSection( sectionId, 'horizontal');
+            }
+
+            // Update glazing bars
+            if ( section.bars && section.bars[type] && section.bars[type].length ) {
+                view.glazing_view
+                    .setSection( section.id )
+                    .handleBarsNumberChange( type );
+            }
+
+            // If section has children — update them recursively
+            if ( section.sections && section.sections.length ) {
+                section.sections.forEach(function (child) {
+                    view.updateSection( child.id, type );
+                });
+            }
+        },
 
         updateRenderedScene: function () {
             this.updateUI();
@@ -1598,6 +1732,7 @@ var app = app || {};
                 selectedSashId: null
             });
         },
+
         shouldDrawHandle: function (type) {
             var result = false;
             var typeResult = false;

@@ -156,6 +156,11 @@ var app = app || {};
         getAvailableFillingTypes: function () {
             return this.filling_types.models;
         },
+        getAvailableFillingTypeNames: function () {
+            return this.getAvailableFillingTypes().map(function (item) {
+                return item.get('name');
+            });
+        },
         getProfileByNameOrNew: function (profile_name) {
             var profile = this.profiles.findWhere({name: profile_name});
 

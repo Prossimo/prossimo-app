@@ -57,10 +57,50 @@ var app = app || {};
             };
         },
         getDescription: function () {
+            var view = this;
             var project_settings = app.settings.getProjectSettings();
             var f = app.utils.format;
             var c = app.utils.convert;
             var m = app.utils.math;
+
+            function getFillingPerimeter(width, height) {
+                return view.options.show_sizes_in_mm ?
+                    f.dimensions_mm(width, height) :
+                    f.dimensions(
+                        c.mm_to_inches(width),
+                        c.mm_to_inches(height),
+                        'fraction',
+                        project_settings && project_settings.get('inches_display_mode')
+                    );
+            }
+
+            function getFillingArea(width, height, format) {
+                format = format || 'sup';
+
+                var result = view.options.show_sizes_in_mm ?
+                    f.square_meters(m.square_meters(width, height)) :
+                    f.square_feet(m.square_feet(c.mm_to_inches(width),
+                    c.mm_to_inches(height)), 2, format);
+
+                return result;
+            }
+
+            function getFillingSize(width, height) {
+                var filling_size = getFillingPerimeter(width, height);
+                var filling_area = getFillingArea(width, height);
+
+                return filling_size + ' (' + filling_area + ')';
+            }
+
+            function getSectionInfo(source) {
+                var result = {};
+
+                result.filling_is_glass = source.filling.type === 'glass';
+                result.filling_name = source.filling.name;
+                result.filling_size = getFillingSize( source.filling.width, source.filling.height );
+
+                return result;
+            }
 
             var sash_list_source = this.model.getSashList(null, null, this.options.show_outside_units_view &&
                 project_settings && project_settings.get('hinge_indicator_mode') === 'american');
@@ -69,7 +109,7 @@ var app = app || {};
             //  This is the list of params that we want to see in the quote. We
             //  throw out attributes that don't apply to the current unit
             var params_list = _.filter(
-                ['glazing', 'internal_color', 'external_color',
+                ['rough_opening', 'glazing', 'internal_color', 'external_color',
                 'interior_handle', 'exterior_handle', 'description', 'hardware_type',
                 'lock_mechanism', 'glazing_bead', 'gasket_color', 'hinge_style',
                 'opening_direction', 'internal_sill', 'external_sill', 'glazing_bar_type'],
@@ -91,32 +131,13 @@ var app = app || {};
             //  Add section for each sash (Sash #N title + sash properties)
             _.each(sash_list_source, function (source_item, index) {
                 var sash_item = {};
-                var filling_size;
-                var filling_area;
                 var opening_size;
                 var opening_area;
                 var filling_type;
+                var section_info;
 
                 sash_item.name = 'Sash #' + (index + 1);
                 sash_item.type = source_item.type;
-
-                filling_size = this.options.show_sizes_in_mm ?
-                    f.dimensions_mm(source_item.filling.width, source_item.filling.height) :
-                    f.dimensions(
-                        c.mm_to_inches(source_item.filling.width),
-                        c.mm_to_inches(source_item.filling.height),
-                        'fraction',
-                        project_settings && project_settings.get('inches_display_mode')
-                    );
-
-                filling_area = this.options.show_sizes_in_mm ?
-                    f.square_meters(m.square_meters(source_item.filling.width, source_item.filling.height)) :
-                    f.square_feet(m.square_feet(c.mm_to_inches(source_item.filling.width),
-                        c.mm_to_inches(source_item.filling.height)), 2, 'sup');
-
-                sash_item.filling_is_glass = source_item.filling.type === 'glass';
-                sash_item.filling_name = source_item.filling.name;
-                sash_item.filling_size = filling_size + ' (' + filling_area + ')';
 
                 //  Show supplier name for filling if it exists
                 if ( this.options.show_supplier_filling_name && app.settings && sash_item.filling_name ) {
@@ -145,11 +166,39 @@ var app = app || {};
                     sash_item.opening_size = opening_size + ' (' + opening_area + ')';
                 }
 
+                //  Child sections
+                if ( source_item.sections.length ) {
+                    var sum = 0;
+
+                    sash_item.sections = [];
+
+                    _.each(source_item.sections, function (section, s_index) {
+                        var section_item = {};
+
+                        section_item.name = 'Section #' + (index + 1) + '.' + (s_index + 1);
+                        section_info = getSectionInfo(section);
+                        _.extend(section_item, section_info);
+
+                        if ( section_info.filling_is_glass ) {
+                            sum += parseFloat(getFillingArea(section.filling.width,
+                                section.filling.height, 'numeric'));
+                        }
+
+                        sash_item.sections.push(section_item);
+                    });
+
+                    sash_item.daylight_sum = sum ? f.square_feet(sum, 2, 'sup') : false;
+                } else {
+                    section_info = getSectionInfo(source_item);
+                    _.extend(sash_item, section_info);
+                }
+
                 sashes.push(sash_item);
             }, this);
 
             var name_title_hash = _.extend({
                 size: 'Size',
+                rough_opening: 'Rough Opening',
                 system: 'System'
             }, _.object( _.pluck(source_hash, 'name'), _.pluck(source_hash, 'title') ), {
                 glazing: this.model.profile.isSolidPanelPossible() ||
@@ -175,7 +224,12 @@ var app = app || {};
                         app.settings.getFillingTypeByName(this.model.get('glazing')).get('supplier_name') :
                         this.model.get('glazing')
                     ) :
-                    this.model.get('glazing')
+                    this.model.get('glazing'),
+                rough_opening: this.options.show_sizes_in_mm ?
+                    f.dimensions_mm(c.inches_to_mm(this.model.getRoughOpeningWidth()),
+                        c.inches_to_mm(this.model.getRoughOpeningHeight())) :
+                    f.dimensions(this.model.getRoughOpeningWidth(), this.model.getRoughOpeningHeight(),
+                        null, project_settings.get('inches_display_mode') || null)
             };
 
             var params = _.map(name_title_hash, function (item, key) {

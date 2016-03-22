@@ -271,6 +271,7 @@ var app = app || {};
                             cells: self.getCellsSpecificOptions(),
                             colHeaders: self.getColumnHeaders(),
                             rowHeaders: true,
+                            rowHeights: 25,
                             trimDropdown: false,
                             maxRows: function () {
                                 return self.collection.length;

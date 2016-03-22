@@ -1,0 +1,63 @@
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'pt-sans', Helvetica, Arial, sans-serif;
+}
+
+.case-contents {
+    width: 1550px;
+    overflow: hidden;
+}
+
+.case-contents > div {
+    float: left;
+    width: 33%;
+    border: 1px solid #ccc;
+}
+
+.case-contents > div + div {
+    border-left: none;
+}
+
+.case-contents > div h4 {
+    text-align: center;
+}
+
+.case-contents > div img {
+    outline: 1px dotted #ddd;
+}
+
+.success {
+    color: green;
+}
+
+.error {
+    color: red;
+}
+
+.diff-data p {
+    margin: 0;
+}
+
+.case-data {
+    margin: 2rem 0;
+}
+
+.unit-properties,
+.profile-properties,
+.preview-settings {
+    font-size: 0.8em;
+}
+
+.unit-properties p,
+.unit-properties ul,
+.profile-properties p,
+.profile-properties ul,
+.preview-settings p,
+.preview-settings ul {
+    margin: 0;
+}

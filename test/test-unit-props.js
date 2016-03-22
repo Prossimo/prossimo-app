@@ -621,6 +621,62 @@ test('getSashName function', function () {
         'Name for tilt_turn_left type in reversed hinges mode');
 });
 
+//  ------------------------------------------------------------------------
+//  Total daylight calculations for sections of an operable sash:
+//  https://github.com/prossimo-ben/prossimo-app/issues/126
+//  ------------------------------------------------------------------------
+
+test('Total daylight calculations for sections of an operable sash', function () {
+    var unit;
+    var full_root;
+    var root_id;
+    var sash_list;
+
+    unit = new app.Unit({
+        width: 8 * 12 + 6,      //  2591 mm
+        height: 6 * 12 + 8      //  2032 mm
+    });
+
+    unit.profile = new app.Profile({
+        frame_width: 70,
+        mullion_width: 92,
+        sash_frame_width: 82,
+        sash_frame_overlap: 34,
+        sash_mullion_overlap: 12,
+        unit_type: 'Window'
+    });
+
+    full_root = unit.generateFullRoot();
+    root_id = full_root.id;
+    unit.setSectionSashType(root_id, 'tilt_turn_right');
+
+    sash_list = unit.getSashList();
+
+    //  Opening
+    equal(sash_list[0].opening.width.toFixed(), 2451, 'Operable sash opening width');
+    equal(sash_list[0].opening.height.toFixed(), 1892, 'Operable sash opening height');
+
+    //  Sash frame
+    equal(sash_list[0].sash_frame.width.toFixed(), 2519, 'Operable sash sash frame width');
+    equal(sash_list[0].sash_frame.height.toFixed(), 1960, 'Operable sash sash frame height');
+
+    //  Glazing
+    equal(sash_list[0].filling.width.toFixed(), 2355, 'Operable sash glazing width');
+    equal(sash_list[0].filling.height.toFixed(), 1796, 'Operable sash glazing height');
+
+    //  Now we split operable sash with a horizontal mullion
+    unit.splitSection(root_id, 'horizontal');
+    sash_list = unit.getSashList();
+
+    //  Top section
+    equal(sash_list[0].sections[0].filling.width.toFixed(), 2355, 'Top section glazing width');
+    equal(sash_list[0].sections[0].filling.height.toFixed(), 852, 'Top section glazing height');
+
+    //  Bottom section (is identical to the top one)
+    equal(sash_list[0].sections[1].filling.width.toFixed(), 2355, 'Bottom section glazing width');
+    equal(sash_list[0].sections[1].filling.height.toFixed(), 852, 'Bottom section glazing height');
+});
+
 test('hasGlazingBars function', function () {
     var unit_1 = new app.Unit({
         width: 5 * 12 + 6,
