@@ -742,65 +742,70 @@ var app = app || {};
             this.appendPopovers();
         },
         onRender: function () {
-            var self = this;
-            var dropdown_scroll_reset = false;
+            var is_visible = this.options.is_always_visible ||
+                this.table_visibility === 'visible';
 
-            var fixed_columns = ['mark', 'quantity', 'width', 'height', 'drawing'];
-            var active_tab_columns = self.getActiveTab().columns;
-            var fixed_columns_count = 0;
+            if ( is_visible ) {
+                var self = this;
+                var dropdown_scroll_reset = false;
 
-            _.each(fixed_columns, function (column) {
-                if ( _.indexOf(active_tab_columns, column) !== -1 ) {
-                    fixed_columns_count += 1;
-                }
-            });
+                var fixed_columns = ['mark', 'quantity', 'width', 'height', 'drawing'];
+                var active_tab_columns = self.getActiveTab().columns;
+                var fixed_columns_count = 0;
 
-            //  We use setTimeout because we want to wait until flexbox
-            //  sizes are calculated properly
-            setTimeout(function () {
-                self.hot = new Handsontable(self.ui.$hot_container[0], {
-                    data: self.getActiveTab().collection,
-                    columns: self.getActiveTabColumnOptions(),
-                    cells: self.getActiveTabCellsSpecificOptions(),
-                    colHeaders: self.getActiveTabHeaders(),
-                    rowHeaders: true,
-                    rowHeights: function () {
-                        return _.contains(self.getActiveTab().columns, 'drawing') ||
-                            _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
-                    },
-                    trimDropdown: false,
-                    maxRows: function () {
-                        return self.getActiveTab().collection.length;
-                    },
-                    fixedColumnsLeft: fixed_columns_count
+                _.each(fixed_columns, function (column) {
+                    if ( _.indexOf(active_tab_columns, column) !== -1 ) {
+                        fixed_columns_count += 1;
+                    }
                 });
-            }, 5);
 
-            this.appendPopovers();
+                //  We use setTimeout because we want to wait until flexbox
+                //  sizes are calculated properly
+                setTimeout(function () {
+                    self.hot = new Handsontable(self.ui.$hot_container[0], {
+                        data: self.getActiveTab().collection,
+                        columns: self.getActiveTabColumnOptions(),
+                        cells: self.getActiveTabCellsSpecificOptions(),
+                        colHeaders: self.getActiveTabHeaders(),
+                        rowHeaders: true,
+                        rowHeights: function () {
+                            return _.contains(self.getActiveTab().columns, 'drawing') ||
+                                _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
+                        },
+                        trimDropdown: false,
+                        maxRows: function () {
+                            return self.getActiveTab().collection.length;
+                        },
+                        fixedColumnsLeft: fixed_columns_count
+                    });
+                }, 5);
 
-            clearInterval(this.dropdown_scroll_timer);
-            this.dropdown_scroll_timer = setInterval(function () {
-                var editor = self.hot && self.hot.getActiveEditor();
+                this.appendPopovers();
 
-                if ( editor && editor.htContainer && !dropdown_scroll_reset ) {
-                    dropdown_scroll_reset = true;
-                    editor.htContainer.scrollIntoView(false);
-                } else {
-                    dropdown_scroll_reset = false;
+                clearInterval(this.dropdown_scroll_timer);
+                this.dropdown_scroll_timer = setInterval(function () {
+                    var editor = self.hot && self.hot.getActiveEditor();
+
+                    if ( editor && editor.htContainer && !dropdown_scroll_reset ) {
+                        dropdown_scroll_reset = true;
+                        editor.htContainer.scrollIntoView(false);
+                    } else {
+                        dropdown_scroll_reset = false;
+                    }
+                }, 100);
+
+                if ( this.total_prices_view ) {
+                    this.total_prices_view.destroy();
                 }
-            }, 100);
 
-            if ( this.total_prices_view ) {
-                this.total_prices_view.destroy();
+                this.total_prices_view = new app.UnitsTableTotalPricesView({
+                    model: app.current_project,
+                    units: this.collection,
+                    extras: this.options.extras
+                });
+
+                this.ui.$total_prices_container.append(this.total_prices_view.render().el);
             }
-
-            this.total_prices_view = new app.UnitsTableTotalPricesView({
-                model: app.current_project,
-                units: this.collection,
-                extras: this.options.extras
-            });
-
-            this.ui.$total_prices_container.append(this.total_prices_view.render().el);
         },
         onDestroy: function () {
             clearInterval(this.dropdown_scroll_timer);
