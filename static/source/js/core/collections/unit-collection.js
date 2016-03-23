@@ -81,6 +81,15 @@ var app = app || {};
             }, this);
 
             return total_quantity;
+        },
+        getTotalSquareFeet: function () {
+            var total_area = 0;
+
+            this.each(function (item) {
+                total_area += item.getTotalSquareFeet();
+            });
+
+            return total_area;
         }
     });
 })();

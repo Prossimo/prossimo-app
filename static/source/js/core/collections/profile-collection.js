@@ -14,7 +14,11 @@ var app = app || {};
         reorder_property_name: 'profiles',
         parse: function (data) {
             return _.map(data.profiles, function (profile) {
-                return _.omit(profile, ['units']);
+                var keys_to_omit = ['units'];
+
+                return _.pick(profile, function (value, key) {
+                    return !_.isNull(value) && !_.contains(keys_to_omit, key);
+                });
             });
         },
         initialize: function (models, options) {

@@ -31,12 +31,12 @@ var app = app || {};
                     title: 'Specs',
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'width', 'height', 'drawing',
-                        'customer_image', 'width_mm', 'height_mm', 'type', 'description',
+                        'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'description',
                         'notes', 'exceptions', 'profile_name', 'system', 'external_color',
                         'internal_color', 'interior_handle', 'exterior_handle', 'hardware_type',
                         'lock_mechanism', 'glazing_bead', 'gasket_color',
                         'hinge_style', 'opening_direction', 'threshold',
-                        'internal_sill', 'external_sill', 'glazing', 'glazing_bar_width',
+                        'internal_sill', 'external_sill', 'glazing', 'glazing_bar_type', 'glazing_bar_width',
                         'uw', 'u_value', 'move_item', 'remove_item']
                 },
                 prices: {
@@ -198,6 +198,7 @@ var app = app || {};
             }
         },
         getGetterFunction: function (unit_model, column_name) {
+            var project_settings = app.settings.getProjectSettings();
             var f = app.utils.format;
             var getter;
 
@@ -209,7 +210,8 @@ var app = app || {};
                     return model.getHeightMM();
                 },
                 dimensions: function (model) {
-                    return f.dimensions(model.get('width'), model.get('height'));
+                    return f.dimensions(model.get('width'), model.get('height'), null,
+                        project_settings.get('inches_display_mode') || null);
                 },
                 unit_cost: function (model) {
                     return model.getUnitCost();
@@ -269,6 +271,10 @@ var app = app || {};
                 },
                 original_cost: function (model) {
                     return model.getOriginalCost();
+                },
+                rough_opening: function (model) {
+                    return f.dimensions(model.getRoughOpeningWidth(), model.getRoughOpeningHeight(), null,
+                        project_settings.get('inches_display_mode') || null);
                 }
             };
 
@@ -424,7 +430,7 @@ var app = app || {};
                 },
                 dimensions: {
                     readOnly: true,
-                    renderer: app.hot_renderers.getFormattedRenderer('price_usd')
+                    renderer: app.hot_renderers.getFormattedRenderer('align_right')
                 },
                 unit_cost: {
                     readOnly: true,
@@ -505,40 +511,63 @@ var app = app || {};
                     renderer: app.hot_renderers.removeItemRenderer
                 },
                 internal_color: {
-                    type: 'autocomplete',
-                    source: app.settings.getColors()
+                    type: 'dropdown',
+                    source: _.union(
+                        app.settings.getColors(),
+                        this.getActiveTab().collection.pluck('internal_color')
+                    ).sort()
                 },
                 external_color: {
-                    type: 'autocomplete',
-                    source: app.settings.getColors()
+                    type: 'dropdown',
+                    source: _.union(
+                        app.settings.getColors(),
+                        this.getActiveTab().collection.pluck('external_color')
+                    ).sort()
                 },
                 interior_handle: {
-                    type: 'autocomplete',
-                    source: app.settings.getInteriorHandleTypes()
+                    type: 'dropdown',
+                    source: _.union(
+                        app.settings.getInteriorHandleTypes(),
+                        this.getActiveTab().collection.pluck('interior_handle')
+                    ).sort()
                 },
                 hinge_style: {
-                    type: 'autocomplete',
-                    source: app.settings.getHingeTypes()
+                    type: 'dropdown',
+                    source: _.union(
+                        app.settings.getHingeTypes(),
+                        this.getActiveTab().collection.pluck('hinge_style')
+                    ).sort()
                 },
                 glazing_bead: {
-                    type: 'autocomplete',
-                    source: app.settings.getGlazingBeadTypes()
+                    type: 'dropdown',
+                    source: _.union(
+                        app.settings.getGlazingBeadTypes(),
+                        this.getActiveTab().collection.pluck('glazing_bead')
+                    ).sort()
                 },
                 glazing: {
                     type: 'dropdown',
-                    source: app.settings.getAvailableFillingTypes().map(function (item) {
-                        return item.get('name');
-                    })
+                    source: app.settings.getAvailableFillingTypeNames()
+                },
+                glazing_bar_type: {
+                    type: 'dropdown',
+                    source: _.union(
+                        app.settings.getGlazingBarTypes(),
+                        this.getActiveTab().collection.pluck('glazing_bar_type')
+                    ).sort()
                 },
                 glazing_bar_width: {
-                    type: 'autocomplete',
+                    type: 'dropdown',
                     source: app.settings.getGlazingBarWidths().map(function (item) {
                         return item.toString();
                     })
                 },
                 gasket_color: {
-                    type: 'autocomplete',
-                    source: app.settings.getGasketColors()
+                    type: 'dropdown',
+                    source: _.union(
+                        app.settings.getGasketColors(),
+                        this.getActiveTab().collection.pluck('gasket_color')
+                    ).sort()
                 },
                 opening_direction: {
                     type: 'dropdown',
@@ -565,6 +594,10 @@ var app = app || {};
                 },
                 original_cost: {
                     readOnly: project_settings && project_settings.get('pricing_mode') === 'estimates'
+                },
+                rough_opening: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('align_right')
                 }
             };
 
@@ -617,6 +650,9 @@ var app = app || {};
                         cell_properties.readOnly = true;
                         cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
                     } else if ( item.isOperableOnlyAttribute(property) && !item.hasOperableSections() ) {
+                        cell_properties.readOnly = true;
+                        cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
+                    } else if ( item.isGlazingBarProperty(property) && !item.hasGlazingBars() ) {
                         cell_properties.readOnly = true;
                         cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
                     }
@@ -679,7 +715,8 @@ var app = app || {};
                 subtotal_profit: 'Subtotal Profit',
                 subtotal_cost_discounted: 'Subtotal Cost w/Disc.',
                 original_cost: project_settings && project_settings.get('pricing_mode') === 'estimates' ?
-                    'Original Cost (est.)' : 'Original Cost'
+                    'Original Cost (est.)' : 'Original Cost',
+                rough_opening: 'Rough Opening'
             };
 
             return custom_column_headers_hash[column_name];
@@ -696,72 +733,79 @@ var app = app || {};
             if ( this.hot ) {
                 clearTimeout(this.table_update_timeout);
                 this.table_update_timeout = setTimeout(function () {
-                    self.hot.loadData(self.getActiveTab().collection);
+                    if ( !self.isDestroyed ) {
+                        self.hot.loadData(self.getActiveTab().collection);
+                    }
                 }, 20);
             }
 
             this.appendPopovers();
         },
         onRender: function () {
-            var self = this;
-            var dropdown_scroll_reset = false;
+            var is_visible = this.options.is_always_visible ||
+                this.table_visibility === 'visible';
 
-            var fixed_columns = ['mark', 'quantity', 'width', 'height', 'drawing'];
-            var active_tab_columns = self.getActiveTab().columns;
-            var fixed_columns_count = 0;
+            if ( is_visible ) {
+                var self = this;
+                var dropdown_scroll_reset = false;
 
-            _.each(fixed_columns, function (column) {
-                if ( _.indexOf(active_tab_columns, column) !== -1 ) {
-                    fixed_columns_count += 1;
-                }
-            });
+                var fixed_columns = ['mark', 'quantity', 'width', 'height', 'drawing'];
+                var active_tab_columns = self.getActiveTab().columns;
+                var fixed_columns_count = 0;
 
-            //  We use setTimeout because we want to wait until flexbox
-            //  sizes are calculated properly
-            setTimeout(function () {
-                self.hot = new Handsontable(self.ui.$hot_container[0], {
-                    data: self.getActiveTab().collection,
-                    columns: self.getActiveTabColumnOptions(),
-                    cells: self.getActiveTabCellsSpecificOptions(),
-                    colHeaders: self.getActiveTabHeaders(),
-                    rowHeaders: true,
-                    rowHeights: function () {
-                        return _.contains(self.getActiveTab().columns, 'drawing') ||
-                            _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
-                    },
-                    trimDropdown: false,
-                    maxRows: function () {
-                        return self.getActiveTab().collection.length;
-                    },
-                    fixedColumnsLeft: fixed_columns_count
+                _.each(fixed_columns, function (column) {
+                    if ( _.indexOf(active_tab_columns, column) !== -1 ) {
+                        fixed_columns_count += 1;
+                    }
                 });
-            }, 5);
 
-            this.appendPopovers();
+                //  We use setTimeout because we want to wait until flexbox
+                //  sizes are calculated properly
+                setTimeout(function () {
+                    self.hot = new Handsontable(self.ui.$hot_container[0], {
+                        data: self.getActiveTab().collection,
+                        columns: self.getActiveTabColumnOptions(),
+                        cells: self.getActiveTabCellsSpecificOptions(),
+                        colHeaders: self.getActiveTabHeaders(),
+                        rowHeaders: true,
+                        rowHeights: function () {
+                            return _.contains(self.getActiveTab().columns, 'drawing') ||
+                                _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
+                        },
+                        trimDropdown: false,
+                        maxRows: function () {
+                            return self.getActiveTab().collection.length;
+                        },
+                        fixedColumnsLeft: fixed_columns_count
+                    });
+                }, 5);
 
-            clearInterval(this.dropdown_scroll_timer);
-            this.dropdown_scroll_timer = setInterval(function () {
-                var editor = self.hot && self.hot.getActiveEditor();
+                this.appendPopovers();
 
-                if ( editor && editor.htContainer && !dropdown_scroll_reset ) {
-                    dropdown_scroll_reset = true;
-                    editor.htContainer.scrollIntoView(false);
-                } else {
-                    dropdown_scroll_reset = false;
+                clearInterval(this.dropdown_scroll_timer);
+                this.dropdown_scroll_timer = setInterval(function () {
+                    var editor = self.hot && self.hot.getActiveEditor();
+
+                    if ( editor && editor.htContainer && !dropdown_scroll_reset ) {
+                        dropdown_scroll_reset = true;
+                        editor.htContainer.scrollIntoView(false);
+                    } else {
+                        dropdown_scroll_reset = false;
+                    }
+                }, 100);
+
+                if ( this.total_prices_view ) {
+                    this.total_prices_view.destroy();
                 }
-            }, 100);
 
-            if ( this.total_prices_view ) {
-                this.total_prices_view.destroy();
+                this.total_prices_view = new app.UnitsTableTotalPricesView({
+                    model: app.current_project,
+                    units: this.collection,
+                    extras: this.options.extras
+                });
+
+                this.ui.$total_prices_container.append(this.total_prices_view.render().el);
             }
-
-            this.total_prices_view = new app.UnitsTableTotalPricesView({
-                model: app.current_project,
-                units: this.collection,
-                extras: this.options.extras
-            });
-
-            this.ui.$total_prices_container.append(this.total_prices_view.render().el);
         },
         onDestroy: function () {
             clearInterval(this.dropdown_scroll_timer);

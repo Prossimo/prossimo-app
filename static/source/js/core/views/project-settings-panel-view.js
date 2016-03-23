@@ -22,6 +22,9 @@ var app = app || {};
             this.model = app.settings.getProjectSettings();
             this.setToggles();
             this.render();
+
+            this.stopListening(app.current_project, 'set_dependencies');
+            this.listenTo(app.current_project, 'set_dependencies', this.onProjectChanged);
         },
         onChangeValueClick: function (e) {
             var $button = $(e.target);

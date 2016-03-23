@@ -11,7 +11,8 @@ var app = app || {};
             $select: '.selectpicker',
             $prev: '.js-prev-unit',
             $next: '.js-next-unit',
-            $sidebar_toggle: '.js-sidebar-toggle'
+            $sidebar_toggle: '.js-sidebar-toggle',
+            $tab_container: '.tab-container'
         },
         events: {
             'change @ui.$select': 'onChange',
@@ -27,12 +28,6 @@ var app = app || {};
                 },
                 active_unit_profile_properties: {
                     title: 'Profile'
-                },
-                active_unit_sashes: {
-                    title: 'Sashes'
-                },
-                active_unit_image: {
-                    title: 'Image'
                 },
                 active_unit_estimated_section_prices: {
                     title: 'Est. Prices'
@@ -72,13 +67,23 @@ var app = app || {};
                 return;
             }
 
+            //  Left
             if ( e.keyCode === 37 ) {
                 this.onPrevBtn();
+            //  Right
+            } else if ( e.keyCode === 39 ) {
+                this.onNextBtn();
+            //  Page Up
+            } else if ( e.keyCode === 33 ) {
+                this.goToPrevTab();
+            //  Page Down
+            } else if ( e.keyCode === 34 ) {
+                this.goToNextTab();
+            } else {
+                return;
             }
 
-            if ( e.keyCode === 39 ) {
-                this.onNextBtn();
-            }
+            e.preventDefault();
         },
         onNextBtn: function () {
             var collection_size = this.serializeData().unit_list.length;
@@ -108,6 +113,20 @@ var app = app || {};
                 this.selectUnit(this.collection.at(prev_index));
             }
         },
+        //  This is not very cool because it breaks "don't store state in html"
+        //  rule, but it's better than rewriting everything
+        goToNextTab: function () {
+            var $active_tab = this.ui.$tab_container.find('.active');
+            var $next_tab = $active_tab.next().length ? $active_tab.next() : $active_tab.siblings().first();
+
+            $next_tab.find('a').trigger('click');
+        },
+        goToPrevTab: function () {
+            var $active_tab = this.ui.$tab_container.find('.active');
+            var $prev_tab = $active_tab.prev().length ? $active_tab.prev() : $active_tab.siblings().last();
+
+            $prev_tab.find('a').trigger('click');
+        },
         onSidebarToggle: function () {
             this.$el.trigger({ type: 'sidebar-toggle' });
         },
@@ -130,10 +149,10 @@ var app = app || {};
             var active_unit;
 
             var relevant_properties = [
-                'mark', 'width', 'height', 'type', 'description', 'notes',
+                'mark', 'width', 'height', 'description', 'notes',
                 'internal_color', 'external_color', 'gasket_color', 'uw',
                 'glazing', 'hinge_style', 'opening_direction', 'internal_sill',
-                'external_sill', 'glazing_bar_width'
+                'external_sill', 'glazing_bar_type', 'glazing_bar_width'
             ];
 
             if ( this.options.parent_view.active_unit ) {
@@ -188,30 +207,50 @@ var app = app || {};
             var sash_list_source;
             var sashes = [];
 
+            function getFillingPerimeter(width, height) {
+                return f.dimensions(c.mm_to_inches(width),
+                        c.mm_to_inches(height), 'fraction',
+                        project_settings && project_settings.get('inches_display_mode'));
+            }
+
+            function getFillingArea(width, height, format) {
+                format = format || 'sup';
+
+                var result = f.square_feet(m.square_feet(c.mm_to_inches(width),
+                             c.mm_to_inches(height)), 2, format);
+
+                return result;
+            }
+
+            function getFillingSize(width, height) {
+                var filling_size = getFillingPerimeter(width, height);
+                var filling_area = getFillingArea(width, height);
+
+                return filling_size + ' (' + filling_area + ')';
+            }
+
+            function getSectionInfo(source) {
+                var result = {};
+
+                result.filling_is_glass = source.filling.type === 'glass';
+                result.filling_name = source.filling.name;
+                result.filling_size = getFillingSize( source.filling.width, source.filling.height );
+
+                return result;
+            }
+
             if ( this.options.parent_view.active_unit ) {
                 sash_list_source = this.options.parent_view.active_unit.getSashList(null, null,
                     project_settings && project_settings.get('hinge_indicator_mode') === 'american');
 
                 _.each(sash_list_source, function (source_item, index) {
                     var sash_item = {};
-                    var filling_size;
-                    var filling_area;
                     var opening_size;
                     var opening_area;
+                    var section_info;
 
                     sash_item.name = 'Sash #' + (index + 1);
                     sash_item.type = source_item.type;
-
-                    filling_size = f.dimensions(c.mm_to_inches(source_item.filling.width),
-                        c.mm_to_inches(source_item.filling.height), 'fraction',
-                        project_settings && project_settings.get('inches_display_mode'));
-
-                    filling_area = f.square_feet(m.square_feet(c.mm_to_inches(source_item.filling.width),
-                        c.mm_to_inches(source_item.filling.height)), 2, 'sup');
-
-                    sash_item.filling_is_glass = source_item.filling.type === 'glass';
-                    sash_item.filling_name = source_item.filling.name;
-                    sash_item.filling_size = filling_size + ' (' + filling_area + ')';
 
                     if ( source_item.opening.height && source_item.opening.width ) {
                         opening_size = f.dimensions(c.mm_to_inches(source_item.opening.width),
@@ -222,6 +261,33 @@ var app = app || {};
                             c.mm_to_inches(source_item.opening.height)), 2, 'sup');
 
                         sash_item.opening_size = opening_size + ' (' + opening_area + ')';
+                    }
+
+                    //  Child sections
+                    if ( source_item.sections.length ) {
+                        var sum = 0;
+
+                        sash_item.sections = [];
+
+                        _.each(source_item.sections, function (section, s_index) {
+                            var section_item = {};
+
+                            section_item.name = 'Section #' + (index + 1) + '.' + (s_index + 1);
+                            section_info = getSectionInfo(section);
+                            _.extend(section_item, section_info);
+
+                            if ( section_info.filling_is_glass ) {
+                                sum += parseFloat(getFillingArea(section.filling.width,
+                                    section.filling.height, 'numeric'));
+                            }
+
+                            sash_item.sections.push(section_item);
+                        });
+
+                        sash_item.daylight_sum = sum ? f.square_feet(sum, 2, 'sup') : false;
+                    } else {
+                        section_info = getSectionInfo(source_item);
+                        _.extend(sash_item, section_info);
                     }
 
                     sashes.push(sash_item);
@@ -265,8 +331,6 @@ var app = app || {};
             var tab_contents = {
                 active_unit_properties: this.getActiveUnitProperties(),
                 active_unit_profile_properties: this.getActiveUnitProfileProperties(),
-                active_unit_sashes: this.getActiveUnitSashList(),
-                active_unit_image: this.getActiveUnitImage(),
                 active_unit_estimated_section_prices: this.getActiveUnitEstimatedSectionPrices()
             };
 
@@ -281,10 +345,10 @@ var app = app || {};
                         dimensions: app.utils.format.dimensions(item.get('width'), item.get('height'), 'fraction')
                     };
                 }, this),
+                active_unit_image: this.getActiveUnitImage(),
+                active_unit_sashes: this.getActiveUnitSashList(),
                 active_unit_properties: tab_contents.active_unit_properties,
                 active_unit_profile_properties: tab_contents.active_unit_profile_properties,
-                active_unit_sashes: tab_contents.active_unit_sashes,
-                active_unit_image: tab_contents.active_unit_image,
                 active_unit_estimated_section_prices: tab_contents.active_unit_estimated_section_prices,
                 tabs: _.each(this.tabs, function (item, key) {
                     item.is_active = key === this.active_tab;

@@ -91,6 +91,7 @@ module.exports = function (grunt) {
     grunt.initConfig({
         sourceUrl: 'static/source',
         buildUrl: 'static/public',
+        fontsUrl: 'static/fonts',
         bowerUrl: 'bower_components',
 
         gitinfo: {},
@@ -100,6 +101,7 @@ module.exports = function (grunt) {
             dev: {
                 options: {
                     modifyVars: {
+                        fontsPath: '"../../<%= fontsUrl %>"',
                         bowerPath: '"../../<%= bowerUrl %>"'
                     }
                 },
@@ -111,6 +113,7 @@ module.exports = function (grunt) {
             build: {
                 options: {
                     modifyVars: {
+                        fontsPath: '"../../<%= fontsUrl %>"',
                         bowerPath: '"../../<%= bowerUrl %>"'
                     }
                 },
@@ -131,10 +134,10 @@ module.exports = function (grunt) {
                     partialsUseNamespace: true,
                     partialRegex: /.*/,
                     partialsPathRegex: /\/partials\//,
-                    processName: function(filePath) {
+                    processName: function (filePath) {
                         return filePath.replace(/^static\/source\/templates\//, '').replace(/\.hbs$/, '');
                     },
-                    processPartialName: function(filePath) {
+                    processPartialName: function (filePath) {
                         return filePath.replace(/^static\/source\/templates\//, '').replace(/\.hbs$/, '');
                     }
                 }
@@ -148,10 +151,10 @@ module.exports = function (grunt) {
                     partialsUseNamespace: true,
                     partialRegex: /.*/,
                     partialsPathRegex: /\/partials\//,
-                    processName: function(filePath) {
+                    processName: function (filePath) {
                         return filePath.replace(/^static\/source\/templates\//, '').replace(/\.hbs$/, '');
                     },
-                    processPartialName: function(filePath) {
+                    processPartialName: function (filePath) {
                         return filePath.replace(/^static\/source\/templates\//, '').replace(/\.hbs$/, '');
                     }
                 }
@@ -431,7 +434,8 @@ module.exports = function (grunt) {
         },
 
         qunit: {
-            all: ['test/**/*.html']
+            basic: ['test/*.html'],
+            visual: ['test/visual-test-runner/test-visual.html']
         },
 
         shell: {
@@ -495,7 +499,10 @@ module.exports = function (grunt) {
         'less:dev', 'uglify:vendor_dev', 'cssmin:vendor_dev', 'replace:dev'//, 'pdfjs'
     ]);
 
-    grunt.registerTask('test', ['jscs', 'eslint', 'qunit']);
+    grunt.registerTask('test', ['jscs', 'eslint', 'qunit:basic']);
+    grunt.registerTask('test_visual', ['qunit:visual']);
+    grunt.registerTask('test_all', ['test', 'test_visual']);
+
     grunt.registerTask('deploy_staging', ['test', 'shell:deploy_staging']);
     grunt.registerTask('deploy_production', ['test', 'shell:deploy_production']);
     grunt.registerTask('deploy', ['deploy_staging']);

@@ -26,7 +26,8 @@ var app = app || {};
             $('body').append( this.render().el );
 
             this.ui.$modal.modal({
-                keyboard: false
+                keyboard: false,
+                show: false
             });
 
             this.on('updateSection', this.onUpdate, this);
