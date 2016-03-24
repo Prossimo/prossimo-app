@@ -845,7 +845,9 @@ var app = app || {};
                         maxRows: function () {
                             return self.getActiveTab().collection.length;
                         },
-                        fixedColumnsLeft: fixed_columns_count
+                        fixedColumnsLeft: fixed_columns_count,
+                        viewportRowRenderingOffset: 300,
+                        viewportColumnRenderingOffset: 50
                     });
                 }, 5);
 
