@@ -69,7 +69,7 @@
 .quote-project-info .project-name {
     text-transform: uppercase;
     font-weight: 700;
-    letter-spacing: 0.1em;
+    // letter-spacing: 0.1em;
     font-size: 2em;
 }
 
@@ -105,12 +105,29 @@
     vertical-align: top;
 }
 
+
 //  ------------------------------------------------------------------------
-//  Units
+//  Unit info heading
+//  ------------------------------------------------------------------------
+
+.quote-unit-heading {
+    width: 100%;
+    table-layout: fixed;
+}
+
+
+
+//  ------------------------------------------------------------------------
+//  Unit info
 //  ------------------------------------------------------------------------
 
 .quote-item {
     margin-bottom: 2rem;
+}
+
+.quote-item table + table {
+    position: relative;
+    top: -1px;
 }
 
 .quote-unit {
@@ -118,8 +135,8 @@
     table-layout: fixed;
 }
 
-.product_description,
-.tech_specs {
+td.product_description,
+td.tech_specs {
     font-size: 0.9em;
 }
 
@@ -130,17 +147,43 @@
 
 .product_description ul,
 .tech_specs ul {
+    display: table;
     padding: 0;
     list-style-type: none;
+    width: 100%;
+}
+
+.product_description li,
+.tech_specs li {
+    display: table-row;
+}
+
+.product_description li strong,
+.tech_specs li strong {
+    display: table-cell;
+    padding-right: 2rem;
+    font-weight: 400;
+    font-style: italic;
+    width: 25%;
+    vertical-align: bottom;
+}
+
+.product_description li span,
+.tech_specs li span {
+    display: table-cell;
+    width: 75%;
+    vertical-align: bottom;
 }
 
 li.opening h6 {
-    margin: 1em 0 0.4em;
+    display: table-row;
+    padding: 1em 0 0.4em;
     font-size: 1em;
     font-weight: 700;
 }
 
 li.opening p {
+    display: table-row;
     margin-bottom: 0;
 }
 
@@ -198,8 +241,13 @@ td.customer_image img {
 }
 
 td.product_image,
-th.product_image {
-    width: 32%;
+th.product_image,
+td.product_image_reversed,
+th.product_image_reversed {
+    // width: 32%;
+    // width: 832px;
+    width: 60%;
+    min-width: 832px;
 }
 
 td.product_image img {
@@ -210,7 +258,10 @@ td.product_image img {
 
 td.product_description,
 th.product_description {
-    width: 24%;
+    width: 40%;
+    // width: 24%;
+    // width: auto;
+    // width: calc(100% - 832px);
 }
 
 td.quantity,
@@ -234,19 +285,57 @@ th.extras_product_description {
 .total-units th.total-units-column,
 .grand-total td.price,
 .grand-total th.price {
-    width: 24%;
+    // width: 24%;
+    width: 30%;
 }
 
-.no-customer-image {
-    td.product_image,
-    th.product_image {
-        width: 34%;
-    }
+// .no-customer-image {
+//     td.product_image,
+//     th.product_image,
+//     td.product_image_reversed,
+//     th.product_image_reversed {
+//         // width: 34%;
+//         width: 430px;
+//     }
 
-    td.product_description,
-    th.product_description {
-        width: 38%;
-    }
+
+//     td.product_description,
+//     th.product_description {
+//         // width: 38%;
+//         width: auto;
+//     }
+// }
+
+.product-image-inner th {
+    // padding: 2rem 0 1.5rem;
+    padding: 1.5rem 0 1rem;
+    text-align: center;
+    font-weight: 400;
+    font-style: italic;
+}
+
+.product-image-inner tbody td {
+    padding: 0;
+    border: none;
+}
+
+.sash-list h5 {
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+    padding: 0.5em 1em;
+    border-top: 1px solid darken(@white, 10%);
+    border-bottom: 1px solid darken(@white, 10%);
+    background-color: darken(@white, 1%);
+    font-weight: 700;
+}
+
+.sash-list h6 {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.sash-list .sections li:first-child h6 {
+    margin-top: 0;
 }
 
 
@@ -255,7 +344,7 @@ th.extras_product_description {
 //  ------------------------------------------------------------------------
 
 .quote-table tfoot td {
-    padding: 0.5em 1em;
+    padding: 0.5rem 1rem;
     border: 1px solid darken(@white, 10%);
     background-color: darken(@white, 1%);
     vertical-align: top;
@@ -310,7 +399,7 @@ div + table.grand-total {
 }
 
 .extras-heading {
-    margin: 0.8em 0.8em 0;
+    margin: 0.8rem 0.8rem 0;
     font-size: 1.1em;
     text-align: center;
     text-transform: uppercase;
@@ -318,7 +407,7 @@ div + table.grand-total {
 }
 
 .optional-extras-subheading {
-    margin: 0.2em 0.8em 0;
+    margin: 0.2rem 0.8rem 0;
     font-size: 0.9em;
     text-align: center;
     font-weight: 700;

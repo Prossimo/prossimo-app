@@ -10,15 +10,15 @@ var app = app || {};
         initialize: function () {
             this.listenTo(this.model, 'change', this.render);
         },
-        getQuoteTableAttributes: function () {
+        getQuoteHeadingAttributes: function () {
             var project_settings = app.settings.getProjectSettings();
 
             var name_title_hash = {
                 mark: 'Mark',
                 customer_image: 'Customer Image',
-                product_image: 'Shop Drawing' +
-                    (this.options.show_outside_units_view ? ': <small>View from Exterior</small>' : ''),
-                product_description: 'Product Description',
+                // product_image: 'Shop Drawing' +
+                //     (this.options.show_outside_units_view ? ': <small>View from Exterior</small>' : ''),
+                // product_description: 'Product Description',
                 quantity: 'Qty',
                 price: project_settings && project_settings.get('pricing_mode') === 'estimates' ?
                     'Estimated Price' : 'Price'
@@ -28,16 +28,48 @@ var app = app || {};
                 delete name_title_hash.customer_image;
             }
 
-            if ( !this.shouldShowDrawings() ) {
-                delete name_title_hash.product_image;
-            }
-
             if ( this.options.show_price === false ) {
                 delete name_title_hash.price;
             }
 
-            var table_attributes = _.map(name_title_hash, function (item, key) {
+            var heading_attributes = _.map(name_title_hash, function (item, key) {
                 return { name: key, title: item };
+            }, this);
+
+            return heading_attributes;
+        },
+        getQuoteTableAttributes: function () {
+            // var project_settings = app.settings.getProjectSettings();
+
+            var name_title_hash = {
+                product_image: this.options.show_outside_units_view ?
+                    'View from Exterior' : 'View from Interior',
+                product_image_alternative: this.options.show_outside_units_view ?
+                    'View from Interior' : 'View from Exterior'
+            };
+
+            // if ( !this.shouldShowCustomerImage() ) {
+            //     delete name_title_hash.customer_image;
+            // }
+
+            if ( !this.shouldShowDrawings() ) {
+                delete name_title_hash.product_image;
+                delete name_title_hash.product_image_alternative;
+            }
+
+            // if ( this.options.show_price === false ) {
+            //     delete name_title_hash.price;
+            // }
+
+            // var table_attributes = _.map(name_title_hash, function (item, key) {
+            //     return { name: key, title: item };
+            // }, this);
+
+            var table_attributes = {};
+
+            _.each(name_title_hash, function (item, key) {
+                // return { name: key, title: item };
+                table_attributes[key] = item;
             }, this);
 
             return table_attributes;
@@ -55,6 +87,9 @@ var app = app || {};
                 discount: discount ? f.percent(discount) : null,
                 subtotal_discounted: discount ? f.price_usd(subtotal_price_discounted) : null
             };
+        },
+        getHeading: function () {
+
         },
         getDescription: function () {
             var view = this;
@@ -202,9 +237,10 @@ var app = app || {};
                 system: 'System'
             }, _.object( _.pluck(source_hash, 'name'), _.pluck(source_hash, 'title') ), {
                 glazing: this.model.profile.isSolidPanelPossible() ||
-                    this.model.profile.isFlushPanelPossible() ? 'Glass Packet/Panel Type' : 'Glass Packet',
+                    this.model.profile.isFlushPanelPossible() ? 'Glass Packet / Panel' : 'Glass Packet',
                 threshold: 'Threshold',
-                u_value: 'U Value'
+                u_value: 'U Value',
+                glazing_bar_type: 'Muntin Type'
             });
 
             var params_source = {
@@ -244,17 +280,18 @@ var app = app || {};
         getCustomerImage: function () {
             return this.model.get('customer_image');
         },
-        getProductImage: function () {
+        getProductImage: function (is_alternative) {
             var project_settings = app.settings && app.settings.getProjectSettings();
-            var preview_height = 400;
-            var preview_width = this.model.collection &&
-                this.model.collection.hasAtLeastOneCustomerImage() ? 400 : 450;
+            var position = this.options.show_outside_units_view ?
+                ( !is_alternative ? 'outside' : 'inside' ) :
+                ( !is_alternative ? 'inside' : 'outside' );
+            var preview_size = 400;
 
             return app.preview(this.model, {
-                width: preview_width,
-                height: preview_height,
+                width: preview_size,
+                height: preview_size,
                 mode: 'base64',
-                position: this.options.show_outside_units_view ? 'outside' : 'inside',
+                position: position,
                 hingeIndicatorMode: this.options.force_european_hinge_indicators ? 'european' :
                     project_settings && project_settings.get('hinge_indicator_mode')
             });
@@ -274,6 +311,7 @@ var app = app || {};
             var show_drawings = this.shouldShowDrawings();
 
             return {
+                heading_attributes: this.getQuoteHeadingAttributes(),
                 table_attributes: this.getQuoteTableAttributes(),
                 mark: this.model.get('mark'),
                 description: this.getDescription(),
@@ -283,6 +321,7 @@ var app = app || {};
                 price: this.getPrices(),
                 customer_image: this.getCustomerImage(),
                 product_image: show_drawings ? this.getProductImage() : '',
+                product_image_alternative: show_drawings ? this.getProductImage(true) : '',
                 show_price: this.options.show_price !== false,
                 show_customer_image: show_customer_image,
                 show_drawings: show_drawings
