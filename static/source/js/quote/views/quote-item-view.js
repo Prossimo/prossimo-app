@@ -313,6 +313,7 @@ var app = app || {};
             return {
                 heading_attributes: this.getQuoteHeadingAttributes(),
                 table_attributes: this.getQuoteTableAttributes(),
+                position: parseFloat(this.model.get('position')) + 1,
                 mark: this.model.get('mark'),
                 description: this.getDescription(),
                 notes: this.model.get('notes'),
