@@ -10,6 +10,7 @@ var app = app || {};
         initialize: function () {
             this.listenTo(this.model, 'change', this.render);
         },
+        //  TODO: remove this function
         getQuoteHeadingAttributes: function () {
             var project_settings = app.settings.getProjectSettings();
 
@@ -38,6 +39,7 @@ var app = app || {};
 
             return heading_attributes;
         },
+        //  TODO: remove or rework this function
         getQuoteTableAttributes: function () {
             // var project_settings = app.settings.getProjectSettings();
 

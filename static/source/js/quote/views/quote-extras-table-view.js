@@ -21,6 +21,7 @@ var app = app || {};
         initialize: function () {
             this.listenTo(this.collection, 'all', this.render);
         },
+        //  TODO: remove this function
         getExtrasTableAttributes: function () {
             var name_title_hash = {
                 ref: 'Ref.',
