@@ -1,80 +1,59 @@
 <table class="quote-unit-heading">
-    {{!-- <thead>
-        <tr>
-            {{#each heading_attributes }}
-            <th class="{{ name }}">{{{ title }}}</th>
-            {{/each}}
-        </tr>
-    </thead> --}}
-    <tbody>
-        <tr>
-            <td class="primary-info">
-                <table>
-                    <tbody>
-                        <tr>
-                            <td class="position">
-                                <strong>Ref.</strong>
-                                <span>{{ position }}</span>
-                            </td>
-                            <td class="mark">
-                                <strong>Mark</strong>
-                                <span>{{ mark }}</span>
-                            </td>
-                            <td class="quantity">
-                                <strong>Quantity</strong>
-                                <span>{{ quantity }}</span>
-                            </td>
-                            {{!-- {{#if show_customer_image }}
-                            <td class="customer-image">
-                                {{#if customer_image }}
-                                <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
-                                {{/if}}
-                            </td>
-                            {{/if}} --}}
-                        </tr>
-                    </tbody>
-                </table>
-            </td>
-            {{#if show_price }}
-            <td class="price">
-                <ul class="unit-price">
-                    <li class="unit">
-                        <strong>Unit price:</strong>
-                        <span class="value">{{ price.unit }}</span>
-                    </li>
-                    <li class="subtotal">
-                        <strong>Subtotal:</strong>
-                        <span class="value">{{ price.subtotal }}</span>
-                    </li>
-                </ul>
-            </td>
-            {{#if price.discount }}
-            <td class="price-discounted">
-                <ul class="unit-price">
-                    {{#if price.discount }}<li class="discount">
-                        <strong>Discount:</strong>
-                        <span class="value">{{ price.discount }}</span>
-                    </li>
-                    {{/if}}
-                    {{#if price.subtotal_discounted }}<li class="subtotal">
-                        <strong>Subtotal w/Discount:</strong>
-                        <span class="value">{{ price.subtotal_discounted }}</span>
-                    </li>
-                    {{/if}}
-                </ul>
-            </td>
-            {{/if}}
-            {{/if}}
-        </tr>
-    </tbody>
+    <tbody><tr>
+        <td class="primary-info">
+            <table>
+                <tbody><tr>
+                    <td class="position">
+                        <strong>Ref.</strong>
+                        <span>{{ position }}</span>
+                    </td>
+                    <td class="mark">
+                        <strong>Mark</strong>
+                        <span>{{ mark }}</span>
+                    </td>
+                    <td class="quantity">
+                        <strong>Quantity</strong>
+                        <span>{{ quantity }}</span>
+                    </td>
+                </tr></tbody>
+            </table>
+        </td>
+        {{#if show_price }}
+        <td class="price">
+            <ul class="unit-price">
+                <li class="unit">
+                    <strong>Unit price:</strong>
+                    <span class="value">{{ price.unit }}</span>
+                </li>
+                <li class="subtotal">
+                    <strong>Subtotal:</strong>
+                    <span class="value">{{ price.subtotal }}</span>
+                </li>
+            </ul>
+        </td>
+        {{#if price.discount }}
+        <td class="price-discounted">
+            <ul class="unit-price">
+                {{#if price.discount }}<li class="discount">
+                    <strong>Discount:</strong>
+                    <span class="value">{{ price.discount }}</span>
+                </li>
+                {{/if}}
+                {{#if price.subtotal_discounted }}<li class="subtotal">
+                    <strong>Subtotal w/Discount:</strong>
+                    <span class="value">{{ price.subtotal_discounted }}</span>
+                </li>
+                {{/if}}
+            </ul>
+        </td>
+        {{/if}}
+        {{/if}}
+    </tr></tbody>
 </table>
 
 <table class="quote-unit{{#unless show_customer_image}} no-customer-image{{/unless}}">
     <thead>
         <tr>
-            {{!-- {{#each table_attributes }}
-            <th class="{{ name }}">{{{ title }}}</th>
-            {{/each}} --}}
             {{#if show_drawings }}
             <th class="product-image">Shop Drawing</th>
             {{/if}}
@@ -82,30 +61,22 @@
         </tr>
     </thead>
     <tbody><tr>
-        {{!-- <td class="mark">{{ mark }}</td> --}}
-        {{!-- {{#if show_customer_image }}
-        <td class="customer-image">
-            {{#if customer_image }}
-            <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
-            {{/if}}
-        </td>
-        {{/if}} --}}
         {{#if show_drawings }}
         <td class="product-image{{#if show_customer_image }} has-customer-image{{/if}}">
             <table class="product-image-inner">
                 <tr>
-                    <th>{{ table_attributes.product_image }}</th>
-                    <th>{{ table_attributes.product_image_alternative }}</th>
+                    <th>{{ product_image.title }}</th>
+                    <th>{{ product_image_alternative.title }}</th>
                 </tr>
                 <tr>
                     <td>
-                        {{#if product_image }}
-                        <div class="image-wrapper"><img src="{{ product_image }}" alt=""></div>
+                        {{#if product_image.img }}
+                        <div class="image-wrapper"><img src="{{ product_image.img }}" alt=""></div>
                         {{/if}}
                     </td>
                     <td>
-                        {{#if product_image_alternative }}
-                        <div class="image-wrapper"><img src="{{ product_image_alternative }}" alt=""></div>
+                        {{#if product_image_alternative.img }}
+                        <div class="image-wrapper"><img src="{{ product_image_alternative.img }}" alt=""></div>
                         {{/if}}
                     </td>
                 </tr>
@@ -158,32 +129,5 @@
                 {{/each}}
             </div>
         </td>
-        {{!-- <td class="quantity">{{ quantity }}</td>
-        {{#if show_price }}
-        <td class="price">
-            <table class="unit-price">
-                <tbody>
-                    <tr class="unit">
-                        <td>Unit price:</td>
-                        <td class="value">{{ price.unit }}</td>
-                    </tr>
-                    <tr class="subtotal">
-                        <td>Subtotal:</td>
-                        <td class="value">{{ price.subtotal }}</td>
-                    </tr>
-                    {{#if price.discount }}<tr class="discount">
-                        <td>Discount:</td>
-                        <td class="value">{{ price.discount }}</td>
-                    </tr>
-                    {{/if}}
-                    {{#if price.subtotal-discounted }}<tr class="subtotal">
-                        <td>Subtotal w/Discount:</td>
-                        <td class="value">{{ price.subtotal_discounted }}</td>
-                    </tr>
-                    {{/if}}
-                </tbody>
-            </table>
-        </td>
-        {{/if}} --}}
     </tr></tbody>
 </table>

@@ -10,72 +10,6 @@ var app = app || {};
         initialize: function () {
             this.listenTo(this.model, 'change', this.render);
         },
-        //  TODO: remove this function
-        getQuoteHeadingAttributes: function () {
-            var project_settings = app.settings.getProjectSettings();
-
-            var name_title_hash = {
-                mark: 'Mark',
-                customer_image: 'Customer Image',
-                // product_image: 'Shop Drawing' +
-                //     (this.options.show_outside_units_view ? ': <small>View from Exterior</small>' : ''),
-                // product_description: 'Product Description',
-                quantity: 'Qty',
-                price: project_settings && project_settings.get('pricing_mode') === 'estimates' ?
-                    'Estimated Price' : 'Price'
-            };
-
-            if ( !this.shouldShowCustomerImage() ) {
-                delete name_title_hash.customer_image;
-            }
-
-            if ( this.options.show_price === false ) {
-                delete name_title_hash.price;
-            }
-
-            var heading_attributes = _.map(name_title_hash, function (item, key) {
-                return { name: key, title: item };
-            }, this);
-
-            return heading_attributes;
-        },
-        //  TODO: remove or rework this function
-        getQuoteTableAttributes: function () {
-            // var project_settings = app.settings.getProjectSettings();
-
-            var name_title_hash = {
-                product_image: this.options.show_outside_units_view ?
-                    'View from Exterior' : 'View from Interior',
-                product_image_alternative: this.options.show_outside_units_view ?
-                    'View from Interior' : 'View from Exterior'
-            };
-
-            // if ( !this.shouldShowCustomerImage() ) {
-            //     delete name_title_hash.customer_image;
-            // }
-
-            if ( !this.shouldShowDrawings() ) {
-                delete name_title_hash.product_image;
-                delete name_title_hash.product_image_alternative;
-            }
-
-            // if ( this.options.show_price === false ) {
-            //     delete name_title_hash.price;
-            // }
-
-            // var table_attributes = _.map(name_title_hash, function (item, key) {
-            //     return { name: key, title: item };
-            // }, this);
-
-            var table_attributes = {};
-
-            _.each(name_title_hash, function (item, key) {
-                // return { name: key, title: item };
-                table_attributes[key] = item;
-            }, this);
-
-            return table_attributes;
-        },
         getPrices: function () {
             var f = app.utils.format;
             var unit_price = this.model.getUnitPrice();
@@ -89,9 +23,6 @@ var app = app || {};
                 discount: discount ? f.percent(discount) : null,
                 subtotal_discounted: discount ? f.price_usd(subtotal_price_discounted) : null
             };
-        },
-        getHeading: function () {
-
         },
         getDescription: function () {
             var view = this;
@@ -288,15 +219,19 @@ var app = app || {};
                 ( !is_alternative ? 'outside' : 'inside' ) :
                 ( !is_alternative ? 'inside' : 'outside' );
             var preview_size = 400;
+            var title = position === 'inside' ? 'View from Interior' : 'View from Exterior';
 
-            return app.preview(this.model, {
-                width: preview_size,
-                height: preview_size,
-                mode: 'base64',
-                position: position,
-                hingeIndicatorMode: this.options.force_european_hinge_indicators ? 'european' :
-                    project_settings && project_settings.get('hinge_indicator_mode')
-            });
+            return {
+                img: app.preview(this.model, {
+                    width: preview_size,
+                    height: preview_size,
+                    mode: 'base64',
+                    position: position,
+                    hingeIndicatorMode: this.options.force_european_hinge_indicators ? 'european' :
+                        project_settings && project_settings.get('hinge_indicator_mode')
+                }),
+                title: title
+            };
         },
         shouldShowCustomerImage: function () {
             return this.model.collection &&
@@ -313,8 +248,6 @@ var app = app || {};
             var show_drawings = this.shouldShowDrawings();
 
             return {
-                heading_attributes: this.getQuoteHeadingAttributes(),
-                table_attributes: this.getQuoteTableAttributes(),
                 position: parseFloat(this.model.get('position')) + 1,
                 mark: this.model.get('mark'),
                 description: this.getDescription(),
