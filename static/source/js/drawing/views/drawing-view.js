@@ -1571,7 +1571,7 @@ var app = app || {};
 
             return correction;
         },
-        getFrameCorrection: function (type, correction) {
+        getFrameCorrectionSum: function (type, correction) {
             var root_section = this.model.get('root_section');
             var measurementData = root_section.measurements.frame;
 
@@ -1581,6 +1581,20 @@ var app = app || {};
                 if (value === 'min') {
                     correction.size -= correction.frame_width;
                     correction.pos += (i === 0) ? correction.frame_width : 0;
+                }
+            });
+
+            return correction;
+        },
+        getFrameCorrection: function (type) {
+            var root_section = this.model.get('root_section');
+            var measurementData = root_section.measurements.frame;
+            var correction = [this.getCorrection(), this.getCorrection()];
+
+            measurementData[type].forEach(function (value, i) {
+                if (value === 'min') {
+                    correction[i].size -= correction[i].frame_width;
+                    correction[i].pos += (i === 0) ? correction[i].frame_width : 0;
                 }
             });
 
@@ -1597,18 +1611,28 @@ var app = app || {};
             return correction;
         },
         createControl: function (width, height) {
+            var view = this;
             var control = new Konva.Rect({
                 width: width,
                 height: height,
-                fill: 'red',
+                fill: '#66B6E3',
                 opacity: 0.5
+            });
+
+            control.on('mouseover', function () {
+                control.fill('#1A8BEF');
+                view.updateLayer();
+            });
+            control.on('mouseout', function () {
+                control.fill('#66B6E3');
+                view.updateLayer();
             });
 
             return control;
         },
         createWholeControls: function (section_id, width, height, type) {
             var group = new Konva.Group();
-            var controlSize = metricSize / 3;
+            var controlSize = metricSize / 4;
 
             // prepare size and position
             var size_1 = 0;
@@ -1648,7 +1672,7 @@ var app = app || {};
         createMullionControls: function (mullion, width, height, type) {
             var view = this;
             var group = new Konva.Group();
-            var controlSize = metricSize / 3;
+            var controlSize = metricSize / 4;
             var position = { x: 0, y: 0 };
 
             if (type === 'horizontal') {
@@ -1781,8 +1805,8 @@ var app = app || {};
             };
 
             // Correction parameters for metrics
-            var vCorrection = this.getFrameCorrection('vertical');
-            var hCorrection = this.getFrameCorrection('horizontal');
+            var vCorrection = this.getFrameCorrectionSum('vertical');
+            var hCorrection = this.getFrameCorrectionSum('horizontal');
 
             // Vertical
             var vHeight = height + (vCorrection.size * this.ratio);
@@ -1839,42 +1863,65 @@ var app = app || {};
             // Draw whole metrics
             group.add( this.createWholeMetrics(mullions, width, height) );
 
-            // Draw opening size metrics
+            // @TODO: Draw opening size metrics
+            // group.add( this.createOpeningSizeMetrics() );
 
-            // Draw glass size metrics
+            // @TODO: Draw glass size metrics
+
 
             return group;
         },
         createArchedInfo: function (width, height) {
             var group = new Konva.Group();
 
-            var archHeight = this.model.getArchedPosition();
+            var vCorrection = this.getFrameCorrection('vertical');
+            var vwCorrection = this.getFrameCorrectionSum('vertical');
+            var hwCorrection = this.getFrameCorrectionSum('horizontal');
+
+            var root_section = this.model.get('root_section');
+            var archHeight = this.model.getArchedPosition() + vCorrection[0].size;
             var params = {
                 getter: function () {
                     return archHeight;
                 },
                 setter: function (val) {
-                    var id = this.model.get('root_section').id;
+                    val = val - vCorrection[0].size;
+
+                    var id = root_section.id;
 
                     this.model._updateSection(id, function (section) {
                         section.archPosition = val;
                     });
                 }.bind(this)
             };
+
+            var vHeight = (this.model.getInMetric('height', 'mm') +
+                            vCorrection[0].size + vCorrection[1].size
+                            ) * this.ratio;
+
+            var vPosition = {
+                x: -metricSize,
+                y: vCorrection[0].pos * this.ratio
+            };
             var metric = this.createVerticalMetric(metricSize, archHeight * this.ratio, params);
+            var vControls = this.createWholeControls(root_section.id, metricSize * 2, vHeight, 'vertical');
 
-            metric.position({
-                x: -metricSize
-            });
-            group.add(metric);
+            metric.position(vPosition);
 
-            var nonArchHeight = this.model.getInMetric('height', 'mm') - archHeight;
+            vPosition.x = vPosition.x * 2;
+            vControls.position(vPosition);
+            group.add(metric, vControls);
+
+            var nonArchHeight = this.model.getInMetric('height', 'mm') - archHeight +
+                                vCorrection[1].size;
 
             params = {
                 getter: function () {
                     return nonArchHeight;
                 },
                 setter: function (val) {
+                    val = val - vCorrection[1].size;
+
                     var id = this.model.get('root_section').id;
                     var archPosition = this.model.getInMetric('height', 'mm') - val;
 
@@ -1883,43 +1930,54 @@ var app = app || {};
                     });
                 }.bind(this)
             };
-            metric = this.createVerticalMetric(metricSize, nonArchHeight * this.ratio, params);
+            metric = this.createVerticalMetric(metricSize, (nonArchHeight + vCorrection[0].size) * this.ratio, params);
             metric.position({
                 x: -metricSize,
-                y: archHeight * this.ratio
+                y: (archHeight + vCorrection[0].pos) * this.ratio
             });
             group.add(metric);
 
-            var verticalWholeMertic = this.createVerticalMetric(metricSize, height, {
-                setter: function (val) {
-                    this.model.setInMetric('height', val, 'mm');
-                }.bind(this),
-                getter: function () {
-                    return this.model.getInMetric('height', 'mm');
-                }.bind(this)
-            });
+            var verticalWholeMertic = this.createVerticalMetric(metricSize,
+                (height + (vwCorrection.size * this.ratio)),
+                {
+                    setter: function (val) {
+                        val -= vwCorrection.size;
+                        this.model.setInMetric('height', val, 'mm');
+                    }.bind(this),
+                    getter: function () {
+                        return ( this.model.getInMetric('height', 'mm') + vwCorrection.size);
+                    }.bind(this)
+                });
 
             verticalWholeMertic.position({
                 x: -metricSize * 2,
-                y: 0
+                y: 0 + (vwCorrection.pos * this.ratio)
             });
 
             group.add(verticalWholeMertic);
 
-            var horizontalWholeMertic = this.createHorizontalMetric(width, metricSize, {
-                setter: function (val) {
-                    this.model.setInMetric('width', val, 'mm');
-                }.bind(this),
-                getter: function () {
-                    return this.model.getInMetric('width', 'mm');
-                }.bind(this)
-            });
-
-            horizontalWholeMertic.position({
-                x: 0,
+            var hWidth = (width + (hwCorrection.size * this.ratio));
+            var hControls = this.createWholeControls(root_section.id, hWidth, metricSize, 'horizontal');
+            var hPosition = {
+                x: 0 + (hwCorrection.pos * this.ratio),
                 y: height
-            });
-            group.add(horizontalWholeMertic);
+            };
+            var horizontalWholeMertic = this.createHorizontalMetric( hWidth,
+                metricSize,
+                {
+                    setter: function (val) {
+                        val -= hwCorrection.size;
+                        this.model.setInMetric('width', val, 'mm');
+                    }.bind(this),
+                    getter: function () {
+                        return ( this.model.getInMetric('width', 'mm') + hwCorrection.size);
+                    }.bind(this)
+                });
+
+            horizontalWholeMertic.position( hPosition);
+            hControls.position( hPosition );
+
+            group.add(horizontalWholeMertic, hControls);
 
             return group;
         },
@@ -1966,6 +2024,9 @@ var app = app || {};
                     }
                 })
                 ;
+        },
+        updateLayer: function () {
+            this.layer.draw();
         },
         updateCanvas: function () {
             // clear all previous objects
