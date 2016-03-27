@@ -684,8 +684,11 @@ var app = app || {};
 
                 section.divider = type;
                 section.sections = [getSectionDefaults(), getSectionDefaults()];
+                // Drop mullion dimension-points
                 section.measurements.mullion = {};
                 section.measurements.mullion[measurementType] = ['center', 'center'];
+                // Drop overlay glassSize metrics (openingSize still actually)
+                section.measurements.glass = false;
 
                 // Reset bars parameter
                 section.bars = getDefaultBars();

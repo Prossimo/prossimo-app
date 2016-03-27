@@ -52,7 +52,9 @@ var app = app || {};
             $title: '#drawing-view-title',
             $bars_control: '#bars-control',
             $section_control: '#section_control',
-            $filling_select: '#filling-select'
+            $filling_select: '#filling-select',
+            $metrics_glass: '#additional-metrics-glass',
+            $metrics_opening: '#additional-metrics-opening'
         },
         events: {
             'click .split-section': 'handleSplitSectionClick',
@@ -66,7 +68,9 @@ var app = app || {};
             'change #horizontal-bars-number': 'handleBarNumberChange',
             'input #horizontal-bars-number': 'handleBarNumberChange',
             'change #filling-select': 'handleFillingTypeChange',
-            'click #glazing-bars-popup': 'handleGlazingBarsPopupClick'
+            'click #glazing-bars-popup': 'handleGlazingBarsPopupClick',
+            'change @ui.$metrics_glass': 'handleAdditionalMetricsChange',
+            'change @ui.$metrics_opening': 'handleAdditionalMetricsChange'
         },
         isInsideView: function () {
             return globalInsideView;
@@ -90,6 +94,23 @@ var app = app || {};
 
                 this.deselectAll();
             }
+        },
+        handleAdditionalMetricsChange: function (evt) {
+            if ( !this.state.selectedSashId ) { return; }
+
+            var type = (evt.target.id === 'additional-metrics-glass') ? 'glass' : 'opening';
+            var reversedType = (type === 'glass') ? 'opening' : 'glass';
+            var value = (evt.target.checked);
+            var section = this.model.getSection( this.state.selectedSashId );
+            var measurements = section.measurements;
+
+            measurements[type] = value;
+
+            if (value) {
+                measurements[ reversedType ] = false;
+            }
+
+            this.model.setSectionMeasurements( this.state.selectedSashId, measurements );
         },
         handleChangeView: function () {
             globalInsideView = !globalInsideView;
@@ -1010,16 +1031,17 @@ var app = app || {};
 
             return group;
         },
-        createVerticalMetric: function (width, height, params) {
+        createVerticalMetric: function (width, height, params, styles) {
             var arrowOffset = width / 2;
             var arrowSize = 5;
             var group = new Konva.Group();
 
+            // Define styles
+            styles = styles || {};
+            styles = _.defaults(styles, this.getDefaultMetricStyles());
+
             var lines = new Konva.Shape({
                 sceneFunc: function (ctx) {
-                    ctx.fillStyle = 'grey';
-                    ctx.lineWidth = 0.5;
-
                     ctx.beginPath();
                     ctx.moveTo(0, 0);
                     ctx.lineTo(width, 0);
@@ -1028,7 +1050,9 @@ var app = app || {};
                     ctx.lineTo(width, height);
 
                     ctx.stroke();
-                }
+                },
+                stroke: styles.arrows.stroke,
+                strokeWidth: styles.arrows.strokeWidth
             });
 
             var arrow = new Konva.Shape({
@@ -1052,29 +1076,29 @@ var app = app || {};
 
                     ctx.strokeShape(this);
                 },
-                stroke: 'grey',
-                strokeWidth: 0.5
+                stroke: styles.arrows.stroke,
+                strokeWidth: styles.arrows.strokeWidth
             });
 
             // left text
             var labelMM = new Konva.Label();
 
             labelMM.add(new Konva.Tag({
-                fill: 'white',
-                stroke: 'grey',
-                strokeWidth: 0.5
+                fill: styles.label.fill,
+                stroke: styles.label.stroke,
+                strokeWidth: styles.label.strokeWidth
             }));
             var textMM = new Konva.Text({
                 text: app.utils.format.dimension_mm(params.getter()),
-                padding: 4,
+                padding: styles.label.padding,
                 fontFamily: fontFamily,
-                fontSize: 11,
-                fill: 'black'
+                fontSize: styles.label.fontSize,
+                fill: styles.label.color
             });
 
             labelMM.add(textMM);
             labelMM.position({
-                x: width - textMM.width() - 2,
+                x: width / 2 - textMM.width() / 2,
                 y: height / 2 + textMM.height() / 2
             });
 
@@ -1082,17 +1106,18 @@ var app = app || {};
             var labelInches = new Konva.Label();
 
             labelInches.add(new Konva.Tag({
-                fill: 'white',
-                stroke: 'grey',
-                strokeWidth: 0.5
+                fill: styles.label.fill,
+                stroke: styles.label.stroke,
+                strokeWidth: styles.label.strokeWidth
             }));
             var inches = app.utils.convert.mm_to_inches(params.getter());
             var val = app.utils.format.dimension(inches, 'fraction', this.state && this.state.inchesDisplayMode);
             var textInches = new Konva.Text({
                 text: val,
-                padding: 4,
-                fill: 'black',
-                fontFamily: fontFamily
+                padding: styles.label.padding,
+                fill: styles.label.color,
+                fontFamily: fontFamily,
+                fontSize: styles.label.fontSize_big
             });
 
             labelInches.add(textInches);
@@ -1111,16 +1136,17 @@ var app = app || {};
             return group;
         },
 
-        createHorizontalMetric: function (width, height, params) {
+        createHorizontalMetric: function (width, height, params, styles) {
             var arrowOffset = height / 2;
             var arrowSize = 5;
             var group = new Konva.Group();
 
+            // Define styles
+            styles = styles || {};
+            styles = _.defaults(styles, this.getDefaultMetricStyles());
+
             var lines = new Konva.Shape({
                 sceneFunc: function (ctx) {
-                    ctx.fillStyle = 'grey';
-                    ctx.lineWidth = 0.5;
-
                     ctx.beginPath();
                     ctx.moveTo(0, 0);
                     ctx.lineTo(0, height);
@@ -1129,7 +1155,9 @@ var app = app || {};
                     ctx.lineTo(width, height);
 
                     ctx.stroke();
-                }
+                },
+                stroke: styles.arrows.stroke,
+                strokeWidth: styles.arrows.strokeWidth
             });
 
             var arrow = new Konva.Shape({
@@ -1153,23 +1181,23 @@ var app = app || {};
 
                     ctx.strokeShape(this);
                 },
-                stroke: 'grey',
-                strokeWidth: 0.5
+                stroke: styles.arrows.stroke,
+                strokeWidth: styles.arrows.strokeWidth
             });
 
             var labelMM = new Konva.Label();
 
             labelMM.add(new Konva.Tag({
-                fill: 'white',
-                stroke: 'grey',
-                strokeWidth: 0.5
+                fill: styles.label.fill,
+                stroke: styles.label.stroke,
+                strokeWidth: styles.label.strokeWidth
             }));
             var textMM = new Konva.Text({
                 text: app.utils.format.dimension_mm(params.getter()),
-                padding: 4,
+                padding: styles.label.padding,
                 fontFamily: fontFamily,
-                fontSize: 11,
-                fill: 'black'
+                fontSize: styles.label.fontSize,
+                fill: styles.label.color
             });
 
             labelMM.add(textMM);
@@ -1181,17 +1209,18 @@ var app = app || {};
             var labelInches = new Konva.Label();
 
             labelInches.add(new Konva.Tag({
-                fill: 'white',
-                stroke: 'grey',
-                strokeWidth: 0.5
+                fill: styles.label.fill,
+                stroke: styles.label.stroke,
+                strokeWidth: styles.label.strokeWidth
             }));
             var inches = app.utils.convert.mm_to_inches(params.getter());
             var val = app.utils.format.dimension(inches, 'fraction', this.state && this.state.inchesDisplayMode);
             var textInches = new Konva.Text({
                 text: val,
-                padding: 4,
-                fill: 'black',
-                fontFamily: fontFamily
+                padding: styles.label.padding,
+                fill: styles.label.color,
+                fontFamily: fontFamily,
+                fontSize: styles.label.fontSize_big
             });
 
             labelInches.add(textInches);
@@ -1208,6 +1237,23 @@ var app = app || {};
 
             group.add(lines, arrow, labelInches, labelMM);
             return group;
+        },
+        getDefaultMetricStyles: function () {
+            return {
+                label: {
+                    fill: 'white',
+                    stroke: 'grey',
+                    strokeWidth: 0.5,
+                    padding: 4,
+                    color: 'black',
+                    fontSize: 11,
+                    fontSize_big: 12
+                },
+                arrows: {
+                    stroke: 'grey',
+                    strokeWidth: 0.5
+                }
+            };
         },
 
         sortMullions: function (mullions) {
@@ -1329,6 +1375,7 @@ var app = app || {};
             //        This is a small specification, which is better not to push into production,
             //        but I think we'd better to save it somewhere. :-)
 
+            /* eslint-disable max-nested-callbacks */
             _.each(mullions, function (mulGroup, type) {
                 var pos = 0;
                 var saved_mullion = null;
@@ -1365,6 +1412,7 @@ var app = app || {};
                     edges.forEach(function (edge, key) {
                         var store_index = store_index_accordance[edge][key];
                         var edge_section;
+                        var edge_state;
 
                         if (edge === 'frame') {
                             if (key === 0 && saved_mullion !== null) {
@@ -1384,9 +1432,15 @@ var app = app || {};
                             }
                         }
 
+                        if (invertedType in edge_section.measurements[edge]) {
+                            edge_state = edge_section.measurements[edge][invertedType][store_index];
+                        } else {
+                            edge_state = edge_section.measurements[edge][type][store_index];
+                        }
+
                         data.edges[key] = {
                             section_id: edge_section.id,
-                            state: edge_section.measurements[edge][invertedType][store_index],
+                            state: edge_state,
                             type: edge,
                             index: store_index
                         };
@@ -1401,6 +1455,7 @@ var app = app || {};
                     result[type].push(data);
                 });
             });
+            /* eslint-enable max-nested-callbacks */
 
             return result;
         },
@@ -1863,11 +1918,106 @@ var app = app || {};
             // Draw whole metrics
             group.add( this.createWholeMetrics(mullions, width, height) );
 
-            // @TODO: Draw opening size metrics
-            // group.add( this.createOpeningSizeMetrics() );
+            // Draw overlay metrics: GlassSize & OpeningSize
+            group.add( this.createOverlayMetrics() );
 
-            // @TODO: Draw glass size metrics
+            return group;
+        },
+        createOverlayMetrics: function () {
+            // Algorithm:
+            // 1. Get a full root
+            // 2. Recursively look at each child section:
+            // 3. If it's measurenets.glass value equal TRUE — draw GlassSizeMetrics
+            // 4. If it's sashType !== fixed_in_frame — it should have an opening size
+            //    so we're looking for measurements.openingSize value,
+            //    if its equal TRUE — draw OpeningSizeMetrics
+            //
+            // Interesting moments:
+            // 1. If user selected to show opening/glass size in one of sections
+            //    and then selected to show opening/glass size of its parents —
+            //    show only parents (use flags to each of metrics type).
 
+            // Function to find overlay metrics recursively
+            function findOverlay( section, results, level) {
+                level = level || 0;
+
+                if (
+                    section.measurements.glass ||
+                    section.sashType !== 'fixed_in_frame' && section.measurements.opening
+                ) {
+                    var type = (section.measurements.glass) ? 'glass' : 'opening';
+
+                    results.push({
+                        section_id: section.id,
+                        type: type,
+                        level: level,
+                        params: section[type + 'Params']
+                    });
+
+                } else if ( section.sections.length ){
+                    section.sections.forEach(function (child) {
+                        level++;
+                        findOverlay(child, results, level);
+                    });
+                }
+
+                return results;
+            }
+
+            var view = this;
+            var group = new Konva.Group();
+            var root = (this.state.insideView) ? this.model.generateFullRoot() : this.model.generateFullReversedRoot();
+            var results = [];
+
+            findOverlay(root, results);
+
+            results.forEach(function (metric) {
+                var mSize = (metricSize / 2);
+                var width = metric.params.width * view.ratio;
+                var height = metric.params.height * view.ratio;
+                var position = {
+                    x: metric.params.x * view.ratio,
+                    y: metric.params.y * view.ratio
+                };
+                var style = {
+                    label: {
+                        fill: 'lightgrey',
+                        stroke: 'grey',
+                        color: 'black',
+                        strokeWidth: 0.5,
+                        padding: 2,
+                        fontSize: 9,
+                        fontSize_big: 9
+                    }
+                };
+                var vertical = view.createVerticalMetric(
+                                mSize / 2,
+                                height,
+                                {
+                                    getter: function () {
+                                        return metric.params.height;
+                                    }
+                                }, style);
+                var horizontal = view.createHorizontalMetric(
+                                width,
+                                mSize / 2,
+                                {
+                                    getter: function () {
+                                        return metric.params.width;
+                                    }
+                                }, style);
+
+                vertical.position({
+                    x: position.x + mSize,
+                    y: position.y
+                });
+                horizontal.position({
+                    x: position.x,
+                    y: position.y + mSize
+                });
+
+                group.add( vertical, horizontal );
+            });
 
             return group;
         },
@@ -2201,6 +2351,18 @@ var app = app || {};
 
             this.$('.remove-arched').toggle(!!isArched);
             this.$('.add-arched').toggle(!isArched);
+
+            // Additional overlay metrics
+            if ( selectedSash ) {
+                this.ui.$metrics_glass.prop('checked', selectedSash.measurements.glass );
+                this.ui.$metrics_opening.prop('checked', selectedSash.measurements.opening );
+
+                if ( selectedSash.sashType !== 'fixed_in_frame' ) {
+                    this.$('#additional-metrics-opening--label').show();
+                } else {
+                    this.$('#additional-metrics-opening--label').hide();
+                }
+            }
         },
 
         updateSize: function (width, height) {
