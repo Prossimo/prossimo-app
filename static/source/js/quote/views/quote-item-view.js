@@ -234,8 +234,8 @@ var app = app || {};
             };
         },
         shouldShowCustomerImage: function () {
-            return this.model.collection &&
-                 this.model.collection.hasAtLeastOneCustomerImage();
+            return this.options.show_customer_image !== false &&
+                this.model.collection && this.model.collection.hasAtLeastOneCustomerImage();
         },
         shouldShowDrawings: function () {
             var project_settings = app.settings && app.settings.getProjectSettings();
@@ -255,12 +255,10 @@ var app = app || {};
                 exceptions: this.model.get('exceptions'),
                 quantity: this.model.get('quantity'),
                 price: this.getPrices(),
-                customer_image: this.getCustomerImage(),
+                customer_image: show_customer_image ? this.getCustomerImage() : '',
                 product_image: show_drawings ? this.getProductImage() : '',
                 product_image_alternative: show_drawings ? this.getProductImage(true) : '',
-                show_price: this.options.show_price !== false,
-                show_customer_image: show_customer_image,
-                show_drawings: show_drawings
+                show_price: this.options.show_price !== false
             };
         }
     });

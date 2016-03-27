@@ -20,6 +20,7 @@ var app = app || {};
                 extras: this.options.extras,
                 project: this.options.project,
                 show_price: this.options.show_price,
+                show_customer_image: this.options.show_customer_image,
                 show_outside_units_view: this.options.show_outside_units_view,
                 show_sizes_in_mm: this.options.show_sizes_in_mm,
                 show_supplier_system: this.options.show_supplier_system,

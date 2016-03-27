@@ -51,18 +51,22 @@
     </tr></tbody>
 </table>
 
-<table class="quote-unit{{#unless show_customer_image}} no-customer-image{{/unless}}">
+<table class="quote-unit">
     <thead>
         <tr>
-            {{#if show_drawings }}
+            {{#if product_image }}
             <th class="product-image">Shop Drawing</th>
+            {{else}}
+                {{#if customer_image }}
+                <th class="customer-image">Customer Image</th>
+                {{/if}}
             {{/if}}
             <th class="product-description">Product Description</th>
         </tr>
     </thead>
     <tbody><tr>
-        {{#if show_drawings }}
-        <td class="product-image{{#if show_customer_image }} has-customer-image{{/if}}">
+        {{#if product_image }}
+        <td class="product-image{{#if customer_image }} has-customer-image{{/if}}">
             <table class="product-image-inner">
                 <tr>
                     <th>{{ product_image.title }}</th>
@@ -82,12 +86,20 @@
                 </tr>
             </table>
             {{#if customer_image }}
-            <div class="customer-image">
+            <div class="customer-image-inner">
                 <h5>Customer Image</h5>
                 <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
             </div>
             {{/if}}
         </td>
+        {{else}}
+            {{#if customer_image }}
+            <td class="customer-image">
+                <div class="customer-image-inner">
+                    <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
+                </div>
+            </td>
+            {{/if}}
         {{/if}}
         <td class="product-description">
             <ul>
