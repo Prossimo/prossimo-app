@@ -52,6 +52,18 @@ var app = app || {};
             }
         });
 
+        $(window).on('keydown', function (event) {
+            var keyCode = event.keyCode || event.which;
+
+            if (keyCode === 90 && ( event.ctrlKey || event.metaKey ) && !event.shiftKey ) {
+                undoManager.undo();
+            }
+
+            if (keyCode === 90 && ( event.ctrlKey || event.metaKey ) && event.shiftKey) {
+                undoManager.redo();
+            }
+        });
+
         return {
             manager: undoManager,
             handler: {
