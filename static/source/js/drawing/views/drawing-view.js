@@ -46,13 +46,20 @@ var app = app || {};
                 inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
                 hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode')
             };
+
+            this.undoManager = new app.UndoManager({
+                register: this.model,
+                track: true
+            });
         },
         ui: {
             $flush_panels: '[data-type="flush-turn-right"], [data-type="flush-turn-left"]',
             $title: '#drawing-view-title',
             $bars_control: '#bars-control',
             $section_control: '#section_control',
-            $filling_select: '#filling-select'
+            $filling_select: '#filling-select',
+            $undo: '#undo',
+            $redo: '#redo'
         },
         events: {
             'click .split-section': 'handleSplitSectionClick',
@@ -66,7 +73,9 @@ var app = app || {};
             'change #horizontal-bars-number': 'handleBarNumberChange',
             'input #horizontal-bars-number': 'handleBarNumberChange',
             'change #filling-select': 'handleFillingTypeChange',
-            'click #glazing-bars-popup': 'handleGlazingBarsPopupClick'
+            'click #glazing-bars-popup': 'handleGlazingBarsPopupClick',
+            'click @ui.$undo': 'handleUndoClick',
+            'click @ui.$redo': 'handleRedoClick'
         },
         isInsideView: function () {
             return globalInsideView;
@@ -75,6 +84,12 @@ var app = app || {};
         isOpeningView: function () {
             return !globalInsideView && this.model.isOpeningDirectionOutward() ||
                 globalInsideView && !this.model.isOpeningDirectionOutward();
+        },
+        handleUndoClick: function () {
+            return this.undoManager.handler.undo();
+        },
+        handleRedoClick: function () {
+            return this.undoManager.handler.redo();
         },
         handleCanvasKeyDown: function (e) {
             if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
@@ -1681,6 +1696,13 @@ var app = app || {};
 
             this.$('.remove-arched').toggle(!!isArched);
             this.$('.add-arched').toggle(!isArched);
+
+            // Undo/Redo: Register buttons once!
+            if (!this.undoManager.registered) {
+                this.undoManager.registerButton('undo', this.ui.$undo);
+                this.undoManager.registerButton('redo', this.ui.$redo);
+                this.undoManager.registered = true;
+            }
         },
 
         updateSize: function (width, height) {
