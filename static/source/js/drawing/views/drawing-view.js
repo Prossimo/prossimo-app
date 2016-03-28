@@ -52,7 +52,9 @@ var app = app || {};
             $title: '#drawing-view-title',
             $bars_control: '#bars-control',
             $section_control: '#section_control',
-            $filling_select: '#filling-select'
+            $filling_select: '#filling-select',
+            $metrics_glass: '#additional-metrics-glass',
+            $metrics_opening: '#additional-metrics-opening'
         },
         events: {
             'click .split-section': 'handleSplitSectionClick',
@@ -66,7 +68,9 @@ var app = app || {};
             'change #horizontal-bars-number': 'handleBarNumberChange',
             'input #horizontal-bars-number': 'handleBarNumberChange',
             'change #filling-select': 'handleFillingTypeChange',
-            'click #glazing-bars-popup': 'handleGlazingBarsPopupClick'
+            'click #glazing-bars-popup': 'handleGlazingBarsPopupClick',
+            'change @ui.$metrics_glass': 'handleAdditionalMetricsChange',
+            'change @ui.$metrics_opening': 'handleAdditionalMetricsChange'
         },
         isInsideView: function () {
             return globalInsideView;
@@ -90,6 +94,23 @@ var app = app || {};
 
                 this.deselectAll();
             }
+        },
+        handleAdditionalMetricsChange: function (evt) {
+            if ( !this.state.selectedSashId ) { return; }
+
+            var type = (evt.target.id === 'additional-metrics-glass') ? 'glass' : 'opening';
+            var reversedType = (type === 'glass') ? 'opening' : 'glass';
+            var value = (evt.target.checked);
+            var section = this.model.getSection( this.state.selectedSashId );
+            var measurements = section.measurements;
+
+            measurements[type] = value;
+
+            if (value) {
+                measurements[ reversedType ] = false;
+            }
+
+            this.model.setSectionMeasurements( this.state.selectedSashId, measurements );
         },
         handleChangeView: function () {
             globalInsideView = !globalInsideView;
@@ -1010,16 +1031,17 @@ var app = app || {};
 
             return group;
         },
-        createVerticalMetric: function (width, height, params) {
+        createVerticalMetric: function (width, height, params, styles) {
             var arrowOffset = width / 2;
             var arrowSize = 5;
             var group = new Konva.Group();
 
+            // Define styles
+            styles = styles || {};
+            styles = _.defaults(styles, this.getDefaultMetricStyles());
+
             var lines = new Konva.Shape({
                 sceneFunc: function (ctx) {
-                    ctx.fillStyle = 'grey';
-                    ctx.lineWidth = 0.5;
-
                     ctx.beginPath();
                     ctx.moveTo(0, 0);
                     ctx.lineTo(width, 0);
@@ -1028,7 +1050,9 @@ var app = app || {};
                     ctx.lineTo(width, height);
 
                     ctx.stroke();
-                }
+                },
+                stroke: styles.arrows.stroke,
+                strokeWidth: styles.arrows.strokeWidth
             });
 
             var arrow = new Konva.Shape({
@@ -1052,29 +1076,29 @@ var app = app || {};
 
                     ctx.strokeShape(this);
                 },
-                stroke: 'grey',
-                strokeWidth: 0.5
+                stroke: styles.arrows.stroke,
+                strokeWidth: styles.arrows.strokeWidth
             });
 
             // left text
             var labelMM = new Konva.Label();
 
             labelMM.add(new Konva.Tag({
-                fill: 'white',
-                stroke: 'grey',
-                strokeWidth: 0.5
+                fill: styles.label.fill,
+                stroke: styles.label.stroke,
+                strokeWidth: styles.label.strokeWidth
             }));
             var textMM = new Konva.Text({
                 text: app.utils.format.dimension_mm(params.getter()),
-                padding: 4,
+                padding: styles.label.padding,
                 fontFamily: fontFamily,
-                fontSize: 11,
-                fill: 'black'
+                fontSize: styles.label.fontSize,
+                fill: styles.label.color
             });
 
             labelMM.add(textMM);
             labelMM.position({
-                x: width - textMM.width() - 2,
+                x: width / 2 - textMM.width() / 2,
                 y: height / 2 + textMM.height() / 2
             });
 
@@ -1082,17 +1106,18 @@ var app = app || {};
             var labelInches = new Konva.Label();
 
             labelInches.add(new Konva.Tag({
-                fill: 'white',
-                stroke: 'grey',
-                strokeWidth: 0.5
+                fill: styles.label.fill,
+                stroke: styles.label.stroke,
+                strokeWidth: styles.label.strokeWidth
             }));
             var inches = app.utils.convert.mm_to_inches(params.getter());
             var val = app.utils.format.dimension(inches, 'fraction', this.state && this.state.inchesDisplayMode);
             var textInches = new Konva.Text({
                 text: val,
-                padding: 4,
-                fill: 'black',
-                fontFamily: fontFamily
+                padding: styles.label.padding,
+                fill: styles.label.color,
+                fontFamily: fontFamily,
+                fontSize: styles.label.fontSize_big
             });
 
             labelInches.add(textInches);
@@ -1111,16 +1136,17 @@ var app = app || {};
             return group;
         },
 
-        createHorizontalMetric: function (width, height, params) {
+        createHorizontalMetric: function (width, height, params, styles) {
             var arrowOffset = height / 2;
             var arrowSize = 5;
             var group = new Konva.Group();
 
+            // Define styles
+            styles = styles || {};
+            styles = _.defaults(styles, this.getDefaultMetricStyles());
+
             var lines = new Konva.Shape({
                 sceneFunc: function (ctx) {
-                    ctx.fillStyle = 'grey';
-                    ctx.lineWidth = 0.5;
-
                     ctx.beginPath();
                     ctx.moveTo(0, 0);
                     ctx.lineTo(0, height);
@@ -1129,7 +1155,9 @@ var app = app || {};
                     ctx.lineTo(width, height);
 
                     ctx.stroke();
-                }
+                },
+                stroke: styles.arrows.stroke,
+                strokeWidth: styles.arrows.strokeWidth
             });
 
             var arrow = new Konva.Shape({
@@ -1153,23 +1181,23 @@ var app = app || {};
 
                     ctx.strokeShape(this);
                 },
-                stroke: 'grey',
-                strokeWidth: 0.5
+                stroke: styles.arrows.stroke,
+                strokeWidth: styles.arrows.strokeWidth
             });
 
             var labelMM = new Konva.Label();
 
             labelMM.add(new Konva.Tag({
-                fill: 'white',
-                stroke: 'grey',
-                strokeWidth: 0.5
+                fill: styles.label.fill,
+                stroke: styles.label.stroke,
+                strokeWidth: styles.label.strokeWidth
             }));
             var textMM = new Konva.Text({
                 text: app.utils.format.dimension_mm(params.getter()),
-                padding: 4,
+                padding: styles.label.padding,
                 fontFamily: fontFamily,
-                fontSize: 11,
-                fill: 'black'
+                fontSize: styles.label.fontSize,
+                fill: styles.label.color
             });
 
             labelMM.add(textMM);
@@ -1181,17 +1209,18 @@ var app = app || {};
             var labelInches = new Konva.Label();
 
             labelInches.add(new Konva.Tag({
-                fill: 'white',
-                stroke: 'grey',
-                strokeWidth: 0.5
+                fill: styles.label.fill,
+                stroke: styles.label.stroke,
+                strokeWidth: styles.label.strokeWidth
             }));
             var inches = app.utils.convert.mm_to_inches(params.getter());
             var val = app.utils.format.dimension(inches, 'fraction', this.state && this.state.inchesDisplayMode);
             var textInches = new Konva.Text({
                 text: val,
-                padding: 4,
-                fill: 'black',
-                fontFamily: fontFamily
+                padding: styles.label.padding,
+                fill: styles.label.color,
+                fontFamily: fontFamily,
+                fontSize: styles.label.fontSize_big
             });
 
             labelInches.add(textInches);
@@ -1209,11 +1238,25 @@ var app = app || {};
             group.add(lines, arrow, labelInches, labelMM);
             return group;
         },
+        getDefaultMetricStyles: function () {
+            return {
+                label: {
+                    fill: 'white',
+                    stroke: 'grey',
+                    strokeWidth: 0.5,
+                    padding: 4,
+                    color: 'black',
+                    fontSize: 11,
+                    fontSize_big: 12
+                },
+                arrows: {
+                    stroke: 'grey',
+                    strokeWidth: 0.5
+                }
+            };
+        },
 
-        createInfo: function (mullions, width, height) {
-            var group = new Konva.Group();
-            var verticalRows = 0;
-            var horizontalRows = 0;
+        sortMullions: function (mullions) {
             var verticalMullions = [];
             var horizontalMullions = [];
 
@@ -1232,190 +1275,803 @@ var app = app || {};
             verticalMullions.sort(function (a, b) {return a.position - b.position; });
             horizontalMullions.sort(function (a, b) {return a.position - b.position; });
 
-            var pos = 0;
+            return {
+                vertical: verticalMullions,
+                horizontal: horizontalMullions
+            };
+        },
+        getMeasurements: function (mullions) {
+            var view = this;
+            var root_section = this.model.get('root_section');
 
-            verticalMullions.forEach(function (mul, i) {
-                var width_ = mul.position - pos;
-                // do not draw very small dimension
-                if (width_ > 0) {
-                    var params = {
-                        getter: function () {
-                            return width_;
-                        }
+            var result = {};
+            var sizeAccordance = {
+                vertical: 'width',
+                horizontal: 'height'
+            };
+            var store_index_accordance = {
+                frame: {
+                    0: 0,
+                    1: 1
+                },
+                mullion: {
+                    0: 1,
+                    1: 0
+                }
+            };
+
+            function findParentByMeasurementType( section_, type_, key_, index_ ) {
+                var result_ = {
+                    section: section_,
+                    index: index_
+                };
+                var parent_section_;
+                var find_index = (key_ === 0) ? 1 : 0;
+                var cur_index = index_;
+
+                if (section_.parentId) {
+                    if (
+                        !(
+                            index_ === find_index &&
+                            !(
+                                'mullion' in section_.measurements &&
+                                type_ in section_.measurements.mullion
+                            )
+                        )
+                    ) {
+                        parent_section_ = view.model.getSection( section_.parentId );
+                        cur_index = (parent_section_.sections[0].id === section_.id) ? 0 : 1;
+                        result_ = findParentByMeasurementType( parent_section_, type_, key_, cur_index );
+                    } else {
+                        result_ = {
+                            section: view.model.getSection( section_.parentId ),
+                            index: find_index
+                        };
+                    }
+                }
+
+                return result_;
+            }
+
+            //        How that algorithm works:
+            //        We're easily get basic information: section_id (for setters), offset and size.
+            //        Also we have to get information about edges of metrics: top (left) and bottom (right).
+            //        There is steps to do it (in a loop for each edge, IND = key):
+            //        1. Get REAL_SECTION (for default it's 0 index of section.sections)
+            //        2. Get edge TYPE from real section (frame / mullion).
+            //        3. Get STORE_INDEX (index that stores data about edge state):
+            //              - frame+top = 0
+            //              - frame+bottom = 1
+            //              - mullion+bottom = 0
+            //              - mullion+top = 0
+            //        4. Find section that stores data about dimension point (STORE_SECTION):
+            //              a). if TYPE === frame, it's easy: get root_section
+            //              b). if TYPE === mullion
+            //                     and (IND === 0 && edge === bottom)
+            //                     or (IND === 1 && edge === top)
+            //                  STORE_SECTION = CURRENT_SECTION (mullion.id)
+            //              c). else we have to find store section looking over parents.
+            //                  We can use algorithm from findParentByMeasurementType function.
+            //
+            //        Finally, we get an object for each Mullion with structure:
+            //        {
+            //          section_id: 105, // Id, that will be used by setters to change position of mullion
+            //          offset: 0,       // Offset in mm, that used in positioning of measurement
+            //          size: 0,         // Size in mm, that used in getters and drawing measurement
+            //          index: 0,        // (0/1), that describes that is normal measurement or "gap" (last one)
+            //          edges: [         // Array that coints only two objects (two edges of measurement)
+            //                  {
+            //                      section_id: 158,  // Id, that will be used to store position of dimension point
+            //                      type: 'frame',    // Type of edge: frame / mullion
+            //                      state: 'max',     // State of current dimension point
+            //                      index: 0          // (0/1), points at index of array element,
+            //                                                  that stores position of dimension point
+            //                  }
+            //                  ]
+            //        }
+            //
+            //        When array is completely composed — draw metrics and controls.
+            //
+            //        This is a small specification, which is better not to push into production,
+            //        but I think we'd better to save it somewhere. :-)
+
+            /* eslint-disable max-nested-callbacks */
+            _.each(mullions, function (mulGroup, type) {
+                var pos = 0;
+                var saved_mullion = null;
+                var invertedType = view.model.getInvertedDivider( type );
+
+                result[type] = [];
+
+                if ( mulGroup.length ) {
+                    // smart hack to draw last measurement in a loop with rest of mullions
+                    var lastMul = mulGroup[ mulGroup.length - 1];
+
+                    mulGroup.push({
+                        gap: true,
+                        id: lastMul.id,
+                        position: view.model.getInMetric( sizeAccordance[type], 'mm'),
+                        sections: lastMul.sections
+                    });
+                }
+
+                mulGroup.forEach(function (mullion) {
+                    var current_section = view.model.getSection(mullion.id);
+                    var index = (mullion.gap) ? 1 : 0;
+                    var real_section = mullion.sections[index];
+                    var edges = view.getMeasurementEdges( real_section.id, invertedType );
+
+                    var data = {
+                        section_id: mullion.id,
+                        offset: pos,
+                        size: (mullion.position - pos),
+                        edges: [],
+                        index: index
                     };
 
-                    if (verticalMullions.length === 1) {
-                        params.setter = function (val) {
-                            if (!this.state.openingView) {
-                                val = this.model.getInMetric('width', 'mm') - val;
+                    edges.forEach(function (edge, key) {
+                        var store_index = store_index_accordance[edge][key];
+                        var edge_section;
+                        var edge_state;
+
+                        if (edge === 'frame') {
+                            if (key === 0 && saved_mullion !== null) {
+                                edge = 'mullion';
+                                edge_section = saved_mullion;
+                                saved_mullion = null;
+                                store_index = 1;
+                            } else {
+                                edge_section = root_section;
                             }
-
-                            this.model.setSectionMullionPosition(mul.id, val);
-                            this.updateSection(mul.id);
-                        }.bind(this);
-                    }
-
-                    var metric = this.createHorizontalMetric(width_ * this.ratio, metricSize, params);
-
-                    metric.position({
-                        x: pos * this.ratio,
-                        y: height
-                    });
-                    pos = mul.position;
-                    group.add(metric);
-                }
-
-                if ( i === verticalMullions.length - 1) {
-                    horizontalRows += 1;
-                    var width__ = this.model.getInMetric('width', 'mm') - pos;
-
-                    params = {
-                        getter: function () {
-                            return width__;
-                        }
-                    };
-
-                    if (verticalMullions.length === 1) {
-                        params.setter = function (val) {
-                            if (this.state.openingView) {
-                                val = this.model.getInMetric('width', 'mm') - val;
+                        } else if ( edge === 'mullion' ) {
+                            if ( index !== key ) {
+                                edge_section = current_section;
+                            } else {
+                                edge_section = findParentByMeasurementType(current_section, invertedType, key, index);
+                                edge_section = edge_section.section;
                             }
-
-                            this.model.setSectionMullionPosition(mul.id, val);
-                            this.updateSection(mul.id);
-                        }.bind(this);
-                    }
-
-                    metric = this.createHorizontalMetric(width__ * this.ratio, metricSize, params);
-                    metric.position({
-                        x: pos * this.ratio,
-                        y: height
-                    });
-                    group.add(metric);
-                }
-            }.bind(this));
-
-            pos = 0;
-            horizontalMullions.forEach(function (mul, i) {
-                var height_ = mul.position - pos;
-
-                if (height_ > 0) {
-                    var params = {
-                        getter: function () {
-                            return height_;
                         }
-                    };
 
-                    if (horizontalMullions.length === 1) {
-                        params.setter = function (val) {
-                            this.model.setSectionMullionPosition(mul.id, val);
-                            this.updateSection(mul.id);
-                        }.bind(this);
-                    }
-
-                    var metric = this.createVerticalMetric(metricSize, height_ * this.ratio, params);
-
-                    metric.position({
-                        x: -metricSize,
-                        y: pos * this.ratio
-                    });
-                    pos = mul.position;
-                    group.add(metric);
-                }
-
-                if ( i === horizontalMullions.length - 1) {
-                    verticalRows += 1;
-                    var height__ = this.model.getInMetric('height', 'mm') - pos;
-
-                    params = {
-                        getter: function () {
-                            return height__;
+                        if (invertedType in edge_section.measurements[edge]) {
+                            edge_state = edge_section.measurements[edge][invertedType][store_index];
+                        } else {
+                            edge_state = edge_section.measurements[edge][type][store_index];
                         }
-                    };
 
-                    if (horizontalMullions.length === 1) {
-                        params.setter = function (val) {
-                            this.model.setSectionMullionPosition(mul.id, this.model.getInMetric('height', 'mm') - val);
-                            this.updateSection(mul.id);
-                        }.bind(this);
+                        data.edges[key] = {
+                            section_id: edge_section.id,
+                            state: edge_state,
+                            type: edge,
+                            index: store_index
+                        };
+                    });
+
+                    pos = mullion.position;
+
+                    if (current_section.sections.length) {
+                        saved_mullion = current_section;
                     }
 
-                    metric = this.createVerticalMetric(metricSize, height__ * this.ratio, params);
-                    metric.position({
-                        x: -metricSize,
-                        y: pos * this.ratio
-                    });
-                    group.add(metric);
+                    result[type].push(data);
+                });
+            });
+            /* eslint-enable max-nested-callbacks */
+
+            return result;
+        },
+        createMullionMetrics: function (mullions, height) {
+            var view = this;
+            var group = new Konva.Group();
+
+            _.each(mullions, function (mulGroup, type) {
+                // Draw measurements & controls
+                mulGroup.forEach(function (mullion) {
+                    var width_ = mullion.size;
+                    var params = {};
+                    var position = {};
+
+                    if (width_ > 0) {
+
+                        // Params
+                        if (type === 'vertical' || type === 'vertical_invisible') {
+                            params.width = (width_ * view.ratio);
+                            params.height = (metricSize);
+                            params.space = width_;
+                            params.methods = {};
+
+                            position = {
+                                x: mullion.offset * view.ratio,
+                                y: height
+                            };
+                        } else {
+                            params.width = (metricSize);
+                            params.height = (width_ * view.ratio);
+                            params.space = width_;
+                            params.methods = {};
+
+                            position = {
+                                x: -metricSize,
+                                y: mullion.offset * view.ratio
+                            };
+                        }
+
+                        if (mullions[type].length === 2) {
+                            params.setter = true;
+                        }
+
+                        var metric = view.createMetric( mullion, params, type);
+
+                        metric.position(position);
+                        group.add(metric);
+                    }
+                });
+            });
+
+            return group;
+        },
+        createMetric: function ( mullion, params, type ) {
+            var view = this;
+            var section = view.model.getSection( mullion.section_id );
+            var group = new Konva.Group();
+            var gap = (mullion.index === 1) ? '_gap' : '';
+            var methodName = 'setter_' + type + gap;
+
+            var correction = view.getTotalCorrection( mullion, type );
+            var methods = {
+                getter: function () {
+                    return this.space;
+                },
+                setter_vertical: function (val) {
+                    val -= correction.size;
+
+                    if (!this.openingView) {
+                        val = this.model.getInMetric('width', 'mm') - val;
+                    }
+
+                    this.model.setSectionMullionPosition(this.id, val);
+                },
+                setter_vertical_gap: function (val) {
+                    val -= correction.size;
+
+                    if (this.openingView) {
+                        val = this.model.getInMetric('width', 'mm') - val;
+                    }
+
+                    this.model.setSectionMullionPosition(this.id, val);
+                },
+                setter_horizontal: function (val) {
+                    val -= correction.size;
+                    this.model.setSectionMullionPosition(this.id, val);
+                },
+                setter_horizontal_gap: function (val) {
+                    val -= correction.size;
+                    this.model.setSectionMullionPosition(this.id, this.model.getInMetric('height', 'mm') - val);
                 }
-            }.bind(this));
+            };
+            var drawingAccordance = {
+                vertical: 'createHorizontalMetric',
+                horizontal: 'createVerticalMetric'
+            };
 
-            var root = this.model.generateFullRoot();
+            // Apply corrections to sizes
+            params.space += correction.size;
+            params.position = {};
 
-            var verticalWholeMertic = this.createVerticalMetric(metricSize, height, {
+            if (type === 'vertical') {
+                params.width += correction.size * view.ratio;
+                params.position.x = correction.pos * view.ratio;
+            } else {
+                params.height += correction.size * view.ratio;
+                params.position.y = correction.pos * view.ratio;
+            }
+
+            // Attach getter
+            params.methods.getter = methods.getter.bind({space: params.space});
+            // Attach setter
+            if (params.setter) {
+                params.methods.setter = methods[methodName].bind({
+                    openingView: view.state.openingView,
+                    id: section.id,
+                    model: view.model
+                });
+            }
+
+            // Draw metrics
+            var metric = view[ drawingAccordance[type] ](params.width, params.height, params.methods);
+            // Draw controls
+            var controls = view.createMullionControls( mullion, params.width, params.height, type );
+
+            // Apply corrections to position
+            metric.position( params.position );
+            controls.position( params.position );
+
+            // Add metric to the group:
+            // We using group to make its position relative to the basic position
+            group.add( metric, controls );
+
+            return group;
+        },
+        getCorrection: function () {
+            return {
+                frame_width: this.model.profile.get('frame_width'),
+                mullion_width: this.model.profile.get('mullion_width') / 2,
+                size: 0,
+                pos: 0
+            };
+        },
+        getMullionCorrection: function (type, value, index, correction) {
+            value = value || 0;
+            correction = correction || this.getCorrection();
+
+            if (type === 'frame') {
+                if (value === 'min') {
+                    correction.size -= correction.frame_width;
+                    correction.pos += (index === 0) ? correction.frame_width : 0;
+                }
+
+                // Max is default
+            } else {
+                if (value === 'min') {
+                    correction.size -= correction.mullion_width;
+                    correction.pos += (index === 1) ? correction.mullion_width : 0;
+                }
+
+                if (value === 'max') {
+                    correction.size += correction.mullion_width;
+                    correction.pos -= (index === 1) ? correction.mullion_width : 0;
+                }
+
+                // Center is default
+            }
+
+            return correction;
+        },
+        getFrameCorrectionSum: function (type, correction) {
+            var root_section = this.model.get('root_section');
+            var measurementData = root_section.measurements.frame;
+
+            correction = correction || this.getCorrection();
+
+            measurementData[type].forEach(function (value, i) {
+                if (value === 'min') {
+                    correction.size -= correction.frame_width;
+                    correction.pos += (i === 0) ? correction.frame_width : 0;
+                }
+            });
+
+            return correction;
+        },
+        getFrameCorrection: function (type) {
+            var root_section = this.model.get('root_section');
+            var measurementData = root_section.measurements.frame;
+            var correction = [this.getCorrection(), this.getCorrection()];
+
+            measurementData[type].forEach(function (value, i) {
+                if (value === 'min') {
+                    correction[i].size -= correction[i].frame_width;
+                    correction[i].pos += (i === 0) ? correction[i].frame_width : 0;
+                }
+            });
+
+            return correction;
+        },
+        getTotalCorrection: function (mullion) {
+            var view = this;
+            var correction = view.getCorrection();
+
+            mullion.edges.forEach(function (edge) {
+                correction = view.getMullionCorrection( edge.type, edge.state, edge.index, correction );
+            });
+
+            return correction;
+        },
+        createControl: function (width, height) {
+            var view = this;
+            var control = new Konva.Rect({
+                width: width,
+                height: height,
+                fill: '#66B6E3',
+                opacity: 0.5
+            });
+
+            control.on('mouseover', function () {
+                control.fill('#1A8BEF');
+                view.updateLayer();
+            });
+            control.on('mouseout', function () {
+                control.fill('#66B6E3');
+                view.updateLayer();
+            });
+
+            return control;
+        },
+        createWholeControls: function (section_id, width, height, type) {
+            var group = new Konva.Group();
+            var controlSize = metricSize / 4;
+
+            // prepare size and position
+            var size_1 = 0;
+            var size_2 = 0;
+            var position = {};
+
+            if (type === 'vertical' || type === 'vertical_invisible') {
+                size_1 = width;
+                size_2 = controlSize;
+
+                position.y = height - controlSize;
+            } else {
+                size_1 = controlSize;
+                size_2 = height;
+
+                position.x = width - controlSize;
+            }
+
+            // Make both controls recursively
+            for (var i = 0; i < 2; i++) {
+                // Create control
+                var control = this.createControl( size_1, size_2 );
+
+                // Attach event
+                control.on('click', this.createMeasurementSelectFrame.bind(this, section_id, 'frame', type, i));
+
+                // Position right/bottom control
+                if ( i === 1 ) {
+                    control.position( position );
+                }
+
+                group.add( control );
+            }
+
+            return group;
+        },
+        createMullionControls: function (mullion, width, height, type) {
+            var view = this;
+            var group = new Konva.Group();
+            var controlSize = metricSize / 4;
+            var position = { x: 0, y: 0 };
+
+            if (type === 'horizontal') {
+                position.y += height - controlSize;
+                height = controlSize;
+            } else {
+                position.x += width - controlSize;
+                width = controlSize;
+            }
+
+            mullion.edges.forEach(function (edge, i) {
+                var control = view.createControl( width, height );
+                // Attach event
+                control.on('click', view.createMeasurementSelectMullion.bind(view, mullion, type, i));
+
+                if (i === 1) {
+                    control.position( position );
+                }
+
+                group.add(control);
+            });
+
+            return group;
+        },
+        createMeasurementSelectUI: function (event, section, states, state, setter) {
+            var view = this;
+            // Two variables to fasten drop to default value if nothing selected
+            var anyStateSelected = false;
+            var defaultState = null;
+
+            // View
+            var $wrap = $('<div>', {class: 'dimension-point-wrapper'});
+            var containerPos = this.$('#drawing').position();
+
+            $wrap
+                .css({
+                    position: 'absolute',
+                    top: event.target.getAbsolutePosition().y + containerPos.top,
+                    left: event.target.getAbsolutePosition().x + containerPos.left
+                })
+                .appendTo(this.$el);
+
+            states.forEach(function (opt) {
+                var selected = false;
+
+                if (state === opt.value) {
+                    selected = true;
+                    anyStateSelected = true;
+                }
+
+                if (opt.default) {
+                    defaultState = opt;
+                }
+
+                var $label = $('<label>', {text: opt.viewname}).appendTo($wrap);
+
+                $('<input>', {
+                    type: 'radio',
+                    name: 'dimension-point-' + section.id,
+                    id: 'dimension-point-' + section.id + '-' + opt.value,
+                    value: opt.value,
+                    checked: selected
+                })
+                .prependTo($label)
+                .on('change', function () {
+                    setter( $(this).val() );
+                    // We should save data in another form...
+                    view.model.setSectionMeasurements( section.id, section.measurements );
+                    $wrap.remove();
+                });
+            });
+
+            // If no option wasn't selected вАФ select default option
+            if (anyStateSelected === false && defaultState !== null) {
+                setter( defaultState.value );
+                view.model.setSectionMeasurements( section.id, section.measurements );
+
+                $('#dimension-point-' + section.id + '-' + defaultState.value).prop('checked', true);
+            }
+
+            // Close it with click everywhere
+            function cancelIt( evt ) {
+                if (
+                    evt.keyCode === 27 ||
+                    $(evt.target).hasClass('dimension-point-wrapper') === false &&
+                    $(evt.target).parents('.dimension-point-wrapper').length === 0
+                ) {
+                    $wrap.remove();
+                    $('body').off('click', cancelIt);
+                }
+            }
+
+            // hack to prevent
+            setTimeout( function () {
+                $('body').on('click tap keyup', cancelIt);
+            }, 50);
+        },
+        createMeasurementSelectFrame: function (section_id, mType, type, index, event) {
+            var view = this;
+            var section = this.model.getSection( section_id );
+            // Get available states
+            var states = this.model.getMeasurementStates( mType );
+            // Get current state of dimension-point
+            var state = section.measurements[mType][type][index];
+
+            return view.createMeasurementSelectUI(event, section, states, state, function (val) {
+                section.measurements[mType][type][index] = val;
+            });
+        },
+        createMeasurementSelectMullion: function (mullion, type, i, event) {
+            var view = this;
+            var edge = mullion.edges[i];
+            var section = this.model.getSection( edge.section_id );
+            // Get available states
+            var states = this.model.getMeasurementStates( edge.type );
+            // Get current state of dimension-point
+            var state = edge.state;
+            var invertedType = view.model.getInvertedDivider( type );
+
+            return view.createMeasurementSelectUI(event, section, states, state, function (val) {
+                section.measurements[edge.type][invertedType][edge.index] = val;
+            });
+        },
+        createWholeMetrics: function (mullions, width, height) {
+            var group = new Konva.Group();
+            var root_section = this.model.generateFullRoot();
+            var rows = {
+                vertical: mullions.vertical.length ? 1 : 0,
+                horizontal: mullions.horizontal.length ? 1 : 0
+            };
+
+            // Correction parameters for metrics
+            var vCorrection = this.getFrameCorrectionSum('vertical');
+            var hCorrection = this.getFrameCorrectionSum('horizontal');
+
+            // Vertical
+            var vHeight = height + (vCorrection.size * this.ratio);
+            var verticalWholeMertic = this.createVerticalMetric(metricSize, vHeight, {
                 setter: function (val) {
+                    val -= vCorrection.size;
                     this.model.setInMetric('height', val, 'mm');
-                    this.updateSection( root.id, 'horizontal' );
                 }.bind(this),
                 getter: function () {
-                    return this.model.getInMetric('height', 'mm');
+                    return this.model.getInMetric('height', 'mm') + vCorrection.size;
                 }.bind(this)
             });
+            var vPosition = {
+                x: -metricSize * (rows.horizontal + 1),
+                y: 0 + (vCorrection.pos * this.ratio)
+            };
+            var vControls = this.createWholeControls(root_section.id, metricSize, vHeight, 'vertical');
 
-            verticalWholeMertic.position({
-                x: -metricSize * (verticalRows + 1),
-                y: 0
-            });
+            verticalWholeMertic.position(vPosition);
+            vControls.position(vPosition);
+            group.add(verticalWholeMertic, vControls);
 
-            group.add(verticalWholeMertic);
-
-            var horizontalWholeMertic = this.createHorizontalMetric(width, metricSize, {
+            // Horizontal
+            var hWidth = width + (hCorrection.size * this.ratio);
+            var horizontalWholeMertic = this.createHorizontalMetric(hWidth, metricSize, {
                 setter: function (val) {
+                    val -= hCorrection.size;
                     this.model.setInMetric('width', val, 'mm');
-                    this.updateSection( root.id, 'vertical' );
                 }.bind(this),
                 getter: function () {
-                    return this.model.getInMetric('width', 'mm');
+                    return this.model.getInMetric('width', 'mm') + hCorrection.size;
                 }.bind(this)
             });
+            var hPosition = {
+                x: 0 + (hCorrection.pos * this.ratio),
+                y: height + rows.vertical * metricSize
+            };
+            var hControls = this.createWholeControls(root_section.id, hWidth, metricSize, 'horizontal');
 
-            horizontalWholeMertic.position({
-                x: 0,
-                y: height + horizontalRows * metricSize
+            horizontalWholeMertic.position(hPosition);
+            hControls.position(hPosition);
+            group.add(horizontalWholeMertic, hControls);
+
+            return group;
+        },
+        createInfo: function (mullions, width, height) {
+            var group = new Konva.Group();
+
+            // Draw mullion metrics
+            mullions = this.sortMullions(mullions);
+            mullions = this.getMeasurements(mullions);
+            group.add( this.createMullionMetrics(mullions, height) );
+
+            // Draw whole metrics
+            group.add( this.createWholeMetrics(mullions, width, height) );
+
+            // Draw overlay metrics: GlassSize & OpeningSize
+            group.add( this.createOverlayMetrics() );
+
+            return group;
+        },
+        createOverlayMetrics: function () {
+            // Algorithm:
+            // 1. Get a full root
+            // 2. Recursively look at each child section:
+            // 3. If it's measurenets.glass value equal TRUE — draw GlassSizeMetrics
+            // 4. If it's sashType !== fixed_in_frame — it should have an opening size
+            //    so we're looking for measurements.openingSize value,
+            //    if its equal TRUE — draw OpeningSizeMetrics
+            //
+            // Interesting moments:
+            // 1. If user selected to show opening/glass size in one of sections
+            //    and then selected to show opening/glass size of its parents —
+            //    show only parents (use flags to each of metrics type).
+
+            // Function to find overlay metrics recursively
+            function findOverlay( section, results, level) {
+                level = level || 0;
+
+                if (
+                    section.measurements.glass ||
+                    section.sashType !== 'fixed_in_frame' && section.measurements.opening
+                ) {
+                    var type = (section.measurements.glass) ? 'glass' : 'opening';
+
+                    results.push({
+                        section_id: section.id,
+                        type: type,
+                        level: level,
+                        params: section[type + 'Params']
+                    });
+
+                } else if ( section.sections.length ){
+                    section.sections.forEach(function (child) {
+                        level++;
+                        findOverlay(child, results, level);
+                    });
+                }
+
+                return results;
+            }
+
+            var view = this;
+            var group = new Konva.Group();
+            var root = (this.state.insideView) ? this.model.generateFullRoot() : this.model.generateFullReversedRoot();
+            var results = [];
+
+            findOverlay(root, results);
+
+            results.forEach(function (metric) {
+                var mSize = (metricSize / 2);
+                var width = metric.params.width * view.ratio;
+                var height = metric.params.height * view.ratio;
+                var position = {
+                    x: metric.params.x * view.ratio,
+                    y: metric.params.y * view.ratio
+                };
+                var style = {
+                    label: {
+                        fill: 'lightgrey',
+                        stroke: 'grey',
+                        color: 'black',
+                        strokeWidth: 0.5,
+                        padding: 2,
+                        fontSize: 9,
+                        fontSize_big: 9
+                    }
+                };
+                var vertical = view.createVerticalMetric(
+                                mSize / 2,
+                                height,
+                                {
+                                    getter: function () {
+                                        return metric.params.height;
+                                    }
+                                }, style);
+                var horizontal = view.createHorizontalMetric(
+                                width,
+                                mSize / 2,
+                                {
+                                    getter: function () {
+                                        return metric.params.width;
+                                    }
+                                }, style);
+
+                vertical.position({
+                    x: position.x + mSize,
+                    y: position.y
+                });
+                horizontal.position({
+                    x: position.x,
+                    y: position.y + mSize
+                });
+
+                group.add( vertical, horizontal );
             });
-            group.add(horizontalWholeMertic);
 
             return group;
         },
         createArchedInfo: function (width, height) {
             var group = new Konva.Group();
 
-            var archHeight = this.model.getArchedPosition();
+            var vCorrection = this.getFrameCorrection('vertical');
+            var vwCorrection = this.getFrameCorrectionSum('vertical');
+            var hwCorrection = this.getFrameCorrectionSum('horizontal');
+
+            var root_section = this.model.get('root_section');
+            var archHeight = this.model.getArchedPosition() + vCorrection[0].size;
             var params = {
                 getter: function () {
                     return archHeight;
                 },
                 setter: function (val) {
-                    var id = this.model.get('root_section').id;
+                    val = val - vCorrection[0].size;
+
+                    var id = root_section.id;
 
                     this.model._updateSection(id, function (section) {
                         section.archPosition = val;
                     });
                 }.bind(this)
             };
+
+            var vHeight = (this.model.getInMetric('height', 'mm') +
+                            vCorrection[0].size + vCorrection[1].size
+                            ) * this.ratio;
+
+            var vPosition = {
+                x: -metricSize,
+                y: vCorrection[0].pos * this.ratio
+            };
             var metric = this.createVerticalMetric(metricSize, archHeight * this.ratio, params);
+            var vControls = this.createWholeControls(root_section.id, metricSize * 2, vHeight, 'vertical');
 
-            metric.position({
-                x: -metricSize
-            });
-            group.add(metric);
+            metric.position(vPosition);
 
-            var nonArchHeight = this.model.getInMetric('height', 'mm') - archHeight;
+            vPosition.x = vPosition.x * 2;
+            vControls.position(vPosition);
+            group.add(metric, vControls);
+
+            var nonArchHeight = this.model.getInMetric('height', 'mm') - archHeight +
+                                vCorrection[1].size;
 
             params = {
                 getter: function () {
                     return nonArchHeight;
                 },
                 setter: function (val) {
+                    val = val - vCorrection[1].size;
+
                     var id = this.model.get('root_section').id;
                     var archPosition = this.model.getInMetric('height', 'mm') - val;
 
@@ -1424,43 +2080,54 @@ var app = app || {};
                     });
                 }.bind(this)
             };
-            metric = this.createVerticalMetric(metricSize, nonArchHeight * this.ratio, params);
+            metric = this.createVerticalMetric(metricSize, (nonArchHeight + vCorrection[0].size) * this.ratio, params);
             metric.position({
                 x: -metricSize,
-                y: archHeight * this.ratio
+                y: (archHeight + vCorrection[0].pos) * this.ratio
             });
             group.add(metric);
 
-            var verticalWholeMertic = this.createVerticalMetric(metricSize, height, {
-                setter: function (val) {
-                    this.model.setInMetric('height', val, 'mm');
-                }.bind(this),
-                getter: function () {
-                    return this.model.getInMetric('height', 'mm');
-                }.bind(this)
-            });
+            var verticalWholeMertic = this.createVerticalMetric(metricSize,
+                (height + (vwCorrection.size * this.ratio)),
+                {
+                    setter: function (val) {
+                        val -= vwCorrection.size;
+                        this.model.setInMetric('height', val, 'mm');
+                    }.bind(this),
+                    getter: function () {
+                        return ( this.model.getInMetric('height', 'mm') + vwCorrection.size);
+                    }.bind(this)
+                });
 
             verticalWholeMertic.position({
                 x: -metricSize * 2,
-                y: 0
+                y: 0 + (vwCorrection.pos * this.ratio)
             });
 
             group.add(verticalWholeMertic);
 
-            var horizontalWholeMertic = this.createHorizontalMetric(width, metricSize, {
-                setter: function (val) {
-                    this.model.setInMetric('width', val, 'mm');
-                }.bind(this),
-                getter: function () {
-                    return this.model.getInMetric('width', 'mm');
-                }.bind(this)
-            });
-
-            horizontalWholeMertic.position({
-                x: 0,
+            var hWidth = (width + (hwCorrection.size * this.ratio));
+            var hControls = this.createWholeControls(root_section.id, hWidth, metricSize, 'horizontal');
+            var hPosition = {
+                x: 0 + (hwCorrection.pos * this.ratio),
                 y: height
-            });
-            group.add(horizontalWholeMertic);
+            };
+            var horizontalWholeMertic = this.createHorizontalMetric( hWidth,
+                metricSize,
+                {
+                    setter: function (val) {
+                        val -= hwCorrection.size;
+                        this.model.setInMetric('width', val, 'mm');
+                    }.bind(this),
+                    getter: function () {
+                        return ( this.model.getInMetric('width', 'mm') + hwCorrection.size);
+                    }.bind(this)
+                });
+
+            horizontalWholeMertic.position( hPosition);
+            hControls.position( hPosition );
+
+            group.add(horizontalWholeMertic, hControls);
 
             return group;
         },
@@ -1507,6 +2174,9 @@ var app = app || {};
                     }
                 })
                 ;
+        },
+        updateLayer: function () {
+            this.layer.draw();
         },
         updateCanvas: function () {
             // clear all previous objects
@@ -1681,6 +2351,18 @@ var app = app || {};
 
             this.$('.remove-arched').toggle(!!isArched);
             this.$('.add-arched').toggle(!isArched);
+
+            // Additional overlay metrics
+            if ( selectedSash ) {
+                this.ui.$metrics_glass.prop('checked', selectedSash.measurements.glass );
+                this.ui.$metrics_opening.prop('checked', selectedSash.measurements.opening );
+
+                if ( selectedSash.sashType !== 'fixed_in_frame' ) {
+                    this.$('#additional-metrics-opening--label').show();
+                } else {
+                    this.$('#additional-metrics-opening--label').hide();
+                }
+            }
         },
 
         updateSize: function (width, height) {
@@ -1762,6 +2444,24 @@ var app = app || {};
                 );
 
             return result;
+        },
+
+        getMeasurementEdges: function (section_id, type) {
+            var edges = this.model.getMeasurementEdges( section_id );
+            var edgeTypes = [];
+
+            if (type === 'horizontal') {
+                edgeTypes = [edges.left, edges.right];
+
+                if (!this.state.insideView) {
+                    edgeTypes.reverse();
+                }
+
+            } else {
+                edgeTypes = [edges.top, edges.bottom];
+            }
+
+            return edgeTypes;
         }
     });
 
