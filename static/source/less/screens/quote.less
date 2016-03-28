@@ -152,17 +152,30 @@
     padding: 0;
 }
 
-.quote-unit-heading .primary-info strong {
+.quote-unit-heading .primary-info strong,
+.quote-unit-heading .primary-info span {
     display: block;
+    float: left;
     padding: 0.5rem 1.5rem;
-    border-bottom: @border_dark;
+}
+
+.quote-unit-heading .primary-info strong {
+    border-right: @border_dark;
     background-color: @bg_light;
 }
 
 .quote-unit-heading .primary-info span {
-    display: block;
-    padding: 0.5rem 1.5rem;
     background-color: @white;
+}
+
+.quote-unit-heading .primary-info.has-price strong {
+    border-bottom: @border_dark;
+    border-right: none;
+}
+
+.quote-unit-heading .primary-info.has-price strong,
+.quote-unit-heading .primary-info.has-price span {
+    float: none;
 }
 
 .quote-unit-heading tbody td.price,

@@ -1,6 +1,6 @@
 <table class="quote-unit-heading">
     <tbody><tr>
-        <td class="primary-info">
+        <td class="primary-info{{#if show_price }} has-price{{/if}}">
             <table>
                 <tbody><tr>
                     <td class="position">
@@ -22,11 +22,11 @@
         <td class="price">
             <ul class="unit-price">
                 <li class="unit">
-                    <strong>Unit price:</strong>
+                    <strong>Unit price{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
                     <span class="value">{{ price.unit }}</span>
                 </li>
                 <li class="subtotal">
-                    <strong>Subtotal:</strong>
+                    <strong>Subtotal{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
                     <span class="value">{{ price.subtotal }}</span>
                 </li>
             </ul>
@@ -40,7 +40,7 @@
                 </li>
                 {{/if}}
                 {{#if price.subtotal_discounted }}<li class="subtotal">
-                    <strong>Subtotal w/Discount:</strong>
+                    <strong>Subtotal w/Disc.{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
                     <span class="value">{{ price.subtotal_discounted }}</span>
                 </li>
                 {{/if}}

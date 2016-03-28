@@ -244,6 +244,7 @@ var app = app || {};
             return show_drawings;
         },
         serializeData: function () {
+            var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
             var show_customer_image = this.shouldShowCustomerImage();
             var show_drawings = this.shouldShowDrawings();
 
@@ -258,7 +259,8 @@ var app = app || {};
                 customer_image: show_customer_image ? this.getCustomerImage() : '',
                 product_image: show_drawings ? this.getProductImage() : '',
                 product_image_alternative: show_drawings ? this.getProductImage(true) : '',
-                show_price: this.options.show_price !== false
+                show_price: this.options.show_price !== false,
+                is_price_estimated: project_settings && project_settings.get('pricing_mode') === 'estimates'
             };
         }
     });
