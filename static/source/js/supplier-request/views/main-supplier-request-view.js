@@ -21,6 +21,7 @@ var app = app || {};
                 collection: app.current_project.units,
                 extras: app.current_project.extras,
                 show_price: false,
+                show_customer_image: false,
                 show_sizes_in_mm: true,
                 show_supplier_system: true,
                 show_supplier_filling_name: true,

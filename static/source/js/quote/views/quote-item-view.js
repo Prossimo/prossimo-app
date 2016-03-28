@@ -10,38 +10,6 @@ var app = app || {};
         initialize: function () {
             this.listenTo(this.model, 'change', this.render);
         },
-        getQuoteTableAttributes: function () {
-            var project_settings = app.settings.getProjectSettings();
-
-            var name_title_hash = {
-                mark: 'Mark',
-                customer_image: 'Customer Image',
-                product_image: 'Shop Drawing' +
-                    (this.options.show_outside_units_view ? ': <small>View from Exterior</small>' : ''),
-                product_description: 'Product Description',
-                quantity: 'Qty',
-                price: project_settings && project_settings.get('pricing_mode') === 'estimates' ?
-                    'Estimated Price' : 'Price'
-            };
-
-            if ( !this.shouldShowCustomerImage() ) {
-                delete name_title_hash.customer_image;
-            }
-
-            if ( !this.shouldShowDrawings() ) {
-                delete name_title_hash.product_image;
-            }
-
-            if ( this.options.show_price === false ) {
-                delete name_title_hash.price;
-            }
-
-            var table_attributes = _.map(name_title_hash, function (item, key) {
-                return { name: key, title: item };
-            }, this);
-
-            return table_attributes;
-        },
         getPrices: function () {
             var f = app.utils.format;
             var unit_price = this.model.getUnitPrice();
@@ -202,9 +170,10 @@ var app = app || {};
                 system: 'System'
             }, _.object( _.pluck(source_hash, 'name'), _.pluck(source_hash, 'title') ), {
                 glazing: this.model.profile.isSolidPanelPossible() ||
-                    this.model.profile.isFlushPanelPossible() ? 'Glass Packet/Panel Type' : 'Glass Packet',
+                    this.model.profile.isFlushPanelPossible() ? 'Glass Packet / Panel' : 'Glass Packet',
                 threshold: 'Threshold',
-                u_value: 'U Value'
+                u_value: 'U Value',
+                glazing_bar_type: 'Muntin Type'
             });
 
             var params_source = {
@@ -244,24 +213,29 @@ var app = app || {};
         getCustomerImage: function () {
             return this.model.get('customer_image');
         },
-        getProductImage: function () {
+        getProductImage: function (is_alternative) {
             var project_settings = app.settings && app.settings.getProjectSettings();
-            var preview_height = 400;
-            var preview_width = this.model.collection &&
-                this.model.collection.hasAtLeastOneCustomerImage() ? 400 : 450;
+            var position = this.options.show_outside_units_view ?
+                ( !is_alternative ? 'outside' : 'inside' ) :
+                ( !is_alternative ? 'inside' : 'outside' );
+            var preview_size = 400;
+            var title = position === 'inside' ? 'View from Interior' : 'View from Exterior';
 
-            return app.preview(this.model, {
-                width: preview_width,
-                height: preview_height,
-                mode: 'base64',
-                position: this.options.show_outside_units_view ? 'outside' : 'inside',
-                hingeIndicatorMode: this.options.force_european_hinge_indicators ? 'european' :
-                    project_settings && project_settings.get('hinge_indicator_mode')
-            });
+            return {
+                img: app.preview(this.model, {
+                    width: preview_size,
+                    height: preview_size,
+                    mode: 'base64',
+                    position: position,
+                    hingeIndicatorMode: this.options.force_european_hinge_indicators ? 'european' :
+                        project_settings && project_settings.get('hinge_indicator_mode')
+                }),
+                title: title
+            };
         },
         shouldShowCustomerImage: function () {
-            return this.model.collection &&
-                 this.model.collection.hasAtLeastOneCustomerImage();
+            return this.options.show_customer_image !== false &&
+                this.model.collection && this.model.collection.hasAtLeastOneCustomerImage();
         },
         shouldShowDrawings: function () {
             var project_settings = app.settings && app.settings.getProjectSettings();
@@ -270,22 +244,23 @@ var app = app || {};
             return show_drawings;
         },
         serializeData: function () {
+            var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
             var show_customer_image = this.shouldShowCustomerImage();
             var show_drawings = this.shouldShowDrawings();
 
             return {
-                table_attributes: this.getQuoteTableAttributes(),
+                position: parseFloat(this.model.get('position')) + 1,
                 mark: this.model.get('mark'),
                 description: this.getDescription(),
                 notes: this.model.get('notes'),
                 exceptions: this.model.get('exceptions'),
                 quantity: this.model.get('quantity'),
                 price: this.getPrices(),
-                customer_image: this.getCustomerImage(),
+                customer_image: show_customer_image ? this.getCustomerImage() : '',
                 product_image: show_drawings ? this.getProductImage() : '',
+                product_image_alternative: show_drawings ? this.getProductImage(true) : '',
                 show_price: this.options.show_price !== false,
-                show_customer_image: show_customer_image,
-                show_drawings: show_drawings
+                is_price_estimated: project_settings && project_settings.get('pricing_mode') === 'estimates'
             };
         }
     });

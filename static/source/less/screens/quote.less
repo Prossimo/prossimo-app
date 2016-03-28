@@ -1,3 +1,17 @@
+@preview_size: 400px;
+@customer_image_size: 200px;
+
+@border_dark: 1px solid darken(@white, 20%);
+@border_medium: 1px solid darken(@white, 15%);
+@border_light: 1px solid darken(@white, 10%);
+
+@bg_light: darken(@white, 1%);
+
+
+//  ------------------------------------------------------------------------
+//  Screen and containers
+//  ------------------------------------------------------------------------
+
 .quote-screen {
     display: flex;
     flex-flow: column;
@@ -13,7 +27,7 @@
     margin-bottom: 2rem;
     padding: 3rem 4rem 4rem;
     background-color: @white;
-    border: 1px solid darken(@white, 15%);
+    border: @border_medium;
     min-height: 100%;
     max-width: 170rem;
     min-width: 150rem;
@@ -69,7 +83,6 @@
 .quote-project-info .project-name {
     text-transform: uppercase;
     font-weight: 700;
-    letter-spacing: 0.1em;
     font-size: 2em;
 }
 
@@ -88,38 +101,129 @@
 }
 
 .quote-table {
-    // border: 1px solid darken(@white, 10%);
     width: 100%;
     table-layout: fixed;
 }
 
 .quote-table thead th {
     padding: 0.5em 1em;
-    border: 1px solid darken(@white, 20%);
-    background-color: darken(@white, 1%);
+    border: @border_dark;
+    background-color: @bg_light;
 }
 
 .quote-table tbody td {
     padding: 0.5em 1em;
-    border: 1px solid darken(@white, 10%);
+    border: @border_light;
     vertical-align: top;
 }
 
+
 //  ------------------------------------------------------------------------
-//  Units
+//  Unit info heading (ref, mark, qty, price)
 //  ------------------------------------------------------------------------
 
 .quote-item {
     margin-bottom: 2rem;
 }
 
-.quote-unit {
+.quote-unit-heading {
     width: 100%;
     table-layout: fixed;
 }
 
-.product_description,
-.tech_specs {
+.quote-unit-heading tbody td {
+    border: @border_dark;
+    background-color: @bg_light;
+}
+
+.quote-unit-heading td span {
+    min-height: 3rem;
+}
+
+.quote-unit-heading td.primary-info {
+    padding: 0;
+    width: 60%;
+}
+
+.quote-unit-heading .primary-info td {
+    border-left: none;
+    border-top: none;
+    border-bottom: none;
+    padding: 0;
+}
+
+.quote-unit-heading .primary-info strong,
+.quote-unit-heading .primary-info span {
+    display: block;
+    float: left;
+    padding: 0.5rem 1.5rem;
+}
+
+.quote-unit-heading .primary-info strong {
+    border-right: @border_dark;
+    background-color: @bg_light;
+}
+
+.quote-unit-heading .primary-info span {
+    background-color: @white;
+}
+
+.quote-unit-heading .primary-info.has-price strong {
+    border-bottom: @border_dark;
+    border-right: none;
+}
+
+.quote-unit-heading .primary-info.has-price strong,
+.quote-unit-heading .primary-info.has-price span {
+    float: none;
+}
+
+.quote-unit-heading tbody td.price,
+.quote-unit-heading tbody td.price-discounted {
+    font-size: 1em;
+    width: 20%;
+}
+
+.quote-table .unit-price {
+    display: table;
+    margin: 0;
+    width: 100%;
+}
+
+.quote-table .unit-price li {
+    display: table-row;
+}
+
+.quote-table .unit-price strong {
+    display: table-cell;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.quote-table .unit-price span {
+    display: table-cell;
+    text-align: right;
+}
+
+.quote-table .unit-price .subtotal strong,
+.quote-table .unit-price .subtotal span {
+    font-weight: 700;
+}
+
+
+//  ------------------------------------------------------------------------
+//  Unit info (image, details)
+//  ------------------------------------------------------------------------
+
+.quote-unit {
+    position: relative;
+    top: -1px;
+    width: 100%;
+    table-layout: fixed;
+}
+
+td.product-description,
+td.tech-specs {
     font-size: 0.9em;
 }
 
@@ -128,104 +232,135 @@
     font-size: 1.1em;
 }
 
-.product_description ul,
-.tech_specs ul {
+.product-description ul,
+.tech-specs ul {
+    display: table;
     padding: 0;
     list-style-type: none;
+    width: 100%;
+}
+
+.product-description li,
+.tech-specs li {
+    display: table-row;
+}
+
+.product-description li strong,
+.tech-specs li strong {
+    display: table-cell;
+    padding-right: 2rem;
+    font-weight: 400;
+    font-style: italic;
+    width: 25%;
+    vertical-align: bottom;
+}
+
+.product-description li span,
+.tech-specs li span {
+    display: table-cell;
+    width: 75%;
+    vertical-align: bottom;
 }
 
 li.opening h6 {
-    margin: 1em 0 0.4em;
+    display: table-row;
+    padding: 1em 0 0.4em;
     font-size: 1em;
     font-weight: 700;
 }
 
 li.opening p {
+    display: table-row;
     margin-bottom: 0;
-}
-
-.quote-table .unit-price {
-    width: 100%;
-}
-
-.quote-table .unit-price td {
-    padding: 0;
-    border: none;
-    vertical-align: bottom;
-}
-
-.quote-table .unit-price tr.subtotal {
-    font-weight: 700;
-}
-
-.quote-table .unit-price td.value {
-    text-align: right;
 }
 
 table.subtotal,
 table.total-units {
     table-layout: fixed;
     width: 100%;
-    border: 1px solid darken(@white, 10%);
-    background-color: darken(@white, 1%);
+    border: @border_light;
+    background-color: @bg_light;
 }
 
-
-//  ------------------------------------------------------------------------
-//  Columns
-//  ------------------------------------------------------------------------
-
-
-td.ref,
-th.ref {
-    width: 4%;
+td.product-image,
+th.product-image {
+    width: 60%;
+    min-width: 832px;
 }
 
-td.mark,
-th.mark {
-    width: 4%;
-}
-
-td.customer_image,
-th.customer_image {
-    width: 16%;
-}
-
-td.customer_image img {
+.product-image img {
     display: block;
-    max-height: 20em;
-    max-width: 100%;
+    max-height: @preview_size;
+    max-width: @preview_size;
 }
 
-td.product_image,
-th.product_image {
-    width: 32%;
+td.product-description,
+th.product-description {
+    width: 40%;
 }
 
-td.product_image img {
+.product-image-inner th {
+    padding: 1rem 0 0.5rem;
+    text-align: center;
+    font-weight: 400;
+    font-style: italic;
+}
+
+.product-image-inner tbody td {
+    padding: 0;
+    border: none;
+}
+
+td.product-image.has-customer-image {
+    position: relative;
+    padding-bottom: @customer_image_size + 80px;
+}
+
+.product-image .customer-image-inner {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: @preview_size;
+    padding-bottom: 20px;
+    border-top: @border_light;
+    border-right: @border_light;
+}
+
+.customer-image-inner h5 {
+    text-align: center;
+    font-style: italic;
+}
+
+.customer-image-inner img {
     display: block;
-    max-height: 30em;
-    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: @customer_image_size;
+    max-height: @customer_image_size;
 }
 
-td.product_description,
-th.product_description {
-    width: 24%;
+.customer-image .customer-image-inner img {
+    max-width: @preview_size;
+    max-height: @preview_size;
 }
 
-td.quantity,
-th.quantity {
-    width: 4%;
+.sash-list h5 {
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+    padding: 0.5em 1em;
+    border-top: @border_light;
+    border-bottom: @border_light;
+    background-color: @bg_light;
+    font-weight: 700;
 }
 
-td.price,
-th.price {
-    width: 20%;
+.sash-list h6 {
+    font-size: 14px;
+    font-weight: 700;
 }
 
-td.extras_product_description,
-th.extras_product_description {
-    width: 72%;
+.sash-list .sections li:first-child h6 {
+    margin-top: 0;
 }
 
 .subtotal td.price,
@@ -234,30 +369,18 @@ th.extras_product_description {
 .total-units th.total-units-column,
 .grand-total td.price,
 .grand-total th.price {
-    width: 24%;
-}
-
-.no-customer-image {
-    td.product_image,
-    th.product_image {
-        width: 34%;
-    }
-
-    td.product_description,
-    th.product_description {
-        width: 38%;
-    }
+    width: 30%;
 }
 
 
 //  ------------------------------------------------------------------------
-//  Table footer
+//  Table Footer (Total Prices)
 //  ------------------------------------------------------------------------
 
 .quote-table tfoot td {
-    padding: 0.5em 1em;
-    border: 1px solid darken(@white, 10%);
-    background-color: darken(@white, 1%);
+    padding: 0.5rem 1rem;
+    border: @border_light;
+    background-color: @bg_light;
     vertical-align: top;
 }
 
@@ -293,7 +416,7 @@ th.extras_product_description {
 }
 
 table.grand-total tr {
-    background-color: darken(@white, 2%);
+    background-color: @bg_light;
 }
 
 div + table.grand-total {
@@ -310,7 +433,7 @@ div + table.grand-total {
 }
 
 .extras-heading {
-    margin: 0.8em 0.8em 0;
+    margin: 0.8rem 0.8rem 0;
     font-size: 1.1em;
     text-align: center;
     text-transform: uppercase;
@@ -318,7 +441,7 @@ div + table.grand-total {
 }
 
 .optional-extras-subheading {
-    margin: 0.2em 0.8em 0;
+    margin: 0.2rem 0.8rem 0;
     font-size: 0.9em;
     text-align: center;
     font-weight: 700;
@@ -328,6 +451,42 @@ div + table.grand-total {
 .optional-extras-subheading + table {
     margin-top: 1rem;
 }
+
+td.extras-product-description,
+th.extras-product-description {
+    width: 65%;
+}
+
+.quote-extras-table {
+    td.quantity,
+    th.quantity {
+        width: 5%;
+    }
+
+    td.price,
+    th.price {
+        width: 25%;
+    }
+
+    .unit-price td {
+        padding: 0;
+        border: none;
+        vertical-align: bottom;
+    }
+
+    .unit-price tr.subtotal {
+        font-weight: 700;
+    }
+
+    .unit-price td.value {
+        text-align: right;
+    }
+
+    .unit-price {
+        width: 100%;
+    }
+}
+
 
 //  ------------------------------------------------------------------------
 //  Terms (below table)
@@ -339,13 +498,18 @@ div + table.grand-total {
 
 .quote-terms-info h2 {
     width: 60%;
+    font-size: 1.5em;
+    font-weight: 700;
 }
 
 .quote-terms-info ul {
     margin: 4rem 0;
     padding: 0;
-    font-weight: 700;
     list-style-type: none;
+}
+
+.warranty {
+    font-weight: 700;
 }
 
 .quote-terms-info table {
@@ -355,4 +519,8 @@ div + table.grand-total {
 
 .quote-terms-info table td {
     padding: 1rem 0;
+}
+
+.quote-terms-info table span {
+    color: lighten(@black, 40%);
 }
