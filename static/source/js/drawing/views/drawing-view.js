@@ -30,7 +30,7 @@ var app = app || {};
     app.DrawingView = Marionette.ItemView.extend({
         tagName: 'div',
         template: app.templates['drawing/drawing-view'],
-        initialize: function () {
+        initialize: function (opts) {
             var project_settings = app.settings.getProjectSettings();
 
             this.listenTo(this.model, 'all', this.updateRenderedScene);
@@ -39,6 +39,7 @@ var app = app || {};
             this.createGlazingPopup();
 
             this.state = {
+                isPreview: ('isPreview' in opts && opts.isPreview),
                 insideView: this.isInsideView(),
                 openingView: this.isOpeningView(),
                 selectedSashId: null,
@@ -1687,39 +1688,42 @@ var app = app || {};
         },
         createWholeControls: function (section_id, width, height, type) {
             var group = new Konva.Group();
-            var controlSize = metricSize / 4;
 
-            // prepare size and position
-            var size_1 = 0;
-            var size_2 = 0;
-            var position = {};
+            if (!this.state.isPreview) {
+                var controlSize = metricSize / 4;
 
-            if (type === 'vertical' || type === 'vertical_invisible') {
-                size_1 = width;
-                size_2 = controlSize;
+                // prepare size and position
+                var size_1 = 0;
+                var size_2 = 0;
+                var position = {};
 
-                position.y = height - controlSize;
-            } else {
-                size_1 = controlSize;
-                size_2 = height;
+                if (type === 'vertical' || type === 'vertical_invisible') {
+                    size_1 = width;
+                    size_2 = controlSize;
 
-                position.x = width - controlSize;
-            }
+                    position.y = height - controlSize;
+                } else {
+                    size_1 = controlSize;
+                    size_2 = height;
 
-            // Make both controls recursively
-            for (var i = 0; i < 2; i++) {
-                // Create control
-                var control = this.createControl( size_1, size_2 );
-
-                // Attach event
-                control.on('click', this.createMeasurementSelectFrame.bind(this, section_id, 'frame', type, i));
-
-                // Position right/bottom control
-                if ( i === 1 ) {
-                    control.position( position );
+                    position.x = width - controlSize;
                 }
 
-                group.add( control );
+                // Make both controls recursively
+                for (var i = 0; i < 2; i++) {
+                    // Create control
+                    var control = this.createControl( size_1, size_2 );
+
+                    // Attach event
+                    control.on('click', this.createMeasurementSelectFrame.bind(this, section_id, 'frame', type, i));
+
+                    // Position right/bottom control
+                    if ( i === 1 ) {
+                        control.position( position );
+                    }
+
+                    group.add( control );
+                }
             }
 
             return group;
@@ -1727,28 +1731,32 @@ var app = app || {};
         createMullionControls: function (mullion, width, height, type) {
             var view = this;
             var group = new Konva.Group();
-            var controlSize = metricSize / 4;
-            var position = { x: 0, y: 0 };
 
-            if (type === 'horizontal') {
-                position.y += height - controlSize;
-                height = controlSize;
-            } else {
-                position.x += width - controlSize;
-                width = controlSize;
-            }
+            if (!this.state.isPreview) {
+                var controlSize = metricSize / 4;
+                var position = { x: 0, y: 0 };
 
-            mullion.edges.forEach(function (edge, i) {
-                var control = view.createControl( width, height );
-                // Attach event
-                control.on('click', view.createMeasurementSelectMullion.bind(view, mullion, type, i));
-
-                if (i === 1) {
-                    control.position( position );
+                if (type === 'horizontal') {
+                    position.y += height - controlSize;
+                    height = controlSize;
+                } else {
+                    position.x += width - controlSize;
+                    width = controlSize;
                 }
 
-                group.add(control);
-            });
+                mullion.edges.forEach(function (edge, i) {
+                    var control = view.createControl( width, height );
+                    // Attach event
+                    control.on('click', view.createMeasurementSelectMullion.bind(view, mullion, type, i));
+
+                    if (i === 1) {
+                        control.position( position );
+                    }
+
+                    group.add(control);
+                });
+
+            }
 
             return group;
         },
@@ -2503,7 +2511,8 @@ var app = app || {};
         }
 
         var view = new app.DrawingView({
-            model: unitModel
+            model: unitModel,
+            isPreview: true
         });
 
         view.render();
