@@ -1974,7 +1974,7 @@ var app = app || {};
 
             var view = this;
             var group = new Konva.Group();
-            var root = (this.state.insideView) ? this.model.generateFullRoot() : this.model.generateFullReversedRoot();
+            var root = (this.state.openingView) ? this.model.generateFullRoot() : this.model.generateFullReversedRoot();
             var results = [];
 
             findOverlay(root, results);
