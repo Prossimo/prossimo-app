@@ -1990,7 +1990,7 @@ var app = app || {};
                 var style = {
                     label: {
                         fill: 'white',
-                        stroke: 'white',
+                        stroke: 'lightgrey',
                         color: 'grey',
                         strokeWidth: 0.5,
                         padding: 2,
