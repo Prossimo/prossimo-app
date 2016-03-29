@@ -233,7 +233,7 @@ var app = app || {};
                 }
 
                 if ( root_section_parsed ) {
-                    this.set('root_section', this.validateSection(root_section_parsed));
+                    this.set('root_section', this.validateSection(root_section_parsed, true));
                     return;
                 }
             }
@@ -243,7 +243,7 @@ var app = app || {};
             }
         },
         //  Check if some of the section values aren't valid and try to fix that
-        validateSection: function (current_section) {
+        validateSection: function (current_section, is_root) {
             //  Replace deprecated sash types with more adequate values
             if ( current_section.sashType === 'flush-turn-left' ) {
                 current_section.sashType = 'turn_only_left';
@@ -257,8 +257,21 @@ var app = app || {};
                 current_section.bars = getDefaultBars();
             }
 
+            if ( !current_section.measurements ) {
+                current_section.measurements = getDefaultMeasurements(is_root);
+            }
+
+            //  TODO: this duplicates code from splitSection, so ideally
+            //  it should be moved to a new helper function
+            if ( current_section.measurements && !current_section.measurements.mullion && current_section.divider ) {
+                var measurementType = getInvertedDivider(current_section.divider).replace(/_invisible/, '');
+
+                current_section.measurements.mullion = {};
+                current_section.measurements.mullion[measurementType] = ['center', 'center'];
+            }
+
             _.each(current_section.sections, function (section) {
-                section = this.validateSection(section);
+                section = this.validateSection(section, false);
             }, this);
 
             return current_section;
@@ -639,7 +652,6 @@ var app = app || {};
             this._updateSection(sectionId, function (section) {
                 section.fillingType = type;
                 section.fillingName = name;
-
             });
 
             //  We also change all nested sections recursively
@@ -1317,7 +1329,7 @@ var app = app || {};
         },
         getInvertedDivider: function (type) {
             return getInvertedDivider(type);
-	}
+        }
     });
 
     // static function
