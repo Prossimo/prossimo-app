@@ -1981,13 +1981,13 @@ var app = app || {};
                 };
                 var style = {
                     label: {
-                        fill: 'lightgrey',
-                        stroke: 'grey',
-                        color: 'black',
+                        fill: 'white',
+                        stroke: 'white',
+                        color: 'grey',
                         strokeWidth: 0.5,
                         padding: 2,
                         fontSize: 9,
-                        fontSize_big: 9
+                        fontSize_big: 10
                     }
                 };
                 var vertical = view.createVerticalMetric(
