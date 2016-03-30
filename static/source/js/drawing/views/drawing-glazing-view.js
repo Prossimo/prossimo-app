@@ -311,6 +311,9 @@ var app = app || {};
 
             return this.callDrawer( 'createHorizontalMetric', drawerParams );
         },
+        getDefaultMetricStyles: function () {
+            return this.callDrawer( 'getDefaultMetricStyles' );
+        },
         // duplicate of DrawingView.createInput
         // changed only appendTo and containerPos
         createInput: function (params, pos, size) {
