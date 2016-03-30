@@ -1990,10 +1990,10 @@ var app = app || {};
                 var style = {
                     label: {
                         fill: 'white',
-                        stroke: 'lightgrey',
-                        color: 'grey',
+                        stroke: 'grey',
+                        color: '#444',
                         strokeWidth: 0.5,
-                        padding: 2,
+                        padding: 3,
                         fontSize: 9,
                         fontSize_big: 10
                     }
