@@ -15,12 +15,14 @@ var app = app || {};
             var unit_price = this.model.getUnitPrice();
             var subtotal_price = this.model.getSubtotalPrice();
             var discount = this.model.get('discount');
+            var unit_price_discounted = this.model.getUnitPriceDiscounted();
             var subtotal_price_discounted = this.model.getSubtotalPriceDiscounted();
 
             return {
                 unit: f.price_usd(unit_price),
                 subtotal: f.price_usd(subtotal_price),
                 discount: discount ? f.percent(discount) : null,
+                unit_discounted: discount ? f.price_usd(unit_price_discounted) : null,
                 subtotal_discounted: discount ? f.price_usd(subtotal_price_discounted) : null
             };
         },
@@ -218,7 +220,7 @@ var app = app || {};
             var position = this.options.show_outside_units_view ?
                 ( !is_alternative ? 'outside' : 'inside' ) :
                 ( !is_alternative ? 'inside' : 'outside' );
-            var preview_size = 400;
+            var preview_size = 600;
             var title = position === 'inside' ? 'View from Interior' : 'View from Exterior';
 
             return {
@@ -247,6 +249,7 @@ var app = app || {};
             var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
             var show_customer_image = this.shouldShowCustomerImage();
             var show_drawings = this.shouldShowDrawings();
+            var show_price = this.options.show_price !== false;
 
             return {
                 position: parseFloat(this.model.get('position')) + 1,
@@ -255,11 +258,10 @@ var app = app || {};
                 notes: this.model.get('notes'),
                 exceptions: this.model.get('exceptions'),
                 quantity: this.model.get('quantity'),
-                price: this.getPrices(),
                 customer_image: show_customer_image ? this.getCustomerImage() : '',
                 product_image: show_drawings ? this.getProductImage() : '',
-                product_image_alternative: show_drawings ? this.getProductImage(true) : '',
-                show_price: this.options.show_price !== false,
+                show_price: show_price,
+                price: show_price ? this.getPrices() : null,
                 is_price_estimated: project_settings && project_settings.get('pricing_mode') === 'estimates'
             };
         }

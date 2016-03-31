@@ -9,9 +9,11 @@ var app = app || {};
         template: app.templates['quote/quote-extras-item-view'],
         getPrices: function () {
             var f = app.utils.format;
+            var unit_price = this.model.getUnitPrice();
             var subtotal_price = this.model.getSubtotalPrice();
 
             return {
+                unit: unit_price ? f.price_usd(unit_price) : null,
                 subtotal: f.price_usd(subtotal_price)
             };
         },

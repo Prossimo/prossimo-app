@@ -221,10 +221,8 @@ var app = app || {};
                 },
                 drawing: function (model) {
                     return app.preview(model, {
-                        // width: 500,
-                        // height: 500,
-                        width: 400,
-                        height: 400,
+                        width: 600,
+                        height: 600,
                         mode: 'base64',
                         position: 'outside'
                     });
