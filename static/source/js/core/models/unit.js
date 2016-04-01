@@ -45,7 +45,8 @@ var app = app || {};
     //  We only enable those for editing on units where `isDoorType` is `true`
     var DOOR_ONLY_PROPERTIES = ['exterior_handle', 'lock_mechanism'];
     //  Same as above, for `hasOperableSections`
-    var OPERABLE_ONLY_PROPERTIES = ['interior_handle', 'exterior_handle', 'hardware_type', 'hinge_style'];
+    var OPERABLE_ONLY_PROPERTIES = ['interior_handle', 'exterior_handle', 'hardware_type',
+        'hinge_style', 'opening_direction'];
     //  Same as above, for `hasGlazingBars`
     var GLAZING_BAR_PROPERTIES = ['glazing_bar_type', 'glazing_bar_width'];
 
@@ -212,9 +213,19 @@ var app = app || {};
 
             if ( !this.options.proxy ) {
                 this.setProfile();
+                this.validateOpeningDirection();
                 this.validateRootSection();
                 this.on('change:profile_name', this.setProfile, this);
                 this.on('change:glazing', this.setDefaultFillingType, this);
+            }
+        },
+        validateOpeningDirection: function () {
+            if ( !app.settings ) {
+                return;
+            }
+
+            if ( !_.contains(app.settings.getOpeningDirections(), this.get('opening_direction')) ) {
+                this.set('opening_direction', app.settings.getOpeningDirections()[0]);
             }
         },
         //  TODO: this function should be improved
