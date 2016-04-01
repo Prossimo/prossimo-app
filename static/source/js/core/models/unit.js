@@ -641,6 +641,12 @@ var app = app || {};
 
             return edges;
         },
+        getInvertedMeasurementVal: function (val) {
+            return (val === 'min') ? 'max' :
+                   (val === 'max') ? 'min' :
+                   (val === 'center') ? 'center' :
+                   val;
+        },
         // @TODO: Add method, that checks for correct values of measurement data
         // @TODO: Add method, that drops measurement data to default
         setFillingType: function (sectionId, type, name) {
