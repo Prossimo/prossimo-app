@@ -33,6 +33,7 @@ var app = app || {};
             var c = app.utils.convert;
             var m = app.utils.math;
 
+            //  TODO: this name is a bit misleading
             function getFillingPerimeter(width, height) {
                 return view.options.show_sizes_in_mm ?
                     f.dimensions_mm(width, height) :
@@ -62,12 +63,22 @@ var app = app || {};
                 return filling_size + ' (' + filling_area + ')';
             }
 
-            function getSectionInfo(source) {
+            function getSectionInfo(source, options) {
+                options = options || {};
                 var result = {};
 
                 result.filling_is_glass = source.filling.type === 'glass';
                 result.filling_name = source.filling.name;
                 result.filling_size = getFillingSize( source.filling.width, source.filling.height );
+
+                //  Show supplier name for filling if it exists
+                if ( options.show_supplier_filling_name && app.settings && source.filling && source.filling.name ) {
+                    var filling_type = app.settings.getFillingTypeByName(source.filling.name);
+
+                    if ( filling_type && filling_type.get('supplier_name') ) {
+                        result.filling_name = filling_type.get('supplier_name');
+                    }
+                }
 
                 return result;
             }
@@ -79,10 +90,10 @@ var app = app || {};
             //  This is the list of params that we want to see in the quote. We
             //  throw out attributes that don't apply to the current unit
             var params_list = _.filter(
-                ['rough_opening', 'glazing', 'internal_color', 'external_color',
+                ['rough_opening', 'internal_color', 'external_color',
                 'interior_handle', 'exterior_handle', 'description', 'hardware_type',
                 'lock_mechanism', 'glazing_bead', 'gasket_color', 'hinge_style',
-                'opening_direction', 'internal_sill', 'external_sill', 'glazing_bar_type'],
+                'opening_direction', 'internal_sill', 'external_sill', 'glazing_bar_type', 'glazing_bar_width'],
             function (param) {
                 var condition = true;
 
@@ -103,20 +114,10 @@ var app = app || {};
                 var sash_item = {};
                 var opening_size;
                 var opening_area;
-                var filling_type;
                 var section_info;
 
                 sash_item.name = 'Sash #' + (index + 1);
                 sash_item.type = source_item.type;
-
-                //  Show supplier name for filling if it exists
-                if ( this.options.show_supplier_filling_name && app.settings && sash_item.filling_name ) {
-                    filling_type = app.settings.getFillingTypeByName(sash_item.filling_name);
-
-                    if ( filling_type && filling_type.get('supplier_name') ) {
-                        sash_item.filling_name = filling_type.get('supplier_name');
-                    }
-                }
 
                 if ( source_item.opening.height && source_item.opening.width ) {
                     opening_size = this.options.show_sizes_in_mm ?
@@ -146,7 +147,7 @@ var app = app || {};
                         var section_item = {};
 
                         section_item.name = 'Section #' + (index + 1) + '.' + (s_index + 1);
-                        section_info = getSectionInfo(section);
+                        section_info = getSectionInfo(section, this.options);
                         _.extend(section_item, section_info);
 
                         if ( section_info.filling_is_glass ) {
@@ -155,27 +156,30 @@ var app = app || {};
                         }
 
                         sash_item.sections.push(section_item);
-                    });
+                    }, this);
 
                     sash_item.daylight_sum = sum ? f.square_feet(sum, 2, 'sup') : false;
                 } else {
-                    section_info = getSectionInfo(source_item);
+                    section_info = getSectionInfo(source_item, this.options);
                     _.extend(sash_item, section_info);
                 }
 
                 sashes.push(sash_item);
             }, this);
 
+            //  TODO: we should only get titles at this points, not add any
+            //  new values to name_title_hash. The reason is that we could
+            //  remove some params like muntin type at the previous steps, but
+            //  add it back here, and we don't want to do that
             var name_title_hash = _.extend({
                 size: 'Size',
                 rough_opening: 'Rough Opening',
                 system: 'System'
             }, _.object( _.pluck(source_hash, 'name'), _.pluck(source_hash, 'title') ), {
-                glazing: this.model.profile.isSolidPanelPossible() ||
-                    this.model.profile.isFlushPanelPossible() ? 'Glass Packet / Panel' : 'Glass Packet',
                 threshold: 'Threshold',
                 u_value: 'U Value',
-                glazing_bar_type: 'Muntin Type'
+                glazing_bar_type: 'Muntin Type',
+                glazing_bar_width: 'Muntin Width'
             });
 
             var params_source = {
@@ -189,22 +193,22 @@ var app = app || {};
                 threshold: this.model.profile.isThresholdPossible() ?
                     this.model.profile.getThresholdType() : false,
                 u_value: this.model.get('uw') ? f.fixed(this.model.getUValue(), 3) : false,
-                glazing: this.options.show_supplier_filling_name && app.settings && this.model.get('glazing') ?
-                    (
-                        app.settings.getFillingTypeByName(this.model.get('glazing')) ?
-                        app.settings.getFillingTypeByName(this.model.get('glazing')).get('supplier_name') :
-                        this.model.get('glazing')
-                    ) :
-                    this.model.get('glazing'),
                 rough_opening: this.options.show_sizes_in_mm ?
                     f.dimensions_mm(c.inches_to_mm(this.model.getRoughOpeningWidth()),
                         c.inches_to_mm(this.model.getRoughOpeningHeight())) :
                     f.dimensions(this.model.getRoughOpeningWidth(), this.model.getRoughOpeningHeight(),
-                        null, project_settings.get('inches_display_mode') || null)
+                        null, project_settings.get('inches_display_mode') || null),
+                glazing_bar_type: this.model.hasGlazingBars() ? this.model.get('glazing_bar_type') : false,
+                glazing_bar_width: this.model.hasGlazingBars() ?
+                    (
+                        this.options.show_sizes_in_mm ? f.dimension_mm(this.model.get('glazing_bar_width')) :
+                        f.dimension(c.mm_to_inches(this.model.get('glazing_bar_width')), 'fraction', null, 'remove')
+                    ) : false
             };
 
             var params = _.map(name_title_hash, function (item, key) {
-                return { name: key, title: item, value: params_source[key] || this.model.get(key) };
+                return { name: key, title: item, value: params_source[key] !== undefined ?
+                    params_source[key] : this.model.get(key) };
             }, this);
 
             return {
