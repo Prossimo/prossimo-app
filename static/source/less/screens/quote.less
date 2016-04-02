@@ -106,13 +106,13 @@
 }
 
 .quote-table thead th {
-    padding: 0.5em 1em;
+    padding: 0.7rem 1.2rem;
     border: @border_dark;
     background-color: @bg_light;
 }
 
 .quote-table tbody td {
-    padding: 0.5em 1em;
+    padding: 0.7rem 1.2rem;
     border: @border_light;
     vertical-align: top;
 }
@@ -258,20 +258,20 @@ td.tech-specs {
     padding-right: 2rem;
     font-weight: 400;
     font-style: italic;
-    width: 25%;
-    vertical-align: bottom;
+    width: 27%;
+    vertical-align: top;
 }
 
 .product-description li span,
 .tech-specs li span {
     display: table-cell;
-    width: 75%;
+    width: 73%;
     vertical-align: bottom;
 }
 
 li.opening h6 {
     display: table-row;
-    padding: 1em 0 0.4em;
+    padding: 1rem 0 0.4rem;
     font-size: 1em;
     font-weight: 700;
 }
@@ -310,6 +310,13 @@ th.product-description {
     width: 44%;
 }
 
+.product-description .size-label {
+    font-size: 0.8em;
+    padding: 0 0.4rem;
+    background-color: darken(@white, 5%);
+    font-style: normal;
+}
+
 td.product-image.has-customer-image {
     position: relative;
     padding-right: @customer_image_size;
@@ -344,9 +351,9 @@ td.product-image.has-customer-image {
 }
 
 .sash-list h5 {
-    margin-left: -1.5rem;
-    margin-right: -1.5rem;
-    padding: 0.5em 1em;
+    margin-left: -1.2rem;
+    margin-right: -1.2rem;
+    padding: 0.7rem 1.2rem;
     border-top: @border_light;
     border-bottom: @border_light;
     background-color: @bg_light;
@@ -457,6 +464,11 @@ th.extras-product-description {
 }
 
 .quote-extras-table {
+    td.ref,
+    th.ref {
+        width: 5%;
+    }
+
     td.quantity,
     th.quantity {
         width: 5%;

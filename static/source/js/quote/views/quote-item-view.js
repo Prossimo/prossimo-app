@@ -172,8 +172,8 @@ var app = app || {};
             //  remove some params like muntin type at the previous steps, but
             //  add it back here, and we don't want to do that
             var name_title_hash = _.extend({
-                size: 'Size',
-                rough_opening: 'Rough Opening',
+                size: 'Size <small class="size-label">WxH</small>',
+                rough_opening: 'Rough Opening <small class="size-label">WxH</small>',
                 system: 'System'
             }, _.object( _.pluck(source_hash, 'name'), _.pluck(source_hash, 'title') ), {
                 threshold: 'Threshold',

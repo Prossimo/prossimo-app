@@ -28,11 +28,14 @@ var app = app || {};
             var f = app.utils.format;
             var description = this.model.get('description');
 
-            if ( this.model.isOptionalType() && this.model.isPercentBasedType() ) {
+            if ( this.isOptionalPercentBased() ) {
                 description += ' (' + f.percent(this.model.getMarkupPercent()) + ' of Subtotal for units)';
             }
 
             return description;
+        },
+        isOptionalPercentBased: function () {
+            return this.model.isOptionalType() && this.model.isPercentBasedType();
         },
         getQuantity: function () {
             var quantity = this.model.get('quantity');
@@ -44,12 +47,16 @@ var app = app || {};
             return quantity;
         },
         serializeData: function () {
+            var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
+
             return {
                 reference_id: this.getReferenceId(),
                 description: this.getDescription(),
                 quantity: this.getQuantity(),
                 price: this.getPrices(),
-                show_price: this.options.show_price !== false
+                show_price: this.options.show_price !== false,
+                is_price_estimated: project_settings && project_settings.get('pricing_mode') === 'estimates' &&
+                    this.isOptionalPercentBased()
             };
         }
     });

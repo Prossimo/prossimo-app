@@ -12,7 +12,7 @@
             </tr>
             {{/if}}
             <tr class="subtotal">
-                <td>Subtotal:</td>
+                <td>Subtotal{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</td>
                 <td class="value">{{ price.subtotal }}</td>
             </tr>
         </tbody>
