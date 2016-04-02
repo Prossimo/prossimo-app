@@ -330,6 +330,9 @@ var app = app || {};
                 this.profile = app.settings.getProfileByNameOrNew(this.get('profile_name'));
             }
         },
+        hasDummyProfile: function () {
+            return this.profile && this.profile.get('is_dummy');
+        },
         setDefaultFillingType: function () {
             var filling_type;
             var glazing = this.get('glazing');

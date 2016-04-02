@@ -266,7 +266,9 @@ var app = app || {};
                 product_image: show_drawings ? this.getProductImage() : '',
                 show_price: show_price,
                 price: show_price ? this.getPrices() : null,
-                is_price_estimated: project_settings && project_settings.get('pricing_mode') === 'estimates'
+                is_price_estimated: project_settings && project_settings.get('pricing_mode') === 'estimates',
+                has_dummy_profile: this.model.hasDummyProfile(),
+                profile_name: this.model.get('profile_name')
             };
         }
     });

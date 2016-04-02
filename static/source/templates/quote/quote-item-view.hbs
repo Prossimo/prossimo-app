@@ -15,6 +15,14 @@
                         <strong>Quantity</strong>
                         <span>{{ quantity }}</span>
                     </td>
+                    {{#if has_dummy_profile }}
+                    <td class="no-profile-warning">
+                        <p>
+                            <i class="glyphicon glyphicon-warning-sign"></i>
+                            Profile "{{ profile_name }}" selected for this unit doesn't exist.
+                        </p>
+                    </td>
+                    {{/if}}
                 </tr></tbody>
             </table>
         </td>

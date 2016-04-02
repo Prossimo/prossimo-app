@@ -164,7 +164,9 @@ var app = app || {};
         getProfileByNameOrNew: function (profile_name) {
             var profile = this.profiles.findWhere({name: profile_name});
 
-            return profile ? profile : new app.Profile();
+            return profile ? profile : new app.Profile({
+                is_dummy: true
+            });
         },
         getDefaultProfileName: function () {
             var default_profile_name = '';
