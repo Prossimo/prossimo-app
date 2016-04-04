@@ -1,3 +1,7 @@
+@preview_size: 600px;
+@customer_image_size: 150px;
+
+
 @media print {
     @page {
         size: landscape;
@@ -62,19 +66,50 @@
         margin-bottom: 20px;
     }
 
-    td.customer_image img {
-        display: block;
-        max-height: 200px;
-        max-width: 200px;
+    .quote-unit-heading .has-discounted-price td strong,
+    .quote-unit-heading .has-discounted-price td span {
+        min-height: 2rem;
     }
 
-    td.product_image img {
+    .quote-unit-heading .has-discounted-price td strong,
+    .quote-unit-heading .has-discounted-price td span {
+        min-height: 2.8rem;
+    }
+
+    .product-image img {
         display: block;
-        max-height: 280px;
-        max-width: 300px;
+        max-height: @preview_size;
+        max-width: @preview_size;
+    }
+
+    .customer-image-inner h5 {
+        font-size: 1em;
+    }
+
+    .customer-image-inner {
+        width: @customer_image_size + 20px;
+    }
+
+    .customer-image-inner img {
+        display: block;
+        max-height: @customer_image_size - 50px;
+        max-width: @customer_image_size - 50px;
+    }
+
+    .sash-list h5 {
+        font-size: 1.1em;
+    }
+
+    .sash-list h6 {
+        font-size: 1.1em;
     }
 
     .quote-item {
+        page-break-inside: avoid;
+    }
+
+    .quote-table .total-units,
+    .quote-table .subtotal {
         page-break-inside: avoid;
     }
 
@@ -84,6 +119,10 @@
     }
 
     .grand-total {
+        page-break-inside: avoid;
+    }
+
+    .quote-terms-info {
         page-break-inside: avoid;
     }
 }

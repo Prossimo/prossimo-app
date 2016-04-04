@@ -1,12 +1,18 @@
 <td class="ref">{{ reference_id }}</td>
-<td class="extras_product_description">{{ description }}</td>
+<td class="extras-product-description">{{ description }}</td>
 <td class="quantity">{{ quantity }}</td>
 {{#if show_price }}
 <td class="price">
     <table class="unit-price">
         <tbody>
+            {{#if price.unit }}
+            <tr class="unit">
+                <td>Unit Price:</td>
+                <td class="value">{{ price.unit }}</td>
+            </tr>
+            {{/if}}
             <tr class="subtotal">
-                <td>Subtotal:</td>
+                <td>Subtotal{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</td>
                 <td class="value">{{ price.subtotal }}</td>
             </tr>
         </tbody>

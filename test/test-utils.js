@@ -40,6 +40,9 @@ test('utils.format.dimension', function () {
     equal(f.dimension(50 + 3 / 7, 'fraction', 'inches_only'), '50 7/16″', 'Expected value is 50 7/16″');
     equal(f.dimension(62, 'fraction', 'inches_only'), '62″', 'Expected value is 62″');
     equal(f.dimension(33.375, null, 'inches_only'), '33.375″', 'Expected value is 33.375″');
+
+    equal(f.dimension(0.472, 'fraction', null, 'remove'), '1/2″', 'Expected value is 1/2″');
+    equal(f.dimension(0.472, 'fraction', null, 'show'), '0 1/2″', 'Expected value is 0 1/2″');
 });
 
 test('utils.format.dimensions', function () {

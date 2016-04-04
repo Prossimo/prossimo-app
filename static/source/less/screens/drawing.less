@@ -58,6 +58,15 @@
 .drawing-controls input {
     width: 35px;
 }
+.drawing-controls label {
+    white-space: nowrap;
+}
+.drawing-controls input.radio {
+    display: inline-block;
+    width: auto;
+    margin-right: 3px;
+    margin-left: 15px;
+}
 
 .drawing-controls img {
     width: 35px;
@@ -76,6 +85,10 @@
 
 .bars-control {
     margin: 0 10px;
+}
+
+#additional-metrics-opening--label {
+    display: none;
 }
 
 
@@ -237,4 +250,18 @@
     padding: 0.2rem 0.8rem;
     border: 1px solid darken(@white, 20%);
     background-color: darken(@white, 10%);
+}
+
+// Measurement controls (dimension-point)
+.dimension-point-wrapper {
+    padding: 0.2rem 0.4rem;
+    background-color: @white;
+}
+.dimension-point-wrapper label {
+    display: block;
+    font-size: 0.8em;
+    padding: 0.2em;
+}
+.dimension-point-wrapper input {
+    margin-right: 0.4em;
 }

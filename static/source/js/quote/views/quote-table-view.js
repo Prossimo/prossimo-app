@@ -14,12 +14,18 @@ var app = app || {};
         },
         initialize: function () {
             this.listenTo(app.current_project.settings, 'change', this.render);
+            //  TODO: this affects performance significantly. We need to
+            //  fine-tune what parts of quote are updated when, don't redraw
+            //  the whole thing
+            this.listenTo(app.current_project.units, 'change', this.render);
+            this.listenTo(app.current_project.extras, 'change', this.render);
         },
         childViewOptions: function () {
             return {
                 extras: this.options.extras,
                 project: this.options.project,
                 show_price: this.options.show_price,
+                show_customer_image: this.options.show_customer_image,
                 show_outside_units_view: this.options.show_outside_units_view,
                 show_sizes_in_mm: this.options.show_sizes_in_mm,
                 show_supplier_system: this.options.show_supplier_system,
@@ -48,6 +54,8 @@ var app = app || {};
             };
         },
         serializeData: function () {
+            var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
+
             return {
                 total_unit_types: this.collection.getTotalUnitTypes(),
                 total_unit_quantity: this.collection.getTotalUnitQuantity(),
@@ -55,7 +63,8 @@ var app = app || {};
                     this.options.extras.getRegularItems().length ||
                     this.options.extras.getOptionalItems().length,
                 total_prices: this.getTotalPrices(),
-                show_price: this.options.show_price !== false
+                show_price: this.options.show_price !== false,
+                is_price_estimated: project_settings && project_settings.get('pricing_mode') === 'estimates'
             };
         },
         onRender: function () {
@@ -77,8 +86,11 @@ var app = app || {};
             }
         },
         onDestroy: function () {
-            if ( this.serializeData().has_extras ) {
+            if ( this.quote_extras_table_view ) {
                 this.quote_extras_table_view.destroy();
+            }
+
+            if ( this.quote_optional_extras_table_view ) {
                 this.quote_optional_extras_table_view.destroy();
             }
         }

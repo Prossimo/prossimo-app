@@ -21,22 +21,8 @@ var app = app || {};
         initialize: function () {
             this.listenTo(this.collection, 'all', this.render);
         },
-        getExtrasTableAttributes: function () {
-            var name_title_hash = {
-                ref: 'Ref.',
-                extras_product_description: 'Product Description',
-                quantity: 'Qty'
-            };
-
-            if ( this.options.show_price !== false ) {
-                name_title_hash.price = 'Price';
-            }
-
-            var table_attributes = _.map(name_title_hash, function (item, key) {
-                return { name: key, title: item };
-            }, this);
-
-            return table_attributes;
+        getPriceColspan: function () {
+            return this.options.show_price !== false ? 3 : 2;
         },
         getTotalPrices: function () {
             var f = app.utils.format;
@@ -53,15 +39,31 @@ var app = app || {};
                 this.collection.getRegularItems().length :
                 this.collection.getOptionalItems().length;
         },
+        hasAtLeastOneOptionalPercentBased: function () {
+            var has_one = false;
+
+            if ( this.options.type === 'Optional' ) {
+                this.collection.each(function (item) {
+                    if ( item.isOptionalType() && item.isPercentBasedType() ) {
+                        has_one = true;
+                    }
+                });
+            }
+
+            return has_one;
+        },
         serializeData: function () {
+            var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
+
             return {
                 items_count: this.getItemsCount(),
-                table_attributes: this.getExtrasTableAttributes(),
-                price_colspan: this.getExtrasTableAttributes().length - 1,
+                price_colspan: this.getPriceColspan(),
                 total_prices: this.getTotalPrices(),
                 heading: this.options.type === 'Regular' ? 'Extras' : 'Optional Extras',
                 is_optional: this.options.type === 'Optional',
-                show_price: this.options.show_price !== false
+                show_price: this.options.show_price !== false,
+                is_price_estimated: project_settings && project_settings.get('pricing_mode') === 'estimates' &&
+                    this.hasAtLeastOneOptionalPercentBased()
             };
         }
     });

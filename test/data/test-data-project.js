@@ -34,10 +34,10 @@ $(document).ready(function () {
             width: 62,
             height: 96,
             quantity: 1,
-            glazing_bar_width: 20,
+            glazing_bar_width: 12,
             description: 'Tilt and turn inswing / fixed PVC',
             notes: 'Opening restriction cord included',
-            profile_name: 'Default Profile (test)',
+            profile_name: 'Pinnacle uPVC (test)',
             internal_color: 'Dark grey matte laminate',
             external_color: 'Dark grey matte laminate',
             gasket_color: 'Black',
@@ -48,7 +48,8 @@ $(document).ready(function () {
             uw: 0.77,
             glazing: '3Std U=.09 SGHC=.5',
             discount: 20,
-            customer_image: app.test_images['1'].url
+            customer_image: app.test_images['1'].url,
+            root_section: app.test_root_sections[0]
         },
         {
             mark: 'B1',
@@ -58,7 +59,7 @@ $(document).ready(function () {
             glazing_bar_width: 20,
             description: 'Tilt and turn inswing above / removable ac sash below. PVC',
             notes: 'Opening restriction cord included',
-            profile_name: 'Alternative Profile (test)',
+            profile_name: 'Pinnacle Entry Door (test)',
             internal_color: 'Dark grey matte laminate',
             external_color: 'Dark grey matte laminate',
             gasket_color: 'Black',
@@ -70,6 +71,36 @@ $(document).ready(function () {
             glazing: '3Std U=.09 SGHC=.5',
             discount: 20,
             customer_image: app.test_images['2'].url
+        },
+        {
+            mark: '377 E 10th Unit A',
+            width: 66,
+            height: 82,
+            quantity: 1,
+            description: 'TILT AND TURN INSWING/FIXED PVC',
+            profile_name: 'Pinnacle uPVC (test)',
+            internal_color: 'Grey Laminate',
+            external_color: 'Grey Laminate',
+            glazing: 'Triple - U=.09 SGHC=.5 VT=.71',
+            root_section: app.test_root_sections[1]
+        },
+        {
+            mark: '11 W 126th Unit H/I',
+            width: 145,
+            height: 90,
+            quantity: 1,
+            profile_name: 'PE 78N HI Entry Door (test)',
+            glazing: 'Triple Low Gain - Tempered',
+            root_section: app.test_root_sections[2]
+        },
+        {
+            mark: 'Moyers Residence Unit A',
+            width: 36.75,
+            height: 72.75,
+            quantity: 1,
+            profile_name: 'Pinnacle uPVC (test)',
+            glazing: 'Triple Standard - Ug=.09 SGHC=.50 LT=71%',
+            root_section: app.test_root_sections[3]
         }
     ]);
 

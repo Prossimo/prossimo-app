@@ -25,14 +25,14 @@ var app = app || {};
 
             $('#header').append( this.render().el );
 
-            this.listenTo(app.vent, 'current_project_changed', this.onCurrentProjectChanged);
+            this.listenTo(app.vent, 'current_project_loaded', this.onCurrentProjectLoaded);
         },
         onSettingsToggle: function () {
             if ( !this.isToggleDisabled() ) {
                 this.$el.toggleClass('is-project-settings-panel-open');
             }
         },
-        onCurrentProjectChanged: function () {
+        onCurrentProjectLoaded: function () {
             if ( !this.isToggleDisabled() ) {
                 this.ui.$settings_toggle.removeClass('disabled');
             }

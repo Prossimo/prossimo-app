@@ -221,8 +221,8 @@ var app = app || {};
                 },
                 drawing: function (model) {
                     return app.preview(model, {
-                        width: 500,
-                        height: 500,
+                        width: 600,
+                        height: 600,
                         mode: 'base64',
                         position: 'outside'
                     });
@@ -692,31 +692,43 @@ var app = app || {};
             var project_settings = app.settings.getProjectSettings();
 
             var custom_column_headers_hash = {
-                dimensions: 'Dimensions',
-                width_mm: 'Width (mm)',
-                height_mm: 'Height (mm)',
-                unit_cost: 'Unit Cost',
-                unit_cost_discounted: 'Unit Cost w/Disc.',
-                subtotal_cost: 'Subtotal Cost',
-                unit_price: 'Unit Price',
-                subtotal_price: 'Subtotal Price',
+                width: 'Width, in',
+                height: 'Height, in',
                 drawing: 'Drawing',
-                u_value: 'U Value',
-                unit_price_discounted: 'Unit Price w/Disc.',
-                subtotal_price_discounted: 'Subtotal Price w/Disc.',
+                width_mm: 'Width, mm',
+                height_mm: 'Height, mm',
+                dimensions: 'Dimensions',
+                rough_opening: 'Rough Opening',
+                customer_image: 'Customer Img.',
                 system: 'System',
+                external_color: 'Color Ext.',
+                internal_color: 'Color Int.',
+                opening_direction: 'Opening Dir.',
                 threshold: 'Threshold',
-                total_square_feet: 'Total Sq.Ft',
-                square_feet_price: 'Price per Sq.Ft',
-                square_feet_price_discounted: 'Price per Sq.Ft w/Disc.',
+                glazing_bar_type: 'Muntin Type',
+                glazing_bar_width: 'Muntin Width',
+                u_value: 'U Value',
                 move_item: 'Move',
                 remove_item: ' ',
-                quote_number: 'Quote Number',
-                subtotal_profit: 'Subtotal Profit',
-                subtotal_cost_discounted: 'Subtotal Cost w/Disc.',
                 original_cost: project_settings && project_settings.get('pricing_mode') === 'estimates' ?
-                    'Original Cost (est.)' : 'Original Cost',
-                rough_opening: 'Rough Opening'
+                    'Orig. Cost (est.)' : 'Orig. Cost',
+                original_currency: 'Orig. Curr.',
+                conversion_rate: 'Conv. Rate',
+                unit_cost: 'Unit Cost',
+                subtotal_cost: 'Subt. Cost',
+                supplier_discount: 'Suppl. Disc.',
+                unit_cost_discounted: 'Unit Cost w/D',
+                subtotal_cost_discounted: 'Subt. Cost w/D',
+                unit_price: 'Unit Price',
+                subtotal_price: 'Subt. Price',
+                unit_price_discounted: 'Unit Price w/D',
+                subtotal_price_discounted: 'Subt. Price w/D',
+                total_square_feet: 'Total ft<sup>2</sup>',
+                square_feet_price: 'Price / ft<sup>2</sup>',
+                square_feet_price_discounted: 'Price / ft<sup>2</sup> w/D',
+                subtotal_profit: 'Subt. Profit',
+                quote_revision: 'Quote Rev.',
+                quote_number: 'Quote #'
             };
 
             return custom_column_headers_hash[column_name];
@@ -741,66 +753,131 @@ var app = app || {};
 
             this.appendPopovers();
         },
+        getActiveTabColWidths: function () {
+            var col_widths = {
+                mark: 60,
+                customer_image: 100,
+                dimensions: 120,
+                rough_opening: 120,
+                description: 240,
+                notes: 240,
+                exceptions: 240,
+                profile_name: 200,
+                system: 200,
+                external_color: 100,
+                internal_color: 100,
+                interior_handle: 160,
+                exterior_handle: 160,
+                hardware_type: 120,
+                lock_mechanism: 120,
+                glazing_bead: 100,
+                gasket_color: 100,
+                hinge_style: 280,
+                opening_direction: 100,
+                internal_sill: 100,
+                external_sill: 100,
+                glazing: 300,
+                glazing_bar_type: 140,
+                glazing_bar_width: 100,
+                remove_item: 65,
+                original_cost: 100,
+                unit_cost: 100,
+                subtotal_cost: 100,
+                unit_cost_discounted: 100,
+                subtotal_cost_discounted: 100,
+                price_markup: 60,
+                unit_price: 100,
+                subtotal_price: 100,
+                unit_price_discounted: 100,
+                subtotal_price_discounted: 100,
+                subtotal_profit: 100,
+                square_feet_price_discounted: 100,
+                extras_type: 100,
+                pipedrive_id: 100,
+                project_name: 240,
+                client_name: 120,
+                client_company_name: 160,
+                client_phone: 180,
+                client_email: 220,
+                client_address: 300,
+                project_address: 300,
+                quote_date: 120
+            };
+
+            var widths_table = _.map(this.getActiveTab().columns, function (item) {
+                return col_widths[item] ? col_widths[item] : 80;
+            }, this);
+
+            return widths_table;
+        },
         onRender: function () {
-            var self = this;
-            var dropdown_scroll_reset = false;
+            var is_visible = this.options.is_always_visible ||
+                this.table_visibility === 'visible';
 
-            var fixed_columns = ['mark', 'quantity', 'width', 'height', 'drawing'];
-            var active_tab_columns = self.getActiveTab().columns;
-            var fixed_columns_count = 0;
+            if ( is_visible ) {
+                var self = this;
+                var dropdown_scroll_reset = false;
 
-            _.each(fixed_columns, function (column) {
-                if ( _.indexOf(active_tab_columns, column) !== -1 ) {
-                    fixed_columns_count += 1;
-                }
-            });
+                var fixed_columns = ['mark', 'quantity', 'width', 'height', 'drawing'];
+                var active_tab_columns = self.getActiveTab().columns;
+                var fixed_columns_count = 0;
 
-            //  We use setTimeout because we want to wait until flexbox
-            //  sizes are calculated properly
-            setTimeout(function () {
-                self.hot = new Handsontable(self.ui.$hot_container[0], {
-                    data: self.getActiveTab().collection,
-                    columns: self.getActiveTabColumnOptions(),
-                    cells: self.getActiveTabCellsSpecificOptions(),
-                    colHeaders: self.getActiveTabHeaders(),
-                    rowHeaders: true,
-                    rowHeights: function () {
-                        return _.contains(self.getActiveTab().columns, 'drawing') ||
-                            _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
-                    },
-                    trimDropdown: false,
-                    maxRows: function () {
-                        return self.getActiveTab().collection.length;
-                    },
-                    fixedColumnsLeft: fixed_columns_count
+                _.each(fixed_columns, function (column) {
+                    if ( _.indexOf(active_tab_columns, column) !== -1 ) {
+                        fixed_columns_count += 1;
+                    }
                 });
-            }, 5);
 
-            this.appendPopovers();
+                //  We use setTimeout because we want to wait until flexbox
+                //  sizes are calculated properly
+                setTimeout(function () {
+                    self.hot = new Handsontable(self.ui.$hot_container[0], {
+                        data: self.getActiveTab().collection,
+                        columns: self.getActiveTabColumnOptions(),
+                        cells: self.getActiveTabCellsSpecificOptions(),
+                        colHeaders: self.getActiveTabHeaders(),
+                        rowHeaders: true,
+                        rowHeights: function () {
+                            return _.contains(self.getActiveTab().columns, 'drawing') ||
+                                _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
+                        },
+                        colWidths: self.getActiveTabColWidths(),
+                        trimDropdown: false,
+                        maxRows: function () {
+                            return self.getActiveTab().collection.length;
+                        },
+                        fixedColumnsLeft: fixed_columns_count,
+                        viewportRowRenderingOffset: 300,
+                        viewportColumnRenderingOffset: 50
+                    });
+                }, 5);
 
-            clearInterval(this.dropdown_scroll_timer);
-            this.dropdown_scroll_timer = setInterval(function () {
-                var editor = self.hot && self.hot.getActiveEditor();
+                this.appendPopovers();
 
-                if ( editor && editor.htContainer && !dropdown_scroll_reset ) {
-                    dropdown_scroll_reset = true;
-                    editor.htContainer.scrollIntoView(false);
-                } else {
-                    dropdown_scroll_reset = false;
+                clearInterval(this.dropdown_scroll_timer);
+                this.dropdown_scroll_timer = setInterval(function () {
+                    var editor = self.hot && self.hot.getActiveEditor();
+
+                    if ( editor && editor.htContainer && !dropdown_scroll_reset ) {
+                        dropdown_scroll_reset = true;
+                        editor.htContainer.scrollIntoView(false);
+                    } else {
+                        dropdown_scroll_reset = false;
+                    }
+                }, 100);
+
+                if ( this.total_prices_view ) {
+                    this.total_prices_view.destroy();
                 }
-            }, 100);
 
-            if ( this.total_prices_view ) {
-                this.total_prices_view.destroy();
+                this.total_prices_view = new app.UnitsTableTotalPricesView({
+                    model: app.current_project,
+                    units: this.collection,
+                    extras: this.options.extras
+                });
+
+                this.ui.$total_prices_container.append(this.total_prices_view.render().el);
             }
-
-            this.total_prices_view = new app.UnitsTableTotalPricesView({
-                model: app.current_project,
-                units: this.collection,
-                extras: this.options.extras
-            });
-
-            this.ui.$total_prices_container.append(this.total_prices_view.render().el);
         },
         onDestroy: function () {
             clearInterval(this.dropdown_scroll_timer);
