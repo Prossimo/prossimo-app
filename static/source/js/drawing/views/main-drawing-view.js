@@ -70,6 +70,11 @@ var app = app || {};
         },
         onDestroy: function () {
             this.sidebar_view.destroy();
+
+            if ( this.drawing_view ) {
+                this.stopListening(this.drawing_view);
+                this.drawing_view.destroy();
+            }
         }
     });
 })();
