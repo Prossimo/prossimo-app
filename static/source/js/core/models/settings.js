@@ -82,7 +82,7 @@ var app = app || {};
             this.project_settings = null;
 
             this.listenTo(app.vent, 'auth:initial_login', this.onInitialLogin);
-            this.listenTo(app.vent, 'current_project_changed', this.setProjectSettings);
+            this.listenTo(app.vent, 'current_project_loaded', this.setProjectSettings);
         },
         setProjectSettings: function () {
             this.project_settings = app.current_project.settings;
