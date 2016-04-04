@@ -16,15 +16,12 @@ var app = app || {};
         initialize: function () {
             this.setToggles();
 
-            this.listenTo(app.vent, 'current_project_changed', this.onProjectChanged);
+            this.listenTo(app.vent, 'current_project_loaded', this.onProjectLoaded);
         },
-        onProjectChanged: function () {
+        onProjectLoaded: function () {
             this.model = app.settings.getProjectSettings();
             this.setToggles();
             this.render();
-
-            this.stopListening(app.current_project, 'set_dependencies');
-            this.listenTo(app.current_project, 'set_dependencies', this.onProjectChanged);
         },
         onChangeValueClick: function (e) {
             var $button = $(e.target);

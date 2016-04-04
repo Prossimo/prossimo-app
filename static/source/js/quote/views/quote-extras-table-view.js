@@ -39,14 +39,31 @@ var app = app || {};
                 this.collection.getRegularItems().length :
                 this.collection.getOptionalItems().length;
         },
+        hasAtLeastOneOptionalPercentBased: function () {
+            var has_one = false;
+
+            if ( this.options.type === 'Optional' ) {
+                this.collection.each(function (item) {
+                    if ( item.isOptionalType() && item.isPercentBasedType() ) {
+                        has_one = true;
+                    }
+                });
+            }
+
+            return has_one;
+        },
         serializeData: function () {
+            var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
+
             return {
                 items_count: this.getItemsCount(),
                 price_colspan: this.getPriceColspan(),
                 total_prices: this.getTotalPrices(),
                 heading: this.options.type === 'Regular' ? 'Extras' : 'Optional Extras',
                 is_optional: this.options.type === 'Optional',
-                show_price: this.options.show_price !== false
+                show_price: this.options.show_price !== false,
+                is_price_estimated: project_settings && project_settings.get('pricing_mode') === 'estimates' &&
+                    this.hasAtLeastOneOptionalPercentBased()
             };
         }
     });

@@ -93,6 +93,17 @@ var app = app || {};
             $.when(d).done(function () {
                 app.vent.trigger('current_project_changed');
                 app.current_project.trigger('set_active');
+
+                self.stopListening();
+
+                if ( app.current_project._wasLoaded ) {
+                    app.vent.trigger('current_project_loaded');
+                } else {
+                    self.listenToOnce(app.current_project, 'fully_loaded', function () {
+                        app.vent.trigger('current_project_loaded');
+                    }, self);
+                }
+
                 self.render();
             });
         },
