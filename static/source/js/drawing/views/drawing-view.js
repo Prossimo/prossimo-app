@@ -1313,12 +1313,10 @@ var app = app || {};
 
                 if (section_.parentId) {
                     if (
+                        index_ !== find_index &&
                         !(
-                            index_ === find_index &&
-                            !(
-                                'mullion' in section_.measurements &&
-                                type_ in section_.measurements.mullion
-                            )
+                            'mullion' in section_.measurements &&
+                            type_ in section_.measurements.mullion
                         )
                     ) {
                         parent_section_ = view.model.getSection( section_.parentId );
@@ -1430,6 +1428,7 @@ var app = app || {};
                                 edge_section = current_section;
                             } else {
                                 edge_section = findParentByMeasurementType(current_section, invertedType, key, index);
+                                store_index = edge_section.index;
                                 edge_section = edge_section.section;
                             }
                         }
@@ -1819,8 +1818,9 @@ var app = app || {};
                             control.on('click', view.createMeasurementSelectMullionNew.bind(
                                 view,
                                 measurement,
+                                mullion.id,
                                 type,
-                                i)
+                                (i + 1) % 2) // тут какая-то хуйня
                             );
 
                             control.position( position );
@@ -1948,9 +1948,13 @@ var app = app || {};
                 section.measurements[mType][type][index] = val;
             });
         },
-        createMeasurementSelectMullionNew: function (mullion, type, i, event) {
+        createMeasurementSelectMullionNew: function (mullion, id, type, i, event) {
             var view = this;
-            var edge = mullion.edges[i];
+
+            var edge = mullion.edges.filter(function (edge_) {
+                return ( edge_.section_id === id && edge_.type === 'mullion');
+            })[0];
+
             var section = this.model.getSection( edge.section_id );
             var invertedType = view.model.getInvertedDivider( type );
 
@@ -1958,7 +1962,6 @@ var app = app || {};
             var states = this.model.getMeasurementStates( edge.type );
             // Get current state of dimension-point
             var state = edge.state;
-
             var invertedIndex = (edge.index + 1) % 2;
 
             return view.createMeasurementSelectUI(event, section, states, state, function (val) {
