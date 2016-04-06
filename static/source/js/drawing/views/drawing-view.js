@@ -1579,17 +1579,12 @@ var app = app || {};
 
             // Draw metrics
             var metric = view[ drawingAccordance[type] ](params.width, params.height, params.methods);
-            // Draw controls
-            // var controls = view.createMullionControls( mullion, params.width, params.height, type );
-
             // Apply corrections to position
             metric.position( params.position );
-            // controls.position( params.position );
 
             // Add metric to the group:
             // We using group to make its position relative to the basic position
             group.add( metric );
-            // group.add( controls );
 
             return group;
         },
@@ -1741,38 +1736,7 @@ var app = app || {};
 
             return group;
         },
-        createMullionControls: function (mullion, width, height, type) {
-            var view = this;
-            var group = new Konva.Group();
-
-            if (!this.state.isPreview) {
-                var controlSize = metricSize / 4;
-                var position = { x: 0, y: 0 };
-
-                if (type === 'horizontal') {
-                    position.y += height - controlSize;
-                    height = controlSize;
-                } else {
-                    position.x += width - controlSize;
-                    width = controlSize;
-                }
-
-                mullion.edges.forEach(function (edge, i) {
-                    var control = view.createControl( width, height );
-                    // Attach events
-                    control.on('click', view.createMeasurementSelectMullion.bind(view, mullion, type, i));
-
-                    if (i === 1) {
-                        control.position( position );
-                    }
-
-                    group.add(control);
-                });
-            }
-
-            return group;
-        },
-        createMullionControlsNew: function (mullions, measurements, width, height) {
+        createMullionControls: function (mullions, measurements, width, height) {
             var view = this;
             var group = new Konva.Group();
             var controlSize = metricSize / 4;
@@ -1815,7 +1779,7 @@ var app = app || {};
                             var control = view.createControl( width_, height_ );
                             // Attach events
                             // @TODO: Change onClick event
-                            control.on('click', view.createMeasurementSelectMullionNew.bind(
+                            control.on('click', view.createMeasurementSelectMullion.bind(
                                 view,
                                 measurement,
                                 mullion.id,
@@ -1948,7 +1912,7 @@ var app = app || {};
                 section.measurements[mType][type][index] = val;
             });
         },
-        createMeasurementSelectMullionNew: function (mullion, id, type, i, event) {
+        createMeasurementSelectMullion: function (mullion, id, type, i, event) {
             var view = this;
 
             var edge = mullion.edges.filter(function (edge_) {
@@ -1969,22 +1933,6 @@ var app = app || {};
 
                 section.measurements[edge.type][invertedType][edge.index] = val;
                 section.measurements[edge.type][invertedType][invertedIndex] = invertedVal;
-            });
-        },
-        createMeasurementSelectMullion: function (mullion, type, i, event) {
-            var view = this;
-            var edge = mullion.edges[i];
-            var section = this.model.getSection( edge.section_id );
-
-            // Get available states
-            var states = this.model.getMeasurementStates( edge.type );
-            // Get current state of dimension-point
-            var state = edge.state;
-
-            var invertedType = view.model.getInvertedDivider( type );
-
-            return view.createMeasurementSelectUI(event, section, states, state, function (val) {
-                section.measurements[edge.type][invertedType][edge.index] = val;
             });
         },
         createWholeMetrics: function (mullions, width, height) {
@@ -2053,7 +2001,7 @@ var app = app || {};
             group.add( this.createMullionMetrics(mullions_, height) );
 
             // Draw mullion controls
-            group.add( this.createMullionControlsNew(mullions, mullions_, width, height) );
+            group.add( this.createMullionControls(mullions, mullions_, width, height) );
 
             // Draw whole metrics
             group.add( this.createWholeMetrics(mullions_, width, height) );
