@@ -1021,7 +1021,7 @@ var app = app || {};
                 number = new Konva.Text({
                         width: section.size.width,
                         align: 'center',
-                        text: section.text + '(' + section.id + ')',
+                        text: section.text,
                         fontFamily: fontFamily,
                         fontSize: 15 / view.ratio,
                         listening: false
