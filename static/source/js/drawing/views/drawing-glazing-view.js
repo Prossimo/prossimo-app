@@ -437,7 +437,7 @@ var app = app || {};
             this.updateCanvas();
             this.options.parent_view.updateCanvas();
         },
-        destroy: function () {
+        onDestroy: function () {
             this.ui.$modal.remove();
             this.stage.destroy();
         },

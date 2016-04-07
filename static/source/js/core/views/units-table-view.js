@@ -221,10 +221,8 @@ var app = app || {};
                 },
                 drawing: function (model) {
                     return app.preview(model, {
-                        // width: 500,
-                        // height: 500,
-                        width: 400,
-                        height: 400,
+                        width: 600,
+                        height: 600,
                         mode: 'base64',
                         position: 'outside'
                     });
@@ -708,6 +706,7 @@ var app = app || {};
                 opening_direction: 'Opening Dir.',
                 threshold: 'Threshold',
                 glazing_bar_type: 'Muntin Type',
+                glazing_bar_width: 'Muntin Width',
                 u_value: 'U Value',
                 move_item: 'Move',
                 remove_item: ' ',
@@ -759,7 +758,7 @@ var app = app || {};
                 mark: 60,
                 customer_image: 100,
                 dimensions: 120,
-                rough_opening: 120,
+                rough_opening: 140,
                 description: 240,
                 notes: 240,
                 exceptions: 240,
@@ -779,7 +778,7 @@ var app = app || {};
                 external_sill: 100,
                 glazing: 300,
                 glazing_bar_type: 140,
-                glazing_bar_width: 120,
+                glazing_bar_width: 100,
                 remove_item: 65,
                 original_cost: 100,
                 unit_cost: 100,

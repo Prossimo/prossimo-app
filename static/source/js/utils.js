@@ -9,9 +9,10 @@ var app = app || {};
 
     app.utils = {
         format: {
-            dimension: function (value, decimal_format, inches_display_mode) {
+            dimension: function (value, decimal_format, inches_display_mode, zero_inch_display_mode) {
                 var value_feet;
                 var value_inches;
+                var integer_part;
                 var fractional_part;
                 var closest_possible_fraction = 0;
                 var i;
@@ -23,6 +24,10 @@ var app = app || {};
                 inches_display_mode = inches_display_mode &&
                     _.indexOf(['feet_and_inches', 'inches_only'], inches_display_mode) !== -1 ?
                     inches_display_mode : 'feet_and_inches';
+
+                zero_inch_display_mode = zero_inch_display_mode &&
+                    _.indexOf(['show', 'remove'], zero_inch_display_mode) !== -1 ?
+                    zero_inch_display_mode : 'show';
 
                 if ( inches_display_mode === 'feet_and_inches' ) {
                     value_feet = Math.floor(parseFloat(value) / 12);
@@ -70,8 +75,10 @@ var app = app || {};
                             }
                         }
 
+                        integer_part = Math.floor(value_inches);
                         fractional_part = closest_possible_fraction.toFixed(MAX_SIGNIFICANT_DIGITS);
-                        value_inches = Math.floor(value_inches) + ' ' +
+                        value_inches = (integer_part || zero_inch_display_mode === 'show' ?
+                            integer_part + ' ' : '') +
                             new Decimal(fractional_part).toFraction(MAX_DENOMINATOR).join('/');
                     }
                 } else {
