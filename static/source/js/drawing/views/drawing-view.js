@@ -1979,11 +1979,9 @@ var app = app || {};
                 x: -metricSize * (rows.horizontal + 1),
                 y: 0 + (vCorrection.pos * this.ratio)
             };
-            var vControls = this.createWholeControls(root_section.id, metricSize, vHeight, 'vertical');
 
             verticalWholeMertic.position(vPosition);
-            vControls.position(vPosition);
-            group.add(verticalWholeMertic, vControls);
+            group.add(verticalWholeMertic);
 
             // Horizontal
             var hWidth = width + (hCorrection.size * this.ratio);
@@ -2000,11 +1998,19 @@ var app = app || {};
                 x: 0 + (hCorrection.pos * this.ratio),
                 y: height + rows.vertical * metricSize
             };
-            var hControls = this.createWholeControls(root_section.id, hWidth, metricSize, 'horizontal');
 
             horizontalWholeMertic.position(hPosition);
-            hControls.position(hPosition);
-            group.add(horizontalWholeMertic, hControls);
+            group.add(horizontalWholeMertic);
+
+            // Create controls
+            if (!this.state.isPreview) {
+                var vControls = this.createWholeControls(root_section.id, metricSize, vHeight, 'vertical');
+                var hControls = this.createWholeControls(root_section.id, hWidth, metricSize, 'horizontal');
+
+                vControls.position(vPosition);
+                hControls.position(hPosition);
+                group.add(vControls, hControls);
+            }
 
             return group;
         },
@@ -2017,11 +2023,12 @@ var app = app || {};
             mullions_ = this.getMeasurements(mullions);
             group.add( this.createMullionMetrics(mullions_, height) );
 
+            // Draw whole metrics
+            group.add( this.createWholeMetrics(mullions_, width, height) );
+
             if (!this.state.isPreview) {
                 // Draw mullion controls
                 group.add( this.createMullionControls(mullions, mullions_, width, height) );
-                // Draw whole metrics
-                group.add( this.createWholeMetrics(mullions_, width, height) );
             }
 
             // Draw overlay metrics: GlassSize & OpeningSize
