@@ -1839,14 +1839,16 @@ var app = app || {};
             var posCorrection = (opts.type === 'vertical') ? target.height() : target.width();
 
             // Hide control for select a dimension point
-            target.opacity(0);
+            target.destroy();
 
             // First of all, we re checking current state and correct position of "zero point"
             // So "zero point" should be the same for any current state
             if (
                 opts.kind === 'frame' && opts.state === 'min'
             ) {
-                origPosition[posParam] += posCorrection * sign;
+                var isMax = (opts.state === 'max') ? 1 : -1;
+
+                origPosition[posParam] += posCorrection * sign * isMax;
             } else if (opts.kind === 'mullion' && opts.state !== 'center') {
                 origPosition[posParam] += (opts.state === 'min') ? posCorrection : posCorrection * -1;
             }
@@ -2016,19 +2018,19 @@ var app = app || {};
         },
         createInfo: function (mullions, width, height) {
             var group = new Konva.Group();
-            var mullions_;
+            var measurements;
 
             // Draw mullion metrics
             mullions = this.sortMullions(mullions);
-            mullions_ = this.getMeasurements(mullions);
-            group.add( this.createMullionMetrics(mullions_, height) );
+            measurements = this.getMeasurements(mullions);
+            group.add( this.createMullionMetrics(measurements, height) );
 
             // Draw whole metrics
-            group.add( this.createWholeMetrics(mullions_, width, height) );
+            group.add( this.createWholeMetrics(measurements, width, height) );
 
             if (!this.state.isPreview) {
                 // Draw mullion controls
-                group.add( this.createMullionControls(mullions, mullions_, width, height) );
+                group.add( this.createMullionControls(mullions, measurements, width, height) );
             }
 
             // Draw overlay metrics: GlassSize & OpeningSize
