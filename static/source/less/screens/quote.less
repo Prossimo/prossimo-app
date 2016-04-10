@@ -1,5 +1,5 @@
-@preview_size: 400px;
-@customer_image_size: 200px;
+@preview_size: 600px;
+@customer_image_size: 150px;
 
 @border_dark: 1px solid darken(@white, 20%);
 @border_medium: 1px solid darken(@white, 15%);
@@ -106,13 +106,13 @@
 }
 
 .quote-table thead th {
-    padding: 0.5em 1em;
+    padding: 0.7rem 1.2rem;
     border: @border_dark;
     background-color: @bg_light;
 }
 
 .quote-table tbody td {
-    padding: 0.5em 1em;
+    padding: 0.7rem 1.2rem;
     border: @border_light;
     vertical-align: top;
 }
@@ -136,13 +136,20 @@
     background-color: @bg_light;
 }
 
+.quote-unit-heading td strong,
 .quote-unit-heading td span {
     min-height: 3rem;
+    vertical-align: middle;
+}
+
+.quote-unit-heading .has-discounted-price td strong,
+.quote-unit-heading .has-discounted-price td span {
+    min-height: 3.7rem;
 }
 
 .quote-unit-heading td.primary-info {
     padding: 0;
-    width: 60%;
+    width: 56%;
 }
 
 .quote-unit-heading .primary-info td {
@@ -181,7 +188,7 @@
 .quote-unit-heading tbody td.price,
 .quote-unit-heading tbody td.price-discounted {
     font-size: 1em;
-    width: 20%;
+    width: 22%;
 }
 
 .quote-table .unit-price {
@@ -208,6 +215,22 @@
 .quote-table .unit-price .subtotal strong,
 .quote-table .unit-price .subtotal span {
     font-weight: 700;
+}
+
+.quote-unit-heading td.no-profile-warning {
+    padding: 0.5rem 1.5rem;
+    border: none;
+    vertical-align: middle;
+}
+
+.no-profile-warning p {
+    margin: 0;
+    font-weight: 700;
+    color: @red;
+}
+
+.no-profile-warning p i {
+    padding-right: 0.5em;
 }
 
 
@@ -251,20 +274,20 @@ td.tech-specs {
     padding-right: 2rem;
     font-weight: 400;
     font-style: italic;
-    width: 25%;
-    vertical-align: bottom;
+    width: 27%;
+    vertical-align: top;
 }
 
 .product-description li span,
 .tech-specs li span {
     display: table-cell;
-    width: 75%;
+    width: 73%;
     vertical-align: bottom;
 }
 
 li.opening h6 {
     display: table-row;
-    padding: 1em 0 0.4em;
+    padding: 1rem 0 0.4rem;
     font-size: 1em;
     font-weight: 700;
 }
@@ -284,8 +307,12 @@ table.total-units {
 
 td.product-image,
 th.product-image {
-    width: 60%;
-    min-width: 832px;
+    width: 56%;
+    min-width: @preview_size + @customer_image_size + 20px;
+}
+
+th.product-image em {
+    font-weight: 400;
 }
 
 .product-image img {
@@ -296,34 +323,29 @@ th.product-image {
 
 td.product-description,
 th.product-description {
-    width: 40%;
+    width: 44%;
 }
 
-.product-image-inner th {
-    padding: 1rem 0 0.5rem;
-    text-align: center;
-    font-weight: 400;
-    font-style: italic;
-}
-
-.product-image-inner tbody td {
-    padding: 0;
-    border: none;
+.product-description .size-label {
+    font-size: 0.8em;
+    padding: 0 0.4rem;
+    background-color: darken(@white, 5%);
+    font-style: normal;
 }
 
 td.product-image.has-customer-image {
     position: relative;
-    padding-bottom: @customer_image_size + 80px;
+    padding-right: @customer_image_size;
 }
 
 .product-image .customer-image-inner {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    width: @preview_size;
+    top: 0;
+    right: 0;
+    width: @customer_image_size;
     padding-bottom: 20px;
-    border-top: @border_light;
-    border-right: @border_light;
+    border-bottom: @border_light;
+    border-left: @border_light;
 }
 
 .customer-image-inner h5 {
@@ -345,9 +367,9 @@ td.product-image.has-customer-image {
 }
 
 .sash-list h5 {
-    margin-left: -1.5rem;
-    margin-right: -1.5rem;
-    padding: 0.5em 1em;
+    margin-left: -1.2rem;
+    margin-right: -1.2rem;
+    padding: 0.7rem 1.2rem;
     border-top: @border_light;
     border-bottom: @border_light;
     background-color: @bg_light;
@@ -458,6 +480,11 @@ th.extras-product-description {
 }
 
 .quote-extras-table {
+    td.ref,
+    th.ref {
+        width: 5%;
+    }
+
     td.quantity,
     th.quantity {
         width: 5%;

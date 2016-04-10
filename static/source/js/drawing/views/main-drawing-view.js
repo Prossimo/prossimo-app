@@ -25,11 +25,6 @@ var app = app || {};
         },
         initialize: function () {
             this.listenTo(app.current_project.settings, 'change', this.updateDrawingView);
-            this.listenTo(app.current_project, 'set_dependencies', this.onSetDependencies);
-        },
-        onSetDependencies: function () {
-            this.render();
-            this.updateDrawingView(true);
         },
         updateDrawingView: function (update_rendered_flag) {
             if ( this.drawing_view ) {
@@ -75,6 +70,11 @@ var app = app || {};
         },
         onDestroy: function () {
             this.sidebar_view.destroy();
+
+            if ( this.drawing_view ) {
+                this.stopListening(this.drawing_view);
+                this.drawing_view.destroy();
+            }
         }
     });
 })();

@@ -119,7 +119,13 @@ var app = app || {};
         },
         initialize: function (attributes, options) {
             this.options = options || {};
+            //  Was it fetched from the server already? This flag could be used
+            //  to tell whether we need to request data from server
             this._wasFetched = false;
+            //  Was it fully loaded already? This means it was fetched and all
+            //  dependencies (units etc.) were processed correctly. This flag
+            //  could be used to tell if it's good to render any views
+            this._wasLoaded = false;
 
             if ( !this.options.proxy ) {
                 this.units = new app.UnitCollection(null, { project: this });
@@ -127,9 +133,8 @@ var app = app || {};
                 this.files = new app.ProjectFileCollection(null, { project: this });
                 this.settings = new app.ProjectSettings(null, { project: this });
 
-                this.setDependencies();
-
                 this.on('sync', this.setDependencies, this);
+                this.on('set_active', this.setDependencies, this);
                 this.listenTo(this.settings, 'change', this.updateSettings);
             }
         },
@@ -137,7 +142,9 @@ var app = app || {};
             var changed_flag = false;
 
             //  If response is empty or there was an error
-            if ( !response || options && options.xhr && options.xhr.status && options.xhr.status !== 200 ) {
+            if ( !response && app.session.get('no_backend') !== true ||
+                options && options.xhr && options.xhr.status && options.xhr.status !== 200
+            ) {
                 return;
             }
 
@@ -168,6 +175,11 @@ var app = app || {};
 
             if ( changed_flag ) {
                 this.trigger('set_dependencies');
+            }
+
+            if ( !this._wasLoaded ) {
+                this._wasLoaded = true;
+                this.trigger('fully_loaded');
             }
         },
         parseSettings: function (source_data) {

@@ -10,7 +10,6 @@ var app = app || {};
         initialize: function () {
             this.listenTo(this.options.units, 'change', this.render);
             this.listenTo(this.options.extras, 'change', this.render);
-            this.listenTo(this.model, 'set_dependencies', this.render);
         },
         serializeData: function () {
             var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;

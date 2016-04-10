@@ -1,10 +1,10 @@
 <table class="quote-unit-heading">
     <tbody><tr>
-        <td class="primary-info{{#if show_price }} has-price{{/if}}">
+        <td class="primary-info{{#if show_price }} has-price{{#if price.discount }} has-discounted-price{{/if}}{{/if}}">
             <table>
                 <tbody><tr>
                     <td class="position">
-                        <strong>Ref.</strong>
+                        <strong>Unit #</strong>
                         <span>{{ position }}</span>
                     </td>
                     <td class="mark">
@@ -15,6 +15,14 @@
                         <strong>Quantity</strong>
                         <span>{{ quantity }}</span>
                     </td>
+                    {{#if has_dummy_profile }}
+                    <td class="no-profile-warning">
+                        <p>
+                            <i class="glyphicon glyphicon-warning-sign"></i>
+                            Profile "{{ profile_name }}" selected for this unit doesn't exist.
+                        </p>
+                    </td>
+                    {{/if}}
                 </tr></tbody>
             </table>
         </td>
@@ -22,7 +30,7 @@
         <td class="price">
             <ul class="unit-price">
                 <li class="unit">
-                    <strong>Unit price{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
+                    <strong>Unit Price{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
                     <span class="value">{{ price.unit }}</span>
                 </li>
                 <li class="subtotal">
@@ -37,6 +45,11 @@
                 {{#if price.discount }}<li class="discount">
                     <strong>Discount:</strong>
                     <span class="value">{{ price.discount }}</span>
+                </li>
+                {{/if}}
+                {{#if price.unit_discounted }}<li class="unit">
+                    <strong>Unit Price w/Disc.{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
+                    <span class="value">{{ price.unit_discounted }}</span>
                 </li>
                 {{/if}}
                 {{#if price.subtotal_discounted }}<li class="subtotal">
@@ -55,7 +68,7 @@
     <thead>
         <tr>
             {{#if product_image }}
-            <th class="product-image">Shop Drawing</th>
+            <th class="product-image">Shop Drawing: <em>{{ product_image.title }}</em></th>
             {{else}}
                 {{#if customer_image }}
                 <th class="customer-image">Customer Image</th>
@@ -67,24 +80,11 @@
     <tbody><tr>
         {{#if product_image }}
         <td class="product-image{{#if customer_image }} has-customer-image{{/if}}">
-            <table class="product-image-inner">
-                <tr>
-                    <th>{{ product_image.title }}</th>
-                    <th>{{ product_image_alternative.title }}</th>
-                </tr>
-                <tr>
-                    <td>
-                        {{#if product_image.img }}
-                        <div class="image-wrapper"><img src="{{ product_image.img }}" alt=""></div>
-                        {{/if}}
-                    </td>
-                    <td>
-                        {{#if product_image_alternative.img }}
-                        <div class="image-wrapper"><img src="{{ product_image_alternative.img }}" alt=""></div>
-                        {{/if}}
-                    </td>
-                </tr>
-            </table>
+            <div class="product-image-inner">
+                {{#if product_image.img }}
+                    <div class="image-wrapper"><img src="{{ product_image.img }}" alt=""></div>
+                {{/if}}
+            </div>
             {{#if customer_image }}
             <div class="customer-image-inner">
                 <h5>Customer Image</h5>
@@ -104,7 +104,7 @@
         <td class="product-description">
             <ul>
                 {{#each description.params }}
-                {{#if value }}<li class="{{ name }}"><strong>{{ title }}:</strong> <span>{{ value }}</span></li>{{/if}}
+                {{#if value }}<li class="{{ name }}"><strong>{{{ title }}}:</strong> <span>{{{ value }}}</span></li>{{/if}}
                 {{/each}}
             </ul>
             {{#if notes }}<p class="notes"><strong>{{ notes }}</strong></p>{{/if}}

@@ -45,7 +45,8 @@ var app = app || {};
     //  We only enable those for editing on units where `isDoorType` is `true`
     var DOOR_ONLY_PROPERTIES = ['exterior_handle', 'lock_mechanism'];
     //  Same as above, for `hasOperableSections`
-    var OPERABLE_ONLY_PROPERTIES = ['interior_handle', 'exterior_handle', 'hardware_type', 'hinge_style'];
+    var OPERABLE_ONLY_PROPERTIES = ['interior_handle', 'exterior_handle', 'hardware_type',
+        'hinge_style', 'opening_direction'];
     //  Same as above, for `hasGlazingBars`
     var GLAZING_BAR_PROPERTIES = ['glazing_bar_type', 'glazing_bar_width'];
 
@@ -103,14 +104,45 @@ var app = app || {};
         };
     }
 
-    function getSectionDefaults() {
+    function getDefaultMeasurements(hasFrame) {
+        var result = {};
+
+        hasFrame = hasFrame || false;
+
+        if (hasFrame) {
+            result.frame = {
+                vertical: ['max', 'max'],
+                horizontal: ['max', 'max']
+            };
+        }
+
+        result.opening = null;
+        result.glass = null;
+
+        return result;
+    }
+
+    function getSectionDefaults(type) {
+        var isRootSection = ( type === 'root_section' );
+
         return {
             id: _.uniqueId(),
             sashType: 'fixed_in_frame',
             fillingType: getDefaultFillingType().fillingType,
             fillingName: getDefaultFillingType().fillingName,
-            bars: getDefaultBars()
+            bars: getDefaultBars(),
+            measurements: getDefaultMeasurements(isRootSection)
         };
+    }
+
+    function getInvertedDivider(type) {
+        if ( /vertical/.test(type) ) {
+            type = type.replace(/vertical/g, 'horizontal');
+        } else if ( /horizontal/.test(type) ) {
+            type = type.replace(/horizontal/g, 'vertical');
+        }
+
+        return type;
     }
 
     app.Unit = Backbone.Model.extend({
@@ -135,7 +167,7 @@ var app = app || {};
                 conversion_rate: 0.9,
                 price_markup: 2.3,
                 quantity: 1,
-                root_section: getSectionDefaults()
+                root_section: getSectionDefaults(name)
             };
 
             if ( app.settings ) {
@@ -181,9 +213,19 @@ var app = app || {};
 
             if ( !this.options.proxy ) {
                 this.setProfile();
+                this.validateOpeningDirection();
                 this.validateRootSection();
                 this.on('change:profile_name', this.setProfile, this);
                 this.on('change:glazing', this.setDefaultFillingType, this);
+            }
+        },
+        validateOpeningDirection: function () {
+            if ( !app.settings ) {
+                return;
+            }
+
+            if ( !_.contains(app.settings.getOpeningDirections(), this.get('opening_direction')) ) {
+                this.set('opening_direction', app.settings.getOpeningDirections()[0]);
             }
         },
         //  TODO: this function should be improved
@@ -202,7 +244,7 @@ var app = app || {};
                 }
 
                 if ( root_section_parsed ) {
-                    this.set('root_section', this.validateSection(root_section_parsed));
+                    this.set('root_section', this.validateSection(root_section_parsed, true));
                     return;
                 }
             }
@@ -212,7 +254,7 @@ var app = app || {};
             }
         },
         //  Check if some of the section values aren't valid and try to fix that
-        validateSection: function (current_section) {
+        validateSection: function (current_section, is_root) {
             //  Replace deprecated sash types with more adequate values
             if ( current_section.sashType === 'flush-turn-left' ) {
                 current_section.sashType = 'turn_only_left';
@@ -226,8 +268,21 @@ var app = app || {};
                 current_section.bars = getDefaultBars();
             }
 
+            if ( !current_section.measurements ) {
+                current_section.measurements = getDefaultMeasurements(is_root);
+            }
+
+            //  TODO: this duplicates code from splitSection, so ideally
+            //  it should be moved to a new helper function
+            if ( current_section.measurements && !current_section.measurements.mullion && current_section.divider ) {
+                var measurementType = getInvertedDivider(current_section.divider).replace(/_invisible/, '');
+
+                current_section.measurements.mullion = {};
+                current_section.measurements.mullion[measurementType] = ['center', 'center'];
+            }
+
             _.each(current_section.sections, function (section) {
-                section = this.validateSection(section);
+                section = this.validateSection(section, false);
             }, this);
 
             return current_section;
@@ -274,6 +329,9 @@ var app = app || {};
             if ( app.settings ) {
                 this.profile = app.settings.getProfileByNameOrNew(this.get('profile_name'));
             }
+        },
+        hasDummyProfile: function () {
+            return this.profile && this.profile.get('is_dummy');
         },
         setDefaultFillingType: function () {
             var filling_type;
@@ -533,6 +591,8 @@ var app = app || {};
             // Update section
             this._updateSection(sectionId, function (section) {
                 section.sashType = type;
+                section.measurements.opening = false;
+                section.measurements.glass = false;
             });
 
             //  Change all nested sections recursively
@@ -545,6 +605,58 @@ var app = app || {};
                 section.bars = bars;
             });
         },
+        setSectionMeasurements: function (sectionId, measurements) {
+            this._updateSection(sectionId, function (section) {
+                section.measurements = measurements;
+            });
+        },
+        getMeasurementStates: function (type) {
+            var defaults = {
+                mullion: [{
+                    value: 'min',
+                    viewname: 'Without mullion'
+                }, {
+                    value: 'center',
+                    viewname: 'Center of mullion',
+                    default: true
+                }, {
+                    value: 'max',
+                    viewname: 'With mullion'
+                }],
+                frame: [{
+                    value: 'max',
+                    viewname: 'With frame',
+                    default: true
+                }, {
+                    value: 'min',
+                    viewname: 'Without frame'
+                }]
+            };
+
+            return defaults[type];
+        },
+        getMeasurementEdges: function (section_id, type) {
+            var section_data = this.getSection(section_id);
+            var edges = { top: 'frame', right: 'frame', bottom: 'frame', left: 'frame' };
+
+            _.each(section_data.mullionEdges, function (edge, key) {
+                edges[key] = 'mullion';
+            });
+
+            if (type) {
+                if (type === 'vertical' || type === 'vertical_invisible') {
+                    delete edges.top;
+                    delete edges.bottom;
+                } else {
+                    delete edges.left;
+                    delete edges.right;
+                }
+            }
+
+            return edges;
+        },
+        // @TODO: Add method, that checks for correct values of measurement data
+        // @TODO: Add method, that drops measurement data to default
         setFillingType: function (sectionId, type, name) {
             if (!_.includes(FILLING_TYPES, type)) {
                 console.error('Unknow filling type: ' + type);
@@ -554,7 +666,6 @@ var app = app || {};
             this._updateSection(sectionId, function (section) {
                 section.fillingType = type;
                 section.fillingName = name;
-
             });
 
             //  We also change all nested sections recursively
@@ -595,9 +706,15 @@ var app = app || {};
             this._updateSection(sectionId, function (section) {
                 var full = this.generateFullRoot();
                 var fullSection = app.Unit.findSection(full, sectionId);
+                var measurementType = getInvertedDivider(type).replace(/_invisible/, '');
 
                 section.divider = type;
                 section.sections = [getSectionDefaults(), getSectionDefaults()];
+                // Drop mullion dimension-points
+                section.measurements.mullion = {};
+                section.measurements.mullion[measurementType] = ['center', 'center'];
+                // Drop overlay glassSize metrics (openingSize still actually)
+                section.measurements.glass = false;
 
                 // Reset bars parameter
                 section.bars = getDefaultBars();
@@ -901,7 +1018,8 @@ var app = app || {};
                 mullions.push({
                     type: rootSection.divider,
                     position: rootSection.position,
-                    id: rootSection.id
+                    id: rootSection.id,
+                    sections: [rootSection.sections[0], rootSection.sections[1]]
                 });
 
                 var submullions = _.map(rootSection.sections, function (s) {
@@ -1222,6 +1340,9 @@ var app = app || {};
         },
         isGlazingBarProperty: function (attribute_name) {
             return _.indexOf(GLAZING_BAR_PROPERTIES, attribute_name) !== -1;
+        },
+        getInvertedDivider: function (type) {
+            return getInvertedDivider(type);
         }
     });
 

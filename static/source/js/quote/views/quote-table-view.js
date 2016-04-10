@@ -14,6 +14,11 @@ var app = app || {};
         },
         initialize: function () {
             this.listenTo(app.current_project.settings, 'change', this.render);
+            //  TODO: this affects performance significantly. We need to
+            //  fine-tune what parts of quote are updated when, don't redraw
+            //  the whole thing
+            this.listenTo(app.current_project.units, 'change', this.render);
+            this.listenTo(app.current_project.extras, 'change', this.render);
         },
         childViewOptions: function () {
             return {
@@ -81,8 +86,11 @@ var app = app || {};
             }
         },
         onDestroy: function () {
-            if ( this.serializeData().has_extras ) {
+            if ( this.quote_extras_table_view ) {
                 this.quote_extras_table_view.destroy();
+            }
+
+            if ( this.quote_optional_extras_table_view ) {
                 this.quote_optional_extras_table_view.destroy();
             }
         }
