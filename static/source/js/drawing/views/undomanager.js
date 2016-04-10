@@ -52,7 +52,8 @@ var app = app || {};
             }
         });
 
-        $(window).on('keydown', function (event) {
+        //  TODO: move this to global shortcut manager
+        $(window).off('keydown').on('keydown', function (event) {
             var keyCode = event.keyCode || event.which;
 
             if (keyCode === 90 && ( event.ctrlKey || event.metaKey ) && !event.shiftKey ) {
