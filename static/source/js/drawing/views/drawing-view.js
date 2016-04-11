@@ -50,6 +50,19 @@ var app = app || {};
             };
 
             this.groups = {};
+
+            this.undoManager = new app.UndoManager({
+                register: this.model,
+                track: true
+            });
+
+            //  TODO: this is a hack, we'll need to have a more hight-level
+            //  way to persist any models on undo / redo event
+            this.listenTo(this.model, 'undo redo', function () {
+                if ( !this.model.isNew() ) {
+                    this.model.sync('update', this.model, {});
+                }
+            });
         },
         ui: {
             $flush_panels: '[data-type="flush-turn-right"], [data-type="flush-turn-left"]',
@@ -57,6 +70,8 @@ var app = app || {};
             $bars_control: '#bars-control',
             $section_control: '#section_control',
             $filling_select: '#filling-select',
+            $undo: '#undo',
+            $redo: '#redo',
             $metrics_glass: '#additional-metrics-glass',
             $metrics_opening: '#additional-metrics-opening'
         },
@@ -73,6 +88,8 @@ var app = app || {};
             'input #horizontal-bars-number': 'handleBarNumberChange',
             'change #filling-select': 'handleFillingTypeChange',
             'click #glazing-bars-popup': 'handleGlazingBarsPopupClick',
+            'click @ui.$undo': 'handleUndoClick',
+            'click @ui.$redo': 'handleRedoClick',
             'change @ui.$metrics_glass': 'handleAdditionalMetricsChange',
             'change @ui.$metrics_opening': 'handleAdditionalMetricsChange'
         },
@@ -83,6 +100,12 @@ var app = app || {};
         isOpeningView: function () {
             return !globalInsideView && this.model.isOpeningDirectionOutward() ||
                 globalInsideView && !this.model.isOpeningDirectionOutward();
+        },
+        handleUndoClick: function () {
+            return this.undoManager.handler.undo();
+        },
+        handleRedoClick: function () {
+            return this.undoManager.handler.redo();
         },
         handleCanvasKeyDown: function (e) {
             if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
@@ -2432,15 +2455,15 @@ var app = app || {};
 
             this.ui.$bars_control.toggle(
                 !isArched &&
-                !!selectedSashId &&
+                selectedSash &&
                 selectedSash.fillingType === 'glass'
             );
 
-            this.ui.$section_control.toggle(!!selectedSashId);
+            this.ui.$section_control.toggle(!!selectedSash);
 
             this.$('.sash-types').toggle(
                 !isArched &&
-                selectedSashId &&
+                selectedSash &&
                 this.model.canAddSashToSection(selectedSashId)
             );
 
@@ -2460,12 +2483,19 @@ var app = app || {};
             this.ui.$filling_select.selectpicker('render');
 
             this.$('.toggle-arched').toggle(
-                selectedSashId &&
+                selectedSash &&
                 this.model.isArchedPossible(selectedSashId)
             );
 
             this.$('.remove-arched').toggle(!!isArched);
             this.$('.add-arched').toggle(!isArched);
+
+            // Undo/Redo: Register buttons once!
+            if (!this.undoManager.registered) {
+                this.undoManager.registerButton('undo', this.ui.$undo);
+                this.undoManager.registerButton('redo', this.ui.$redo);
+                this.undoManager.registered = true;
+            }
 
             // Additional overlay metrics
             if ( selectedSash ) {
