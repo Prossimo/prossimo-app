@@ -2348,15 +2348,15 @@ var app = app || {};
 
             this.ui.$bars_control.toggle(
                 !isArched &&
-                !!selectedSashId &&
+                selectedSash &&
                 selectedSash.fillingType === 'glass'
             );
 
-            this.ui.$section_control.toggle(!!selectedSashId);
+            this.ui.$section_control.toggle(!!selectedSash);
 
             this.$('.sash-types').toggle(
                 !isArched &&
-                selectedSashId &&
+                selectedSash &&
                 this.model.canAddSashToSection(selectedSashId)
             );
 
@@ -2376,7 +2376,7 @@ var app = app || {};
             this.ui.$filling_select.selectpicker('render');
 
             this.$('.toggle-arched').toggle(
-                selectedSashId &&
+                selectedSash &&
                 this.model.isArchedPossible(selectedSashId)
             );
 
