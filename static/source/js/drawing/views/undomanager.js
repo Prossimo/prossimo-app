@@ -41,6 +41,25 @@ var app = app || {};
             checkButtons(type);
         }
 
+        //  FIXME: this is inefficient because it is fired on all objects
+        //  in our registry (currently we're using it in a way when we only
+        //  have one object in it at a time, but there will be problems when
+        //  we'll want to have per-collection undo actions), and has two loops,
+        //  because they have two ways of storing objects in this plugin
+        /* eslint-disable max-nested-callbacks */
+        undoManager.on('all', function (event) {
+            _.each(this.objectRegistry.cidIndexes, function (cid) {
+                var object = this.objectRegistry.registeredObjects[cid];
+
+                object.trigger(event);
+            }, this);
+
+            _.each(this.objectRegistry.registeredObjects, function (object) {
+                object.trigger(event);
+            }, this);
+        });
+        /* eslint-enable max-nested-callbacks */
+
         undoManager.on('all', checkButtons);
         undoManager.stack.on('add', function () {
             if (buttons.undo !== null && undoManager.isAvailable('undo')) {
