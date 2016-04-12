@@ -1403,6 +1403,7 @@ var app = app || {};
 
             /* eslint-disable max-nested-callbacks */
             _.each(mullions, function (mulGroup, type) {
+                var grouped = {};
                 var pos = 0;
                 var saved_mullion = null;
                 var invertedType = view.model.getInvertedDivider( type );
@@ -1426,11 +1427,14 @@ var app = app || {};
                     var index = (mullion.gap) ? 1 : 0;
                     var real_section = mullion.sections[index];
                     var edges = view.getMeasurementEdges( real_section.id, invertedType );
+                    var size = (mullion.position - pos);
+
+                    // if (size <= 0) { return; }
 
                     var data = {
                         section_id: mullion.id,
                         offset: pos,
-                        size: (mullion.position - pos),
+                        size: size,
                         edges: [],
                         index: index
                     };
@@ -1451,7 +1455,11 @@ var app = app || {};
                             }
                         } else if ( edge === 'mullion' ) {
                             if ( index !== key ) {
-                                edge_section = current_section;
+                                if (saved_mullion !== null) {
+                                    edge_section = saved_mullion;
+                                } else {
+                                    edge_section = current_section;
+                                }
                             } else {
                                 edge_section = findParentByMeasurementType(current_section, invertedType, key, index);
                                 store_index = edge_section.index;
@@ -1465,12 +1473,14 @@ var app = app || {};
                             edge_state = edge_section.measurements[edge][type][store_index];
                         }
 
-                        data.edges[key] = {
+                        var edge_data = {
                             section_id: edge_section.id,
                             state: edge_state,
                             type: edge,
                             index: store_index
                         };
+
+                        data.edges[key] = edge_data;
                     });
 
                     pos = mullion.position;
@@ -1480,9 +1490,72 @@ var app = app || {};
                     }
 
                     result[type].push(data);
+
+                    // Store resulted data to groups
+                    if (mullion.position in grouped) {
+                        grouped[mullion.position].push( data );
+                    } else {
+                        grouped[mullion.position] = [data];
+                    }
+                });
+
+                result[type].forEach(function (mullion, i) {
+                    var pos_ = (mullion.index === 1) ? mullion.offset : mullion.offset + mullion.size;
+
+                    var siblings = grouped[pos_].filter(function (sibling) {
+                            return (sibling.section_id !== mullion.section_id);
+                        });
+
+                    result[type][i].siblings = siblings;
                 });
             });
             /* eslint-enable max-nested-callbacks */
+
+            return result;
+        },
+        getControls: function (mullions) {
+            var view = this;
+            var result = {};
+
+            _.each(mullions, function (mGroup, type) {
+                var siblings = {};
+
+                result[type] = [];
+
+                mGroup.forEach(function (mullion) {
+                    if (mullion.gap) { return; }
+
+                    if ( !(mullion.position in siblings) ) {
+                        // Store mullion id into siblings array
+                        siblings[mullion.position] = [mullion.id];
+
+                        var mType = view.model.getInvertedDivider(type);
+                        var section = view.model.getSection( mullion.id );
+
+                        var data = {
+                            position: mullion.position,
+                            state: section.measurements.mullion[mType][0],
+                            kind: 'mullion',
+                            type: mType,
+                            sections: [mullion.id]
+                        };
+
+                        result[type].push(data);
+                    } else {
+                        // Store mullion id into siblings array and skip them
+                        // If it has an unique id
+                        if (siblings[mullion.position].indexOf( mullion.id ) === -1) {
+                            siblings[mullion.position].push( mullion.id );
+                        }
+                    }
+                });
+
+                // Linking siblings
+                result[type].forEach(function (mullion, i) {
+                    result[type][i].sections = siblings[mullion.position];
+                });
+
+            });
 
             return result;
         },
@@ -1757,62 +1830,57 @@ var app = app || {};
 
             return group;
         },
-        createMullionControls: function (mullions, measurements, width, height) {
+        createMullionControls: function (controls, width, height) {
             var view = this;
             var group = new Konva.Group();
 
             /* eslint-disable max-nested-callbacks */
             var root_section = this.model.get('root_section');
 
-            _.each(mullions, function (mulGroup, type) {
-                mulGroup.forEach( function (mullion, i) {
-                    if (!mullion.gap) {
-                        var measurement = measurements[type][i];
-                        var position = { x: 0, y: 0 };
-                        var correction = view.getTotalCorrectionControls( measurement, type );
-                        var width_;
-                        var height_;
+            _.each(controls, function (cGroup, type) {
 
-                        if (type === 'horizontal') {
-                            position.y = 0 +
-                                mullion.position * view.ratio +
-                                correction.size * view.ratio +
-                                correction.pos * view.ratio -
-                                controlSize / 2;
-                            position.x = -metricSize;
+                cGroup.forEach(function (controlData) {
+                    var position = { x: 0, y: 0 };
+                    var correction = view.getCorrection();
+                    var width_;
+                    var height_;
 
-                            width_ = metricSize;
-                            height_ = controlSize;
-                        } else {
-                            position.x += 0 +
-                                mullion.position * view.ratio +
-                                correction.size * view.ratio +
-                                correction.pos * view.ratio -
-                                controlSize / 2;
-                            position.y = height;
-
-                            width_ = controlSize;
-                            height_ = metricSize;
-                        }
-
-                        var control = view.createControl( width_, height_ );
-                        // Attach events
-                        control.on('click', view.createMeasurementSelectMullion.bind(
-                            view,
-                            measurement,
-                            mullion.id,
-                            type,
-                            (i + 1) % 2)
-                        );
-
-                        control.position( position );
-                        group.add(control);
-
+                    if (controlData.state !== 'center') {
+                        correction.size = (controlData.state === 'min') ?
+                                        -correction.mullion_width : correction.mullion_width;
                     }
+
+                    if (type === 'horizontal') {
+                        position.y = 0 +
+                            controlData.position * view.ratio +
+                            correction.size * view.ratio -
+                            controlSize / 2;
+                        position.x = -metricSize;
+
+                        width_ = metricSize;
+                        height_ = controlSize;
+                    } else {
+                        position.x += 0 +
+                            controlData.position * view.ratio +
+                            correction.size * view.ratio -
+                            controlSize / 2;
+                        position.y = height;
+
+                        width_ = controlSize;
+                        height_ = metricSize;
+                    }
+
+                    var control = view.createControl( width_, height_ );
+                    // Attach events
+                    control.on('click', view.createMeasurementSelectMullion.bind(view, controlData)
+                    );
+
+                    control.position( position );
+                    group.add(control);
                 });
 
                 // Draw controls for frame
-                if (mulGroup.length) {
+                if (cGroup.length) {
                     var invertedType = view.model.getInvertedDivider( type );
                     var correction = view.getFrameCorrectionSum( invertedType );
 
@@ -1903,10 +1971,12 @@ var app = app || {};
 
                 controlPosition[posParam] += (correction * view.ratio);
                 control.position( controlPosition );
+
+                var secondArg = (opts.control) ? opts.control : opts.section.id;
+
                 // Attach events
                 control.on('click', function () {
-                    opts.setter(opt.value);
-                    view.model.setSectionMeasurements( opts.section.id, opts.section.measurements );
+                    opts.setter(opt.value, secondArg);
                     view.updateLayer();
                 });
                 control.on('mouseover', function () {
@@ -1938,40 +2008,40 @@ var app = app || {};
                 states: states,
                 state: state,
                 index: index,
-                setter: function (val) {
+                setter: function (val, id) {
                     section.measurements[mType][type][index] = val;
+
+                    view.model.setSectionMeasurements( id, section.measurements );
                 }
             };
 
             return view.createMeasurementSelectUI(event, opts);
         },
-        createMeasurementSelectMullion: function (mullion, id, type, i, event) {
+        createMeasurementSelectMullion: function (control, event) {
             var view = this;
 
-            var edge = mullion.edges.filter(function (edge_) {
-                return ( edge_.section_id === id && edge_.type === 'mullion');
-            })[0];
-
-            var section = this.model.getSection( edge.section_id );
-            var invertedType = view.model.getInvertedDivider( type );
-
             // Get available states
-            var states = this.model.getMeasurementStates( edge.type );
+            var states = this.model.getMeasurementStates( 'mullion' );
             // Get current state of dimension-point
-            var state = edge.state;
-            var invertedIndex = (edge.index + 1) % 2;
+            var state = control.state;
 
             var opts = {
                 kind: 'mullion',
-                type: invertedType,
-                section: section,
+                type: control.type,
+                control: control,
                 states: states,
                 state: state,
-                setter: function (val) {
+                setter: function (val, control_) {
                     var invertedVal = view.model.getInvertedMeasurementVal( val );
 
-                    section.measurements[edge.type][invertedType][edge.index] = val;
-                    section.measurements[edge.type][invertedType][invertedIndex] = invertedVal;
+                    _.each(control_.sections, function (section_id) {
+                        var section = view.model.getSection( section_id );
+
+                        section.measurements[control.kind][control.type][0] = val;
+                        section.measurements[control.kind][control.type][1] = invertedVal;
+
+                        view.model.setSectionMeasurements( section_id, section.measurements );
+                    });
                 }
             };
 
@@ -2042,10 +2112,14 @@ var app = app || {};
         createInfo: function (mullions, width, height) {
             var group = new Konva.Group();
             var measurements;
+            var controls;
 
-            // Draw mullion metrics
+            // Get data for info layer
             mullions = this.sortMullions(mullions);
             measurements = this.getMeasurements(mullions);
+            controls = this.getControls(mullions);
+
+            // Draw mullion metrics
             group.add( this.createMullionMetrics(measurements, height) );
 
             // Draw whole metrics
@@ -2053,7 +2127,7 @@ var app = app || {};
 
             if (!this.state.isPreview) {
                 // Draw mullion controls
-                group.add( this.createMullionControls(mullions, measurements, width, height) );
+                group.add( this.createMullionControls(controls, width, height) );
             }
 
             // Draw overlay metrics: GlassSize & OpeningSize
