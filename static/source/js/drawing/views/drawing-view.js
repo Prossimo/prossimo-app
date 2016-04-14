@@ -1756,7 +1756,7 @@ var app = app || {};
             var root_section = this.model.get('root_section');
             var measurementData = root_section.measurements.frame;
 
-            if (this.state.openingView) {
+            if (type === 'horizontal' && this.state.openingView) {
                 measurementData[type].reverse();
             }
 
@@ -1908,17 +1908,23 @@ var app = app || {};
                     var invertedType = view.model.getInvertedDivider( type );
                     var correction = view.getFrameCorrectionSum( invertedType );
 
-
                     var cor = {
                         size: correction.size,
-                        pos: (type === 'horizontal' || type === 'vertical' && !view.state.openingView) ?
-                                correction.pos :
-                                (correction.pos === 0) ?
-                                correction.size * -1 :
-                                (correction.pos * -1 === correction.size) ?
-                                correction.pos + correction.size :
-                                correction.pos
+                        pos: correction.pos
                     };
+
+                    if (invertedType === 'horizontal') {
+                        cor = {
+                            size: correction.size,
+                            pos: (!view.state.openingView) ?
+                                    correction.pos :
+                                    (correction.pos === 0) ?
+                                    correction.size * -1 :
+                                    (correction.pos * -1 === correction.size) ?
+                                    correction.pos + correction.size :
+                                    correction.pos
+                        };
+                    }
 
                     cor.size = cor.size * view.ratio;
                     cor.pos = cor.pos * view.ratio;
