@@ -1908,15 +1908,27 @@ var app = app || {};
                     var invertedType = view.model.getInvertedDivider( type );
                     var correction = view.getFrameCorrectionSum( invertedType );
 
-                    correction.size = correction.size * view.ratio;
-                    correction.pos = correction.pos * view.ratio;
+
+                    var cor = {
+                        size: correction.size,
+                        pos: (type === 'horizontal' || type === 'vertical' && !view.state.openingView) ?
+                                correction.pos :
+                                (correction.pos === 0) ?
+                                correction.size * -1 :
+                                (correction.pos * -1 === correction.size) ?
+                                correction.pos + correction.size :
+                                correction.pos
+                    };
+
+                    cor.size = cor.size * view.ratio;
+                    cor.pos = cor.pos * view.ratio;
 
                     var params = {
-                        width: (invertedType === 'vertical') ? metricSize : width + correction.size,
-                        height: (invertedType === 'vertical') ? height + correction.size : metricSize,
+                        width: (invertedType === 'vertical') ? metricSize : width + cor.size,
+                        height: (invertedType === 'vertical') ? height + cor.size : metricSize,
                         position: {
-                            x: (invertedType === 'vertical') ? metricSize * -1 : 0 + correction.pos,
-                            y: (invertedType === 'vertical') ? 0 + correction.pos : height
+                            x: (invertedType === 'vertical') ? metricSize * -1 : 0 + cor.pos,
+                            y: (invertedType === 'vertical') ? 0 + cor.pos : height
                         }
                     };
                     var frameControls = view.createWholeControls(
