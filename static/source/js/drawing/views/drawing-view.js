@@ -1962,6 +1962,11 @@ var app = app || {};
             var min = 'min';
             var max = 'max';
 
+            if (opts.type !== 'vertical' && opts.kind === 'frame' && view.state.openingView) {
+                min = 'max';
+                max = 'min';
+            }
+
             view.updateLayer();
 
             // View
@@ -1993,6 +1998,12 @@ var app = app || {};
             opts.states.forEach(function (opt) {
                 if (opt.value === opts.state) { return; }
 
+                var value = opt.value;
+
+                if (opts.type !== 'vertical' && opts.kind === 'mullion' && view.state.openingView) {
+                    value = view.model.getInvertedMeasurementVal( opt.value );
+                }
+
                 var control = new Konva.Rect({
                     fill: '#33CE10',
                     opacity: 0.5,
@@ -2022,7 +2033,7 @@ var app = app || {};
 
                 // Attach events
                 control.on('click', function () {
-                    opts.setter(opt.value, secondArg);
+                    opts.setter(value, secondArg);
                     view.updateLayer();
                 });
                 control.on('mouseover', function () {
