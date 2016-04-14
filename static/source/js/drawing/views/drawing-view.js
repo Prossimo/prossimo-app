@@ -1830,14 +1830,11 @@ var app = app || {};
                 positions.push({});
                 positions.push({y: height - controlSize});
             } else {
-                var correction = this.getFrameCorrectionSum('horizontal');
-
                 size_1 = controlSize;
                 size_2 = height;
 
                 positions.push({});
-                positions.push({x: width - controlSize + (correction.pos * this.ratio)});
-                // @TODO: Баг с первым контролом — нужно как-то определять его и другие значения править
+                positions.push({x: width - controlSize});
             }
 
             // Make both controls recursively
@@ -1944,6 +1941,9 @@ var app = app || {};
             var view = this;
             var contolSize = metricSize / 4;
 
+            var min = 'min';
+            var max = 'max';
+
             view.updateLayer();
 
             // View
@@ -1963,13 +1963,13 @@ var app = app || {};
             // First of all, we re checking current state and correct position of "zero point"
             // So "zero point" should be the same for any current state
             if (
-                opts.kind === 'frame' && opts.state === 'min'
+                opts.kind === 'frame' && opts.state === min
             ) {
-                var isMax = (opts.state === 'max') ? 1 : -1;
+                var isMax = (opts.state === max) ? 1 : -1;
 
                 origPosition[posParam] += posCorrection * sign * isMax;
             } else if (opts.kind === 'mullion' && opts.state !== 'center') {
-                origPosition[posParam] += (opts.state === 'min') ? posCorrection : posCorrection * -1;
+                origPosition[posParam] += (opts.state === min) ? posCorrection : posCorrection * -1;
             }
             // Create controls
             opts.states.forEach(function (opt) {
@@ -1986,14 +1986,14 @@ var app = app || {};
 
                 // Correcting position of controls
                 if (opts.kind === 'frame') {
-                    correction = (opt.value === 'min') ? offset * sign : 0;
+                    correction = (opt.value === min) ? offset * sign : 0;
                 } else if (opts.kind === 'mullion') {
-                    controlPosition[posParam] += (opt.value === 'min') ? -1 * posCorrection / 2 :
-                                                 (opt.value === 'max') ? posCorrection / 2 :
+                    controlPosition[posParam] += (opt.value === min) ? -1 * posCorrection / 2 :
+                                                 (opt.value === max) ? posCorrection / 2 :
                                                  0;
 
-                    correction = (opt.value === 'min') ? offset * -1 :
-                                 (opt.value === 'max') ? offset :
+                    correction = (opt.value === min) ? offset * -1 :
+                                 (opt.value === max) ? offset :
                                  0;
                 }
 
