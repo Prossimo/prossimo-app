@@ -303,7 +303,7 @@ var app = app || {};
             var section_list_source;
             var sections = [];
 
-            if ( this.options.parent_view.active_unit && project_settings && project_settings.get('pricing_mode') === 'estimates' ) {
+            if ( this.options.parent_view.active_unit && project_settings.get('pricing_mode') === 'estimates' ) {
                 section_list_source = this.options.parent_view.active_unit.getSectionsListWithEstimatedPrices();
 
                 _.each(section_list_source, function (source_item, index) {
