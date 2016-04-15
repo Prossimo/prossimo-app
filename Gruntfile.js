@@ -28,6 +28,7 @@ module.exports = function (grunt) {
     var js_files = [
         'backbone-extensions.js',
         'backbone-safesync.js',
+        'application.js',
         'router.js',
         'dialogs.js',
         'utils.js',

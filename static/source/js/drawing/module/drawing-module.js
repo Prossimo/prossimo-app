@@ -30,6 +30,6 @@ var app = app || {};
 
     console.log(app);
 
-    // app.module('DrawingModule', app.DrawingModule);
+    app.App.module('DrawingModule', app.DrawingModule);
 
 })();
