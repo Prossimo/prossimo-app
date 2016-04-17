@@ -16,7 +16,8 @@ module.exports = function (grunt) {
         'bootstrap-toggle/js/bootstrap-toggle.min.js',
         'konva/konva.min.js',
         'decimal.js/decimal.min.js',
-        'Backbone.Undo.js/Backbone.Undo.js'
+        'Backbone.Undo.js/Backbone.Undo.js',
+        'backbone.KonvaView/backbone.KonvaView.js'
     ];
 
     var vendor_css_files = [
