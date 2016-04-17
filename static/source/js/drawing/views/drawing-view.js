@@ -236,6 +236,11 @@ var app = app || {};
                 showSubtext: true,
                 size: 10
             });
+
+            app.DrawingModule.start({
+                model: this.model,
+                stage: this.stage
+            });
         },
 
         // Marrionente lifecycle method
@@ -245,6 +250,8 @@ var app = app || {};
             if ( this.glazing_view ) {
                 this.glazing_view.destroy();
             }
+
+            app.DrawingModule.stop();
         },
 
         serializeData: function () {
