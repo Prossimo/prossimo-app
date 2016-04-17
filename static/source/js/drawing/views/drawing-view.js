@@ -229,6 +229,7 @@ var app = app || {};
             });
 
             this.layer = new Konva.Layer();
+
             this.stage.add(this.layer);
 
             this.ui.$filling_select.selectpicker({
@@ -242,7 +243,8 @@ var app = app || {};
                 stage: this.stage,
                 layers: {
                     // controls: false
-                }
+                },
+                metricSize: metricSize
             });
         },
 
@@ -551,32 +553,6 @@ var app = app || {};
                 });
             }.bind(this));
             return mullion;
-        },
-        createSections: function (rootSection) {
-            var objects = [];
-
-            if (rootSection.sections && rootSection.sections.length) {
-                var mullion = this.createMullion(rootSection);
-
-                if (this.state.openingView) {
-                    objects.push(mullion);
-                }
-
-                // draw each child section
-                rootSection.sections.forEach(function (sectionData) {
-                    objects = objects.concat(this.createSections(sectionData));
-                }.bind(this));
-
-                if (!this.state.openingView) {
-                    objects.push(mullion);
-                }
-            }
-
-            var sash = this.createSash(rootSection);
-
-            objects.push(sash);
-
-            return objects;
         },
 
         // special shape on top of sash to hightlight selection
@@ -2221,123 +2197,123 @@ var app = app || {};
         },
         updateCanvas: function () {
             // clear all previous objects
-            this.layer.destroyChildren();
+            // this.layer.destroyChildren();
 
-            // transparent background to detect click on empty space
-            var back = new Konva.Rect({
-                width: this.stage.width(),
-                height: this.stage.height()
-            });
+            // // transparent background to detect click on empty space
+            // var back = new Konva.Rect({
+            //     width: this.stage.width(),
+            //     height: this.stage.height()
+            // });
 
-            this.layer.add(back);
-            back.on('click tap', function () {
-                this.deselectAll();
-            }.bind(this));
+            // this.layer.add(back);
+            // back.on('click tap', function () {
+            //     this.deselectAll();
+            // }.bind(this));
 
-            var frameWidth = this.model.getInMetric('width', 'mm');
-            var frameHeight = this.model.getInMetric('height', 'mm');
+            // var frameWidth = this.model.getInMetric('width', 'mm');
+            // var frameHeight = this.model.getInMetric('height', 'mm');
 
-            // we will add 0.5 pixel offset for better strokes
-            var topOffset = 10 + 0.5;
-            var wr = (this.stage.width() - metricSize * 2) / frameWidth;
-            var hr = (this.stage.height() - metricSize * 2 - topOffset) / frameHeight;
+            // // we will add 0.5 pixel offset for better strokes
+            // var topOffset = 10 + 0.5;
+            // var wr = (this.stage.width() - metricSize * 2) / frameWidth;
+            // var hr = (this.stage.height() - metricSize * 2 - topOffset) / frameHeight;
 
-            // scale ratio
-            var ratio = Math.min(wr, hr) * 0.95;
+            // // scale ratio
+            // var ratio = Math.min(wr, hr) * 0.95;
 
-            var frameOnScreenWidth = frameWidth * ratio;
-            var frameOnScreenHeight = frameHeight * ratio;
+            // var frameOnScreenWidth = frameWidth * ratio;
+            // var frameOnScreenHeight = frameHeight * ratio;
 
-            this.ratio = ratio;
+            // this.ratio = ratio;
 
-            var group = new Konva.Group();
+            // var group = new Konva.Group();
 
-            // place unit on center
-            group.x(Math.round(this.stage.width() / 2 - frameOnScreenWidth / 2 + metricSize) + 0.5);
-            // and will small offset from top
-            group.y(topOffset);
+            // // place unit on center
+            // group.x(Math.round(this.stage.width() / 2 - frameOnScreenWidth / 2 + metricSize) + 0.5);
+            // // and will small offset from top
+            // group.y(topOffset);
 
-            this.layer.add(group);
+            // this.layer.add(group);
 
-            var root;
+            // var root;
 
-            if (this.state.openingView) {
-                root = this.model.generateFullRoot();
-            } else {
-                root = this.model.generateFullReversedRoot();
-            }
+            // if (this.state.openingView) {
+            //     root = this.model.generateFullRoot();
+            // } else {
+            //     root = this.model.generateFullReversedRoot();
+            // }
 
-            var frameGroup;
-            var isDoorFrame =
-                this.model.profile.isThresholdPossible() &&
-                this.model.profile.get('low_threshold');
+            // var frameGroup;
+            // var isDoorFrame =
+            //     this.model.profile.isThresholdPossible() &&
+            //     this.model.profile.get('low_threshold');
 
-            var isArchedWindow = (this.model.getArchedPosition() !== null);
+            // var isArchedWindow = (this.model.getArchedPosition() !== null);
 
-            // create main frame
-            if (isDoorFrame) {
-                frameGroup = this.createDoorFrame({
-                    sectionId: root.id,
-                    width: this.model.getInMetric('width', 'mm'),
-                    height: this.model.getInMetric('height', 'mm'),
-                    frameWidth: this.model.profile.get('frame_width')
-                });
-            } else if (isArchedWindow) {
-                frameGroup = this.createArchedFrame({
-                    sectionId: root.id,
-                    width: this.model.getInMetric('width', 'mm'),
-                    height: this.model.getInMetric('height', 'mm'),
-                    frameWidth: this.model.profile.get('frame_width'),
-                    archHeight: this.model.getArchedPosition()
-                });
-            } else {
-                frameGroup = this.createFrame({
-                    sectionId: root.id,
-                    width: this.model.getInMetric('width', 'mm'),
-                    height: this.model.getInMetric('height', 'mm'),
-                    frameWidth: this.model.profile.get('frame_width')
-                });
-            }
+            // // create main frame
+            // if (isDoorFrame) {
+            //     frameGroup = this.createDoorFrame({
+            //         sectionId: root.id,
+            //         width: this.model.getInMetric('width', 'mm'),
+            //         height: this.model.getInMetric('height', 'mm'),
+            //         frameWidth: this.model.profile.get('frame_width')
+            //     });
+            // } else if (isArchedWindow) {
+            //     frameGroup = this.createArchedFrame({
+            //         sectionId: root.id,
+            //         width: this.model.getInMetric('width', 'mm'),
+            //         height: this.model.getInMetric('height', 'mm'),
+            //         frameWidth: this.model.profile.get('frame_width'),
+            //         archHeight: this.model.getArchedPosition()
+            //     });
+            // } else {
+            //     frameGroup = this.createFrame({
+            //         sectionId: root.id,
+            //         width: this.model.getInMetric('width', 'mm'),
+            //         height: this.model.getInMetric('height', 'mm'),
+            //         frameWidth: this.model.profile.get('frame_width')
+            //     });
+            // }
 
-            frameGroup.scale({x: ratio, y: ratio});
-            group.add(frameGroup);
+            // frameGroup.scale({x: ratio, y: ratio});
+            // group.add(frameGroup);
 
-            // group for all nested elements
-            var sectionsGroup = new Konva.Group();
+            // // group for all nested elements
+            // var sectionsGroup = new Konva.Group();
 
-            sectionsGroup.scale({x: ratio, y: ratio});
-            group.add(sectionsGroup);
+            // sectionsGroup.scale({x: ratio, y: ratio});
+            // group.add(sectionsGroup);
 
-            // create sections(sashes) recursively
-            var sections = this.createSections(root);
+            // // create sections(sashes) recursively
+            // var sections = this.createSections(root);
 
-            sectionsGroup.add.apply(sectionsGroup, sections);
+            // sectionsGroup.add.apply(sectionsGroup, sections);
 
-            // if we are not looking from opening view
-            // we should see MAIN frame first
-            if (!this.state.openingView) {
-                // so we move it to top
-                frameGroup.moveToTop();
-            }
+            // // if we are not looking from opening view
+            // // we should see MAIN frame first
+            // if (!this.state.openingView) {
+            //     // so we move it to top
+            //     frameGroup.moveToTop();
+            // }
 
-            // infoGroup is group for displaying dimension information
-            var infoGroup;
+            // // infoGroup is group for displaying dimension information
+            // var infoGroup;
 
-            if (this.model.get('root_section').arched) {
-                infoGroup = this.createArchedInfo(frameOnScreenWidth, frameOnScreenHeight);
-            } else {
-                var mullions;
+            // if (this.model.get('root_section').arched) {
+            //     infoGroup = this.createArchedInfo(frameOnScreenWidth, frameOnScreenHeight);
+            // } else {
+            //     var mullions;
 
-                if (this.state.openingView) {
-                    mullions = this.model.getMullions();
-                } else {
-                    mullions = this.model.getRevertedMullions();
-                }
+            //     if (this.state.openingView) {
+            //         mullions = this.model.getMullions();
+            //     } else {
+            //         mullions = this.model.getRevertedMullions();
+            //     }
 
-                infoGroup = this.createInfo(mullions, frameOnScreenWidth, frameOnScreenHeight);
-            }
+            //     infoGroup = this.createInfo(mullions, frameOnScreenWidth, frameOnScreenHeight);
+            // }
 
-            group.add(infoGroup);
+            // group.add(infoGroup);
 
             this.layer.draw();
         },

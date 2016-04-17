@@ -39,7 +39,8 @@ var app = app || {};
                 stage.add( data.layer );
 
                 data.drawer = new data.DrawerClass({
-                    layer: data.layer
+                    layer: data.layer,
+                    metricSize: 50
                 });
                 this.layers[opts.name] = data;
             } else {

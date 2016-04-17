@@ -11,7 +11,8 @@ var app = app || {};
 //         unit: true,
 //         metrics: true,
 //         controls: false
-//     }
+//     },
+//     metricSize: 50          // define a custom metricSize
 // });
 //
 // To end module:
@@ -45,6 +46,8 @@ var app = app || {};
             }
             // Assign Konva.Stage
             this.set('stage', stage);
+            // Assign metricSize
+            this.set('metricSize', ('metricSize' in opts) ? opts.metricSize : 50 );
 
             // Bind events
             this.on('state:any', function () { this.update(); });
@@ -55,7 +58,6 @@ var app = app || {};
         },
         onStart: function (opts) {
             this.define( opts );
-            this.setState('started', true);
         },
         onStop: function () {
             this.unbindModel();
@@ -129,6 +131,11 @@ var app = app || {};
         // Events
         update: function () {
             this.trigger('update');
+        },
+        // Actions
+        deselectAll: function () {
+            this.setState('selected:mullion', null);
+            this.setState('selected:sash', null);
         }
     });
 
