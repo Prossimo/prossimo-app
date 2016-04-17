@@ -4,11 +4,14 @@ var app = app || {};
     'use strict';
 
     var defaultLayer = {
-        layer: null, // new Konva.Layer
+        // Should be defined by user:
         name: 'UnknownLayer',
+        DrawerClass: null,      // Backbone.KonvaView class
         zIndex: 0,
-        isVisible: true,
-        isActive: true
+        isVisible: true
+        // Will be setted automatically in the addLayer method:
+        // layer: null,         // new Konva.Layer
+        // drawer: null         // new drawerClass({layer: layer})
     };
     var parent = app.App.module('DrawingModule.Composer');
     var module = Marionette.Module.extend({
@@ -17,40 +20,75 @@ var app = app || {};
             // Make an object for holding layers
             this.layers = {};
         },
-        define: function () {
-            console.log( this.moduleName + ' has been defined!' );
-        },
         onStart: function () {
-            console.log( this.moduleName + ' has been started!' );
+            this.parent = parent;
+            this.parent.on('update', this.update);
         },
         onStop: function () {
-            console.log( this.moduleName + ' was stoped!' );
+            this.parent.off('update', this.update);
+            this.each(function (layer) {
+                layer.drawer.remove();
+            });
         },
-
-        // Define setter/getter
-        set: function (name, val) {
-            parent.set(name, val);
-        },
-        get: function (name) {
-            return parent.get(name);
-        },
-
         // Add/Remove/Get layers
-        addLayer: function (opts) {
-            var layer = _.defaults(opts, defaultLayer);
+        addLayer: function (opts, stage) {
+            var data = _.defaults(opts, defaultLayer);
 
-            layer.layer = new Konva.Layer();
-            this.layers[opts.name] = layer;
+            if (data.DrawerClass !== null) {
+                data.layer = new Konva.Layer();
+                stage.add( data.layer );
 
-            return layer;
+                data.drawer = new data.DrawerClass({
+                    layer: data.layer
+                });
+                this.layers[opts.name] = data;
+            } else {
+                throw new Error('You must specify DrawerClass for a new layer (layer name: ' + data.name + ')');
+            }
+
+            return data;
         },
-        // Get layers as array
-        // asArray: function () {
+        addLayers: function (layers, stage) {
+            _.each(layers, function (value) {
+                this.addLayer(value, stage);
+            }.bind(this));
 
-        // },
-        // Events
-        update: function () {
+            return this.getLayers();
+        },
+        removeLayer: function (name) {
+            if (name in this.layers) {
+                delete this.layers[name];
+            }
 
+            return true;
+        },
+        getLayer: function (name) {
+            var result = null;
+
+            if (name in this.layers) {
+                result = this.layers[name];
+            }
+
+            return result;
+        },
+        getLayers: function (asArray) {
+            var result;
+
+            if (asArray) {
+                result = Array.from(this.layers);
+
+                result.sort(function (a, b) {
+                    return a.zIndex > b.zIndex;
+                });
+            } else {
+                result = this.layers;
+            }
+
+            return result;
+        },
+        // Itterate each layer
+        each: function (callback) {
+            _.each(this.layers, callback);
         }
     });
 

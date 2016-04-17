@@ -239,7 +239,10 @@ var app = app || {};
 
             app.DrawingModule.start({
                 model: this.model,
-                stage: this.stage
+                stage: this.stage,
+                layers: {
+                    // controls: false
+                }
             });
         },
 
