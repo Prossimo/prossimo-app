@@ -364,6 +364,7 @@ var app = app || {};
                 showSubtext: true
             });
 
+            //  TODO: move this to global shortcut manager
             $(document).off('keydown').on('keydown', function (e) {
                 self.onKeyDown(e);
             });

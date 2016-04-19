@@ -758,7 +758,7 @@ var app = app || {};
                 mark: 60,
                 customer_image: 100,
                 dimensions: 120,
-                rough_opening: 120,
+                rough_opening: 140,
                 description: 240,
                 notes: 240,
                 exceptions: 240,

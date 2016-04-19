@@ -133,9 +133,8 @@ var app = app || {};
                 this.files = new app.ProjectFileCollection(null, { project: this });
                 this.settings = new app.ProjectSettings(null, { project: this });
 
-                this.setDependencies();
-
                 this.on('sync', this.setDependencies, this);
+                this.on('set_active', this.setDependencies, this);
                 this.listenTo(this.settings, 'change', this.updateSettings);
             }
         },
@@ -143,7 +142,9 @@ var app = app || {};
             var changed_flag = false;
 
             //  If response is empty or there was an error
-            if ( !response || options && options.xhr && options.xhr.status && options.xhr.status !== 200 ) {
+            if ( !response && app.session.get('no_backend') !== true ||
+                options && options.xhr && options.xhr.status && options.xhr.status !== 200
+            ) {
                 return;
             }
 
