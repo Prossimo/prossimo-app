@@ -41,7 +41,7 @@ var app = app || {};
                         c.mm_to_inches(width),
                         c.mm_to_inches(height),
                         'fraction',
-                        project_settings && project_settings.get('inches_display_mode')
+                        'inches_only'
                     );
             }
 
@@ -126,7 +126,7 @@ var app = app || {};
                             c.mm_to_inches(source_item.opening.width),
                             c.mm_to_inches(source_item.opening.height),
                             'fraction',
-                            project_settings && project_settings.get('inches_display_mode')
+                            'inches_only'
                         );
 
                     opening_area = this.options.show_sizes_in_mm ?

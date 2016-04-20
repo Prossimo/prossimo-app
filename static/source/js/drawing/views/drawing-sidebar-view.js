@@ -209,8 +209,7 @@ var app = app || {};
 
             function getFillingPerimeter(width, height) {
                 return f.dimensions(c.mm_to_inches(width),
-                        c.mm_to_inches(height), 'fraction',
-                        project_settings && project_settings.get('inches_display_mode'));
+                        c.mm_to_inches(height), 'fraction', 'inches_only');
             }
 
             function getFillingArea(width, height, format) {
@@ -254,8 +253,7 @@ var app = app || {};
 
                     if ( source_item.opening.height && source_item.opening.width ) {
                         opening_size = f.dimensions(c.mm_to_inches(source_item.opening.width),
-                            c.mm_to_inches(source_item.opening.height), 'fraction',
-                            project_settings && project_settings.get('inches_display_mode'));
+                            c.mm_to_inches(source_item.opening.height), 'fraction', 'inches_only');
 
                         opening_area = f.square_feet(m.square_feet(c.mm_to_inches(source_item.opening.width),
                             c.mm_to_inches(source_item.opening.height)), 2, 'sup');
