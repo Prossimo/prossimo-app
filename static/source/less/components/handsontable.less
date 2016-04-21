@@ -1,4 +1,15 @@
-.handsontable .htDimmed {
-    background-color: darken(@white, 5%);
+@zebra-row-color: #fffdea;
+@dimmed-cell-color: darken(@white, 5%);
+
+.handsontable tbody tr:nth-child(2n) td {
+    background-color: @zebra-row-color;
+}
+
+.handsontable tbody tr td.htDimmed {
+    background-color: @dimmed-cell-color;
     color: lighten(@black, 40%);
+}
+
+.handsontable tbody tr:nth-child(2n) td.htDimmed {
+    background-color: multiply(@zebra-row-color, darken(@dimmed-cell-color, 1%));
 }
