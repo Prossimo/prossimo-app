@@ -840,11 +840,13 @@ var app = app || {};
                 };
 
                 _.extend(opts, module.getStyle('indexes'));
-                opts.fontSize = opts.fontSize * ratio;
+                opts.fontSize = opts.fontSize / ratio;
 
                 number = new Konva.Text(opts);
+
                 number.position( section.position );
                 number.y( number.y() + section.size.height / 2 - number.height() / 2 );
+
                 group.add( number );
             });
 
