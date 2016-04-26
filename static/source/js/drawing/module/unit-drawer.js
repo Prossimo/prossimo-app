@@ -58,15 +58,6 @@ var app = app || {};
         // Utils
         // Functions search for Konva Object inside object with specified name
         // And rises up to the parents recursively
-        getOrigin: function (object, name) {
-            if ('name' in object.attrs && name === object.attrs.name) {
-                return object;
-            } else if (object.parent) {
-                return this.getOrigin(object.parent, name);
-            }
-
-            return false;
-        },
         getSectionID: function (object) {
             if ('sectionId' in object.attrs) {
                 return object;
@@ -89,8 +80,7 @@ var app = app || {};
         onBackClick: function () {
             this.deselectAll();
         },
-        setSelection: function (event, type, originName) {
-            console.log('setSelection', type, originName, event);
+        setSelection: function (event, type) {
             var origin = this.getSectionID(event.target);
             var untype = (type === 'sash') ? 'mullion' : 'sash';
 
@@ -98,7 +88,6 @@ var app = app || {};
                 module.setState('selected:' + untype, null, false);
                 module.setState('selected:' + type, origin.attrs.sectionId, false);
             }
-            // @TODO: тут идет множественный вызов почему-то. Из-за этого проблемы :(
         },
         deselectAll: function (preventUpdate) {
             module.deselectAll(preventUpdate);
