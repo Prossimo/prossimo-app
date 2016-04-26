@@ -143,6 +143,11 @@ var app = app || {};
                 insideView: this.isInsideView(),
                 openingView: this.isOpeningView()
             });
+
+            app.DrawingModule.setState({
+                insideView: this.isInsideView(),
+                openingView: this.isOpeningView()
+            });
         },
         handleGlazingBarsPopupClick: function () {
             if ( !this.glazing_view ) {

@@ -90,6 +90,13 @@ var app = app || {};
         // Itterate each layer
         each: function (callback) {
             _.each(this.layers, callback);
+        },
+        update: function () {
+            this.each(function (layer) {
+                if (layer.isVisible) {
+                    layer.drawer.render();
+                }
+            });
         }
     });
 

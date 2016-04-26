@@ -49,6 +49,32 @@ var app = app || {};
             // Assign metricSize
             this.set('metricSize', ('metricSize' in opts) ? opts.metricSize : 50 );
 
+            // Default styles
+            var styles = {
+                frames: {
+
+                },
+                mullions: {
+
+                },
+                fillings: {
+
+                },
+                labels: {
+
+                },
+                indexes: {
+                    align: 'center',
+                    fontFamily: 'pt-sans',
+                    fontSize: 15
+                }
+            };
+            // Assign styles
+            _.extend(styles, opts.styles);
+            _.each(styles, function (style, name) {
+                this.set('style:' + name, style);
+            }.bind(this));
+
             // Bind events
             this.on('state:any', function () { this.update(); });
 
@@ -71,23 +97,54 @@ var app = app || {};
             return (name in this.data) ? this.data[name] : null;
         },
         // Define setter/getter for state
-        setState: function (name, val) {
-            var eventData = {
-                name: name,
-                oldValue: this.getState(name),
-                newValue: val
-            };
+        setState: function (name, val, preventUpdate) {
+            var eventData = [];
 
-            if (eventData.oldValue !== eventData.newValue) {
-                this.trigger('state:any', eventData);
-                this.trigger('state:' + name, eventData);
-                this.state[name] = val;
+            if (typeof name === 'object') {
+                preventUpdate = val;
+
+                _.each(name, function (value, key) {
+                    eventData.push({
+                        name: key,
+                        oldValue: this.getState(key),
+                        newValue: value
+                    });
+                }.bind(this));
+            } else if (typeof name === 'string') {
+                eventData.push({
+                    name: name,
+                    oldValue: this.getState(name),
+                    newValue: val
+                });
             }
+
+            _.each(eventData, function (data) {
+                if (data.oldValue !== data.newValue) {
+                    this.state[data.name] = data.newValue;
+
+                    if (!preventUpdate) {
+                        this.trigger('state:' + data.name, data);
+                    }
+                }
+            }.bind(this));
+
+            if (!preventUpdate) {
+                this.trigger('state:any', eventData);
+            }
+
+            return eventData;
         },
         getState: function (name) {
             return (name in this.state) ? this.state[name] : null;
         },
+        // Get style
+        getStyle: function (name) {
+            var style = this.get('style:' + name);
 
+            if (!style) { style = {}; }
+
+            return style;
+        },
         // Assign/bind/unbind model
         assignModel: function (model) {
             this.unbindModel();
@@ -133,9 +190,9 @@ var app = app || {};
             this.trigger('update');
         },
         // Actions
-        deselectAll: function () {
-            this.setState('selected:mullion', null);
-            this.setState('selected:sash', null);
+        deselectAll: function (preventUpdate) {
+            this.setState('selected:mullion', null, preventUpdate);
+            this.setState('selected:sash', null, preventUpdate);
         }
     });
 

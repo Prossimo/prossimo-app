@@ -101,11 +101,7 @@ var app = app || {};
         },
         update: function () {
             // Update each layer
-            layerManager.each(function (layer) {
-                if (layer.isVisible) {
-                    layer.drawer.render();
-                }
-            });
+            layerManager.update();
         }
     });
 
