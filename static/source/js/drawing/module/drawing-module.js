@@ -49,6 +49,13 @@ var app = app || {};
             // Assign metricSize
             this.set('metricSize', ('metricSize' in opts) ? opts.metricSize : 50 );
 
+            // Assign project settings
+            var project_settings = app.settings && app.settings.getProjectSettings();
+
+            this.setState({
+                hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode')
+            }, false);
+
             // Default styles
             var styles = {
                 frames: {
