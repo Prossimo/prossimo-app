@@ -1073,32 +1073,148 @@ var app = app || {};
                 _.assign(section, getDefaultFillingType());
             });
         },
-        getSizes: function (root) {
-            root = root || this.generateFullRoot();
-            var res = {
+        //  Here we get a list with basic sizes for each piece of the unit:
+        //  frame, sashes, mullions, openings, glasses. Each piece got width,
+        //  height, and some also got frame_width
+        getSizes: function (current_root) {
+            current_root = current_root || this.generateFullRoot();
+
+            var result = {
                 sashes: [],
                 glasses: [],
-                openings: []
+                openings: [],
+                mullions: []
             };
 
-            _.each(root.sections, function (sec) {
+            if ( !result.frame ) {
+                result.frame = {
+                    width: app.utils.convert.inches_to_mm(this.get('width')),
+                    height: app.utils.convert.inches_to_mm(this.get('height')),
+                    frame_width: this.profile.get('frame_width')
+                };
+            }
+
+            _.each(current_root.sections, function (sec) {
                 var subSizes = this.getSizes(sec);
 
-                res.sashes = res.sashes.concat(subSizes.sashes);
-                res.glasses = res.glasses.concat(subSizes.glasses);
-                res.openings = res.openings.concat(subSizes.openings);
+                result.sashes = result.sashes.concat(subSizes.sashes);
+                result.glasses = result.glasses.concat(subSizes.glasses);
+                result.openings = result.openings.concat(subSizes.openings);
+                result.mullions = result.mullions.concat(subSizes.mullions);
             }, this);
 
-            if (root.sections.length === 0) {
-                res.glasses.push(root.glassParams);
+            if ( current_root.sections.length === 0 ) {
+                result.glasses.push({
+                    width: current_root.glassParams.width,
+                    height: current_root.glassParams.height
+                });
             }
 
-            if (root.sashType !== 'fixed_in_frame') {
-                res.sashes.push(root.sashParams);
-                res.openings.push(root.openingParams);
+            if ( current_root.divider ) {
+                result.mullions.push({
+                    type: current_root.divider,
+                    width: current_root.mullionParams.width,
+                    height: current_root.mullionParams.height
+                });
             }
 
-            return res;
+            if ( current_root.sashType !== 'fixed_in_frame' ) {
+                result.sashes.push({
+                    width: current_root.sashParams.width,
+                    height: current_root.sashParams.height,
+                    frame_width: this.profile.get('sash_frame_width')
+                });
+
+                result.openings.push({
+                    width: current_root.openingParams.width,
+                    height: current_root.openingParams.height
+                });
+            }
+
+            return result;
+        },
+        //  Get linear and area size stats for various parts of the window.
+        //  These values could be used as a base to calculate estimated
+        //  cost of options for the unit
+        getLinearAndAreaStats: function () {
+            var sizes = this.getSizes();
+            var result = {
+                frame: {
+                    length: 0,
+                    area: 0,
+                    area_both_sides: 0
+                },
+                sashes: {
+                    length: 0,
+                    area: 0,
+                    area_both_sides: 0
+                },
+                glasses: {
+                    area: 0,
+                    area_both_sides: 0
+                },
+                openings: {
+                    area: 0
+                },
+                mullions: {
+                    length: 0,
+                    area: 0,
+                    area_both_sides: 0
+                },
+                profile_total: {
+                    length: 0,
+                    area: 0,
+                    area_both_sides: 0
+                }
+            };
+
+            //  TODO: how to exactly calculate this, by the way?
+            function getProfilePerimeter(width, height, frame_width) {
+                return (width + height) * 2 - frame_width * 4;
+            }
+
+            function getArea(width, height) {
+                return app.utils.math.square_meters(width, height);
+            }
+
+            result.frame.length = getProfilePerimeter(sizes.frame.width, sizes.frame.height, sizes.frame.frame_width);
+            result.frame.area = getArea(result.frame.length, sizes.frame.frame_width);
+            result.frame.area_both_sides = result.frame.area * 2;
+
+            _.each(sizes.sashes, function (sash) {
+                var sash_perimeter = getProfilePerimeter(sash.width, sash.height, sash.frame_width);
+
+                result.sashes.length += sash_perimeter;
+                result.sashes.area += getArea(sash_perimeter, sash.frame_width);
+                result.sashes.area_both_sides += getArea(sash_perimeter, sash.frame_width) * 2;
+            });
+
+            _.each(sizes.mullions, function (mullion) {
+                if ( mullion.type === 'vertical' ) {
+                    result.mullions.length += mullion.height;
+                    result.mullions.area += getArea(mullion.height, mullion.width);
+                    result.mullions.area_both_sides += getArea(mullion.height, mullion.width) * 2;
+                } else {
+                    result.mullions.length += mullion.width;
+                    result.mullions.area += getArea(mullion.width, mullion.height);
+                    result.mullions.area_both_sides += getArea(mullion.width, mullion.height) * 2;
+                }
+            });
+
+            _.each(sizes.openings, function (opening) {
+                result.openings.area += getArea(opening.width, opening.height);
+            });
+
+            _.each(sizes.glasses, function (glass) {
+                result.glasses.area += getArea(glass.width, glass.height);
+                result.glasses.area_both_sides += getArea(glass.width, glass.height) * 2;
+            });
+
+            result.profile_total.length = result.frame.length + result.sashes.length + result.mullions.length;
+            result.profile_total.area = result.frame.area + result.sashes.area + result.mullions.area;
+            result.profile_total.area_both_sides = result.profile_total.area * 2;
+
+            return result;
         },
         //  Returns sizes in mms
         getSashList: function (current_root, parent_root, reverse_hinges) {
