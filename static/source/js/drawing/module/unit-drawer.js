@@ -973,7 +973,7 @@ var app = app || {};
             }
 
             // arched shape
-            var arcPos = this.model.getArchedPosition();
+            var arcPos = model.getArchedPosition();
 
             return new Konva.Shape({
                 x: fillX,
