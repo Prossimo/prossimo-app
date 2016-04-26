@@ -1083,7 +1083,8 @@ var app = app || {};
                 sashes: [],
                 glasses: [],
                 openings: [],
-                mullions: []
+                mullions: [],
+                glazing_bars: []
             };
 
             if ( !result.frame ) {
@@ -1101,6 +1102,7 @@ var app = app || {};
                 result.glasses = result.glasses.concat(subSizes.glasses);
                 result.openings = result.openings.concat(subSizes.openings);
                 result.mullions = result.mullions.concat(subSizes.mullions);
+                result.glazing_bars = result.glazing_bars.concat(subSizes.glazing_bars);
             }, this);
 
             if ( current_root.sections.length === 0 ) {
@@ -1116,6 +1118,28 @@ var app = app || {};
                     width: current_root.mullionParams.width,
                     height: current_root.mullionParams.height
                 });
+            }
+
+            if ( current_root.bars.horizontal.length ) {
+                _.each(current_root.bars.horizontal, function () {
+                    result.glazing_bars.push({
+                        type: 'horizontal',
+                        width: current_root.glassParams.width,
+                        height: this.get('glazing_bar_width'),
+                        intersections: current_root.bars.vertical.length
+                    });
+                }, this);
+            }
+
+            if ( current_root.bars.vertical.length ) {
+                _.each(current_root.bars.vertical, function () {
+                    result.glazing_bars.push({
+                        type: 'vertical',
+                        width: this.get('glazing_bar_width'),
+                        height: current_root.glassParams.height,
+                        intersections: current_root.bars.horizontal.length
+                    });
+                }, this);
             }
 
             if ( current_root.sashType !== 'fixed_in_frame' ) {
@@ -1141,11 +1165,13 @@ var app = app || {};
             var result = {
                 frame: {
                     length: 0,
+                    length_without_intersections: 0,
                     area: 0,
                     area_both_sides: 0
                 },
                 sashes: {
                     length: 0,
+                    length_without_intersections: 0,
                     area: 0,
                     area_both_sides: 0
                 },
@@ -1161,32 +1187,51 @@ var app = app || {};
                     area: 0,
                     area_both_sides: 0
                 },
+                glazing_bars: {
+                    length: 0,
+                    length_without_intersections: 0,
+                    area: 0,
+                    area_both_sides: 0
+                },
                 profile_total: {
                     length: 0,
+                    length_without_intersections: 0,
                     area: 0,
                     area_both_sides: 0
                 }
             };
 
-            //  TODO: how to exactly calculate this, by the way?
-            function getProfilePerimeter(width, height, frame_width) {
+            function getProfilePerimeter(width, height) {
+                return (width + height) * 2;
+            }
+
+            function getProfilePerimeterWithoutIntersections(width, height, frame_width) {
                 return (width + height) * 2 - frame_width * 4;
+            }
+
+            function getBarLengthWithoutIntersections(length, bar_width, intersections_number) {
+                return length - bar_width * intersections_number;
             }
 
             function getArea(width, height) {
                 return app.utils.math.square_meters(width, height);
             }
 
-            result.frame.length = getProfilePerimeter(sizes.frame.width, sizes.frame.height, sizes.frame.frame_width);
-            result.frame.area = getArea(result.frame.length, sizes.frame.frame_width);
+            result.frame.length = getProfilePerimeter(sizes.frame.width, sizes.frame.height);
+            result.frame.length_without_intersections =
+                getProfilePerimeterWithoutIntersections(sizes.frame.width, sizes.frame.height, sizes.frame.frame_width);
+            result.frame.area = getArea(result.frame.length_without_intersections, sizes.frame.frame_width);
             result.frame.area_both_sides = result.frame.area * 2;
 
             _.each(sizes.sashes, function (sash) {
-                var sash_perimeter = getProfilePerimeter(sash.width, sash.height, sash.frame_width);
+                var sash_perimeter = getProfilePerimeter(sash.width, sash.height);
+                var sash_perimeter_without_intersections =
+                    getProfilePerimeterWithoutIntersections(sash.width, sash.height, sash.frame_width);
 
                 result.sashes.length += sash_perimeter;
-                result.sashes.area += getArea(sash_perimeter, sash.frame_width);
-                result.sashes.area_both_sides += getArea(sash_perimeter, sash.frame_width) * 2;
+                result.sashes.length_without_intersections += sash_perimeter_without_intersections;
+                result.sashes.area += getArea(sash_perimeter_without_intersections, sash.frame_width);
+                result.sashes.area_both_sides += getArea(sash_perimeter_without_intersections, sash.frame_width) * 2;
             });
 
             _.each(sizes.mullions, function (mullion) {
@@ -1201,6 +1246,21 @@ var app = app || {};
                 }
             });
 
+            _.each(sizes.glazing_bars, function (bar) {
+                if ( bar.type === 'vertical' ) {
+                    result.glazing_bars.length += bar.height;
+                    result.glazing_bars.length_without_intersections += bar.height;
+                    result.glazing_bars.area += getArea(bar.height, bar.width);
+                    result.glazing_bars.area_both_sides += getArea(bar.height, bar.width) * 2;
+                } else {
+                    result.glazing_bars.length += bar.width;
+                    result.glazing_bars.length_without_intersections +=
+                        getBarLengthWithoutIntersections(bar.width, bar.height, bar.intersections);
+                    result.glazing_bars.area += getArea(bar.width, bar.height);
+                    result.glazing_bars.area_both_sides += getArea(bar.width, bar.height) * 2;
+                }
+            });
+
             _.each(sizes.openings, function (opening) {
                 result.openings.area += getArea(opening.width, opening.height);
             });
@@ -1211,6 +1271,8 @@ var app = app || {};
             });
 
             result.profile_total.length = result.frame.length + result.sashes.length + result.mullions.length;
+            result.profile_total.length_without_intersections = result.frame.length_without_intersections +
+                result.sashes.length_without_intersections + result.mullions.length;
             result.profile_total.area = result.frame.area + result.sashes.area + result.mullions.area;
             result.profile_total.area_both_sides = result.profile_total.area * 2;
 

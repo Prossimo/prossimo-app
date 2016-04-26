@@ -161,7 +161,8 @@ test('Size calculations for Unit #001 from 377 E 10th project', function () {
 
     var unit = new app.Unit({
         width: c.mm_to_inches(1676),
-        height: c.mm_to_inches(2083)
+        height: c.mm_to_inches(2083),
+        glazing_bar_width: 12
     });
 
     unit.profile = new app.Profile({
@@ -306,23 +307,48 @@ test('Size calculations for Unit #001 from 377 E 10th project', function () {
     equal(Math.abs(sash_list[0].sash_frame.height - target_sizes.sashes[0].height) < margin_of_error,
         true, 'Sash 3 frame height equals calculated height');
 
+    //  Now get unit stats
     unit_size_stats = unit.getLinearAndAreaStats();
 
-    equal(unit_size_stats.frame.length, 7238, 'Unit frame length is correct');
-    equal(unit_size_stats.frame.area, 1.01332 / 2, 'Unit frame area is correct');
-    equal(unit_size_stats.frame.area_both_sides, 1.01332, 'Unit frame area for both sides is correct');
-    equal(unit_size_stats.sashes.length, 6478, 'Unit sashes length is correct');
-    equal(unit_size_stats.sashes.area, 1.062392 / 2, 'Unit sashes area is correct');
-    equal(unit_size_stats.sashes.area_both_sides, 1.062392, 'Unit sashes area for both sides is correct');
-    equal(unit_size_stats.mullions.length, 3387, 'Unit mullions length is correct');
-    equal(unit_size_stats.mullions.area, 0.623208 / 2, 'Unit mullions area is correct');
-    equal(unit_size_stats.mullions.area_both_sides, 0.623208, 'Unit mullions area for both sides is correct');
-    equal(unit_size_stats.profile_total.length, 17103, 'Unit profile total length is correct');
-    equal(unit_size_stats.profile_total.area, 2.69892 / 2, 'Unit profile total area is correct');
-    equal(unit_size_stats.profile_total.area_both_sides, 2.69892, 'Unit profile total area for both sides is correct');
-    equal(unit_size_stats.openings.area, 1.336422, 'Unit openings area is correct');
-    equal(unit_size_stats.glasses.area, 2.374956, 'Unit glasses area is correct');
-    equal(unit_size_stats.glasses.area_both_sides, 2.374956 * 2, 'Unit glasses area for both sides is correct');
+    equal(unit_size_stats.frame.length, 7518, 'Unit frame length');
+    equal(unit_size_stats.frame.length_without_intersections, 7238, 'Unit frame length without intersections');
+    equal(unit_size_stats.frame.area, 1.01332 / 2, 'Unit frame area');
+    equal(unit_size_stats.frame.area_both_sides, 1.01332, 'Unit frame area for both sides');
+    equal(unit_size_stats.sashes.length, 7134, 'Unit sashes length');
+    equal(unit_size_stats.sashes.length_without_intersections, 6478, 'Unit sashes length without intersections');
+    equal(unit_size_stats.sashes.area, 1.062392 / 2, 'Unit sashes area');
+    equal(unit_size_stats.sashes.area_both_sides, 1.062392, 'Unit sashes area for both sides');
+    equal(unit_size_stats.mullions.length, 3387, 'Unit mullions length');
+    equal(unit_size_stats.mullions.area, 0.623208 / 2, 'Unit mullions area');
+    equal(unit_size_stats.mullions.area_both_sides, 0.623208, 'Unit mullions area for both sides');
+    equal(unit_size_stats.profile_total.length, 18039, 'Unit profile total length');
+    equal(unit_size_stats.profile_total.length_without_intersections, 17103,
+        'Unit profile total length without intersections');
+    equal(unit_size_stats.profile_total.area, 2.69892 / 2, 'Unit profile total area');
+    equal(unit_size_stats.profile_total.area_both_sides, 2.69892, 'Unit profile total area for both sides');
+    equal(unit_size_stats.openings.area, 1.336422, 'Unit openings area');
+    equal(unit_size_stats.glasses.area, 2.374956, 'Unit glasses area');
+    equal(unit_size_stats.glasses.area_both_sides, 2.374956 * 2, 'Unit glasses area for both sides');
+
+    //  Now add some glazing bars and get stats for them
+    unit.setSectionBars(bottom_right_section.id, {
+        vertical: [
+            { position: 100 },
+            { position: 200 }
+        ],
+        horizontal: [
+            { position: 100 },
+            { position: 200 }
+        ]
+    });
+
+    unit_size_stats = unit.getLinearAndAreaStats();
+
+    equal(unit_size_stats.glazing_bars.length, 1971.4, 'Unit glazing bar length');
+    equal(unit_size_stats.glazing_bars.length_without_intersections, 1923.4,
+        'Unit glazing bar length without intersections');
+    equal(unit_size_stats.glazing_bars.area, 0.0236568, 'Unit glazing bar area');
+    equal(unit_size_stats.glazing_bars.area_both_sides, 0.0236568 * 2, 'Unit glazing bar area for both sides');
 });
 
 //  We use values in mms because that's what was used in the reference project.
