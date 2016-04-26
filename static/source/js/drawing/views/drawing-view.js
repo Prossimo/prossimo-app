@@ -251,17 +251,38 @@ var app = app || {};
                 },
                 metricSize: metricSize
             });
+            this.bindModuleEvents();
         },
 
         // Marrionente lifecycle method
         onDestroy: function () {
             this.stage.destroy();
+            this.unbindModuleEvents();
 
             if ( this.glazing_view ) {
                 this.glazing_view.destroy();
             }
 
             app.DrawingModule.stop();
+        },
+
+        bindModuleEvents: function () {
+            app.DrawingModule.on('state:selected:mullion', function (data) {
+                this.deselectAll();
+                this.setState({
+                    selectedMullionId: data.newValue
+                });
+            }.bind(this));
+            app.DrawingModule.on('state:selected:sash', function (data) {
+                this.deselectAll();
+                this.setState({
+                    selectedSashId: data.newValue
+                });
+            }.bind(this));
+        },
+        unbindModuleEvents: function () {
+            app.DrawingModule.off('state:selected:mullion');
+            app.DrawingModule.off('state:selected:sash');
         },
 
         serializeData: function () {
