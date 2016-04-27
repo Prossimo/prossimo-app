@@ -1164,14 +1164,14 @@ var app = app || {};
             var sizes = this.getSizes();
             var result = {
                 frame: {
-                    length: 0,
-                    length_without_intersections: 0,
+                    linear: 0,
+                    linear_without_intersections: 0,
                     area: 0,
                     area_both_sides: 0
                 },
                 sashes: {
-                    length: 0,
-                    length_without_intersections: 0,
+                    linear: 0,
+                    linear_without_intersections: 0,
                     area: 0,
                     area_both_sides: 0
                 },
@@ -1183,19 +1183,19 @@ var app = app || {};
                     area: 0
                 },
                 mullions: {
-                    length: 0,
+                    linear: 0,
                     area: 0,
                     area_both_sides: 0
                 },
                 glazing_bars: {
-                    length: 0,
-                    length_without_intersections: 0,
+                    linear: 0,
+                    linear_without_intersections: 0,
                     area: 0,
                     area_both_sides: 0
                 },
                 profile_total: {
-                    length: 0,
-                    length_without_intersections: 0,
+                    linear: 0,
+                    linear_without_intersections: 0,
                     area: 0,
                     area_both_sides: 0
                 }
@@ -1217,10 +1217,10 @@ var app = app || {};
                 return app.utils.math.square_meters(width, height);
             }
 
-            result.frame.length = getProfilePerimeter(sizes.frame.width, sizes.frame.height);
-            result.frame.length_without_intersections =
+            result.frame.linear = getProfilePerimeter(sizes.frame.width, sizes.frame.height);
+            result.frame.linear_without_intersections =
                 getProfilePerimeterWithoutIntersections(sizes.frame.width, sizes.frame.height, sizes.frame.frame_width);
-            result.frame.area = getArea(result.frame.length_without_intersections, sizes.frame.frame_width);
+            result.frame.area = getArea(result.frame.linear_without_intersections, sizes.frame.frame_width);
             result.frame.area_both_sides = result.frame.area * 2;
 
             _.each(sizes.sashes, function (sash) {
@@ -1228,19 +1228,19 @@ var app = app || {};
                 var sash_perimeter_without_intersections =
                     getProfilePerimeterWithoutIntersections(sash.width, sash.height, sash.frame_width);
 
-                result.sashes.length += sash_perimeter;
-                result.sashes.length_without_intersections += sash_perimeter_without_intersections;
+                result.sashes.linear += sash_perimeter;
+                result.sashes.linear_without_intersections += sash_perimeter_without_intersections;
                 result.sashes.area += getArea(sash_perimeter_without_intersections, sash.frame_width);
                 result.sashes.area_both_sides += getArea(sash_perimeter_without_intersections, sash.frame_width) * 2;
             });
 
             _.each(sizes.mullions, function (mullion) {
                 if ( mullion.type === 'vertical' ) {
-                    result.mullions.length += mullion.height;
+                    result.mullions.linear += mullion.height;
                     result.mullions.area += getArea(mullion.height, mullion.width);
                     result.mullions.area_both_sides += getArea(mullion.height, mullion.width) * 2;
                 } else {
-                    result.mullions.length += mullion.width;
+                    result.mullions.linear += mullion.width;
                     result.mullions.area += getArea(mullion.width, mullion.height);
                     result.mullions.area_both_sides += getArea(mullion.width, mullion.height) * 2;
                 }
@@ -1248,13 +1248,13 @@ var app = app || {};
 
             _.each(sizes.glazing_bars, function (bar) {
                 if ( bar.type === 'vertical' ) {
-                    result.glazing_bars.length += bar.height;
-                    result.glazing_bars.length_without_intersections += bar.height;
+                    result.glazing_bars.linear += bar.height;
+                    result.glazing_bars.linear_without_intersections += bar.height;
                     result.glazing_bars.area += getArea(bar.height, bar.width);
                     result.glazing_bars.area_both_sides += getArea(bar.height, bar.width) * 2;
                 } else {
-                    result.glazing_bars.length += bar.width;
-                    result.glazing_bars.length_without_intersections +=
+                    result.glazing_bars.linear += bar.width;
+                    result.glazing_bars.linear_without_intersections +=
                         getBarLengthWithoutIntersections(bar.width, bar.height, bar.intersections);
                     result.glazing_bars.area += getArea(bar.width, bar.height);
                     result.glazing_bars.area_both_sides += getArea(bar.width, bar.height) * 2;
@@ -1270,9 +1270,9 @@ var app = app || {};
                 result.glasses.area_both_sides += getArea(glass.width, glass.height) * 2;
             });
 
-            result.profile_total.length = result.frame.length + result.sashes.length + result.mullions.length;
-            result.profile_total.length_without_intersections = result.frame.length_without_intersections +
-                result.sashes.length_without_intersections + result.mullions.length;
+            result.profile_total.linear = result.frame.linear + result.sashes.linear + result.mullions.linear;
+            result.profile_total.linear_without_intersections = result.frame.linear_without_intersections +
+                result.sashes.linear_without_intersections + result.mullions.linear;
             result.profile_total.area = result.frame.area + result.sashes.area + result.mullions.area;
             result.profile_total.area_both_sides = result.profile_total.area * 2;
 

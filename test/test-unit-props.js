@@ -310,20 +310,20 @@ test('Size calculations for Unit #001 from 377 E 10th project', function () {
     //  Now get unit stats
     unit_size_stats = unit.getLinearAndAreaStats();
 
-    equal(unit_size_stats.frame.length, 7518, 'Unit frame length');
-    equal(unit_size_stats.frame.length_without_intersections, 7238, 'Unit frame length without intersections');
+    equal(unit_size_stats.frame.linear, 7518, 'Unit frame linear');
+    equal(unit_size_stats.frame.linear_without_intersections, 7238, 'Unit frame linear without intersections');
     equal(unit_size_stats.frame.area, 1.01332 / 2, 'Unit frame area');
     equal(unit_size_stats.frame.area_both_sides, 1.01332, 'Unit frame area for both sides');
-    equal(unit_size_stats.sashes.length, 7134, 'Unit sashes length');
-    equal(unit_size_stats.sashes.length_without_intersections, 6478, 'Unit sashes length without intersections');
+    equal(unit_size_stats.sashes.linear, 7134, 'Unit sashes linear');
+    equal(unit_size_stats.sashes.linear_without_intersections, 6478, 'Unit sashes linear without intersections');
     equal(unit_size_stats.sashes.area, 1.062392 / 2, 'Unit sashes area');
     equal(unit_size_stats.sashes.area_both_sides, 1.062392, 'Unit sashes area for both sides');
-    equal(unit_size_stats.mullions.length, 3387, 'Unit mullions length');
+    equal(unit_size_stats.mullions.linear, 3387, 'Unit mullions linear');
     equal(unit_size_stats.mullions.area, 0.623208 / 2, 'Unit mullions area');
     equal(unit_size_stats.mullions.area_both_sides, 0.623208, 'Unit mullions area for both sides');
-    equal(unit_size_stats.profile_total.length, 18039, 'Unit profile total length');
-    equal(unit_size_stats.profile_total.length_without_intersections, 17103,
-        'Unit profile total length without intersections');
+    equal(unit_size_stats.profile_total.linear, 18039, 'Unit profile total linear');
+    equal(unit_size_stats.profile_total.linear_without_intersections, 17103,
+        'Unit profile total linear without intersections');
     equal(unit_size_stats.profile_total.area, 2.69892 / 2, 'Unit profile total area');
     equal(unit_size_stats.profile_total.area_both_sides, 2.69892, 'Unit profile total area for both sides');
     equal(unit_size_stats.openings.area, 1.336422, 'Unit openings area');
@@ -344,9 +344,9 @@ test('Size calculations for Unit #001 from 377 E 10th project', function () {
 
     unit_size_stats = unit.getLinearAndAreaStats();
 
-    equal(unit_size_stats.glazing_bars.length, 1971.4, 'Unit glazing bar length');
-    equal(unit_size_stats.glazing_bars.length_without_intersections, 1923.4,
-        'Unit glazing bar length without intersections');
+    equal(unit_size_stats.glazing_bars.linear, 1971.4, 'Unit glazing bar linear');
+    equal(unit_size_stats.glazing_bars.linear_without_intersections, 1923.4,
+        'Unit glazing bar linear without intersections');
     equal(unit_size_stats.glazing_bars.area, 0.0236568, 'Unit glazing bar area');
     equal(unit_size_stats.glazing_bars.area_both_sides, 0.0236568 * 2, 'Unit glazing bar area for both sides');
 });

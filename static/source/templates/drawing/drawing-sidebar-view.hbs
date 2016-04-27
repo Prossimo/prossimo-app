@@ -122,6 +122,26 @@
 {{/if}}
 {{/if}}
 
+{{#if active_unit_stats }}
+{{#if tabs.active_unit_stats.is_active }}
+    <div class="active-unit-profile-properties">
+        {{#each active_unit_stats }}
+        <table>
+            <h4>{{ title }}</h4>
+            <tbody>
+                {{#each data }}
+                <tr{{#if is_total }} class="total"{{/if}}>
+                    <td class="title">{{ title }}</td>
+                    <td class="value">{{{ value }}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        {{/each}}
+    </div>
+{{/if}}
+{{/if}}
+
 {{#if active_unit_estimated_section_prices }}
 {{#if tabs.active_unit_estimated_section_prices.is_active }}
     <div class="active-unit-estimated-section-prices">
