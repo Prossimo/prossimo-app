@@ -29,6 +29,9 @@ var app = app || {};
                 active_unit_profile_properties: {
                     title: 'Profile'
                 },
+                active_unit_stats: {
+                    title: 'Unit Stats'
+                },
                 active_unit_estimated_section_prices: {
                     title: 'Est. Prices'
                 }
@@ -209,8 +212,7 @@ var app = app || {};
 
             function getFillingPerimeter(width, height) {
                 return f.dimensions(c.mm_to_inches(width),
-                        c.mm_to_inches(height), 'fraction',
-                        project_settings && project_settings.get('inches_display_mode'));
+                        c.mm_to_inches(height), 'fraction', 'inches_only');
             }
 
             function getFillingArea(width, height, format) {
@@ -254,8 +256,7 @@ var app = app || {};
 
                     if ( source_item.opening.height && source_item.opening.width ) {
                         opening_size = f.dimensions(c.mm_to_inches(source_item.opening.width),
-                            c.mm_to_inches(source_item.opening.height), 'fraction',
-                            project_settings && project_settings.get('inches_display_mode'));
+                            c.mm_to_inches(source_item.opening.height), 'fraction', 'inches_only');
 
                         opening_area = f.square_feet(m.square_feet(c.mm_to_inches(source_item.opening.width),
                             c.mm_to_inches(source_item.opening.height)), 2, 'sup');
@@ -296,6 +297,65 @@ var app = app || {};
 
             return sashes;
         },
+        getActiveUnitStats: function () {
+            var unit_stats;
+            var f = app.utils.format;
+            var stats_data = [];
+
+            var titles = {
+                frame: 'Frame',
+                sashes: 'Sash Frames',
+                mullions: 'Mullions',
+                profile_total: 'Profile Total',
+                glasses: 'Fillings',
+                openings: 'Openings',
+                glazing_bars: 'Glazing Bars'
+            };
+
+            if ( this.options.parent_view.active_unit ) {
+                var group_titles = {
+                    linear: 'Total Linear',
+                    linear_without_intersections: 'Total Linear (Without Intersections)',
+                    area: 'Total Area',
+                    area_both_sides: 'Total Area (Both Sides)'
+                };
+                var data_groups = _.keys(group_titles);
+                var group_data = {};
+
+                unit_stats = this.options.parent_view.active_unit.getLinearAndAreaStats();
+
+                _.each(unit_stats, function (item, key) {
+                    _.each(data_groups, function (group_name) {
+                        if ( item[group_name] ) {
+                            group_data[group_name] = group_data[group_name] || [];
+
+                            group_data[group_name].push({
+                                key: key,
+                                title: titles[key],
+                                value: group_name.indexOf('linear') !== -1 ?
+                                    f.dimension_mm(item[group_name]) : f.square_meters(item[group_name]),
+                                is_total: key === 'profile_total'
+                            });
+
+                        }
+                    }, this);
+                }, this);
+
+                _.each(group_titles, function (title, key) {
+                    group_data[key] = _.sortBy(group_data[key], function (param) {
+                        return _.indexOf(['frame', 'sashes', 'mullions', 'profile_total', 'glasses',
+                            'openings', 'glazing_bars'], param.key);
+                    });
+
+                    stats_data.push({
+                        title: title,
+                        data: group_data[key]
+                    });
+                }, this);
+            }
+
+            return stats_data;
+        },
         getActiveUnitEstimatedSectionPrices: function () {
             var project_settings = app.settings.getProjectSettings();
             var f = app.utils.format;
@@ -331,6 +391,7 @@ var app = app || {};
             var tab_contents = {
                 active_unit_properties: this.getActiveUnitProperties(),
                 active_unit_profile_properties: this.getActiveUnitProfileProperties(),
+                active_unit_stats: this.getActiveUnitStats(),
                 active_unit_estimated_section_prices: this.getActiveUnitEstimatedSectionPrices()
             };
 
@@ -349,6 +410,7 @@ var app = app || {};
                 active_unit_sashes: this.getActiveUnitSashList(),
                 active_unit_properties: tab_contents.active_unit_properties,
                 active_unit_profile_properties: tab_contents.active_unit_profile_properties,
+                active_unit_stats: tab_contents.active_unit_stats,
                 active_unit_estimated_section_prices: tab_contents.active_unit_estimated_section_prices,
                 tabs: _.each(this.tabs, function (item, key) {
                     item.is_active = key === this.active_tab;

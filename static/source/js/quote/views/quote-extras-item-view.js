@@ -14,7 +14,7 @@ var app = app || {};
 
             return {
                 unit: unit_price ? f.price_usd(unit_price) : null,
-                subtotal: f.price_usd(subtotal_price)
+                subtotal: subtotal_price ? f.price_usd(subtotal_price) : null
             };
         },
         getReferenceId: function () {

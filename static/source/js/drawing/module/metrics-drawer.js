@@ -7,6 +7,7 @@ var app = app || {};
     var module;
     var model;
     var metricSize;
+    var controlSize;
     var ratio;
 
     app.Drawers = app.Drawers || {};
@@ -19,6 +20,7 @@ var app = app || {};
 
             model = module.get('model');
             metricSize = params.metricSize;
+            controlSize = metricSize / 4;
             composer = app.App.module('DrawingModule.Composer');
         },
         el: function () {
@@ -79,22 +81,24 @@ var app = app || {};
         },
         createInfo: function (mullions, width, height) {
             var group = new Konva.Group();
+            var measurements;
+            var controls;
 
-            console.log(1, mullions);
+            // Get data for info layer
+            mullions = this.sortMullions(mullions);
+            measurements = this.getMeasurements(mullions);
+            controls = this.getControls(mullions);
 
             // Draw mullion metrics
-            mullions = this.sortMullions(mullions);
-
-            console.log(2, mullions);
-
-            mullions = this.getMeasurements(mullions);
-
-            console.log(3, mullions);
-
-            group.add( this.createMullionMetrics(mullions, height) );
+            group.add( this.createMullionMetrics(measurements, height) );
 
             // Draw whole metrics
-            group.add( this.createWholeMetrics(mullions, width, height) );
+            group.add( this.createWholeMetrics(measurements, width, height) );
+
+            if (!module.getState('isPreview')) {
+                // Draw mullion controls
+                group.add( this.createMullionControls(controls, width, height) );
+            }
 
             // Draw overlay metrics: GlassSize & OpeningSize
             group.add( this.createOverlayMetrics() );
@@ -156,22 +160,15 @@ var app = app || {};
 
                 if (section_.parentId) {
                     if (
+                        index_ !== find_index &&
                         !(
-                            index_ === find_index &&
-                            !(
-                                'mullion' in section_.measurements &&
-                                type_ in section_.measurements.mullion
-                            )
+                            'mullion' in section_.measurements &&
+                            type_ in section_.measurements.mullion
                         )
                     ) {
                         parent_section_ = model.getSection( section_.parentId );
                         cur_index = (parent_section_.sections[0].id === section_.id) ? 0 : 1;
                         result_ = findParentByMeasurementType( parent_section_, type_, key_, cur_index );
-                    } else {
-                        result_ = {
-                            section: model.getSection( section_.parentId ),
-                            index: find_index
-                        };
                     }
                 }
 
@@ -223,6 +220,7 @@ var app = app || {};
             /* eslint-disable max-nested-callbacks */
             _.each(mullions, function (mulGroup, type) {
                 var pos = 0;
+                var grouped = {};
                 var saved_mullion = null;
                 var invertedType = model.getInvertedDivider( type );
 
@@ -245,14 +243,17 @@ var app = app || {};
                     var index = (mullion.gap) ? 1 : 0;
                     var real_section = mullion.sections[index];
                     var edges = view.getMeasurementEdges( real_section.id, invertedType );
+                    var size = (mullion.position - pos);
+
 
                     var data = {
                         section_id: mullion.id,
                         offset: pos,
-                        size: (mullion.position - pos),
+                        size: size,
                         edges: [],
                         index: index
                     };
+                    var loaded = false;
 
                     edges.forEach(function (edge, key) {
                         var store_index = store_index_accordance[edge][key];
@@ -270,10 +271,24 @@ var app = app || {};
                             }
                         } else if ( edge === 'mullion' ) {
                             if ( index !== key ) {
-                                edge_section = current_section;
+                                edge_section = (saved_mullion) ? saved_mullion : current_section;
+                                loaded = !!(saved_mullion);
+                                saved_mullion = null;
                             } else {
-                                edge_section = findParentByMeasurementType(current_section, invertedType, key, index);
-                                edge_section = edge_section.section;
+                                if (saved_mullion !== null) {
+                                    edge_section = saved_mullion;
+                                    loaded = true;
+                                    saved_mullion = null;
+                                } else {
+                                    edge_section = findParentByMeasurementType(
+                                        current_section,
+                                        invertedType,
+                                        key,
+                                        index
+                                    );
+                                    store_index = edge_section.index;
+                                    edge_section = edge_section.section;
+                                }
                             }
                         }
 
@@ -281,6 +296,13 @@ var app = app || {};
                             edge_state = edge_section.measurements[edge][invertedType][store_index];
                         } else {
                             edge_state = edge_section.measurements[edge][type][store_index];
+                        }
+
+                        // Change state for mullions if this is vertical mullion and it's outside view
+                        if (edge === 'mullion' && type === 'vertical' && module.getState('openingView')) {
+                            edge_state = (edge_state === 'min') ? 'max' :
+                                         (edge_state === 'max') ? 'min' :
+                                         'center';
                         }
 
                         data.edges[key] = {
@@ -293,14 +315,40 @@ var app = app || {};
 
                     pos = mullion.position;
 
-                    if (current_section.sections.length) {
+                    if (current_section.sections.length && !loaded) {
                         saved_mullion = current_section;
                     }
 
                     result[type].push(data);
+
+                    // Store resulted data to groups
+                    if (mullion.position in grouped) {
+                        grouped[mullion.position].push( data );
+                    } else {
+                        grouped[mullion.position] = [data];
+                    }
+                });
+
+                result[type].forEach(function (mullion, i) {
+                    var pos_ = (mullion.index === 1) ? mullion.offset : mullion.offset + mullion.size;
+
+                    var siblings = grouped[pos_].filter(function (sibling) {
+                            return (sibling.section_id !== mullion.section_id);
+                        });
+
+                    result[type][i].siblings = siblings;
                 });
             });
             /* eslint-enable max-nested-callbacks */
+
+            // Switch edges for frame dimension-point for vertical mullions if it's outside view
+            if (module.getState('openingView') && result.vertical.length > 0) {
+                var firstState = result.vertical[0].edges[0].state;
+                var secondState = result.vertical[ result.vertical.length - 1 ].edges[1].state;
+
+                result.vertical[0].edges[0].state = secondState;
+                result.vertical[ result.vertical.length - 1 ].edges[1].state = firstState;
+            }
 
             return result;
         },
@@ -423,16 +471,12 @@ var app = app || {};
 
             // Draw metrics
             var metric = view[ drawingAccordance[type] ](params.width, params.height, params.methods);
-            // Draw controls
-            var controls = view.createMullionControls( mullion, params.width, params.height, type );
-
             // Apply corrections to position
             metric.position( params.position );
-            controls.position( params.position );
 
             // Add metric to the group:
             // We using group to make its position relative to the basic position
-            group.add( metric, controls );
+            group.add( metric );
 
             return group;
         },
@@ -443,6 +487,59 @@ var app = app || {};
                 size: 0,
                 pos: 0
             };
+        },
+        getControls: function (mullions) {
+            var result = {};
+
+            _.each(mullions, function (mGroup, type) {
+                var siblings = {};
+
+                result[type] = [];
+
+                mGroup.forEach(function (mullion) {
+                    if (mullion.gap) { return; }
+
+                    if ( !(mullion.position in siblings) ) {
+                        // Store mullion id into siblings array
+                        siblings[mullion.position] = [mullion.id];
+
+                        var mType = model.getInvertedDivider(type);
+                        var section = model.getSection( mullion.id );
+                        var state = section.measurements.mullion[mType][0];
+
+                        // Change state if this is vertical control and it's outside view
+                        if (type === 'vertical' && module.getState('openingView')) {
+                            state = (state === 'min') ? 'max' :
+                                    (state === 'max') ? 'min' :
+                                    'center';
+                        }
+
+                        var data = {
+                            position: mullion.position,
+                            state: state,
+                            kind: 'mullion',
+                            type: mType,
+                            sections: [mullion.id]
+                        };
+
+                        result[type].push(data);
+                    } else {
+                        // Store mullion id into siblings array and skip them
+                        // If it has an unique id
+                        if (siblings[mullion.position].indexOf( mullion.id ) === -1) {
+                            siblings[mullion.position].push( mullion.id );
+                        }
+                    }
+                });
+
+                // Linking siblings
+                result[type].forEach(function (mullion, i) {
+                    result[type][i].sections = siblings[mullion.position];
+                });
+
+            });
+
+            return result;
         },
         getMullionCorrection: function (type, value, index, correction) {
             value = value || 0;
@@ -474,6 +571,10 @@ var app = app || {};
         getFrameCorrectionSum: function (type, correction) {
             var root_section = model.get('root_section');
             var measurementData = root_section.measurements.frame;
+
+            if (type === 'horizontal' && module.getState('openingView')) {
+                measurementData[type].reverse();
+            }
 
             correction = correction || this.getCorrection();
 
@@ -532,152 +633,239 @@ var app = app || {};
         },
         createWholeControls: function (section_id, width, height, type) {
             var group = new Konva.Group();
+            // prepare size and position
+            var size_1 = 0;
+            var size_2 = 0;
+            var positions = [];
 
-            if (!module.getState('preview')) {
-                var controlSize = metricSize / 4;
+            if (type === 'vertical' || type === 'vertical_invisible') {
+                size_1 = width;
+                size_2 = controlSize;
 
-                // prepare size and position
-                var size_1 = 0;
-                var size_2 = 0;
-                var position = {};
+                positions.push({});
+                positions.push({y: height - controlSize});
+            } else {
+                size_1 = controlSize;
+                size_2 = height;
 
-                if (type === 'vertical' || type === 'vertical_invisible') {
-                    size_1 = width;
-                    size_2 = controlSize;
+                positions.push({});
+                positions.push({x: width - controlSize});
+            }
 
-                    position.y = height - controlSize;
-                } else {
-                    size_1 = controlSize;
-                    size_2 = height;
+            // Make both controls recursively
+            for (var i = 0; i < 2; i++) {
+                // Create control
+                var control = this.createControl( size_1, size_2 );
+                var index = (!module.getState('openingView')) ? i : (i + 1) % 2;
 
-                    position.x = width - controlSize;
-                }
+                // Attach event
+                control.on('click', this.createMeasurementSelectFrame.bind(this, section_id, 'frame', type, index));
 
-                // Make both controls recursively
-                for (var i = 0; i < 2; i++) {
-                    // Create control
-                    var control = this.createControl( size_1, size_2 );
+                // Position right/bottom control
+                control.position( positions[i] );
 
-                    // Attach event
-                    control.on('click', this.createMeasurementSelectFrame.bind(this, section_id, 'frame', type, i));
-
-                    // Position right/bottom control
-                    if ( i === 1 ) {
-                        control.position( position );
-                    }
-
-                    group.add( control );
-                }
+                group.add( control );
             }
 
             return group;
         },
-        createMullionControls: function (mullion, width, height, type) {
+        createMullionControls: function (controls, width, height) {
             var view = this;
             var group = new Konva.Group();
 
-            if (!module.getState('preview')) {
-                var controlSize = metricSize / 4;
-                var position = { x: 0, y: 0 };
+            /* eslint-disable max-nested-callbacks */
+            var root_section = model.get('root_section');
 
-                if (type === 'horizontal') {
-                    position.y += height - controlSize;
-                    height = controlSize;
-                } else {
-                    position.x += width - controlSize;
-                    width = controlSize;
-                }
+            _.each(controls, function (cGroup, type) {
 
-                mullion.edges.forEach(function (edge, i) {
-                    var control = view.createControl( width, height );
-                    // Attach event
-                    control.on('click', view.createMeasurementSelectMullion.bind(view, mullion, type, i));
+                cGroup.forEach(function (controlData) {
+                    var position = { x: 0, y: 0 };
+                    var correction = view.getCorrection();
+                    var width_;
+                    var height_;
 
-                    if (i === 1) {
-                        control.position( position );
+                    if (controlData.state !== 'center') {
+                        correction.size = (controlData.state === 'min') ?
+                                        -correction.mullion_width : correction.mullion_width;
                     }
 
+                    if (type === 'horizontal') {
+                        position.y = 0 +
+                            controlData.position * ratio +
+                            correction.size * ratio -
+                            controlSize / 2;
+                        position.x = -metricSize;
+
+                        width_ = metricSize;
+                        height_ = controlSize;
+                    } else {
+                        position.x += 0 +
+                            controlData.position * ratio +
+                            correction.size * ratio -
+                            controlSize / 2;
+                        position.y = height;
+
+                        width_ = controlSize;
+                        height_ = metricSize;
+                    }
+
+                    var control = view.createControl( width_, height_ );
+                    // Attach events
+                    control.on('click', view.createMeasurementSelectMullion.bind(view, controlData)
+                    );
+
+                    control.position( position );
                     group.add(control);
                 });
 
-            }
+                // Draw controls for frame
+                if (cGroup.length) {
+                    var invertedType = model.getInvertedDivider( type );
+                    var correction = view.getFrameCorrectionSum( invertedType );
+
+                    var cor = {
+                        size: correction.size,
+                        pos: correction.pos
+                    };
+
+                    if (invertedType === 'horizontal') {
+                        cor = {
+                            size: correction.size,
+                            pos: (!module.getState('openingView')) ?
+                                    correction.pos :
+                                    (correction.pos === 0) ?
+                                    correction.size * -1 :
+                                    (correction.pos * -1 === correction.size) ?
+                                    correction.pos + correction.size :
+                                    correction.pos
+                        };
+                    }
+
+                    cor.size = cor.size * ratio;
+                    cor.pos = cor.pos * ratio;
+
+                    var params = {
+                        width: (invertedType === 'vertical') ? metricSize : width + cor.size,
+                        height: (invertedType === 'vertical') ? height + cor.size : metricSize,
+                        position: {
+                            x: (invertedType === 'vertical') ? metricSize * -1 : 0 + cor.pos,
+                            y: (invertedType === 'vertical') ? 0 + cor.pos : height
+                        }
+                    };
+
+                    console.log( height, correction, cor );
+
+                    var frameControls = view.createWholeControls(
+                        root_section.id,
+                        params.width,
+                        params.height,
+                        invertedType
+                    );
+
+                    frameControls.position( params.position );
+
+                    group.add( frameControls );
+                }
+
+            });
+            /* eslint-enable max-nested-callbacks */
 
             return group;
         },
-        createMeasurementSelectUI: function (event, section, states, state, setter) {
-            // Two variables to fasten drop to default value if nothing selected
-            var anyStateSelected = false;
-            var defaultState = null;
+        createMeasurementSelectUI: function (event, opts) {
+            var view = this;
+            var contolSize = metricSize / 4;
+
+            var min = 'min';
+            var max = 'max';
+
+            if (opts.type !== 'vertical' && opts.kind === 'frame' && module.getState('openingView')) {
+                min = 'max';
+                max = 'min';
+            }
+
+            view.updateLayer();
 
             // View
-            var $wrap = $('<div>', {class: 'dimension-point-wrapper'});
-            var container = $(module.get('stage').container());
-            var containerPos = container.position();
+            var target = event.target;
+            var sign = (opts.kind === 'frame' && opts.index === 1) ? -1 : 1;
+            var origPosition = target.getAbsolutePosition();
+            var posParam = (opts.type === 'vertical') ? 'y' : 'x';
+            var width = (opts.type === 'vertical') ? metricSize : contolSize;
+            var height = (opts.type === 'vertical') ? contolSize : metricSize;
+            var offset = (opts.kind === 'mullion') ?
+                          view.getCorrection().mullion_width : view.getCorrection().frame_width;
+            var posCorrection = (opts.type === 'vertical') ? target.height() : target.width();
 
-            $wrap
-                .css({
-                    position: 'absolute',
-                    top: event.target.getAbsolutePosition().y + containerPos.top,
-                    left: event.target.getAbsolutePosition().x + containerPos.left
-                })
-                .appendTo(container);
+            // Hide control for select a dimension point
+            target.destroy();
 
-            console.log('!', $wrap);
+            // First of all, we re checking current state and correct position of "zero point"
+            // So "zero point" should be the same for any current state
+            if (
+                opts.kind === 'frame' && opts.state === min
+            ) {
+                var isMax = (opts.state === max) ? 1 : -1;
 
-            states.forEach(function (opt) {
-                var selected = false;
+                origPosition[posParam] += posCorrection * sign * isMax;
+            } else if (opts.kind === 'mullion' && opts.state !== 'center') {
+                origPosition[posParam] += (opts.state === min) ? posCorrection : posCorrection * -1;
+            }
+            // Create controls
+            opts.states.forEach(function (opt) {
+                if (opt.value === opts.state) { return; }
 
-                if (state === opt.value) {
-                    selected = true;
-                    anyStateSelected = true;
+                var value = opt.value;
+
+                if (opts.type !== 'vertical' && opts.kind === 'mullion' && module.getState('openingView')) {
+                    value = model.getInvertedMeasurementVal( opt.value );
                 }
 
-                if (opt.default) {
-                    defaultState = opt;
-                }
-
-                var $label = $('<label>', {text: opt.viewname}).appendTo($wrap);
-
-                $('<input>', {
-                    type: 'radio',
-                    name: 'dimension-point-' + section.id,
-                    id: 'dimension-point-' + section.id + '-' + opt.value,
-                    value: opt.value,
-                    checked: selected
-                })
-                .prependTo($label)
-                .on('change', function () {
-                    setter( $(this).val() );
-                    // We should save data in another form...
-                    model.setSectionMeasurements( section.id, section.measurements );
-                    $wrap.remove();
+                var control = new Konva.Rect({
+                    fill: '#33CE10',
+                    opacity: 0.5,
+                    width: width,
+                    height: height
                 });
+                var controlPosition = _.clone(origPosition);
+                var correction = 0;
+
+                // Correcting position of controls
+                if (opts.kind === 'frame') {
+                    correction = (opt.value === min) ? offset * sign : 0;
+                } else if (opts.kind === 'mullion') {
+                    controlPosition[posParam] += (opt.value === min) ? -1 * posCorrection / 2 :
+                                                 (opt.value === max) ? posCorrection / 2 :
+                                                 0;
+
+                    correction = (opt.value === min) ? offset * -1 :
+                                 (opt.value === max) ? offset :
+                                 0;
+                }
+
+                controlPosition[posParam] += (correction * ratio);
+                control.position( controlPosition );
+
+                var secondArg = (opts.control) ? opts.control : opts.section.id;
+
+                // Attach events
+                control.on('click', function () {
+                    opts.setter(value, secondArg);
+                    view.updateLayer();
+                });
+                control.on('mouseover', function () {
+                    control.opacity(0.75);
+                    view.updateLayer();
+                });
+                control.on('mouseout', function () {
+                    control.opacity(0.5);
+                    view.updateLayer();
+                });
+
+                view.layer.add( control );
             });
 
-            // If no option wasn't selected вАФ select default option
-            if (anyStateSelected === false && defaultState !== null) {
-                setter( defaultState.value );
-                model.setSectionMeasurements( section.id, section.measurements );
-
-                $('#dimension-point-' + section.id + '-' + defaultState.value).prop('checked', true);
-            }
-
-            // Close it with click everywhere
-            function cancelIt( evt ) {
-                if (
-                    evt.keyCode === 27 ||
-                    $(evt.target).hasClass('dimension-point-wrapper') === false &&
-                    $(evt.target).parents('.dimension-point-wrapper').length === 0
-                ) {
-                    $wrap.remove();
-                    $('body').off('click', cancelIt);
-                }
-            }
-
-            // hack to prevent
-            setTimeout( function () {
-                $('body').on('click tap keyup', cancelIt);
-            }, 50);
+            view.layer.draw();
         },
         createMeasurementSelectFrame: function (section_id, mType, type, index, event) {
             var view = this;
@@ -687,23 +875,51 @@ var app = app || {};
             // Get current state of dimension-point
             var state = section.measurements[mType][type][index];
 
-            return view.createMeasurementSelectUI(event, section, states, state, function (val) {
-                section.measurements[mType][type][index] = val;
-            });
-        },
-        createMeasurementSelectMullion: function (mullion, type, i, event) {
-            var view = this;
-            var edge = mullion.edges[i];
-            var section = model.getSection( edge.section_id );
-            // Get available states
-            var states = model.getMeasurementStates( edge.type );
-            // Get current state of dimension-point
-            var state = edge.state;
-            var invertedType = model.getInvertedDivider( type );
+            var opts = {
+                kind: 'frame',
+                type: type,
+                section: section,
+                states: states,
+                state: state,
+                index: index,
+                setter: function (val, id) {
+                    section.measurements[mType][type][index] = val;
 
-            return view.createMeasurementSelectUI(event, section, states, state, function (val) {
-                section.measurements[edge.type][invertedType][edge.index] = val;
-            });
+                    model.setSectionMeasurements( id, section.measurements );
+                }
+            };
+
+            return view.createMeasurementSelectUI(event, opts);
+        },
+        createMeasurementSelectMullion: function (control, event) {
+            var view = this;
+
+            // Get available states
+            var states = model.getMeasurementStates( 'mullion' );
+            // Get current state of dimension-point
+            var state = control.state;
+
+            var opts = {
+                kind: 'mullion',
+                type: control.type,
+                control: control,
+                states: states,
+                state: state,
+                setter: function (val, control_) {
+                    var invertedVal = model.getInvertedMeasurementVal( val );
+
+                    _.each(control_.sections, function (section_id) {
+                        var section = model.getSection( section_id );
+
+                        section.measurements[control.kind][control.type][0] = val;
+                        section.measurements[control.kind][control.type][1] = invertedVal;
+
+                        model.setSectionMeasurements( section_id, section.measurements );
+                    });
+                }
+            };
+
+            return view.createMeasurementSelectUI(event, opts);
         },
         createWholeMetrics: function (mullions, width, height) {
             var group = new Konva.Group();
@@ -732,11 +948,9 @@ var app = app || {};
                 x: -metricSize * (rows.horizontal + 1),
                 y: 0 + (vCorrection.pos * ratio)
             };
-            var vControls = this.createWholeControls(root_section.id, metricSize, vHeight, 'vertical');
 
             verticalWholeMertic.position(vPosition);
-            vControls.position(vPosition);
-            group.add(verticalWholeMertic, vControls);
+            group.add(verticalWholeMertic);
 
             // Horizontal
             var hWidth = width + (hCorrection.size * ratio);
@@ -744,20 +958,29 @@ var app = app || {};
                 setter: function (val) {
                     val -= hCorrection.size;
                     model.setInMetric('width', val, 'mm');
-                }.bind(this),
+                },
                 getter: function () {
                     return model.getInMetric('width', 'mm') + hCorrection.size;
-                }.bind(this)
+                }
             });
+
             var hPosition = {
                 x: 0 + (hCorrection.pos * ratio),
                 y: height + rows.vertical * metricSize
             };
-            var hControls = this.createWholeControls(root_section.id, hWidth, metricSize, 'horizontal');
 
             horizontalWholeMertic.position(hPosition);
-            hControls.position(hPosition);
-            group.add(horizontalWholeMertic, hControls);
+            group.add(horizontalWholeMertic);
+
+            // Create controls
+            if (!module.getState('isPreview')) {
+                var vControls = this.createWholeControls(root_section.id, metricSize, vHeight, 'vertical');
+                var hControls = this.createWholeControls(root_section.id, hWidth, metricSize, 'horizontal');
+
+                vControls.position(vPosition);
+                hControls.position(hPosition);
+                group.add(vControls, hControls);
+            }
 
             return group;
         },

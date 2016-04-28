@@ -810,7 +810,8 @@ var app = app || {};
                 result.push({
                     text: text,
                     position: position,
-                    size: size
+                    size: size,
+                    id: mainSection.id
                 });
 
             }
