@@ -17,6 +17,10 @@ var app = app || {};
             this.parent = parent;
             this.parent.on('update', this.update);
 
+            this.model = parent.get('model');
+            this.stage = parent.get('stage');
+            this.metricSize = parent.get('metricSize');
+
             // Calculate sizes: ratio, screenSize, centerPosition
             // Get sizes
             var sizes = this.getSizes();
@@ -66,9 +70,9 @@ var app = app || {};
         },
         // Calculate ratio
         getSizes: function () {
-            var model = parent.get('model');
-            var stage = parent.get('stage');
-            var metricSize = parent.get('metricSize');
+            var model = this.model;
+            var stage = this.stage;
+            var metricSize = this.metricSize;
 
             var frameWidth = model.getInMetric('width', 'mm');
             var frameHeight = model.getInMetric('height', 'mm');

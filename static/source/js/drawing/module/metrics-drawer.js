@@ -753,8 +753,6 @@ var app = app || {};
                         }
                     };
 
-                    console.log( height, correction, cor );
-
                     var frameControls = view.createWholeControls(
                         root_section.id,
                         params.width,

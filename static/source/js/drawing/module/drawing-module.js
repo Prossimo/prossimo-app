@@ -37,7 +37,10 @@ var app = app || {};
             // Assign model
             if ('model' in opts) {
                 this.assignModel( opts.model );
+            } else {
+                throw new Error('DrawingModule can\'t start without defined Model!');
             }
+
             // Check for Konva.Stage or create it
             if ('stage' in opts && 'nodeType' in opts.stage && opts.stage.nodeType === 'Stage') {
                 stage = opts.stage;
@@ -54,7 +57,8 @@ var app = app || {};
 
             this.setState({
                 hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode'),
-                inchesDisplayMode: project_settings && project_settings.get('inches_display_mode')
+                inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
+                isPreview: ('preview' in opts && opts.preview) ? opts.preview : false
             }, false);
 
             // Default styles
@@ -107,6 +111,7 @@ var app = app || {};
             this.define( opts );
         },
         onStop: function () {
+            app.App.module('DrawingModule.Composer').stop();
             this.unbindModel();
         },
 
@@ -214,9 +219,93 @@ var app = app || {};
         deselectAll: function (preventUpdate) {
             this.setState('selected:mullion', null, preventUpdate);
             this.setState('selected:sash', null, preventUpdate);
+        },
+        // Get result for preview method: canvas / base64 / image
+        getCanvas: function () {
+            return this.get('stage').container();
+        },
+        getBase64: function () {
+            return this.get('stage').toDataURL();
+        },
+        getImage: function () {
+            var img = new Image();
+
+            img.src = this.get('stage').toDataURL();
+
+            return img;
         }
     });
 
     app.DrawingModule = app.App.module('DrawingModule', module);
+
+    app.preview = function (unitModel, options) {
+
+        var result;
+        var defaults = {
+            width: 300,
+            height: 300,
+            mode: 'base64',
+            position: 'inside',
+            metricSize: 50,
+            layers: {}
+        };
+
+        options = _.defaults({}, options, defaults);
+
+        var full_root_json_string = JSON.stringify(unitModel.generateFullRoot());
+        var options_json_string = JSON.stringify(options);
+
+        //  If we already got an image for the same full_root and same options,
+        //  just return it from our preview cache
+        if (
+            unitModel.preview && unitModel.preview.result &&
+            unitModel.preview.result[options_json_string] &&
+            full_root_json_string === unitModel.preview.full_root_json_string
+        ) {
+            return unitModel.preview.result[options_json_string];
+        }
+
+        //  If full root changes, preview cache should be erased
+        if (
+            !unitModel.preview ||
+            !unitModel.preview.result ||
+            full_root_json_string !== unitModel.preview.full_root_json_string
+        ) {
+            unitModel.preview = {};
+            unitModel.preview.result = {};
+        }
+
+        app.DrawingModule.start({
+            model: unitModel,
+            layers: options.layers,
+            metricSize: options.metricSize
+        });
+
+        if ( _.indexOf(['inside', 'outside'], options.position) !== -1 ) {
+            app.DrawingModule.setState({
+                insideView: options.position === 'inside',
+                openingView: options.position === 'inside' && !unitModel.isOpeningDirectionOutward() ||
+                    options.position === 'outside' && unitModel.isOpeningDirectionOutward(),
+                inchesDisplayMode: options.inchesDisplayMode,
+                hingeIndicatorMode: options.hingeIndicatorMode
+            }, false);
+        }
+
+        if (options.mode === 'canvas') {
+            result = app.DrawingModule.getCanvas();
+        } else if (options.mode === 'base64') {
+            result = app.DrawingModule.getBase64();
+        } else if (options.mode === 'image') {
+            result = app.DrawingModule.getImage();
+        }
+
+        unitModel.preview.full_root_json_string = full_root_json_string;
+        unitModel.preview.result[options_json_string] = result;
+
+        // clean
+        app.DrawingModule.stop();
+
+        return result;
+    };
 
 })();
