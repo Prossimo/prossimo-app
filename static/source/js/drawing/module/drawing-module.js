@@ -239,7 +239,6 @@ var app = app || {};
     app.DrawingModule = app.App.module('DrawingModule', module);
 
     app.preview = function (unitModel, options) {
-
         var result;
         var defaults = {
             width: 300,

@@ -6,7 +6,6 @@ var app = app || {};
     var composer;
     var module;
     var model;
-    var metricSize;
     var ratio;
 
     app.Drawers = app.Drawers || {};
@@ -17,7 +16,6 @@ var app = app || {};
             this.layer = params.layer;
             this.stage = module.get('stage');
 
-            metricSize = params.metricSize;
             model = module.get('model');
             composer = app.App.module('DrawingModule.Composer');
         },
@@ -480,7 +478,6 @@ var app = app || {};
             var hasFrame = (sectionData.sashType !== 'fixed_in_frame');
             var frameWidth = hasFrame ? model.profile.get('sash_frame_width') : 0;
 
-
             var fillX;
             var fillY;
             var fillWidth;
@@ -632,7 +629,7 @@ var app = app || {};
                         typeResult &&
                         (
                             (module.getState('insideView')) ||
-                            (!module.getState('insideView')&& model.profile.hasOutsideHandle())
+                            (!module.getState('insideView') && model.profile.hasOutsideHandle())
                         )
                 );
 

@@ -245,7 +245,6 @@ var app = app || {};
                     var edges = view.getMeasurementEdges( real_section.id, invertedType );
                     var size = (mullion.position - pos);
 
-
                     var data = {
                         section_id: mullion.id,
                         offset: pos,
