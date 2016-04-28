@@ -53,7 +53,8 @@ var app = app || {};
             var project_settings = app.settings && app.settings.getProjectSettings();
 
             this.setState({
-                hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode')
+                hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode'),
+                inchesDisplayMode: project_settings && project_settings.get('inches_display_mode')
             }, false);
 
             // Default styles
@@ -67,8 +68,21 @@ var app = app || {};
                 fillings: {
 
                 },
-                labels: {
-
+                measurements: {
+                    label: {
+                        fill: 'white',
+                        stroke: 'grey',
+                        strokeWidth: 0.5,
+                        padding: 4,
+                        color: 'black',
+                        fontSize: 11,
+                        fontSize_big: 12,
+                        fontFamily: 'pt-sans'
+                    },
+                    arrows: {
+                        stroke: 'grey',
+                        strokeWidth: 0.5
+                    }
                 },
                 indexes: {
                     align: 'center',

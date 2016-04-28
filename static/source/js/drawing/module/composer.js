@@ -53,11 +53,6 @@ var app = app || {};
                     name: 'metrics',
                     DrawerClass: app.Drawers.MetricsDrawer,
                     zIndex: 1
-                },
-                controls: {
-                    name: 'controls',
-                    DrawerClass: app.Drawers.ControlsDrawer,
-                    zIndex: 2
                 }
             };
 

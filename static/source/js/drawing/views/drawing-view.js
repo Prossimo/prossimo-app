@@ -194,6 +194,7 @@ var app = app || {};
 
             this.model.splitSection(this.state.selectedSashId, divider);
             this.deselectAll();
+            app.DrawingModule.deselectAll();
         },
         handleChangeSashTypeClick: function (e) {
             this.$('.popup-wrap').hide();

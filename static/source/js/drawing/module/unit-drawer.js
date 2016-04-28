@@ -979,7 +979,7 @@ var app = app || {};
                     ctx.fillStrokeShape(this);
                 }
             });
-        },
+        }
 
     });
 
