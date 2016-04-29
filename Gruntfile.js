@@ -85,10 +85,7 @@ module.exports = function (grunt) {
     ];
 
     var test_data_js_files = [
-        'test/data/test-data-customer-images.js',
-        'test/data/test-data-root-sections.js',
-        'test/data/test-data-settings.js',
-        'test/data/test-data-project.js'
+        'test/data/test-data-no-backend-fixtures.js'
     ];
 
     grunt.initConfig({
