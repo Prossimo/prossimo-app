@@ -147,7 +147,7 @@ var app = app || {};
                 openingView: this.isOpeningView()
             });
 
-            app.DrawingModule.setState({
+            this.module.setState({
                 insideView: this.isInsideView(),
                 openingView: this.isOpeningView()
             });
@@ -197,7 +197,7 @@ var app = app || {};
 
             this.model.splitSection(this.state.selectedSashId, divider);
             this.deselectAll();
-            app.DrawingModule.deselectAll();
+            this.module.deselectAll();
         },
         handleChangeSashTypeClick: function (e) {
             this.$('.popup-wrap').hide();
@@ -247,14 +247,13 @@ var app = app || {};
                 size: 10
             });
 
-            app.DrawingModule.start({
+            this.module = new app.DrawingModule({
                 model: this.model,
                 stage: this.stage,
-                layers: {
-                    // controls: false
-                },
+                layers: {},
                 metricSize: metricSize
             });
+
             this.bindModuleEvents();
         },
 
@@ -267,17 +266,17 @@ var app = app || {};
                 this.glazing_view.destroy();
             }
 
-            app.DrawingModule.stop();
+            delete this.module;
         },
 
         bindModuleEvents: function () {
-            app.DrawingModule.on('state:selected:mullion', function (data) {
+            this.module.on('state:selected:mullion', function (data) {
                 this.deselectAll();
                 this.setState({
                     selectedMullionId: data.newValue
                 });
             }.bind(this));
-            app.DrawingModule.on('state:selected:sash', function (data) {
+            this.module.on('state:selected:sash', function (data) {
                 this.deselectAll();
                 this.setState({
                     selectedSashId: data.newValue
@@ -285,8 +284,8 @@ var app = app || {};
             }.bind(this));
         },
         unbindModuleEvents: function () {
-            app.DrawingModule.off('state:selected:mullion');
-            app.DrawingModule.off('state:selected:sash');
+            this.module.off('state:selected:mullion');
+            this.module.off('state:selected:sash');
         },
 
         serializeData: function () {

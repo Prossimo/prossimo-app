@@ -3,7 +3,6 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var composer;
     var module;
     var model;
     var ratio;
@@ -11,13 +10,12 @@ var app = app || {};
     app.Drawers = app.Drawers || {};
     app.Drawers.UnitDrawer = Backbone.KonvaView.extend({
         initialize: function (params) {
-            module = app.DrawingModule;
+            module = params.builder;
 
             this.layer = params.layer;
-            this.stage = module.get('stage');
+            this.stage = params.stage;
 
             model = module.get('model');
-            composer = app.App.module('DrawingModule.Composer');
         },
         el: function () {
             var group = new Konva.Group();
@@ -25,8 +23,7 @@ var app = app || {};
             return group;
         },
         render: function () {
-            // Get fresh raio from composer module
-            ratio = composer.getSizes().ratio;
+            ratio = module.get('ratio');
 
             // Clear all previous objects
             this.layer.destroyChildren();
@@ -104,8 +101,7 @@ var app = app || {};
             group.add( frameGroup );
             group.add( sectionGroup );
 
-            var sizes = composer.getSizes();
-            var center = sizes.center;
+            var center = module.get('center');
             // place unit on stage center
             group.position( center );
 
