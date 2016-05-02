@@ -3,7 +3,7 @@
         <h4>Current Profile</h4>
         <select name="profile-selector-dropdown" id="profile-selector-dropdown" class="selectpicker show-tick" title="Choose a profile" data-live-search="true">
             {{#each profile_list}}
-                <option {{#if is_selected }}selected{{/if}} value="{{ id }}">{{ profile_name }}</option>
+                <option {{#if is_selected }}selected{{/if}} value="{{ id }}">{{ name }}</option>
             {{/each}}
         </select>
     </div>

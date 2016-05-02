@@ -32,7 +32,7 @@ var app = app || {};
                     collection: this.collection,
                     columns: ['mark', 'quantity', 'width', 'height', 'drawing',
                         'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'description',
-                        'notes', 'exceptions', 'profile_name', 'system', 'external_color',
+                        'notes', 'exceptions', 'profile_id', 'system', 'external_color',
                         'internal_color', 'interior_handle', 'exterior_handle', 'hardware_type',
                         'lock_mechanism', 'glazing_bead', 'gasket_color',
                         'hinge_style', 'opening_direction', 'threshold',
@@ -307,6 +307,11 @@ var app = app || {};
                 },
                 glazing_bar_width: function (attr_name, val) {
                     return parseFloat(val);
+                },
+                profile_id: function (attr_name, val) {
+                    var profile_id = app.settings && app.settings.getProfileIdByName(val);
+
+                    return profile_id ? profile_id : null;
                 }
             };
 
@@ -486,9 +491,10 @@ var app = app || {};
                 supplier_discount: {
                     renderer: app.hot_renderers.getFormattedRenderer('percent')
                 },
-                profile_name: {
+                profile_id: {
                     type: 'dropdown',
-                    source: app.settings.getAvailableProfileNames()
+                    source: app.settings.getAvailableProfileNames(),
+                    renderer: app.hot_renderers.unitProfileRenderer
                 },
                 total_square_feet: {
                     readOnly: true,
@@ -762,7 +768,7 @@ var app = app || {};
                 description: 240,
                 notes: 240,
                 exceptions: 240,
-                profile_name: 200,
+                profile_id: 200,
                 system: 200,
                 external_color: 100,
                 internal_color: 100,

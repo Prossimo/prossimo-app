@@ -46,7 +46,7 @@ $(document).ready(function () {
             glazing_bar_width: 12,
             description: 'Tilt and turn inswing / fixed PVC',
             notes: 'Opening restriction cord included',
-            profile_name: 'Pinnacle uPVC (test)',
+            profile_id: 9991,
             internal_color: 'Dark grey matte laminate',
             external_color: 'Dark grey matte laminate',
             gasket_color: 'Black',
@@ -68,7 +68,7 @@ $(document).ready(function () {
             glazing_bar_width: 20,
             description: 'Tilt and turn inswing above / removable ac sash below. PVC',
             notes: 'Opening restriction cord included',
-            profile_name: 'Pinnacle Entry Door (test)',
+            profile_id: 9992,
             internal_color: 'Dark grey matte laminate',
             external_color: 'Dark grey matte laminate',
             gasket_color: 'Black',
@@ -87,7 +87,7 @@ $(document).ready(function () {
             height: 82,
             quantity: 1,
             description: 'TILT AND TURN INSWING/FIXED PVC',
-            profile_name: 'Pinnacle uPVC (test)',
+            profile_id: 9991,
             internal_color: 'Grey Laminate',
             external_color: 'Grey Laminate',
             glazing: 'Triple - U=.09 SGHC=.5 VT=.71',
@@ -98,7 +98,7 @@ $(document).ready(function () {
             width: 145,
             height: 90,
             quantity: 1,
-            profile_name: 'PE 78N HI Entry Door (test)',
+            profile_id: 9993,
             glazing: 'Triple Low Gain - Tempered',
             root_section: test_root_sections_data[2]
         },
@@ -107,7 +107,7 @@ $(document).ready(function () {
             width: 36.75,
             height: 72.75,
             quantity: 1,
-            profile_name: 'Pinnacle uPVC (test)',
+            profile_id: 9991,
             glazing: 'Triple Standard - Ug=.09 SGHC=.50 LT=71%',
             root_section: test_root_sections_data[3]
         }
@@ -172,6 +172,7 @@ $(document).ready(function () {
 
     var test_profiles_data = [
         {
+            id: 9991,
             name: 'Pinnacle uPVC (test)',
             frame_width: 70,
             mullion_width: 92,
@@ -182,6 +183,7 @@ $(document).ready(function () {
             no_backend: true
         },
         {
+            id: 9992,
             name: 'Pinnacle Entry Door (test)',
             unit_type: 'Patio Door',
             frame_width: 84,
@@ -195,6 +197,7 @@ $(document).ready(function () {
             no_backend: true
         },
         {
+            id: 9993,
             name: 'PE 78N HI Entry Door (test)',
             unit_type: 'Entry Door',
             frame_width: 74,

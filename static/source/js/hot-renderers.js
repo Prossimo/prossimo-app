@@ -175,6 +175,25 @@ var app = app || {};
             Handsontable.renderers.TextRenderer.apply(this, arguments);
 
             return td;
+        },
+        unitProfileRenderer: function (instance, td, row) {
+            var current_unit = instance.getSourceData().at(row) &&
+                instance.getSourceData().at(row);
+            var current_profile = current_unit && current_unit.profile;
+
+            if ( current_profile && current_profile.get('name') ) {
+                arguments[5] = current_profile.get('name');
+                Handsontable.renderers.AutocompleteRenderer.apply(this, arguments);
+            } else {
+                if ( current_unit && current_unit.get('profile_name') ) {
+                    arguments[5] = current_unit.get('profile_name');
+                }
+
+                Handsontable.renderers.AutocompleteRenderer.apply(this, arguments);
+                $(td).addClass('htInvalid');
+            }
+
+            return td;
         }
     };
 })();

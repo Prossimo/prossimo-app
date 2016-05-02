@@ -161,21 +161,26 @@ var app = app || {};
                 return item.get('name');
             });
         },
-        getProfileByNameOrNew: function (profile_name) {
-            var profile = this.profiles.findWhere({name: profile_name});
+        getProfileByIdOrDummy: function (profile_id) {
+            var profile = this.profiles.get(profile_id);
 
             return profile ? profile : new app.Profile({
                 is_dummy: true
             });
         },
-        getDefaultProfileName: function () {
-            var default_profile_name = '';
+        getProfileIdByName: function (profile_name) {
+            var profile = this.profiles.findWhere({name: profile_name});
+
+            return profile ? profile.get('id') : null;
+        },
+        getDefaultProfileId: function () {
+            var default_profile_id = 0;
 
             if ( this.profiles.length ) {
-                default_profile_name = this.profiles.at(0).get('name');
+                default_profile_id = this.profiles.at(0).get('id');
             }
 
-            return default_profile_name;
+            return default_profile_id;
         },
         getColors: function () {
             return COLORS;
