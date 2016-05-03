@@ -1,37 +1,55 @@
 var app = app || {};
 
+// LayerManager is a important and required part for DrawingModule
+// It creates, stores and working with layers into stage
+// And transfer keyboard events from view to drawers
+
 (function () {
     'use strict';
 
-    var defaultLayer = {
-        // Should be defined by user:
-        name: 'UnknownLayer',
-        DrawerClass: null,      // Backbone.KonvaView class
-        zIndex: 0,
-        isVisible: true
-        // Will be setted automatically in the addLayer method:
-        // layer: null,         // new Konva.Layer
-        // drawer: null         // new drawerClass({layer: layer})
-    };
-    var parent = app.App.module('DrawingModule.Composer');
-    var module = Marionette.Module.extend({
-        // Module common functions
-        initialize: function () {
-            // Make an object for holding layers
+    app.LayerManager = Marionette.Object.extend({
+        initialize: function (opts) {
             this.layers = {};
+
+            this.createLayers( opts );
+
+            // Start listening update on builder
+            this.listenTo( this.getOption('builder'), 'update', this.update);
         },
-        onStart: function () {
-            this.parent = parent;
-            this.parent.on('update', this.update);
-        },
-        onStop: function () {
-            this.parent.off('update', this.update);
-            this.each(function (layer) {
-                layer.drawer.remove();
+        // Create layers on init
+        createLayers: function (layerOpts) {
+            var layers = {
+                unit: {
+                    name: 'unit',
+                    DrawerClass: app.Drawers.UnitDrawer,
+                    zIndex: 0
+                },
+                metrics: {
+                    name: 'metrics',
+                    DrawerClass: app.Drawers.MetricsDrawer,
+                    zIndex: 1
+                }
+            };
+
+            _.each(layerOpts, function (value, key) {
+                if (key in layers) {
+                    layers[key].isVisible = value;
+                }
             });
+
+            this.addLayers(layers, this.getOption('stage'));
         },
         // Add/Remove/Get layers
         addLayer: function (opts, stage) {
+            var defaultLayer = {
+                name: 'UnknownLayer',
+                DrawerClass: null,      // Backbone.KonvaView class
+                zIndex: 0,
+                isVisible: true
+                // Will be setted automatically in the addLayer method:
+                // layer: null,         // new Konva.Layer
+                // drawer: null         // new drawerClass({layer: layer})
+            };
             var data = _.defaults(opts, defaultLayer);
 
             if (data.DrawerClass !== null) {
@@ -40,7 +58,9 @@ var app = app || {};
 
                 data.drawer = new data.DrawerClass({
                     layer: data.layer,
-                    metricSize: 50
+                    stage: this.getOption('stage'),
+                    builder: this.getOption('builder'),
+                    metricSize: this.getOption('metricSize')
                 });
                 this.layers[opts.name] = data;
             } else {
@@ -97,9 +117,22 @@ var app = app || {};
                     layer.drawer.render();
                 }
             });
+        },
+        // Handler
+        handleKeyEvents: function (event) {
+            var eventHandler = (event.type === 'keydown') ? 'onKeyDown' :
+                               (event.type === 'keyup') ? 'onKeyUp' :
+                               (event.type === 'keypress') ? 'onKeyPress' :
+                               null;
+
+            if (eventHandler !== null) {
+                this.each(function (layer) {
+                    if (typeof layer.drawer[eventHandler] === 'function') {
+                        layer.drawer[eventHandler](event);
+                    }
+                });
+            }
         }
     });
-
-    app.App.module('DrawingModule.Composer.LayerManager', module);
 
 })();
