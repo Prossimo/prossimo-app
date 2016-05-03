@@ -131,6 +131,21 @@ var app = app || {};
                     layer.drawer.render();
                 }
             });
+        },
+        // Handler
+        handleKeyEvents: function (event) {
+            var eventHandler = (event.type === 'keydown') ? 'onKeyDown' :
+                               (event.type === 'keyup') ? 'onKeyUp' :
+                               (event.type === 'keypress') ? 'onKeyPress' :
+                               null;
+
+            if (eventHandler !== null) {
+                this.each(function (layer) {
+                    if (typeof layer.drawer[eventHandler] === 'function') {
+                        layer.drawer[eventHandler](event);
+                    }
+                });
+            }
         }
     });
 
@@ -229,6 +244,7 @@ var app = app || {};
 
         // Apply options to the object & initialize the object
         assignStage: function (opts) {
+
             var stage;
             // Check for defined stage in opts
             if ('stage' in opts && 'nodeType' in opts.stage && opts.stage.nodeType === 'Stage') {
@@ -371,6 +387,12 @@ var app = app || {};
         bindModel: function (model) {
             this.set('model', model);
             this.listenTo(model, 'change', this.update);
+        },
+        // Handler
+        handleKeyEvents: function (event) {
+            if (this.getState('isPreview') === false && this.layerManager) {
+                this.layerManager.handleKeyEvents( event );
+            }
         },
         // Create private Konva.Stage (if it wasn't defined in options)
         createStage: function () {

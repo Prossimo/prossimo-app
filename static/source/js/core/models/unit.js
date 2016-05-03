@@ -578,6 +578,7 @@ var app = app || {};
             func(sectionToUpdate);
 
             this.persist('root_section', rootSection);
+            this.trigger('change', this);
         },
         setSectionSashType: function (sectionId, type) {
             if (!_.includes(SASH_TYPES, type)) {

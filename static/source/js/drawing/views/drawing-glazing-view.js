@@ -53,9 +53,8 @@ var app = app || {};
             this.stage = new Konva.Stage({
                 container: this.ui.$drawing.get(0)
             });
-            var stageSize = [570, window.innerHeight - 200];
 
-            this.callDrawer('updateSize', stageSize);
+            this.updateSize( 570, (window.innerHeight - 200) );
 
             this.layer = new Konva.Layer();
             this.stage.add(this.layer);
@@ -66,6 +65,8 @@ var app = app || {};
         updateCanvas: function () {
             // clear all previous objects
             this.layer.destroyChildren();
+
+            this.calculateRatio();
 
             // transparent background to detect click on empty space
             var back = new Konva.Rect({
@@ -87,29 +88,33 @@ var app = app || {};
 
             this.layer.draw();
         },
-        createSection: function () {
+        calculateRatio: function () {
             // we will add 0.5 pixel offset for better strokes
             var topOffset = 10 + 0.5;
+            var fillWidth = this.getSize().width;
+            var fillHeight = this.getSize().height;
+            var stageWidth = this.stage.width();
+            var stageHeight = this.stage.height();
+            var wr = (stageWidth - metricSize) / fillWidth;
+            var hr = (stageHeight - metricSize - topOffset) / fillHeight;
+
+            this.ratio = Math.min(wr, hr) * 0.95;
+        },
+        createSection: function () {
             var group = new Konva.Group({
                 x: 20,
                 y: 20
             });
 
+            // calculate width and height
             var fillWidth = this.getSize().width;
             var fillHeight = this.getSize().height;
 
-            // calculate ratio
-            var wr = (this.stage.width() - metricSize) / fillWidth;
-            var hr = (this.stage.height() - metricSize - topOffset) / fillHeight;
-            var ratio = Math.min(wr, hr) * 0.95;
-
             // zero position for children graphics
             var zeroPos = {
-                x: (0 + metricSize) / ratio,
+                x: (0 + metricSize) / this.ratio,
                 y: 0
             };
-
-            this.ratio = ratio;
 
             // creating graphics
             var frameGroup = this.createGlass({
@@ -131,8 +136,8 @@ var app = app || {};
             });
 
             // scale with ratio
-            frameGroup.scale({x: ratio, y: ratio});
-            bars.scale({x: ratio, y: ratio});
+            frameGroup.scale({x: this.ratio, y: this.ratio});
+            bars.scale({x: this.ratio, y: this.ratio});
 
             // adding to group
             group.add( frameGroup );
@@ -216,7 +221,7 @@ var app = app || {};
             };
             var barMetric;
 
-            var bars = this.callDrawer( 'getBarsWithSpaces', [this.section] );
+            var bars = this.getBarsWithSpaces(this.section);
 
             var defaultMethods = {
                 getter: function () {
@@ -304,15 +309,12 @@ var app = app || {};
         createVerticalMetrics: function ( params ) {
             var drawerParams = [params.metricSize, params.height * this.ratio, params.methods];
 
-            return this.callDrawer( 'createVerticalMetric', drawerParams );
+            return this.createVerticalMetric.apply(this, drawerParams);
         },
         createHorizontalMetrics: function ( params ) {
             var drawerParams = [params.width * this.ratio, params.metricSize, params.methods];
 
-            return this.callDrawer( 'createHorizontalMetric', drawerParams );
-        },
-        getDefaultMetricStyles: function () {
-            return this.callDrawer( 'getDefaultMetricStyles' );
+            return this.createHorizontalMetric.apply(this, drawerParams);
         },
         // duplicate of DrawingView.createInput
         // changed only appendTo and containerPos
@@ -435,7 +437,6 @@ var app = app || {};
         saveBars: function () {
             this.model.setSectionBars( this.section.id, this.section.bars );
             this.updateCanvas();
-            this.options.parent_view.updateCanvas();
         },
         onDestroy: function () {
             this.ui.$modal.remove();
@@ -506,15 +507,251 @@ var app = app || {};
                     .animate({left: 0}, (intDuration / intShakes) / 4);
             }
         },
-        callDrawer: function ( method, args ) {
-            var parent = this.options.parent_view;
-            var _args = args || [];
+        // Moved from DrawingView
+        getBarsWithSpaces: function ( section ) {
+            var bars = JSON.parse( JSON.stringify( section.bars ) );
 
-            if ( !(parent instanceof app.DrawingView && method in parent) ) {
-                throw new Error('There is no method `' + method + '` in parent Drawing_view');
+            _.each(bars, function ( group ) {
+                var spaceUsed = 0;
+
+                group.forEach(function ( bar ) {
+                    bar.space = bar.position - spaceUsed;
+                    spaceUsed += bar.space;
+                });
+            });
+
+            return bars;
+        },
+        updateSize: function (width, height) {
+            width = width || this.ui.$drawing.get(0).offsetWidth;
+            height = height || this.ui.$drawing.get(0).offsetHeight;
+            this.stage.width(width);
+            this.stage.height(height);
+        },
+        createVerticalMetric: function (width, height, params, styles) {
+            var arrowOffset = width / 2;
+            var arrowSize = 5;
+            var group = new Konva.Group();
+
+            // Define styles
+            styles = styles || {};
+            styles = _.defaults(styles, this.getDefaultMetricStyles());
+
+            var lines = new Konva.Shape({
+                sceneFunc: function (ctx) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(width, 0);
+
+                    ctx.moveTo(0, height);
+                    ctx.lineTo(width, height);
+
+                    ctx.stroke();
+                },
+                stroke: styles.arrows.stroke,
+                strokeWidth: styles.arrows.strokeWidth
+            });
+
+            var arrow = new Konva.Shape({
+                sceneFunc: function (ctx) {
+                    ctx.translate(arrowOffset, 0);
+
+                    ctx.beginPath();
+                    // top pointer
+                    ctx.moveTo(-arrowSize, arrowSize);
+                    ctx.lineTo(0, 0);
+                    ctx.lineTo(arrowSize, arrowSize);
+
+                    // line
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(0, height);
+
+                    // bottom pointer
+                    ctx.moveTo(-arrowSize, height - arrowSize);
+                    ctx.lineTo(0, height);
+                    ctx.lineTo(arrowSize, height - arrowSize);
+
+                    ctx.strokeShape(this);
+                },
+                stroke: styles.arrows.stroke,
+                strokeWidth: styles.arrows.strokeWidth
+            });
+
+            // left text
+            var labelMM = new Konva.Label();
+
+            labelMM.add(new Konva.Tag({
+                fill: styles.label.fill,
+                stroke: styles.label.stroke,
+                strokeWidth: styles.label.strokeWidth
+            }));
+            var textMM = new Konva.Text({
+                text: app.utils.format.dimension_mm(params.getter()),
+                padding: styles.label.padding,
+                fontFamily: styles.label.fontFamily,
+                fontSize: styles.label.fontSize,
+                fill: styles.label.color
+            });
+
+            labelMM.add(textMM);
+            labelMM.position({
+                x: width / 2 - textMM.width() / 2,
+                y: height / 2 + textMM.height() / 2
+            });
+
+            // left text
+            var labelInches = new Konva.Label();
+
+            labelInches.add(new Konva.Tag({
+                fill: styles.label.fill,
+                stroke: styles.label.stroke,
+                strokeWidth: styles.label.strokeWidth
+            }));
+            var inches = app.utils.convert.mm_to_inches(params.getter());
+            var val = app.utils.format.dimension(inches, 'fraction', this.state && this.state.inchesDisplayMode);
+            var textInches = new Konva.Text({
+                text: val,
+                padding: styles.label.padding,
+                fill: styles.label.color,
+                fontFamily: styles.label.fontFamily,
+                fontSize: styles.label.fontSize_big
+            });
+
+            labelInches.add(textInches);
+            labelInches.position({
+                x: width / 2 - textInches.width() / 2,
+                y: height / 2 - textInches.height() / 2
+            });
+
+            if (params.setter) {
+                labelInches.on('click tap', function () {
+                    this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
+                }.bind(this));
             }
 
-            return parent[method].apply(this, _args);
+            group.add(lines, arrow, labelInches, labelMM);
+            return group;
+        },
+        createHorizontalMetric: function (width, height, params, styles) {
+            var arrowOffset = height / 2;
+            var arrowSize = 5;
+            var group = new Konva.Group();
+
+            // Define styles
+            styles = styles || {};
+            styles = _.defaults(styles, this.getDefaultMetricStyles());
+
+            var lines = new Konva.Shape({
+                sceneFunc: function (ctx) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(0, height);
+
+                    ctx.moveTo(width, 0);
+                    ctx.lineTo(width, height);
+
+                    ctx.stroke();
+                },
+                stroke: styles.arrows.stroke,
+                strokeWidth: styles.arrows.strokeWidth
+            });
+
+            var arrow = new Konva.Shape({
+                sceneFunc: function (ctx) {
+                    // top pointer
+                    ctx.translate(0, arrowOffset);
+
+                    ctx.beginPath();
+                    ctx.moveTo(arrowSize, -arrowSize);
+                    ctx.lineTo(0, 0);
+                    ctx.lineTo(arrowSize, arrowSize);
+
+                    // line
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(width, 0);
+
+                    // bottom pointer
+                    ctx.moveTo(width - arrowSize, -arrowSize);
+                    ctx.lineTo(width, 0);
+                    ctx.lineTo(width - arrowSize, arrowSize);
+
+                    ctx.strokeShape(this);
+                },
+                stroke: styles.arrows.stroke,
+                strokeWidth: styles.arrows.strokeWidth
+            });
+
+            var labelMM = new Konva.Label();
+
+            labelMM.add(new Konva.Tag({
+                fill: styles.label.fill,
+                stroke: styles.label.stroke,
+                strokeWidth: styles.label.strokeWidth
+            }));
+
+            var textMM = new Konva.Text({
+                text: app.utils.format.dimension_mm(params.getter()),
+                padding: styles.label.padding,
+                fontFamily: styles.label.fontFamily,
+                fontSize: styles.label.fontSize,
+                fill: styles.label.color
+            });
+
+            labelMM.add(textMM);
+            labelMM.position({
+                x: width / 2 - textMM.width() / 2,
+                y: arrowOffset + textMM.height() / 2
+            });
+
+            var labelInches = new Konva.Label();
+
+            labelInches.add(new Konva.Tag({
+                fill: styles.label.fill,
+                stroke: styles.label.stroke,
+                strokeWidth: styles.label.strokeWidth
+            }));
+            var inches = app.utils.convert.mm_to_inches(params.getter());
+            var val = app.utils.format.dimension(inches, 'fraction', this.state && this.state.inchesDisplayMode);
+            var textInches = new Konva.Text({
+                text: val,
+                padding: styles.label.padding,
+                fill: styles.label.color,
+                fontFamily: styles.label.fontFamily,
+                fontSize: styles.label.fontSize_big
+            });
+
+            labelInches.add(textInches);
+            labelInches.position({
+                x: width / 2 - textInches.width() / 2,
+                y: arrowOffset - labelInches.height() / 2
+            });
+
+            if (params.setter) {
+                labelInches.on('click tap', function () {
+                    this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
+                }.bind(this));
+            }
+
+            group.add(lines, arrow, labelInches, labelMM);
+            return group;
+        },
+        getDefaultMetricStyles: function () {
+            return {
+                label: {
+                    fill: 'white',
+                    stroke: 'grey',
+                    strokeWidth: 0.5,
+                    padding: 4,
+                    color: 'black',
+                    fontSize: 11,
+                    fontSize_big: 12,
+                    fontFamily: 'pt-sans'
+                },
+                arrows: {
+                    stroke: 'grey',
+                    strokeWidth: 0.5
+                }
+            };
         }
     });
 

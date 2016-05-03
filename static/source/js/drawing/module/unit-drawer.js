@@ -75,6 +75,15 @@ var app = app || {};
         onBackClick: function () {
             this.deselectAll();
         },
+
+        // Keyboards handlers
+        onKeyDown: function (e) {
+            if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
+                this.removeSelected();
+            }
+        },
+
+        // Selections
         setSelection: function (event, type) {
             var origin = this.getSectionID(event.target);
             var untype = (type === 'sash') ? 'mullion' : 'sash';
@@ -86,6 +95,20 @@ var app = app || {};
         },
         deselectAll: function (preventUpdate) {
             module.deselectAll(preventUpdate);
+        },
+        removeSelected: function () {
+            var selectedMullionId = module.getState('selected:mullion');
+            var selectedSashId = module.getState('selected:sash');
+
+            if (selectedMullionId) {
+                model.removeMullion(selectedMullionId);
+            }
+
+            if (selectedSashId) {
+                model.removeSash(selectedSashId);
+            }
+
+            this.deselectAll();
         },
 
         // Create unit
