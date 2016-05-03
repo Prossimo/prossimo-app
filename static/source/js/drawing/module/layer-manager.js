@@ -11,46 +11,43 @@ var app = app || {};
         initialize: function (opts) {
             this.layers = {};
 
-            this.createLayers( opts );
+            this.createLayers( opts.layers );
 
             // Start listening update on builder
             this.listenTo( this.getOption('builder'), 'update', this.update);
         },
         // Create layers on init
         createLayers: function (layerOpts) {
-            var layers = {
+            var defaultLayers = {
                 unit: {
-                    name: 'unit',
                     DrawerClass: app.Drawers.UnitDrawer,
-                    zIndex: 0
+                    zIndex: 0,
+                    visible: true,
+                    active: true
                 },
                 metrics: {
-                    name: 'metrics',
                     DrawerClass: app.Drawers.MetricsDrawer,
-                    zIndex: 1
+                    zIndex: 1,
+                    visible: true,
+                    active: true
                 }
             };
 
-            _.each(layerOpts, function (value, key) {
-                if (key in layers) {
-                    layers[key].isVisible = value;
+            var layers = _.defaults(layerOpts, defaultLayers);
+
+            _.each(layerOpts, function (layer, key) {
+                if (key in layers && layer.active === false) {
+                    delete layers[key];
+                } else if (defaultLayers.hasOwnProperty(key)){
+                    _.defaults(layer, defaultLayers[key]);
                 }
             });
 
             this.addLayers(layers, this.getOption('stage'));
         },
         // Add/Remove/Get layers
-        addLayer: function (opts, stage) {
-            var defaultLayer = {
-                name: 'UnknownLayer',
-                DrawerClass: null,      // Backbone.KonvaView class
-                zIndex: 0,
-                isVisible: true
-                // Will be setted automatically in the addLayer method:
-                // layer: null,         // new Konva.Layer
-                // drawer: null         // new drawerClass({layer: layer})
-            };
-            var data = _.defaults(opts, defaultLayer);
+        addLayer: function (name, opts, stage) {
+            var data = opts;
 
             if (data.DrawerClass !== null) {
                 data.layer = new Konva.Layer();
@@ -62,16 +59,16 @@ var app = app || {};
                     builder: this.getOption('builder'),
                     metricSize: this.getOption('metricSize')
                 });
-                this.layers[opts.name] = data;
+                this.layers[name] = data;
             } else {
-                throw new Error('You must specify DrawerClass for a new layer (layer name: ' + data.name + ')');
+                throw new Error('You must specify DrawerClass for a new layer (layer name: ' + name + ')');
             }
 
             return data;
         },
         addLayers: function (layers, stage) {
-            _.each(layers, function (value) {
-                this.addLayer(value, stage);
+            _.each(layers, function (value, key) {
+                this.addLayer(key, value, stage);
             }.bind(this));
 
             return this.getLayers();
@@ -113,7 +110,7 @@ var app = app || {};
         },
         update: function () {
             this.each(function (layer) {
-                if (layer.isVisible) {
+                if (layer.visible) {
                     layer.drawer.render();
                 }
             });

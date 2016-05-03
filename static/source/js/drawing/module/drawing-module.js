@@ -2,18 +2,22 @@ var app = app || {};
 
 // This module starts manually with required parameters:
 // app.DrawingModule.start({
-//     model: model,            // link to the model
-//     stage: stage,            // link to the Konva.Stage or null
-//                              // if it's not defined — Module should create
-//                              // his own Konva.Stage and append it into
-//                              // invisible area on the page
-//     layers: {                // options of layer visibility
-//         unit: true,
-//         metrics: true
+//     model: model,                // link to the model
+//     stage: stage,                // link to the Konva.Stage or null
+//                                  // if it's not defined — Module should create
+//                                  // his own Konva.Stage and append it into
+//                                  // invisible area on the page
+//     layers: {                    // options of layers. Unit and Metrics layers is a default.
+//         unit: {
+//              visible: false,     // but it can be turned into invisible (it won't be rendered)
+//              active: false       // or it can be removed from layers list at all
+//         },
+//         metrics: {
+//              DrawerClass: app.Drawers.CustomMetricsDrawer, // also you can specify custom drawers
+//              zIndex: 10          // and specify zIndex (order of layers)
+//         }
 //     },
-//     singleSection: true,
-//     sectionId: 106,
-//     metricSize: 50          // define a custom metricSize
+//     metricSize: 50               // define a custom metricSize
 // });
 //
 // To end module:
@@ -228,10 +232,11 @@ var app = app || {};
             var params = {
                 stage: this.get('stage'),
                 metricSize: this.get('metricSize'),
-                builder: this
+                builder: this,
+                layers: {}
             };
 
-            _.extend(params, opts.layers);
+            _.extend(params.layers, opts.layers);
 
             this.layerManager = new app.LayerManager(params);
 
