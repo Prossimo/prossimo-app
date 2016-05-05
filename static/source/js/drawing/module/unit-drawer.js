@@ -745,10 +745,12 @@ var app = app || {};
             // #192: Reverse hinge indicator for outside view
             if ( module.getState('hingeIndicatorMode') === 'american' ) {
                 directionLine.scale({
-                    x: -1
+                    x: -1,
+                    y: -1
                 });
                 directionLine.move({
-                    x: section.glassParams.width
+                    x: section.glassParams.width,
+                    y: section.glassParams.height
                 });
             }
 
