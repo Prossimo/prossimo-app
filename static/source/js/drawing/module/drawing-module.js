@@ -1,7 +1,7 @@
 var app = app || {};
 
 // This module starts manually with required parameters:
-// app.DrawingModule.start({
+// new app.DrawingModule({
 //     model: model,                // link to the model
 //     stage: stage,                // link to the Konva.Stage or null
 //                                  // if it's not defined — Module should create
@@ -15,13 +15,17 @@ var app = app || {};
 //         metrics: {
 //              DrawerClass: app.Drawers.CustomMetricsDrawer, // also you can specify custom drawers
 //              zIndex: 10          // and specify zIndex (order of layers)
+//         },
+//         customLayer: {
+//              DrawerClass: app.Drawers.Custom // also you can add any number of custom layers
+//                                              // but it should have a unique key in layers object
+//                                              // and should have a link to any Drawer
 //         }
 //     },
+//     styles: {},                  // you can define custom styles. See assignDefaultStyles method.
+//     preview: false,              // use when you want to disable controls on metrics
 //     metricSize: 50               // define a custom metricSize
 // });
-//
-// To end module:
-// app.DrawingModule.stop();    // it should unbind events and etc
 
 (function () {
     'use strict';
@@ -220,8 +224,10 @@ var app = app || {};
                     fontSize: 15
                 }
             };
+
+            styles = app.utils.object.deep_extend(styles, opts.styles);
+
             // Assign styles
-            _.extend(styles, opts.styles);
             _.each(styles, function (style, name) {
                 this.set('style:' + name, style);
             }.bind(this));
