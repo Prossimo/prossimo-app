@@ -18,6 +18,12 @@ var app = app || {};
         },
         // Create layers on init
         createLayers: function (layerOpts) {
+            var defaultLayer = {
+                zIndex: 0,
+                visible: true,
+                active: true
+            };
+
             var defaultLayers = {
                 unit: {
                     DrawerClass: app.Drawers.UnitDrawer,
@@ -40,6 +46,8 @@ var app = app || {};
                     delete layers[key];
                 } else if (defaultLayers.hasOwnProperty(key)){
                     _.defaults(layer, defaultLayers[key]);
+                } else {
+                    _.defaults(layer, defaultLayer);
                 }
             });
 
@@ -57,7 +65,8 @@ var app = app || {};
                     layer: data.layer,
                     stage: this.getOption('stage'),
                     builder: this.getOption('builder'),
-                    metricSize: this.getOption('metricSize')
+                    metricSize: this.getOption('metricSize'),
+                    data: data.data
                 });
                 this.layers[name] = data;
             } else {
@@ -111,6 +120,7 @@ var app = app || {};
         update: function () {
             this.each(function (layer) {
                 if (layer.visible) {
+                    console.log('!');
                     layer.drawer.render();
                 }
             });

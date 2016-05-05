@@ -305,6 +305,14 @@ var app = app || {};
             this.setState('selected:mullion', null, preventUpdate);
             this.setState('selected:sash', null, preventUpdate);
         },
+        // Get layer to work directly with drawer, for example
+        getLayer: function (name) {
+            if (this.layerManager) {
+                return this.layerManager.getLayer(name);
+            }
+
+            return false;
+        },
         // Get result for preview method: canvas / base64 / image
         getCanvas: function () {
             return this.get('stage').container();

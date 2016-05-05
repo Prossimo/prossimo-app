@@ -71,6 +71,7 @@ module.exports = function (grunt) {
         'drawing/views/main-drawing-view.js',
         'drawing/views/drawing-view.js',
         'drawing/views/drawing-sidebar-view.js',
+        'drawing/module/glazing-drawer.js',
         'drawing/views/drawing-glazing-view.js',
         'drawing/views/undomanager.js',
         'quote/views/main-quote-view.js',
