@@ -261,7 +261,7 @@ var app = app || {};
                             a[prop] = b[prop];
                         }
                     }
-                } else {
+                } else if ( !(_.isUndefined(b) || _.isNull(b) || _.isNaN(b)) ) {
                     a = b;
                 }
 
