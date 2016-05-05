@@ -18,6 +18,9 @@ var app = app || {};
             this.layer = params.layer;
             this.stage = params.stage;
 
+            this.sectionId = params.data.sectionId;
+            this.ui = params.data.ui;
+
             metricSize = params.metricSize;
         },
         el: function () {
@@ -26,8 +29,8 @@ var app = app || {};
             return group;
         },
         render: function () {
-            if (this.section) {
-                console.log('render sect', this.section);
+            if (this.sectionId) {
+                this.section = model.getSection(this.sectionId);
 
                 ratio = module.get('ratio');
 
@@ -48,10 +51,6 @@ var app = app || {};
         },
         updateLayer: function () {
             this.layer.draw();
-        },
-        // VITAL METHOD: This drawer will work only after setting section
-        setSection: function (sectionId) {
-            this.section = model.getSection(sectionId);
         },
         // Get methods
         getBarsCount: function () {
@@ -496,7 +495,7 @@ var app = app || {};
                 strokeWidth: styles.label.strokeWidth
             }));
             var inches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(inches, 'fraction', this.state && this.state.inchesDisplayMode);
+            var val = app.utils.format.dimension(inches, 'fraction', module.getState('inchesDisplayMode'));
             var textInches = new Konva.Text({
                 text: val,
                 padding: styles.label.padding,
@@ -599,7 +598,7 @@ var app = app || {};
                 strokeWidth: styles.label.strokeWidth
             }));
             var inches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(inches, 'fraction', this.state && this.state.inchesDisplayMode);
+            var val = app.utils.format.dimension(inches, 'fraction', module.getState('inchesDisplayMode'));
             var textInches = new Konva.Text({
                 text: val,
                 padding: styles.label.padding,

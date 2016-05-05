@@ -106,8 +106,6 @@ var app = app || {};
             return this.undoManager.handler.redo();
         },
         handleCanvasKeyDown: function (e) {
-            e.preventDefault();
-
             if (this.module) {
                 this.module.handleKeyEvents(e);
             }
@@ -292,7 +290,8 @@ var app = app || {};
         },
         createGlazingPopup: function () {
             this.glazing_view = new app.DrawingGlazingPopup({
-                model: this.model
+                model: this.model,
+                mainModule: this.module
             });
         },
 
@@ -389,11 +388,11 @@ var app = app || {};
             }
 
             // Update glazing bars
-            if ( section.bars && section.bars[type] && section.bars[type].length ) {
-                view.glazing_view
-                    .setSection( section.id )
-                    .handleBarsNumberChange( type );
-            }
+            // if ( section.bars && section.bars[type] && section.bars[type].length ) {
+            //     view.glazing_view
+            //         .setSection( section.id )
+            //         .handleBarsNumberChange( type );
+            // }
 
             // If section has children — update them recursively
             if ( section.sections && section.sections.length ) {

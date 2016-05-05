@@ -79,6 +79,7 @@ var app = app || {};
         // Keyboards handlers
         onKeyDown: function (e) {
             if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
+                e.preventDefault();
                 this.removeSelected();
             }
         },

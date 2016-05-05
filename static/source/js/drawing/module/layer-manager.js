@@ -61,6 +61,7 @@ var app = app || {};
                 data.layer = new Konva.Layer();
                 stage.add( data.layer );
 
+                data.name = name;
                 data.drawer = new data.DrawerClass({
                     layer: data.layer,
                     stage: this.getOption('stage'),

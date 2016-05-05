@@ -28,8 +28,6 @@ var app = app || {};
                 keyboard: false,
                 show: false
             });
-
-            this.on('updateSection', this.onUpdate, this);
         },
         handleVBarsNumberChange: function () {
             this.handleBarsNumberChange( 'vertical' );
@@ -38,6 +36,7 @@ var app = app || {};
             this.handleBarsNumberChange( 'horizontal' );
         },
         handleBarsNumberChange: function ( type ) {
+
             if ( this.ui['$bar_' + type].val() < 0 ) {
                 this.ui['$bar_' + type].val(0);
                 this.showError();
@@ -53,25 +52,6 @@ var app = app || {};
                 container: this.ui.$drawing.get(0)
             });
 
-            this.module = new app.DrawingModule({
-                model: this.model,
-                stage: this.stage,
-                layers: {
-                    unit: {
-                        // active: false
-                        zIndex: 0
-                    },
-                    metrics: {
-                        active: false
-                    },
-                    glazing: {
-                        DrawerClass: app.Drawers.GlazingBarDrawer,
-                        zIndex: 1
-                    }
-                },
-                metricSize: metricSize
-            });
-
             this.updateSize( 570, (window.innerHeight - 200) );
         },
         onDestroy: function () {
@@ -84,9 +64,35 @@ var app = app || {};
             this.ui.$bar_vertical.val( this.getBarsCount().vertical );
             this.ui.$bar_horizontal.val( this.getBarsCount().horizontal );
 
-            this.module.getLayer('glazing').drawer.setSection( section_id );
+            if (this.module) {
+                this.module.destroy();
+            }
 
-            this.trigger('updateSection');
+            this.module = new app.DrawingModule({
+                model: this.model,
+                stage: this.stage,
+                layers: {
+                    unit: {
+                        active: false
+                    },
+                    metrics: {
+                        active: false
+                    },
+                    glazing: {
+                        DrawerClass: app.Drawers.GlazingBarDrawer,
+                        zIndex: 1,
+                        data: {
+                            sectionId: section_id,
+                            ui: {
+                                $body: this.ui.$body,
+                                $drawing: this.ui.$drawing
+                            }
+                        }
+                    }
+                },
+                metricSize: metricSize
+            });
+
             return this;
         },
         showModal: function () {
