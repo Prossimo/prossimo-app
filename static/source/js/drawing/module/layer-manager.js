@@ -120,7 +120,6 @@ var app = app || {};
         update: function () {
             this.each(function (layer) {
                 if (layer.visible) {
-                    console.log('!');
                     layer.drawer.render();
                 }
             });
