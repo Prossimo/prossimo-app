@@ -19,7 +19,7 @@ var app = app || {};
         'Flush Mount-Brushed Silver Metal Cover', 'Flush Mount-Brass Metal Cover'
     ];
     var GLAZING_BEAD_TYPES = ['Rounded', 'Square'];
-    var GLAZING_BAR_TYPES = ['Surface glued', 'Surface glued (w/spacer)', 'Between panes', 'True divided lite'];
+    var GLAZING_BAR_TYPES = ['Between panes', 'Surface glued', 'Surface glued (w/spacer)', 'True divided lite'];
     var GLAZING_BAR_WIDTHS = [12, 22, 44];
     var OPENING_DIRECTIONS = ['Inward', 'Outward'];
 

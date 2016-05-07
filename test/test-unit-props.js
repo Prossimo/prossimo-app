@@ -110,6 +110,7 @@ test('find sash border offsets', function () {
 //  If we use values in inches, there's a noticeable margin of error
 test('Size calculations for Unit #010 from 377 E 10th project', function () {
     var sash_list;
+    var unit_sizes;
     var unit = new app.Unit({
         width: c.mm_to_inches(1067),
         height: c.mm_to_inches(1194)
@@ -129,9 +130,16 @@ test('Size calculations for Unit #010 from 377 E 10th project', function () {
         ]
     };
 
+    unit_sizes = unit.getSizes();
+
+    //  Frame
+    equal(1067, unit_sizes.frame.width, 'Unit width equals calculated width');
+    equal(1194, unit_sizes.frame.height, 'Unit height equals calculated height');
+    equal(70, unit_sizes.frame.frame_width, 'Unit frame width equals calculated frame width');
+
     //  Glass 1
-    equal(target_sizes.glasses[0].width, unit.getSizes().glasses[0].width, 'Glass 1 width equals calculated width');
-    equal(target_sizes.glasses[0].height, unit.getSizes().glasses[0].height, 'Glass 1 height equals calculated height');
+    equal(target_sizes.glasses[0].width, unit_sizes.glasses[0].width, 'Glass 1 width equals calculated width');
+    equal(target_sizes.glasses[0].height, unit_sizes.glasses[0].height, 'Glass 1 height equals calculated height');
 
     //  Check that list of sashes is correct
     sash_list = unit.getSashList();
@@ -147,11 +155,14 @@ test('Size calculations for Unit #010 from 377 E 10th project', function () {
 test('Size calculations for Unit #001 from 377 E 10th project', function () {
     //  1 millimeter difference is possible
     var margin_of_error = 1;
+    var unit_sizes;
+    var unit_size_stats;
     var sash_list;
 
     var unit = new app.Unit({
         width: c.mm_to_inches(1676),
-        height: c.mm_to_inches(2083)
+        height: c.mm_to_inches(2083),
+        glazing_bar_width: 12
     });
 
     unit.profile = new app.Profile({
@@ -196,6 +207,8 @@ test('Size calculations for Unit #001 from 377 E 10th project', function () {
     var root_id = unit.get('root_section').id;
     var full_root = unit.generateFullRoot();
 
+    unit_sizes = unit.getSizes();
+
     var converted_height_in_mm = c.inches_to_mm(unit.get('height'));
     var converted_width_in_mm = c.inches_to_mm(unit.get('width'));
     var calculated_height_in_mm = full_root.sashParams.height +
@@ -203,8 +216,11 @@ test('Size calculations for Unit #001 from 377 E 10th project', function () {
     var calculated_width_in_mm = full_root.sashParams.width +
         2 * full_root.sashParams.y;
 
+    //  Frame sizes
     equal(converted_height_in_mm, calculated_height_in_mm, 'Converted height equals calculated height');
     equal(converted_width_in_mm, calculated_width_in_mm, 'Converted width equals calculated width');
+    equal(converted_height_in_mm, unit_sizes.frame.height, 'Converted height equals height calculated with getSizes');
+    equal(converted_width_in_mm, unit_sizes.frame.width, 'Converted width equals width calculated with getSizes');
 
     //  Now split sections as in the reference unit
     unit.splitSection(root_id, 'vertical');
@@ -220,16 +236,17 @@ test('Size calculations for Unit #001 from 377 E 10th project', function () {
     unit.setSectionMullionPosition(left_section.id, 1511.3);
     unit.setSectionMullionPosition(right_section.id, 1511.3);
     full_root = unit.generateFullRoot();
+    unit_sizes = unit.getSizes();
 
     //  Glass 1
-    equal(Math.abs(target_sizes.glasses[2].width - unit.getSizes().glasses[0].width) < margin_of_error,
+    equal(Math.abs(target_sizes.glasses[2].width - unit_sizes.glasses[0].width) < margin_of_error,
         true, 'Glass 1 width equals calculated width');
-    equal(Math.abs(target_sizes.glasses[2].height - unit.getSizes().glasses[0].height) < margin_of_error,
+    equal(Math.abs(target_sizes.glasses[2].height - unit_sizes.glasses[0].height) < margin_of_error,
         true, 'Glass 1 height equals calculated height');
     //  Glass 2
-    equal(Math.abs(target_sizes.glasses[3].width - unit.getSizes().glasses[1].width) < margin_of_error,
+    equal(Math.abs(target_sizes.glasses[3].width - unit_sizes.glasses[1].width) < margin_of_error,
         true, 'Glass 2 width equals calculated width');
-    equal(Math.abs(target_sizes.glasses[3].height - unit.getSizes().glasses[1].height) < margin_of_error,
+    equal(Math.abs(target_sizes.glasses[3].height - unit_sizes.glasses[1].height) < margin_of_error,
         true, 'Glass 2 height equals calculated height');
 
     //  Add proper sash types
@@ -239,27 +256,37 @@ test('Size calculations for Unit #001 from 377 E 10th project', function () {
     unit.setSectionSashType(top_right_section.id, 'tilt_turn_right');
     unit.setSectionSashType(bottom_right_section.id, 'turn_only_right');
 
+    unit_sizes = unit.getSizes();
+
     //  Glass 3
-    equal(Math.abs(target_sizes.glasses[0].width - unit.getSizes().glasses[2].width) < margin_of_error,
+    equal(Math.abs(target_sizes.glasses[0].width - unit_sizes.glasses[2].width) < margin_of_error,
         true, 'Glass 3 width equals calculated width');
-    equal(Math.abs(target_sizes.glasses[0].height - unit.getSizes().glasses[2].height) < margin_of_error,
+    equal(Math.abs(target_sizes.glasses[0].height - unit_sizes.glasses[2].height) < margin_of_error,
         true, 'Glass 3 height equals calculated height');
     //  Glass 4
-    equal(Math.abs(target_sizes.glasses[1].width - unit.getSizes().glasses[3].width) < margin_of_error,
+    equal(Math.abs(target_sizes.glasses[1].width - unit_sizes.glasses[3].width) < margin_of_error,
         true, 'Glass 4 width equals calculated width');
-    equal(Math.abs(target_sizes.glasses[1].height - unit.getSizes().glasses[3].height) < margin_of_error,
+    equal(Math.abs(target_sizes.glasses[1].height - unit_sizes.glasses[3].height) < margin_of_error,
         true, 'Glass 4 height equals calculated height');
 
     //  Sash 1
-    equal(Math.abs(target_sizes.sashes[0].width - unit.getSizes().sashes[0].width) < margin_of_error,
+    equal(Math.abs(target_sizes.sashes[0].width - unit_sizes.sashes[0].width) < margin_of_error,
         true, 'Sash 1 width equals calculated width');
-    equal(Math.abs(target_sizes.sashes[0].height - unit.getSizes().sashes[0].height) < margin_of_error,
+    equal(Math.abs(target_sizes.sashes[0].height - unit_sizes.sashes[0].height) < margin_of_error,
         true, 'Sash 1 height equals calculated height');
     //  Sash 2
-    equal(Math.abs(target_sizes.sashes[1].width - unit.getSizes().sashes[1].width) < margin_of_error,
+    equal(Math.abs(target_sizes.sashes[1].width - unit_sizes.sashes[1].width) < margin_of_error,
         true, 'Sash 2 width equals calculated width');
-    equal(Math.abs(target_sizes.sashes[1].height - unit.getSizes().sashes[1].height) < margin_of_error,
+    equal(Math.abs(target_sizes.sashes[1].height - unit_sizes.sashes[1].height) < margin_of_error,
         true, 'Sash 2 height equals calculated height');
+
+    //  Mullion sizes
+    equal(unit_sizes.mullions[0].width, 722, 'Mullion 1 length is correct');
+    equal(unit_sizes.mullions[0].type, 'horizontal', 'Mullion 1 type is correct');
+    equal(unit_sizes.mullions[1].width, 722, 'Mullion 2 length is correct');
+    equal(unit_sizes.mullions[1].type, 'horizontal', 'Mullion 2 type is correct');
+    equal(unit_sizes.mullions[2].height, 1943, 'Mullion 3 length is correct');
+    equal(unit_sizes.mullions[2].type, 'vertical', 'Mullion 3 type is correct');
 
     //  Check that list of sashes is correct
     sash_list = unit.getSashList();
@@ -279,6 +306,49 @@ test('Size calculations for Unit #001 from 377 E 10th project', function () {
         true, 'Sash 3 frame width equals calculated width');
     equal(Math.abs(sash_list[0].sash_frame.height - target_sizes.sashes[0].height) < margin_of_error,
         true, 'Sash 3 frame height equals calculated height');
+
+    //  Now get unit stats
+    unit_size_stats = unit.getLinearAndAreaStats();
+
+    equal(unit_size_stats.frame.linear, 7518, 'Unit frame linear');
+    equal(unit_size_stats.frame.linear_without_intersections, 7238, 'Unit frame linear without intersections');
+    equal(unit_size_stats.frame.area, 1.01332 / 2, 'Unit frame area');
+    equal(unit_size_stats.frame.area_both_sides, 1.01332, 'Unit frame area for both sides');
+    equal(unit_size_stats.sashes.linear, 7134, 'Unit sashes linear');
+    equal(unit_size_stats.sashes.linear_without_intersections, 6478, 'Unit sashes linear without intersections');
+    equal(unit_size_stats.sashes.area, 1.062392 / 2, 'Unit sashes area');
+    equal(unit_size_stats.sashes.area_both_sides, 1.062392, 'Unit sashes area for both sides');
+    equal(unit_size_stats.mullions.linear, 3387, 'Unit mullions linear');
+    equal(unit_size_stats.mullions.area, 0.623208 / 2, 'Unit mullions area');
+    equal(unit_size_stats.mullions.area_both_sides, 0.623208, 'Unit mullions area for both sides');
+    equal(unit_size_stats.profile_total.linear, 18039, 'Unit profile total linear');
+    equal(unit_size_stats.profile_total.linear_without_intersections, 17103,
+        'Unit profile total linear without intersections');
+    equal(unit_size_stats.profile_total.area, 2.69892 / 2, 'Unit profile total area');
+    equal(unit_size_stats.profile_total.area_both_sides, 2.69892, 'Unit profile total area for both sides');
+    equal(unit_size_stats.openings.area, 1.336422, 'Unit openings area');
+    equal(unit_size_stats.glasses.area, 2.374956, 'Unit glasses area');
+    equal(unit_size_stats.glasses.area_both_sides, 2.374956 * 2, 'Unit glasses area for both sides');
+
+    //  Now add some glazing bars and get stats for them
+    unit.setSectionBars(bottom_right_section.id, {
+        vertical: [
+            { position: 100 },
+            { position: 200 }
+        ],
+        horizontal: [
+            { position: 100 },
+            { position: 200 }
+        ]
+    });
+
+    unit_size_stats = unit.getLinearAndAreaStats();
+
+    equal(unit_size_stats.glazing_bars.linear, 1971.4, 'Unit glazing bar linear');
+    equal(unit_size_stats.glazing_bars.linear_without_intersections, 1923.4,
+        'Unit glazing bar linear without intersections');
+    equal(unit_size_stats.glazing_bars.area, 0.0236568, 'Unit glazing bar area');
+    equal(unit_size_stats.glazing_bars.area_both_sides, 0.0236568 * 2, 'Unit glazing bar area for both sides');
 });
 
 //  We use values in mms because that's what was used in the reference project.

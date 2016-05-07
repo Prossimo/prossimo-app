@@ -90,6 +90,12 @@ var app = app || {};
             });
 
             return total_area;
+        },
+        getAveragePricePerSquareFoot: function () {
+            var total_area = this.getTotalSquareFeet();
+            var total_price = this.getSubtotalPriceDiscounted();
+
+            return total_area ? total_price / total_area : 0;
         }
     });
 })();
