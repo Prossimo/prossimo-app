@@ -243,6 +243,7 @@ var app = app || {};
 
             return group;
         },
+        /* eslint-disable max-statements */
         createBars: function (params) {
             var fillX = params.x;
             var fillY = params.y;
@@ -465,7 +466,11 @@ var app = app || {};
                     // Draw controls for intersection with horizontal bars
                     for (j = 0; j < vBarCount; j++) {
 
-                        if (_.isArray(data.links) && data.links.indexOf(this.section.bars.vertical[j].id) !== -1) { continue; }
+                        if (
+                            _.isArray(data.links) && data.links.indexOf(this.section.bars.vertical[j].id) !== -1
+                        ) {
+                            continue;
+                        }
 
                         controls.add( this.createEdgeControl({
                             index: j,
@@ -510,6 +515,7 @@ var app = app || {};
 
             return group;
         },
+        /* eslint-enable max-statements */
         createEdgeControl: function (params) {
             var circle = new Konva.Circle({
                 x: params.position.x,
