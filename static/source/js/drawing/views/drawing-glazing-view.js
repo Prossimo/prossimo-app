@@ -287,12 +287,12 @@ var app = app || {};
 
                 if (data.links) {
                     if (data.links[0] !== null) {
-                        tbar = this.getBar(data.links[0]);
+                        tbar = this.model.getBar(this.section.id, data.links[0]);
                         pos_from = (tbar !== null && 'position' in tbar) ? tbar.position : 0;
                     }
 
                     if (data.links[1] !== null) {
-                        tbar = this.getBar(data.links[1]);
+                        tbar = this.model.getBar(this.section.id, data.links[1]);
                         size_to = (tbar !== null && 'position' in tbar) ? fillY + tbar.position : fillHeight;
                     }
                 }
@@ -348,7 +348,11 @@ var app = app || {};
                     // Draw controls for intersection with horizontal bars
                     for (j = 0; j < hBarCount; j++) {
 
-                        if (_.isArray(data.links) && data.links.indexOf(this.section.bars.horizontal[j].id) !== -1) { continue; }
+                        if (
+                            _.isArray(data.links) && data.links.indexOf(this.section.bars.horizontal[j].id) !== -1
+                        ) {
+                            continue;
+                        }
 
                         controls.add( this.createEdgeControl({
                             index: j,
@@ -400,12 +404,12 @@ var app = app || {};
 
                 if (data.links) {
                     if (data.links[0] !== null) {
-                        tbar = this.getBar(data.links[0]);
+                        tbar = this.model.getBar(this.section.id, data.links[0]);
                         pos_from = (tbar !== null && 'position' in tbar) ? tbar.position : 0;
                     }
 
                     if (data.links[1] !== null) {
-                        tbar = this.getBar(data.links[1]);
+                        tbar = this.model.getBar(this.section.id, data.links[1]);
                         size_to = (tbar !== null && 'position' in tbar) ? tbar.position : fillWidth;
                     }
                 }
@@ -766,7 +770,7 @@ var app = app || {};
                 _.each(arr, function (bar, index) {
                     _.each(bar.links, function (link, edge) {
                         if (link !== null) {
-                            linked = view.getBar(link);
+                            linked = view.model.getBar(view.section.id, link);
 
                             if (linked === null) {
                                 bars[type][index].links[edge] = null;
@@ -849,20 +853,6 @@ var app = app || {};
                 width: this.section.glassParams.width,
                 height: this.section.glassParams.height
             };
-        },
-        getBar: function (id) {
-            var found = null;
-
-            _.each(this.section.bars, function (arr) {
-                _.each(arr, function (bar) {
-                    if (bar.id === id) {
-                        found = bar;
-                        return;
-                    }
-                });
-            });
-
-            return found;
         },
         showError: function () {
             var intShakes = 2;
