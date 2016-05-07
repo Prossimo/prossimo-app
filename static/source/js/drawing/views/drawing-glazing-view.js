@@ -93,6 +93,7 @@ var app = app || {};
         },
         handleControlClick: function (params) {
             var bar = this.section.bars[params.bar.type][params.bar.index];
+            var id;
 
             if ( !('id' in bar) ) {
                 bar.id = _.uniqueId();
@@ -102,11 +103,19 @@ var app = app || {};
                 bar.links = [null, null];
             }
 
-            if ( !('id' in params.link) ) {
-                params.link.id = _.uniqueId();
+            if (params.link === null) {
+                id = null;
             }
 
-            bar.links[params.bar.edge] = params.link.id;
+            if ( params.link !== null ) {
+                if ( !('id' in params.link) ) {
+                    params.link.id = _.uniqueId();
+                }
+
+                id = params.link.id;
+            }
+
+            bar.links[params.bar.edge] = id;
             this.model.setSectionBars( this.section.id, this.section.bars );
 
             this.resetStates();
@@ -240,6 +249,9 @@ var app = app || {};
             var fillWidth = params.width;
             var fillHeight = params.height;
 
+            var pos_from = 0;
+            var size_to = 0;
+
             var group = new Konva.Group();
 
             var hBarCount = this.getBarsCount().horizontal;
@@ -249,6 +261,7 @@ var app = app || {};
             var nullPos;
 
             var bar;
+            var tbar;
             var line;
             var area;
             var circle;
@@ -263,27 +276,43 @@ var app = app || {};
             var i;
             var j;
 
+            // Vertical bars
             for (i = 0; i < vBarCount; i++) {
                 data = this.section.bars.vertical[i];
 
                 isSelected = (this.getState('selectedBar') === data);
+                pos_from = 0;
                 position = fillX + data.position;
-                edges[0] = fillY;
-                edges[1] = edges[0] + fillHeight;
+                size_to = fillHeight;
+
+                if (data.links) {
+                    if (data.links[0] !== null) {
+                        tbar = this.getBar(data.links[0]);
+                        pos_from = (tbar !== null && 'position' in tbar) ? tbar.position : 0;
+                    }
+
+                    if (data.links[1] !== null) {
+                        tbar = this.getBar(data.links[1]);
+                        size_to = (tbar !== null && 'position' in tbar) ? fillY + tbar.position : fillHeight;
+                    }
+                }
+
+                edges[0] = fillY + pos_from;
+                edges[1] = size_to;
 
                 bar = new Konva.Group();
                 line = new Konva.Rect({
                     x: position - (this.model.get('glazing_bar_width') / 2),
-                    y: fillY,
+                    y: fillY + pos_from,
                     width: this.model.get('glazing_bar_width'),
-                    height: fillHeight,
+                    height: size_to - pos_from,
                     fill: (isSelected) ? 'yellow' : 'white'
                 });
                 area = new Konva.Rect({
-                    x: fillX + data.position - (this.model.get('glazing_bar_width') * 2),
-                    y: fillY,
+                    x: position - (this.model.get('glazing_bar_width') * 2),
+                    y: fillY + pos_from,
                     width: this.model.get('glazing_bar_width') * 4,
-                    height: fillHeight
+                    height: size_to - pos_from
                 });
 
                 bar.on('click', this.handleBarClick.bind(this, data));
@@ -318,6 +347,9 @@ var app = app || {};
 
                     // Draw controls for intersection with horizontal bars
                     for (j = 0; j < hBarCount; j++) {
+
+                        if (_.isArray(data.links) && data.links.indexOf(this.section.bars.horizontal[j].id) !== -1) { continue; }
+
                         controls.add( this.createEdgeControl({
                             index: j,
                             edge: selectedEdge,
@@ -329,7 +361,7 @@ var app = app || {};
                             link: this.section.bars.horizontal[j],
                             position: {
                                 x: position,
-                                y: this.section.bars.horizontal[j].position
+                                y: fillY + this.section.bars.horizontal[j].position
                             }
                         }) );
                     }
@@ -349,7 +381,7 @@ var app = app || {};
                         link: null,
                         position: {
                             x: position,
-                            y: nullPos
+                            y: fillY + nullPos
                         }
                     }) );
                 }
@@ -357,26 +389,42 @@ var app = app || {};
                 group.add(bar);
             }
 
+            // Horizontal bars
             for (i = 0; i < hBarCount; i++) {
                 data = this.section.bars.horizontal[i];
 
                 isSelected = (this.getState('selectedBar') === data);
+                pos_from = 0;
                 position = fillY + data.position;
-                edges[0] = fillX;
-                edges[1] = edges[0] + fillWidth;
+                size_to = fillWidth;
+
+                if (data.links) {
+                    if (data.links[0] !== null) {
+                        tbar = this.getBar(data.links[0]);
+                        pos_from = (tbar !== null && 'position' in tbar) ? tbar.position : 0;
+                    }
+
+                    if (data.links[1] !== null) {
+                        tbar = this.getBar(data.links[1]);
+                        size_to = (tbar !== null && 'position' in tbar) ? tbar.position : fillWidth;
+                    }
+                }
+
+                edges[0] = pos_from;
+                edges[1] = size_to;
 
                 bar = new Konva.Group();
                 line = new Konva.Rect({
-                    x: fillX,
+                    x: fillX + pos_from,
                     y: position - (this.model.get('glazing_bar_width') / 2),
-                    width: fillWidth,
+                    width: size_to - pos_from,
                     height: this.model.get('glazing_bar_width'),
                     fill: (this.getState('selectedBar') === data) ? 'yellow' : 'white'
                 });
                 area = new Konva.Rect({
-                    x: fillX,
-                    y: fillY + data.position - (this.model.get('glazing_bar_width') * 2),
-                    width: fillWidth,
+                    x: fillX + pos_from,
+                    y: position - (this.model.get('glazing_bar_width') * 2),
+                    width: size_to - pos_from,
                     height: this.model.get('glazing_bar_width') * 4
                 });
 
@@ -391,7 +439,7 @@ var app = app || {};
 
                         if (!isCircleSelected) {
                             circle = new Konva.Circle({
-                                x: edges[j],
+                                x: fillX + edges[j],
                                 y: position,
                                 radius: this.model.get('glazing_bar_width') * 3,
                                 fill: 'red',
@@ -412,6 +460,9 @@ var app = app || {};
 
                     // Draw controls for intersection with horizontal bars
                     for (j = 0; j < vBarCount; j++) {
+
+                        if (_.isArray(data.links) && data.links.indexOf(this.section.bars.vertical[j].id) !== -1) { continue; }
+
                         controls.add( this.createEdgeControl({
                             index: j,
                             edge: selectedEdge,
@@ -670,6 +721,7 @@ var app = app || {};
 
                 for (var i = 0; i < vertical_count; i++) {
                     var vbar = {
+                        id: _.uniqueId(),
                         position: vSpace * (i + 1),
                         links: [null, null]
                     };
@@ -687,6 +739,7 @@ var app = app || {};
 
                 for (var j = 0; j < horizontal_count; j++) {
                     var hbar = {
+                        id: _.uniqueId(),
                         position: hSpace * (j + 1),
                         links: [null, null]
                     };
@@ -704,6 +757,28 @@ var app = app || {};
 
             return bars;
         },
+        /* eslint-disable max-nested-callbacks */
+        checkLinks: function (bars) {
+            var view = this;
+            var linked = null;
+
+            _.each(bars, function (arr, type) {
+                _.each(arr, function (bar, index) {
+                    _.each(bar.links, function (link, edge) {
+                        if (link !== null) {
+                            linked = view.getBar(link);
+
+                            if (linked === null) {
+                                bars[type][index].links[edge] = null;
+                            }
+                        }
+                    });
+                });
+            });
+
+            return bars;
+        },
+        /* eslint-enable max-nested-callbacks */
         sortBars: function () {
             _.each(this.section.bars, function ( group ) {
                 group.sort(function ( a, b ) {
@@ -712,7 +787,9 @@ var app = app || {};
             });
         },
         saveBars: function () {
-            this.model.setSectionBars( this.section.id, this.section.bars );
+            var bars = this.checkLinks( this.section.bars );
+
+            this.model.setSectionBars( this.section.id, bars );
             this.updateCanvas();
             this.options.parent_view.updateCanvas();
         },
@@ -772,6 +849,20 @@ var app = app || {};
                 width: this.section.glassParams.width,
                 height: this.section.glassParams.height
             };
+        },
+        getBar: function (id) {
+            var found = null;
+
+            _.each(this.section.bars, function (arr) {
+                _.each(arr, function (bar) {
+                    if (bar.id === id) {
+                        found = bar;
+                        return;
+                    }
+                });
+            });
+
+            return found;
         },
         showError: function () {
             var intShakes = 2;
