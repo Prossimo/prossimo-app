@@ -30,10 +30,8 @@ var app = app || {};
                 show: false
             });
 
-            this.state = {
-                selectedBar: null,
-                selectedEdge: null
-            };
+            this.state = {};
+            this.resetStates();
 
             this.on('updateSection', this.onUpdate, this);
             this.on('onSetState', this.onUpdate, this);
@@ -64,29 +62,64 @@ var app = app || {};
         },
         handleBarClick: function (data) {
             this.setState({
-                selectedBar: data
+                selectedBar: data,
+                selectedEdge: null
             });
         },
-        handleControlOver: function (key) {
+        handleEdgeOver: function (key) {
             this.setState({
                 hoverEdge: key
             });
         },
-        handleControlOut: function () {
+        handleEdgeOut: function () {
             this.setState({
                 hoverEdge: null
             });
         },
-        handleControlClick: function (key) {
+        handleEdgeClick: function (key) {
             this.setState({
                 selectedEdge: key
             });
         },
+        handleControlOver: function (key) {
+            this.setState({
+                hoverControl: key
+            });
+        },
+        handleControlOut: function () {
+            this.setState({
+                hoverControl: null
+            });
+        },
+        handleControlClick: function (params) {
+            var bar = this.section.bars[params.bar.type][params.bar.index];
+
+            if ( !('id' in bar) ) {
+                bar.id = _.uniqueId();
+            }
+
+            if ( !('links' in bar) ) {
+                bar.links = [null, null];
+            }
+
+            if ( !('id' in params.link) ) {
+                params.link.id = _.uniqueId();
+            }
+
+            bar.links[params.bar.edge] = params.link.id;
+            this.model.setSectionBars( this.section.id, this.section.bars );
+
+            this.resetStates();
+        },
         handleBackClick: function () {
+            this.resetStates();
+        },
+        resetStates: function () {
             this.setState({
                 selectedBar: null,
                 selectedEdge: null,
-                hoverEdge: null
+                hoverEdge: null,
+                hoverControl: null
             });
         },
         onRender: function () {
@@ -213,16 +246,19 @@ var app = app || {};
             var vBarCount = this.getBarsCount().vertical;
             var data;
             var position;
+            var nullPos;
 
             var bar;
             var line;
             var area;
             var circle;
+            var controls = new Konva.Group();
 
             var edges = [0, 0];
             var isSelected = false;
             var isCircleHover = false;
             var isCircleSelected = false;
+            var selectedEdge;
 
             var i;
             var j;
@@ -254,9 +290,9 @@ var app = app || {};
                 bar.add(area, line);
 
                 // Draw controls to switch edges
-                if (isSelected) {
+                if (isSelected && this.state.selectedEdge === null) {
+                    // 1. Draw controls to select edge
                     for (j = 0; j < 2; j++) {
-                        isCircleSelected = (this.state.selectedEdge === j);
                         isCircleHover = (this.state.hoverEdge === j);
 
                         if (!isCircleSelected) {
@@ -269,13 +305,53 @@ var app = app || {};
                             });
 
                             circle
-                                .on('mouseover', this.handleControlOver.bind(this, j))
-                                .on('mouseout', this.handleControlOut.bind(this, j))
-                                .on('click', this.handleControlClick.bind(this, j));
+                                .on('mouseover', this.handleEdgeOver.bind(this, j))
+                                .on('mouseout', this.handleEdgeOut.bind(this, j))
+                                .on('click', this.handleEdgeClick.bind(this, j));
 
-                            bar.add(circle);
+                            controls.add(circle);
                         }
                     }
+                } else if (isSelected && this.state.selectedEdge !== null) {
+                    // 2. Draw controls to bound selected edge
+                    selectedEdge = this.state.selectedEdge;
+
+                    // Draw controls for intersection with horizontal bars
+                    for (j = 0; j < hBarCount; j++) {
+                        controls.add( this.createEdgeControl({
+                            index: j,
+                            edge: selectedEdge,
+                            bar: {
+                                type: 'vertical',
+                                index: i,
+                                edge: selectedEdge
+                            },
+                            link: this.section.bars.horizontal[j],
+                            position: {
+                                x: position,
+                                y: this.section.bars.horizontal[j].position
+                            }
+                        }) );
+                    }
+                    // Draw controls at section edge:
+                    // For edge with key === 0 - null means section edge at left/top side
+                    // For 1 - right/bottom side
+                    nullPos = (selectedEdge === 0) ? 0 : fillHeight;
+
+                    controls.add( this.createEdgeControl({
+                        index: -1,
+                        bar: {
+                            type: 'vertical',
+                            index: i,
+                            edge: selectedEdge
+                        },
+                        edge: selectedEdge,
+                        link: null,
+                        position: {
+                            x: position,
+                            y: nullPos
+                        }
+                    }) );
                 }
 
                 group.add(bar);
@@ -308,7 +384,7 @@ var app = app || {};
                 bar.add(area, line);
 
                 // Draw controls to switch edges
-                if (isSelected) {
+                if (isSelected && this.state.selectedEdge === null) {
                     for (j = 0; j < 2; j++) {
                         isCircleSelected = (this.state.selectedEdge === j);
                         isCircleHover = (this.state.hoverEdge === j);
@@ -323,19 +399,77 @@ var app = app || {};
                             });
 
                             circle
-                                .on('mouseover', this.handleControlOver.bind(this, j))
-                                .on('mouseout', this.handleControlOut.bind(this, j))
-                                .on('click', this.handleControlClick.bind(this, j));
+                                .on('mouseover', this.handleEdgeOver.bind(this, j))
+                                .on('mouseout', this.handleEdgeOut.bind(this, j))
+                                .on('click', this.handleEdgeClick.bind(this, j));
 
-                            bar.add(circle);
+                            controls.add(circle);
                         }
                     }
+                } else if (isSelected && this.state.selectedEdge !== null) {
+                    // 2. Draw controls to bound selected edge
+                    selectedEdge = this.state.selectedEdge;
+
+                    // Draw controls for intersection with horizontal bars
+                    for (j = 0; j < vBarCount; j++) {
+                        controls.add( this.createEdgeControl({
+                            index: j,
+                            edge: selectedEdge,
+                            bar: {
+                                type: 'horizontal',
+                                index: i,
+                                edge: selectedEdge
+                            },
+                            link: this.section.bars.vertical[j],
+                            position: {
+                                x: fillX + this.section.bars.vertical[j].position,
+                                y: position
+                            }
+                        }) );
+                    }
+                    // Draw controls at section edge:
+                    // For edge with key === 0 - null means section edge at left/top side
+                    // For 1 - right/bottom side
+                    nullPos = (selectedEdge === 0) ? 0 : fillWidth;
+
+                    controls.add( this.createEdgeControl({
+                        index: -1,
+                        bar: {
+                            type: 'horizontal',
+                            index: i,
+                            edge: selectedEdge
+                        },
+                        edge: selectedEdge,
+                        link: null,
+                        position: {
+                            x: fillX + nullPos,
+                            y: position
+                        }
+                    }) );
                 }
 
                 group.add(bar);
             }
 
+            group.add(controls);
+
             return group;
+        },
+        createEdgeControl: function (params) {
+            var circle = new Konva.Circle({
+                x: params.position.x,
+                y: params.position.y,
+                radius: this.model.get('glazing_bar_width') * 3,
+                fill: 'green',
+                opacity: (this.state.hoverControl === params.index) ? 0.7 : 0.3
+            });
+
+            circle
+                .on('mouseover', this.handleControlOver.bind(this, params.index))
+                .on('mouseout', this.handleControlOut.bind(this, params.index))
+                .on('click', this.handleControlClick.bind(this, params));
+
+            return circle;
         },
         createMetrics: function ( params ) {
             // @TODO: Add "lock" control to metrics
