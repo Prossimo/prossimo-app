@@ -30,7 +30,20 @@ var app = app || {};
                 show: false
             });
 
+            this.state = {
+                selectedBar: null,
+                selectedEdge: null
+            };
+
             this.on('updateSection', this.onUpdate, this);
+            this.on('onSetState', this.onUpdate, this);
+        },
+        setState: function (state) {
+            this.state = _.assign(this.state, state);
+            this.trigger('onSetState');
+        },
+        getState: function (name) {
+            return (name in this.state) ? this.state[name] : null;
         },
         handleVBarsNumberChange: function () {
             this.handleBarsNumberChange( 'vertical' );
@@ -48,6 +61,33 @@ var app = app || {};
 
             this.section.bars = this.changeBarsNumber( type );
             this.saveBars();
+        },
+        handleBarClick: function (data) {
+            this.setState({
+                selectedBar: data
+            });
+        },
+        handleControlOver: function (key) {
+            this.setState({
+                hoverEdge: key
+            });
+        },
+        handleControlOut: function () {
+            this.setState({
+                hoverEdge: null
+            });
+        },
+        handleControlClick: function (key) {
+            this.setState({
+                selectedEdge: key
+            });
+        },
+        handleBackClick: function () {
+            this.setState({
+                selectedBar: null,
+                selectedEdge: null,
+                hoverEdge: null
+            });
         },
         onRender: function () {
             this.stage = new Konva.Stage({
@@ -73,11 +113,15 @@ var app = app || {};
                 height: this.stage.height()
             });
 
+            back.on('click', this.handleBackClick.bind(this));
+
             this.layer.add(back);
 
             var section = new Konva.Group();
 
             section.add( this.createSection() );
+            section.on('click', this.handleBackClick.bind(this));
+
             this.layer.add( section );
 
             section.setAbsolutePosition({
@@ -164,31 +208,130 @@ var app = app || {};
             var fillHeight = params.height;
 
             var group = new Konva.Group();
-            var bar;
 
             var hBarCount = this.getBarsCount().horizontal;
             var vBarCount = this.getBarsCount().vertical;
-            var space;
+            var data;
+            var position;
 
-            for (var i = 0; i < vBarCount; i++) {
-                space = this.section.bars.vertical[i].position;
+            var bar;
+            var line;
+            var area;
+            var circle;
 
-                bar = new Konva.Rect({
-                    x: fillX + space - (this.model.get('glazing_bar_width') / 2), y: fillY,
-                    width: this.model.get('glazing_bar_width'), height: fillHeight,
-                    fill: 'white', listening: false
+            var edges = [0, 0];
+            var isSelected = false;
+            var isCircleHover = false;
+            var isCircleSelected = false;
+
+            var i;
+            var j;
+
+            for (i = 0; i < vBarCount; i++) {
+                data = this.section.bars.vertical[i];
+
+                isSelected = (this.getState('selectedBar') === data);
+                position = fillX + data.position;
+                edges[0] = fillY;
+                edges[1] = edges[0] + fillHeight;
+
+                bar = new Konva.Group();
+                line = new Konva.Rect({
+                    x: position - (this.model.get('glazing_bar_width') / 2),
+                    y: fillY,
+                    width: this.model.get('glazing_bar_width'),
+                    height: fillHeight,
+                    fill: (isSelected) ? 'yellow' : 'white'
                 });
+                area = new Konva.Rect({
+                    x: fillX + data.position - (this.model.get('glazing_bar_width') * 2),
+                    y: fillY,
+                    width: this.model.get('glazing_bar_width') * 4,
+                    height: fillHeight
+                });
+
+                bar.on('click', this.handleBarClick.bind(this, data));
+                bar.add(area, line);
+
+                // Draw controls to switch edges
+                if (isSelected) {
+                    for (j = 0; j < 2; j++) {
+                        isCircleSelected = (this.state.selectedEdge === j);
+                        isCircleHover = (this.state.hoverEdge === j);
+
+                        if (!isCircleSelected) {
+                            circle = new Konva.Circle({
+                                x: position,
+                                y: edges[j],
+                                radius: this.model.get('glazing_bar_width') * 3,
+                                fill: 'red',
+                                opacity: (isCircleHover) ? 0.7 : 0.3
+                            });
+
+                            circle
+                                .on('mouseover', this.handleControlOver.bind(this, j))
+                                .on('mouseout', this.handleControlOut.bind(this, j))
+                                .on('click', this.handleControlClick.bind(this, j));
+
+                            bar.add(circle);
+                        }
+                    }
+                }
+
                 group.add(bar);
             }
 
             for (i = 0; i < hBarCount; i++) {
-                space = this.section.bars.horizontal[i].position;
+                data = this.section.bars.horizontal[i];
 
-                bar = new Konva.Rect({
-                    x: fillX, y: fillY + space - (this.model.get('glazing_bar_width') / 2),
-                    width: fillWidth, height: this.model.get('glazing_bar_width'),
-                    fill: 'white', listening: false
+                isSelected = (this.getState('selectedBar') === data);
+                position = fillY + data.position;
+                edges[0] = fillX;
+                edges[1] = edges[0] + fillWidth;
+
+                bar = new Konva.Group();
+                line = new Konva.Rect({
+                    x: fillX,
+                    y: position - (this.model.get('glazing_bar_width') / 2),
+                    width: fillWidth,
+                    height: this.model.get('glazing_bar_width'),
+                    fill: (this.getState('selectedBar') === data) ? 'yellow' : 'white'
                 });
+                area = new Konva.Rect({
+                    x: fillX,
+                    y: fillY + data.position - (this.model.get('glazing_bar_width') * 2),
+                    width: fillWidth,
+                    height: this.model.get('glazing_bar_width') * 4
+                });
+
+                bar.on('click', this.handleBarClick.bind(this, data));
+                bar.add(area, line);
+
+                // Draw controls to switch edges
+                if (isSelected) {
+                    for (j = 0; j < 2; j++) {
+                        isCircleSelected = (this.state.selectedEdge === j);
+                        isCircleHover = (this.state.hoverEdge === j);
+
+                        if (!isCircleSelected) {
+                            circle = new Konva.Circle({
+                                x: edges[j],
+                                y: position,
+                                radius: this.model.get('glazing_bar_width') * 3,
+                                fill: 'red',
+                                opacity: (isCircleHover) ? 0.7 : 0.3
+                            });
+
+                            circle
+                                .on('mouseover', this.handleControlOver.bind(this, j))
+                                .on('mouseout', this.handleControlOut.bind(this, j))
+                                .on('click', this.handleControlClick.bind(this, j));
+
+                            bar.add(circle);
+                        }
+                    }
+                }
+
                 group.add(bar);
             }
 
@@ -393,7 +536,8 @@ var app = app || {};
 
                 for (var i = 0; i < vertical_count; i++) {
                     var vbar = {
-                        position: vSpace * (i + 1)
+                        position: vSpace * (i + 1),
+                        links: [null, null]
                     };
 
                     vertical.push(vbar);
@@ -409,7 +553,8 @@ var app = app || {};
 
                 for (var j = 0; j < horizontal_count; j++) {
                     var hbar = {
-                        position: hSpace * (j + 1)
+                        position: hSpace * (j + 1),
+                        links: [null, null]
                     };
 
                     horizontal.push(hbar);
