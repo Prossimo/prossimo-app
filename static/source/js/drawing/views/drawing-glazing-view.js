@@ -30,7 +30,18 @@ var app = app || {};
                 show: false
             });
 
+            this.state = {};
+            this.resetStates();
+
             this.on('updateSection', this.onUpdate, this);
+            this.on('onSetState', this.onUpdate, this);
+        },
+        setState: function (state) {
+            this.state = _.assign(this.state, state);
+            this.trigger('onSetState');
+        },
+        getState: function (name) {
+            return (name in this.state) ? this.state[name] : null;
         },
         handleVBarsNumberChange: function () {
             this.handleBarsNumberChange( 'vertical' );
@@ -48,6 +59,77 @@ var app = app || {};
 
             this.section.bars = this.changeBarsNumber( type );
             this.saveBars();
+        },
+        handleBarClick: function (data) {
+            this.setState({
+                selectedBar: data,
+                selectedEdge: null
+            });
+        },
+        handleEdgeOver: function (key) {
+            this.setState({
+                hoverEdge: key
+            });
+        },
+        handleEdgeOut: function () {
+            this.setState({
+                hoverEdge: null
+            });
+        },
+        handleEdgeClick: function (key) {
+            this.setState({
+                selectedEdge: key
+            });
+        },
+        handleControlOver: function (key) {
+            this.setState({
+                hoverControl: key
+            });
+        },
+        handleControlOut: function () {
+            this.setState({
+                hoverControl: null
+            });
+        },
+        handleControlClick: function (params) {
+            var bar = this.section.bars[params.bar.type][params.bar.index];
+            var id;
+
+            if ( !('id' in bar) ) {
+                bar.id = _.uniqueId();
+            }
+
+            if ( !('links' in bar) ) {
+                bar.links = [null, null];
+            }
+
+            if (params.link === null) {
+                id = null;
+            }
+
+            if ( params.link !== null ) {
+                if ( !('id' in params.link) ) {
+                    params.link.id = _.uniqueId();
+                }
+
+                id = params.link.id;
+            }
+
+            bar.links[params.bar.edge] = id;
+            this.model.setSectionBars( this.section.id, this.section.bars );
+
+            this.resetStates();
+        },
+        handleBackClick: function () {
+            this.resetStates();
+        },
+        resetStates: function () {
+            this.setState({
+                selectedBar: null,
+                selectedEdge: null,
+                hoverEdge: null,
+                hoverControl: null
+            });
         },
         onRender: function () {
             this.stage = new Konva.Stage({
@@ -73,11 +155,15 @@ var app = app || {};
                 height: this.stage.height()
             });
 
+            back.on('click', this.handleBackClick.bind(this));
+
             this.layer.add(back);
 
             var section = new Konva.Group();
 
             section.add( this.createSection() );
+            section.on('click', this.handleBackClick.bind(this));
+
             this.layer.add( section );
 
             section.setAbsolutePosition({
@@ -157,42 +243,294 @@ var app = app || {};
 
             return group;
         },
+        /* eslint-disable max-statements */
         createBars: function (params) {
             var fillX = params.x;
             var fillY = params.y;
             var fillWidth = params.width;
             var fillHeight = params.height;
 
+            var pos_from = 0;
+            var size_to = 0;
+
             var group = new Konva.Group();
-            var bar;
 
             var hBarCount = this.getBarsCount().horizontal;
             var vBarCount = this.getBarsCount().vertical;
-            var space;
+            var data;
+            var position;
+            var nullPos;
 
-            for (var i = 0; i < vBarCount; i++) {
-                space = this.section.bars.vertical[i].position;
+            var bar;
+            var tbar;
+            var line;
+            var area;
+            var circle;
+            var controls = new Konva.Group();
 
-                bar = new Konva.Rect({
-                    x: fillX + space - (this.model.get('glazing_bar_width') / 2), y: fillY,
-                    width: this.model.get('glazing_bar_width'), height: fillHeight,
-                    fill: 'white', listening: false
+            var edges = [0, 0];
+            var isSelected = false;
+            var isCircleHover = false;
+            var isCircleSelected = false;
+            var selectedEdge;
+
+            var i;
+            var j;
+
+            // Vertical bars
+            for (i = 0; i < vBarCount; i++) {
+                data = this.section.bars.vertical[i];
+
+                isSelected = (this.getState('selectedBar') === data);
+                pos_from = 0;
+                position = fillX + data.position;
+                size_to = fillHeight;
+
+                if (data.links) {
+                    if (data.links[0] !== null) {
+                        tbar = this.model.getBar(this.section.id, data.links[0]);
+                        pos_from = (tbar !== null && 'position' in tbar) ? tbar.position : 0;
+                    }
+
+                    if (data.links[1] !== null) {
+                        tbar = this.model.getBar(this.section.id, data.links[1]);
+                        size_to = (tbar !== null && 'position' in tbar) ? fillY + tbar.position : fillHeight;
+                    }
+                }
+
+                edges[0] = fillY + pos_from;
+                edges[1] = size_to;
+
+                bar = new Konva.Group();
+                line = new Konva.Rect({
+                    x: position - (this.model.get('glazing_bar_width') / 2),
+                    y: fillY + pos_from,
+                    width: this.model.get('glazing_bar_width'),
+                    height: size_to - pos_from,
+                    fill: (isSelected) ? 'yellow' : 'white'
                 });
+                area = new Konva.Rect({
+                    x: position - (this.model.get('glazing_bar_width') * 2),
+                    y: fillY + pos_from,
+                    width: this.model.get('glazing_bar_width') * 4,
+                    height: size_to - pos_from
+                });
+
+                bar.on('click', this.handleBarClick.bind(this, data));
+                bar.add(area, line);
+
+                // Draw controls to switch edges
+                if (isSelected && this.state.selectedEdge === null) {
+                    // 1. Draw controls to select edge
+                    for (j = 0; j < 2; j++) {
+                        isCircleHover = (this.state.hoverEdge === j);
+
+                        if (!isCircleSelected) {
+                            circle = new Konva.Circle({
+                                x: position,
+                                y: edges[j],
+                                radius: this.model.get('glazing_bar_width') * 3,
+                                fill: 'red',
+                                opacity: (isCircleHover) ? 0.7 : 0.3
+                            });
+
+                            circle
+                                .on('mouseover', this.handleEdgeOver.bind(this, j))
+                                .on('mouseout', this.handleEdgeOut.bind(this, j))
+                                .on('click', this.handleEdgeClick.bind(this, j));
+
+                            controls.add(circle);
+                        }
+                    }
+                } else if (isSelected && this.state.selectedEdge !== null) {
+                    // 2. Draw controls to bound selected edge
+                    selectedEdge = this.state.selectedEdge;
+
+                    // Draw controls for intersection with horizontal bars
+                    for (j = 0; j < hBarCount; j++) {
+
+                        if (
+                            _.isArray(data.links) && data.links.indexOf(this.section.bars.horizontal[j].id) !== -1
+                        ) {
+                            continue;
+                        }
+
+                        controls.add( this.createEdgeControl({
+                            index: j,
+                            edge: selectedEdge,
+                            bar: {
+                                type: 'vertical',
+                                index: i,
+                                edge: selectedEdge
+                            },
+                            link: this.section.bars.horizontal[j],
+                            position: {
+                                x: position,
+                                y: fillY + this.section.bars.horizontal[j].position
+                            }
+                        }) );
+                    }
+                    // Draw controls at section edge:
+                    // For edge with key === 0 - null means section edge at left/top side
+                    // For 1 - right/bottom side
+                    nullPos = (selectedEdge === 0) ? 0 : fillHeight;
+
+                    controls.add( this.createEdgeControl({
+                        index: -1,
+                        bar: {
+                            type: 'vertical',
+                            index: i,
+                            edge: selectedEdge
+                        },
+                        edge: selectedEdge,
+                        link: null,
+                        position: {
+                            x: position,
+                            y: fillY + nullPos
+                        }
+                    }) );
+                }
+
                 group.add(bar);
             }
 
+            // Horizontal bars
             for (i = 0; i < hBarCount; i++) {
-                space = this.section.bars.horizontal[i].position;
+                data = this.section.bars.horizontal[i];
 
-                bar = new Konva.Rect({
-                    x: fillX, y: fillY + space - (this.model.get('glazing_bar_width') / 2),
-                    width: fillWidth, height: this.model.get('glazing_bar_width'),
-                    fill: 'white', listening: false
+                isSelected = (this.getState('selectedBar') === data);
+                pos_from = 0;
+                position = fillY + data.position;
+                size_to = fillWidth;
+
+                if (data.links) {
+                    if (data.links[0] !== null) {
+                        tbar = this.model.getBar(this.section.id, data.links[0]);
+                        pos_from = (tbar !== null && 'position' in tbar) ? tbar.position : 0;
+                    }
+
+                    if (data.links[1] !== null) {
+                        tbar = this.model.getBar(this.section.id, data.links[1]);
+                        size_to = (tbar !== null && 'position' in tbar) ? tbar.position : fillWidth;
+                    }
+                }
+
+                edges[0] = pos_from;
+                edges[1] = size_to;
+
+                bar = new Konva.Group();
+                line = new Konva.Rect({
+                    x: fillX + pos_from,
+                    y: position - (this.model.get('glazing_bar_width') / 2),
+                    width: size_to - pos_from,
+                    height: this.model.get('glazing_bar_width'),
+                    fill: (this.getState('selectedBar') === data) ? 'yellow' : 'white'
                 });
+                area = new Konva.Rect({
+                    x: fillX + pos_from,
+                    y: position - (this.model.get('glazing_bar_width') * 2),
+                    width: size_to - pos_from,
+                    height: this.model.get('glazing_bar_width') * 4
+                });
+
+                bar.on('click', this.handleBarClick.bind(this, data));
+                bar.add(area, line);
+
+                // Draw controls to switch edges
+                if (isSelected && this.state.selectedEdge === null) {
+                    for (j = 0; j < 2; j++) {
+                        isCircleSelected = (this.state.selectedEdge === j);
+                        isCircleHover = (this.state.hoverEdge === j);
+
+                        if (!isCircleSelected) {
+                            circle = new Konva.Circle({
+                                x: fillX + edges[j],
+                                y: position,
+                                radius: this.model.get('glazing_bar_width') * 3,
+                                fill: 'red',
+                                opacity: (isCircleHover) ? 0.7 : 0.3
+                            });
+
+                            circle
+                                .on('mouseover', this.handleEdgeOver.bind(this, j))
+                                .on('mouseout', this.handleEdgeOut.bind(this, j))
+                                .on('click', this.handleEdgeClick.bind(this, j));
+
+                            controls.add(circle);
+                        }
+                    }
+                } else if (isSelected && this.state.selectedEdge !== null) {
+                    // 2. Draw controls to bound selected edge
+                    selectedEdge = this.state.selectedEdge;
+
+                    // Draw controls for intersection with horizontal bars
+                    for (j = 0; j < vBarCount; j++) {
+
+                        if (
+                            _.isArray(data.links) && data.links.indexOf(this.section.bars.vertical[j].id) !== -1
+                        ) {
+                            continue;
+                        }
+
+                        controls.add( this.createEdgeControl({
+                            index: j,
+                            edge: selectedEdge,
+                            bar: {
+                                type: 'horizontal',
+                                index: i,
+                                edge: selectedEdge
+                            },
+                            link: this.section.bars.vertical[j],
+                            position: {
+                                x: fillX + this.section.bars.vertical[j].position,
+                                y: position
+                            }
+                        }) );
+                    }
+                    // Draw controls at section edge:
+                    // For edge with key === 0 - null means section edge at left/top side
+                    // For 1 - right/bottom side
+                    nullPos = (selectedEdge === 0) ? 0 : fillWidth;
+
+                    controls.add( this.createEdgeControl({
+                        index: -1,
+                        bar: {
+                            type: 'horizontal',
+                            index: i,
+                            edge: selectedEdge
+                        },
+                        edge: selectedEdge,
+                        link: null,
+                        position: {
+                            x: fillX + nullPos,
+                            y: position
+                        }
+                    }) );
+                }
+
                 group.add(bar);
             }
+
+            group.add(controls);
 
             return group;
+        },
+        /* eslint-enable max-statements */
+        createEdgeControl: function (params) {
+            var circle = new Konva.Circle({
+                x: params.position.x,
+                y: params.position.y,
+                radius: this.model.get('glazing_bar_width') * 3,
+                fill: 'green',
+                opacity: (this.state.hoverControl === params.index) ? 0.7 : 0.3
+            });
+
+            circle
+                .on('mouseover', this.handleControlOver.bind(this, params.index))
+                .on('mouseout', this.handleControlOut.bind(this, params.index))
+                .on('click', this.handleControlClick.bind(this, params));
+
+            return circle;
         },
         createMetrics: function ( params ) {
             // @TODO: Add "lock" control to metrics
@@ -393,7 +731,9 @@ var app = app || {};
 
                 for (var i = 0; i < vertical_count; i++) {
                     var vbar = {
-                        position: vSpace * (i + 1)
+                        id: _.uniqueId(),
+                        position: vSpace * (i + 1),
+                        links: [null, null]
                     };
 
                     vertical.push(vbar);
@@ -409,7 +749,9 @@ var app = app || {};
 
                 for (var j = 0; j < horizontal_count; j++) {
                     var hbar = {
-                        position: hSpace * (j + 1)
+                        id: _.uniqueId(),
+                        position: hSpace * (j + 1),
+                        links: [null, null]
                     };
 
                     horizontal.push(hbar);
@@ -425,6 +767,28 @@ var app = app || {};
 
             return bars;
         },
+        /* eslint-disable max-nested-callbacks */
+        checkLinks: function (bars) {
+            var view = this;
+            var linked = null;
+
+            _.each(bars, function (arr, type) {
+                _.each(arr, function (bar, index) {
+                    _.each(bar.links, function (link, edge) {
+                        if (link !== null) {
+                            linked = view.model.getBar(view.section.id, link);
+
+                            if (linked === null) {
+                                bars[type][index].links[edge] = null;
+                            }
+                        }
+                    });
+                });
+            });
+
+            return bars;
+        },
+        /* eslint-enable max-nested-callbacks */
         sortBars: function () {
             _.each(this.section.bars, function ( group ) {
                 group.sort(function ( a, b ) {
@@ -433,7 +797,9 @@ var app = app || {};
             });
         },
         saveBars: function () {
-            this.model.setSectionBars( this.section.id, this.section.bars );
+            var bars = this.checkLinks( this.section.bars );
+
+            this.model.setSectionBars( this.section.id, bars );
             this.updateCanvas();
             this.options.parent_view.updateCanvas();
         },

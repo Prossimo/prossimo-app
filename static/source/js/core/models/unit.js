@@ -67,7 +67,7 @@ var app = app || {};
         // 'flush-turn-left': 'Flush Panel Left Hinge',
         fixed_in_frame: 'Fixed',
         fixed_in_sash: 'Fixed in Sash',
-        tilt_only: 'Tilt Only Bottom Hung',
+        tilt_only: 'Tilt Only',
         tilt_turn_right: 'Tilt-turn Right Hinge',
         tilt_turn_left: 'Tilt-turn Left Hinge',
         turn_only_right: 'Turn Only Right Hinge',
@@ -660,6 +660,21 @@ var app = app || {};
                    (val === 'max') ? 'min' :
                    (val === 'center') ? 'center' :
                    val;
+        },
+        getBar: function (sectionId, id) {
+            var found = null;
+            var section = this.getSection(sectionId);
+
+            _.each(section.bars, function (arr) {
+                _.each(arr, function (bar) {
+                    if (bar.id === id) {
+                        found = bar;
+                        return;
+                    }
+                });
+            });
+
+            return found;
         },
         // @TODO: Add method, that checks for correct values of measurement data
         // @TODO: Add method, that drops measurement data to default
