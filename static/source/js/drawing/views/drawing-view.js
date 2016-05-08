@@ -73,11 +73,12 @@ var app = app || {};
             $undo: '#undo',
             $redo: '#redo',
             $metrics_glass: '#additional-metrics-glass',
-            $metrics_opening: '#additional-metrics-opening'
+            $metrics_opening: '#additional-metrics-opening',
+            $sash_types: '.change-sash-type'
         },
         events: {
             'click .split-section': 'handleSplitSectionClick',
-            'click .change-sash-type': 'handleChangeSashTypeClick',
+            'click @ui.$sash_types': 'handleChangeSashTypeClick',
             'click #clear-frame': 'handleClearFrameClick',
             'keydown #drawing': 'handleCanvasKeyDown',
             'click #change-view-button': 'handleChangeView',
@@ -227,6 +228,9 @@ var app = app || {};
 
         // Marrionente lifecycle method
         onRender: function () {
+
+            this.changeIcons();
+
             this.stage = new Konva.Stage({
                 container: this.$('#drawing').get(0)
             });
@@ -248,6 +252,32 @@ var app = app || {};
             if ( this.glazing_view ) {
                 this.glazing_view.destroy();
             }
+        },
+        // Change icons for american / european style
+        changeIcons: function () {
+            var tilt_turn_left = this.ui.$sash_types.filter('[data-type=tilt_turn_left]');
+            var tilt_turn_right = this.ui.$sash_types.filter('[data-type=tilt_turn_right]');
+            var tilt_only = this.ui.$sash_types.filter('[data-type=tilt_only]');
+
+            function toAmerican( $el ) {
+                $el.attr('src', $el.attr('src').replace('.png', '_american.png') );
+            }
+
+            function toEuropean( $el ) {
+                $el.attr('src', $el.attr('src').replace('_american.png', '.png') );
+            }
+
+            if (this.state.hingeIndicatorMode === 'american') {
+                toAmerican( tilt_turn_left );
+                toAmerican( tilt_turn_right );
+                toAmerican( tilt_only );
+            } else {
+                toEuropean( tilt_turn_left );
+                toEuropean( tilt_turn_right );
+                toEuropean( tilt_only );
+            }
+
+            return true;
         },
 
         serializeData: function () {
@@ -856,10 +886,12 @@ var app = app || {};
             // #192: Reverse hinge indicator for outside view
             if ( this.state.hingeIndicatorMode === 'american' ) {
                 directionLine.scale({
-                    x: -1
+                    x: -1,
+                    y: -1
                 });
                 directionLine.move({
-                    x: section.glassParams.width
+                    x: section.glassParams.width,
+                    y: section.glassParams.height
                 });
             }
 
