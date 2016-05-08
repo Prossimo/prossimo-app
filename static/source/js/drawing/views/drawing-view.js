@@ -724,7 +724,7 @@ var app = app || {};
                 space = data.position;
 
                 _from = 0;
-                _to = fillHeight;
+                _to = fillY + fillHeight;
 
                 if (data.links) {
                     if (data.links[0] !== null) {
@@ -734,7 +734,7 @@ var app = app || {};
 
                     if (data.links[1] !== null) {
                         tbar = this.model.getBar(section.id, data.links[1]);
-                        _to = (tbar !== null && 'position' in tbar) ? fillY + tbar.position : fillHeight;
+                        _to = (tbar !== null && 'position' in tbar) ? fillY + tbar.position : fillY + fillHeight;
                     }
                 }
 
@@ -754,7 +754,7 @@ var app = app || {};
                 space = data.position;
 
                 _from = 0;
-                _to = fillWidth;
+                _to = fillX + fillWidth;
 
                 if (data.links) {
                     if (data.links[0] !== null) {
@@ -764,7 +764,7 @@ var app = app || {};
 
                     if (data.links[1] !== null) {
                         tbar = this.model.getBar(section.id, data.links[1]);
-                        _to = (tbar !== null && 'position' in tbar) ? fillY + tbar.position : fillWidth;
+                        _to = (tbar !== null && 'position' in tbar) ? fillX + tbar.position : fillX + fillWidth;
                     }
                 }
 
