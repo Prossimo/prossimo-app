@@ -78,7 +78,7 @@ var app = app || {};
         },
         events: {
             'click .split-section': 'handleSplitSectionClick',
-            'click @ui.$sash-types': 'handleChangeSashTypeClick',
+            'click @ui.$sash_types': 'handleChangeSashTypeClick',
             'click #clear-frame': 'handleClearFrameClick',
             'keydown #drawing': 'handleCanvasKeyDown',
             'click #change-view-button': 'handleChangeView',
