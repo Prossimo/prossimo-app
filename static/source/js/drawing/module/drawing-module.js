@@ -54,15 +54,15 @@ var app = app || {};
 
             chain
             // Assign project settings
-            .then(this.assignDefaultStates.bind(this))
+            .then(this.assignDefaultStates.bind(this, opts))
             // Assign styles
-            .then(this.assignDefaultStyles.bind(this))
+            .then(this.assignDefaultStyles.bind(this, opts))
             // Assign sizes
-            .then(this.assignSizes.bind(this))
+            .then(this.assignSizes.bind(this, opts))
             // Create an instance of layerManager
-            .then(this.createLayerManager.bind(this))
+            .then(this.createLayerManager.bind(this, opts))
             // Render
-            .done(this.update.bind(this));
+            .done(this.update.bind(this, opts));
 
             // Let's wait until canvas will be painted in the browser
             (function start() {
@@ -155,10 +155,21 @@ var app = app || {};
 
             return opts;
         },
+        updateSize: function (width, height) {
+            var stage = this.get('stage');
+
+            stage.width(width);
+            stage.height(height);
+        },
         // Calculate ratio, screen size and left-top point for position a unit to the center of stage
         assignSizes: function (opts) {
             var stage = this.get('stage');
             var model = this.get('model');
+
+            if (opts && opts.width && opts.height) {
+                this.updateSize(opts.width, opts.height);
+            }
+
             var metricSize = ( opts && 'metricSize' in opts) ? opts.metricSize :
                              ( this.get('metricSize') ) ? this.get('metricSize') :
                              50;
@@ -298,8 +309,8 @@ var app = app || {};
         },
 
         // Events
-        update: function () {
-            this.assignSizes();
+        update: function (opts) {
+            this.assignSizes(opts);
             this.trigger('update');
         },
         // Actions
@@ -387,6 +398,10 @@ var app = app || {};
                 inchesDisplayMode: options.inchesDisplayMode,
                 hingeIndicatorMode: options.hingeIndicatorMode
             }, false);
+        }
+
+        if (options.width && options.height) {
+            module.updateSize( options.width, options.height );
         }
 
         if (options.mode === 'canvas') {
