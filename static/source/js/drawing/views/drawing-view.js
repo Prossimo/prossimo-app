@@ -705,6 +705,7 @@ var app = app || {};
                     if (data.links[1] !== null) {
                         tbar = this.model.getBar(section.id, data.links[1]);
                         _to = (tbar !== null && 'position' in tbar) ? fillY + tbar.position : fillHeight;
+                        _from += fillX;
                     }
                 }
 
@@ -712,7 +713,7 @@ var app = app || {};
                     x: fillX + space - (glazing_bar_width / 2),
                     y: _from,
                     width: glazing_bar_width,
-                    height: _to - _from,
+                    height: _to - _from + fillY,
                     fill: 'white',
                     listening: false
                 });
@@ -735,6 +736,7 @@ var app = app || {};
                     if (data.links[1] !== null) {
                         tbar = this.model.getBar(section.id, data.links[1]);
                         _to = (tbar !== null && 'position' in tbar) ? fillY + tbar.position : fillWidth;
+                        _from += fillY;
                     }
                 }
 
