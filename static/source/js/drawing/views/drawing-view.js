@@ -699,21 +699,22 @@ var app = app || {};
                 if (data.links) {
                     if (data.links[0] !== null) {
                         tbar = this.model.getBar(section.id, data.links[0]);
-                        _from = (tbar !== null && 'position' in tbar) ? tbar.position : 0;
+                        _from = (tbar !== null && 'position' in tbar) ? fillY + tbar.position : fillY;
                     }
 
                     if (data.links[1] !== null) {
                         tbar = this.model.getBar(section.id, data.links[1]);
-                        _to = (tbar !== null && 'position' in tbar) ? fillY + tbar.position : fillHeight;
-                        _from += fillX;
+                        _to = (tbar !== null && 'position' in tbar) ? tbar.position : fillHeight;
                     }
                 }
+
+                _to += fillY;
 
                 bar = new Konva.Rect({
                     x: fillX + space - (glazing_bar_width / 2),
                     y: _from,
                     width: glazing_bar_width,
-                    height: _to - _from + fillY,
+                    height: _to - _from,
                     fill: 'white',
                     listening: false
                 });
@@ -730,15 +731,16 @@ var app = app || {};
                 if (data.links) {
                     if (data.links[0] !== null) {
                         tbar = this.model.getBar(section.id, data.links[0]);
-                        _from = (tbar !== null && 'position' in tbar) ? tbar.position : 0;
+                        _from = (tbar !== null && 'position' in tbar) ? fillX + tbar.position : fillX;
                     }
 
                     if (data.links[1] !== null) {
                         tbar = this.model.getBar(section.id, data.links[1]);
-                        _to = (tbar !== null && 'position' in tbar) ? fillY + tbar.position : fillWidth;
-                        _from += fillY;
+                        _to = (tbar !== null && 'position' in tbar) ? tbar.position : fillWidth;
                     }
                 }
+
+                _to += fillX;
 
                 bar = new Konva.Rect({
                     x: _from,
