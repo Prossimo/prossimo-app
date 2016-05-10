@@ -57,6 +57,10 @@ var app = app || {};
         onDestroy: function () {
             this.ui.$modal.remove();
             this.stage.destroy();
+
+            if ( this.module ) {
+                this.module.destroy();
+            }
         },
         setSection: function (section_id) {
             this.section = this.model.getSection(section_id);
@@ -64,8 +68,9 @@ var app = app || {};
             this.ui.$bar_vertical.val( this.getBarsCount().vertical );
             this.ui.$bar_horizontal.val( this.getBarsCount().horizontal );
 
-            if (this.module) {
+            if ( this.module ) {
                 this.module.destroy();
+                this.stage.clear();
             }
 
             this.module = new app.DrawingModule({

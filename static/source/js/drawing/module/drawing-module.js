@@ -125,17 +125,21 @@ var app = app || {};
 
         // Apply options to the object & initialize the object
         assignStage: function (opts) {
-
             var stage;
+            var is_stage_predefined = false;
+
             // Check for defined stage in opts
             if ('stage' in opts && 'nodeType' in opts.stage && opts.stage.nodeType === 'Stage') {
                 stage = opts.stage;
+                is_stage_predefined = true;
             } else {
                 // Or create a private stage
                 stage = this.createStage();
             }
+
             // Assign stage
             this.set('stage', stage);
+            this.set('is_stage_predefined', is_stage_predefined);
 
             return opts;
         },
@@ -281,16 +285,8 @@ var app = app || {};
         // Create private Konva.Stage (if it wasn't defined in options)
         createStage: function () {
             var container = $('<div>', {
-                id: 'drawing-module-container',
-                css: {
-                    overflow: 'hidden',
-                    width: '0px',
-                    height: '0px',
-                    position: 'absolute',
-                    top: '-10px',
-                    left: '-10px'
-                }
-            }).prependTo('body');
+                id: 'drawing-module-container'
+            });
 
             var stage = new Konva.Stage({
                 width: window.screen.width,
@@ -332,6 +328,16 @@ var app = app || {};
             img.src = this.get('stage').toDataURL();
 
             return img;
+        },
+        onDestroy: function () {
+            var stage = this.get('stage');
+            var is_predefined = this.get('is_stage_predefined');
+
+            if ( stage && is_predefined === false ) {
+                stage.destroy();
+            }
+
+            this.stopListening();
         }
     });
 
@@ -390,6 +396,8 @@ var app = app || {};
         } else if (options.mode === 'image') {
             result = module.getImage();
         }
+
+        module.destroy();
 
         unitModel.preview.full_root_json_string = full_root_json_string;
         unitModel.preview.result[options_json_string] = result;

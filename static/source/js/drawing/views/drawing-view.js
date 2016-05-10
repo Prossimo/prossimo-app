@@ -146,8 +146,8 @@ var app = app || {};
             }
 
             this.glazing_view
-                    .setSection( this.state.selectedSashId )
-                    .showModal();
+                .setSection( this.state.selectedSashId )
+                .showModal();
         },
         handleFillingTypeChange: function () {
             var filling_type;
@@ -254,26 +254,28 @@ var app = app || {};
                 this.glazing_view.destroy();
             }
 
-            delete this.module;
+            if ( this.module ) {
+                this.module.destroy();
+            }
         },
 
         bindModuleEvents: function () {
-            this.module.on('state:selected:mullion', function (data) {
+            this.listenTo(this.module, 'state:selected:mullion', function (data) {
                 this.deselectAll();
                 this.setState({
                     selectedMullionId: data.newValue
                 });
-            }.bind(this));
-            this.module.on('state:selected:sash', function (data) {
+            });
+            this.listenTo(this.module, 'state:selected:sash', function (data) {
                 this.deselectAll();
                 this.setState({
                     selectedSashId: data.newValue
                 });
-            }.bind(this));
+            });
         },
         unbindModuleEvents: function () {
-            this.module.off('state:selected:mullion');
-            this.module.off('state:selected:sash');
+            this.stopListening('state:selected:mullion');
+            this.stopListening('state:selected:sash');
         },
 
         serializeData: function () {
