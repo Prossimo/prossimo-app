@@ -897,7 +897,7 @@ var app = app || {};
                 if (section.fillingType === 'louver') {
                     filling.stroke('black');
                 }
-            } else if (true) {
+            } else {
                 var arcPos = model.getArchedPosition();
 
                 filling = new Konva.Shape({

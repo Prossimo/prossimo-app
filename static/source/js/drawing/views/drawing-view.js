@@ -418,13 +418,6 @@ var app = app || {};
                 view.updateSection( sectionId, 'horizontal');
             }
 
-            // Update glazing bars
-            // if ( section.bars && section.bars[type] && section.bars[type].length ) {
-            //     view.glazing_view
-            //         .setSection( section.id )
-            //         .handleBarsNumberChange( type );
-            // }
-
             // If section has children — update them recursively
             if ( section.sections && section.sections.length ) {
                 section.sections.forEach(function (child) {
