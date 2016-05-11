@@ -191,6 +191,7 @@ var app = app || {};
             var frameWidth = params.frameWidth;  // in mm
             var width = params.width;
             var height = params.height;
+            var style = module.getStyle('frame');
 
             var group = new Konva.Group({
                 name: 'frame',
@@ -237,9 +238,9 @@ var app = app || {};
             // add styles for borders
             group.children
                 .closed(true)
-                .stroke('black')
-                .strokeWidth(1)
-                .fill('white');
+                .stroke(style.stroke)
+                .strokeWidth(style.strokeWidth)
+                .fill(style.fill);
 
             return group;
         },
@@ -247,16 +248,19 @@ var app = app || {};
         createFlushFrame: function (params) {
             var width = params.width;
             var height = params.height;
+            var opts = {};
 
-            var rect = new Konva.Rect({
+            // Extend opts with styles
+            _.extend(opts, module.getStyle('flush_frame'));
+            // Extend with sizes and data
+            _.extend(opts, {
                 width: width,
                 height: height,
-                fill: 'lightgrey',
-                stroke: 'black',
-                strokeWidth: 1,
                 name: 'frame',
                 sectionId: params.sectionId
             });
+
+            var rect = new Konva.Rect(opts);
 
             return rect;
         },
@@ -267,6 +271,11 @@ var app = app || {};
             var thresholdWidth = model.profile.get('threshold_width');
             var width = params.width;
             var height = params.height;
+
+            var style = {
+                frame: module.getStyle('frame'),
+                bottom: module.getStyle('door_bottom')
+            };
 
             var group = new Konva.Group();
             var top = new Konva.Line({
@@ -300,9 +309,9 @@ var app = app || {};
 
             group.children
                 .closed(true)
-                .stroke('black')
-                .strokeWidth(1)
-                .fill('white');
+                .stroke(style.frame.stroke)
+                .strokeWidth(style.frame.strokeWidth)
+                .fill(style.frame.fill);
 
             var bottom = new Konva.Line({
                 points: [
@@ -312,9 +321,9 @@ var app = app || {};
                     0, height
                 ],
                 closed: true,
-                stroke: 'black',
-                strokeWidth: 1,
-                fill: 'grey'
+                stroke: style.bottom.stroke,
+                strokeWidth: style.bottom.strokeWidth,
+                fill: style.bottom.fill
             });
 
             group.add(bottom);
@@ -329,11 +338,13 @@ var app = app || {};
             var height = params.height;
             var archHeight = params.archHeight;
 
+            var style = module.getStyle('frame');
+
             var group = new Konva.Group();
             var top = new Konva.Shape({
-                stroke: 'black',
-                strokeWidth: 1,
-                fill: 'white',
+                stroke: style.stroke,
+                strokeWidth: style.strokeWidth,
+                fill: style.fill,
                 sceneFunc: function (ctx) {
                     ctx.beginPath();
                     var scale = (width / 2) / archHeight;
@@ -392,9 +403,9 @@ var app = app || {};
 
             group.find('Line')
                 .closed(true)
-                .stroke('black')
-                .strokeWidth(1)
-                .fill('white');
+                .stroke(style.stroke)
+                .strokeWidth(style.strokeWidth)
+                .fill(style.fill);
 
             return group;
         },
@@ -439,12 +450,14 @@ var app = app || {};
             return objects;
         },
         createMullion: function (section) {
+            var style = module.getStyle('mullions');
+            var fillStyle = module.getStyle('fillings');
             var mullion = new Konva.Rect({
                 name: 'mullion',
                 sectionId: section.id,
-                stroke: 'black',
-                fill: 'white',
-                strokeWidth: 1
+                stroke: style.default.stroke,
+                fill: style.default.fill,
+                strokeWidth: style.default.strokeWidth
             });
 
             mullion.setAttrs(section.mullionParams);
@@ -469,13 +482,13 @@ var app = app || {};
                 (section.sections[1].sashType === 'fixed_in_frame') && !isSelected;
 
             if (isVerticalInvisible && !isSelected) {
-                mullion.fill('lightgreen');
-                mullion.opacity(0.5);
+                mullion.fill(style.hidden.fill);
+                mullion.opacity(style.hidden.opacity);
             } else if ((isVerticalInvisible || isHorizontalInvisible) && isSelected) {
-                mullion.opacity(0.7);
-                mullion.fill('#4E993F');
+                mullion.opacity(style.hidden_selected.opacity);
+                mullion.fill(style.hidden_selected.fill);
             } else if (isSelected) {
-                mullion.fill('lightgrey');
+                mullion.fill(style.default_selected.fill);
             }
 
             if (hideVerticalMullion) {
@@ -483,7 +496,7 @@ var app = app || {};
             }
 
             if (hideHorizontalMullion) {
-                mullion.fill('lightblue');
+                mullion.fill(fillStyle.glass.fill);
             }
 
             return mullion;
@@ -658,6 +671,7 @@ var app = app || {};
         createHandle: function (section, params) {
             var type = section.sashType;
             var offset = params.frameWidth / 2;
+            var style = module.getStyle('handle');
             var pos = {
                 x: null,
                 y: null,
@@ -688,8 +702,8 @@ var app = app || {};
                 x: pos.x,
                 y: pos.y,
                 rotation: pos.rotation,
-                stroke: 'black',
-                fill: 'rgba(0,0,0,0.2)',
+                stroke: style.stroke,
+                fill: style.fill,
                 sceneFunc: function (ctx) {
                     ctx.beginPath();
                     ctx.rect(-23, -23, 46, 55);
@@ -702,8 +716,9 @@ var app = app || {};
         },
         createDirectionLine: function (section) {
             var type = section.sashType;
+            var style = module.getStyle('direction_line');
             var directionLine = new Konva.Shape({
-                stroke: 'black',
+                stroke: style.stroke,
                 x: section.glassParams.x - section.sashParams.x,
                 y: section.glassParams.y - section.sashParams.y,
                 sceneFunc: function (ctx) {
@@ -868,6 +883,8 @@ var app = app || {};
             var fillHeight = params.height;
             var filling;
 
+            var style = module.getStyle('fillings');
+
             if (!section.arched) {
                 filling = new Konva.Shape({
                     name: 'filling',
@@ -876,7 +893,7 @@ var app = app || {};
                     y: fillY,
                     width: fillWidth,
                     height: fillHeight,
-                    fill: 'lightblue',
+                    fill: style.glass.fill,
                     sceneFunc: function (ctx) {
                         ctx.beginPath();
                         ctx.rect(0, 0, this.width(), this.height());
@@ -895,7 +912,7 @@ var app = app || {};
                 });
 
                 if (section.fillingType === 'louver') {
-                    filling.stroke('black');
+                    filling.stroke(style.louver.stroke);
                 }
             } else {
                 var arcPos = model.getArchedPosition();
@@ -905,7 +922,7 @@ var app = app || {};
                     sectionId: section.id,
                     x: fillX,
                     y: fillY,
-                    fill: 'lightblue',
+                    fill: style.glass.fill,
                     sceneFunc: function (ctx) {
                         ctx.beginPath();
                         ctx.moveTo(0, fillHeight);
@@ -920,7 +937,7 @@ var app = app || {};
             }
 
             if (section.fillingType && section.fillingType !== 'glass') {
-                filling.fill('lightgrey');
+                filling.fill(style.others.fill);
             }
 
             return filling;
@@ -939,6 +956,8 @@ var app = app || {};
             var glazing_bar_width = model.get('glazing_bar_width');
             var data;
             var space;
+
+            var style = module.getStyle('bars');
 
             var _from;
             var _to;
@@ -970,7 +989,7 @@ var app = app || {};
                     y: _from,
                     width: glazing_bar_width,
                     height: _to - _from,
-                    fill: 'white',
+                    fill: style.normal.fill,
                     listening: false
                 });
                 group.add(bar);
@@ -1002,7 +1021,7 @@ var app = app || {};
                     y: fillY + space - (glazing_bar_width / 2),
                     width: _to - _from,
                     height: glazing_bar_width,
-                    fill: 'white',
+                    fill: style.normal.fill,
                     listening: false
                 });
                 group.add(bar);
@@ -1018,12 +1037,13 @@ var app = app || {};
             var fillY = params.y;
             var fillWidth = params.width;
             var fillHeight = params.height;
+            var style = module.getStyle('selection');
             // usual rect
             if (!section.arched) {
                 return new Konva.Rect({
                     width: section.sashParams.width,
                     height: section.sashParams.height,
-                    fill: 'rgba(0,0,0,0.2)'
+                    fill: style.fill
                 });
             }
 
@@ -1033,7 +1053,7 @@ var app = app || {};
             return new Konva.Shape({
                 x: fillX,
                 y: fillY,
-                fill: 'rgba(0,0,0,0.2)',
+                fill: style.fill,
                 sceneFunc: function (ctx) {
                     ctx.beginPath();
                     ctx.moveTo(0, fillHeight);

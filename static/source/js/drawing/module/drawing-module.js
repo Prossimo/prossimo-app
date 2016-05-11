@@ -208,14 +208,67 @@ var app = app || {};
         assignDefaultStyles: function (opts) {
             // Default styles
             var styles = {
-                frames: {
-
+                flush_frame: {
+                    fill: 'lightgrey',
+                    stroke: 'black',
+                    strokeWidth: 1
+                },
+                frame: {
+                    fill: 'white',
+                    stroke: 'black',
+                    strokeWidth: 1
+                },
+                door_bottom: {
+                    fill: 'grey',
+                    stroke: 'black',
+                    strokeWidth: 1
                 },
                 mullions: {
-
+                    default: {
+                        fill: 'white',
+                        stroke: 'black',
+                        strokeWidth: 1
+                    },
+                    default_selected: {
+                        fill: 'lightgrey'
+                    },
+                    hidden: {
+                        fill: 'lightgreen',
+                        opacity: 0.5
+                    },
+                    hidden_selected: {
+                        fill: '#4E993F',
+                        opacity: 0.7
+                    }
+                },
+                selection: {
+                    fill: 'rgba(0,0,0,0.2)'
                 },
                 fillings: {
-
+                    glass: {
+                        fill: 'lightblue'
+                    },
+                    louver: {
+                        stroke: 'black'
+                    },
+                    others: {
+                        fill: 'lightgrey'
+                    }
+                },
+                bars: {
+                    normal: {
+                        fill: 'white'
+                    },
+                    selected: {
+                        fill: 'yellow'
+                    }
+                },
+                handle: {
+                    fill: 'rgba(0,0,0,0.2)',
+                    stroke: 'black'
+                },
+                direction_line: {
+                    stroke: 'black'
                 },
                 measurements: {
                     label: {
@@ -231,12 +284,53 @@ var app = app || {};
                     arrows: {
                         stroke: 'grey',
                         strokeWidth: 0.5
+                    },
+                    controls: {
+                        normal: {
+                            fill: '#66B6E3',
+                            opacity: 0.5
+                        },
+                        hover: {
+                            fill: '#1A8BEF'
+                        }
+                    },
+                    select: {
+                        normal: {
+                            fill: '#33CE10',
+                            opacity: 0.5
+                        },
+                        hover: {
+                            opacity: 0.75
+                        }
+                    }
+                },
+                overlay_measurements: {
+                    label: {
+                        fill: 'white',
+                        stroke: 'grey',
+                        color: '#444',
+                        strokeWidth: 0.5,
+                        padding: 3,
+                        fontSize: 9,
+                        fontSize_big: 10
                     }
                 },
                 indexes: {
                     align: 'center',
                     fontFamily: 'pt-sans',
                     fontSize: 15
+                },
+                glazing_controls: {
+                    bound: {
+                        fill: 'green',
+                        radius: 3,
+                        normal: {
+                            opacity: 0.7
+                        },
+                        hover: {
+                            opacity: 0.3
+                        }
+                    }
                 }
             };
 

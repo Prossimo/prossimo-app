@@ -429,7 +429,6 @@ var app = app || {};
         setState: function (state) {
             this.state = _.assign(this.state, state);
             this.updateUI();
-            // this.updateCanvas();
             this.$('#drawing').focus();
             this.trigger('onSetState');
         },

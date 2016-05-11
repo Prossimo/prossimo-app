@@ -103,28 +103,30 @@ var app = app || {};
             var bar = this.section.bars[params.bar.type][params.bar.index];
             var id;
 
-            if ( !('id' in bar) ) {
-                bar.id = _.uniqueId();
-            }
-
-            if ( !('links' in bar) ) {
-                bar.links = [null, null];
-            }
-
-            if (params.link === null) {
-                id = null;
-            }
-
-            if ( params.link !== null ) {
-                if ( !('id' in params.link) ) {
-                    params.link.id = _.uniqueId();
+            if (_.isObject(bar)) {
+                if ( !('id' in bar) ) {
+                    bar.id = _.uniqueId();
                 }
 
-                id = params.link.id;
-            }
+                if ( !('links' in bar) ) {
+                    bar.links = [null, null];
+                }
 
-            bar.links[params.bar.edge] = id;
-            model.setSectionBars( this.section.id, this.section.bars );
+                if (params.link === null) {
+                    id = null;
+                }
+
+                if ( params.link !== null ) {
+                    if ( !('id' in params.link) ) {
+                        params.link.id = _.uniqueId();
+                    }
+
+                    id = params.link.id;
+                }
+
+                bar.links[params.bar.edge] = id;
+                model.setSectionBars( this.section.id, this.section.bars );
+            }
 
             this.resetStates();
         },
@@ -271,13 +273,14 @@ var app = app || {};
         },
         createGlass: function ( params ) {
             var group = new Konva.Group();
+            var style = module.getStyle('fillings');
 
             var glass = new Konva.Rect({
                 x: params.x,
                 y: params.y,
                 width: params.width,
                 height: params.height,
-                fill: 'lightblue'
+                fill: style.glass.fill
             });
 
             group.add(glass);
@@ -542,13 +545,15 @@ var app = app || {};
             return controls;
         },
         createBoundControl: function (params) {
+            var style = module.getStyle('glazing_controls');
             var circle = new Konva.Circle({
                 name: 'control',
                 x: params.position.x,
                 y: params.position.y,
-                radius: model.get('glazing_bar_width') * 3,
-                fill: 'green',
-                opacity: (module.getState('hoverControl') === params.index) ? 0.7 : 0.3
+                radius: model.get('glazing_bar_width') * style.bound.radius,
+                fill: style.bound.fill,
+                opacity: (module.getState('hoverControl') === params.index) ?
+                            style.bound.hover.opacity : style.bound.normal.opacity
             });
 
             circle

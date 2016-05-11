@@ -608,19 +608,20 @@ var app = app || {};
         },
         createControl: function (width, height) {
             var view = this;
+            var style = module.getStyle('measurements');
             var control = new Konva.Rect({
                 width: width,
                 height: height,
-                fill: '#66B6E3',
-                opacity: 0.5
+                fill: style.controls.normal.fill,
+                opacity: style.controls.normal.opacity
             });
 
             control.on('mouseover', function () {
-                control.fill('#1A8BEF');
+                control.fill(style.controls.hover.fill);
                 view.updateLayer();
             });
             control.on('mouseout', function () {
-                control.fill('#66B6E3');
+                control.fill(style.controls.normal.fill);
                 view.updateLayer();
             });
 
@@ -768,6 +769,7 @@ var app = app || {};
         createMeasurementSelectUI: function (event, opts) {
             var view = this;
             var contolSize = metricSize / 4;
+            var style = module.getStyle('measurements');
 
             var min = 'min';
             var max = 'max';
@@ -815,8 +817,8 @@ var app = app || {};
                 }
 
                 var control = new Konva.Rect({
-                    fill: '#33CE10',
-                    opacity: 0.5,
+                    fill: style.select.normal.fill,
+                    opacity: style.select.normal.opacity,
                     width: width,
                     height: height
                 });
@@ -847,11 +849,11 @@ var app = app || {};
                     view.updateLayer();
                 });
                 control.on('mouseover', function () {
-                    control.opacity(0.75);
+                    control.opacity(style.select.hover.opacity);
                     view.updateLayer();
                 });
                 control.on('mouseout', function () {
-                    control.opacity(0.5);
+                    control.opacity(style.select.normal.opacity);
                     view.updateLayer();
                 });
 
@@ -1019,6 +1021,7 @@ var app = app || {};
             }
 
             var view = this;
+            var style = module.getStyle('overlay_measurements');
             var group = new Konva.Group();
             var root = (module.getState('openingView')) ? model.generateFullRoot() : model.generateFullReversedRoot();
             var results = [];
@@ -1033,17 +1036,6 @@ var app = app || {};
                     x: metric.params.x * ratio,
                     y: metric.params.y * ratio
                 };
-                var style = {
-                    label: {
-                        fill: 'white',
-                        stroke: 'grey',
-                        color: '#444',
-                        strokeWidth: 0.5,
-                        padding: 3,
-                        fontSize: 9,
-                        fontSize_big: 10
-                    }
-                };
                 var vertical = view.createVerticalMetric(
                                 mSize / 2,
                                 height,
@@ -1051,7 +1043,7 @@ var app = app || {};
                                     getter: function () {
                                         return metric.params.height;
                                     }
-                                }, style);
+                                }, style.label);
                 var horizontal = view.createHorizontalMetric(
                                 width,
                                 mSize / 2,
@@ -1059,7 +1051,7 @@ var app = app || {};
                                     getter: function () {
                                         return metric.params.width;
                                     }
-                                }, style);
+                                }, style.label);
 
                 vertical.position({
                     x: position.x + mSize,
