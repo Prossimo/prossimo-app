@@ -287,289 +287,261 @@ var app = app || {};
         createBars: function (params) {
             var fillX = params.x;
             var fillY = params.y;
+            var fillOffset;
+
             var fillWidth = params.width;
             var fillHeight = params.height;
+            var fillSize;
 
             var pos_from = 0;
             var size_to = 0;
 
             var group = new Konva.Group();
 
-            var hBarCount = this.getBarsCount().horizontal;
-            var vBarCount = this.getBarsCount().vertical;
             var data;
             var position;
             var nullPos;
 
             var bar;
             var tbar;
-            var line;
-            var area;
-            var circle;
             var controls = new Konva.Group();
 
             var edges = [0, 0];
             var isSelected = false;
-            var isCircleHover = false;
-            var isCircleSelected = false;
             var selectedEdge;
 
-            var i;
-            var j;
+            // Universal loop
+            _.each(this.getBarsCount(), function (count, type) {
+                for (var i = 0; i < count; i++) {
+                    data = this.section.bars[type][i];
 
-            // Vertical bars
-            for (i = 0; i < vBarCount; i++) {
-                data = this.section.bars.vertical[i];
+                    isSelected = (
+                        module.getState('selectedBar') !== null &&
+                        module.getState('selectedBar').id === data.id
+                    );
 
-                isSelected = (
-                                module.getState('selectedBar') !== null &&
-                                module.getState('selectedBar').id === data.id
-                            );
+                    pos_from = 0;
 
-                pos_from = 0;
-                position = fillX + data.position;
-                size_to = fillHeight;
+                    fillOffset = (type === 'vertical') ? fillX : fillY;
+                    fillSize = (type === 'vertical') ? fillHeight : fillWidth;
 
-                if (data.links) {
-                    if (data.links[0] !== null) {
-                        tbar = model.getBar(this.section.id, data.links[0]);
-                        pos_from = (tbar !== null && 'position' in tbar) ? tbar.position : 0;
-                    }
+                    position = fillOffset + data.position;
+                    size_to = fillSize;
 
-                    if (data.links[1] !== null) {
-                        tbar = model.getBar(this.section.id, data.links[1]);
-                        size_to = (tbar !== null && 'position' in tbar) ? fillY + tbar.position : fillHeight;
-                    }
-                }
-
-                edges[0] = fillY + pos_from;
-                edges[1] = size_to;
-
-                bar = new Konva.Group({
-                    name: 'bar'
-                });
-                line = new Konva.Rect({
-                    x: position - (model.get('glazing_bar_width') / 2),
-                    y: fillY + pos_from,
-                    width: model.get('glazing_bar_width'),
-                    height: size_to - pos_from,
-                    fill: (isSelected) ? 'yellow' : 'white'
-                });
-                area = new Konva.Rect({
-                    x: position - (model.get('glazing_bar_width') * 2),
-                    y: fillY + pos_from,
-                    width: model.get('glazing_bar_width') * 4,
-                    height: size_to - pos_from
-                });
-
-                bar.on('click', this.handleBarClick.bind(this, data));
-                bar.add(area, line);
-
-                // Draw controls to switch edges
-                if (isSelected && module.getState('selectedEdge') === null) {
-                    // 1. Draw controls to select edge
-                    for (j = 0; j < 2; j++) {
-                        isCircleHover = (module.getState('hoverEdge') === j);
-
-                        if (!isCircleSelected) {
-                            circle = new Konva.Circle({
-                                name: 'edge',
-                                x: position,
-                                y: edges[j],
-                                radius: model.get('glazing_bar_width') * 3,
-                                fill: 'red',
-                                opacity: (isCircleHover) ? 0.7 : 0.3
-                            });
-
-                            circle
-                                .on('mouseover', this.handleEdgeOver.bind(this, j))
-                                .on('mouseout', this.handleEdgeOut.bind(this, j))
-                                .on('click', this.handleEdgeClick.bind(this, j));
-
-                            controls.add(circle);
-                        }
-                    }
-                } else if (isSelected && module.getState('selectedEdge') !== null) {
-                    // 2. Draw controls to bound selected edge
-                    selectedEdge = module.getState('selectedEdge');
-
-                    // Draw controls for intersection with horizontal bars
-                    for (j = 0; j < hBarCount; j++) {
-
-                        if (
-                            _.isArray(data.links) && data.links.indexOf(this.section.bars.horizontal[j].id) !== -1
-                        ) {
-                            continue;
+                    if (data.links) {
+                        if (data.links[0] !== null) {
+                            tbar = model.getBar(this.section.id, data.links[0]);
+                            pos_from = (tbar !== null && 'position' in tbar) ? tbar.position : fillOffset;
                         }
 
-                        controls.add( this.createEdgeControl({
-                            index: j,
-                            edge: selectedEdge,
+                        if (data.links[1] !== null) {
+                            tbar = model.getBar(this.section.id, data.links[1]);
+
+                            if (type === 'vertical') {
+                                size_to = (tbar !== null && 'position' in tbar) ? tbar.position : fillSize;
+                            } else {
+                                size_to = (tbar !== null && 'position' in tbar) ? tbar.position : fillSize;
+                            }
+                        }
+                    }
+
+                    edges[0] = (type === 'vertical') ? pos_from : fillX + pos_from;
+                    edges[1] = (type === 'vertical') ? size_to : fillX + size_to;
+
+                    bar = this.createBar({
+                        type: type,
+                        isSelected: isSelected,
+                        position: position,
+                        from: pos_from,
+                        to: size_to,
+                        offset: {
+                            fillX: fillX,
+                            fillY: fillY
+                        },
+                        data: data
+                    });
+
+                    // Draw controls to switch edges
+                    if (isSelected && module.getState('selectedEdge') === null) {
+                        // 1. Draw controls to select edge
+                        controls.add( this.createEdgeControls({
+                            type: type,
+                            position: position,
+                            edges: edges
+                        }) );
+                    } else if (isSelected && module.getState('selectedEdge') !== null) {
+                        // 2. Draw controls to bound selected edge
+                        selectedEdge = module.getState('selectedEdge');
+
+                        var invertedType = (type === 'vertical') ? 'horizontal' : 'vertical';
+
+                        // Draw controls for intersection with horizontal bars
+                        for (var j = 0; j < this.getBarsCount()[invertedType]; j++) {
+
+                            if (
+                                _.isArray(data.links) &&
+                                data.links.indexOf(this.section.bars[invertedType][j].id) !== -1
+                            ) {
+                                continue;
+                            }
+
+                            controls.add( this.createBoundControl({
+                                index: j,
+                                edge: selectedEdge,
+                                bar: {
+                                    type: type,
+                                    index: i,
+                                    edge: selectedEdge
+                                },
+                                link: this.section.bars[invertedType][j],
+                                position: (type === 'vertical') ?
+                                    {
+                                        x: position,
+                                        y: fillY + this.section.bars[invertedType][j].position
+                                    } : {
+                                        x: fillX + this.section.bars.vertical[j].position,
+                                        y: position
+                                    }
+                            }) );
+                        }
+                        // Draw controls at section edge:
+                        // For edge with key === 0 - null means section edge at left/top side
+                        // For 1 - right/bottom side
+                        nullPos = (selectedEdge === 0) ? 0 : fillHeight;
+
+                        controls.add( this.createBoundControl({
+                            index: -1,
                             bar: {
                                 type: 'vertical',
                                 index: i,
                                 edge: selectedEdge
                             },
-                            link: this.section.bars.horizontal[j],
-                            position: {
-                                x: position,
-                                y: fillY + this.section.bars.horizontal[j].position
-                            }
-                        }) );
-                    }
-                    // Draw controls at section edge:
-                    // For edge with key === 0 - null means section edge at left/top side
-                    // For 1 - right/bottom side
-                    nullPos = (selectedEdge === 0) ? 0 : fillHeight;
-
-                    controls.add( this.createEdgeControl({
-                        index: -1,
-                        bar: {
-                            type: 'vertical',
-                            index: i,
-                            edge: selectedEdge
-                        },
-                        edge: selectedEdge,
-                        link: null,
-                        position: {
-                            x: position,
-                            y: fillY + nullPos
-                        }
-                    }) );
-                }
-
-                group.add(bar);
-            }
-
-            // Horizontal bars
-            for (i = 0; i < hBarCount; i++) {
-                data = this.section.bars.horizontal[i];
-
-                isSelected = (
-                                module.getState('selectedBar') !== null &&
-                                module.getState('selectedBar').id === data.id
-                            );
-
-                pos_from = 0;
-                position = fillY + data.position;
-                size_to = fillWidth;
-
-                if (data.links) {
-                    if (data.links[0] !== null) {
-                        tbar = model.getBar(this.section.id, data.links[0]);
-                        pos_from = (tbar !== null && 'position' in tbar) ? tbar.position : 0;
-                    }
-
-                    if (data.links[1] !== null) {
-                        tbar = model.getBar(this.section.id, data.links[1]);
-                        size_to = (tbar !== null && 'position' in tbar) ? tbar.position : fillWidth;
-                    }
-                }
-
-                edges[0] = pos_from;
-                edges[1] = size_to;
-
-                bar = new Konva.Group({
-                    name: 'bar'
-                });
-                line = new Konva.Rect({
-                    x: fillX + pos_from,
-                    y: position - (model.get('glazing_bar_width') / 2),
-                    width: size_to - pos_from,
-                    height: model.get('glazing_bar_width'),
-                    fill: (module.getState('selectedBar') === data) ? 'yellow' : 'white'
-                });
-                area = new Konva.Rect({
-                    x: fillX + pos_from,
-                    y: position - (model.get('glazing_bar_width') * 2),
-                    width: size_to - pos_from,
-                    height: model.get('glazing_bar_width') * 4
-                });
-
-                bar.on('click', this.handleBarClick.bind(this, data));
-                bar.add(area, line);
-
-                // Draw controls to switch edges
-                if (isSelected && module.getState('selectedEdge') === null) {
-                    for (j = 0; j < 2; j++) {
-                        isCircleSelected = (module.getState('selectedEdge') === j);
-                        isCircleHover = (module.getState('hoverEdge') === j);
-
-                        if (!isCircleSelected) {
-                            circle = new Konva.Circle({
-                                name: 'edge',
-                                x: fillX + edges[j],
-                                y: position,
-                                radius: model.get('glazing_bar_width') * 3,
-                                fill: 'red',
-                                opacity: (isCircleHover) ? 0.7 : 0.3
-                            });
-
-                            circle
-                                .on('mouseover', this.handleEdgeOver.bind(this, j))
-                                .on('mouseout', this.handleEdgeOut.bind(this, j))
-                                .on('click', this.handleEdgeClick.bind(this, j));
-
-                            controls.add(circle);
-                        }
-                    }
-                } else if (isSelected && module.getState('selectedEdge') !== null) {
-                    // 2. Draw controls to bound selected edge
-                    selectedEdge = module.getState('selectedEdge');
-
-                    // Draw controls for intersection with horizontal bars
-                    for (j = 0; j < vBarCount; j++) {
-
-                        if (
-                            _.isArray(data.links) && data.links.indexOf(this.section.bars.vertical[j].id) !== -1
-                        ) {
-                            continue;
-                        }
-
-                        controls.add( this.createEdgeControl({
-                            index: j,
                             edge: selectedEdge,
-                            bar: {
-                                type: 'horizontal',
-                                index: i,
-                                edge: selectedEdge
-                            },
-                            link: this.section.bars.vertical[j],
-                            position: {
-                                x: fillX + this.section.bars.vertical[j].position,
-                                y: position
-                            }
+                            link: null,
+                            position: (type === 'vertical') ?
+                                {
+                                    x: position,
+                                    y: fillY + nullPos
+                                } :
+                                {
+                                    x: fillX + nullPos,
+                                    y: position
+                                }
                         }) );
                     }
-                    // Draw controls at section edge:
-                    // For edge with key === 0 - null means section edge at left/top side
-                    // For 1 - right/bottom side
-                    nullPos = (selectedEdge === 0) ? 0 : fillWidth;
 
-                    controls.add( this.createEdgeControl({
-                        index: -1,
-                        bar: {
-                            type: 'horizontal',
-                            index: i,
-                            edge: selectedEdge
-                        },
-                        edge: selectedEdge,
-                        link: null,
-                        position: {
-                            x: fillX + nullPos,
-                            y: position
-                        }
-                    }) );
+                    group.add( bar );
+
                 }
-
-                group.add(bar);
-            }
+            }.bind(this));
 
             group.add(controls);
 
             return group;
         },
-        createEdgeControl: function (params) {
+        createBar: function (params) {
+            var selectedColor = 'yellow';
+            var normalColor = 'white';
+
+            var bar = new Konva.Group({
+                name: 'bar'
+            });
+            var opts = {
+                line: {},
+                area: {}
+            };
+
+            // Position & size
+            if (params.type === 'vertical') {
+                // For vertical bars
+                opts.line = {
+                    x: params.position - (model.get('glazing_bar_width') / 2),
+                    y: params.offset.fillY + params.from,
+                    width: model.get('glazing_bar_width'),
+                    height: params.to - params.from
+                };
+                opts.area = {
+                    x: params.position - (model.get('glazing_bar_width') * 2),
+                    y: params.offset.fillY + params.from,
+                    width: model.get('glazing_bar_width') * 4,
+                    height: params.to - params.from
+                };
+            } else {
+                // For horizontal bars
+                opts.line = {
+                    x: params.offset.fillX + params.from,
+                    y: params.position - (model.get('glazing_bar_width') / 2),
+                    width: params.to - params.from,
+                    height: model.get('glazing_bar_width')
+                };
+                opts.area = {
+                    x: params.offset.fillY + params.from,
+                    y: params.position - (model.get('glazing_bar_width') * 2),
+                    width: params.to - params.from,
+                    height: model.get('glazing_bar_width') * 4
+                };
+            }
+            // Colors
+            opts.line.fill = (params.isSelected) ? selectedColor : normalColor;
+
+            var line = new Konva.Rect(opts.line);
+            var area = new Konva.Rect(opts.area);
+
+            // Events
+            bar.on('click', this.handleBarClick.bind(this, params.data));
+
+            // Grouping
+            bar.add(area, line);
+
+            return bar;
+        },
+        createEdgeControls: function (params) {
+            var controls = new Konva.Group();
+            var circle;
+
+            var opts = {};
+            var isCircleHover;
+            var isCircleSelected;
+
+            for (var j = 0; j < 2; j++) {
+                isCircleSelected = (module.getState('selectedEdge') === j);
+                isCircleHover = (module.getState('hoverEdge') === j);
+
+                if (!isCircleSelected) {
+                    // Position
+                    if (params.type === 'vertical') {
+                        // Vertical
+                        opts = {
+                            x: params.position,
+                            y: params.edges[j]
+                        };
+                    } else {
+                        // Horizontal
+                        opts = {
+                            x: params.edges[j],
+                            y: params.position
+                        };
+                    }
+                    // Styles
+                    opts.name = 'edge';
+                    opts.radius = model.get('glazing_bar_width') * 3;
+                    opts.fill = 'red';
+                    opts.opacity = (isCircleHover) ? 0.7 : 0.3;
+
+                    circle = new Konva.Circle(opts);
+
+                    circle
+                        .on('mouseover', this.handleEdgeOver.bind(this, j))
+                        .on('mouseout', this.handleEdgeOut.bind(this, j))
+                        .on('click', this.handleEdgeClick.bind(this, j));
+
+                    controls.add( circle );
+                }
+            }
+
+            return controls;
+        },
+        createBoundControl: function (params) {
             var circle = new Konva.Circle({
                 name: 'control',
                 x: params.position.x,
@@ -750,7 +722,7 @@ var app = app || {};
 
                         params.setter(mm);
                         view.sortBars();
-                        view.saveBars();
+                        view.saveBars( view.section.bars );
 
                         $wrap.remove();
                     }

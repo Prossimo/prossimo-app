@@ -92,7 +92,7 @@ var app = app || {};
                                 $body: this.ui.$body,
                                 $drawing: this.ui.$drawing
                             },
-                            saveBars: this.saveBars
+                            saveBars: this.saveBars.bind(this)
                         }
                     }
                 },
