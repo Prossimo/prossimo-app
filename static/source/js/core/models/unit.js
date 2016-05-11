@@ -67,7 +67,7 @@ var app = app || {};
         // 'flush-turn-left': 'Flush Panel Left Hinge',
         fixed_in_frame: 'Fixed',
         fixed_in_sash: 'Fixed in Sash',
-        tilt_only: 'Tilt Only Bottom Hung',
+        tilt_only: 'Tilt Only',
         tilt_turn_right: 'Tilt-turn Right Hinge',
         tilt_turn_left: 'Tilt-turn Left Hinge',
         turn_only_right: 'Turn Only Right Hinge',
