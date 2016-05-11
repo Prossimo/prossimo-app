@@ -80,8 +80,6 @@ var app = app || {};
             var bar = this.section.bars[params.bar.type][params.bar.index];
             var id;
 
-            console.log( params, this.section.bars );
-
             if ( !('id' in bar) ) {
                 bar.id = _.uniqueId();
             }
