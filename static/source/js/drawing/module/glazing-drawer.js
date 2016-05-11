@@ -41,32 +41,9 @@ var app = app || {};
                 this.layer.add( this.createView() );
                 // Draw layer
                 this.layer.draw();
-
-                // Detaching and attching events
-                // this.undelegateEvents();
-                // this.delegateEvents();
             }
         },
-        events: {
-            /*
-            // Click
-            'click #back': 'handleBackClick',
-            'click .bar': 'handleBarClick',
-            'click .edge': 'handleEdgeClick',
-            'click .control': 'handleControlClick',
-            // Tap
-            'tap #back': 'handleBackClick',
-            'tap .bar': 'handleBarClick',
-            'tap .edge': 'handleEdgeClick',
-            'tap .control': 'handleControlClick',
-            // Mouse over
-            'mouseover .edge': 'handleEdgeOver',
-            'mouseover .control': 'handleControlOver',
-            // Mouse out
-            'mouseout .edge': 'handleEdgeOut',
-            'mouseout .control': 'handleControlOut'
-            */
-        },
+        events: {},
         // handlers
         handleBarClick: function (data) {
             module.setState({
@@ -103,30 +80,30 @@ var app = app || {};
             var bar = this.section.bars[params.bar.type][params.bar.index];
             var id;
 
-            if (_.isObject(bar)) {
-                if ( !('id' in bar) ) {
-                    bar.id = _.uniqueId();
-                }
+            console.log( params, this.section.bars );
 
-                if ( !('links' in bar) ) {
-                    bar.links = [null, null];
-                }
-
-                if (params.link === null) {
-                    id = null;
-                }
-
-                if ( params.link !== null ) {
-                    if ( !('id' in params.link) ) {
-                        params.link.id = _.uniqueId();
-                    }
-
-                    id = params.link.id;
-                }
-
-                bar.links[params.bar.edge] = id;
-                model.setSectionBars( this.section.id, this.section.bars );
+            if ( !('id' in bar) ) {
+                bar.id = _.uniqueId();
             }
+
+            if ( !('links' in bar) ) {
+                bar.links = [null, null];
+            }
+
+            if (params.link === null) {
+                id = null;
+            }
+
+            if ( params.link !== null ) {
+                if ( !('id' in params.link) ) {
+                    params.link.id = _.uniqueId();
+                }
+
+                id = params.link.id;
+            }
+
+            bar.links[params.bar.edge] = id;
+            model.setSectionBars( this.section.id, this.section.bars );
 
             this.resetStates();
         },
@@ -410,12 +387,12 @@ var app = app || {};
                         // Draw controls at section edge:
                         // For edge with key === 0 - null means section edge at left/top side
                         // For 1 - right/bottom side
-                        nullPos = (selectedEdge === 0) ? 0 : fillHeight;
+                        nullPos = (selectedEdge === 0) ? 0 : fillSize;
 
                         controls.add( this.createBoundControl({
                             index: -1,
                             bar: {
-                                type: 'vertical',
+                                type: type,
                                 index: i,
                                 edge: selectedEdge
                             },
