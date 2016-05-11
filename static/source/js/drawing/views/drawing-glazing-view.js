@@ -91,7 +91,8 @@ var app = app || {};
                             ui: {
                                 $body: this.ui.$body,
                                 $drawing: this.ui.$drawing
-                            }
+                            },
+                            saveBars: this.saveBars
                         }
                     }
                 },
@@ -150,7 +151,9 @@ var app = app || {};
 
                 for (var i = 0; i < vertical_count; i++) {
                     var vbar = {
-                        position: vSpace * (i + 1)
+                        id: _.uniqueId(),
+                        position: vSpace * (i + 1),
+                        links: [null, null]
                     };
 
                     vertical.push(vbar);
@@ -166,7 +169,9 @@ var app = app || {};
 
                 for (var j = 0; j < horizontal_count; j++) {
                     var hbar = {
-                        position: hSpace * (j + 1)
+                        id: _.uniqueId(),
+                        position: hSpace * (j + 1),
+                        links: [null, null]
                     };
 
                     horizontal.push(hbar);
@@ -188,8 +193,33 @@ var app = app || {};
                 height: this.section.glassParams.height
             };
         },
-        saveBars: function () {
-            this.model.setSectionBars( this.section.id, this.section.bars );
+        /* eslint-disable max-nested-callbacks */
+        checkLinks: function (bars) {
+            var view = this;
+            var linked = null;
+
+            _.each(bars, function (arr, type) {
+                _.each(arr, function (bar, index) {
+                    _.each(bar.links, function (link, edge) {
+                        if (link !== null) {
+                            linked = view.model.getBar(view.section.id, link);
+
+                            if (linked === null) {
+                                bars[type][index].links[edge] = null;
+                            }
+                        }
+                    });
+                });
+            });
+
+            return bars;
+        },
+        /* eslint-enable max-nested-callbacks */
+        saveBars: function (newBars) {
+            var bars = (newBars) ? newBars : this.section.bars;
+
+            bars = this.checkLinks( bars );
+            this.model.setSectionBars( this.section.id, bars );
         }
     });
 

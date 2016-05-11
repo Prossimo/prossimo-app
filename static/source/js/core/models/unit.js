@@ -104,6 +104,15 @@ var app = app || {};
         };
     }
 
+    function validateBar(opts, type) {
+        return {
+            id: opts.id || _.uniqueId(),
+            type: opts.type || type,
+            position: opts.position,
+            links: opts.links || [null, null]
+        };
+    }
+
     function getDefaultMeasurements(hasFrame) {
         var result = {};
 
@@ -266,6 +275,12 @@ var app = app || {};
 
             if ( !current_section.bars ) {
                 current_section.bars = getDefaultBars();
+            } else {
+                _.each(current_section.bars, function (barType, type) {
+                    _.each(barType, function (bar, index) {
+                        current_section.bars[type][index] = validateBar( bar, type );
+                    });
+                });
             }
 
             if ( !current_section.measurements ) {
@@ -661,6 +676,21 @@ var app = app || {};
                    (val === 'max') ? 'min' :
                    (val === 'center') ? 'center' :
                    val;
+        },
+        getBar: function (sectionId, id) {
+            var found = null;
+            var section = this.getSection(sectionId);
+
+            _.each(section.bars, function (arr) {
+                _.each(arr, function (bar) {
+                    if (bar.id === id) {
+                        found = bar;
+                        return;
+                    }
+                });
+            });
+
+            return found;
         },
         // @TODO: Add method, that checks for correct values of measurement data
         // @TODO: Add method, that drops measurement data to default

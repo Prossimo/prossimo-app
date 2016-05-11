@@ -937,27 +937,73 @@ var app = app || {};
             var hBarCount = section.bars.horizontal.length;
             var vBarCount = section.bars.vertical.length;
             var glazing_bar_width = model.get('glazing_bar_width');
+            var data;
             var space;
 
+            var _from;
+            var _to;
+            var tbar;
+
             for (var i = 0; i < vBarCount; i++) {
-                space = section.bars.vertical[i].position;
+                data = section.bars.vertical[i];
+                space = data.position;
+
+                _from = 0;
+                _to = fillHeight;
+
+                if (data.links) {
+                    if (data.links[0] !== null) {
+                        tbar = model.getBar(section.id, data.links[0]);
+                        _from = (tbar !== null && 'position' in tbar) ? fillY + tbar.position : fillY;
+                    }
+
+                    if (data.links[1] !== null) {
+                        tbar = model.getBar(section.id, data.links[1]);
+                        _to = (tbar !== null && 'position' in tbar) ? tbar.position : fillHeight;
+                    }
+                }
+
+                _to += fillY;
 
                 bar = new Konva.Rect({
-                    x: fillX + space - (glazing_bar_width / 2), y: fillY,
-                    width: glazing_bar_width, height: fillHeight,
-                    fill: 'white', listening: false
+                    x: fillX + space - (glazing_bar_width / 2),
+                    y: _from,
+                    width: glazing_bar_width,
+                    height: _to - _from,
+                    fill: 'white',
+                    listening: false
                 });
                 group.add(bar);
             }
 
             for (i = 0; i < hBarCount; i++) {
-                space = section.bars.horizontal[i].position;
+                data = section.bars.horizontal[i];
+                space = data.position;
+
+                _from = 0;
+                _to = fillWidth;
+
+                if (data.links) {
+                    if (data.links[0] !== null) {
+                        tbar = model.getBar(section.id, data.links[0]);
+                        _from = (tbar !== null && 'position' in tbar) ? fillX + tbar.position : fillX;
+                    }
+
+                    if (data.links[1] !== null) {
+                        tbar = model.getBar(section.id, data.links[1]);
+                        _to = (tbar !== null && 'position' in tbar) ? tbar.position : fillWidth;
+                    }
+                }
+
+                _to += fillX;
 
                 bar = new Konva.Rect({
-                    x: fillX, y: fillY + space - (glazing_bar_width / 2),
-                    width: fillWidth, height: glazing_bar_width,
-                    fill: 'white', listening: false,
-                    name: 'bar'
+                    x: _from,
+                    y: fillY + space - (glazing_bar_width / 2),
+                    width: _to - _from,
+                    height: glazing_bar_width,
+                    fill: 'white',
+                    listening: false
                 });
                 group.add(bar);
             }
