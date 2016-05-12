@@ -417,6 +417,22 @@ var app = app || {};
             return group;
         },
 
+        clipCircle: function (group) {
+            var root = model.generateFullRoot();
+            var frameWidth = model.profile.get('frame_width');
+            var position = {
+                x: root.sashParams.x,
+                y: root.sashParams.y
+            };
+
+            if (root.circular && root.radius > 0) {
+                group.clipType( 'circle' );
+                group.clipX( position.x );
+                group.clipY( position.y );
+                group.clipRadius( root.radius - frameWidth );
+            }
+        },
+
         createCircleFrame: function (params) {
             var frameWidth = params.frameWidth;
             var radius = params.radius;
@@ -459,6 +475,8 @@ var app = app || {};
 
             sectionsGroup.add.apply(sectionsGroup, sections);
             sectionsGroup.scale({x: ratio, y: ratio});
+
+            this.clipCircle( sectionsGroup );
 
             return sectionsGroup;
         },
