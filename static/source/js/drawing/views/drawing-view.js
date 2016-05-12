@@ -75,20 +75,33 @@ var app = app || {};
             $metrics_opening: '#additional-metrics-opening'
         },
         events: {
+            // Click
             'click .split-section': 'handleSplitSectionClick',
             'click @ui.$sash_types': 'handleChangeSashTypeClick',
             'click #clear-frame': 'handleClearFrameClick',
-            'keydown #drawing': 'handleCanvasKeyDown',
             'click #change-view-button': 'handleChangeView',
             'click .toggle-arched': 'handleArchedClick',
+            'click .toggle-circular': 'handleCircularClick',
+            'click #glazing-bars-popup': 'handleGlazingBarsPopupClick',
+            'click @ui.$undo': 'handleUndoClick',
+            'click @ui.$redo': 'handleRedoClick',
+            // Tap
+            'tap .split-section': 'handleSplitSectionClick',
+            'tap @ui.$sash_types': 'handleChangeSashTypeClick',
+            'tap #clear-frame': 'handleClearFrameClick',
+            'tap #change-view-button': 'handleChangeView',
+            'tap .toggle-arched': 'handleArchedClick',
+            'tap .toggle-circular': 'handleCircularClick',
+            'tap #glazing-bars-popup': 'handleGlazingBarsPopupClick',
+            'tap @ui.$undo': 'handleUndoClick',
+            'tap @ui.$redo': 'handleRedoClick',
+            // Others
+            'keydown #drawing': 'handleCanvasKeyDown',
             'change #vertical-bars-number': 'handleBarNumberChange',
             'input #vertical-bars-number': 'handleBarNumberChange',
             'change #horizontal-bars-number': 'handleBarNumberChange',
             'input #horizontal-bars-number': 'handleBarNumberChange',
             'change #filling-select': 'handleFillingTypeChange',
-            'click #glazing-bars-popup': 'handleGlazingBarsPopupClick',
-            'click @ui.$undo': 'handleUndoClick',
-            'click @ui.$redo': 'handleRedoClick',
             'change @ui.$metrics_glass': 'handleAdditionalMetricsChange',
             'change @ui.$metrics_opening': 'handleAdditionalMetricsChange'
         },
@@ -175,6 +188,18 @@ var app = app || {};
                     section.archPosition = Math.min(width / 2, height);
                 }
             }.bind(this));
+        },
+        handleCircularClick: function () {
+            if (!this.state.selectedSashId) {
+                console.warn('no sash selected');
+                return;
+            }
+
+            var width = this.model.getInMetric('width', 'mm');
+            var height = this.model.getInMetric('height', 'mm');
+            var radius = Math.min(width, height) / 2;
+
+            this.model.setCircular( this.state.selectedSashId, radius );
         },
         handleClearFrameClick: function () {
             this.deselectAll();
@@ -339,6 +364,7 @@ var app = app || {};
             var selectedSashId = this.state.selectedSashId;
             var selectedSash = this.model.getSection(selectedSashId);
             var isArched = selectedSash && selectedSash.arched;
+            var isCircular = selectedSash && selectedSash.circular;
 
             this.ui.$bars_control.toggle(
                 !isArched &&
@@ -369,13 +395,21 @@ var app = app || {};
 
             this.ui.$filling_select.selectpicker('render');
 
+            // Toggle arched controls
             this.$('.toggle-arched').toggle(
                 selectedSash &&
                 this.model.isArchedPossible(selectedSashId)
             );
+            this.$('.remove-arched').toggle(!!isArched && !isCircular);
+            this.$('.add-arched').toggle(!isArched && !isCircular);
 
-            this.$('.remove-arched').toggle(!!isArched);
-            this.$('.add-arched').toggle(!isArched);
+            // Toggle circular controls
+            this.$('.toggle-circular').toggle(
+                selectedSash &&
+                this.model.isCircularPossible(selectedSashId)
+            );
+            this.$('.remove-circular').toggle(!!isCircular && !isArched);
+            this.$('.add-circular').toggle(!isCircular && !isArched);
 
             // Undo/Redo: Register buttons once!
             if (!this.undoManager.registered) {

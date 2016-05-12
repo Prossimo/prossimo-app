@@ -154,6 +154,18 @@ var app = app || {};
         return type;
     }
 
+    function findParent(root, childId) {
+        if (root.sections.length === 0) {
+            return null;
+        }
+
+        if (root.sections[0].id === childId || root.sections[1].id === childId) {
+            return root;
+        }
+
+        return findParent(root.sections[0], childId) || findParent(root.sections[1], childId);
+    }
+
     app.Unit = Backbone.Model.extend({
         defaults: function () {
             var defaults = {};
@@ -483,21 +495,26 @@ var app = app || {};
         isOpeningDirectionOutward: function () {
             return this.get('opening_direction') === 'Outward';
         },
-        isArchedPossible: function (sashId) {
-            // TODO: move function outside
-            // is it useful somewhere else ?
-            function findParent(root, childId) {
-                if (root.sections.length === 0) {
-                    return null;
-                }
+        isCircularPossible: function (sashId) {
+            var root = this.generateFullRoot();
+            var parent = findParent(root, sashId);
 
-                if (root.sections[0].id === childId || root.sections[1].id === childId) {
-                    return root;
-                }
-
-                return findParent(root.sections[0], childId) || findParent(root.sections[1], childId);
+            if (!parent) {
+                return true;
             }
 
+            return false;
+        },
+        getCircleRadius: function () {
+            var root = this.generateFullRoot();
+
+            if (root.circular) {
+                return root.radius;
+            }
+
+            return null;
+        },
+        isArchedPossible: function (sashId) {
             var root = this.generateFullRoot();
 
             if (app.Unit.findSection(root, sashId).sashType !== 'fixed_in_frame') {
@@ -541,7 +558,6 @@ var app = app || {};
 
             if (root.arched) {
                 return root.archPosition;
-                // return Math.min(this.getInMetric('width', 'mm') / 2, this.getInMetric('height', 'mm'));
             }
 
             while (true) {
@@ -594,6 +610,19 @@ var app = app || {};
 
             this.persist('root_section', rootSection);
             this.trigger('change', this);
+        },
+        setCircular: function (sashId, radius) {
+            var section = this.getSection( sashId );
+
+            if (this.isRootSection(section.id)) {
+                this._updateSection(sashId, function (sash) {
+                    sash.circular = !sash.circular;
+                    sash.radius = radius;
+                });
+
+                this.setInMetric('width', radius * 2, 'mm');
+                this.setInMetric('height', radius * 2, 'mm');
+            }
         },
         setSectionSashType: function (sectionId, type) {
             if (!_.includes(SASH_TYPES, type)) {
