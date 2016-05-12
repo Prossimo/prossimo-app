@@ -618,6 +618,9 @@ var app = app || {};
                 this._updateSection(sashId, function (sash) {
                     sash.circular = !sash.circular;
                     sash.radius = radius;
+
+                    // Reset bars parameter
+                    sash.bars = getDefaultBars();
                 });
 
                 this.setInMetric('width', radius * 2, 'mm');

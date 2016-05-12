@@ -14,7 +14,7 @@ module.exports = function (grunt) {
         'bootstrap/js/modal.js',
         'bootstrap-select/dist/js/bootstrap-select.min.js',
         'bootstrap-toggle/js/bootstrap-toggle.min.js',
-        'konva/konva.js',
+        'konva/konva.min.js',
         'decimal.js/decimal.min.js',
         'Backbone.Undo.js/Backbone.Undo.js',
         'backbone.KonvaView/backbone.KonvaView.js'

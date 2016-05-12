@@ -429,7 +429,17 @@ var app = app || {};
                 innerRadius: radius - frameWidth,
                 outerRadius: radius,
                 angle: 360,
-                fill: style.fill,
+                fill: style.fill
+            }), new Konva.Circle({
+                x: radius,
+                y: radius,
+                radius: radius - frameWidth,
+                stroke: style.stroke,
+                strokeWidth: style.strokeWidth
+            }), new Konva.Circle({
+                x: radius,
+                y: radius,
+                radius: radius,
                 stroke: style.stroke,
                 strokeWidth: style.strokeWidth
             }) );
