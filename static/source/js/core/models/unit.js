@@ -611,20 +611,43 @@ var app = app || {};
             this.persist('root_section', rootSection);
             this.trigger('change', this);
         },
-        setCircular: function (sashId, radius) {
-            var section = this.getSection( sashId );
+        setCircular: function (sectionId, opts) {
+            this._updateSection(sectionId, function (section) {
+                if (opts.circular !== undefined) {
+                    // Set circular
+                    section.circular = !!opts.circular;
+                    // Reset bars
+                    section.bars = getDefaultBars();
+                }
 
-            if (this.isRootSection(section.id)) {
-                this._updateSection(sashId, function (sash) {
-                    sash.circular = !sash.circular;
-                    sash.radius = radius;
+                if (section.circular) {
+                    // Set radius
+                    section.radius = opts.radius / 2;
+                } else {
+                    // Reset radius
+                    section.radius = 0;
+                }
+            });
 
-                    // Reset bars parameter
-                    sash.bars = getDefaultBars();
+            if (opts.radius) {
+                // Set equal width and height
+                this.setInMetric('width', opts.radius, 'mm', true);
+                this.setInMetric('height', opts.radius, 'mm', true);
+            }
+        },
+        toggleCircular: function (sectionId, val) {
+
+            if (this.isRootSection(sectionId)) {
+                var section = this.getSection( sectionId );
+
+                var width = this.getInMetric('width', 'mm');
+                var height = this.getInMetric('height', 'mm');
+                var radius = Math.min(width, height);
+
+                this.setCircular(sectionId, {
+                    circular: val || !section.circular,
+                    radius: radius
                 });
-
-                this.setInMetric('width', radius * 2, 'mm');
-                this.setInMetric('height', radius * 2, 'mm');
             }
         },
         setSectionSashType: function (sectionId, type) {
@@ -1116,15 +1139,21 @@ var app = app || {};
 
             return app.utils.convert.inches_to_mm(this.get(attr));
         },
-        setInMetric: function (attr, val, metric) {
+        setInMetric: function (attr, val, metric, prevent) {
             if (!metric || (['mm', 'inches'].indexOf(metric) === -1)) {
                 throw new Error('Set metric! "mm" or "inches"');
             }
 
-            if (metric === 'inches') {
-                this.set(attr, val);
-            } else {
-                this.set(attr, app.utils.convert.mm_to_inches(val));
+            val = (metric === 'inches') ? val : app.utils.convert.mm_to_inches(val);
+
+            this.set(attr, val);
+
+            if (this.getCircleRadius() !== null && !prevent) {
+                var root = this.generateFullRoot();
+
+                this.setCircular( root.id, {
+                    radius: app.utils.convert.inches_to_mm(val)
+                } );
             }
         },
         clearFrame: function () {

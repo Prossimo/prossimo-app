@@ -195,11 +195,7 @@ var app = app || {};
                 return;
             }
 
-            var width = this.model.getInMetric('width', 'mm');
-            var height = this.model.getInMetric('height', 'mm');
-            var radius = Math.min(width, height) / 2;
-
-            this.model.setCircular( this.state.selectedSashId, radius );
+            this.model.toggleCircular( this.state.selectedSashId );
         },
         handleClearFrameClick: function () {
             this.deselectAll();

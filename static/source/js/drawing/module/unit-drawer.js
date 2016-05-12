@@ -435,13 +435,15 @@ var app = app || {};
                 y: radius,
                 radius: radius - frameWidth,
                 stroke: style.stroke,
-                strokeWidth: style.strokeWidth
+                strokeWidth: style.strokeWidth,
+                listening: false
             }), new Konva.Circle({
                 x: radius,
                 y: radius,
                 radius: radius,
                 stroke: style.stroke,
-                strokeWidth: style.strokeWidth
+                strokeWidth: style.strokeWidth,
+                listening: false
             }) );
 
             return group;
