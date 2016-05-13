@@ -194,7 +194,7 @@ var app = app || {};
 
             return group;
         },
-        createCircularSashFrame: function (params) {
+        createCircleSashFrame: function (params) {
             var section = params.section;
             var frameWidth = params.frameWidth; // in mm
             var data = params.data;
@@ -221,8 +221,6 @@ var app = app || {};
             } else {
                 // Otherwise it's a sash inside one of children section, so this sash have an arc side
             }
-
-            // console.log('!', section, data);
 
             return group;
         },
@@ -471,7 +469,9 @@ var app = app || {};
             var frameWidth = params.frameWidth;
             var radius = params.radius;
             var style = module.getStyle('frame');
-            var group = new Konva.Group();
+            var group = new Konva.Group({
+                name: 'frame'
+            });
 
             group.add( new Konva.Arc({
                 x: radius,
@@ -507,9 +507,26 @@ var app = app || {};
             // create sections(sashes) recursively
             var sections = this.createSections(root);
 
-            sectionsGroup.add.apply(sectionsGroup, sections);
+            var radius = model.getCircleRadius();
+            var frameWidth = model.profile.get('frame_width');
+            // var sashFrameWidth = model.profile.get('sash_frame_width');
+
+            _.each(sections, function (section) {
+                sectionsGroup.add(section);
+
+                // Clip mullions that out over the edge of filling
+                if (section.attrs.name === 'mullion') {
+                    this.clipCircle( section, {
+                        x: frameWidth + 4,
+                        y: frameWidth + 4,
+                        radius: radius - frameWidth - 4
+                    });
+                }
+            }.bind(this));
+
             sectionsGroup.scale({x: ratio, y: ratio});
 
+            // Clip a whole unit
             this.clipCircle( sectionsGroup );
 
             return sectionsGroup;
@@ -520,18 +537,12 @@ var app = app || {};
             if (rootSection.sections && rootSection.sections.length) {
                 var mullion = this.createMullion(rootSection);
 
-                if (module.getState('openingView')) {
-                    objects.push(mullion);
-                }
+                objects.push(mullion);
 
                 // draw each child section
                 rootSection.sections.forEach(function (sectionData) {
                     objects = objects.concat(this.createSections(sectionData));
                 }.bind(this));
-
-                if (!module.getState('openingView')) {
-                    objects.push(mullion);
-                }
             }
 
             var sash = this.createSash(rootSection);
@@ -543,8 +554,10 @@ var app = app || {};
         createMullion: function (section) {
             var style = module.getStyle('mullions');
             var fillStyle = module.getStyle('fillings');
+            var group = new Konva.Group({
+                name: 'mullion'
+            });
             var mullion = new Konva.Rect({
-                name: 'mullion',
                 sectionId: section.id,
                 stroke: style.default.stroke,
                 fill: style.default.fill,
@@ -590,7 +603,9 @@ var app = app || {};
                 mullion.fill(fillStyle.glass.fill);
             }
 
-            return mullion;
+            group.add( mullion );
+
+            return group;
         },
         createSash: function (sectionData) {
             var group = new Konva.Group({
@@ -599,10 +614,9 @@ var app = app || {};
                 name: 'sash'
             });
 
-            var circleData = (model.getCircleRadius() !== null) ? model.getCircleSashData(sectionData) : null;
+            var circleData = (model.getCircleRadius() !== null) ? model.getCircleSashData(sectionData.id) : null;
             var hasFrame = (sectionData.sashType !== 'fixed_in_frame');
             var frameWidth = hasFrame ? model.profile.get('sash_frame_width') : 0;
-            var profileFrameWidth = model.profile.get('frame_width');
 
             var fillX;
             var fillY;
@@ -638,30 +652,55 @@ var app = app || {};
                 !hasSubSections && !isFlushType ||
                 !hasSubSections && model.isRootSection(sectionData.id) && isFlushType;
 
+            var shouldDrawBars = shouldDrawFilling &&
+                !sectionData.fillingType || sectionData.fillingType === 'glass';
+
+            var shouldDrawDirectionLine = sectionData.sashType !== 'fixed_in_frame';
+
+            var filling;
+
+            var circleClip = {};
+
+            if (circleData) {
+                var sashData = (function findSash(sectionId) {
+                    var section = model.getSection(sectionId);
+
+                    if (section && section.circular) {
+                        return section;
+                    } else if (section && section.parentId) {
+                        return findSash( section.parentId );
+                    }
+
+                    return null;
+                })(sectionData.id);
+
+                var sashCircleData = model.getCircleSashData(sashData.id);
+                var pos = {
+                    x: sashCircleData.sashParams.x - sectionData.sashParams.x,
+                    y: sashCircleData.sashParams.y - sectionData.sashParams.y
+                };
+
+                circleClip = {
+                    x: pos.x + 3,
+                    y: pos.y + 3,
+                    radius: sashCircleData.radius - 3
+                };
+            }
+
             if (shouldDrawFilling) {
-                var filling;
+                filling = this.createFilling(sectionData, {
+                    x: fillX - frameWidth,
+                    y: fillY - frameWidth,
+                    width: fillWidth,
+                    height: fillHeight
+                });
 
                 if (circleData) {
-                    filling = this.createFilling(sectionData, {
-                        frameWidth: frameWidth,
-                        x: fillX,
-                        y: fillY,
-                        radius: circleData.radius - frameWidth
-                    });
-                } else {
-                    filling = this.createFilling(sectionData, {
-                        x: fillX,
-                        y: fillY,
-                        width: fillWidth,
-                        height: fillHeight
-                    });
+                    this.clipCircle(filling, circleClip);
                 }
 
                 group.add(filling);
             }
-
-            var shouldDrawBars = shouldDrawFilling &&
-                !sectionData.fillingType || sectionData.fillingType === 'glass';
 
             if (shouldDrawBars) {
                 var bars = this.createBars(sectionData, {
@@ -671,17 +710,15 @@ var app = app || {};
                     height: fillHeight
                 });
 
+                if (circleData) {
+                    this.clipCircle(bars, circleClip);
+                }
+
                 group.add(bars);
             }
 
-            var type = sectionData.sashType;
-
-            var shouldDrawDirectionLine = sectionData.sashType !== 'fixed_in_frame';
-
             if (shouldDrawDirectionLine) {
-                var directionLine = new Konva.Group({});
-
-                directionLine.add( this.createDirectionLine(sectionData) );
+                var directionLine = this.createDirectionLine(sectionData);
 
                 // clip direction line inside filling
                 if (circleData && circleData.type === 'circle') {
@@ -720,7 +757,7 @@ var app = app || {};
             if (sectionData.sashType !== 'fixed_in_frame') {
 
                 if (circleData) {
-                    frameGroup = this.createCircularSashFrame({
+                    frameGroup = this.createCircleSashFrame({
                         frameWidth: frameWidth,
                         section: sectionData,
                         data: circleData
@@ -737,7 +774,7 @@ var app = app || {};
                 group.add(frameGroup);
             }
 
-            var shouldDrawHandle = this.shouldDrawHandle(type);
+            var shouldDrawHandle = this.shouldDrawHandle(sectionData.sashType);
 
             if (shouldDrawHandle) {
                 var handle = this.createHandle(sectionData, {
@@ -746,15 +783,6 @@ var app = app || {};
 
                 group.add(handle);
             }
-
-            // Clip content by circle for sash === circle
-            // if (circleData && circleData.type === 'circle') {
-            //     this.clipCircle( group, {
-            //         x: fillX - frameWidth,
-            //         y: fillY - frameWidth,
-            //         radius: circleData.radius
-            //     });
-            // }
 
             return group;
         },
@@ -819,6 +847,7 @@ var app = app || {};
             }
 
             var handle = new Konva.Shape({
+                name: 'handle',
                 x: pos.x,
                 y: pos.y,
                 rotation: pos.rotation,
@@ -835,9 +864,13 @@ var app = app || {};
             return handle;
         },
         createDirectionLine: function (section) {
+            var group = new Konva.Group({
+                name: 'directionLine'
+            });
             var type = section.sashType;
             var style = module.getStyle('direction_line');
             var directionLine = new Konva.Shape({
+                name: 'directionLine',
                 stroke: style.stroke,
                 x: section.glassParams.x - section.sashParams.x,
                 y: section.glassParams.y - section.sashParams.y,
@@ -890,7 +923,9 @@ var app = app || {};
                 });
             }
 
-            return directionLine;
+            group.add( directionLine );
+
+            return group;
         },
         createSectionIndexes: function (mainSection, indexes, i) {
             var view = this;
@@ -973,7 +1008,9 @@ var app = app || {};
             return result;
         },
         createIndexes: function (indexes) {
-            var group = new Konva.Group();
+            var group = new Konva.Group({
+                name: 'sectionIndexes'
+            });
             var number;
 
             indexes.forEach(function (section) {

@@ -650,12 +650,13 @@ var app = app || {};
                 });
             }
         },
-        getCircleSashData: function (section) {
+        getCircleSashData: function (sectionId) {
+            var section = this.getSection( sectionId );
             var radius = this.getCircleRadius();
             var frameWidth = this.profile.get('sash_frame_width');
             var result = {};
 
-            result.sash = section.sashParams;
+            result.sashParams = section.sashParams;
             result.edges = {
                 top: !!section.mullionEdges.top || false,
                 right: !!section.mullionEdges.right || false,
