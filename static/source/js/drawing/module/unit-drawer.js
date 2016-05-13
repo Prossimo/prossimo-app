@@ -427,9 +427,9 @@ var app = app || {};
 
             if (root.circular && root.radius > 0) {
                 group.clipType( 'circle' );
-                group.clipX( position.x );
-                group.clipY( position.y );
-                group.clipRadius( root.radius - frameWidth );
+                group.clipX( position.x - frameWidth );
+                group.clipY( position.y - frameWidth );
+                group.clipRadius( root.radius );
             }
         },
 
