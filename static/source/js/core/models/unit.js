@@ -650,6 +650,45 @@ var app = app || {};
                 });
             }
         },
+        getCircleSashData: function (section) {
+            var radius = this.getCircleRadius();
+            var frameWidth = this.profile.get('sash_frame_width');
+            var result = {};
+
+            result.sash = section.sashParams;
+            result.edges = {
+                top: !!section.mullionEdges.top || false,
+                right: !!section.mullionEdges.right || false,
+                bottom: !!section.mullionEdges.bottom || false,
+                left: !!section.mullionEdges.left || false
+            };
+
+            result.type = (
+                            result.edges.top && result.edges.right &&
+                            result.edges.bottom && result.edges.left
+                          ) ? 'rect' :
+                          (
+                            !(result.edges.top && result.edges.right &&
+                              result.edges.bottom && result.edges.left)
+                          ) ? 'circle' :
+                              'arc';
+
+            if (result.type === 'arc') {
+                // Тут расчет градусов и т.п.
+            }
+
+            if (result.type === 'circle') {
+                var root = this.generateFullRoot();
+
+                result.circle = {
+                    x: root.sashParams.x,
+                    y: root.sashParams.y
+                };
+                result.radius = Math.min( root.sashParams.width, root.sashParams.height ) / 2;
+            }
+
+            return result;
+        },
         setSectionSashType: function (sectionId, type) {
             if (!_.includes(SASH_TYPES, type)) {
                 console.error('Unrecognized sash type: ' + type);

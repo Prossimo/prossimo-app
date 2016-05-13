@@ -194,6 +194,38 @@ var app = app || {};
 
             return group;
         },
+        createCircularSashFrame: function (params) {
+            var section = params.section;
+            var frameWidth = params.frameWidth; // in mm
+            var data = params.data;
+
+            var group = new Konva.Group({
+                name: 'frame',
+                sectionId: params.sectionId
+            });
+
+            if (data.type === 'rect') {
+                // If this is a section that bordered with mullions from each side — it's a simple rectangular sash
+                group = this.createFrame({
+                    width: section.sashParams.width,
+                    height: section.sashParams.height,
+                    frameWidth: frameWidth,
+                    sectionId: section.id
+                });
+            } else if (data.type === 'circle') {
+                // If there is no edges around — it's just a circle (sash inside root section)
+                group = this.createCircleFrame({
+                    frameWidth: frameWidth,
+                    radius: data.radius
+                });
+            } else {
+                // Otherwise it's a sash inside one of children section, so this sash have an arc side
+            }
+
+            // console.log('!', section, data);
+
+            return group;
+        },
         createFrame: function (params) {
             var frameWidth = params.frameWidth;  // in mm
             var width = params.width;
@@ -417,19 +449,21 @@ var app = app || {};
             return group;
         },
 
-        clipCircle: function (group) {
+        clipCircle: function (group, params) {
             var root = model.generateFullRoot();
-            var frameWidth = model.profile.get('frame_width');
-            var position = {
-                x: root.sashParams.x,
-                y: root.sashParams.y
-            };
 
-            if (root.circular && root.radius > 0) {
+            params = params || {};
+            params = _.defaults(params, {
+                x: 0,
+                y: 0,
+                radius: root.radius
+            });
+
+            if (root.circular && params.radius > 0) {
                 group.clipType( 'circle' );
-                group.clipX( position.x - frameWidth );
-                group.clipY( position.y - frameWidth );
-                group.clipRadius( root.radius );
+                group.clipX( params.x - 2 );
+                group.clipY( params.y - 2 );
+                group.clipRadius( params.radius + 2 );
             }
         },
 
@@ -565,6 +599,7 @@ var app = app || {};
                 name: 'sash'
             });
 
+            var circleData = (model.getCircleRadius() !== null) ? model.getCircleSashData(sectionData) : null;
             var hasFrame = (sectionData.sashType !== 'fixed_in_frame');
             var frameWidth = hasFrame ? model.profile.get('sash_frame_width') : 0;
             var profileFrameWidth = model.profile.get('frame_width');
@@ -599,40 +634,28 @@ var app = app || {};
             var isFlushType = sectionData.fillingType &&
                 sectionData.fillingType.indexOf('flush') >= 0;
 
-            var frameGroup;
-
-            if (isFlushType && !hasSubSections) {
-                frameGroup = this.createFlushFrame({
-                    width: sectionData.sashParams.width,
-                    height: sectionData.sashParams.height,
-                    sectionId: sectionData.id
-                });
-                group.add(frameGroup);
-            }
-
-            if (sectionData.sashType !== 'fixed_in_frame') {
-
-                frameGroup = this.createFrame({
-                    width: sectionData.sashParams.width,
-                    height: sectionData.sashParams.height,
-                    frameWidth: frameWidth,
-                    sectionId: sectionData.id
-                });
-
-                group.add(frameGroup);
-            }
-
             var shouldDrawFilling =
                 !hasSubSections && !isFlushType ||
                 !hasSubSections && model.isRootSection(sectionData.id) && isFlushType;
 
             if (shouldDrawFilling) {
-                var filling = this.createFilling(sectionData, {
-                    x: fillX,
-                    y: fillY,
-                    width: fillWidth,
-                    height: fillHeight
-                });
+                var filling;
+
+                if (circleData) {
+                    filling = this.createFilling(sectionData, {
+                        frameWidth: frameWidth,
+                        x: fillX,
+                        y: fillY,
+                        radius: circleData.radius - frameWidth
+                    });
+                } else {
+                    filling = this.createFilling(sectionData, {
+                        x: fillX,
+                        y: fillY,
+                        width: fillWidth,
+                        height: fillHeight
+                    });
+                }
 
                 group.add(filling);
             }
@@ -652,20 +675,22 @@ var app = app || {};
             }
 
             var type = sectionData.sashType;
-            var shouldDrawHandle = this.shouldDrawHandle(type);
-
-            if (shouldDrawHandle) {
-                var handle = this.createHandle(sectionData, {
-                    frameWidth: frameWidth
-                });
-
-                group.add(handle);
-            }
 
             var shouldDrawDirectionLine = sectionData.sashType !== 'fixed_in_frame';
 
             if (shouldDrawDirectionLine) {
-                var directionLine = this.createDirectionLine(sectionData);
+                var directionLine = new Konva.Group({});
+
+                directionLine.add( this.createDirectionLine(sectionData) );
+
+                // clip direction line inside filling
+                if (circleData && circleData.type === 'circle') {
+                    this.clipCircle( directionLine, {
+                        x: fillX,
+                        y: fillY,
+                        radius: circleData.radius - frameWidth
+                    });
+                }
 
                 group.add(directionLine);
             }
@@ -681,13 +706,55 @@ var app = app || {};
                 group.add( this.createIndexes(indexes) );
             }
 
-            // Clip group if this is a circle
-            if ( sectionData.circular && sectionData.radius ) {
-                group.clipType( 'circle' );
-                group.clipX( fillX - frameWidth );
-                group.clipY( fillY - frameWidth );
-                group.clipRadius( sectionData.radius - profileFrameWidth );
+            var frameGroup;
+
+            if (isFlushType && !hasSubSections) {
+                frameGroup = this.createFlushFrame({
+                    width: sectionData.sashParams.width,
+                    height: sectionData.sashParams.height,
+                    sectionId: sectionData.id
+                });
+                group.add(frameGroup);
             }
+
+            if (sectionData.sashType !== 'fixed_in_frame') {
+
+                if (circleData) {
+                    frameGroup = this.createCircularSashFrame({
+                        frameWidth: frameWidth,
+                        section: sectionData,
+                        data: circleData
+                    });
+                } else {
+                    frameGroup = this.createFrame({
+                        width: sectionData.sashParams.width,
+                        height: sectionData.sashParams.height,
+                        frameWidth: frameWidth,
+                        sectionId: sectionData.id
+                    });
+                }
+
+                group.add(frameGroup);
+            }
+
+            var shouldDrawHandle = this.shouldDrawHandle(type);
+
+            if (shouldDrawHandle) {
+                var handle = this.createHandle(sectionData, {
+                    frameWidth: frameWidth
+                });
+
+                group.add(handle);
+            }
+
+            // Clip content by circle for sash === circle
+            // if (circleData && circleData.type === 'circle') {
+            //     this.clipCircle( group, {
+            //         x: fillX - frameWidth,
+            //         y: fillY - frameWidth,
+            //         radius: circleData.radius
+            //     });
+            // }
 
             return group;
         },
@@ -972,10 +1039,10 @@ var app = app || {};
                 if (isSelected) {
                     selection = new Konva.Shape( _.extend(_.clone(opts), {fill: selectionStyle.fill}) );
                 }
-            } else if (section.circular) {
+            } else if (section.circular || params.radius) {
                 // Circular
-                var frameWidth = model.profile.get('frame_width');
-                var radius = section.radius - frameWidth;
+                var frameWidth = params.frameWidth || model.profile.get('frame_width');
+                var radius = params.radius || section.radius - frameWidth;
 
                 opts = {
                     sectionId: section.id,
