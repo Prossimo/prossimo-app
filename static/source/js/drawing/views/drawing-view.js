@@ -389,7 +389,7 @@ var app = app || {};
                         var inches = app.utils.parseFormat.dimension(_value);
                         var mm = app.utils.convert.inches_to_mm(inches) * sign;
 
-                        params.setter(mm);
+                        params.setter(mm, view);
 
                         closeWrap();
                     }

@@ -228,6 +228,13 @@ var app = app || {};
             return bars;
         },
         /* eslint-enable max-nested-callbacks */
+        sortBars: function () {
+            _.each(this.section.bars, function ( group ) {
+                group.sort(function ( a, b ) {
+                    return a.position > b.position;
+                });
+            });
+        },
         saveBars: function (newBars) {
             var bars = (newBars) ? newBars : this.section.bars;
 

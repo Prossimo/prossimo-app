@@ -1296,8 +1296,7 @@ var app = app || {};
                         pos: labelInches.getAbsolutePosition(),
                         size: textInches.size()
                     });
-                    // this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
-                }.bind(this));
+                });
             }
 
             group.add(lines, arrow, labelInches, labelMM);
@@ -1404,8 +1403,7 @@ var app = app || {};
                         pos: labelInches.getAbsolutePosition(),
                         size: textInches.size()
                     });
-                    // this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
-                }.bind(this));
+                });
             }
 
             group.add(lines, arrow, labelInches, labelMM);

@@ -538,8 +538,7 @@ var app = app || {};
             return circle;
         },
         createMetrics: function ( params ) {
-            // @TODO: Add "lock" control to metrics
-            var view = this;
+            var drawer = this;
             var metrics = new Konva.Group();
             var max = {
                 vertical: params.width,
@@ -554,8 +553,8 @@ var app = app || {};
                 horizontal: new Konva.Group()
             };
             var methods = {
-                vertical: this.createHorizontalMetrics.bind(view),
-                horizontal: this.createVerticalMetrics.bind(view)
+                vertical: this.createHorizontalMetrics.bind(drawer),
+                horizontal: this.createVerticalMetrics.bind(drawer)
             };
             var barMetric;
 
@@ -565,38 +564,50 @@ var app = app || {};
                 getter: function () {
                     return this.space;
                 },
-                setter: function ( type, space, val ) {
+                setter: function ( type, space, val, view ) {
                     var delta = val - space;
                     var mm = app.utils.parseFormat.dimension( this.position + delta );
 
-                    if ( mm >= max[type] - minimalGap || (this.position + delta) < 0 + minimalGap ) {
+                    if (
+                        view &&
+                        (mm >= max[type] - minimalGap || (this.position + delta) < 0 + minimalGap )
+                    ) {
                         view.showError();
                         return;
                     }
 
                     this.position = this.position + delta;
 
-                    view.sortBars();
-                    view.saveBars( view.section.bars );
+                    if (view) {
+                        view.sortBars();
+                        view.saveBars( drawer.section.bars );
+                    }
+
                 },
                 gap_getter: function ( ) {
                     return this.space;
                 },
-                gap_setter: function ( type, val ) {
+                gap_setter: function ( type, val, view ) {
                     var mm = app.utils.parseFormat.dimension(val);
-                    var lastBar = view.section.bars[type][view.section.bars[type].length - 1];
+                    var lastBar = drawer.section.bars[type][view.section.bars[type].length - 1];
                     var freeSpace = max[type] - lastBar.position;
                     var delta = freeSpace - val;
 
-                    if ( mm > max[type] - minimalGap || val < 0 + minimalGap ) {
+                    if (
+                        view &&
+                        (mm > max[type] - minimalGap || val < 0 + minimalGap )
+                    ) {
                         view.showError();
                         return;
                     }
 
                     lastBar.position = lastBar.position + delta;
 
-                    view.sortBars();
-                    view.saveBars( view.section.bars );
+                    if (view) {
+                        view.sortBars();
+                        view.saveBars( drawer.section.bars );
+                    }
+
                 }
             };
 
@@ -608,10 +619,10 @@ var app = app || {};
                     var p = {
                         methods: {
                             getter: defaultMethods.getter.bind( bar ),
-                            setter: defaultMethods.setter.bind( view.section.bars[type][i], type, bar.space )
+                            setter: defaultMethods.setter.bind( drawer.section.bars[type][i], type, bar.space )
                         }
                     };
-                    var position = view.getBarPosition( type, bar );
+                    var position = drawer.getBarPosition( type, bar );
 
                     _.extend(p, params);
                     p[paramName[type]] = bar.space;
@@ -632,7 +643,7 @@ var app = app || {};
                         getter: defaultMethods.gap_getter.bind( gapObject )
                     }
                 };
-                var position = view.getBarPosition( type, gapObject );
+                var position = drawer.getBarPosition( type, gapObject );
 
                 if (group.length > 0) {
                     p.methods.setter = defaultMethods.gap_setter.bind( gapObject, type );
@@ -659,13 +670,6 @@ var app = app || {};
             var drawerParams = [params.width * ratio, params.metricSize, params.methods];
 
             return this.createHorizontalMetric.apply(this, drawerParams);
-        },
-        sortBars: function () {
-            _.each(this.section.bars, function ( group ) {
-                group.sort(function ( a, b ) {
-                    return a.position > b.position;
-                });
-            });
         },
         createVerticalMetric: function (width, height, params, styles) {
             var arrowOffset = width / 2;
