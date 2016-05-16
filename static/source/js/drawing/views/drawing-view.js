@@ -301,10 +301,12 @@ var app = app || {};
                     selectedSashId: data.newValue
                 });
             });
+            this.listenTo(this.module, 'labelClicked', function (data) {
+                this.createInput( data.params, data.pos, data.size );
+            });
         },
         unbindModuleEvents: function () {
-            this.stopListening('state:selected:mullion');
-            this.stopListening('state:selected:sash');
+            this.stopListening(this.module);
         },
 
         serializeData: function () {
@@ -322,7 +324,74 @@ var app = app || {};
         createGlazingPopup: function () {
             this.glazing_view = new app.DrawingGlazingPopup({
                 model: this.model,
-                mainModule: this.module
+                parent: this
+            });
+        },
+
+        createInput: function (params, pos, size) {
+            var module = this.module;
+            var container = $(module.get('stage').container());
+            var $wrap = $('<div>')
+                .addClass('popup-wrap')
+                .appendTo(container)
+                .on('click', function (e) {
+                    if (e.target === $wrap.get(0)) {
+                        $wrap.remove();
+                    }
+                });
+
+            var padding = 3;
+            var valInInches = app.utils.convert.mm_to_inches(params.getter());
+            var val = app.utils.format.dimension(valInInches, 'fraction');
+
+            var containerPos = (container.css('position') === 'relative') ? {top: 0, left: 0} : container.position();
+
+            $('<input>')
+                .val(val)
+                .css({
+                    position: 'absolute',
+                    top: (pos.y - padding + containerPos.top) + 'px',
+                    left: (pos.x - padding + containerPos.left) + 'px',
+                    height: (size.height + padding * 2) + 'px',
+                    width: (size.width + 20 + padding * 2) + 'px',
+                    fontSize: '12px'
+                })
+                .appendTo($wrap)
+                .focus()
+                .select()
+                .on('keyup', function (e) {
+                    if (e.keyCode === 13) {  // enter
+                        var _value = this.value;
+                        var sign = 1;
+
+                        if (_value[0] === '-') {
+                            sign = (params.canBeNegative) ? -1 : 1;
+                            _value = _value.slice(1);
+                        }
+
+                        var inches = app.utils.parseFormat.dimension(_value);
+                        var mm = app.utils.convert.inches_to_mm(inches) * sign;
+
+                        params.setter(mm);
+
+                        $wrap.remove();
+                    }
+
+                    if (e.keyCode === 27) { // esc
+                        $wrap.remove();
+                    }
+                })
+                .on('blur', function () {
+                    $wrap.remove();
+                });
+
+            $(document).on('keydown', function (e) {
+                if (e.keyCode === 46 || e.keyCode === 8) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    $wrap.remove();
+                }
             });
         },
 

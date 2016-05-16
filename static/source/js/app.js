@@ -5,6 +5,8 @@ window.ENTER_KEY = 13;
 $(function () {
     'use strict';
 
+    app.App = new Marionette.Application();
+
     app.App.on('start', function () {
 
         //  Register a communication channel for all events in the app

@@ -1177,48 +1177,6 @@ var app = app || {};
 
             return group;
         },
-        createInput: function (params, pos, size) {
-            var container = $(module.get('stage').container());
-            var $wrap = $('<div>')
-                .addClass('popup-wrap')
-                .appendTo(container)
-                .on('click', function (e) {
-                    if (e.target === $wrap.get(0)) {
-                        $wrap.remove();
-                    }
-                });
-
-            var padding = 3;
-            var valInInches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(valInInches, 'fraction', module.getState('inchesDisplayMode'));
-
-            $('<input>')
-                .val(val)
-                .css({
-                    position: 'absolute',
-                    top: (pos.y - padding) + 'px',
-                    left: (pos.x - padding) + 'px',
-                    height: (size.height + padding * 2) + 'px',
-                    width: (size.width + 20 + padding * 2) + 'px',
-                    fontSize: '12px'
-                })
-                .appendTo($wrap)
-                .focus()
-                .select()
-                .on('keyup', function (e) {
-                    if (e.keyCode === 13) {  // enter
-                        var inches = app.utils.parseFormat.dimension(this.value);
-                        var mm = app.utils.convert.inches_to_mm(inches);
-
-                        params.setter(mm);
-                        $wrap.remove();
-                    }
-
-                    if (e.keyCode === 27) { // esc
-                        $wrap.remove();
-                    }
-                });
-        },
         getMeasurementEdges: function (section_id, type) {
             var edges = model.getMeasurementEdges( section_id );
             var edgeTypes = [];
@@ -1333,7 +1291,12 @@ var app = app || {};
 
             if (params.setter) {
                 labelInches.on('click tap', function () {
-                    this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
+                    module.trigger('labelClicked', {
+                        params: params,
+                        pos: labelInches.getAbsolutePosition(),
+                        size: textInches.size()
+                    });
+                    // this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
                 }.bind(this));
             }
 
@@ -1436,7 +1399,12 @@ var app = app || {};
 
             if (params.setter) {
                 labelInches.on('click tap', function () {
-                    this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
+                    module.trigger('labelClicked', {
+                        params: params,
+                        pos: labelInches.getAbsolutePosition(),
+                        size: textInches.size()
+                    });
+                    // this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
                 }.bind(this));
             }
 
