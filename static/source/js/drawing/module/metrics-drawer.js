@@ -318,16 +318,16 @@ var app = app || {};
 
                     // Store resulted data to groups
                     if (mullion.position in grouped) {
-                        grouped[mullion.position].push( data );
+                        grouped[mullion.position.toFixed(4)].push( data );
                     } else {
-                        grouped[mullion.position] = [data];
+                        grouped[mullion.position.toFixed(4)] = [data];
                     }
                 });
 
                 result[type].forEach(function (mullion, i) {
                     var pos_ = (mullion.index === 1) ? mullion.offset : mullion.offset + mullion.size;
 
-                    var siblings = grouped[pos_].filter(function (sibling) {
+                    var siblings = grouped[pos_.toFixed(4)].filter(function (sibling) {
                             return (sibling.section_id !== mullion.section_id);
                         });
 
