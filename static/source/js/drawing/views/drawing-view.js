@@ -44,7 +44,8 @@ var app = app || {};
                 selectedSashId: null,
                 selectedMullionId: null,
                 inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
-                hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode')
+                hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode'),
+                inputFocused: false
             };
 
             this.groups = {};
@@ -107,7 +108,7 @@ var app = app || {};
             return this.undoManager.handler.redo();
         },
         handleCanvasKeyDown: function (e) {
-            if (this.module) {
+            if (this.module && !this.state.inputFocused) {
                 this.module.handleKeyEvents(e);
             }
         },
@@ -329,6 +330,7 @@ var app = app || {};
         },
 
         createInput: function (params, pos, size) {
+            var view = this;
             var module = this.module;
             var container = $(module.get('stage').container());
             var $wrap = $('<div>')
@@ -346,6 +348,14 @@ var app = app || {};
 
             var containerPos = (container.css('position') === 'relative') ? {top: 0, left: 0} : container.position();
 
+            function closeWrap() {
+                view.setState({
+                    inputFocused: false
+                });
+
+                $wrap.remove();
+            }
+
             $('<input>')
                 .val(val)
                 .css({
@@ -357,6 +367,9 @@ var app = app || {};
                     fontSize: '12px'
                 })
                 .appendTo($wrap)
+                .on('focus', function () {
+                    view.state.inputFocused = true;
+                })
                 .focus()
                 .select()
                 .on('keyup', function (e) {
@@ -374,25 +387,14 @@ var app = app || {};
 
                         params.setter(mm);
 
-                        $wrap.remove();
+                        closeWrap();
                     }
 
                     if (e.keyCode === 27) { // esc
-                        $wrap.remove();
+                        closeWrap();
                     }
                 })
-                .on('blur', function () {
-                    $wrap.remove();
-                });
-
-            $(document).on('keydown', function (e) {
-                if (e.keyCode === 46 || e.keyCode === 8) {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    $wrap.remove();
-                }
-            });
+                .on('blur', closeWrap);
         },
 
         updateUI: function () {
