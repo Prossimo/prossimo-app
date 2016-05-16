@@ -349,9 +349,11 @@ var app = app || {};
             var containerPos = (container.css('position') === 'relative') ? {top: 0, left: 0} : container.position();
 
             function closeWrap() {
-                view.setState({
-                    inputFocused: false
-                });
+                if (view.setState) {
+                    view.setState({
+                        inputFocused: false
+                    });
+                }
 
                 $wrap.remove();
             }
@@ -368,7 +370,9 @@ var app = app || {};
                 })
                 .appendTo($wrap)
                 .on('focus', function () {
-                    view.state.inputFocused = true;
+                    if (view.state) {
+                        view.state.inputFocused = true;
+                    }
                 })
                 .focus()
                 .select()
