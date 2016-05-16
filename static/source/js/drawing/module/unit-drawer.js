@@ -52,11 +52,11 @@ var app = app || {};
         // Utils
         // Functions search for Konva Object inside object with specified name
         // And rises up to the parents recursively
-        getSectionID: function (object) {
+        getSectionId: function (object) {
             if ('sectionId' in object.attrs) {
                 return object;
             } else if (object.parent) {
-                return this.getSectionID(object.parent);
+                return this.getSectionId(object.parent);
             }
 
             return false;
@@ -85,7 +85,7 @@ var app = app || {};
 
         // Selections
         setSelection: function (event, type) {
-            var origin = this.getSectionID(event.target);
+            var origin = this.getSectionId(event.target);
             var untype = (type === 'sash') ? 'mullion' : 'sash';
 
             if (origin) {
@@ -215,7 +215,8 @@ var app = app || {};
                 // If there is no edges around — it's just a circle (sash inside root section)
                 group = this.createCircleFrame({
                     frameWidth: frameWidth,
-                    radius: data.radius
+                    radius: data.radius,
+                    sectionId: section.id
                 });
             } else {
                 // Otherwise it's a sash inside one of children section, so this sash have an arc side
@@ -469,7 +470,8 @@ var app = app || {};
             var radius = params.radius;
             var style = module.getStyle('frame');
             var group = new Konva.Group({
-                name: 'frame'
+                name: 'frame',
+                sectionId: params.sectionId
             });
 
             group.add( new Konva.Arc({
