@@ -21,8 +21,10 @@ var app = app || {};
             'change @ui.$bar_vertical': 'handleVBarsNumberChange',
             'change @ui.$bar_horizontal': 'handleHBarsNumberChange'
         },
-        initialize: function () {
+        initialize: function (opts) {
             $('body').append( this.render().el );
+
+            this.parent = opts.parent || null;
 
             this.ui.$modal.modal({
                 keyboard: false,
@@ -60,8 +62,19 @@ var app = app || {};
 
             if ( this.module ) {
                 this.module.destroy();
+                this.unbindModuleEvents();
             }
         },
+
+        bindModuleEvents: function () {
+            this.listenTo(this.module, 'labelClicked', function (data) {
+                this.parent.createInput.call(this, data.params, data.pos, data.size);
+            });
+        },
+        unbindModuleEvents: function () {
+            this.stopListening(this.module);
+        },
+
         setSection: function (section_id) {
             this.section = this.model.getSection(section_id);
 
@@ -70,6 +83,8 @@ var app = app || {};
 
             if ( this.module ) {
                 this.module.destroy();
+                this.unbindModuleEvents();
+
                 this.stage.clear();
             }
 
@@ -88,16 +103,14 @@ var app = app || {};
                         zIndex: 1,
                         data: {
                             sectionId: section_id,
-                            ui: {
-                                $body: this.ui.$body,
-                                $drawing: this.ui.$drawing
-                            },
                             saveBars: this.saveBars.bind(this)
                         }
                     }
                 },
                 metricSize: metricSize
             });
+
+            this.bindModuleEvents();
 
             return this;
         },
@@ -215,6 +228,13 @@ var app = app || {};
             return bars;
         },
         /* eslint-enable max-nested-callbacks */
+        sortBars: function () {
+            _.each(this.section.bars, function ( group ) {
+                group.sort(function ( a, b ) {
+                    return a.position > b.position;
+                });
+            });
+        },
         saveBars: function (newBars) {
             var bars = (newBars) ? newBars : this.section.bars;
 

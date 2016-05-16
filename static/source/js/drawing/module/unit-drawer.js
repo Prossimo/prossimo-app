@@ -36,7 +36,6 @@ var app = app || {};
             this.undelegateEvents();
             this.delegateEvents();
         },
-        // Почему-то при таком делегировании возникает множественность :(
         events: {
             'click .frame': 'onFrameClick',
             'tap .frame': 'onFrameClick',

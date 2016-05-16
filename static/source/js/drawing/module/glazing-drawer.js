@@ -20,7 +20,6 @@ var app = app || {};
             this.saveBars = (_.isFunction(params.data.saveBars)) ? params.data.saveBars : function () {};
 
             this.sectionId = params.data.sectionId;
-            this.ui = params.data.ui;
 
             metricSize = params.metricSize;
         },
@@ -539,8 +538,7 @@ var app = app || {};
             return circle;
         },
         createMetrics: function ( params ) {
-            // @TODO: Add "lock" control to metrics
-            var view = this;
+            var drawer = this;
             var metrics = new Konva.Group();
             var max = {
                 vertical: params.width,
@@ -555,8 +553,8 @@ var app = app || {};
                 horizontal: new Konva.Group()
             };
             var methods = {
-                vertical: this.createHorizontalMetrics.bind(view),
-                horizontal: this.createVerticalMetrics.bind(view)
+                vertical: this.createHorizontalMetrics.bind(drawer),
+                horizontal: this.createVerticalMetrics.bind(drawer)
             };
             var barMetric;
 
@@ -566,32 +564,50 @@ var app = app || {};
                 getter: function () {
                     return this.space;
                 },
-                setter: function ( type, space, val ) {
+                setter: function ( type, space, val, view ) {
                     var delta = val - space;
                     var mm = app.utils.parseFormat.dimension( this.position + delta );
 
-                    if ( mm >= max[type] - minimalGap || (this.position + delta) < 0 + minimalGap ) {
+                    if (
+                        view &&
+                        (mm >= max[type] - minimalGap || (this.position + delta) < 0 + minimalGap )
+                    ) {
                         view.showError();
                         return;
                     }
 
                     this.position = this.position + delta;
+
+                    if (view) {
+                        view.sortBars();
+                        view.saveBars( drawer.section.bars );
+                    }
+
                 },
                 gap_getter: function ( ) {
                     return this.space;
                 },
-                gap_setter: function ( type, val ) {
+                gap_setter: function ( type, val, view ) {
                     var mm = app.utils.parseFormat.dimension(val);
-                    var lastBar = view.section.bars[type][view.section.bars[type].length - 1];
+                    var lastBar = drawer.section.bars[type][view.section.bars[type].length - 1];
                     var freeSpace = max[type] - lastBar.position;
                     var delta = freeSpace - val;
 
-                    if ( mm > max[type] - minimalGap || val < 0 + minimalGap ) {
+                    if (
+                        view &&
+                        (mm > max[type] - minimalGap || val < 0 + minimalGap )
+                    ) {
                         view.showError();
                         return;
                     }
 
                     lastBar.position = lastBar.position + delta;
+
+                    if (view) {
+                        view.sortBars();
+                        view.saveBars( drawer.section.bars );
+                    }
+
                 }
             };
 
@@ -603,10 +619,10 @@ var app = app || {};
                     var p = {
                         methods: {
                             getter: defaultMethods.getter.bind( bar ),
-                            setter: defaultMethods.setter.bind( view.section.bars[type][i], type, bar.space )
+                            setter: defaultMethods.setter.bind( drawer.section.bars[type][i], type, bar.space )
                         }
                     };
-                    var position = view.getBarPosition( type, bar );
+                    var position = drawer.getBarPosition( type, bar );
 
                     _.extend(p, params);
                     p[paramName[type]] = bar.space;
@@ -627,7 +643,7 @@ var app = app || {};
                         getter: defaultMethods.gap_getter.bind( gapObject )
                     }
                 };
-                var position = view.getBarPosition( type, gapObject );
+                var position = drawer.getBarPosition( type, gapObject );
 
                 if (group.length > 0) {
                     p.methods.setter = defaultMethods.gap_setter.bind( gapObject, type );
@@ -654,74 +670,6 @@ var app = app || {};
             var drawerParams = [params.width * ratio, params.metricSize, params.methods];
 
             return this.createHorizontalMetric.apply(this, drawerParams);
-        },
-        // duplicate of DrawingView.createInput
-        // changed only appendTo and containerPos
-        createInput: function (params, pos, size) {
-            var view = this;
-            var $wrap = $('<div>')
-                .addClass('popup-wrap')
-                .appendTo(this.ui.$body)
-                .on('click', function (e) {
-                    if (e.target === $wrap.get(0)) {
-                        $wrap.remove();
-                    }
-                });
-
-            var containerPos = this.ui.$drawing.position();
-
-            var padding = 3;
-            var valInInches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(valInInches, 'fraction');
-
-            $('<input>')
-                .val(val)
-                .css({
-                    position: 'absolute',
-                    top: (pos.y - padding + containerPos.top) + 'px',
-                    left: (pos.x - padding + containerPos.left) + 'px',
-                    height: (size.height + padding * 2) + 'px',
-                    width: (size.width + 20 + padding * 2) + 'px',
-                    fontSize: '12px'
-                })
-                .appendTo($wrap)
-                .focus()
-                .select()
-                .on('keyup', function (e) {
-                    if (e.keyCode === 13) {  // enter
-                        var _value = this.value;
-                        var sign = 1;
-
-                        if (_value[0] === '-') {
-                            sign = -1;
-                            _value = _value.slice(1);
-                        }
-
-                        var inches = app.utils.parseFormat.dimension(_value);
-                        var mm = app.utils.convert.inches_to_mm(inches) * sign;
-
-                        params.setter(mm);
-                        view.sortBars();
-                        view.saveBars( view.section.bars );
-
-                        $wrap.remove();
-                    }
-
-                    if (e.keyCode === 27) { // esc
-                        $wrap.remove();
-                    }
-                })
-                .on('blur', function () {
-                    $wrap.remove();
-                })
-                ;
-        },
-        sortBars: function () {
-            _.each(this.section.bars, function ( group ) {
-                group.sort(function ( a, b ) {
-                    return a.position > b.position;
-                });
-            });
         },
         createVerticalMetric: function (width, height, params, styles) {
             var arrowOffset = width / 2;
@@ -819,9 +767,17 @@ var app = app || {};
             });
 
             if (params.setter) {
+                // Only for glazing-bars: position of bar can be defined using negative values
+                params.canBeNegative = true;
+
                 labelInches.on('click tap', function () {
-                    this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
-                }.bind(this));
+                    module.trigger('labelClicked', {
+                        params: params,
+                        pos: labelInches.getAbsolutePosition(),
+                        size: textInches.size()
+                    });
+                    // this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
+                });
             }
 
             group.add(lines, arrow, labelInches, labelMM);
@@ -922,9 +878,17 @@ var app = app || {};
             });
 
             if (params.setter) {
+                // Only for glazing-bars: position of bar can be defined using negative values
+                params.canBeNegative = true;
+
                 labelInches.on('click tap', function () {
-                    this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
-                }.bind(this));
+                    module.trigger('labelClicked', {
+                        params: params,
+                        pos: labelInches.getAbsolutePosition(),
+                        size: textInches.size()
+                    });
+                    // this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
+                });
             }
 
             group.add(lines, arrow, labelInches, labelMM);

@@ -44,7 +44,8 @@ var app = app || {};
                 selectedSashId: null,
                 selectedMullionId: null,
                 inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
-                hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode')
+                hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode'),
+                inputFocused: false
             };
 
             this.groups = {};
@@ -120,7 +121,7 @@ var app = app || {};
             return this.undoManager.handler.redo();
         },
         handleCanvasKeyDown: function (e) {
-            if (this.module) {
+            if (this.module && !this.state.inputFocused) {
                 this.module.handleKeyEvents(e);
             }
         },
@@ -322,10 +323,12 @@ var app = app || {};
                     selectedSashId: data.newValue
                 });
             });
+            this.listenTo(this.module, 'labelClicked', function (data) {
+                this.createInput( data.params, data.pos, data.size );
+            });
         },
         unbindModuleEvents: function () {
-            this.stopListening('state:selected:mullion');
-            this.stopListening('state:selected:sash');
+            this.stopListening(this.module);
         },
 
         serializeData: function () {
@@ -343,8 +346,80 @@ var app = app || {};
         createGlazingPopup: function () {
             this.glazing_view = new app.DrawingGlazingPopup({
                 model: this.model,
-                mainModule: this.module
+                parent: this
             });
+        },
+
+        createInput: function (params, pos, size) {
+            var view = this;
+            var module = this.module;
+            var container = $(module.get('stage').container());
+            var $wrap = $('<div>')
+                .addClass('popup-wrap')
+                .appendTo(container)
+                .on('click', function (e) {
+                    if (e.target === $wrap.get(0)) {
+                        $wrap.remove();
+                    }
+                });
+
+            var padding = 3;
+            var valInInches = app.utils.convert.mm_to_inches(params.getter());
+            var val = app.utils.format.dimension(valInInches, 'fraction');
+
+            var containerPos = (container.css('position') === 'relative') ? {top: 0, left: 0} : container.position();
+
+            function closeWrap() {
+                if (view.setState) {
+                    view.setState({
+                        inputFocused: false
+                    });
+                }
+
+                $wrap.remove();
+            }
+
+            $('<input>')
+                .val(val)
+                .css({
+                    position: 'absolute',
+                    top: (pos.y - padding + containerPos.top) + 'px',
+                    left: (pos.x - padding + containerPos.left) + 'px',
+                    height: (size.height + padding * 2) + 'px',
+                    width: (size.width + 20 + padding * 2) + 'px',
+                    fontSize: '12px'
+                })
+                .appendTo($wrap)
+                .on('focus', function () {
+                    if (view.state) {
+                        view.state.inputFocused = true;
+                    }
+                })
+                .focus()
+                .select()
+                .on('keyup', function (e) {
+                    if (e.keyCode === 13) {  // enter
+                        var _value = this.value;
+                        var sign = 1;
+
+                        if (_value[0] === '-') {
+                            sign = (params.canBeNegative) ? -1 : 1;
+                            _value = _value.slice(1);
+                        }
+
+                        var inches = app.utils.parseFormat.dimension(_value);
+                        var mm = app.utils.convert.inches_to_mm(inches) * sign;
+
+                        params.setter(mm, view);
+
+                        closeWrap();
+                    }
+
+                    if (e.keyCode === 27) { // esc
+                        closeWrap();
+                    }
+                })
+                .on('blur', closeWrap);
         },
 
         updateUI: function () {
