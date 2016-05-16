@@ -688,10 +688,10 @@ var app = app || {};
 
             if (shouldDrawFilling) {
                 filling = this.createFilling(sectionData, {
-                    x: fillX - frameWidth,
-                    y: fillY - frameWidth,
-                    width: fillWidth,
-                    height: fillHeight
+                    x: (circleData) ? fillX - frameWidth : fillX,
+                    y: (circleData) ? fillY - frameWidth : fillY,
+                    width: (circleData) ? fillWidth + frameWidth : fillWidth,
+                    height: (circleData) ? fillHeight + frameWidth : fillHeight
                 });
 
                 if (circleData) {
