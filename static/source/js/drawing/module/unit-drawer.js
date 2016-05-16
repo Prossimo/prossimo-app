@@ -746,6 +746,23 @@ var app = app || {};
 
             var frameGroup;
 
+            var isSelected = (module.getState('selected:sash') === sectionData.id);
+
+            if (isSelected) {
+                var selection = this.createSelectionShape(sectionData, {
+                    x: fillX,
+                    y: fillY,
+                    width: fillWidth,
+                    height: fillHeight
+                });
+
+                if (circleData) {
+                    this.clipCircle(selection, circleClip);
+                }
+
+                group.add( selection );
+            }
+
             if (isFlushType && !hasSubSections) {
                 frameGroup = this.createFlushFrame({
                     width: sectionData.sashParams.width,
@@ -1041,12 +1058,10 @@ var app = app || {};
             var fillHeight = params.height;
             var group = new Konva.Group({name: 'filling'});
             var filling;
-            var selection;
             var sceneFunc;
             var opts;
 
             var style = module.getStyle('fillings');
-            var selectionStyle = module.getStyle('selection');
             var isSelected = (module.getState('selected:sash') === section.id);
 
             if (section.arched) {
@@ -1073,10 +1088,6 @@ var app = app || {};
                 };
                 // Draw filling
                 filling = new Konva.Shape(opts);
-                // Draw selection
-                if (isSelected) {
-                    selection = new Konva.Shape( _.extend(_.clone(opts), {fill: selectionStyle.fill}) );
-                }
             } else if (section.circular || params.radius) {
                 // Circular
                 var frameWidth = params.frameWidth || model.profile.get('frame_width');
@@ -1091,10 +1102,6 @@ var app = app || {};
                 };
                 // Draw filling
                 filling = new Konva.Circle(opts);
-                // Draw selection
-                if (isSelected) {
-                    selection = new Konva.Circle( _.extend(_.clone(opts), {fill: selectionStyle.fill}) );
-                }
             } else {
                 // Default
                 opts = {
@@ -1122,10 +1129,6 @@ var app = app || {};
                 };
                 // Draw filling
                 filling = new Konva.Shape(opts);
-                // Draw selection
-                if (isSelected) {
-                    selection = new Konva.Shape( _.extend(_.clone(opts), {fill: selectionStyle.fill}) );
-                }
             }
 
             // Special fillings
@@ -1138,10 +1141,6 @@ var app = app || {};
             }
 
             group.add( filling );
-
-            if (isSelected) {
-                group.add( selection );
-            }
 
             return group;
         },
@@ -1241,33 +1240,58 @@ var app = app || {};
             var fillWidth = params.width;
             var fillHeight = params.height;
             var style = module.getStyle('selection');
-            // usual rect
-            if (!section.arched) {
-                return new Konva.Rect({
+
+            var group = new Konva.Group({
+                name: 'selection'
+            });
+            var shape;
+
+            if (section.arched) {
+                // arched shape
+                var arcPos = model.getArchedPosition();
+
+                shape = new Konva.Shape({
+                    x: fillX,
+                    y: fillY,
+                    fill: style.fill,
+                    sceneFunc: function (ctx) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, fillHeight);
+                        ctx.lineTo(0, arcPos);
+                        ctx.quadraticCurveTo(0, 0, fillWidth / 2, 0);
+                        ctx.quadraticCurveTo(fillWidth, 0, fillWidth, arcPos);
+                        ctx.lineTo(fillWidth, fillHeight);
+                        ctx.closePath();
+                        ctx.fillStrokeShape(this);
+                    }
+                });
+            } else if (section.circular) {
+                // circular shape
+                var radius = model.getCircleRadius();
+                var frameWidth = model.profile.get('frame_width');
+
+                if (section.sashType !== 'fixed_in_frame') {
+                    frameWidth = frameWidth / 2;
+                }
+
+                shape = new Konva.Circle({
+                    x: radius - frameWidth,
+                    y: radius - frameWidth,
+                    radius: radius - frameWidth,
+                    fill: style.fill
+                });
+            } else {
+                // usual rect
+                shape = new Konva.Rect({
                     width: section.sashParams.width,
                     height: section.sashParams.height,
                     fill: style.fill
                 });
             }
 
-            // arched shape
-            var arcPos = model.getArchedPosition();
+            group.add( shape );
 
-            return new Konva.Shape({
-                x: fillX,
-                y: fillY,
-                fill: style.fill,
-                sceneFunc: function (ctx) {
-                    ctx.beginPath();
-                    ctx.moveTo(0, fillHeight);
-                    ctx.lineTo(0, arcPos);
-                    ctx.quadraticCurveTo(0, 0, fillWidth / 2, 0);
-                    ctx.quadraticCurveTo(fillWidth, 0, fillWidth, arcPos);
-                    ctx.lineTo(fillWidth, fillHeight);
-                    ctx.closePath();
-                    ctx.fillStrokeShape(this);
-                }
-            });
+            return group;
         }
 
     });
