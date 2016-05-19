@@ -104,6 +104,15 @@ var app = app || {};
         };
     }
 
+    function validateBar(opts, type) {
+        return {
+            id: opts.id || _.uniqueId(),
+            type: opts.type || type,
+            position: opts.position,
+            links: opts.links || [null, null]
+        };
+    }
+
     function getDefaultMeasurements(hasFrame) {
         var result = {};
 
@@ -266,6 +275,12 @@ var app = app || {};
 
             if ( !current_section.bars ) {
                 current_section.bars = getDefaultBars();
+            } else {
+                _.each(current_section.bars, function (barType, type) {
+                    _.each(barType, function (bar, index) {
+                        current_section.bars[type][index] = validateBar( bar, type );
+                    });
+                });
             }
 
             if ( !current_section.measurements ) {
@@ -578,6 +593,7 @@ var app = app || {};
             func(sectionToUpdate);
 
             this.persist('root_section', rootSection);
+            this.trigger('change', this);
         },
         setSectionSashType: function (sectionId, type) {
             if (!_.includes(SASH_TYPES, type)) {

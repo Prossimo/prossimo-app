@@ -16,7 +16,8 @@ module.exports = function (grunt) {
         'bootstrap-toggle/js/bootstrap-toggle.min.js',
         'konva/konva.min.js',
         'decimal.js/decimal.min.js',
-        'Backbone.Undo.js/Backbone.Undo.js'
+        'Backbone.Undo.js/Backbone.Undo.js',
+        'backbone.KonvaView/backbone.KonvaView.js'
     ];
 
     var vendor_css_files = [
@@ -62,9 +63,14 @@ module.exports = function (grunt) {
         'docs-import/views/main-docs-import-view.js',
         'docs-import/views/document-selector-view.js',
         'docs-import/views/document-list-view.js',
+        'drawing/module/drawing-module.js',
+        'drawing/module/layer-manager.js',
+        'drawing/module/unit-drawer.js',
+        'drawing/module/metrics-drawer.js',
         'drawing/views/main-drawing-view.js',
         'drawing/views/drawing-view.js',
         'drawing/views/drawing-sidebar-view.js',
+        'drawing/module/glazing-drawer.js',
         'drawing/views/drawing-glazing-view.js',
         'drawing/views/undomanager.js',
         'quote/views/main-quote-view.js',
