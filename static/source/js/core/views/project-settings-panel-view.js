@@ -16,7 +16,7 @@ var app = app || {};
         initialize: function () {
             this.setToggles();
 
-            this.listenTo(app.vent, 'current_project_loaded', this.onProjectLoaded);
+            this.listenTo(app.vent, 'project_selector:fetch_current:stop', this.onProjectLoaded);
         },
         onProjectLoaded: function () {
             this.model = app.settings.getProjectSettings();
