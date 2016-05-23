@@ -349,7 +349,7 @@ var app = app || {};
 
             //  Store profile name so in case when profile was deleted we can
             //  have its old name for the reference
-            if ( !this.hasDummyProfile() ) {
+            if ( this.profile && !this.hasDummyProfile() ) {
                 this.set('profile_name', this.profile.get('name'));
             }
         },
