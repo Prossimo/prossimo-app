@@ -250,6 +250,23 @@ var app = app || {};
             mm_to_inches: function (mm_value) {
                 return parseFloat(mm_value / 25.4);
             }
+        },
+        object: {
+            deep_extend: function (a, b) {
+                if (_.isObject(a) && _.isObject(b)) {
+                    for (var prop in b) {
+                        if (prop in a && _.isObject(b[prop])) {
+                            app.utils.object.deep_extend(a[prop], b[prop]);
+                        } else {
+                            a[prop] = b[prop];
+                        }
+                    }
+                } else if ( !(_.isUndefined(b) || _.isNull(b) || _.isNaN(b)) ) {
+                    a = b;
+                }
+
+                return a;
+            }
         }
     };
 })();

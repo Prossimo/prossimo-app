@@ -16,7 +16,9 @@ module.exports = function (grunt) {
         'bootstrap-toggle/js/bootstrap-toggle.min.js',
         'konva/konva.min.js',
         'decimal.js/decimal.min.js',
-        'Backbone.Undo.js/Backbone.Undo.js'
+        'Backbone.Undo.js/Backbone.Undo.js',
+        'backbone.KonvaView/backbone.KonvaView.js',
+        'spin.js/spin.min.js'
     ];
 
     var vendor_css_files = [
@@ -57,14 +59,20 @@ module.exports = function (grunt) {
         'core/views/no-project-selected-view.js',
         'core/views/status-panel-view.js',
         'core/views/project-settings-panel-view.js',
+        'core/views/spinner-view.js',
         'core/views/top-bar-view.js',
         'units-table/views/main-units-table-view.js',
         'docs-import/views/main-docs-import-view.js',
         'docs-import/views/document-selector-view.js',
         'docs-import/views/document-list-view.js',
+        'drawing/module/drawing-module.js',
+        'drawing/module/layer-manager.js',
+        'drawing/module/unit-drawer.js',
+        'drawing/module/metrics-drawer.js',
         'drawing/views/main-drawing-view.js',
         'drawing/views/drawing-view.js',
         'drawing/views/drawing-sidebar-view.js',
+        'drawing/module/glazing-drawer.js',
         'drawing/views/drawing-glazing-view.js',
         'drawing/views/undomanager.js',
         'quote/views/main-quote-view.js',

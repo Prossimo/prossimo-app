@@ -68,7 +68,7 @@ var app = app || {};
         // 'flush-turn-left': 'Flush Panel Left Hinge',
         fixed_in_frame: 'Fixed',
         fixed_in_sash: 'Fixed in Sash',
-        tilt_only: 'Tilt Only Bottom Hung',
+        tilt_only: 'Tilt Only',
         tilt_turn_right: 'Tilt-turn Right Hinge',
         tilt_turn_left: 'Tilt-turn Left Hinge',
         turn_only_right: 'Turn Only Right Hinge',
@@ -102,6 +102,15 @@ var app = app || {};
         return {
             vertical: [],
             horizontal: []
+        };
+    }
+
+    function validateBar(opts, type) {
+        return {
+            id: opts.id || _.uniqueId(),
+            type: opts.type || type,
+            position: opts.position,
+            links: opts.links || [null, null]
         };
     }
 
@@ -267,6 +276,12 @@ var app = app || {};
 
             if ( !current_section.bars ) {
                 current_section.bars = getDefaultBars();
+            } else {
+                _.each(current_section.bars, function (barType, type) {
+                    _.each(barType, function (bar, index) {
+                        current_section.bars[type][index] = validateBar( bar, type );
+                    });
+                });
             }
 
             if ( !current_section.measurements ) {
@@ -586,6 +601,7 @@ var app = app || {};
             func(sectionToUpdate);
 
             this.persist('root_section', rootSection);
+            this.trigger('change', this);
         },
         setSectionSashType: function (sectionId, type) {
             if (!_.includes(SASH_TYPES, type)) {
@@ -668,6 +684,21 @@ var app = app || {};
                    (val === 'max') ? 'min' :
                    (val === 'center') ? 'center' :
                    val;
+        },
+        getBar: function (sectionId, id) {
+            var found = null;
+            var section = this.getSection(sectionId);
+
+            _.each(section.bars, function (arr) {
+                _.each(arr, function (bar) {
+                    if (bar.id === id) {
+                        found = bar;
+                        return;
+                    }
+                });
+            });
+
+            return found;
         },
         // @TODO: Add method, that checks for correct values of measurement data
         // @TODO: Add method, that drops measurement data to default

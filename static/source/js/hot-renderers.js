@@ -128,7 +128,9 @@ var app = app || {};
         moveItemRenderer: function (instance, td, row) {
             var $td = $(td);
             var is_first_item = row === 0;
-            var is_last_item = row === instance.getSourceData().length - 1;
+            var is_last_item = row === instance.getSourceData().filter(function (item) {
+                return item.get('is_base_type') !== true;
+            }).length - 1;
 
             var $button_up = $('<button class="btn btn-move btn-up btn-xs js-move-item-up"' +
                 'data-row="' + row + '">Up</button>');

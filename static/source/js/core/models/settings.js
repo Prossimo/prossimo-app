@@ -82,7 +82,7 @@ var app = app || {};
             this.project_settings = null;
 
             this.listenTo(app.vent, 'auth:initial_login', this.onInitialLogin);
-            this.listenTo(app.vent, 'current_project_loaded', this.setProjectSettings);
+            this.listenTo(app.vent, 'project_selector:fetch_current:stop', this.setProjectSettings);
         },
         setProjectSettings: function () {
             this.project_settings = app.current_project.settings;
@@ -99,8 +99,10 @@ var app = app || {};
             var d1 = $.Deferred();
             var d2 = $.Deferred();
 
+            app.vent.trigger('settings:fetch_data:start');
+
             $.when(d1, d2).done(function () {
-                app.vent.trigger('settings:fetched_data');
+                app.vent.trigger('settings:fetch_data:stop');
             });
 
             this.profiles.fetch({

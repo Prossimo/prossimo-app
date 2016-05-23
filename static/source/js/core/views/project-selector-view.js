@@ -16,7 +16,7 @@ var app = app || {};
         },
         initialize: function () {
             this.listenTo(this.collection, 'all', this.render);
-            this.listenTo(app.vent, 'settings:fetched_data', this.onInitialLogin);
+            this.listenTo(app.vent, 'settings:fetch_data:stop', this.onInitialLogin);
             this.listenTo(app.vent, 'auth:fetched_no_backend', this.onNoBackend);
         },
         //  This is called after we're done fetching profiles and filling types
@@ -29,13 +29,17 @@ var app = app || {};
         fetchProjectList: function () {
             var self = this;
 
+            app.vent.trigger('project_selector:fetch_list:start');
+
             this.collection.fetch({
                 remove: false,
                 success: function () {
                     self.loadLastProject();
+                    app.vent.trigger('project_selector:fetch_list:stop');
                 },
                 error: function () {
                     self.loadLastProject();
+                    app.vent.trigger('project_selector:fetch_list:stop');
                 },
                 data: {
                     limit: 0
@@ -83,6 +87,8 @@ var app = app || {};
             if ( app.current_project._wasFetched || app.session.get('no_backend') ) {
                 d.resolve('Project was already fetched');
             } else {
+                app.vent.trigger('project_selector:fetch_current:start');
+
                 app.current_project.fetch({
                     success: function () {
                         d.resolve('Fetched project');
@@ -97,10 +103,10 @@ var app = app || {};
                 self.stopListening();
 
                 if ( app.current_project._wasLoaded ) {
-                    app.vent.trigger('current_project_loaded');
+                    app.vent.trigger('project_selector:fetch_current:stop');
                 } else {
                     self.listenToOnce(app.current_project, 'fully_loaded', function () {
-                        app.vent.trigger('current_project_loaded');
+                        app.vent.trigger('project_selector:fetch_current:stop');
                     }, self);
                 }
 

@@ -25,8 +25,6 @@ var app = app || {};
     // global params
     var globalInsideView = false;
     var metricSize = 50;
-    var controlSize = metricSize / 4;
-    var fontFamily = 'pt-sans';
 
     app.DrawingView = Marionette.ItemView.extend({
         tagName: 'div',
@@ -46,7 +44,8 @@ var app = app || {};
                 selectedSashId: null,
                 selectedMullionId: null,
                 inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
-                hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode')
+                hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode'),
+                inputFocused: false
             };
 
             this.groups = {};
@@ -72,12 +71,13 @@ var app = app || {};
             $filling_select: '#filling-select',
             $undo: '#undo',
             $redo: '#redo',
+            $sash_types: '.change-sash-type',
             $metrics_glass: '#additional-metrics-glass',
             $metrics_opening: '#additional-metrics-opening'
         },
         events: {
             'click .split-section': 'handleSplitSectionClick',
-            'click .change-sash-type': 'handleChangeSashTypeClick',
+            'click @ui.$sash_types': 'handleChangeSashTypeClick',
             'click #clear-frame': 'handleClearFrameClick',
             'keydown #drawing': 'handleCanvasKeyDown',
             'click #change-view-button': 'handleChangeView',
@@ -108,18 +108,8 @@ var app = app || {};
             return this.undoManager.handler.redo();
         },
         handleCanvasKeyDown: function (e) {
-            if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
-                e.preventDefault();
-
-                if (this.state.selectedMullionId) {
-                    this.model.removeMullion(this.state.selectedMullionId);
-                }
-
-                if (this.state.selectedSashId) {
-                    this.model.removeSash(this.state.selectedSashId);
-                }
-
-                this.deselectAll();
+            if (this.module && !this.state.inputFocused) {
+                this.module.handleKeyEvents(e);
             }
         },
         handleAdditionalMetricsChange: function (evt) {
@@ -146,6 +136,11 @@ var app = app || {};
                 insideView: this.isInsideView(),
                 openingView: this.isOpeningView()
             });
+
+            this.module.setState({
+                insideView: this.isInsideView(),
+                openingView: this.isOpeningView()
+            });
         },
         handleGlazingBarsPopupClick: function () {
             if ( !this.glazing_view ) {
@@ -153,8 +148,8 @@ var app = app || {};
             }
 
             this.glazing_view
-                    .setSection( this.state.selectedSashId )
-                    .showModal();
+                .setSection( this.state.selectedSashId )
+                .showModal();
         },
         handleFillingTypeChange: function () {
             var filling_type;
@@ -192,6 +187,7 @@ var app = app || {};
 
             this.model.splitSection(this.state.selectedSashId, divider);
             this.deselectAll();
+            this.module.deselectAll();
         },
         handleChangeSashTypeClick: function (e) {
             this.$('.popup-wrap').hide();
@@ -227,11 +223,14 @@ var app = app || {};
 
         // Marrionente lifecycle method
         onRender: function () {
+            this.changeIcons();
+
             this.stage = new Konva.Stage({
                 container: this.$('#drawing').get(0)
             });
 
             this.layer = new Konva.Layer();
+
             this.stage.add(this.layer);
 
             this.ui.$filling_select.selectpicker({
@@ -239,15 +238,76 @@ var app = app || {};
                 showSubtext: true,
                 size: 10
             });
-        },
 
+            this.module = new app.DrawingModule({
+                model: this.model,
+                stage: this.stage,
+                layers: {},
+                metricSize: metricSize
+            });
+
+            this.bindModuleEvents();
+        },
         // Marrionente lifecycle method
         onDestroy: function () {
             this.stage.destroy();
+            this.unbindModuleEvents();
 
             if ( this.glazing_view ) {
                 this.glazing_view.destroy();
             }
+
+            if ( this.module ) {
+                this.module.destroy();
+            }
+        },
+
+        // Change icons for american / european style
+        changeIcons: function () {
+            var tilt_turn_left = this.ui.$sash_types.filter('[data-type=tilt_turn_left]');
+            var tilt_turn_right = this.ui.$sash_types.filter('[data-type=tilt_turn_right]');
+            var tilt_only = this.ui.$sash_types.filter('[data-type=tilt_only]');
+
+            function toAmerican( $el ) {
+                $el.attr('src', $el.attr('src').replace('.png', '_american.png') );
+            }
+
+            function toEuropean( $el ) {
+                $el.attr('src', $el.attr('src').replace('_american.png', '.png') );
+            }
+
+            if (this.state.hingeIndicatorMode === 'american') {
+                toAmerican( tilt_turn_left );
+                toAmerican( tilt_turn_right );
+                toAmerican( tilt_only );
+            } else {
+                toEuropean( tilt_turn_left );
+                toEuropean( tilt_turn_right );
+                toEuropean( tilt_only );
+            }
+
+            return true;
+        },
+
+        bindModuleEvents: function () {
+            this.listenTo(this.module, 'state:selected:mullion', function (data) {
+                this.deselectAll();
+                this.setState({
+                    selectedMullionId: data.newValue
+                });
+            });
+            this.listenTo(this.module, 'state:selected:sash', function (data) {
+                this.deselectAll();
+                this.setState({
+                    selectedSashId: data.newValue
+                });
+            });
+            this.listenTo(this.module, 'labelClicked', function (data) {
+                this.createInput( data.params, data.pos, data.size );
+            });
+        },
+        unbindModuleEvents: function () {
+            this.stopListening(this.module);
         },
 
         serializeData: function () {
@@ -264,2158 +324,39 @@ var app = app || {};
         },
         createGlazingPopup: function () {
             this.glazing_view = new app.DrawingGlazingPopup({
-                parent_view: this,
-                model: this.model
-            });
-        },
-        // common case frame
-        // almost all sashes build via this frame
-        // it draw just "edges"
-        createFrame: function (params) {
-            var frameWidth = params.frameWidth;  // in mm
-            var width = params.width;
-            var height = params.height;
-
-            var group = new Konva.Group();
-            var top = new Konva.Line({
-                points: [
-                    0, 0,
-                    width, 0,
-                    width - frameWidth, frameWidth,
-                    frameWidth, frameWidth
-                ]
-            });
-
-            var left = new Konva.Line({
-                points: [
-                    0, 0,
-                    frameWidth, frameWidth,
-                    frameWidth, height - frameWidth,
-                    0, height
-                ]
-            });
-
-            var bottom = new Konva.Line({
-                points: [
-                    0, height,
-                    frameWidth, height - frameWidth,
-                    width - frameWidth, height - frameWidth,
-                    width, height
-                ]
-            });
-
-            var right = new Konva.Line({
-                points: [
-                    width, 0,
-                    width, height,
-                    width - frameWidth, height - frameWidth,
-                    width - frameWidth, frameWidth
-                ]
-            });
-
-            group.add(top, left, bottom, right);
-
-            // add styles for borders
-            group.children
-                .closed(true)
-                .stroke('black')
-                .strokeWidth(1)
-                .fill('white');
-
-            var sectionId = params.sectionId;
-
-            if ( params.nobind !== true ) {
-                group.on('click', this.handleObjectClick.bind(this, sectionId));
-            }
-
-            return group;
-        },
-
-        // like common frame above but fully filled
-        createFlushFrame: function (params) {
-            var width = params.width;
-            var height = params.height;
-
-            var group = new Konva.Group();
-            var rect = new Konva.Rect({
-                width: width,
-                height: height,
-                fill: 'lightgrey',
-                stroke: 'black',
-                strokeWidth: 1
-            });
-
-            var sectionId = params.sectionId;
-
-            group.add(rect);
-            group.on('click', this.handleObjectClick.bind(this, sectionId));
-
-            return group;
-        },
-
-        // door frame have special case for threshold drawing
-        createDoorFrame: function (params) {
-            var frameWidth = params.frameWidth;  // in mm
-            var thresholdWidth = this.model.profile.get('threshold_width');
-            var width = params.width;
-            var height = params.height;
-
-            var group = new Konva.Group();
-            var top = new Konva.Line({
-                points: [
-                    0, 0,
-                    width, 0,
-                    width - frameWidth, frameWidth,
-                    frameWidth, frameWidth
-                ]
-            });
-
-            var left = new Konva.Line({
-                points: [
-                    0, 0,
-                    frameWidth, frameWidth,
-                    frameWidth, height - thresholdWidth,
-                    0, height - thresholdWidth
-                ]
-            });
-
-            var right = new Konva.Line({
-                points: [
-                    width, 0,
-                    width, height - thresholdWidth,
-                    width - frameWidth, height - thresholdWidth,
-                    width - frameWidth, frameWidth
-                ]
-            });
-
-            group.add(top, left, right);
-
-            group.children
-                .closed(true)
-                .stroke('black')
-                .strokeWidth(1)
-                .fill('white');
-
-            var bottom = new Konva.Line({
-                points: [
-                    0, height - thresholdWidth,
-                    width, height - thresholdWidth,
-                    width, height,
-                    0, height
-                ],
-                closed: true,
-                stroke: 'black',
-                strokeWidth: 1,
-                fill: 'grey'
-            });
-
-            group.add(bottom);
-
-            return group;
-        },
-
-        // arched frame have special case for arched part
-        createArchedFrame: function (params) {
-            var frameWidth = params.frameWidth;
-            var width = params.width;
-            var height = params.height;
-            var archHeight = params.archHeight;
-
-            var group = new Konva.Group();
-            var top = new Konva.Shape({
-                stroke: 'black',
-                strokeWidth: 1,
-                fill: 'white',
-                sceneFunc: function (ctx) {
-                    ctx.beginPath();
-                    var scale = (width / 2) / archHeight;
-
-                    ctx.save();
-                    ctx.scale(scale, 1);
-                    var radius = archHeight;
-
-                    ctx._context.arc(
-                        radius, radius, radius,
-                        0, Math.PI, true);
-                    ctx.restore();
-                    ctx.translate(width / 2, archHeight);
-                    ctx.scale(
-                        (width / 2 - frameWidth) / archHeight,
-                        (archHeight - frameWidth) / archHeight
-                    );
-                    ctx._context.arc(
-                        0, 0,
-                        radius,
-                        Math.PI, 0
-                    );
-                    ctx.closePath();
-                    ctx.fillStrokeShape(this);
-                }
-            });
-
-            var left = new Konva.Line({
-                points: [
-                    0, archHeight,
-                    frameWidth, archHeight,
-                    frameWidth, height - frameWidth,
-                    0, height
-                ]
-            });
-
-            var bottom = new Konva.Line({
-                points: [
-                    0, height,
-                    frameWidth, height - frameWidth,
-                    width - frameWidth, height - frameWidth,
-                    width, height
-                ]
-            });
-
-            var right = new Konva.Line({
-                points: [
-                    width, archHeight,
-                    width, height,
-                    width - frameWidth, height - frameWidth,
-                    width - frameWidth, archHeight
-                ]
-            });
-
-            group.add(left, right, bottom, top);
-
-            group.find('Line')
-                .closed(true)
-                .stroke('black')
-                .strokeWidth(1)
-                .fill('white');
-
-            return group;
-        },
-
-        createMullion: function (section) {
-            var mullion = new Konva.Rect({
-                stroke: 'black',
-                fill: 'white',
-                strokeWidth: 1
-            });
-
-            mullion.setAttrs(section.mullionParams);
-            var isVerticalInvisible = (
-                section.divider === 'vertical_invisible'
-            );
-            var isHorizontalInvisible = (
-                section.divider === 'horizontal_invisible'
-            );
-            var isSelected = this.state.selectedMullionId === section.id;
-
-            // do not show mullion for type vertical_invisible
-            // and sash is added for both right and left sides
-            var hideVerticalMullion =
-                (section.divider === 'vertical_invisible') &&
-                (section.sections[0].sashType !== 'fixed_in_frame') &&
-                (section.sections[1].sashType !== 'fixed_in_frame') && !isSelected;
-
-            var hideHorizontalMullion =
-                (section.divider === 'horizontal_invisible') &&
-                (section.sections[0].sashType === 'fixed_in_frame') &&
-                (section.sections[1].sashType === 'fixed_in_frame') && !isSelected;
-
-            if (isVerticalInvisible && !isSelected) {
-                mullion.fill('lightgreen');
-                mullion.opacity(0.5);
-            } else if ((isVerticalInvisible || isHorizontalInvisible) && isSelected) {
-                mullion.opacity(0.7);
-                mullion.fill('#4E993F');
-            } else if (isSelected) {
-                mullion.fill('lightgrey');
-            }
-
-            if (hideVerticalMullion) {
-                mullion.opacity(0.01);
-            }
-
-            if (hideHorizontalMullion) {
-                mullion.fill('lightblue');
-            }
-
-            mullion.on('click', function () {
-                this.deselectAll();
-                this.setState({
-                    selectedMullionId: section.id
-                });
-            }.bind(this));
-            return mullion;
-        },
-        createSections: function (rootSection) {
-            var objects = [];
-
-            if (rootSection.sections && rootSection.sections.length) {
-                var mullion = this.createMullion(rootSection);
-
-                if (this.state.openingView) {
-                    objects.push(mullion);
-                }
-
-                // draw each child section
-                rootSection.sections.forEach(function (sectionData) {
-                    objects = objects.concat(this.createSections(sectionData));
-                }.bind(this));
-
-                if (!this.state.openingView) {
-                    objects.push(mullion);
-                }
-            }
-
-            var sash = this.createSash(rootSection);
-
-            objects.push(sash);
-
-            return objects;
-        },
-
-        // special shape on top of sash to hightlight selection
-        // it is simple to draw shape with alpha on top
-        // then change styles of selected object
-        createSelectionShape: function (section, params) {
-            var fillX = params.x;
-            var fillY = params.y;
-            var fillWidth = params.width;
-            var fillHeight = params.height;
-            // usual rect
-            if (!section.arched) {
-                return new Konva.Rect({
-                    width: section.sashParams.width,
-                    height: section.sashParams.height,
-                    fill: 'rgba(0,0,0,0.2)'
-                });
-            }
-
-            // arched shape
-            var arcPos = this.model.getArchedPosition();
-
-            return new Konva.Shape({
-                x: fillX,
-                y: fillY,
-                fill: 'rgba(0,0,0,0.2)',
-                sceneFunc: function (ctx) {
-                    ctx.beginPath();
-                    ctx.moveTo(0, fillHeight);
-                    ctx.lineTo(0, arcPos);
-                    ctx.quadraticCurveTo(0, 0, fillWidth / 2, 0);
-                    ctx.quadraticCurveTo(fillWidth, 0, fillWidth, arcPos);
-                    ctx.lineTo(fillWidth, fillHeight);
-                    ctx.closePath();
-                    ctx.fillStrokeShape(this);
-                }
+                model: this.model,
+                parent: this
             });
         },
 
-        createFilling: function (section, params) {
-            var fillX = params.x;
-            var fillY = params.y;
-            var fillWidth = params.width;
-            var fillHeight = params.height;
-            var filling;
-
-            if (!section.arched) {
-                filling = new Konva.Shape({
-                    x: fillX,
-                    y: fillY,
-                    width: fillWidth,
-                    height: fillHeight,
-                    fill: 'lightblue',
-                    sceneFunc: function (ctx) {
-                        ctx.beginPath();
-                        ctx.rect(0, 0, this.width(), this.height());
-                        // draw louver lines
-                        if (section.fillingType === 'louver') {
-                            var offset = 40;
-
-                            for (var i = 0; i < this.height() / offset; i++) {
-                                ctx.moveTo(0, i * offset);
-                                ctx.lineTo(this.width(), i * offset);
-                            }
-                        }
-
-                        ctx.fillStrokeShape(this);
-                    }
-                });
-
-                if (section.fillingType === 'louver') {
-                    filling.stroke('black');
-                }
-            } else if (true) {
-                var arcPos = this.model.getArchedPosition();
-
-                filling = new Konva.Shape({
-                    x: fillX,
-                    y: fillY,
-                    fill: 'lightblue',
-                    sceneFunc: function (ctx) {
-                        ctx.beginPath();
-                        ctx.moveTo(0, fillHeight);
-                        ctx.lineTo(0, arcPos);
-                        ctx.quadraticCurveTo(0, 0, fillWidth / 2, 0);
-                        ctx.quadraticCurveTo(fillWidth, 0, fillWidth, arcPos);
-                        ctx.lineTo(fillWidth, fillHeight);
-                        ctx.closePath();
-                        ctx.fillStrokeShape(this);
-                    }
-                });
-            }
-
-            if (section.fillingType && section.fillingType !== 'glass') {
-                filling.fill('lightgrey');
-            }
-
-            filling.on('click', this.handleObjectClick.bind(this, section.id));
-            return filling;
-        },
-        createBars: function (section, params) {
-            var fillX = params.x;
-            var fillY = params.y;
-            var fillWidth = params.width;
-            var fillHeight = params.height;
-
-            var group = new Konva.Group();
-            var bar;
-
-            var hBarCount = section.bars.horizontal.length;
-            var vBarCount = section.bars.vertical.length;
-            var glazing_bar_width = this.model.get('glazing_bar_width');
-            var space;
-
-            for (var i = 0; i < vBarCount; i++) {
-                space = section.bars.vertical[i].position;
-
-                bar = new Konva.Rect({
-                    x: fillX + space - (glazing_bar_width / 2), y: fillY,
-                    width: glazing_bar_width, height: fillHeight,
-                    fill: 'white', listening: false
-                });
-                group.add(bar);
-            }
-
-            for (i = 0; i < hBarCount; i++) {
-                space = section.bars.horizontal[i].position;
-
-                bar = new Konva.Rect({
-                    x: fillX, y: fillY + space - (glazing_bar_width / 2),
-                    width: fillWidth, height: glazing_bar_width,
-                    fill: 'white', listening: false
-                });
-                group.add(bar);
-            }
-
-            return group;
-        },
-        getBarsWithSpaces: function ( section ) {
-            var bars = JSON.parse( JSON.stringify( section.bars ) );
-
-            _.each(bars, function ( group ) {
-                var spaceUsed = 0;
-
-                group.forEach(function ( bar ) {
-                    bar.space = bar.position - spaceUsed;
-                    spaceUsed += bar.space;
-                });
-            });
-
-            return bars;
-        },
-        createHandle: function (section, params) {
-            var type = section.sashType;
-            var offset = params.frameWidth / 2;
-            var pos = {
-                x: null,
-                y: null,
-                rotation: 0
-            };
-
-            if (type === 'tilt_turn_right' || type === 'turn_only_right' ||
-                type === 'slide-right' || type === 'flush-turn-right'
-            ) {
-                pos.x = offset;
-                pos.y = section.sashParams.height / 2;
-            }
-
-            if (type === 'tilt_turn_left' || type === 'turn_only_left' ||
-                type === 'slide-left' || type === 'flush-turn-left'
-            ) {
-                pos.x = section.sashParams.width - offset;
-                pos.y = section.sashParams.height / 2;
-            }
-
-            if (type === 'tilt_only') {
-                pos.x = section.sashParams.width / 2;
-                pos.y = offset;
-                pos.rotation = 90;
-            }
-
-            var handle = new Konva.Shape({
-                x: pos.x,
-                y: pos.y,
-                rotation: pos.rotation,
-                stroke: 'black',
-                fill: 'rgba(0,0,0,0.2)',
-                sceneFunc: function (ctx) {
-                    ctx.beginPath();
-                    ctx.rect(-23, -23, 46, 55);
-                    ctx.rect(-14, -5, 28, 90);
-                    ctx.fillStrokeShape(this);
-                }
-            });
-
-            return handle;
-        },
-        createDirectionLine: function (section) {
-            var type = section.sashType;
-            var directionLine = new Konva.Shape({
-                stroke: 'black',
-                x: section.glassParams.x - section.sashParams.x,
-                y: section.glassParams.y - section.sashParams.y,
-                sceneFunc: function (ctx) {
-                    ctx.beginPath();
-                    var width = section.glassParams.width;
-                    var height = section.glassParams.height;
-
-                    if (type.indexOf('right') >= 0 && (type.indexOf('slide') === -1)) {
-                        ctx.moveTo(width, height);
-                        ctx.lineTo(0, height / 2);
-                        ctx.lineTo(width, 0);
-                    }
-
-                    if (type.indexOf('left') >= 0 && (type.indexOf('slide') === -1)) {
-                        ctx.moveTo(0, 0);
-                        ctx.lineTo(width, height / 2);
-                        ctx.lineTo(0, height);
-                    }
-
-                    if (type.indexOf('tilt_turn_') >= 0 || type.indexOf('slide') >= 0 || type === 'tilt_only') {
-                        ctx.moveTo(0, height);
-                        ctx.lineTo(width / 2, 0);
-                        ctx.lineTo(width, height);
-                    }
-
-                    if (type === 'tilt_only_top_hung') {
-                        ctx.moveTo(0, 0);
-                        ctx.lineTo(width / 2, height);
-                        ctx.lineTo(width, 0);
-                    }
-
-                    ctx.strokeShape(this);
-                }
-            });
-
-            if ((type.indexOf('_hinge_hidden_latch') !== -1)) {
-                directionLine.dash([10 / this.ratio, 10 / this.ratio]);
-            }
-
-            // #192: Reverse hinge indicator for outside view
-            if ( this.state.hingeIndicatorMode === 'american' ) {
-                directionLine.scale({
-                    x: -1
-                });
-                directionLine.move({
-                    x: section.glassParams.width
-                });
-            }
-
-            return directionLine;
-        },
-        createSash: function (sectionData) {
-            var hasFrame = (sectionData.sashType !== 'fixed_in_frame');
-            var frameWidth = hasFrame ? this.model.profile.get('sash_frame_width') : 0;
-
-            var group = new Konva.Group({
-                x: sectionData.sashParams.x,
-                y: sectionData.sashParams.y
-            });
-
-            var fillX;
-            var fillY;
-            var fillWidth;
-            var fillHeight;
-
-            if (_.includes(['full-flush-panel', 'exterior-flush-panel'], sectionData.fillingType) &&
-                !this.state.openingView
-            ) {
-                fillX = sectionData.openingParams.x - sectionData.sashParams.x;
-                fillY = sectionData.openingParams.y - sectionData.sashParams.y;
-                fillWidth = sectionData.openingParams.width;
-                fillHeight = sectionData.openingParams.height;
-            } else if (_.includes(['full-flush-panel', 'interior-flush-panel'], sectionData.fillingType) &&
-                        this.state.openingView
-            ) {
-                fillX = 0;
-                fillY = 0;
-                fillWidth = sectionData.sashParams.width;
-                fillHeight = sectionData.sashParams.height;
-            } else {
-                fillX = sectionData.glassParams.x - sectionData.sashParams.x;
-                fillY = sectionData.glassParams.y - sectionData.sashParams.y;
-                fillWidth = sectionData.glassParams.width;
-                fillHeight = sectionData.glassParams.height;
-            }
-
-            var hasSubSections = sectionData.sections && sectionData.sections.length;
-            var isFlushType = sectionData.fillingType &&
-                sectionData.fillingType.indexOf('flush') >= 0;
-
-            var frameGroup;
-
-            if (isFlushType && !hasSubSections) {
-                frameGroup = this.createFlushFrame({
-                    width: sectionData.sashParams.width,
-                    height: sectionData.sashParams.height,
-                    sectionId: sectionData.id
-                });
-                group.add(frameGroup);
-            }
-
-            if (sectionData.sashType !== 'fixed_in_frame') {
-
-                frameGroup = this.createFrame({
-                    width: sectionData.sashParams.width,
-                    height: sectionData.sashParams.height,
-                    frameWidth: frameWidth,
-                    sectionId: sectionData.id
-                });
-
-                group.add(frameGroup);
-            }
-
-            var shouldDrawFilling =
-                !hasSubSections && !isFlushType ||
-                !hasSubSections && this.model.isRootSection(sectionData.id) && isFlushType;
-
-            if (shouldDrawFilling) {
-                var filling = this.createFilling(sectionData, {
-                    x: fillX,
-                    y: fillY,
-                    width: fillWidth,
-                    height: fillHeight
-                });
-
-                group.add(filling);
-            }
-
-            var shouldDrawBars = shouldDrawFilling &&
-                !sectionData.fillingType || sectionData.fillingType === 'glass';
-
-            if (shouldDrawBars) {
-                var bars = this.createBars(sectionData, {
-                    x: fillX,
-                    y: fillY,
-                    width: fillWidth,
-                    height: fillHeight
-                });
-
-                group.add(bars);
-            }
-
-            var type = sectionData.sashType;
-            var shouldDrawHandle = this.shouldDrawHandle(type);
-
-            if (shouldDrawHandle) {
-                var handle = this.createHandle(sectionData, {
-                    frameWidth: frameWidth
-                });
-
-                group.add(handle);
-            }
-
-            var shouldDrawDirectionLine = sectionData.sashType !== 'fixed_in_frame';
-
-            if (shouldDrawDirectionLine) {
-                var directionLine = this.createDirectionLine(sectionData);
-
-                group.add(directionLine);
-            }
-
-            var sashList = this.model.getSashList();
-            var index = _.findIndex(sashList, function (s) {
-                return s.id === sectionData.id;
-            });
-
-            if (index >= 0) {
-                var indexes = this.createSectionIndexes(sectionData, {main: index, add: null});
-
-                group.add( this.createIndexes(indexes) );
-            }
-
-            var isSelected = (this.state.selectedSashId === sectionData.id);
-
-            if (isSelected) {
-                var selection = this.createSelectionShape(sectionData, {
-                    x: fillX,
-                    y: fillY,
-                    width: fillWidth,
-                    height: fillHeight
-                });
-
-                group.add(selection);
-            }
-
-            return group;
-        },
-        createSectionIndexes: function (mainSection, indexes, i) {
-            var view = this;
-            var result = [];
-
-            indexes = indexes || {
-                main: 0,
-                add: null,
-                parent: null
-            };
-
-            i = i || 0;
-
-            // If section have a children — create Indexes for them recursively
-            if (mainSection.sections.length) {
-
-                if (this.state.insideView && mainSection.divider === 'vertical') {
-                    mainSection.sections.reverse();
-                }
-
-                mainSection.sections.forEach(function (section, j) {
-
-                    if (mainSection.sashType !== 'fixed_in_frame') {
-                        indexes.parent = mainSection;
-                    }
-
-                    if (!section.sections.length) {
-                        indexes.add += 1;
-
-                    }
-
-                    result = result.concat( view.createSectionIndexes(section, indexes, j) );
-                });
-
-            // If section haven't a children sections — create Index for it
-            } else {
-                var text = (indexes.main + 1);
-                var position = {
-                    x: (
-                        mainSection.glassParams.x - mainSection.sashParams.x
-                    ),
-                    y: (
-                        mainSection.glassParams.y - mainSection.sashParams.y
-                    )
-                };
-                var size = {
-                    width: mainSection.glassParams.width,
-                    height: mainSection.glassParams.height
-                };
-
-                if (indexes.add !== null) {
-                    text += '.' + indexes.add;
-
-                    if (indexes.parent) {
-
-                        position = {
-                            x: (
-                                mainSection.glassParams.x - indexes.parent.sashParams.x
-                            ),
-                            y: (
-                                mainSection.glassParams.y - indexes.parent.sashParams.y
-                            )
-                        };
-                        size = {
-                            width: size.width,
-                            height: size.height
-                        };
-                    }
-                }
-
-                result.push({
-                    text: text,
-                    position: position,
-                    size: size,
-                    id: mainSection.id
-                });
-
-            }
-
-            return result;
-        },
-        createIndexes: function (indexes) {
-            var view = this;
-            var group = new Konva.Group();
-            var number;
-
-            indexes.forEach(function (section) {
-                number = new Konva.Text({
-                        width: section.size.width,
-                        align: 'center',
-                        text: section.text,
-                        fontFamily: fontFamily,
-                        fontSize: 15 / view.ratio,
-                        listening: false
-                    });
-                number.position( section.position );
-                number.y( number.y() + section.size.height / 2 - number.height() / 2 );
-                group.add( number );
-            });
-
-            return group;
-        },
-        createVerticalMetric: function (width, height, params, styles) {
-            var arrowOffset = width / 2;
-            var arrowSize = 5;
-            var group = new Konva.Group();
-
-            // Define styles
-            styles = styles || {};
-            styles = _.defaults(styles, this.getDefaultMetricStyles());
-
-            var lines = new Konva.Shape({
-                sceneFunc: function (ctx) {
-                    ctx.beginPath();
-                    ctx.moveTo(0, 0);
-                    ctx.lineTo(width, 0);
-
-                    ctx.moveTo(0, height);
-                    ctx.lineTo(width, height);
-
-                    ctx.stroke();
-                },
-                stroke: styles.arrows.stroke,
-                strokeWidth: styles.arrows.strokeWidth
-            });
-
-            var arrow = new Konva.Shape({
-                sceneFunc: function (ctx) {
-                    ctx.translate(arrowOffset, 0);
-
-                    ctx.beginPath();
-                    // top pointer
-                    ctx.moveTo(-arrowSize, arrowSize);
-                    ctx.lineTo(0, 0);
-                    ctx.lineTo(arrowSize, arrowSize);
-
-                    // line
-                    ctx.moveTo(0, 0);
-                    ctx.lineTo(0, height);
-
-                    // bottom pointer
-                    ctx.moveTo(-arrowSize, height - arrowSize);
-                    ctx.lineTo(0, height);
-                    ctx.lineTo(arrowSize, height - arrowSize);
-
-                    ctx.strokeShape(this);
-                },
-                stroke: styles.arrows.stroke,
-                strokeWidth: styles.arrows.strokeWidth
-            });
-
-            // left text
-            var labelMM = new Konva.Label();
-
-            labelMM.add(new Konva.Tag({
-                fill: styles.label.fill,
-                stroke: styles.label.stroke,
-                strokeWidth: styles.label.strokeWidth
-            }));
-            var textMM = new Konva.Text({
-                text: app.utils.format.dimension_mm(params.getter()),
-                padding: styles.label.padding,
-                fontFamily: fontFamily,
-                fontSize: styles.label.fontSize,
-                fill: styles.label.color
-            });
-
-            labelMM.add(textMM);
-            labelMM.position({
-                x: width / 2 - textMM.width() / 2,
-                y: height / 2 + textMM.height() / 2
-            });
-
-            // left text
-            var labelInches = new Konva.Label();
-
-            labelInches.add(new Konva.Tag({
-                fill: styles.label.fill,
-                stroke: styles.label.stroke,
-                strokeWidth: styles.label.strokeWidth
-            }));
-            var inches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(inches, 'fraction', this.state && this.state.inchesDisplayMode);
-            var textInches = new Konva.Text({
-                text: val,
-                padding: styles.label.padding,
-                fill: styles.label.color,
-                fontFamily: fontFamily,
-                fontSize: styles.label.fontSize_big
-            });
-
-            labelInches.add(textInches);
-            labelInches.position({
-                x: width / 2 - textInches.width() / 2,
-                y: height / 2 - textInches.height() / 2
-            });
-
-            if (params.setter) {
-                labelInches.on('click tap', function () {
-                    this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
-                }.bind(this));
-            }
-
-            group.add(lines, arrow, labelInches, labelMM);
-            return group;
-        },
-
-        createHorizontalMetric: function (width, height, params, styles) {
-            var arrowOffset = height / 2;
-            var arrowSize = 5;
-            var group = new Konva.Group();
-
-            // Define styles
-            styles = styles || {};
-            styles = _.defaults(styles, this.getDefaultMetricStyles());
-
-            var lines = new Konva.Shape({
-                sceneFunc: function (ctx) {
-                    ctx.beginPath();
-                    ctx.moveTo(0, 0);
-                    ctx.lineTo(0, height);
-
-                    ctx.moveTo(width, 0);
-                    ctx.lineTo(width, height);
-
-                    ctx.stroke();
-                },
-                stroke: styles.arrows.stroke,
-                strokeWidth: styles.arrows.strokeWidth
-            });
-
-            var arrow = new Konva.Shape({
-                sceneFunc: function (ctx) {
-                    // top pointer
-                    ctx.translate(0, arrowOffset);
-
-                    ctx.beginPath();
-                    ctx.moveTo(arrowSize, -arrowSize);
-                    ctx.lineTo(0, 0);
-                    ctx.lineTo(arrowSize, arrowSize);
-
-                    // line
-                    ctx.moveTo(0, 0);
-                    ctx.lineTo(width, 0);
-
-                    // bottom pointer
-                    ctx.moveTo(width - arrowSize, -arrowSize);
-                    ctx.lineTo(width, 0);
-                    ctx.lineTo(width - arrowSize, arrowSize);
-
-                    ctx.strokeShape(this);
-                },
-                stroke: styles.arrows.stroke,
-                strokeWidth: styles.arrows.strokeWidth
-            });
-
-            var labelMM = new Konva.Label();
-
-            labelMM.add(new Konva.Tag({
-                fill: styles.label.fill,
-                stroke: styles.label.stroke,
-                strokeWidth: styles.label.strokeWidth
-            }));
-            var textMM = new Konva.Text({
-                text: app.utils.format.dimension_mm(params.getter()),
-                padding: styles.label.padding,
-                fontFamily: fontFamily,
-                fontSize: styles.label.fontSize,
-                fill: styles.label.color
-            });
-
-            labelMM.add(textMM);
-            labelMM.position({
-                x: width / 2 - textMM.width() / 2,
-                y: arrowOffset + textMM.height() / 2
-            });
-
-            var labelInches = new Konva.Label();
-
-            labelInches.add(new Konva.Tag({
-                fill: styles.label.fill,
-                stroke: styles.label.stroke,
-                strokeWidth: styles.label.strokeWidth
-            }));
-            var inches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(inches, 'fraction', this.state && this.state.inchesDisplayMode);
-            var textInches = new Konva.Text({
-                text: val,
-                padding: styles.label.padding,
-                fill: styles.label.color,
-                fontFamily: fontFamily,
-                fontSize: styles.label.fontSize_big
-            });
-
-            labelInches.add(textInches);
-            labelInches.position({
-                x: width / 2 - textInches.width() / 2,
-                y: arrowOffset - labelInches.height() / 2
-            });
-
-            if (params.setter) {
-                labelInches.on('click tap', function () {
-                    this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
-                }.bind(this));
-            }
-
-            group.add(lines, arrow, labelInches, labelMM);
-            return group;
-        },
-        getDefaultMetricStyles: function () {
-            return {
-                label: {
-                    fill: 'white',
-                    stroke: 'grey',
-                    strokeWidth: 0.5,
-                    padding: 4,
-                    color: 'black',
-                    fontSize: 11,
-                    fontSize_big: 12
-                },
-                arrows: {
-                    stroke: 'grey',
-                    strokeWidth: 0.5
-                }
-            };
-        },
-
-        sortMullions: function (mullions) {
-            var verticalMullions = [];
-            var horizontalMullions = [];
-
-            mullions.forEach(function (mul) {
-                if (this.state.selectedMullionId && this.state.selectedMullionId !== mul.id) {
-                    return;
-                }
-
-                if (mul.type === 'vertical' || mul.type === 'vertical_invisible') {
-                    verticalMullions.push(mul);
-                } else {
-                    horizontalMullions.push(mul);
-                }
-            }.bind(this));
-
-            verticalMullions.sort(function (a, b) {return a.position - b.position; });
-            horizontalMullions.sort(function (a, b) {return a.position - b.position; });
-
-            return {
-                vertical: verticalMullions,
-                horizontal: horizontalMullions
-            };
-        },
-        getMeasurements: function (mullions) {
-            var view = this;
-            var root_section = this.model.get('root_section');
-
-            var result = {};
-            var sizeAccordance = {
-                vertical: 'width',
-                horizontal: 'height'
-            };
-            var store_index_accordance = {
-                frame: {
-                    0: 0,
-                    1: 1
-                },
-                mullion: {
-                    0: 1,
-                    1: 0
-                }
-            };
-
-            function findParentByMeasurementType( section_, type_, key_, index_ ) {
-                var result_ = {
-                    section: section_,
-                    index: index_
-                };
-                var parent_section_;
-                var find_index = (key_ === 0) ? 1 : 0;
-                var cur_index = index_;
-
-                if (section_.parentId) {
-                    if (
-                        index_ !== find_index &&
-                        !(
-                            'mullion' in section_.measurements &&
-                            type_ in section_.measurements.mullion
-                        )
-                    ) {
-                        parent_section_ = view.model.getSection( section_.parentId );
-                        cur_index = (parent_section_.sections[0].id === section_.id) ? 0 : 1;
-                        result_ = findParentByMeasurementType( parent_section_, type_, key_, cur_index );
-                    }
-                }
-
-                return result_;
-            }
-
-            //        How that algorithm works:
-            //        We're easily get basic information: section_id (for setters), offset and size.
-            //        Also we have to get information about edges of metrics: top (left) and bottom (right).
-            //        There is steps to do it (in a loop for each edge, IND = key):
-            //        1. Get REAL_SECTION (for default it's 0 index of section.sections)
-            //        2. Get edge TYPE from real section (frame / mullion).
-            //        3. Get STORE_INDEX (index that stores data about edge state):
-            //              - frame+top = 0
-            //              - frame+bottom = 1
-            //              - mullion+bottom = 0
-            //              - mullion+top = 0
-            //        4. Find section that stores data about dimension point (STORE_SECTION):
-            //              a). if TYPE === frame, it's easy: get root_section
-            //              b). if TYPE === mullion
-            //                     and (IND === 0 && edge === bottom)
-            //                     or (IND === 1 && edge === top)
-            //                  STORE_SECTION = CURRENT_SECTION (mullion.id)
-            //              c). else we have to find store section looking over parents.
-            //                  We can use algorithm from findParentByMeasurementType function.
-            //
-            //        Finally, we get an object for each Mullion with structure:
-            //        {
-            //          section_id: 105, // Id, that will be used by setters to change position of mullion
-            //          offset: 0,       // Offset in mm, that used in positioning of measurement
-            //          size: 0,         // Size in mm, that used in getters and drawing measurement
-            //          index: 0,        // (0/1), that describes that is normal measurement or "gap" (last one)
-            //          edges: [         // Array that coints only two objects (two edges of measurement)
-            //                  {
-            //                      section_id: 158,  // Id, that will be used to store position of dimension point
-            //                      type: 'frame',    // Type of edge: frame / mullion
-            //                      state: 'max',     // State of current dimension point
-            //                      index: 0          // (0/1), points at index of array element,
-            //                                                  that stores position of dimension point
-            //                  }
-            //                  ]
-            //        }
-            //
-            //        When array is completely composed — draw metrics and controls.
-            //
-            //        This is a small specification, which is better not to push into production,
-            //        but I think we'd better to save it somewhere. :-)
-
-            /* eslint-disable max-nested-callbacks */
-            _.each(mullions, function (mulGroup, type) {
-                var saved_mullion = null;
-                var grouped = {};
-                var pos = 0;
-                var invertedType = view.model.getInvertedDivider( type );
-
-                result[type] = [];
-
-                if ( mulGroup.length ) {
-                    // smart hack to draw last measurement in a loop with rest of mullions
-                    var lastMul = mulGroup[ mulGroup.length - 1];
-
-                    mulGroup.push({
-                        gap: true,
-                        id: lastMul.id,
-                        position: view.model.getInMetric( sizeAccordance[type], 'mm'),
-                        sections: lastMul.sections
-                    });
-                }
-
-                mulGroup.forEach(function (mullion) {
-                    var current_section = view.model.getSection(mullion.id);
-
-                    var index = (mullion.gap) ? 1 : 0;
-                    var real_section = mullion.sections[index];
-                    var edges = view.getMeasurementEdges( real_section.id, invertedType );
-                    var size = (mullion.position - pos);
-
-                    // if (size <= 0) { return; }
-
-                    var data = {
-                        section_id: mullion.id,
-                        offset: pos,
-                        size: size,
-                        edges: [],
-                        index: index
-                    };
-                    var loaded = false;
-
-                    edges.forEach(function (edge, key) {
-                        var store_index = store_index_accordance[edge][key];
-                        var edge_section;
-                        var edge_state;
-
-                        if (edge === 'frame') {
-                            if (key === 0 && saved_mullion !== null) {
-                                edge = 'mullion';
-                                edge_section = saved_mullion;
-                                saved_mullion = null;
-                                store_index = 1;
-                            } else {
-                                edge_section = root_section;
-                            }
-                        } else if ( edge === 'mullion' ) {
-                            if ( index !== key ) {
-                                edge_section = (saved_mullion) ? saved_mullion : current_section;
-                                loaded = !!(saved_mullion);
-                                saved_mullion = null;
-                            } else {
-                                if (saved_mullion !== null) {
-                                    edge_section = saved_mullion;
-                                    loaded = true;
-                                    saved_mullion = null;
-                                } else {
-                                    edge_section = findParentByMeasurementType(
-                                        current_section,
-                                        invertedType,
-                                        key,
-                                        index
-                                    );
-                                    store_index = edge_section.index;
-                                    edge_section = edge_section.section;
-                                }
-                            }
-                        }
-
-                        if (invertedType in edge_section.measurements[edge]) {
-                            edge_state = edge_section.measurements[edge][invertedType][store_index];
-                        } else {
-                            edge_state = edge_section.measurements[edge][type][store_index];
-                        }
-
-                        // Change state for mullions if this is vertical mullion and it's outside view
-                        if (edge === 'mullion' && type === 'vertical' && view.state.openingView) {
-                            edge_state = (edge_state === 'min') ? 'max' :
-                                         (edge_state === 'max') ? 'min' :
-                                         'center';
-                        }
-
-                        var edge_data = {
-                            section_id: edge_section.id,
-                            state: edge_state,
-                            type: edge,
-                            index: store_index
-                        };
-
-                        data.edges[key] = edge_data;
-                    });
-
-                    pos = mullion.position;
-
-                    if (current_section.sections.length && !loaded) {
-                        saved_mullion = current_section;
-                    }
-
-                    result[type].push(data);
-
-                    // Store resulted data to groups
-                    if (mullion.position in grouped) {
-                        grouped[mullion.position].push( data );
-                    } else {
-                        grouped[mullion.position] = [data];
-                    }
-                });
-
-                result[type].forEach(function (mullion, i) {
-                    var pos_ = (mullion.index === 1) ? mullion.offset : mullion.offset + mullion.size;
-
-                    var siblings = grouped[pos_].filter(function (sibling) {
-                            return (sibling.section_id !== mullion.section_id);
-                        });
-
-                    result[type][i].siblings = siblings;
-                });
-            });
-            /* eslint-enable max-nested-callbacks */
-
-            // Switch edges for frame dimension-point for vertical mullions if it's outside view
-            if (view.state.openingView && result.vertical.length > 0) {
-                var firstState = result.vertical[0].edges[0].state;
-                var secondState = result.vertical[ result.vertical.length - 1 ].edges[1].state;
-
-                result.vertical[0].edges[0].state = secondState;
-                result.vertical[ result.vertical.length - 1 ].edges[1].state = firstState;
-            }
-
-            return result;
-        },
-        getControls: function (mullions) {
-            var view = this;
-            var result = {};
-
-            _.each(mullions, function (mGroup, type) {
-                var siblings = {};
-
-                result[type] = [];
-
-                mGroup.forEach(function (mullion) {
-                    if (mullion.gap) { return; }
-
-                    if ( !(mullion.position in siblings) ) {
-                        // Store mullion id into siblings array
-                        siblings[mullion.position] = [mullion.id];
-
-                        var mType = view.model.getInvertedDivider(type);
-                        var section = view.model.getSection( mullion.id );
-                        var state = section.measurements.mullion[mType][0];
-
-                        // Change state if this is vertical control and it's outside view
-                        if (type === 'vertical' && view.state.openingView) {
-                            state = (state === 'min') ? 'max' :
-                                    (state === 'max') ? 'min' :
-                                    'center';
-                        }
-
-                        var data = {
-                            position: mullion.position,
-                            state: state,
-                            kind: 'mullion',
-                            type: mType,
-                            sections: [mullion.id]
-                        };
-
-                        result[type].push(data);
-                    } else {
-                        // Store mullion id into siblings array and skip them
-                        // If it has an unique id
-                        if (siblings[mullion.position].indexOf( mullion.id ) === -1) {
-                            siblings[mullion.position].push( mullion.id );
-                        }
-                    }
-                });
-
-                // Linking siblings
-                result[type].forEach(function (mullion, i) {
-                    result[type][i].sections = siblings[mullion.position];
-                });
-
-            });
-
-            return result;
-        },
-        createMullionMetrics: function (mullions, height) {
-            var view = this;
-            var group = new Konva.Group();
-
-            _.each(mullions, function (mulGroup, type) {
-                // Draw measurements & controls
-                mulGroup.forEach(function (mullion) {
-                    var width_ = mullion.size;
-                    var params = {};
-                    var position = {};
-
-                    if (width_ > 0) {
-
-                        // Params
-                        if (type === 'vertical' || type === 'vertical_invisible') {
-                            params.width = (width_ * view.ratio);
-                            params.height = (metricSize);
-                            params.space = width_;
-                            params.methods = {};
-
-                            position = {
-                                x: mullion.offset * view.ratio,
-                                y: height
-                            };
-                        } else {
-                            params.width = (metricSize);
-                            params.height = (width_ * view.ratio);
-                            params.space = width_;
-                            params.methods = {};
-
-                            position = {
-                                x: -metricSize,
-                                y: mullion.offset * view.ratio
-                            };
-                        }
-
-                        if (mullions[type].length === 2) {
-                            params.setter = true;
-                        }
-
-                        var metric = view.createMetric( mullion, params, type);
-
-                        metric.position(position);
-                        group.add(metric);
-                    }
-                });
-            });
-
-            return group;
-        },
-        createMetric: function ( mullion, params, type ) {
-            var view = this;
-            var section = view.model.getSection( mullion.section_id );
-            var group = new Konva.Group();
-            var gap = (mullion.index === 1) ? '_gap' : '';
-            var methodName = 'setter_' + type + gap;
-
-            var correction = view.getTotalCorrection( mullion, type );
-            var methods = {
-                getter: function () {
-                    return this.space;
-                },
-                setter_vertical: function (val) {
-                    val -= correction.size;
-
-                    if (!this.openingView) {
-                        val = this.model.getInMetric('width', 'mm') - val;
-                    }
-
-                    this.model.setSectionMullionPosition(this.id, val);
-                },
-                setter_vertical_gap: function (val) {
-                    val -= correction.size;
-
-                    if (this.openingView) {
-                        val = this.model.getInMetric('width', 'mm') - val;
-                    }
-
-                    this.model.setSectionMullionPosition(this.id, val);
-                },
-                setter_horizontal: function (val) {
-                    val -= correction.size;
-                    this.model.setSectionMullionPosition(this.id, val);
-                },
-                setter_horizontal_gap: function (val) {
-                    val -= correction.size;
-                    this.model.setSectionMullionPosition(this.id, this.model.getInMetric('height', 'mm') - val);
-                }
-            };
-            var drawingAccordance = {
-                vertical: 'createHorizontalMetric',
-                horizontal: 'createVerticalMetric'
-            };
-
-            // Apply corrections to sizes
-            params.space += correction.size;
-            params.position = {};
-
-            if (type === 'vertical') {
-                params.width += correction.size * view.ratio;
-                params.position.x = correction.pos * view.ratio;
-            } else {
-                params.height += correction.size * view.ratio;
-                params.position.y = correction.pos * view.ratio;
-            }
-
-            // Attach getter
-            params.methods.getter = methods.getter.bind({space: params.space});
-            // Attach setter
-            if (params.setter) {
-                params.methods.setter = methods[methodName].bind({
-                    openingView: view.state.openingView,
-                    id: section.id,
-                    model: view.model
-                });
-            }
-
-            // Draw metrics
-            var metric = view[ drawingAccordance[type] ](params.width, params.height, params.methods);
-            // Apply corrections to position
-            metric.position( params.position );
-
-            // Add metric to the group:
-            // We using group to make its position relative to the basic position
-            group.add( metric );
-
-            return group;
-        },
-        getCorrection: function () {
-            return {
-                frame_width: this.model.profile.get('frame_width'),
-                mullion_width: this.model.profile.get('mullion_width') / 2,
-                size: 0,
-                pos: 0
-            };
-        },
-        getMullionCorrection: function (type, value, index, correction) {
-            value = value || 0;
-            correction = correction || this.getCorrection();
-
-            if (type === 'frame') {
-                if (value === 'min') {
-                    correction.size -= correction.frame_width;
-                    correction.pos += (index === 0) ? correction.frame_width : 0;
-                }
-
-                // Max is default
-            } else {
-                if (value === 'min') {
-                    correction.size -= correction.mullion_width;
-                    correction.pos += (index === 1) ? correction.mullion_width : 0;
-                }
-
-                if (value === 'max') {
-                    correction.size += correction.mullion_width;
-                    correction.pos -= (index === 1) ? correction.mullion_width : 0;
-                }
-
-                // Center is default
-            }
-
-            return correction;
-        },
-        getFrameCorrectionSum: function (type, correction) {
-            var root_section = this.model.get('root_section');
-            var measurementData = root_section.measurements.frame;
-
-            if (type === 'horizontal' && this.state.openingView) {
-                measurementData[type].reverse();
-            }
-
-            correction = correction || this.getCorrection();
-
-            measurementData[type].forEach(function (value, i) {
-                if (value === 'min') {
-                    correction.size -= correction.frame_width;
-                    correction.pos += (i === 0) ? correction.frame_width : 0;
-                }
-            });
-
-            return correction;
-        },
-        getFrameCorrection: function (type) {
-            var root_section = this.model.get('root_section');
-            var measurementData = root_section.measurements.frame;
-            var correction = [this.getCorrection(), this.getCorrection()];
-
-            measurementData[type].forEach(function (value, i) {
-                if (value === 'min') {
-                    correction[i].size -= correction[i].frame_width;
-                    correction[i].pos += (i === 0) ? correction[i].frame_width : 0;
-                }
-            });
-
-            return correction;
-        },
-        getTotalCorrection: function (mullion) {
-            var view = this;
-            var correction = view.getCorrection();
-
-            mullion.edges.forEach(function (edge) {
-                correction = view.getMullionCorrection( edge.type, edge.state, edge.index, correction );
-            });
-
-            return correction;
-        },
-        createControl: function (width, height) {
-            var view = this;
-            var control = new Konva.Rect({
-                width: width,
-                height: height,
-                fill: '#66B6E3',
-                opacity: 0.5
-            });
-
-            control.on('mouseover', function () {
-                control.fill('#1A8BEF');
-                view.updateLayer();
-            });
-            control.on('mouseout', function () {
-                control.fill('#66B6E3');
-                view.updateLayer();
-            });
-
-            return control;
-        },
-        createWholeControls: function (section_id, width, height, type) {
-            var view = this;
-            var group = new Konva.Group();
-            // prepare size and position
-            var size_1 = 0;
-            var size_2 = 0;
-            var positions = [];
-
-            if (type === 'vertical' || type === 'vertical_invisible') {
-                size_1 = width;
-                size_2 = controlSize;
-
-                positions.push({});
-                positions.push({y: height - controlSize});
-            } else {
-                size_1 = controlSize;
-                size_2 = height;
-
-                positions.push({});
-                positions.push({x: width - controlSize});
-            }
-
-            // Make both controls recursively
-            for (var i = 0; i < 2; i++) {
-                // Create control
-                var control = this.createControl( size_1, size_2 );
-                var index = (!view.state.openingView) ? i : (i + 1) % 2;
-
-                // Attach event
-                control.on('click', this.createMeasurementSelectFrame.bind(this, section_id, 'frame', type, index));
-
-                // Position right/bottom control
-                control.position( positions[i] );
-
-                group.add( control );
-            }
-
-            return group;
-        },
-        createMullionControls: function (controls, width, height) {
-            var view = this;
-            var group = new Konva.Group();
-
-            /* eslint-disable max-nested-callbacks */
-            var root_section = this.model.get('root_section');
-
-            _.each(controls, function (cGroup, type) {
-
-                cGroup.forEach(function (controlData) {
-                    var position = { x: 0, y: 0 };
-                    var correction = view.getCorrection();
-                    var width_;
-                    var height_;
-
-                    if (controlData.state !== 'center') {
-                        correction.size = (controlData.state === 'min') ?
-                                        -correction.mullion_width : correction.mullion_width;
-                    }
-
-                    if (type === 'horizontal') {
-                        position.y = 0 +
-                            controlData.position * view.ratio +
-                            correction.size * view.ratio -
-                            controlSize / 2;
-                        position.x = -metricSize;
-
-                        width_ = metricSize;
-                        height_ = controlSize;
-                    } else {
-                        position.x += 0 +
-                            controlData.position * view.ratio +
-                            correction.size * view.ratio -
-                            controlSize / 2;
-                        position.y = height;
-
-                        width_ = controlSize;
-                        height_ = metricSize;
-                    }
-
-                    var control = view.createControl( width_, height_ );
-                    // Attach events
-                    control.on('click', view.createMeasurementSelectMullion.bind(view, controlData)
-                    );
-
-                    control.position( position );
-                    group.add(control);
-                });
-
-                // Draw controls for frame
-                if (cGroup.length) {
-                    var invertedType = view.model.getInvertedDivider( type );
-                    var correction = view.getFrameCorrectionSum( invertedType );
-
-                    var cor = {
-                        size: correction.size,
-                        pos: correction.pos
-                    };
-
-                    if (invertedType === 'horizontal') {
-                        cor = {
-                            size: correction.size,
-                            pos: (!view.state.openingView) ?
-                                    correction.pos :
-                                    (correction.pos === 0) ?
-                                    correction.size * -1 :
-                                    (correction.pos * -1 === correction.size) ?
-                                    correction.pos + correction.size :
-                                    correction.pos
-                        };
-                    }
-
-                    cor.size = cor.size * view.ratio;
-                    cor.pos = cor.pos * view.ratio;
-
-                    var params = {
-                        width: (invertedType === 'vertical') ? metricSize : width + cor.size,
-                        height: (invertedType === 'vertical') ? height + cor.size : metricSize,
-                        position: {
-                            x: (invertedType === 'vertical') ? metricSize * -1 : 0 + cor.pos,
-                            y: (invertedType === 'vertical') ? 0 + cor.pos : height
-                        }
-                    };
-                    var frameControls = view.createWholeControls(
-                        root_section.id,
-                        params.width,
-                        params.height,
-                        invertedType
-                    );
-
-                    frameControls.position( params.position );
-
-                    group.add( frameControls );
-                }
-
-            });
-            /* eslint-enable max-nested-callbacks */
-
-            return group;
-        },
-        createMeasurementSelectUI: function (event, opts) {
-            // @TODO: Нужно менять положение контролов для openingView
-            var view = this;
-            var contolSize = metricSize / 4;
-
-            var min = 'min';
-            var max = 'max';
-
-            if (opts.type !== 'vertical' && opts.kind === 'frame' && view.state.openingView) {
-                min = 'max';
-                max = 'min';
-            }
-
-            view.updateLayer();
-
-            // View
-            var target = event.target;
-            var sign = (opts.kind === 'frame' && opts.index === 1) ? -1 : 1;
-            var origPosition = target.getAbsolutePosition();
-            var posParam = (opts.type === 'vertical') ? 'y' : 'x';
-            var width = (opts.type === 'vertical') ? metricSize : contolSize;
-            var height = (opts.type === 'vertical') ? contolSize : metricSize;
-            var offset = (opts.kind === 'mullion') ?
-                          view.getCorrection().mullion_width : view.getCorrection().frame_width;
-            var posCorrection = (opts.type === 'vertical') ? target.height() : target.width();
-
-            // Hide control for select a dimension point
-            target.destroy();
-
-            // First of all, we re checking current state and correct position of "zero point"
-            // So "zero point" should be the same for any current state
-            if (
-                opts.kind === 'frame' && opts.state === min
-            ) {
-                var isMax = (opts.state === max) ? 1 : -1;
-
-                origPosition[posParam] += posCorrection * sign * isMax;
-            } else if (opts.kind === 'mullion' && opts.state !== 'center') {
-                origPosition[posParam] += (opts.state === min) ? posCorrection : posCorrection * -1;
-            }
-            // Create controls
-            opts.states.forEach(function (opt) {
-                if (opt.value === opts.state) { return; }
-
-                var value = opt.value;
-
-                if (opts.type !== 'vertical' && opts.kind === 'mullion' && view.state.openingView) {
-                    value = view.model.getInvertedMeasurementVal( opt.value );
-                }
-
-                var control = new Konva.Rect({
-                    fill: '#33CE10',
-                    opacity: 0.5,
-                    width: width,
-                    height: height
-                });
-                var controlPosition = _.clone(origPosition);
-                var correction = 0;
-
-                // Correcting position of controls
-                if (opts.kind === 'frame') {
-                    correction = (opt.value === min) ? offset * sign : 0;
-                } else if (opts.kind === 'mullion') {
-                    controlPosition[posParam] += (opt.value === min) ? -1 * posCorrection / 2 :
-                                                 (opt.value === max) ? posCorrection / 2 :
-                                                 0;
-
-                    correction = (opt.value === min) ? offset * -1 :
-                                 (opt.value === max) ? offset :
-                                 0;
-                }
-
-                controlPosition[posParam] += (correction * view.ratio);
-                control.position( controlPosition );
-
-                var secondArg = (opts.control) ? opts.control : opts.section.id;
-
-                // Attach events
-                control.on('click', function () {
-                    opts.setter(value, secondArg);
-                    view.updateLayer();
-                });
-                control.on('mouseover', function () {
-                    control.opacity(0.75);
-                    view.updateLayer();
-                });
-                control.on('mouseout', function () {
-                    control.opacity(0.5);
-                    view.updateLayer();
-                });
-
-                view.layer.add( control );
-            });
-
-            view.layer.draw();
-        },
-        createMeasurementSelectFrame: function (section_id, mType, type, index, event) {
-            var view = this;
-            var section = this.model.getSection( section_id );
-            // Get available states
-            var states = this.model.getMeasurementStates( mType );
-            // Get current state of dimension-point
-            var state = section.measurements[mType][type][index];
-
-            var opts = {
-                kind: 'frame',
-                type: type,
-                section: section,
-                states: states,
-                state: state,
-                index: index,
-                setter: function (val, id) {
-                    section.measurements[mType][type][index] = val;
-
-                    view.model.setSectionMeasurements( id, section.measurements );
-                }
-            };
-
-            return view.createMeasurementSelectUI(event, opts);
-        },
-        createMeasurementSelectMullion: function (control, event) {
-            var view = this;
-
-            // Get available states
-            var states = this.model.getMeasurementStates( 'mullion' );
-            // Get current state of dimension-point
-            var state = control.state;
-
-            var opts = {
-                kind: 'mullion',
-                type: control.type,
-                control: control,
-                states: states,
-                state: state,
-                setter: function (val, control_) {
-                    var invertedVal = view.model.getInvertedMeasurementVal( val );
-
-                    _.each(control_.sections, function (section_id) {
-                        var section = view.model.getSection( section_id );
-
-                        section.measurements[control.kind][control.type][0] = val;
-                        section.measurements[control.kind][control.type][1] = invertedVal;
-
-                        view.model.setSectionMeasurements( section_id, section.measurements );
-                    });
-                }
-            };
-
-            return view.createMeasurementSelectUI(event, opts);
-        },
-        createWholeMetrics: function (mullions, width, height) {
-            var group = new Konva.Group();
-            var root_section = this.model.generateFullRoot();
-            var rows = {
-                vertical: mullions.vertical.length ? 1 : 0,
-                horizontal: mullions.horizontal.length ? 1 : 0
-            };
-
-            // Correction parameters for metrics
-            var vCorrection = this.getFrameCorrectionSum('vertical');
-            var hCorrection = this.getFrameCorrectionSum('horizontal');
-
-            // Vertical
-            var vHeight = height + (vCorrection.size * this.ratio);
-            var verticalWholeMertic = this.createVerticalMetric(metricSize, vHeight, {
-                setter: function (val) {
-                    val -= vCorrection.size;
-                    this.model.setInMetric('height', val, 'mm');
-                }.bind(this),
-                getter: function () {
-                    return this.model.getInMetric('height', 'mm') + vCorrection.size;
-                }.bind(this)
-            });
-            var vPosition = {
-                x: -metricSize * (rows.horizontal + 1),
-                y: 0 + (vCorrection.pos * this.ratio)
-            };
-
-            verticalWholeMertic.position(vPosition);
-            group.add(verticalWholeMertic);
-
-            // Horizontal
-            var hWidth = width + (hCorrection.size * this.ratio);
-            var horizontalWholeMertic = this.createHorizontalMetric(hWidth, metricSize, {
-                setter: function (val) {
-                    val -= hCorrection.size;
-                    this.model.setInMetric('width', val, 'mm');
-                }.bind(this),
-                getter: function () {
-                    return this.model.getInMetric('width', 'mm') + hCorrection.size;
-                }.bind(this)
-            });
-
-            var hPosition = {
-                x: 0 + (hCorrection.pos * this.ratio),
-                y: height + rows.vertical * metricSize
-            };
-
-            horizontalWholeMertic.position(hPosition);
-            group.add(horizontalWholeMertic);
-
-            // Create controls
-            if (!this.state.isPreview) {
-                var vControls = this.createWholeControls(root_section.id, metricSize, vHeight, 'vertical');
-                var hControls = this.createWholeControls(root_section.id, hWidth, metricSize, 'horizontal');
-
-                vControls.position(vPosition);
-                hControls.position(hPosition);
-                group.add(vControls, hControls);
-            }
-
-            return group;
-        },
-        createInfo: function (mullions, width, height) {
-            var group = new Konva.Group();
-            var measurements;
-            var controls;
-
-            // Get data for info layer
-            mullions = this.sortMullions(mullions);
-            measurements = this.getMeasurements(mullions);
-            controls = this.getControls(mullions);
-
-            // Draw mullion metrics
-            group.add( this.createMullionMetrics(measurements, height) );
-
-            // Draw whole metrics
-            group.add( this.createWholeMetrics(measurements, width, height) );
-
-            if (!this.state.isPreview) {
-                // Draw mullion controls
-                group.add( this.createMullionControls(controls, width, height) );
-            }
-
-            // Draw overlay metrics: GlassSize & OpeningSize
-            group.add( this.createOverlayMetrics() );
-
-            return group;
-        },
-        createOverlayMetrics: function () {
-            // Algorithm:
-            // 1. Get a full root
-            // 2. Recursively look at each child section:
-            // 3. If it's measurenets.glass value equal TRUE — draw GlassSizeMetrics
-            // 4. If it's sashType !== fixed_in_frame — it should have an opening size
-            //    so we're looking for measurements.openingSize value,
-            //    if its equal TRUE — draw OpeningSizeMetrics
-            //
-            // Interesting moments:
-            // 1. If user selected to show opening/glass size in one of sections
-            //    and then selected to show opening/glass size of its parents —
-            //    show only parents (use flags to each of metrics type).
-
-            // Function to find overlay metrics recursively
-            function findOverlay( section, results, level) {
-                level = level || 0;
-
-                if (
-                    section.measurements.glass ||
-                    section.sashType !== 'fixed_in_frame' && section.measurements.opening
-                ) {
-                    var type = (section.measurements.glass) ? 'glass' : 'opening';
-
-                    results.push({
-                        section_id: section.id,
-                        type: type,
-                        level: level,
-                        params: section[type + 'Params']
-                    });
-
-                } else if ( section.sections.length ){
-                    section.sections.forEach(function (child) {
-                        level++;
-                        findOverlay(child, results, level);
-                    });
-                }
-
-                return results;
-            }
-
-            var view = this;
-            var group = new Konva.Group();
-            var root = (this.state.openingView) ? this.model.generateFullRoot() : this.model.generateFullReversedRoot();
-            var results = [];
-
-            findOverlay(root, results);
-
-            results.forEach(function (metric) {
-                var mSize = (metricSize / 2);
-                var width = metric.params.width * view.ratio;
-                var height = metric.params.height * view.ratio;
-                var position = {
-                    x: metric.params.x * view.ratio,
-                    y: metric.params.y * view.ratio
-                };
-                var style = {
-                    label: {
-                        fill: 'white',
-                        stroke: 'grey',
-                        color: '#444',
-                        strokeWidth: 0.5,
-                        padding: 3,
-                        fontSize: 9,
-                        fontSize_big: 10
-                    }
-                };
-                var vertical = view.createVerticalMetric(
-                                mSize / 2,
-                                height,
-                                {
-                                    getter: function () {
-                                        return metric.params.height;
-                                    }
-                                }, style);
-                var horizontal = view.createHorizontalMetric(
-                                width,
-                                mSize / 2,
-                                {
-                                    getter: function () {
-                                        return metric.params.width;
-                                    }
-                                }, style);
-
-                vertical.position({
-                    x: position.x + mSize,
-                    y: position.y
-                });
-                horizontal.position({
-                    x: position.x,
-                    y: position.y + mSize
-                });
-
-                group.add( vertical, horizontal );
-            });
-
-            return group;
-        },
-        createArchedInfo: function (width, height) {
-            var group = new Konva.Group();
-
-            var vCorrection = this.getFrameCorrection('vertical');
-            var vwCorrection = this.getFrameCorrectionSum('vertical');
-            var hwCorrection = this.getFrameCorrectionSum('horizontal');
-
-            var root_section = this.model.get('root_section');
-            var archHeight = this.model.getArchedPosition() + vCorrection[0].size;
-            var params = {
-                getter: function () {
-                    return archHeight;
-                },
-                setter: function (val) {
-                    val = val - vCorrection[0].size;
-
-                    var id = root_section.id;
-
-                    this.model._updateSection(id, function (section) {
-                        section.archPosition = val;
-                    });
-                }.bind(this)
-            };
-
-            var vHeight = (this.model.getInMetric('height', 'mm') +
-                            vCorrection[0].size + vCorrection[1].size
-                            ) * this.ratio;
-
-            var vPosition = {
-                x: -metricSize,
-                y: vCorrection[0].pos * this.ratio
-            };
-            var metric = this.createVerticalMetric(metricSize, archHeight * this.ratio, params);
-            var vControls = this.createWholeControls(root_section.id, metricSize * 2, vHeight, 'vertical');
-
-            metric.position(vPosition);
-
-            vPosition.x = vPosition.x * 2;
-            vControls.position(vPosition);
-            group.add(metric, vControls);
-
-            var nonArchHeight = this.model.getInMetric('height', 'mm') - archHeight +
-                                vCorrection[1].size;
-
-            params = {
-                getter: function () {
-                    return nonArchHeight;
-                },
-                setter: function (val) {
-                    val = val - vCorrection[1].size;
-
-                    var id = this.model.get('root_section').id;
-                    var archPosition = this.model.getInMetric('height', 'mm') - val;
-
-                    this.model._updateSection(id, function (section) {
-                        section.archPosition = archPosition;
-                    });
-                }.bind(this)
-            };
-            metric = this.createVerticalMetric(metricSize, (nonArchHeight + vCorrection[0].size) * this.ratio, params);
-            metric.position({
-                x: -metricSize,
-                y: (archHeight + vCorrection[0].pos) * this.ratio
-            });
-            group.add(metric);
-
-            var verticalWholeMertic = this.createVerticalMetric(metricSize,
-                (height + (vwCorrection.size * this.ratio)),
-                {
-                    setter: function (val) {
-                        val -= vwCorrection.size;
-                        this.model.setInMetric('height', val, 'mm');
-                    }.bind(this),
-                    getter: function () {
-                        return ( this.model.getInMetric('height', 'mm') + vwCorrection.size);
-                    }.bind(this)
-                });
-
-            verticalWholeMertic.position({
-                x: -metricSize * 2,
-                y: 0 + (vwCorrection.pos * this.ratio)
-            });
-
-            group.add(verticalWholeMertic);
-
-            var hWidth = (width + (hwCorrection.size * this.ratio));
-            var hControls = this.createWholeControls(root_section.id, hWidth, metricSize, 'horizontal');
-            var hPosition = {
-                x: 0 + (hwCorrection.pos * this.ratio),
-                y: height
-            };
-            var horizontalWholeMertic = this.createHorizontalMetric( hWidth,
-                metricSize,
-                {
-                    setter: function (val) {
-                        val -= hwCorrection.size;
-                        this.model.setInMetric('width', val, 'mm');
-                    }.bind(this),
-                    getter: function () {
-                        return ( this.model.getInMetric('width', 'mm') + hwCorrection.size);
-                    }.bind(this)
-                });
-
-            horizontalWholeMertic.position( hPosition);
-            hControls.position( hPosition );
-
-            group.add(horizontalWholeMertic, hControls);
-
-            return group;
-        },
         createInput: function (params, pos, size) {
+            var view = this;
+            var module = this.module;
+            var container = $(module.get('stage').container());
             var $wrap = $('<div>')
                 .addClass('popup-wrap')
-                .appendTo(this.$el)
+                .appendTo(container)
                 .on('click', function (e) {
                     if (e.target === $wrap.get(0)) {
                         $wrap.remove();
                     }
                 });
 
-            var containerPos = this.$('#drawing').position();
-
             var padding = 3;
             var valInInches = app.utils.convert.mm_to_inches(params.getter());
-            var val = app.utils.format.dimension(valInInches, 'fraction', this.state.inchesDisplayMode);
+            var val = app.utils.format.dimension(valInInches, 'fraction');
+
+            var containerPos = (container.css('position') === 'relative') ? {top: 0, left: 0} : container.position();
+
+            function closeWrap() {
+                if (view.setState) {
+                    view.setState({
+                        inputFocused: false
+                    });
+                }
+
+                $wrap.remove();
+            }
 
             $('<input>')
                 .val(val)
@@ -2428,147 +369,36 @@ var app = app || {};
                     fontSize: '12px'
                 })
                 .appendTo($wrap)
+                .on('focus', function () {
+                    if (view.state) {
+                        view.state.inputFocused = true;
+                    }
+                })
                 .focus()
                 .select()
                 .on('keyup', function (e) {
                     if (e.keyCode === 13) {  // enter
-                        var inches = app.utils.parseFormat.dimension(this.value);
-                        var mm = app.utils.convert.inches_to_mm(inches);
+                        var _value = this.value;
+                        var sign = 1;
 
-                        params.setter(mm);
-                        $wrap.remove();
+                        if (_value[0] === '-') {
+                            sign = (params.canBeNegative) ? -1 : 1;
+                            _value = _value.slice(1);
+                        }
+
+                        var inches = app.utils.parseFormat.dimension(_value);
+                        var mm = app.utils.convert.inches_to_mm(inches) * sign;
+
+                        params.setter(mm, view);
+
+                        closeWrap();
                     }
 
                     if (e.keyCode === 27) { // esc
-                        $wrap.remove();
+                        closeWrap();
                     }
                 })
-                ;
-        },
-        updateLayer: function () {
-            this.layer.draw();
-        },
-        updateCanvas: function () {
-            // clear all previous objects
-            this.layer.destroyChildren();
-
-            // transparent background to detect click on empty space
-            var back = new Konva.Rect({
-                width: this.stage.width(),
-                height: this.stage.height()
-            });
-
-            this.layer.add(back);
-            back.on('click tap', function () {
-                this.deselectAll();
-            }.bind(this));
-
-            var frameWidth = this.model.getInMetric('width', 'mm');
-            var frameHeight = this.model.getInMetric('height', 'mm');
-
-            // we will add 0.5 pixel offset for better strokes
-            var topOffset = 10 + 0.5;
-            var wr = (this.stage.width() - metricSize * 2) / frameWidth;
-            var hr = (this.stage.height() - metricSize * 2 - topOffset) / frameHeight;
-
-            // scale ratio
-            var ratio = Math.min(wr, hr) * 0.95;
-
-            var frameOnScreenWidth = frameWidth * ratio;
-            var frameOnScreenHeight = frameHeight * ratio;
-
-            this.ratio = ratio;
-
-            var group = new Konva.Group();
-
-            // place unit on center
-            group.x(Math.round(this.stage.width() / 2 - frameOnScreenWidth / 2 + metricSize) + 0.5);
-            // and will small offset from top
-            group.y(topOffset);
-
-            this.layer.add(group);
-
-            var root;
-
-            if (this.state.openingView) {
-                root = this.model.generateFullRoot();
-            } else {
-                root = this.model.generateFullReversedRoot();
-            }
-
-            var frameGroup;
-            var isDoorFrame =
-                this.model.profile.isThresholdPossible() &&
-                this.model.profile.get('low_threshold');
-
-            var isArchedWindow = (this.model.getArchedPosition() !== null);
-
-            // create main frame
-            if (isDoorFrame) {
-                frameGroup = this.createDoorFrame({
-                    sectionId: root.id,
-                    width: this.model.getInMetric('width', 'mm'),
-                    height: this.model.getInMetric('height', 'mm'),
-                    frameWidth: this.model.profile.get('frame_width')
-                });
-            } else if (isArchedWindow) {
-                frameGroup = this.createArchedFrame({
-                    sectionId: root.id,
-                    width: this.model.getInMetric('width', 'mm'),
-                    height: this.model.getInMetric('height', 'mm'),
-                    frameWidth: this.model.profile.get('frame_width'),
-                    archHeight: this.model.getArchedPosition()
-                });
-            } else {
-                frameGroup = this.createFrame({
-                    sectionId: root.id,
-                    width: this.model.getInMetric('width', 'mm'),
-                    height: this.model.getInMetric('height', 'mm'),
-                    frameWidth: this.model.profile.get('frame_width')
-                });
-            }
-
-            frameGroup.scale({x: ratio, y: ratio});
-            group.add(frameGroup);
-
-            // group for all nested elements
-            var sectionsGroup = new Konva.Group();
-
-            sectionsGroup.scale({x: ratio, y: ratio});
-            group.add(sectionsGroup);
-
-            // create sections(sashes) recursively
-            var sections = this.createSections(root);
-
-            sectionsGroup.add.apply(sectionsGroup, sections);
-
-            // if we are not looking from opening view
-            // we should see MAIN frame first
-            if (!this.state.openingView) {
-                // so we move it to top
-                frameGroup.moveToTop();
-            }
-
-            // infoGroup is group for displaying dimension information
-            var infoGroup;
-
-            if (this.model.get('root_section').arched) {
-                infoGroup = this.createArchedInfo(frameOnScreenWidth, frameOnScreenHeight);
-            } else {
-                var mullions;
-
-                if (this.state.openingView) {
-                    mullions = this.model.getMullions();
-                } else {
-                    mullions = this.model.getRevertedMullions();
-                }
-
-                infoGroup = this.createInfo(mullions, frameOnScreenWidth, frameOnScreenHeight);
-            }
-
-            group.add(infoGroup);
-
-            this.layer.draw();
+                .on('blur', closeWrap);
         },
 
         updateUI: function () {
@@ -2646,6 +476,12 @@ var app = app || {};
             this.stage.width(width || this.$('#drawing').get(0).offsetWidth);
             this.stage.height(height || this.$('#drawing').get(0).offsetHeight);
         },
+
+        updateRenderedScene: function () {
+            this.updateUI();
+            this.updateSize();
+            this.$('#drawing').focus();
+        },
         updateSection: function (sectionId, type) {
             var view = this;
             var section = this.model.getSection(sectionId);
@@ -2657,13 +493,6 @@ var app = app || {};
                 view.updateSection( sectionId, 'horizontal');
             }
 
-            // Update glazing bars
-            if ( section.bars && section.bars[type] && section.bars[type].length ) {
-                view.glazing_view
-                    .setSection( section.id )
-                    .handleBarsNumberChange( type );
-            }
-
             // If section has children — update them recursively
             if ( section.sections && section.sections.length ) {
                 section.sections.forEach(function (child) {
@@ -2672,16 +501,9 @@ var app = app || {};
             }
         },
 
-        updateRenderedScene: function () {
-            this.updateUI();
-            this.updateSize();
-            this.updateCanvas();
-            this.$('#drawing').focus();
-        },
         setState: function (state) {
             this.state = _.assign(this.state, state);
             this.updateUI();
-            this.updateCanvas();
             this.$('#drawing').focus();
             this.trigger('onSetState');
         },
@@ -2690,138 +512,7 @@ var app = app || {};
                 selectedMullionId: null,
                 selectedSashId: null
             });
-        },
-
-        shouldDrawHandle: function (type) {
-            var result = false;
-            var typeResult = false;
-
-            if (
-                    type !== 'fixed_in_frame' &&
-                    (
-                        type.indexOf('left') >= 0 ||
-                        type.indexOf('right') >= 0 ||
-                        type === 'tilt_only'
-                    ) &&
-                    (type.indexOf('_hinge_hidden_latch') === -1)
-            ) {
-                typeResult = true;
-            }
-
-            // Draw handle if:
-            // 1). type of sash has handle
-            // 2a). it's inside view
-            // 2b). it's outside view & profile hasOutsideHandle (for example, door)
-            result = (
-                        typeResult &&
-                        (
-                            (this.state.insideView) ||
-                            (!this.state.insideView && this.model.profile.hasOutsideHandle())
-                        )
-                );
-
-            return result;
-        },
-
-        getMeasurementEdges: function (section_id, type) {
-            var edges = this.model.getMeasurementEdges( section_id );
-            var edgeTypes = [];
-
-            if (type === 'horizontal') {
-                edgeTypes = [edges.left, edges.right];
-
-                if (!this.state.insideView) {
-                    edgeTypes.reverse();
-                }
-
-            } else {
-                edgeTypes = [edges.top, edges.bottom];
-            }
-
-            return edgeTypes;
         }
     });
-
-    app.preview = function (unitModel, options) {
-        var result;
-        var project_settings = app.settings && app.settings.getProjectSettings();
-        var defaults = {
-            width: 300,
-            height: 300,
-            mode: 'base64',
-            position: 'inside',
-            inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
-            hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode')
-        };
-
-        options = _.defaults({}, options, defaults);
-
-        var full_root_json_string = JSON.stringify(unitModel.generateFullRoot());
-        var options_json_string = JSON.stringify(options);
-
-        //  If we already got an image for the same full_root and same options,
-        //  just return it from our preview cache
-        if (
-            unitModel.preview && unitModel.preview.result &&
-            unitModel.preview.result[options_json_string] &&
-            full_root_json_string === unitModel.preview.full_root_json_string
-        ) {
-            return unitModel.preview.result[options_json_string];
-        }
-
-        //  If full root changes, preview cache should be erased
-        if (
-            !unitModel.preview ||
-            !unitModel.preview.result ||
-            full_root_json_string !== unitModel.preview.full_root_json_string
-        ) {
-            unitModel.preview = {};
-            unitModel.preview.result = {};
-        }
-
-        var view = new app.DrawingView({
-            model: unitModel,
-            isPreview: true
-        });
-
-        view.render();
-        view.updateSize(options.width, options.height);
-        view.updateCanvas();
-
-        if ( _.indexOf(['inside', 'outside'], options.position) !== -1 ) {
-            view.setState({
-                insideView: options.position === 'inside',
-                openingView: options.position === 'inside' && !unitModel.isOpeningDirectionOutward() ||
-                    options.position === 'outside' && unitModel.isOpeningDirectionOutward(),
-                inchesDisplayMode: options.inchesDisplayMode,
-                hingeIndicatorMode: options.hingeIndicatorMode
-            });
-        } else {
-            view.destroy();
-            view.remove();
-            throw new Error('unrecognized position for preview: ' + options.position);
-        }
-
-        if (options.mode === 'canvas') {
-            result = view.layer.canvas._canvas;
-        } else if (options.mode === 'base64') {
-            result = view.stage.toDataURL();
-        } else if (options.mode === 'image') {
-            result = new Image();
-            result.src = view.stage.toDataURL();
-        } else {
-            view.destroy();
-            view.remove();
-            throw new Error('unrecognized mode for preview: ' + options.mode);
-        }
-
-        unitModel.preview.full_root_json_string = full_root_json_string;
-        unitModel.preview.result[options_json_string] = result;
-
-        // clean
-        view.destroy();
-        view.remove();
-        return result;
-    };
 
 })();
