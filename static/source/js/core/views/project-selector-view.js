@@ -17,7 +17,7 @@ var app = app || {};
         initialize: function () {
             this.listenTo(this.collection, 'all', this.render);
             this.listenTo(app.vent, 'settings:fetch_data:stop', this.onInitialLogin);
-            this.listenTo(app.vent, 'auth:no_backend', this.onNoBackend);
+            this.listenTo(app.vent, 'auth:fetched_no_backend', this.onNoBackend);
         },
         //  This is called after we're done fetching profiles and filling types
         onInitialLogin: function () {
