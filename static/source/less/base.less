@@ -93,3 +93,35 @@ mark,
 .toggle-container input[type="checkbox"] {
     display: none;
 }
+
+
+//  ------------------------------------------------------------------------
+//  Loading state
+//  ------------------------------------------------------------------------
+
+body {
+    &:after {
+        position: absolute;
+        z-index: 300;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 0;
+        background-color: #ccc;
+        transition:
+            opacity 0.2s ease-in 0s,
+            width 0.1s ease 0.3s,
+            height 0.1s ease 0.3s;
+        opacity: 0;
+        content: '';
+    }
+}
+
+body.is-loading {
+    &:after {
+        width: 100%;
+        height: 100%;
+        transition: opacity 0.2s ease-in 0s;
+        opacity: 0.2;
+    }
+}

@@ -19,7 +19,7 @@
                     <td class="no-profile-warning">
                         <p>
                             <i class="glyphicon glyphicon-warning-sign"></i>
-                            Profile "{{ profile_name }}" selected for this unit doesn't exist.
+                            Profile{{#if profile_name }} "{{ profile_name }}"{{/if}} selected for this unit doesn't exist.
                         </p>
                     </td>
                     {{/if}}

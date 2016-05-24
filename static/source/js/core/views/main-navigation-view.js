@@ -66,7 +66,7 @@ var app = app || {};
 
             $('#sidebar').append( this.render().el );
 
-            this.listenTo(app.vent, 'current_project_loaded', this.reloadActiveScreen);
+            this.listenTo(app.vent, 'project_selector:fetch_current:stop', this.reloadActiveScreen);
         },
         onRender: function () {
             //  Append each navigation item

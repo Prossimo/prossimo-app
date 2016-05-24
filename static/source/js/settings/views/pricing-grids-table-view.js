@@ -43,7 +43,7 @@ var app = app || {};
                     return {
                         is_selected: this.current_profile && item.id === this.current_profile.id,
                         id: item.id,
-                        profile_name: item.get('name')
+                        name: item.get('name')
                     };
                 }, this),
                 tabs: _.each(this.tabs, function (item, key) {

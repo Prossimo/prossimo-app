@@ -15,6 +15,7 @@ var app = app || {};
         { name: 'glazing_bar_width', title: 'Glazing Bar Width (mm)', type: 'number' },
 
         { name: 'profile_name', title: 'Profile', type: 'string' },
+        { name: 'profile_id', title: 'Profile', type: 'string' },
         { name: 'customer_image', title: 'Customer Image', type: 'string' },
         { name: 'internal_color', title: 'Color Interior', type: 'string' },
         { name: 'external_color', title: 'Color Exterior', type: 'string' },
@@ -101,6 +102,15 @@ var app = app || {};
         return {
             vertical: [],
             horizontal: []
+        };
+    }
+
+    function validateBar(opts, type) {
+        return {
+            id: opts.id || _.uniqueId(),
+            type: opts.type || type,
+            position: opts.position,
+            links: opts.links || [null, null]
         };
     }
 
@@ -215,7 +225,7 @@ var app = app || {};
                 this.setProfile();
                 this.validateOpeningDirection();
                 this.validateRootSection();
-                this.on('change:profile_name', this.setProfile, this);
+                this.on('change:profile_id', this.setProfile, this);
                 this.on('change:glazing', this.setDefaultFillingType, this);
             }
         },
@@ -266,6 +276,12 @@ var app = app || {};
 
             if ( !current_section.bars ) {
                 current_section.bars = getDefaultBars();
+            } else {
+                _.each(current_section.bars, function (barType, type) {
+                    _.each(barType, function (bar, index) {
+                        current_section.bars[type][index] = validateBar( bar, type );
+                    });
+                });
             }
 
             if ( !current_section.measurements ) {
@@ -322,12 +338,19 @@ var app = app || {};
         setProfile: function () {
             this.profile = null;
 
-            if ( app.settings && !this.get('profile_name') ) {
-                this.set('profile_name', app.settings.getDefaultProfileName());
+            //  Assign the default profile id to a newly created unit
+            if ( app.settings && !this.get('profile_id') && !this.get('profile_name') ) {
+                this.set('profile_id', app.settings.getDefaultProfileId());
             }
 
             if ( app.settings ) {
-                this.profile = app.settings.getProfileByNameOrNew(this.get('profile_name'));
+                this.profile = app.settings.getProfileByIdOrDummy(this.get('profile_id'));
+            }
+
+            //  Store profile name so in case when profile was deleted we can
+            //  have its old name for the reference
+            if ( this.profile && !this.hasDummyProfile() ) {
+                this.set('profile_name', this.profile.get('name'));
             }
         },
         hasDummyProfile: function () {
@@ -578,6 +601,7 @@ var app = app || {};
             func(sectionToUpdate);
 
             this.persist('root_section', rootSection);
+            this.trigger('change', this);
         },
         setSectionSashType: function (sectionId, type) {
             if (!_.includes(SASH_TYPES, type)) {

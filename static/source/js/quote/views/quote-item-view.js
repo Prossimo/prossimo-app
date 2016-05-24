@@ -268,7 +268,7 @@ var app = app || {};
                 price: show_price ? this.getPrices() : null,
                 is_price_estimated: project_settings && project_settings.get('pricing_mode') === 'estimates',
                 has_dummy_profile: this.model.hasDummyProfile(),
-                profile_name: this.model.get('profile_name')
+                profile_name: this.model.get('profile_name') || this.model.get('profile_id') || ''
             };
         }
     });
