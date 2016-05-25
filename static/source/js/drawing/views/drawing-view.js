@@ -54,14 +54,6 @@ var app = app || {};
                 register: this.model,
                 track: true
             });
-
-            //  TODO: this is a hack, we'll need to have a more hight-level
-            //  way to persist any models on undo / redo event
-            this.listenTo(this.model, 'undo redo', function () {
-                if ( !this.model.isNew() ) {
-                    this.model.sync('update', this.model, {});
-                }
-            });
         },
         ui: {
             $flush_panels: '[data-type="flush-turn-right"], [data-type="flush-turn-left"]',
@@ -92,6 +84,12 @@ var app = app || {};
             'click @ui.$redo': 'handleRedoClick',
             'change @ui.$metrics_glass': 'handleAdditionalMetricsChange',
             'change @ui.$metrics_opening': 'handleAdditionalMetricsChange'
+        },
+        keyShortcuts: {
+            'ctrl+z': 'handleUndoClick',
+            'command+z': 'handleUndoClick',
+            'ctrl+shift+z': 'handleRedoClick',
+            'command+shift+z': 'handleRedoClick'
         },
         isInsideView: function () {
             return globalInsideView;

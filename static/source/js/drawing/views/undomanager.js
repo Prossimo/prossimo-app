@@ -41,6 +41,17 @@ var app = app || {};
             checkButtons(type);
         }
 
+        //  Call update event on model to persist changes to server
+        if ( opts && opts.register && opts.register instanceof Backbone.Model ) {
+            var model = opts.register;
+
+            model.off('undo redo').on('undo redo', function () {
+                if ( !model.isNew() ) {
+                    model.sync('update', model, {});
+                }
+            });
+        }
+
         //  FIXME: this is inefficient because it is fired on all objects
         //  in our registry (currently we're using it in a way when we only
         //  have one object in it at a time, but there will be problems when
@@ -68,19 +79,6 @@ var app = app || {};
 
             if (buttons.redo !== null && !undoManager.isAvailable('redo')) {
                 buttons.redo.prop('disabled', true);
-            }
-        });
-
-        //  TODO: move this to global shortcut manager
-        $(window).off('keydown').on('keydown', function (event) {
-            var keyCode = event.keyCode || event.which;
-
-            if (keyCode === 90 && ( event.ctrlKey || event.metaKey ) && !event.shiftKey ) {
-                undoManager.undo();
-            }
-
-            if (keyCode === 90 && ( event.ctrlKey || event.metaKey ) && event.shiftKey) {
-                undoManager.redo();
             }
         });
 
