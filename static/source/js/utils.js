@@ -267,6 +267,138 @@ var app = app || {};
 
                 return a;
             }
+        },
+        vector2d: {
+            getVector: function (v) {
+                if (_.isObject(v) && 'x' in v && 'y' in v) {
+                    return v;
+                } else if (_.isArray(v) && v.length === 2) {
+                    return {x: v[0], y: v[1]};
+                } else if (_.isFunction(v)) {
+                    return app.utils.vector2d.getVector( v() );
+                } else if (_.isNumber(v)) {
+                    return {x: v, y: v};
+                }
+
+                return {x: 0, y: 0};
+            },
+            length: function (v) {
+                v = app.utils.vector2d.getVector(v);
+
+                return Math.sqrt( Math.pow(v.x, 2) + Math.pow(v.y, 2) );
+            },
+            normalize: function (v) {
+                v = app.utils.vector2d.getVector(v);
+
+                var len = app.utils.vector2d.length(v);
+
+                return {x: v.x / len, y: v.y / len };
+            },
+            add: function (v1, v2) {
+                v1 = app.utils.vector2d.getVector(v1);
+                v2 = app.utils.vector2d.getVector(v2);
+
+                return {x: v1.x + v2.x, y: v1.y + v2.y};
+            },
+            substract: function (v1, v2) {
+                v1 = app.utils.vector2d.getVector(v1);
+                v2 = app.utils.vector2d.getVector(v2);
+
+                return {x: v1.x - v2.x, y: v1.y - v2.y};
+            },
+            multiply: function (v1, v2) {
+                v1 = app.utils.vector2d.getVector(v1);
+                v2 = app.utils.vector2d.getVector(v2);
+
+                return {x: v1.x * v2.x, y: v1.y * v2.y};
+            },
+            divide: function (v1, v2) {
+                v1 = app.utils.vector2d.getVector(v1);
+                v2 = app.utils.vector2d.getVector(v2);
+
+                return {x: v1.x / v2.x, y: v1.y / v2.y};
+            },
+            scalar: function (v1, v2) {
+                var sc = app.utils.vector2d.multiply( v1, v2 );
+
+                return (sc.x + sc.y);
+            },
+            angle: function (v1, v2) {
+                return Math.acos(
+                    app.utils.vector2d.scalar(
+                        app.utils.vector2d.normalize(v1),
+                        app.utils.vector2d.normalize(v2)
+                    )
+                );
+            }
+        },
+        angle: {
+            rad_to_deg: function (rad) {
+                return rad * 180 / Math.PI;
+            },
+            deg_to_rad: function (deg) {
+                return deg * Math.PI / 180;
+            }
+        },
+        edges: {
+            /* eslint-disable no-bitwise */
+            getBitmask: function () {
+                return {
+                    top: 0x1,
+                    right: 0x2,
+                    bottom: 0x4,
+                    left: 0x8
+                };
+            },
+            getMask: function (edges) {
+                var mask = app.utils.edges.getBitmask();
+                var result = 0;
+
+                _.each(edges, function (edge) {
+                    result = result | mask[edge];
+                });
+
+                return result;
+            },
+            parseMask: function (mask) {
+                var m = app.utils.edges.getBitmask();
+                var r = [];
+
+                _.each(m, function (bit, key) {
+                    if ( (mask & bit) !== 0 ) {
+                        r.push(key);
+                    }
+                });
+
+                return r;
+            },
+            isMask: function (mask, edges) {
+                var mask2 = app.utils.edges.getMask(edges);
+
+                return (mask === mask2);
+            },
+            /* eslint-enable no-bitwise */
+            getPointsByEdges: function (points, edges) {
+                var p = _.clone(points);
+
+                p.sort(function (a, b) {
+                    var res = 0;
+
+                    if ( _.isEqual(edges, ['top']) ) {
+                        res = (a.y < b.y) - (b.y < a.y) || (a.x < b.x) - (b.x < a.x);
+                    } else if (_.isEqual(edges, ['right'])) {
+                        res = (a.x > b.x) - (b.x > a.x) || (a.y < b.y) - (b.y < a.y);
+                    } else if (_.isEqual(edges, ['bottom'])) {
+                        res = (a.y > b.y) - (b.y > a.y) || (a.x < b.x) - (b.x < a.x);
+                    } else if (_.isEqual(edges, ['left'])) {
+                        res = (a.x < b.x) - (b.x < a.x) || (a.y < b.y) - (b.y < a.y);
+                    }
+
+                    return res;
+                });
+
+                return [p.pop(), p.pop()];
+            }
         }
     };
 })();

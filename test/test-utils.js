@@ -277,3 +277,153 @@ test('utils.convert.mm_to_inches', function () {
     equal(c.mm_to_inches(25.4), 1, 'Expected value is 1');
     equal(c.mm_to_inches(0), 0, 'Expected value is 0');
 });
+
+//  ------------------------------------------------------------------------
+//  Test vector2d functions from utils.js
+//  ------------------------------------------------------------------------
+test('utils.vector2d.getVector', function () {
+    var v = app.utils.vector2d;
+
+    function func() {
+        return [this, Math.pow(this, 2)];
+    }
+
+    deepEqual(v.getVector({x: 5, y: 10}), {x: 5, y: 10}, 'Expected value is {x: 5, y: 10}');
+    deepEqual(v.getVector([1, 3]), {x: 1, y: 3}, 'Expected value is {x: 1, y: 3}');
+    deepEqual(v.getVector(3), {x: 3, y: 3}, 'Expected value is {x: 3, y: 3}');
+    deepEqual(v.getVector(func.bind(3)), {x: 3, y: 9}, 'Expected value is {x: 3, y: 9}');
+});
+
+test('utils.vector2d.length', function () {
+    var v = app.utils.vector2d;
+
+    equal(v.length({x: 3, y: 4}), 5, 'Expected value is 5');
+    equal(v.length({x: 0, y: 10}), 10, 'Expected value is 10');
+    equal(v.length({x: 1, y: 9}), 9.055385138137417, 'Expected value is 9.055385138137417');
+});
+
+test('utils.vector2d.normalize', function () {
+    var v = app.utils.vector2d;
+
+    deepEqual(v.normalize([1, 1]), {x: 0.7071067811865475, y: 0.7071067811865475},
+                    'Expected value is {x: 0.7071067811865475, y: 0.7071067811865475}');
+    deepEqual(v.normalize({x: 3, y: 4}), {x: 0.6, y: 0.8}, 'Expected value is {x: 0.6, y: 0.8}');
+    deepEqual(v.normalize({x: 0, y: 10}), {x: 0, y: 1}, 'Expected value is {x: 0, y: 1}');
+    deepEqual(v.normalize({x: 1, y: 9}), {x: 0.11043152607484653, y: 0.9938837346736188},
+                    'Expected value is {x: 0.11043152607484653, y: 0.9938837346736188}');
+});
+
+test('utils.vector2d.add', function () {
+    var v = app.utils.vector2d;
+
+    deepEqual(v.add([1, 1], [2, 4]), {x: 3, y: 5}, 'Expected value is {x: 3, y: 5}');
+    deepEqual(v.add([-3, -1], [2, 4]), {x: -1, y: 3}, 'Expected value is {x: -1, y: 3}');
+    deepEqual(v.add({x: 3, y: 4}, {x: 0, y: 1}), {x: 3, y: 5}, 'Expected value is {x: 3, y: 5}');
+});
+
+test('utils.vector2d.substract', function () {
+    var v = app.utils.vector2d;
+
+    deepEqual(v.substract([1, 1], [2, 4]), {x: -1, y: -3}, 'Expected value is {x: -1, y: -3}');
+    deepEqual(v.substract([-3, -1], [2, 4]), {x: -5, y: -5}, 'Expected value is {x: -5, y: -5}');
+    deepEqual(v.substract({x: 3, y: 4}, {x: 0, y: 1}), {x: 3, y: 3}, 'Expected value is {x: 3, y: 3}');
+});
+
+test('utils.vector2d.multiply', function () {
+    var v = app.utils.vector2d;
+
+    deepEqual(v.multiply([1, 1], [2, 4]), {x: 2, y: 4}, 'Expected value is {x: 2, y: 4}');
+    deepEqual(v.multiply([-3, -1], [2, 4]), {x: -6, y: -4}, 'Expected value is {x: -6, y: -4}');
+    deepEqual(v.multiply({x: 3, y: 4}, {x: 0, y: 1}), {x: 0, y: 4}, 'Expected value is {x: 0, y: 4}');
+});
+
+test('utils.vector2d.divide', function () {
+    var v = app.utils.vector2d;
+
+    deepEqual(v.divide([1, 1], [2, 4]), {x: 0.5, y: 0.25}, 'Expected value is {x: 0.5, y: 0.25}');
+    deepEqual(v.divide([-3, -1], [2, 4]), {x: -1.5, y: -0.25}, 'Expected value is {x: -1.5, y: -0.25}');
+    deepEqual(v.divide({x: 3, y: 4}, {x: 0.5, y: 1}), {x: 6, y: 4}, 'Expected value is {x: 6, y: 4}');
+});
+
+test('utils.vector2d.scalar', function () {
+    var v = app.utils.vector2d;
+
+    equal(v.scalar([1, 1], [2, 4]), 6, 'Expected value is 6');
+    equal(v.scalar([-3, -1], [2, 4]), -10, 'Expected value is -10');
+    equal(v.scalar({x: 3, y: 4}, {x: 0.5, y: 1}), 5.5, 'Expected value is 5.5');
+});
+
+test('utils.vector2d.angle', function () {
+    var v = app.utils.vector2d;
+
+    equal(v.angle([1, 1], [2, 4]), 0.32175055439664263, 'Expected value is 0.32175055439664263');
+    equal(v.angle([-3, -1], [2, 4]), 2.356194490192345, 'Expected value is 2.356194490192345');
+    equal(v.angle({x: 3, y: 4}, {x: 0.5, y: 1}), 0.17985349979247847, 'Expected value is 0.17985349979247847');
+});
+
+//  ------------------------------------------------------------------------
+//  Test angle functions from utils.js
+//  ------------------------------------------------------------------------
+test('utils.angle.rad_to_deg', function () {
+    var a = app.utils.angle;
+
+    equal(a.rad_to_deg(0.5), 28.64788975654116, 'Expected value is 28.64788975654116');
+    equal(a.rad_to_deg(1), 57.29577951308232, 'Expected value is 57.29577951308232');
+    equal(a.rad_to_deg(-9.5), -544.309905374282, 'Expected value is -544.309905374282');
+});
+
+test('utils.angle.deg_to_rad', function () {
+    var a = app.utils.angle;
+
+    equal(a.deg_to_rad(90), 1.5707963267948966, 'Expected value is 1.5707963267948966');
+    equal(a.deg_to_rad(1), 0.017453292519943295, 'Expected value is 0.017453292519943295');
+    equal(a.deg_to_rad(180), 3.141592653589793, 'Expected value is 3.141592653589793');
+    equal(a.deg_to_rad(-180), -3.141592653589793, 'Expected value is -3.141592653589793');
+});
+
+//  ------------------------------------------------------------------------
+//  Test edge functions from utils.js
+//  ------------------------------------------------------------------------
+test('utils.edges.getMask', function () {
+    var e = app.utils.edges;
+
+    equal(e.getMask(['top']), 1, 'Expected value is 1');
+    equal(e.getMask(['right']), 2, 'Expected value is 2');
+    equal(e.getMask(['bottom']), 4, 'Expected value is 4');
+    equal(e.getMask(['left']), 8, 'Expected value is 8');
+
+    equal(e.getMask(['top', 'right']), 3, 'Expected value is 3');
+    equal(e.getMask(['top', 'right', 'left']), 11, 'Expected value is 11');
+    equal(e.getMask(['top', 'right', 'left', 'bottom']), 15, 'Expected value is 15');
+
+    equal(e.getMask(['right', 'left', 'bottom']), 14, 'Expected value is 14');
+});
+
+test('utils.edges.isMask', function () {
+    var e = app.utils.edges;
+    var mask = e.getMask(['top', 'right', 'bottom']);
+
+    equal(e.isMask(mask, ['right']), false, '1: Expected value is false');
+    equal(e.isMask(mask, ['top', 'right', 'bottom']), true, '2: Expected value is true');
+});
+
+test('utils.edges.parseMask', function () {
+    var e = app.utils.edges;
+    var masks = [['top', 'right', 'bottom'], ['top'], ['right', 'left']];
+
+    _.each(masks, function (mask, i) {
+        var _m = e.getMask(mask);
+
+        deepEqual(e.parseMask(_m), mask, i + ': Expected value is ' + mask.toString());
+    });
+});
+
+test('utils.edges.getPointsByEdges', function () {
+    var e = app.utils.edges;
+    var points = [{x: 0, y: 0}, {x: 0, y: 1}, {x: 1, y: 0}, {x: 1, y: 1}];
+
+    deepEqual(e.getPointsByEdges(points, ['top']), [{x: 0, y: 0}, {x: 1, y: 0}], 'Top: Expected value is 0,0 and 1,0');
+    deepEqual(e.getPointsByEdges(points, ['right']), [{x: 1, y: 0}, {x: 1, y: 1}], 'Right: Expected value is 1,0 and 1,1');
+    deepEqual(e.getPointsByEdges(points, ['bottom']), [{x: 0, y: 1}, {x: 1, y: 1}], 'Bottom: Expected value is 0,1 and 1,1');
+    deepEqual(e.getPointsByEdges(points, ['left']), [{x: 0, y: 0}, {x: 0, y: 1}], 'Left: Expected value is 0,0 and 0,1');
+});
