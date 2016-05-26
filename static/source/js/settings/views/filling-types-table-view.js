@@ -18,6 +18,9 @@ var app = app || {};
             'click .js-move-item-up': 'onMoveItemUp',
             'click .js-move-item-down': 'onMoveItemDown'
         },
+        keyShortcuts: {
+            n: 'addNewFillingType'
+        },
         initialize: function () {
             this.table_update_timeout = null;
             this.dropdown_scroll_timer = null;

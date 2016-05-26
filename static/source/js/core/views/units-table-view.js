@@ -20,6 +20,9 @@ var app = app || {};
             'click .js-move-item-up': 'onMoveItemUp',
             'click .js-move-item-down': 'onMoveItemDown'
         },
+        keyShortcuts: {
+            n: 'onNewUnitOrAccessory'
+        },
         initialize: function () {
             this.table_update_timeout = null;
             this.dropdown_scroll_timer = null;
@@ -140,6 +143,15 @@ var app = app || {};
 
             e.stopPropagation();
             this.options.extras.add(new_accessory);
+        },
+        onNewUnitOrAccessory: function (e) {
+            var active_tab = this.getActiveTab();
+
+            if ( this.table_visibility === 'visible' && active_tab.collection === this.collection ) {
+                this.addNewUnit(e);
+            } else if ( this.table_visibility === 'visible' && active_tab.collection === this.options.extras ) {
+                this.addNewAccessory(e);
+            }
         },
         serializeData: function () {
             return {
