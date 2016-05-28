@@ -324,12 +324,25 @@ var app = app || {};
                 return (sc.x + sc.y);
             },
             angle: function (v1, v2) {
-                return Math.acos(
-                    app.utils.vector2d.scalar(
-                        app.utils.vector2d.normalize(v1),
-                        app.utils.vector2d.normalize(v2)
-                    )
+                var scalar = app.utils.vector2d.scalar(
+                    app.utils.vector2d.normalize(v1),
+                    app.utils.vector2d.normalize(v2)
                 );
+
+                scalar = (scalar < -1) ? -1 : (scalar > 1) ? 1 : scalar;
+
+                return Math.acos( scalar );
+            },
+            clockwiseSort: function (input) {
+                var base = Math.atan2(1, 0);
+
+                input = input.map(app.utils.vector2d.getVector);
+
+                return input.sort(function (a, b) {
+                    return Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x) +
+                            (Math.atan2(b.y, b.x) > base ? -2 * Math.PI : 0) +
+                            (Math.atan2(a.y, a.x) > base ? 2 * Math.PI : 0);
+                });
             }
         },
         angle: {
@@ -380,24 +393,63 @@ var app = app || {};
             /* eslint-enable no-bitwise */
             getPointsByEdges: function (points, edges) {
                 var p = _.clone(points);
+                var result = [];
 
-                p.sort(function (a, b) {
-                    var res = 0;
+                // Sort points clockwise (starting from 12 o'clock):
+                p = app.utils.vector2d.clockwiseSort(p);
 
-                    if ( _.isEqual(edges, ['top']) ) {
-                        res = (a.y < b.y) - (b.y < a.y) || (a.x < b.x) - (b.x < a.x);
-                    } else if (_.isEqual(edges, ['right'])) {
-                        res = (a.x > b.x) - (b.x > a.x) || (a.y < b.y) - (b.y < a.y);
-                    } else if (_.isEqual(edges, ['bottom'])) {
-                        res = (a.y > b.y) - (b.y > a.y) || (a.x < b.x) - (b.x < a.x);
-                    } else if (_.isEqual(edges, ['left'])) {
-                        res = (a.x < b.x) - (b.x < a.x) || (a.y < b.y) - (b.y < a.y);
-                    }
+                switch (app.utils.edges.getMask(edges)) {
+                    case 1: // top
+                        result = [p[3], p[1]];
+                    break;
+                    case 2: // right
+                        result = [p[0], p[2]];
+                    break;
+                    case 3: // top + right
+                        result = [p[3], p[2]];
+                    break;
+                    case 4: // bottom
+                        result = [p[3], p[1]];
+                    break;
+                    case 5: // top + bottom
+                        result = [[p[0], p[1]], [p[2], p[3]]];
+                    break;
+                    case 6: // right + bottom
+                        result = [p[0], p[3]];
+                    break;
+                    case 7: // top + right + bottom
+                        result = [p[2], p[3]];
+                    break;
+                    case 8: // left
+                        result = [p[0], p[2]];
+                    break;
+                    case 9: // top + left
+                        result = [p[2], p[1]];
+                    break;
+                    case 10: // left + right
+                        result = [[p[3], p[0]], [p[1], p[2]]];
+                    break;
+                    case 11: // top + left + right
+                        result = [p[1], p[2]];
+                    break;
+                    case 12: // left + bottom
+                        result = [p[0], p[1]];
+                    break;
+                    case 13: // left + bottom + top
+                        result = [p[0], p[1]];
+                    break;
+                    case 14: // left + right + bottom
+                        result = [p[3], p[0]];
+                    break;
+                    case 15: // left + right + bottom + top
+                        result = [];
+                    break;
+                    default:
+                        result = [];
+                    break;
+                }
 
-                    return res;
-                });
-
-                return [p.pop(), p.pop()];
+                return result;
             }
         }
     };
