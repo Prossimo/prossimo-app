@@ -9,7 +9,9 @@ var app = app || {};
         template: app.templates['core/units-table-view'],
         ui: {
             $total_prices_container: '.units-table-total-prices-container',
-            $hot_container: '.handsontable-container'
+            $hot_container: '.handsontable-container',
+            $undo: '.js-undo',
+            $redo: '.js-redo'
         },
         events: {
             'click .units-table-title': 'toggleTableVisibility',
@@ -18,7 +20,9 @@ var app = app || {};
             'click .nav-tabs a': 'onTabClick',
             'click .js-remove-item': 'onRemoveItem',
             'click .js-move-item-up': 'onMoveItemUp',
-            'click .js-move-item-down': 'onMoveItemDown'
+            'click .js-move-item-down': 'onMoveItemDown',
+            'click @ui.$undo': 'onUndo',
+            'click @ui.$redo': 'onRedo'
         },
         keyShortcuts: {
             n: 'onNewUnitOrAccessory'
@@ -71,6 +75,11 @@ var app = app || {};
             };
             this.active_tab = 'specs';
 
+            this.undo_manager = new app.UndoManager({
+                register: this.collection,
+                track: true
+            });
+
             this.listenTo(this.collection, 'all', this.updateTable);
             this.listenTo(this.options.extras, 'all', this.updateTable);
             this.listenTo(app.projects, 'all', this.updateTable);
@@ -119,6 +128,12 @@ var app = app || {};
             e.preventDefault();
             this.setActiveTab(target);
             this.render();
+        },
+        onUndo: function () {
+            return this.undo_manager.handler.undo();
+        },
+        onRedo: function () {
+            return this.undo_manager.handler.redo();
         },
         toggleTableVisibility: function () {
             if ( !this.options.is_always_visible ) {
@@ -895,6 +910,13 @@ var app = app || {};
                 });
 
                 this.ui.$total_prices_container.append(this.total_prices_view.render().el);
+
+                //  TODO: why like this?
+                if ( !this.undo_manager.registered ) {
+                    this.undo_manager.registerButton('undo', this.ui.$undo);
+                    this.undo_manager.registerButton('redo', this.ui.$redo);
+                    this.undo_manager.registered = true;
+                }
             }
         },
         onDestroy: function () {
