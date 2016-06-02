@@ -267,6 +267,9 @@ var app = app || {};
                 metricSize: metricSize
             });
 
+            // To show debug info, just uncomment it:
+            // this.module.set('debug', true);
+
             this.bindModuleEvents();
         },
         // Marrionente lifecycle method
