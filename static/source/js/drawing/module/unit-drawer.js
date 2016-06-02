@@ -1278,9 +1278,10 @@ var app = app || {};
             var number;
 
             indexes.forEach(function (section) {
+                var add = (module.get('debug') ? ' (' + section.id + ')' : '');
                 var opts = {
                     width: section.size.width,
-                    text: section.text + ' (' + section.id + ')',
+                    text: section.text + add,
                     listening: false
                 };
 
