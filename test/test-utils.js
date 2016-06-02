@@ -371,6 +371,27 @@ test('utils.vector2d.clockwiseSort', function () {
     deepEqual(v.clockwiseSort(toSort), sorted, 'Expected value is (0,1) (1,0) (0, -1) (-1, 0)');
 });
 
+test('utils.vector2d.points_to_vectors', function () {
+    var v = app.utils.vector2d;
+
+    var points = [{x: 3, y: 3}, {x: -1, y: -6}, {x: 0, y: 0}];
+    var center = {x: 1, y: 1};
+
+    var exp = [{x: 2, y: -2}, {x: -2, y: 7}, {x: -1, y: 1}];
+
+    deepEqual(v.points_to_vectors(points, center), exp, 'Points to vectors conversion');
+});
+test('utils.vector2d.vectors_to_points', function () {
+    var v = app.utils.vector2d;
+
+    var points = [{x: 2, y: -2}, {x: -2, y: 7}, {x: -1, y: 1}];
+    var center = {x: 1, y: 1};
+
+    var exp = [{x: 3, y: 3}, {x: -1, y: -6}, {x: 0, y: 0}];
+
+    deepEqual(v.vectors_to_points(points, center), exp, 'Vectors to points conversion');
+});
+
 //  ------------------------------------------------------------------------
 //  Test angle functions from utils.js
 //  ------------------------------------------------------------------------
@@ -389,68 +410,4 @@ test('utils.angle.deg_to_rad', function () {
     equal(a.deg_to_rad(1), 0.017453292519943295, 'Expected value is 0.017453292519943295');
     equal(a.deg_to_rad(180), 3.141592653589793, 'Expected value is 3.141592653589793');
     equal(a.deg_to_rad(-180), -3.141592653589793, 'Expected value is -3.141592653589793');
-});
-
-//  ------------------------------------------------------------------------
-//  Test edge functions from utils.js
-//  ------------------------------------------------------------------------
-test('utils.edges.getMask', function () {
-    var e = app.utils.edges;
-
-    equal(e.getMask(['top']), 1, 'Expected value is 1');
-    equal(e.getMask(['right']), 2, 'Expected value is 2');
-    equal(e.getMask(['bottom']), 4, 'Expected value is 4');
-    equal(e.getMask(['left']), 8, 'Expected value is 8');
-
-    equal(e.getMask(['top', 'right']), 3, 'Expected value is 3');
-    equal(e.getMask(['top', 'right', 'left']), 11, 'Expected value is 11');
-    equal(e.getMask(['top', 'right', 'left', 'bottom']), 15, 'Expected value is 15');
-
-    equal(e.getMask(['right', 'left', 'bottom']), 14, 'Expected value is 14');
-});
-
-test('utils.edges.isMask', function () {
-    var e = app.utils.edges;
-    var mask = e.getMask(['top', 'right', 'bottom']);
-
-    equal(e.isMask(mask, ['right']), false, '1: Expected value is false');
-    equal(e.isMask(mask, ['top', 'right', 'bottom']), true, '2: Expected value is true');
-});
-
-test('utils.edges.parseMask', function () {
-    var e = app.utils.edges;
-    var masks = [['top', 'right', 'bottom'], ['top'], ['right', 'left']];
-
-    _.each(masks, function (mask, i) {
-        var _m = e.getMask(mask);
-
-        deepEqual(e.parseMask(_m), mask, i + ': Expected value is ' + mask.toString());
-    });
-});
-
-test('utils.edges.getPointsByEdges', function () {
-    var e = app.utils.edges;
-    var points = [{x: -1, y: 0}, {x: 0, y: 1}, {x: 1, y: 0}, {x: 0, y: -1}];
-    var pointsDiag = [{x: -1, y: -1}, {x: 1, y: -1}, {x: -1, y: 1}, {x: 1, y: 1}];
-
-    deepEqual(e.getPointsByEdges(points, ['top']), [{x: -1, y: 0}, {x: 1, y: 0}], 'Top');
-    deepEqual(e.getPointsByEdges(points, ['right']), [{x: 0, y: 1}, {x: 0, y: -1}], 'Right');
-    deepEqual(e.getPointsByEdges(points, ['bottom']), [{x: -1, y: 0}, {x: 1, y: 0}], 'Bottom');
-    deepEqual(e.getPointsByEdges(points, ['left']), [{x: 0, y: 1}, {x: 0, y: -1}], 'Left');
-
-    deepEqual(e.getPointsByEdges(points, ['bottom', 'left']), [{x: 0, y: 1}, {x: 1, y: 0}], 'Bottom+Left');
-    deepEqual(e.getPointsByEdges(points, ['bottom', 'right']), [{x: 0, y: 1}, {x: -1, y: 0}], 'Bottom+Right');
-
-    deepEqual(e.getPointsByEdges(points, ['top', 'left']), [{x: 0, y: -1}, {x: 1, y: 0}], 'Top+Left');
-    deepEqual(e.getPointsByEdges(points, ['top', 'right']), [{x: -1, y: 0}, {x: 0, y: -1}], 'Top+Right');
-
-    deepEqual(e.getPointsByEdges(pointsDiag, ['top', 'left', 'right']), [{x: 1, y: -1}, {x: -1, y: -1}], 'Top+Right+Left');
-    deepEqual(e.getPointsByEdges(pointsDiag, ['bottom', 'left', 'right']), [{x: -1, y: 1}, {x: 1, y: 1}], 'Bottom+Right+Left');
-    deepEqual(e.getPointsByEdges(pointsDiag, ['top', 'left', 'bottom']), [{x: 1, y: 1}, {x: 1, y: -1}], 'Top+Left+Bottom');
-    deepEqual(e.getPointsByEdges(pointsDiag, ['top', 'right', 'bottom']), [{x: -1, y: -1}, {x: -1, y: 1}], 'Top+Right+Bottom');
-
-    deepEqual(e.getPointsByEdges(pointsDiag, ['top', 'bottom']),
-        [[{x: 1, y: 1}, {x: 1, y: -1}], [{x: -1, y: -1}, {x: -1, y: 1}]], 'Top+Bottom');
-    deepEqual(e.getPointsByEdges(pointsDiag, ['left', 'right']),
-        [[{x: -1, y: 1}, {x: 1, y: 1}], [{x: 1, y: -1}, {x: -1, y: -1}]], 'Left+Right');
 });

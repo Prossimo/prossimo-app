@@ -343,6 +343,36 @@ var app = app || {};
                             (Math.atan2(b.y, b.x) > base ? -2 * Math.PI : 0) +
                             (Math.atan2(a.y, a.x) > base ? 2 * Math.PI : 0);
                 });
+            },
+            points_to_vectors: function (points, center) {
+                var result = [];
+
+                _.each(points, function (point) {
+                    var p = {
+                        x: point.x - center.x,
+                        y: point.y - center.y
+                    };
+
+                    p.y *= -1; // switch coordinate system
+
+                    result.push(p);
+                });
+
+                return result;
+            },
+            vectors_to_points: function (points, center) {
+                var result = [];
+
+                _.each(points, function (point) {
+                    var p = {
+                        x: point.x + center.x,
+                        y: (point.y * -1) + center.y
+                    };
+
+                    result.push(p);
+                });
+
+                return result;
             }
         },
         angle: {
@@ -351,105 +381,6 @@ var app = app || {};
             },
             deg_to_rad: function (deg) {
                 return deg * Math.PI / 180;
-            }
-        },
-        edges: {
-            /* eslint-disable no-bitwise */
-            getBitmask: function () {
-                return {
-                    top: 0x1,
-                    right: 0x2,
-                    bottom: 0x4,
-                    left: 0x8
-                };
-            },
-            getMask: function (edges) {
-                var mask = app.utils.edges.getBitmask();
-                var result = 0;
-
-                _.each(edges, function (edge) {
-                    result = result | mask[edge];
-                });
-
-                return result;
-            },
-            parseMask: function (mask) {
-                var m = app.utils.edges.getBitmask();
-                var r = [];
-
-                _.each(m, function (bit, key) {
-                    if ( (mask & bit) !== 0 ) {
-                        r.push(key);
-                    }
-                });
-
-                return r;
-            },
-            isMask: function (mask, edges) {
-                var mask2 = app.utils.edges.getMask(edges);
-
-                return (mask === mask2);
-            },
-            /* eslint-enable no-bitwise */
-            getPointsByEdges: function (points, edges) {
-                var p = _.clone(points);
-                var result = [];
-
-                // Sort points clockwise (starting from 12 o'clock):
-                p = app.utils.vector2d.clockwiseSort(p);
-
-                switch (app.utils.edges.getMask(edges)) {
-                    case 1: // top
-                        result = [p[3], p[1]];
-                    break;
-                    case 2: // right
-                        result = [p[0], p[2]];
-                    break;
-                    case 3: // top + right
-                        result = [p[3], p[2]];
-                    break;
-                    case 4: // bottom
-                        result = [p[3], p[1]];
-                    break;
-                    case 5: // top + bottom
-                        result = [[p[0], p[1]], [p[2], p[3]]];
-                    break;
-                    case 6: // right + bottom
-                        result = [p[0], p[3]];
-                    break;
-                    case 7: // top + right + bottom
-                        result = [p[2], p[3]];
-                    break;
-                    case 8: // left
-                        result = [p[0], p[2]];
-                    break;
-                    case 9: // top + left
-                        result = [p[2], p[1]];
-                    break;
-                    case 10: // left + right
-                        result = [[p[3], p[0]], [p[1], p[2]]];
-                    break;
-                    case 11: // top + left + right
-                        result = [p[1], p[2]];
-                    break;
-                    case 12: // left + bottom
-                        result = [p[0], p[1]];
-                    break;
-                    case 13: // left + bottom + top
-                        result = [p[0], p[1]];
-                    break;
-                    case 14: // left + right + bottom
-                        result = [p[3], p[0]];
-                    break;
-                    case 15: // left + right + bottom + top
-                        result = [];
-                    break;
-                    default:
-                        result = [];
-                    break;
-                }
-
-                return result;
             }
         }
     };
