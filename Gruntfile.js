@@ -17,7 +17,8 @@ module.exports = function (grunt) {
         'konva/konva.min.js',
         'decimal.js/decimal.min.js',
         'Backbone.Undo.js/Backbone.Undo.js',
-        'backbone.KonvaView/backbone.KonvaView.js'
+        'backbone.KonvaView/backbone.KonvaView.js',
+        'spin.js/spin.min.js'
     ];
 
     var vendor_css_files = [
@@ -58,6 +59,7 @@ module.exports = function (grunt) {
         'core/views/no-project-selected-view.js',
         'core/views/status-panel-view.js',
         'core/views/project-settings-panel-view.js',
+        'core/views/spinner-view.js',
         'core/views/top-bar-view.js',
         'units-table/views/main-units-table-view.js',
         'docs-import/views/main-docs-import-view.js',
@@ -91,10 +93,7 @@ module.exports = function (grunt) {
     ];
 
     var test_data_js_files = [
-        'test/data/test-data-customer-images.js',
-        'test/data/test-data-root-sections.js',
-        'test/data/test-data-settings.js',
-        'test/data/test-data-project.js'
+        'test/data/test-data-no-backend-fixtures.js'
     ];
 
     grunt.initConfig({

@@ -167,6 +167,16 @@ var app = app || {};
                 };
             }
 
+            //  Don't allow profile names that consist of numbers only ("123")
+            if ( options.validate && attributes.name &&
+                parseInt(attributes.name, 10).toString() === attributes.name
+            ) {
+                return {
+                    attribute_name: 'name',
+                    error_message: 'Profile name can\'t consist of only numbers'
+                };
+            }
+
             //  Simple type validation for numbers and booleans
             _.find(attributes, function (value, key) {
                 var attribute_obj = this.getNameTitleTypeHash([key]);

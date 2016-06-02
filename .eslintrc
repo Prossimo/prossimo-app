@@ -179,6 +179,7 @@
         "$": false,
         "_": false,
         "Handsontable": false,
-        "Decimal": false
+        "Decimal": false,
+        "Spinner": false
     }
 }

@@ -11,7 +11,8 @@ var app = app || {};
             $container: '.top-bar-container',
             $project_selector_container: '.project-selector-container',
             $status_panel_container: '.status-panel-container',
-            $settings_toggle: '.project-settings-toggle'
+            $settings_toggle: '.project-settings-toggle',
+            $spinner_container: '.spinner-container'
         },
         events: {
             'click @ui.$settings_toggle': 'onSettingsToggle'
@@ -22,10 +23,11 @@ var app = app || {};
             this.project_settings_panel_view = new app.ProjectSettingsPanelView({
                 model: app.settings.getProjectSettings()
             });
+            this.spinner_view = new app.SpinnerView();
 
             $('#header').append( this.render().el );
 
-            this.listenTo(app.vent, 'current_project_loaded', this.onCurrentProjectLoaded);
+            this.listenTo(app.vent, 'project_selector:fetch_current:stop', this.onCurrentProjectLoaded);
         },
         onSettingsToggle: function () {
             if ( !this.isToggleDisabled() ) {
@@ -51,6 +53,7 @@ var app = app || {};
             this.ui.$project_selector_container.append(this.project_selector_view.render().el);
             this.ui.$status_panel_container.append(this.status_panel_view.render().el);
             this.$el.append(this.project_settings_panel_view.render().el);
+            this.ui.$spinner_container.append(this.spinner_view.render().el);
         }
     });
 })();
