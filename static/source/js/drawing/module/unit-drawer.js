@@ -259,6 +259,7 @@ var app = app || {};
                     var linePoints = []; // Flat array of relPoints. This will be passed into Konva.Line constructor
                     var absArcCenter = {x: 0, y: 0}; // Absolute center of local center point (for draw circle)
                     var intersects = []; // Find points that intersects with circles (outer & inner radiuses)
+                    var frameConnection = {x: 0, y: 0}; // Object stores possible frame correction for straight frames
 
                     // Find points closest to mullion and two another, that forms a sash frame
                     // But without any skew at short edges.
@@ -271,6 +272,8 @@ var app = app || {};
                             {x: opts.x + opts.width, y: opts.y + opts.frameWidth},
                             {x: opts.x, y: opts.y + opts.frameWidth}
                         ];
+
+                        frameConnection.x = opts.frameWidth;
                     } else if (edge === 'right') {
                         points = [
                             // mullion
@@ -280,15 +283,17 @@ var app = app || {};
                             {x: opts.x + opts.width - opts.frameWidth, y: opts.y + opts.height},
                             {x: opts.x + opts.width - opts.frameWidth, y: opts.y}
                         ];
+                        frameConnection.y = opts.frameWidth;
                     } else if (edge === 'bottom') {
                         points = [
                             // mullion
-                            {x: opts.x + opts.width, y: opts.y + opts.height},
                             {x: opts.x, y: opts.y + opts.height},
+                            {x: opts.x + opts.width, y: opts.y + opts.height},
                             // frame
-                            {x: opts.x, y: opts.y + opts.height - opts.frameWidth},
-                            {x: opts.x + opts.width, y: opts.y + opts.height - opts.frameWidth}
+                            {x: opts.x + opts.width, y: opts.y + opts.height - opts.frameWidth},
+                            {x: opts.x, y: opts.y + opts.height - opts.frameWidth}
                         ];
+                        frameConnection.x = opts.frameWidth;
                     } else if (edge === 'left') {
                         points = [
                             // mullion
@@ -298,6 +303,7 @@ var app = app || {};
                             {x: opts.x + opts.frameWidth, y: opts.y + opts.height},
                             {x: opts.x + opts.frameWidth, y: opts.y}
                         ];
+                        frameConnection.y = opts.frameWidth;
                     }
 
                     // Get absolute position of points
@@ -331,34 +337,45 @@ var app = app || {};
                         )
                     );
 
-                    relPoints = intersects.map(function (point) {
-                        return {
+                    relPoints = intersects.map(function (point, index) {
+                        var r = {
                             x: point.x - opts.absX,
                             y: point.y - opts.absY
                         };
+
+                        // If points wasn't intersected with circle —
+                        // it's a point that connected to another straight frame side
+                        // So we must substract default connection size (frameWidth) from points
+                        if ( !('intersects' in point) ) {
+                            // Use index to make sure that point is "inside frame" (index 2 or 3)
+                            if (index === 3) {
+                                r.x -= frameConnection.x;
+                                r.y -= frameConnection.y;
+                            } else if (index === 2) {
+                                r.x += frameConnection.x;
+                                r.y += frameConnection.y;
+                            }
+                        }
+
+                        return r;
                     });
+
+                    // console.log(params.section.id);
+                    // console.log(edge);
+                    // console.log('--');
+                    // console.log('>P = ', points);
+                    // console.log('aP = ', absPoints);
+                    // console.log('C = ', absArcCenter);
+                    // console.log('R = ', opts.outerRadius - 1);
+                    // console.log('r = ', opts.innerRadius);
+                    // console.log('X = ', intersects);
+                    // console.log('abs = ', opts.absX, opts.absY);
+                    // console.log('rel = ', relPoints);
 
                     _.each(relPoints, function (point) {
                         linePoints.push(point.x);
                         linePoints.push(point.y);
                     });
-
-                    // Calculate chorde
-                    // var vec = app.utils.vector2d.points_to_vectors(absPoints, opts.center);
-                    // var angle = app.utils.vector2d.angle(vec[0], vec[1]);
-                    // var maxLength = 2 * (opts.radius - opts.mainFrameWidth) * Math.sin(angle / 2);
-
-                    console.log(params.section.id);
-                    console.log(edge);
-                    console.log('--');
-                    console.log('>P = ', points);
-                    console.log('aP = ', absPoints);
-                    console.log('C = ', absArcCenter);
-                    console.log('R = ', opts.outerRadius - 1);
-                    console.log('r = ', opts.innerRadius);
-                    console.log('X = ', intersects);
-                    console.log('abs = ', opts.absX, opts.absY);
-                    console.log('rel = ', relPoints);
 
                     straightEdges.add( new Konva.Line({
                         points: linePoints

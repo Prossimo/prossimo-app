@@ -394,7 +394,7 @@ var app = app || {};
                     };
                 }
 
-                var result = [];
+                var result = (leave) ? [a2, a1] : [];
                 var a = (a2.x - a1.x) * (a2.x - a1.x) +
                         (a2.y - a1.y) * (a2.y - a1.y);
                 var b = 2 * ( (a2.x - a1.x) * (a1.x - c.x) +
@@ -409,23 +409,21 @@ var app = app || {};
                     var u2 = ( -b - e ) / ( 2 * a );
 
                     if ( !((u1 < 0 || u1 > 1) && (u2 < 0 || u2 > 1)) ) {
-                        result = [];
+                        var obj;
 
                         if ( u1 >= 0 && u1 <= 1) {
-                            result.push( lerp(a1, a2, u1) );
-                        } else if (leave) {
-                            result.push( a2 );
+                            obj = lerp(a1, a2, u1);
+                            obj.intersects = true;
+
+                            result[0] = obj;
                         }
 
                         if ( u2 >= 0 && u2 <= 1) {
-                            result.push( lerp(a1, a2, u2) );
-                        } else if (leave) {
-                            result.push( a1 );
+                            obj = lerp(a1, a2, u2);
+                            obj.intersects = true;
+                            result[1] = obj;
                         }
                     }
-                } else {
-                    result.push( a2 );
-                    result.push( a1 );
                 }
 
                 return result;
