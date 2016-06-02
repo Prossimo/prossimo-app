@@ -651,9 +651,8 @@ var app = app || {};
             }
         },
         getCircleSashData: function (sectionId) {
+            var root;
             var section = this.getSection( sectionId );
-            var radius = this.getCircleRadius();
-            var frameWidth = this.profile.get('sash_frame_width');
             var result = {};
 
             result.sashParams = section.sashParams;
@@ -664,22 +663,24 @@ var app = app || {};
                 left: !!section.mullionEdges.left || false
             };
 
-            result.type = (
-                            result.edges.top && result.edges.right &&
-                            result.edges.bottom && result.edges.left
-                          ) ? 'rect' :
-                          (
-                            !(result.edges.top && result.edges.right &&
-                              result.edges.bottom && result.edges.left)
-                          ) ? 'circle' :
-                              'arc';
+            if ( result.edges.top === result.edges.right &&
+                 result.edges.top === result.edges.bottom &&
+                 result.edges.top === result.edges.left
+            ) {
+                result.type = (result.edges.top === true) ? 'rect' : 'circle';
+            } else {
+                result.type = 'arc';
+            }
 
             if (result.type === 'arc') {
                 // Тут расчет градусов и т.п.
+                root = this.generateFullRoot();
+
+                result.radius = Math.min( root.sashParams.width, root.sashParams.height ) / 2;
             }
 
             if (result.type === 'circle') {
-                var root = this.generateFullRoot();
+                root = this.generateFullRoot();
 
                 result.circle = {
                     x: root.sashParams.x,

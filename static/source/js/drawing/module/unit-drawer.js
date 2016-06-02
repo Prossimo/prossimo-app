@@ -200,7 +200,7 @@ var app = app || {};
 
             var group = new Konva.Group({
                 name: 'frame',
-                sectionId: params.sectionId
+                sectionId: section.id
             });
 
             if (data.type === 'rect') {
@@ -218,12 +218,224 @@ var app = app || {};
                     radius: data.radius,
                     sectionId: section.id
                 });
-            } else {
+            } else if (data.type === 'arc') {
                 // Otherwise it's a sash inside one of children section, so this sash have an arc side
+                group = this.createArchSashFrame({
+                    frameWidth: frameWidth,
+                    radius: data.radius,
+                    section: section
+                });
             }
 
             return group;
         },
+        createArchSashFrame: function (params) {
+            var frameWidth = params.frameWidth;
+            var style = module.getStyle('frame');
+
+            var x = 0;
+            var y = 0;
+            var width = params.section.sashParams.width;
+            var height = params.section.sashParams.height;
+
+            var mainFrameWidth = model.profile.get('frame_width') / 2;
+            var radius = model.getCircleRadius();
+            var center = {
+                x: radius - mainFrameWidth,
+                y: radius - mainFrameWidth
+            };
+
+            var group = new Konva.Group({
+                name: 'frame',
+                sectionId: params.section.id
+            });
+            var straightEdges = new Konva.Group({
+                name: 'edges'
+            });
+            var arcEdge = new Konva.Group({
+                name: 'arcEdge'
+            });
+
+            var sEdges = [];
+            var sPoints = [];
+
+            _.each(params.section.mullionEdges, function (val, key) {
+                if (val !== undefined) {
+                    sEdges.push(key);
+                }
+            });
+
+            // Calculate and draw straight part of sash frame
+            _.each(params.section.mullionEdges, function (val, edge) {
+                if (val === 'vertical' || val === 'horizontal') {
+                    var edgePoints = [];
+                    var points;
+
+                    // @TODO: Calculate chord of a circle and limit every mullion to this length.
+                    if (edge === 'top') {
+                        points = [
+                            {x: x, y: y},
+                            {x: x + width, y: y}
+                        ];
+                    } else if (edge === 'right') {
+                        points = [
+                            {x: x + width, y: y},
+                            {x: x + width, y: y + height}
+                        ];
+                    } else if (edge === 'bottom') {
+                        points = [
+                            {x: x + width, y: y + height},
+                            {x: x, y: y + height}
+                        ];
+                    } else if (edge === 'left') {
+                        points = [
+                            {x: x, y: y},
+                            {x: x, y: y + height}
+                        ];
+                    }
+
+                    var abs = [];
+
+                    _.each(points, function (point) {
+                        abs.push({
+                            x: point.x + params.section.sashParams.x,
+                            y: point.y + params.section.sashParams.y
+                        });
+                    });
+
+                    var vec = app.utils.vector2d.points_to_vectors(abs, center);
+                    var angle = app.utils.vector2d.angle(vec[0], vec[1]);
+                    var maxLength = 2 * (radius - mainFrameWidth) * Math.sin(angle / 2);
+
+                    console.log('p=', points);
+                    console.log('abs=', abs);
+                    console.log('>>>', vec, app.utils.angle.rad_to_deg(angle));
+                    console.log('===', maxLength);
+
+                    // @TODO: maxLength вычисляется неверно, т.к. края точек высчитываются не на окружности,
+                    //        а по невидимым частям сегмента. Как итог изменение угла происходит не корректное:
+                    //        1. нужно определить точки на окружности
+                    //        2. вычислить угол между ними
+                    //        3. найти длину хорды
+                    //        4. дальше все как есть :)
+
+                    var length;
+                    var addX;
+
+                    if (edge === 'top') {
+                        length = (maxLength < width) ? maxLength : width;
+                        addX = (maxLength < width) ? ((width - maxLength) / 2) : 0;
+
+                        edgePoints = [
+                            x + addX, y,
+                            x + addX + length, y,
+                            x + addX + length - frameWidth, y + frameWidth,
+                            x + addX + frameWidth, y + frameWidth
+                        ];
+                    } else if (edge === 'right') {
+                        edgePoints = [
+                            x + width - frameWidth, y + frameWidth,
+                            x + width, y,
+                            x + width, y + height,
+                            x + width - frameWidth, y + height - frameWidth
+                        ];
+                    } else if (edge === 'bottom') {
+                        length = (maxLength < width) ? maxLength : width;
+                        addX = (maxLength < width) ? ((width - maxLength) / 2) : 0;
+
+                        console.log('len=', length);
+                        console.log('addX=', addX);
+
+                        edgePoints = [
+                            x + addX + frameWidth, y + height - frameWidth,
+                            x + addX + length - frameWidth, y + height - frameWidth,
+                            x + addX + length, y + height,
+                            x + addX, y + height
+                        ];
+                    } else if (edge === 'left') {
+                        edgePoints = [
+                            x, y,
+                            x + frameWidth, y + frameWidth,
+                            x + frameWidth, y + height - frameWidth,
+                            x, y + height
+                        ];
+                    }
+
+                    sPoints = sPoints.concat(edgePoints);
+
+                    straightEdges.add( new Konva.Line({
+                        points: edgePoints
+                    }) );
+                }
+            });
+
+            straightEdges.children
+                .closed(true)
+                .stroke(style.stroke)
+                .strokeWidth(style.strokeWidth)
+                .fill(style.fill);
+
+            // Calculate and draw arched parts of sash frame
+            var uPoints = [
+                {x: 0, y: 0},
+                {x: 0, y: 0 + height},
+                {x: 0 + width, y: 0 + height},
+                {x: 0 + width, y: 0}
+            ];
+
+            // Convert every point into absolute position
+            _.each(uPoints, function (point) {
+                point.x = point.x + params.section.sashParams.x;
+                point.y = point.y + params.section.sashParams.y;
+            });
+            // Convert points to vectors relative to the center point of unit
+            uPoints = app.utils.vector2d.points_to_vectors(uPoints, center);
+
+            // Search relative center point for drawing arc
+            var arcCenter = app.utils.vector2d.vectors_to_points([{x: 0, y: 0}], center)[0];
+
+            arcCenter.x = arcCenter.x - params.section.sashParams.x + mainFrameWidth;
+            arcCenter.y = arcCenter.y - params.section.sashParams.y + mainFrameWidth;
+
+            arcEdge.add(
+                new Konva.Arc({
+                    x: arcCenter.x,
+                    y: arcCenter.y,
+                    innerRadius: radius - mainFrameWidth - frameWidth,
+                    outerRadius: radius - mainFrameWidth,
+                    angle: 360,
+                    fill: style.fill
+                }),
+                new Konva.Arc({
+                    x: arcCenter.x,
+                    y: arcCenter.y,
+                    innerRadius: radius - mainFrameWidth - frameWidth,
+                    outerRadius: radius - mainFrameWidth - frameWidth + style.strokeWidth,
+                    angle: 360,
+                    fill: style.stroke
+                }),
+                new Konva.Arc({
+                    x: arcCenter.x,
+                    y: arcCenter.y,
+                    innerRadius: radius - mainFrameWidth,
+                    outerRadius: radius - mainFrameWidth + style.strokeWidth,
+                    angle: 360,
+                    fill: style.stroke
+                })
+            );
+
+            // Clip it to default rectangle shape of section
+            arcEdge.clipX(x - 2);
+            arcEdge.clipY(y - 2);
+            arcEdge.clipWidth(width + 4);
+            arcEdge.clipHeight(height + 4);
+
+            // Add to group
+            group.add( arcEdge, straightEdges );
+
+            return group;
+        },
+
         createFrame: function (params) {
             var frameWidth = params.frameWidth;  // in mm
             var width = params.width;
@@ -512,6 +724,8 @@ var app = app || {};
             var frameWidth = model.profile.get('frame_width');
             // var sashFrameWidth = model.profile.get('sash_frame_width');
 
+            var muls = [];
+
             _.each(sections, function (section) {
                 sectionsGroup.add(section);
 
@@ -522,8 +736,16 @@ var app = app || {};
                         y: frameWidth + 4,
                         radius: radius - frameWidth - 4
                     });
+
+                    muls.push(section);
                 }
             }.bind(this));
+
+            if ( !module.getState('openingView') ) {
+                _.each(muls, function (mullion) {
+                    mullion.moveToTop();
+                });
+            }
 
             sectionsGroup.scale({x: ratio, y: ratio});
 
@@ -618,6 +840,7 @@ var app = app || {};
             var circleData = (model.getCircleRadius() !== null) ? model.getCircleSashData(sectionData.id) : null;
             var hasFrame = (sectionData.sashType !== 'fixed_in_frame');
             var frameWidth = hasFrame ? model.profile.get('sash_frame_width') : 0;
+            var mainFrameWidth = model.profile.get('frame_width') / 2;
 
             var fillX;
             var fillY;
@@ -722,12 +945,23 @@ var app = app || {};
                 var directionLine = this.createDirectionLine(sectionData);
 
                 // clip direction line inside filling
-                if (circleData && circleData.type === 'circle') {
-                    this.clipCircle( directionLine, {
-                        x: fillX,
-                        y: fillY,
-                        radius: circleData.radius - frameWidth
-                    });
+                if (circleData) {
+                    if (circleData.type === 'circle') {
+                        this.clipCircle( directionLine, {
+                            x: fillX,
+                            y: fillY,
+                            radius: circleData.radius - frameWidth
+                        });
+                    }
+
+                    if (circleData.type === 'arc') {
+                        this.clipCircle( directionLine, {
+                            x: 2 - sectionData.sashParams.x + mainFrameWidth,
+                            y: 2 - sectionData.sashParams.y + mainFrameWidth,
+                            radius: circleData.radius + mainFrameWidth - 4
+                        });
+                    }
+
                 }
 
                 group.add(directionLine);
@@ -1034,7 +1268,7 @@ var app = app || {};
             indexes.forEach(function (section) {
                 var opts = {
                     width: section.size.width,
-                    text: section.text,
+                    text: section.text + ' (' + section.id + ')',
                     listening: false
                 };
 
@@ -1062,7 +1296,6 @@ var app = app || {};
             var opts;
 
             var style = module.getStyle('fillings');
-            var isSelected = (module.getState('selected:sash') === section.id);
 
             if (section.arched) {
                 // Arched
