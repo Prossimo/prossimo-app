@@ -230,141 +230,138 @@ var app = app || {};
             return group;
         },
         createArchSashFrame: function (params) {
-            var frameWidth = params.frameWidth;
             var style = module.getStyle('frame');
 
-            var x = 0;
-            var y = 0;
-            var width = params.section.sashParams.width;
-            var height = params.section.sashParams.height;
-
-            var mainFrameWidth = model.profile.get('frame_width') / 2;
-            var radius = model.getCircleRadius();
-            var center = {
-                x: radius - mainFrameWidth,
-                y: radius - mainFrameWidth
-            };
+            var opts = this.getCircleSashDrawingOpts(params);
 
             var group = new Konva.Group({
                 name: 'frame',
                 sectionId: params.section.id
             });
+            var straightEdges = this.createStraightEdges(params, opts, style);
+            var arcEdge = this.createArcEdges(params, opts, style);
+
+            // Add to group
+            group.add( arcEdge, straightEdges );
+
+            return group;
+        },
+        createStraightEdges: function (params, opts, style) {
             var straightEdges = new Konva.Group({
                 name: 'edges'
             });
-            var arcEdge = new Konva.Group({
-                name: 'arcEdge'
-            });
-
-            var sEdges = [];
-            var sPoints = [];
-
-            _.each(params.section.mullionEdges, function (val, key) {
-                if (val !== undefined) {
-                    sEdges.push(key);
-                }
-            });
-
             // Calculate and draw straight part of sash frame
             _.each(params.section.mullionEdges, function (val, edge) {
                 if (val === 'vertical' || val === 'horizontal') {
-                    var edgePoints = [];
-                    var points;
+                    var points = [];     // Original points of frame
+                    var absPoints = [];  // Absolute points: Used in calculations
+                    var relPoints = [];  // Relative points: After all calculations we return it into relative positions
+                    var linePoints = []; // Flat array of relPoints. This will be passed into Konva.Line constructor
+                    var absArcCenter = {x: 0, y: 0}; // Absolute center of local center point (for draw circle)
+                    var intersects = []; // Find points that intersects with circles (outer & inner radiuses)
 
-                    // @TODO: Calculate chord of a circle and limit every mullion to this length.
+                    // Find points closest to mullion and two another, that forms a sash frame
+                    // But without any skew at short edges.
                     if (edge === 'top') {
                         points = [
-                            {x: x, y: y},
-                            {x: x + width, y: y}
+                            // mullion
+                            {x: opts.x, y: opts.y},
+                            {x: opts.x + opts.width, y: opts.y},
+                            // frame
+                            {x: opts.x + opts.width, y: opts.y + opts.frameWidth},
+                            {x: opts.x, y: opts.y + opts.frameWidth}
                         ];
                     } else if (edge === 'right') {
                         points = [
-                            {x: x + width, y: y},
-                            {x: x + width, y: y + height}
+                            // mullion
+                            {x: opts.x + opts.width, y: opts.y},
+                            {x: opts.x + opts.width, y: opts.y + opts.height},
+                            // frame
+                            {x: opts.x + opts.width - opts.frameWidth, y: opts.y + opts.height},
+                            {x: opts.x + opts.width - opts.frameWidth, y: opts.y}
                         ];
                     } else if (edge === 'bottom') {
                         points = [
-                            {x: x + width, y: y + height},
-                            {x: x, y: y + height}
+                            // mullion
+                            {x: opts.x + opts.width, y: opts.y + opts.height},
+                            {x: opts.x, y: opts.y + opts.height},
+                            // frame
+                            {x: opts.x, y: opts.y + opts.height - opts.frameWidth},
+                            {x: opts.x + opts.width, y: opts.y + opts.height - opts.frameWidth}
                         ];
                     } else if (edge === 'left') {
                         points = [
-                            {x: x, y: y},
-                            {x: x, y: y + height}
+                            // mullion
+                            {x: opts.x, y: opts.y},
+                            {x: opts.x, y: opts.y + opts.height},
+                            // frame
+                            {x: opts.x + opts.frameWidth, y: opts.y + opts.height},
+                            {x: opts.x + opts.frameWidth, y: opts.y}
                         ];
                     }
 
-                    var abs = [];
-
+                    // Get absolute position of points
                     _.each(points, function (point) {
-                        abs.push({
-                            x: point.x + params.section.sashParams.x,
-                            y: point.y + params.section.sashParams.y
-                        });
+                        var absPoint = {
+                            x: point.x + opts.absX,
+                            y: point.y + opts.absY
+                        };
+
+                        absPoints.push(absPoint);
                     });
 
-                    var vec = app.utils.vector2d.points_to_vectors(abs, center);
-                    var angle = app.utils.vector2d.angle(vec[0], vec[1]);
-                    var maxLength = 2 * (radius - mainFrameWidth) * Math.sin(angle / 2);
+                    absArcCenter.x = opts.arcCenter.x + opts.absX;
+                    absArcCenter.y = opts.arcCenter.y + opts.absY;
 
-                    console.log('p=', points);
-                    console.log('abs=', abs);
-                    console.log('>>>', vec, app.utils.angle.rad_to_deg(angle));
-                    console.log('===', maxLength);
+                    // Find which of points lies at the arched frame
+                    intersects = app.utils.geometry.intersectCircleLine(
+                        absArcCenter,
+                        opts.outerRadius - 1,
+                        absPoints[0],
+                        absPoints[1],
+                        true
+                    );
+                    intersects = intersects.concat(
+                        app.utils.geometry.intersectCircleLine(
+                            absArcCenter,
+                            opts.innerRadius,
+                            absPoints[2],
+                            absPoints[3],
+                            true
+                        )
+                    );
 
-                    // @TODO: maxLength вычисляется неверно, т.к. края точек высчитываются не на окружности,
-                    //        а по невидимым частям сегмента. Как итог изменение угла происходит не корректное:
-                    //        1. нужно определить точки на окружности
-                    //        2. вычислить угол между ними
-                    //        3. найти длину хорды
-                    //        4. дальше все как есть :)
+                    relPoints = intersects.map(function (point) {
+                        return {
+                            x: point.x - opts.absX,
+                            y: point.y - opts.absY
+                        };
+                    });
 
-                    var length;
-                    var addX;
+                    _.each(relPoints, function (point) {
+                        linePoints.push(point.x);
+                        linePoints.push(point.y);
+                    });
 
-                    if (edge === 'top') {
-                        length = (maxLength < width) ? maxLength : width;
-                        addX = (maxLength < width) ? ((width - maxLength) / 2) : 0;
+                    // Calculate chorde
+                    // var vec = app.utils.vector2d.points_to_vectors(absPoints, opts.center);
+                    // var angle = app.utils.vector2d.angle(vec[0], vec[1]);
+                    // var maxLength = 2 * (opts.radius - opts.mainFrameWidth) * Math.sin(angle / 2);
 
-                        edgePoints = [
-                            x + addX, y,
-                            x + addX + length, y,
-                            x + addX + length - frameWidth, y + frameWidth,
-                            x + addX + frameWidth, y + frameWidth
-                        ];
-                    } else if (edge === 'right') {
-                        edgePoints = [
-                            x + width - frameWidth, y + frameWidth,
-                            x + width, y,
-                            x + width, y + height,
-                            x + width - frameWidth, y + height - frameWidth
-                        ];
-                    } else if (edge === 'bottom') {
-                        length = (maxLength < width) ? maxLength : width;
-                        addX = (maxLength < width) ? ((width - maxLength) / 2) : 0;
-
-                        console.log('len=', length);
-                        console.log('addX=', addX);
-
-                        edgePoints = [
-                            x + addX + frameWidth, y + height - frameWidth,
-                            x + addX + length - frameWidth, y + height - frameWidth,
-                            x + addX + length, y + height,
-                            x + addX, y + height
-                        ];
-                    } else if (edge === 'left') {
-                        edgePoints = [
-                            x, y,
-                            x + frameWidth, y + frameWidth,
-                            x + frameWidth, y + height - frameWidth,
-                            x, y + height
-                        ];
-                    }
-
-                    sPoints = sPoints.concat(edgePoints);
+                    console.log(params.section.id);
+                    console.log(edge);
+                    console.log('--');
+                    console.log('>P = ', points);
+                    console.log('aP = ', absPoints);
+                    console.log('C = ', absArcCenter);
+                    console.log('R = ', opts.outerRadius - 1);
+                    console.log('r = ', opts.innerRadius);
+                    console.log('X = ', intersects);
+                    console.log('abs = ', opts.absX, opts.absY);
+                    console.log('rel = ', relPoints);
 
                     straightEdges.add( new Konva.Line({
-                        points: edgePoints
+                        points: linePoints
                     }) );
                 }
             });
@@ -375,65 +372,63 @@ var app = app || {};
                 .strokeWidth(style.strokeWidth)
                 .fill(style.fill);
 
+            return straightEdges;
+        },
+        createArcEdges: function (params, opts, style) {
+            var arcEdge = new Konva.Group({
+                name: 'arcEdge'
+            });
+
             // Calculate and draw arched parts of sash frame
             var uPoints = [
                 {x: 0, y: 0},
-                {x: 0, y: 0 + height},
-                {x: 0 + width, y: 0 + height},
-                {x: 0 + width, y: 0}
+                {x: 0, y: 0 + opts.height},
+                {x: 0 + opts.width, y: 0 + opts.height},
+                {x: 0 + opts.width, y: 0}
             ];
 
             // Convert every point into absolute position
             _.each(uPoints, function (point) {
-                point.x = point.x + params.section.sashParams.x;
-                point.y = point.y + params.section.sashParams.y;
+                point.x = point.x + opts.absX;
+                point.y = point.y + opts.absY;
             });
             // Convert points to vectors relative to the center point of unit
-            uPoints = app.utils.vector2d.points_to_vectors(uPoints, center);
-
-            // Search relative center point for drawing arc
-            var arcCenter = app.utils.vector2d.vectors_to_points([{x: 0, y: 0}], center)[0];
-
-            arcCenter.x = arcCenter.x - params.section.sashParams.x + mainFrameWidth;
-            arcCenter.y = arcCenter.y - params.section.sashParams.y + mainFrameWidth;
+            uPoints = app.utils.vector2d.points_to_vectors(uPoints, opts.center);
 
             arcEdge.add(
                 new Konva.Arc({
-                    x: arcCenter.x,
-                    y: arcCenter.y,
-                    innerRadius: radius - mainFrameWidth - frameWidth,
-                    outerRadius: radius - mainFrameWidth,
+                    x: opts.arcCenter.x,
+                    y: opts.arcCenter.y,
+                    innerRadius: opts.innerRadius,
+                    outerRadius: opts.outerRadius,
                     angle: 360,
                     fill: style.fill
                 }),
                 new Konva.Arc({
-                    x: arcCenter.x,
-                    y: arcCenter.y,
-                    innerRadius: radius - mainFrameWidth - frameWidth,
-                    outerRadius: radius - mainFrameWidth - frameWidth + style.strokeWidth,
+                    x: opts.arcCenter.x,
+                    y: opts.arcCenter.y,
+                    innerRadius: opts.outerRadius,
+                    outerRadius: opts.outerRadius + style.strokeWidth,
                     angle: 360,
                     fill: style.stroke
                 }),
                 new Konva.Arc({
-                    x: arcCenter.x,
-                    y: arcCenter.y,
-                    innerRadius: radius - mainFrameWidth,
-                    outerRadius: radius - mainFrameWidth + style.strokeWidth,
+                    x: opts.arcCenter.x,
+                    y: opts.arcCenter.y,
+                    innerRadius: opts.innerRadius,
+                    outerRadius: opts.innerRadius + style.strokeWidth,
                     angle: 360,
                     fill: style.stroke
                 })
             );
 
             // Clip it to default rectangle shape of section
-            arcEdge.clipX(x - 2);
-            arcEdge.clipY(y - 2);
-            arcEdge.clipWidth(width + 4);
-            arcEdge.clipHeight(height + 4);
+            arcEdge.clipX(opts.x - 2);
+            arcEdge.clipY(opts.y - 2);
+            arcEdge.clipWidth(opts.width + 4);
+            arcEdge.clipHeight(opts.height + 4);
 
-            // Add to group
-            group.add( arcEdge, straightEdges );
-
-            return group;
+            return arcEdge;
         },
 
         createFrame: function (params) {
@@ -1525,6 +1520,32 @@ var app = app || {};
             group.add( shape );
 
             return group;
+        },
+        getCircleSashDrawingOpts: function (params) {
+            var opts = {};
+
+            opts.x = 0;
+            opts.y = 0;
+            opts.absX = params.section.sashParams.x;
+            opts.absY = params.section.sashParams.y;
+            opts.width = params.section.sashParams.width;
+            opts.height = params.section.sashParams.height;
+            opts.frameWidth = params.frameWidth;
+            opts.mainFrameWidth = model.profile.get('frame_width') / 2;
+            opts.radius = model.getCircleRadius();
+            opts.center = {
+                x: opts.radius - opts.mainFrameWidth,
+                y: opts.radius - opts.mainFrameWidth
+            };
+            // Search relative center point for drawing arc
+            opts.arcCenter = app.utils.vector2d.vectors_to_points([{x: 0, y: 0}], opts.center)[0];
+            opts.arcCenter.x = opts.arcCenter.x - params.section.sashParams.x + opts.mainFrameWidth;
+            opts.arcCenter.y = opts.arcCenter.y - params.section.sashParams.y + opts.mainFrameWidth;
+            // Search inner and outer radius for sash
+            opts.innerRadius = opts.radius - opts.mainFrameWidth - params.frameWidth;
+            opts.outerRadius = opts.radius - opts.mainFrameWidth;
+
+            return opts;
         }
 
     });

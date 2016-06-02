@@ -609,7 +609,6 @@ var app = app || {};
             func(sectionToUpdate);
 
             this.persist('root_section', rootSection);
-            this.trigger('change', this);
         },
         setCircular: function (sectionId, opts) {
             this._updateSection(sectionId, function (section) {

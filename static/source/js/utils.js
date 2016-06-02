@@ -382,6 +382,54 @@ var app = app || {};
             deg_to_rad: function (deg) {
                 return deg * Math.PI / 180;
             }
+        },
+        geometry: {
+            intersectCircleLine: function (c, r, a1, a2, leave) {
+                // From lib: http://www.kevlindev.com/gui/math/intersection/#Anchor-intersectCircleLin-40934
+                // Modified for our task
+                function lerp(p1, p2, t) {
+                    return {
+                        x: p1.x + (p2.x - p1.x) * t,
+                        y: p1.y + (p2.y - p1.y) * t
+                    };
+                }
+
+                var result = [];
+                var a = (a2.x - a1.x) * (a2.x - a1.x) +
+                        (a2.y - a1.y) * (a2.y - a1.y);
+                var b = 2 * ( (a2.x - a1.x) * (a1.x - c.x) +
+                              (a2.y - a1.y) * (a1.y - c.y) );
+                var cc = c.x * c.x + c.y * c.y + a1.x * a1.x + a1.y * a1.y -
+                         2 * (c.x * a1.x + c.y * a1.y) - r * r;
+                var deter = b * b - 4 * a * cc;
+
+                if ( deter > 0 ) {
+                    var e = Math.sqrt(deter);
+                    var u1 = ( -b + e ) / ( 2 * a );
+                    var u2 = ( -b - e ) / ( 2 * a );
+
+                    if ( !((u1 < 0 || u1 > 1) && (u2 < 0 || u2 > 1)) ) {
+                        result = [];
+
+                        if ( u1 >= 0 && u1 <= 1) {
+                            result.push( lerp(a1, a2, u1) );
+                        } else if (leave) {
+                            result.push( a2 );
+                        }
+
+                        if ( u2 >= 0 && u2 <= 1) {
+                            result.push( lerp(a1, a2, u2) );
+                        } else if (leave) {
+                            result.push( a1 );
+                        }
+                    }
+                } else {
+                    result.push( a2 );
+                    result.push( a1 );
+                }
+
+                return result;
+            }
         }
     };
 })();
