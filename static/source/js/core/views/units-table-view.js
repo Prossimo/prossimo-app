@@ -877,7 +877,7 @@ var app = app || {};
                 } else if ( isCtrlDown && event.keyCode === 90 ) {
                     self.onUndo();
                 } else if ( !onlyCtrlKeys && !isCtrlDown && event.keyCode === 78 ) {
-                    self.onNewUnitOrAccessory();
+                    self.onNewUnitOrAccessory(event);
                     event.preventDefault();
                     event.stopPropagation();
                 }

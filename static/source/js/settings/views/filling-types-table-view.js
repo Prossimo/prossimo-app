@@ -10,16 +10,26 @@ var app = app || {};
         className: 'filling-types-table',
         template: app.templates['settings/filling-types-table-view'],
         ui: {
-            $hot_container: '.filling-types-handsontable-container'
+            $hot_container: '.filling-types-handsontable-container',
+            $undo: '.js-undo',
+            $redo: '.js-redo'
         },
         events: {
             'click .js-add-new-filling-type': 'addNewFillingType',
             'click .js-remove-item': 'onRemoveItem',
             'click .js-move-item-up': 'onMoveItemUp',
-            'click .js-move-item-down': 'onMoveItemDown'
+            'click .js-move-item-down': 'onMoveItemDown',
+            'click @ui.$undo': 'onUndo',
+            'click @ui.$redo': 'onRedo'
         },
         keyShortcuts: {
-            n: 'addNewFillingType'
+            n: 'addNewFillingType',
+            'ctrl+z': 'onUndo',
+            'command+z': 'onUndo',
+            'ctrl+shift+z': 'onRedo',
+            'command+shift+z': 'onRedo',
+            'ctrl+y': 'onRedo',
+            'command+y': 'onRedo'
         },
         initialize: function () {
             this.table_update_timeout = null;
@@ -27,6 +37,11 @@ var app = app || {};
             this.columns = [
                 'name', 'supplier_name', 'type', 'move_item', 'remove_item'
             ];
+
+            this.undo_manager = new app.UndoManager({
+                register: this.collection,
+                track: true
+            });
 
             this.listenTo(this.collection, 'invalid', this.showValidationError);
             this.listenTo(this.collection, 'all', this.updateTable);
@@ -40,6 +55,12 @@ var app = app || {};
 
             e.stopPropagation();
             this.collection.add(new_type);
+        },
+        onUndo: function () {
+            this.undo_manager.handler.undo();
+        },
+        onRedo: function () {
+            this.undo_manager.handler.redo();
         },
         onRemoveItem: function (e) {
             var target_row = $(e.target).data('row');
@@ -263,6 +284,26 @@ var app = app || {};
             var self = this;
             var dropdown_scroll_reset = false;
 
+            //  We have to duplicate keydown event handling here because of the
+            //  way copyPaste plugin for HoT works. It intercepts focus once
+            //  you press ctrl key (meta key), so keydown handler in our view
+            //  (via backbone.marionette.keyshortcuts plugin) does not fire
+            function onBeforeKeyDown(event, onlyCtrlKeys) {
+                var isCtrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
+
+                //  Ctrl + Y || Ctrl + Shift + Z
+                if ( isCtrlDown && (event.keyCode === 89 || (event.shiftKey && event.keyCode === 90 )) ) {
+                    self.onRedo();
+                //  Ctrl + Z
+                } else if ( isCtrlDown && event.keyCode === 90 ) {
+                    self.onUndo();
+                } else if ( !onlyCtrlKeys && !isCtrlDown && event.keyCode === 78 ) {
+                    self.addNewFillingType(event);
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+
             if ( this.collection.length ) {
                 //  We use setTimeout because we want to wait until flexbox
                 //  sizes are calculated properly
@@ -278,6 +319,9 @@ var app = app || {};
                             trimDropdown: false,
                             maxRows: function () {
                                 return self.collection.length;
+                            },
+                            beforeKeyDown: function (e) {
+                                onBeforeKeyDown(e, true);
                             }
                         });
                     }
@@ -295,6 +339,15 @@ var app = app || {};
                     dropdown_scroll_reset = false;
                 }
             }, 100);
+
+            this.undo_manager.registerButton('undo', this.ui.$undo);
+            this.undo_manager.registerButton('redo', this.ui.$redo);
+
+            $(window).off('keydown').on('keydown', function (e) {
+                if ( !e.isDuplicate && $(e.target).hasClass('copyPaste') ) {
+                    onBeforeKeyDown(e);
+                }
+            });
         },
         onDestroy: function () {
             clearInterval(this.dropdown_scroll_timer);
@@ -302,6 +355,8 @@ var app = app || {};
             if ( this.hot ) {
                 this.hot.destroy();
             }
+
+            $(window).off('keydown');
         }
     });
 })();
