@@ -10,35 +10,27 @@ var app = app || {};
             redo: null
         };
 
-        function checkButtons(type) {
-            switch (type) {
-                case 'undo':
-                    if (!undo_manager.isAvailable('undo') && buttons.undo !== null && !buttons.undo.prop('disabled')) {
-                        buttons.undo.prop('disabled', true);
-                    }
+        function checkButtons() {
+            if ( buttons.undo !== null && buttons.undo.length ) {
+                if ( undo_manager.isAvailable('undo') ) {
+                    buttons.undo.prop('disabled', false);
+                } else {
+                    buttons.undo.prop('disabled', true);
+                }
+            }
 
-                    if (undo_manager.isAvailable('redo') && buttons.redo !== null && buttons.redo.prop('disabled')) {
-                        buttons.redo.prop('disabled', false);
-                    }
-
-                break;
-                case 'redo':
-                    if (!undo_manager.isAvailable('redo') && buttons.redo !== null && !buttons.redo.prop('disabled')) {
-                        buttons.redo.prop('disabled', true);
-                    }
-
-                    if (undo_manager.isAvailable('undo') && buttons.undo !== null && buttons.undo.prop('disabled')) {
-                        buttons.undo.prop('disabled', false);
-                    }
-
-                break;
+            if ( buttons.redo !== null && buttons.redo.length ) {
+                if ( undo_manager.isAvailable('redo') ) {
+                    buttons.redo.prop('disabled', false);
+                } else {
+                    buttons.redo.prop('disabled', true);
+                }
             }
         }
 
         function registerButton(type, button) {
             buttons[type] = button;
-
-            checkButtons(type);
+            checkButtons();
         }
 
         //  Add custom processing for Undo/Redo events to persist them
@@ -177,13 +169,7 @@ var app = app || {};
 
         undo_manager.on('all', checkButtons);
         undo_manager.stack.on('add', function () {
-            if (buttons.undo !== null && undo_manager.isAvailable('undo')) {
-                buttons.undo.prop('disabled', false);
-            }
-
-            if (buttons.redo !== null && !undo_manager.isAvailable('redo')) {
-                buttons.redo.prop('disabled', true);
-            }
+            checkButtons();
         });
 
         return {

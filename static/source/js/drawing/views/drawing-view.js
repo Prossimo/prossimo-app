@@ -89,7 +89,9 @@ var app = app || {};
             'ctrl+z': 'handleUndoClick',
             'command+z': 'handleUndoClick',
             'ctrl+shift+z': 'handleRedoClick',
-            'command+shift+z': 'handleRedoClick'
+            'command+shift+z': 'handleRedoClick',
+            'ctrl+y': 'handleRedoClick',
+            'command+y': 'handleRedoClick'
         },
         isInsideView: function () {
             return globalInsideView;
