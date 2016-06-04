@@ -36,11 +36,11 @@ var app = app || {};
             this.table_update_timeout = null;
             this.dropdown_scroll_timer = null;
             this.columns = [
-                'name', 'unit_type', 'system', 'supplier_system', 'frame_width', 'mullion_width',
-                'sash_frame_width', 'sash_frame_overlap', 'sash_mullion_overlap',
+                'move_item', 'name', 'unit_type', 'system', 'supplier_system', 'frame_width',
+                'mullion_width', 'sash_frame_width', 'sash_frame_overlap', 'sash_mullion_overlap',
                 'frame_corners', 'sash_corners', 'low_threshold', 'threshold_width',
                 'frame_u_value', 'visible_frame_width_fixed', 'visible_frame_width_operable',
-                'spacer_thermal_bridge_value', 'move_item', 'remove_item'
+                'spacer_thermal_bridge_value', 'remove_item'
             ];
 
             this.undo_manager = new app.UndoManager({

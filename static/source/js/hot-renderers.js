@@ -132,10 +132,10 @@ var app = app || {};
                 return item.get('is_base_type') !== true;
             }).length - 1;
 
-            var $button_up = $('<button class="btn btn-move btn-up btn-xs js-move-item-up"' +
-                'data-row="' + row + '">Up</button>');
-            var $button_down = $('<button class="btn btn-move btn-down btn-xs js-move-item-down"' +
-                'data-row="' + row + '">Down</button>');
+            var $button_up = $('<button class="btn btn-xs btn-move js-move-item-up glyphicon glyphicon-arrow-up"' +
+                'data-row="' + row + '"></button>');
+            var $button_down = $('<button class="btn btn-xs btn-move js-move-item-down glyphicon glyphicon-arrow-down"' +
+                'data-row="' + row + '"></button>');
 
             if ( is_first_item ) {
                 $button_up.addClass('disabled');

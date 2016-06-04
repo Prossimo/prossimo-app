@@ -45,32 +45,32 @@ var app = app || {};
                 specs: {
                     title: 'Specs',
                     collection: this.collection,
-                    columns: ['mark', 'quantity', 'width', 'height', 'drawing',
+                    columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing',
                         'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'description',
                         'notes', 'exceptions', 'profile_id', 'system', 'external_color',
                         'internal_color', 'interior_handle', 'exterior_handle', 'hardware_type',
                         'lock_mechanism', 'glazing_bead', 'gasket_color',
                         'hinge_style', 'opening_direction', 'threshold',
                         'internal_sill', 'external_sill', 'glazing', 'glazing_bar_type', 'glazing_bar_width',
-                        'uw', 'u_value', 'move_item', 'remove_item']
+                        'uw', 'u_value', 'remove_item']
                 },
                 prices: {
                     title: 'Prices',
                     collection: this.collection,
-                    columns: ['mark', 'quantity', 'width', 'height', 'drawing', 'width_mm', 'height_mm',
+                    columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing', 'width_mm', 'height_mm',
                         'original_cost', 'original_currency', 'conversion_rate', 'unit_cost', 'subtotal_cost',
                         'supplier_discount', 'unit_cost_discounted', 'subtotal_cost_discounted', 'price_markup',
                         'unit_price', 'subtotal_price', 'discount', 'unit_price_discounted',
                         'subtotal_price_discounted', 'subtotal_profit', 'total_square_feet', 'square_feet_price',
-                        'square_feet_price_discounted', 'move_item', 'remove_item']
+                        'square_feet_price_discounted', 'remove_item']
                 },
                 extras: {
                     title: 'Extras',
                     collection: this.options.extras,
-                    columns: ['description', 'quantity', 'extras_type', 'original_cost',
+                    columns: ['move_item', 'description', 'quantity', 'extras_type', 'original_cost',
                         'original_currency', 'conversion_rate', 'unit_cost', 'price_markup',
                         'unit_price', 'subtotal_cost', 'subtotal_price', 'subtotal_profit',
-                        'move_item', 'remove_item']
+                        'remove_item']
                 },
                 project_info: {
                     title: 'Project Info',
@@ -809,6 +809,7 @@ var app = app || {};
         },
         getActiveTabColWidths: function () {
             var col_widths = {
+                move_item: 55,
                 mark: 60,
                 customer_image: 100,
                 dimensions: 120,

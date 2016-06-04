@@ -36,7 +36,7 @@ var app = app || {};
             this.table_update_timeout = null;
             this.dropdown_scroll_timer = null;
             this.columns = [
-                'name', 'supplier_name', 'type', 'move_item', 'remove_item'
+                'move_item', 'name', 'supplier_name', 'type', 'remove_item'
             ];
 
             this.undo_manager = new app.UndoManager({
