@@ -18,7 +18,9 @@ module.exports = function (grunt) {
         'decimal.js/decimal.min.js',
         'Backbone.Undo.js/Backbone.Undo.js',
         'backbone.KonvaView/backbone.KonvaView.js',
-        'spin.js/spin.min.js'
+        'spin.js/spin.min.js',
+        'mousetrap/mousetrap.min.js',
+        'backbone.marionette.keyshortcuts/backbone.marionette.keyshortcuts.js'
     ];
 
     var vendor_css_files = [

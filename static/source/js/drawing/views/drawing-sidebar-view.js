@@ -21,6 +21,12 @@ var app = app || {};
             'click .nav-tabs a': 'onTabClick',
             'click @ui.$sidebar_toggle': 'onSidebarToggle'
         },
+        keyShortcuts: {
+            left: 'onPrevBtn',
+            right: 'onNextBtn',
+            pageup: 'goToPrevTab',
+            pagedown: 'goToNextTab'
+        },
         initialize: function () {
             this.tabs = {
                 active_unit_properties: {
@@ -64,29 +70,6 @@ var app = app || {};
         },
         onChange: function () {
             this.selectUnit(this.collection.get(this.ui.$select.val()));
-        },
-        onKeyDown: function (e) {
-            if ( $(e.target).is('input') !== false ) {
-                return;
-            }
-
-            //  Left
-            if ( e.keyCode === 37 ) {
-                this.onPrevBtn();
-            //  Right
-            } else if ( e.keyCode === 39 ) {
-                this.onNextBtn();
-            //  Page Up
-            } else if ( e.keyCode === 33 ) {
-                this.goToPrevTab();
-            //  Page Down
-            } else if ( e.keyCode === 34 ) {
-                this.goToNextTab();
-            } else {
-                return;
-            }
-
-            e.preventDefault();
         },
         onNextBtn: function () {
             var collection_size = this.serializeData().unit_list.length;
@@ -420,19 +403,9 @@ var app = app || {};
             };
         },
         onRender: function () {
-            var self = this;
-
             this.ui.$select.selectpicker({
                 showSubtext: true
             });
-
-            //  TODO: move this to global shortcut manager
-            $(document).off('keydown').on('keydown', function (e) {
-                self.onKeyDown(e);
-            });
-        },
-        onDestroy: function () {
-            $(document).off('keydown');
         }
     });
 })();

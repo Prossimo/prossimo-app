@@ -601,7 +601,6 @@ var app = app || {};
             func(sectionToUpdate);
 
             this.persist('root_section', rootSection);
-            this.trigger('change', this);
         },
         setSectionSashType: function (sectionId, type) {
             if (!_.includes(SASH_TYPES, type)) {
@@ -896,9 +895,7 @@ var app = app || {};
                     mullionAttrs.width = rootSection.glassParams.width;
                     mullionAttrs.height = this.profile.get('mullion_width');
                 }
-                // if (rootSection.sashType !== 'none') {
 
-                // }
                 rootSection.mullionParams = mullionAttrs;
             }
 
@@ -1106,8 +1103,11 @@ var app = app || {};
         clearFrame: function () {
             var rootId = this.get('root_section').id;
 
-            this.removeMullion(rootId);
+            //  Similar to removeMullion but affects more properties
             this._updateSection(rootId, function (section) {
+                section.divider = null;
+                section.sections = [];
+                section.position = null;
                 section.sashType = 'fixed_in_frame';
                 _.assign(section, getDefaultFillingType());
             });

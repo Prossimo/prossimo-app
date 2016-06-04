@@ -7,6 +7,11 @@ var app = app || {};
         //  On successful first save (via POST) we want to get ID of a newly
         //  created DB entity and assign it to our model
         saveAndGetId: function (key, val, options) {
+            //  Mostly to play nice with undo manager
+            if ( key === null || typeof key === 'object' && val ) {
+                options = val;
+            }
+
             options = options || {};
 
             function processResponse(status, model, response) {

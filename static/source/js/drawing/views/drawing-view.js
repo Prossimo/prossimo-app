@@ -50,17 +50,9 @@ var app = app || {};
 
             this.groups = {};
 
-            this.undoManager = new app.UndoManager({
+            this.undo_manager = new app.UndoManager({
                 register: this.model,
                 track: true
-            });
-
-            //  TODO: this is a hack, we'll need to have a more hight-level
-            //  way to persist any models on undo / redo event
-            this.listenTo(this.model, 'undo redo', function () {
-                if ( !this.model.isNew() ) {
-                    this.model.sync('update', this.model, {});
-                }
             });
         },
         ui: {
@@ -93,6 +85,14 @@ var app = app || {};
             'change @ui.$metrics_glass': 'handleAdditionalMetricsChange',
             'change @ui.$metrics_opening': 'handleAdditionalMetricsChange'
         },
+        keyShortcuts: {
+            'ctrl+z': 'handleUndoClick',
+            'command+z': 'handleUndoClick',
+            'ctrl+shift+z': 'handleRedoClick',
+            'command+shift+z': 'handleRedoClick',
+            'ctrl+y': 'handleRedoClick',
+            'command+y': 'handleRedoClick'
+        },
         isInsideView: function () {
             return globalInsideView;
         },
@@ -102,10 +102,10 @@ var app = app || {};
                 globalInsideView && !this.model.isOpeningDirectionOutward();
         },
         handleUndoClick: function () {
-            return this.undoManager.handler.undo();
+            return this.undo_manager.handler.undo();
         },
         handleRedoClick: function () {
-            return this.undoManager.handler.redo();
+            return this.undo_manager.handler.redo();
         },
         handleCanvasKeyDown: function (e) {
             if (this.module && !this.state.inputFocused) {
@@ -453,10 +453,10 @@ var app = app || {};
             this.$('.add-arched').toggle(!isArched);
 
             // Undo/Redo: Register buttons once!
-            if (!this.undoManager.registered) {
-                this.undoManager.registerButton('undo', this.ui.$undo);
-                this.undoManager.registerButton('redo', this.ui.$redo);
-                this.undoManager.registered = true;
+            if ( !this.undo_manager.registered ) {
+                this.undo_manager.registerButton('undo', this.ui.$undo);
+                this.undo_manager.registerButton('redo', this.ui.$redo);
+                this.undo_manager.registered = true;
             }
 
             // Additional overlay metrics

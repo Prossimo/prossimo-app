@@ -9,16 +9,31 @@ var app = app || {};
         template: app.templates['core/units-table-view'],
         ui: {
             $total_prices_container: '.units-table-total-prices-container',
-            $hot_container: '.handsontable-container'
+            $hot_container: '.handsontable-container',
+            $add_new_unit: '.js-add-new-unit',
+            $add_new_accessory: '.js-add-new-accessory',
+            $undo: '.js-undo',
+            $redo: '.js-redo'
         },
         events: {
             'click .units-table-title': 'toggleTableVisibility',
-            'click .js-add-new-unit': 'addNewUnit',
-            'click .js-add-new-accessory': 'addNewAccessory',
+            'click @ui.$add_new_unit': 'addNewUnit',
+            'click @ui.$add_new_accessory': 'addNewAccessory',
             'click .nav-tabs a': 'onTabClick',
             'click .js-remove-item': 'onRemoveItem',
             'click .js-move-item-up': 'onMoveItemUp',
-            'click .js-move-item-down': 'onMoveItemDown'
+            'click .js-move-item-down': 'onMoveItemDown',
+            'click @ui.$undo': 'onUndo',
+            'click @ui.$redo': 'onRedo'
+        },
+        keyShortcuts: {
+            n: 'onNewUnitOrAccessory',
+            'ctrl+z': 'onUndo',
+            'command+z': 'onUndo',
+            'ctrl+shift+z': 'onRedo',
+            'command+shift+z': 'onRedo',
+            'ctrl+y': 'onRedo',
+            'command+y': 'onRedo'
         },
         initialize: function () {
             this.table_update_timeout = null;
@@ -68,6 +83,11 @@ var app = app || {};
             };
             this.active_tab = 'specs';
 
+            this.undo_manager = new app.UndoManager({
+                register: this.collection,
+                track: true
+            });
+
             this.listenTo(this.collection, 'all', this.updateTable);
             this.listenTo(this.options.extras, 'all', this.updateTable);
             this.listenTo(app.projects, 'all', this.updateTable);
@@ -106,8 +126,19 @@ var app = app || {};
             return this.tabs[this.active_tab];
         },
         setActiveTab: function (tab_name) {
+            var previous_collection;
+            var active_collection;
+
             if ( _.contains(_.keys(this.tabs), tab_name) ) {
+                previous_collection = this.getActiveTab().collection;
                 this.active_tab = tab_name;
+                active_collection = this.getActiveTab().collection;
+
+                if ( previous_collection !== active_collection ) {
+                    this.undo_manager.manager.clear();
+                    this.undo_manager.manager.unregisterAll();
+                    this.undo_manager.manager.register(active_collection);
+                }
             }
         },
         onTabClick: function (e) {
@@ -117,29 +148,46 @@ var app = app || {};
             this.setActiveTab(target);
             this.render();
         },
+        onUndo: function () {
+            this.undo_manager.handler.undo();
+            this.ui.$undo.blur();
+        },
+        onRedo: function () {
+            this.undo_manager.handler.redo();
+            this.ui.$redo.blur();
+        },
         toggleTableVisibility: function () {
             if ( !this.options.is_always_visible ) {
                 this.table_visibility = this.table_visibility === 'hidden' ? 'visible' : 'hidden';
                 this.render();
             }
         },
-        addNewUnit: function (e) {
+        addNewUnit: function () {
             var new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
             var new_unit = new app.Unit({
                 position: new_position
             });
 
-            e.stopPropagation();
             this.collection.add(new_unit);
+            this.ui.$add_new_unit.blur();
         },
-        addNewAccessory: function (e) {
+        addNewAccessory: function () {
             var new_position = this.options.extras.length ? this.options.extras.getMaxPosition() + 1 : 0;
             var new_accessory = new app.Accessory({
                 position: new_position
             });
 
-            e.stopPropagation();
             this.options.extras.add(new_accessory);
+            this.ui.$add_new_accessory.blur();
+        },
+        onNewUnitOrAccessory: function (e) {
+            var active_tab = this.getActiveTab();
+
+            if ( this.table_visibility === 'visible' && active_tab.collection === this.collection ) {
+                this.addNewUnit(e);
+            } else if ( this.table_visibility === 'visible' && active_tab.collection === this.options.extras ) {
+                this.addNewAccessory(e);
+            }
         },
         serializeData: function () {
             return {
@@ -819,9 +867,29 @@ var app = app || {};
         onRender: function () {
             var is_visible = this.options.is_always_visible ||
                 this.table_visibility === 'visible';
+            var self = this;
+
+            //  We have to duplicate keydown event handling here because of the
+            //  way copyPaste plugin for HoT works. It intercepts focus once
+            //  you press ctrl key (meta key), so keydown handler in our view
+            //  (via backbone.marionette.keyshortcuts plugin) does not fire
+            function onBeforeKeyDown(event, onlyCtrlKeys) {
+                var isCtrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
+
+                //  Ctrl + Y || Ctrl + Shift + Z
+                if ( isCtrlDown && (event.keyCode === 89 || (event.shiftKey && event.keyCode === 90 )) ) {
+                    self.onRedo();
+                //  Ctrl + Z
+                } else if ( isCtrlDown && event.keyCode === 90 ) {
+                    self.onUndo();
+                } else if ( !onlyCtrlKeys && !isCtrlDown && event.keyCode === 78 ) {
+                    self.onNewUnitOrAccessory(event);
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
 
             if ( is_visible ) {
-                var self = this;
                 var dropdown_scroll_reset = false;
 
                 var fixed_columns = ['mark', 'quantity', 'width', 'height', 'drawing'];
@@ -854,7 +922,10 @@ var app = app || {};
                         },
                         fixedColumnsLeft: fixed_columns_count,
                         viewportRowRenderingOffset: 300,
-                        viewportColumnRenderingOffset: 50
+                        viewportColumnRenderingOffset: 50,
+                        beforeKeyDown: function (e) {
+                            onBeforeKeyDown(e, true);
+                        }
                     });
                 }, 5);
 
@@ -883,6 +954,15 @@ var app = app || {};
                 });
 
                 this.ui.$total_prices_container.append(this.total_prices_view.render().el);
+
+                this.undo_manager.registerButton('undo', this.ui.$undo);
+                this.undo_manager.registerButton('redo', this.ui.$redo);
+
+                $(window).off('keydown').on('keydown', function (e) {
+                    if ( !e.isDuplicate && $(e.target).hasClass('copyPaste') ) {
+                        onBeforeKeyDown(e);
+                    }
+                });
             }
         },
         onDestroy: function () {
@@ -897,6 +977,8 @@ var app = app || {};
             if ( this.total_prices_view ) {
                 this.total_prices_view.destroy();
             }
+
+            $(window).off('keydown');
         }
     });
 })();
