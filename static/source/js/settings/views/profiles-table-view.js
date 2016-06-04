@@ -11,11 +11,12 @@ var app = app || {};
         template: app.templates['settings/profiles-table-view'],
         ui: {
             $hot_container: '.profiles-handsontable-container',
+            $add_new_profile: '.js-add-new-profile',
             $undo: '.js-undo',
             $redo: '.js-redo'
         },
         events: {
-            'click .js-add-new-profile': 'addNewProfile',
+            'click @ui.$add_new_profile': 'addNewProfile',
             'click .js-remove-item': 'onRemoveItem',
             'click .js-move-item-up': 'onMoveItemUp',
             'click .js-move-item-down': 'onMoveItemDown',
@@ -59,12 +60,15 @@ var app = app || {};
 
             e.stopPropagation();
             this.collection.add(new_profile);
+            this.ui.$add_new_profile.blur();
         },
         onUndo: function () {
             this.undo_manager.handler.undo();
+            this.ui.$undo.blur();
         },
         onRedo: function () {
             this.undo_manager.handler.redo();
+            this.ui.$redo.blur();
         },
         onRemoveItem: function (e) {
             var target_row = $(e.target).data('row');

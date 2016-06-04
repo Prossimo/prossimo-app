@@ -11,11 +11,12 @@ var app = app || {};
         template: app.templates['settings/filling-types-table-view'],
         ui: {
             $hot_container: '.filling-types-handsontable-container',
+            $add_new_type: '.js-add-new-filling-type',
             $undo: '.js-undo',
             $redo: '.js-redo'
         },
         events: {
-            'click .js-add-new-filling-type': 'addNewFillingType',
+            'click @ui.$add_new_type': 'addNewFillingType',
             'click .js-remove-item': 'onRemoveItem',
             'click .js-move-item-up': 'onMoveItemUp',
             'click .js-move-item-down': 'onMoveItemDown',
@@ -55,12 +56,15 @@ var app = app || {};
 
             e.stopPropagation();
             this.collection.add(new_type);
+            this.ui.$add_new_type.blur();
         },
         onUndo: function () {
             this.undo_manager.handler.undo();
+            this.ui.$undo.blur();
         },
         onRedo: function () {
             this.undo_manager.handler.redo();
+            this.ui.$redo.blur();
         },
         onRemoveItem: function (e) {
             var target_row = $(e.target).data('row');

@@ -10,13 +10,15 @@ var app = app || {};
         ui: {
             $total_prices_container: '.units-table-total-prices-container',
             $hot_container: '.handsontable-container',
+            $add_new_unit: '.js-add-new-unit',
+            $add_new_accessory: '.js-add-new-accessory',
             $undo: '.js-undo',
             $redo: '.js-redo'
         },
         events: {
             'click .units-table-title': 'toggleTableVisibility',
-            'click .js-add-new-unit': 'addNewUnit',
-            'click .js-add-new-accessory': 'addNewAccessory',
+            'click @ui.$add_new_unit': 'addNewUnit',
+            'click @ui.$add_new_accessory': 'addNewAccessory',
             'click .nav-tabs a': 'onTabClick',
             'click .js-remove-item': 'onRemoveItem',
             'click .js-move-item-up': 'onMoveItemUp',
@@ -148,9 +150,11 @@ var app = app || {};
         },
         onUndo: function () {
             this.undo_manager.handler.undo();
+            this.ui.$undo.blur();
         },
         onRedo: function () {
             this.undo_manager.handler.redo();
+            this.ui.$redo.blur();
         },
         toggleTableVisibility: function () {
             if ( !this.options.is_always_visible ) {
@@ -165,6 +169,7 @@ var app = app || {};
             });
 
             this.collection.add(new_unit);
+            this.ui.$add_new_unit.blur();
         },
         addNewAccessory: function () {
             var new_position = this.options.extras.length ? this.options.extras.getMaxPosition() + 1 : 0;
@@ -173,6 +178,7 @@ var app = app || {};
             });
 
             this.options.extras.add(new_accessory);
+            this.ui.$add_new_accessory.blur();
         },
         onNewUnitOrAccessory: function (e) {
             var active_tab = this.getActiveTab();
