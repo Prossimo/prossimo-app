@@ -52,6 +52,8 @@ var app = app || {};
                 });
 
                 this.ui.$profiles_container.append(this.profiles_table_view.render().el);
+            } else if ( this.profiles_table_view ) {
+                this.profiles_table_view.destroy();
             }
 
             if ( this.active_tab === 'filling_types' ) {
@@ -61,6 +63,8 @@ var app = app || {};
                 });
 
                 this.ui.$filling_types_container.append(this.filling_types_table_view.render().el);
+            } else if ( this.filling_types_table_view ) {
+                this.filling_types_table_view.destroy();
             }
 
             if ( this.active_tab === 'pricing_grids' ) {
@@ -70,6 +74,8 @@ var app = app || {};
                 });
 
                 this.ui.$pricing_grids_container.append(this.pricing_grids_table_view.render().el);
+            } else if ( this.pricing_grids_table_view ) {
+                this.pricing_grids_table_view.destroy();
             }
         },
         serializeData: function () {
