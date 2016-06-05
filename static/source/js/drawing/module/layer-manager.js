@@ -36,6 +36,12 @@ var app = app || {};
                     zIndex: 1,
                     visible: true,
                     active: true
+                },
+                trapezoidControls: {
+                    DrawerClass: app.Drawers.TrapezoidControlsDrawer,
+                    zIndex: 2,
+                    visible: true,
+                    active: true
                 }
             };
 

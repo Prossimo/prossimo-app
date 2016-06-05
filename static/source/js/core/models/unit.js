@@ -105,6 +105,27 @@ var app = app || {};
         };
     }
 
+    function getZeroVector() {
+        // (!) Important: vector have a reverted y-axis:
+        //     positive values is going up, negative is going down
+        return { x: 0, y: 0 };
+    }
+
+    function getDefaultTrapezoid() {
+        // This is array of corner opts.
+        // Starting from top-left and going clockwise.
+        // Each corner opts contains a vector of corner displacement
+        var zeroVector = getZeroVector();
+
+        return [
+            _.clone(zeroVector),
+            _.clone(zeroVector),
+            _.clone(zeroVector),
+            _.clone(zeroVector)
+        ];
+    }
+
+
     function validateBar(opts, type) {
         return {
             id: opts.id || _.uniqueId(),
@@ -141,6 +162,7 @@ var app = app || {};
             fillingType: getDefaultFillingType().fillingType,
             fillingName: getDefaultFillingType().fillingName,
             bars: getDefaultBars(),
+            trapezoid: getDefaultTrapezoid(),
             measurements: getDefaultMeasurements(isRootSection)
         };
     }
@@ -294,6 +316,10 @@ var app = app || {};
                         current_section.bars[type][index] = validateBar( bar, type );
                     });
                 });
+            }
+
+            if ( !current_section.trapezoid) {
+                current_section.trapezoid = getDefaultTrapezoid();
             }
 
             if ( !current_section.measurements ) {
@@ -513,6 +539,16 @@ var app = app || {};
 
             return false;
         },
+        isTrapezoidPossible: function () {
+            var root = this.generateFullRoot();
+
+            // We can't do a trapezoid section only if it's a circular unit!
+            if (root.circular) {
+                return false;
+            }
+
+            return true;
+        },
         getCircleRadius: function () {
             var root = this.generateFullRoot();
 
@@ -521,6 +557,21 @@ var app = app || {};
             }
 
             return null;
+        },
+        getTrapezoidParams: function (sectionId) {
+            var section = this.findSection(sectionId);
+
+            return section.trapezoid;
+        },
+        setTrapezoidCorner: function (sectionId, cornerIndex, opts) {
+            if ('x' in opts && 'y' in opts) {
+                this._updateSection(sectionId, function (section) {
+                    section.trapezoid[cornerIndex] = {
+                        x: opts.x || section.trapezoid[cornerIndex].x || getZeroVector().x,
+                        y: opts.y || section.trapezoid[cornerIndex].y || getZeroVector().y
+                    };
+                });
+            }
         },
         isArchedPossible: function (sashId) {
             var root = this.generateFullRoot();

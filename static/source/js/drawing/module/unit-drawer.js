@@ -855,28 +855,7 @@ var app = app || {};
             var frameWidth = hasFrame ? model.profile.get('sash_frame_width') : 0;
             var mainFrameWidth = model.profile.get('frame_width') / 2;
 
-            var fill = {};
-
-            if (_.includes(['full-flush-panel', 'exterior-flush-panel'], sectionData.fillingType) &&
-                !module.getState('openingView')
-            ) {
-                fill.x = sectionData.openingParams.x - sectionData.sashParams.x;
-                fill.y = sectionData.openingParams.y - sectionData.sashParams.y;
-                fill.width = sectionData.openingParams.width;
-                fill.height = sectionData.openingParams.height;
-            } else if (_.includes(['full-flush-panel', 'interior-flush-panel'], sectionData.fillingType) &&
-                        module.getState('openingView')
-            ) {
-                fill.x = 0;
-                fill.y = 0;
-                fill.width = sectionData.sashParams.width;
-                fill.height = sectionData.sashParams.height;
-            } else {
-                fill.x = sectionData.glassParams.x - sectionData.sashParams.x;
-                fill.y = sectionData.glassParams.y - sectionData.sashParams.y;
-                fill.width = sectionData.glassParams.width;
-                fill.height = sectionData.glassParams.height;
-            }
+            var fill = module.utils.getSashParams(sectionData);
 
             var hasSubSections = sectionData.sections && sectionData.sections.length;
             var isFlushType = sectionData.fillingType &&

@@ -37,7 +37,7 @@ var app = app || {};
 
             this.data = {};
             this.state = {};
-            this.status = 'initializing';
+            this.utils = new app.DrawingModuleUtils(this);
 
             // Assign model
             if ('model' in opts) {
