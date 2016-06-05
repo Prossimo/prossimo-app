@@ -842,6 +842,7 @@ var app = app || {};
 
             return group;
         },
+        /* eslint-disable max-statements */
         createSash: function (sectionData) {
             var group = new Konva.Group({
                 x: sectionData.sashParams.x,
@@ -854,30 +855,27 @@ var app = app || {};
             var frameWidth = hasFrame ? model.profile.get('sash_frame_width') : 0;
             var mainFrameWidth = model.profile.get('frame_width') / 2;
 
-            var fillX;
-            var fillY;
-            var fillWidth;
-            var fillHeight;
+            var fill = {};
 
             if (_.includes(['full-flush-panel', 'exterior-flush-panel'], sectionData.fillingType) &&
                 !module.getState('openingView')
             ) {
-                fillX = sectionData.openingParams.x - sectionData.sashParams.x;
-                fillY = sectionData.openingParams.y - sectionData.sashParams.y;
-                fillWidth = sectionData.openingParams.width;
-                fillHeight = sectionData.openingParams.height;
+                fill.x = sectionData.openingParams.x - sectionData.sashParams.x;
+                fill.y = sectionData.openingParams.y - sectionData.sashParams.y;
+                fill.width = sectionData.openingParams.width;
+                fill.height = sectionData.openingParams.height;
             } else if (_.includes(['full-flush-panel', 'interior-flush-panel'], sectionData.fillingType) &&
                         module.getState('openingView')
             ) {
-                fillX = 0;
-                fillY = 0;
-                fillWidth = sectionData.sashParams.width;
-                fillHeight = sectionData.sashParams.height;
+                fill.x = 0;
+                fill.y = 0;
+                fill.width = sectionData.sashParams.width;
+                fill.height = sectionData.sashParams.height;
             } else {
-                fillX = sectionData.glassParams.x - sectionData.sashParams.x;
-                fillY = sectionData.glassParams.y - sectionData.sashParams.y;
-                fillWidth = sectionData.glassParams.width;
-                fillHeight = sectionData.glassParams.height;
+                fill.x = sectionData.glassParams.x - sectionData.sashParams.x;
+                fill.y = sectionData.glassParams.y - sectionData.sashParams.y;
+                fill.width = sectionData.glassParams.width;
+                fill.height = sectionData.glassParams.height;
             }
 
             var hasSubSections = sectionData.sections && sectionData.sections.length;
@@ -893,7 +891,7 @@ var app = app || {};
 
             var shouldDrawDirectionLine = sectionData.sashType !== 'fixed_in_frame';
 
-            var filling;
+            var shouldDrawHandle = this.shouldDrawHandle(sectionData.sashType);
 
             var circleClip = {};
 
@@ -924,11 +922,11 @@ var app = app || {};
             }
 
             if (shouldDrawFilling) {
-                filling = this.createFilling(sectionData, {
-                    x: (circleData) ? fillX - frameWidth : fillX,
-                    y: (circleData) ? fillY - frameWidth : fillY,
-                    width: (circleData) ? fillWidth + frameWidth : fillWidth,
-                    height: (circleData) ? fillHeight + frameWidth : fillHeight
+                var filling = this.createFilling(sectionData, {
+                    x: (circleData) ? fill.x - frameWidth : fill.x,
+                    y: (circleData) ? fill.y - frameWidth : fill.y,
+                    width: (circleData) ? fill.width + frameWidth : fill.width,
+                    height: (circleData) ? fill.height + frameWidth : fill.height
                 });
 
                 if (circleData) {
@@ -940,10 +938,10 @@ var app = app || {};
 
             if (shouldDrawBars) {
                 var bars = this.createBars(sectionData, {
-                    x: fillX,
-                    y: fillY,
-                    width: fillWidth,
-                    height: fillHeight
+                    x: fill.x,
+                    y: fill.y,
+                    width: fill.width,
+                    height: fill.height
                 });
 
                 if (circleData) {
@@ -960,8 +958,8 @@ var app = app || {};
                 if (circleData) {
                     if (circleData.type === 'circle') {
                         this.clipCircle( directionLine, {
-                            x: fillX,
-                            y: fillY,
+                            x: fill.x,
+                            y: fill.y,
                             radius: circleData.radius - frameWidth
                         });
                     }
@@ -996,10 +994,10 @@ var app = app || {};
 
             if (isSelected) {
                 var selection = this.createSelectionShape(sectionData, {
-                    x: fillX,
-                    y: fillY,
-                    width: fillWidth,
-                    height: fillHeight
+                    x: fill.x,
+                    y: fill.y,
+                    width: fill.width,
+                    height: fill.height
                 });
 
                 if (circleData) {
@@ -1038,8 +1036,6 @@ var app = app || {};
                 group.add(frameGroup);
             }
 
-            var shouldDrawHandle = this.shouldDrawHandle(sectionData.sashType);
-
             if (shouldDrawHandle) {
                 var handle = this.createHandle(sectionData, {
                     frameWidth: frameWidth
@@ -1050,6 +1046,7 @@ var app = app || {};
 
             return group;
         },
+        /* eslint-enable max-statements */
         shouldDrawHandle: function (type) {
             var result = false;
             var typeResult = false;
