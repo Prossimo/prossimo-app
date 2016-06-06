@@ -268,7 +268,7 @@ var app = app || {};
             });
 
             // To show debug info, just uncomment it:
-            // this.module.set('debug', true);
+            this.module.set('debug', true);
 
             this.bindModuleEvents();
         },
@@ -328,6 +328,9 @@ var app = app || {};
             });
             this.listenTo(this.module, 'labelClicked', function (data) {
                 this.createInput( data.params, data.pos, data.size );
+            });
+            this.listenTo(this.module, 'trapezoidControlClicked', function (data) {
+                this.createTrapezoidInput( data.params, data.pos );
             });
         },
         unbindModuleEvents: function () {
@@ -423,6 +426,126 @@ var app = app || {};
                     }
                 })
                 .on('blur', closeWrap);
+        },
+        createTrapezoidInput: function (params, pos) {
+            var view = this;
+            var module = this.module;
+            var corner = this.model.getSection(params.sectionId).trapezoid[params.cornerIndex];
+            var container = $(module.get('stage').container());
+            var style = module.getStyle('trapezoid_controls');
+            var $wrap = $('<div>')
+                .addClass('popup-wrap')
+                .appendTo(container)
+                .on('click', function (e) {
+                    if (e.target === $wrap.get(0)) {
+                        $wrap.remove();
+                    }
+                });
+
+            var containerPos = (container.css('position') === 'relative') ? {top: 0, left: 0} : container.position();
+
+            function closeWrap() {
+                if (view.setState) {
+                    view.setState({
+                        inputFocused: false
+                    });
+                }
+
+                $wrap.remove();
+            }
+
+            function applyValue(val, key) {
+                var sign = 1;
+
+                if (val[0] === '-') {
+                    sign = -1;
+                    val = val.slice(1);
+                }
+
+                if (key === 'x' && view.module.getState('openingView')) {
+                    sign = sign * -1;
+                }
+
+                val = app.utils.parseFormat.dimension(val);
+                val = app.utils.convert.inches_to_mm(val) * sign;
+                corner[key] = parseFloat(val);
+            }
+
+            function createLabel(key, val) {
+                var sign = '';
+
+                if (key === 'x' && view.module.getState('openingView') && val !== 0) {
+                    sign = '-';
+                }
+
+                val = app.utils.convert.mm_to_inches(val);
+                val = app.utils.format.dimension(val, 'fraction');
+                val = sign + val;
+
+                var $label = $('<label>')
+                    .css({
+                        display: 'block'
+                    })
+                    .text(key + ': ');
+
+                $('<input>')
+                    .val(val)
+                    .css({
+                        display: 'inline-block',
+                        width: style.popup.inputWidth,
+                        padding: style.popup.padding,
+                        fontSize: style.popup.fontSize
+                    })
+                    .appendTo($label)
+                    .on('focus', function () {
+                        if (view.state) {
+                            view.state.inputFocused = true;
+                        }
+                    })
+                    .on('keyup', function (e) {
+                        if (e.keyCode === 13) {  // enter
+                            applyValue(this.value, key);
+
+                            $(this).trigger('enter');
+                        }
+
+                        if (e.keyCode === 27) { // esc
+                            closeWrap();
+                        }
+                    })
+                    .on('blur', function () {
+                        applyValue(this.value, key);
+                    });
+
+                return $label;
+            }
+
+            var $block = $('<div>')
+                .css({
+                    position: 'absolute',
+                    top: (pos.y + containerPos.top) + 'px',
+                    left: (pos.x + containerPos.left) + 'px',
+                    width: (style.popup.width) + 'px',
+                    fontSize: style.popup.fontSize,
+                    background: style.popup.background,
+                    border: style.popup.borderColor + ' solid ' + style.popup.borderWidth,
+                    padding: style.popup.padding
+                })
+                .appendTo($wrap);
+
+            var $x = createLabel('x', corner.x).appendTo($block);
+            var $y = createLabel('y', corner.y).appendTo($block);
+
+            $x.find('input').on('enter', function () {
+                $y.focus().select();
+            });
+
+            $y.find('input').on('enter', function () {
+                view.model.setTrapezoidCorner(params.sectionId, params.cornerIndex, corner);
+                closeWrap();
+            });
+
+            $x.find('input').focus().select();
         },
 
         updateUI: function () {

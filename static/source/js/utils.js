@@ -345,6 +345,8 @@ var app = app || {};
                 });
             },
             points_to_vectors: function (points, center) {
+                center = center || {x: 0, y: 0};
+
                 var result = [];
 
                 _.each(points, function (point) {
@@ -361,6 +363,8 @@ var app = app || {};
                 return result;
             },
             vectors_to_points: function (points, center) {
+                center = center || {x: 0, y: 0};
+
                 var result = [];
 
                 _.each(points, function (point) {

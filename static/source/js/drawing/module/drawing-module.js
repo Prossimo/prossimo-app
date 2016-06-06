@@ -150,7 +150,8 @@ var app = app || {};
                 type: ('type' in opts && opts.type) ? opts.type : 'unit',
                 hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode'),
                 inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
-                isPreview: ('preview' in opts && opts.preview) ? opts.preview : false
+                isPreview: ('preview' in opts && opts.preview) ? opts.preview : false,
+                openingView: false
             }, false);
 
             return opts;
@@ -330,6 +331,25 @@ var app = app || {};
                         hover: {
                             opacity: 0.3
                         }
+                    }
+                },
+                trapezoid_controls: {
+                    normal: {
+                        fill: 'red',
+                        opacity: 0.3
+                    },
+                    hover: {
+                        fill: 'red',
+                        opacity: 0.6
+                    },
+                    popup: {
+                        background: '#EEE',
+                        borderColor: '#CCC',
+                        borderWidth: '1px',
+                        padding: '3px',
+                        fontSize: '12px',
+                        width: '100px',
+                        inputWidth: '60px'
                     }
                 }
             };

@@ -105,9 +105,12 @@ var app = app || {};
         };
     }
 
-    function getZeroVector() {
-        // (!) Important: vector have a reverted y-axis:
-        //     positive values is going up, negative is going down
+    function getZeroPoint() {
+        // (!) Important: this is a displacement of a point (vecotr).
+        //                But we're using not a reverted y-axis to
+        //                make it easier to calculate positions.
+        //                So positive values is going down,
+        //                negative is going up.
         return { x: 0, y: 0 };
     }
 
@@ -115,13 +118,13 @@ var app = app || {};
         // This is array of corner opts.
         // Starting from top-left and going clockwise.
         // Each corner opts contains a vector of corner displacement
-        var zeroVector = getZeroVector();
+        var zeroPoint = getZeroPoint();
 
         return [
-            _.clone(zeroVector),
-            _.clone(zeroVector),
-            _.clone(zeroVector),
-            _.clone(zeroVector)
+            _.clone(zeroPoint),
+            _.clone(zeroPoint),
+            _.clone(zeroPoint),
+            _.clone(zeroPoint)
         ];
     }
 
@@ -567,8 +570,8 @@ var app = app || {};
             if ('x' in opts && 'y' in opts) {
                 this._updateSection(sectionId, function (section) {
                     section.trapezoid[cornerIndex] = {
-                        x: opts.x || section.trapezoid[cornerIndex].x || getZeroVector().x,
-                        y: opts.y || section.trapezoid[cornerIndex].y || getZeroVector().y
+                        x: parseInt(opts.x) || getZeroPoint().x,
+                        y: parseInt(opts.y) || getZeroPoint().y
                     };
                 });
             }
@@ -731,7 +734,6 @@ var app = app || {};
             }
 
             if (result.type === 'arc') {
-                // Тут расчет градусов и т.п.
                 root = this.generateFullRoot();
 
                 result.radius = Math.min( root.sashParams.width, root.sashParams.height ) / 2;
@@ -873,15 +875,22 @@ var app = app || {};
             });
         },
         removeMullion: function (sectionId) {
+            var unit = this;
+
             this._updateSection(sectionId, function (section) {
+                // @TODO: Add calculation of trapezoid points for parent section!
+                section.trapezoid = unit.joinTrapezoid(section.sections, section);
                 section.divider = null;
                 section.sections = [];
                 section.position = null;
             });
         },
         removeSash: function (sectionId) {
+            var unit = this;
+
             this._updateSection(sectionId, function (section) {
                 section.sashType = 'fixed_in_frame';
+                section.trapezoid = unit.joinTrapezoid(section.sections, section);
                 _.assign(section, getDefaultFillingType());
                 section.divider = null;
                 section.sections = [];
@@ -901,6 +910,7 @@ var app = app || {};
 
                 section.divider = type;
                 section.sections = [getSectionDefaults(), getSectionDefaults()];
+                section.sections = this.splitTrapezoid(section);
                 // Drop mullion dimension-points
                 section.measurements.mullion = {};
                 section.measurements.mullion[measurementType] = ['center', 'center'];
@@ -1165,6 +1175,7 @@ var app = app || {};
                 sectionData.mullionEdges.right = temp;
                 return this.generateFullReversedRoot(sectionData);
             }.bind(this));
+
             return rootSection;
         },
         // it is not possible to add sash inside another sash
@@ -1719,6 +1730,35 @@ var app = app || {};
         },
         getInvertedDivider: function (type) {
             return getInvertedDivider(type);
+        },
+        getTrapezoid: function (sectionId, isReversed) {
+            var section = this.getSection(sectionId);
+            var trapezoid = section.trapezoid;
+
+            if (isReversed) {
+                trapezoid = [
+                    trapezoid[1],
+                    trapezoid[0],
+                    trapezoid[3],
+                    trapezoid[2]
+                ];
+
+                _.each(trapezoid, function (tr, i) {
+                    trapezoid[i].x = tr.x * -1;
+                });
+            }
+
+            return trapezoid;
+        },
+        joinTrapezoid: function (sections, parent) {
+            console.log('join', sections, 'into', parent.id);
+            return getDefaultTrapezoid();
+        },
+        splitTrapezoid: function (section) {
+            var sections = section.sections;
+
+            console.log('split', section.id, 'into', sections);
+            return sections;
         }
     });
 
