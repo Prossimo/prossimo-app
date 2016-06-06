@@ -1751,13 +1751,38 @@ var app = app || {};
             return trapezoid;
         },
         joinTrapezoid: function (sections, parent) {
-            console.log('join', sections, 'into', parent.id);
-            return getDefaultTrapezoid();
+            var trapezoid = getDefaultTrapezoid();
+            // console.log('join', sections, 'into', parent.id, 'divider was', parent.divider);
+            if (parent.divider === 'horizontal' || parent.divider === 'horizontal_invisible') {
+                trapezoid[0] = sections[0].trapezoid[0];
+                trapezoid[1] = sections[0].trapezoid[1];
+                trapezoid[2] = sections[1].trapezoid[2];
+                trapezoid[3] = sections[1].trapezoid[3];
+            } else {
+                trapezoid[0] = sections[0].trapezoid[0];
+                trapezoid[1] = sections[1].trapezoid[1];
+                trapezoid[2] = sections[1].trapezoid[2];
+                trapezoid[3] = sections[0].trapezoid[3];
+            }
+
+            return trapezoid;
         },
         splitTrapezoid: function (section) {
             var sections = section.sections;
+            // console.log('split', section.id, 'into', sections);
+            // console.log('split by', section.divider);
+            if (section.divider === 'horizontal' || section.divider === 'horizontal_invisible') {
+                sections[0].trapezoid[0] = section.trapezoid[0];
+                sections[0].trapezoid[1] = section.trapezoid[1];
+                sections[1].trapezoid[2] = section.trapezoid[2];
+                sections[1].trapezoid[3] = section.trapezoid[3];
+            } else {
+                sections[0].trapezoid[0] = section.trapezoid[0];
+                sections[0].trapezoid[3] = section.trapezoid[3];
+                sections[1].trapezoid[1] = section.trapezoid[1];
+                sections[1].trapezoid[2] = section.trapezoid[2];
+            }
 
-            console.log('split', section.id, 'into', sections);
             return sections;
         }
     });
