@@ -272,7 +272,8 @@ var app = app || {};
                         width: 600,
                         height: 600,
                         mode: 'base64',
-                        position: 'outside'
+                        position: 'outside',
+                        hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode')
                     });
                 },
                 subtotal_cost: function (model) {

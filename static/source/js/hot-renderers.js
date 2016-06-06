@@ -132,9 +132,11 @@ var app = app || {};
                 return item.get('is_base_type') !== true;
             }).length - 1;
 
-            var $button_up = $('<button class="btn btn-xs btn-move js-move-item-up glyphicon glyphicon-arrow-up"' +
+            var $button_up =
+                $('<button class="btn btn-xs btn-move js-move-item-up glyphicon glyphicon-arrow-up"' +
                 'data-row="' + row + '"></button>');
-            var $button_down = $('<button class="btn btn-xs btn-move js-move-item-down glyphicon glyphicon-arrow-down"' +
+            var $button_down =
+                $('<button class="btn btn-xs btn-move js-move-item-down glyphicon glyphicon-arrow-down"' +
                 'data-row="' + row + '"></button>');
 
             if ( is_first_item ) {
