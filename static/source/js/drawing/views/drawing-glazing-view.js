@@ -3,9 +3,6 @@ var app = app || {};
 (function () {
     'use strict';
 
-    // global variables
-    var metricSize = 50;
-
     app.DrawingGlazingPopup = Marionette.ItemView.extend({
         className: 'drawing-glazing-popup',
         template: app.templates['drawing/drawing-glazing-view'],
@@ -25,6 +22,7 @@ var app = app || {};
             $('body').append( this.render().el );
 
             this.parent = opts.parent || null;
+            this.metric_size = 50;
 
             this.ui.$modal.modal({
                 keyboard: false,
@@ -38,7 +36,6 @@ var app = app || {};
             this.handleBarsNumberChange( 'horizontal' );
         },
         handleBarsNumberChange: function ( type ) {
-
             if ( this.ui['$bar_' + type].val() < 0 ) {
                 this.ui['$bar_' + type].val(0);
                 this.showError();
@@ -107,7 +104,7 @@ var app = app || {};
                         }
                     }
                 },
-                metricSize: metricSize
+                metricSize: this.metric_size
             });
 
             this.bindModuleEvents();
