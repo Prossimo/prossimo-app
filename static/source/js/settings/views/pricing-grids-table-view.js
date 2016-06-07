@@ -234,7 +234,8 @@ var app = app || {};
                         columns: self.getColumnOptions(),
                         colHeaders: self.getColumnHeaders(),
                         data: self.getDataObject(),
-                        rowHeights: 25
+                        rowHeights: 25,
+                        enterMoves: { row: 0, col: 0 }
                     });
                 }, 5);
             } else {

@@ -925,6 +925,7 @@ var app = app || {};
                         fixedColumnsLeft: fixed_columns_count,
                         viewportRowRenderingOffset: 300,
                         viewportColumnRenderingOffset: 50,
+                        enterMoves: { row: 0, col: 0 },
                         beforeKeyDown: function (e) {
                             onBeforeKeyDown(e, true);
                         }

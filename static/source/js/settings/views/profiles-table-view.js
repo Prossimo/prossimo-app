@@ -384,6 +384,7 @@ var app = app || {};
                                 return self.collection.length;
                             },
                             fixedColumnsLeft: fixed_columns_count,
+                            enterMoves: { row: 0, col: 0 },
                             beforeKeyDown: function (e) {
                                 onBeforeKeyDown(e, true);
                             }

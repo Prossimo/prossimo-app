@@ -324,6 +324,7 @@ var app = app || {};
                             maxRows: function () {
                                 return self.collection.length;
                             },
+                            enterMoves: { row: 0, col: 0 },
                             beforeKeyDown: function (e) {
                                 onBeforeKeyDown(e, true);
                             }
