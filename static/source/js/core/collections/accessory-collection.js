@@ -18,8 +18,8 @@ var app = app || {};
             this.options = options || {};
             this.proxy_accessory = new app.Accessory(null, { proxy: true });
 
-            //  When parent project is set active, we validate positions
-            this.listenTo(this.options.project, 'set_active', this.validatePositions);
+            //  When parent project is fully loaded, we validate positions
+            this.listenTo(this.options.project, 'fully_loaded', this.validatePositions);
             this.on('loaded', this.addDefaultShipping, this);
         },
         //  Add new `Shipping` item if there's no shipping yet

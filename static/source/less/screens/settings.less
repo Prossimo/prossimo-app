@@ -109,6 +109,19 @@
     border-color: darken(@white, 30%);
 }
 
+.profiles-table-controls .btn {
+    float: left;
+    border: 1px solid darken(@white, 35%);
+}
+
+.profiles-table-controls .btn + .btn {
+    margin-left: 0.5rem;
+}
+
+.profiles-table-controls .btn-xs + .btn:not(.btn-xs) {
+    margin-left: 1.5rem;
+}
+
 
 //  ------------------------------------------------------------------------
 //  Filling types
@@ -143,6 +156,7 @@
 }
 
 
+//  FIXME: this is not used anymore, could be removed
 //  ------------------------------------------------------------------------
 //  UI Settings
 //  ------------------------------------------------------------------------

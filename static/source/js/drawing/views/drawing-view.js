@@ -3,9 +3,9 @@ var app = app || {};
 (function () {
     'use strict';
 
-    // This view is orginized in React-like aproach
-    // but with several source of state
-    // as we have
+    // This view is organized in React-like approach but with multiple sources
+    // of state as we have:
+    //
     // 1. this.model - unit this.model.profile - profile data
     //
     // 2. this.state - UI state of view.
@@ -13,18 +13,12 @@ var app = app || {};
     //
     // 3. and globalInsideView variable. This variable is not part of this.state
     // as we need to keep it the same for any view
-
+    //
     // starting point of all drawing is "renderCanvas" function
-
+    //
     // main pattern for methods name
     // this.handleSomeAction - callback on some user UI action
     // this.createSomeObject - pure function that create some canvas UI elements
-    // TODO: as this functions are pure, so it is better to move them into separete files
-    // something like "components" directory
-
-    // global params
-    var globalInsideView = false;
-    var metricSize = 50;
 
     app.DrawingView = Marionette.ItemView.extend({
         tagName: 'div',
@@ -36,6 +30,8 @@ var app = app || {};
             this.on('update_rendered', this.updateRenderedScene, this);
 
             this.createGlazingPopup();
+
+            this.metric_size = 50;
 
             this.state = {
                 isPreview: ('isPreview' in opts && opts.isPreview),
@@ -50,17 +46,9 @@ var app = app || {};
 
             this.groups = {};
 
-            this.undoManager = new app.UndoManager({
+            this.undo_manager = new app.UndoManager({
                 register: this.model,
                 track: true
-            });
-
-            //  TODO: this is a hack, we'll need to have a more hight-level
-            //  way to persist any models on undo / redo event
-            this.listenTo(this.model, 'undo redo', function () {
-                if ( !this.model.isNew() ) {
-                    this.model.sync('update', this.model, {});
-                }
             });
         },
         ui: {
@@ -93,19 +81,32 @@ var app = app || {};
             'change @ui.$metrics_glass': 'handleAdditionalMetricsChange',
             'change @ui.$metrics_opening': 'handleAdditionalMetricsChange'
         },
+        keyShortcuts: {
+            'ctrl+z': 'handleUndoClick',
+            'command+z': 'handleUndoClick',
+            'ctrl+shift+z': 'handleRedoClick',
+            'command+shift+z': 'handleRedoClick',
+            'ctrl+y': 'handleRedoClick',
+            'command+y': 'handleRedoClick'
+        },
+        setGlobalInsideView: function (value) {
+            // this.options.parent_view.global_inside_view = value;
+            this.options.parent_view.setGlobalInsideView(value);
+        },
         isInsideView: function () {
-            return globalInsideView;
+            // return this.options.parent_view.global_inside_view;
+            return this.options.parent_view.getGlobalInsideView();
         },
         // Are we looking at unit from the opening side?
         isOpeningView: function () {
-            return !globalInsideView && this.model.isOpeningDirectionOutward() ||
-                globalInsideView && !this.model.isOpeningDirectionOutward();
+            return !this.isInsideView() && this.model.isOpeningDirectionOutward() ||
+                this.isInsideView() && !this.model.isOpeningDirectionOutward();
         },
         handleUndoClick: function () {
-            return this.undoManager.handler.undo();
+            return this.undo_manager.handler.undo();
         },
         handleRedoClick: function () {
-            return this.undoManager.handler.redo();
+            return this.undo_manager.handler.redo();
         },
         handleCanvasKeyDown: function (e) {
             if (this.module && !this.state.inputFocused) {
@@ -130,7 +131,7 @@ var app = app || {};
             this.model.setSectionMeasurements( this.state.selectedSashId, measurements );
         },
         handleChangeView: function () {
-            globalInsideView = !globalInsideView;
+            this.setGlobalInsideView(!this.isInsideView());
 
             this.setState({
                 insideView: this.isInsideView(),
@@ -243,7 +244,12 @@ var app = app || {};
                 model: this.model,
                 stage: this.stage,
                 layers: {},
-                metricSize: metricSize
+                metricSize: this.metric_size
+            });
+
+            this.module.setState({
+                insideView: this.isInsideView(),
+                openingView: this.isOpeningView()
             });
 
             this.bindModuleEvents();
@@ -403,12 +409,10 @@ var app = app || {};
 
         updateUI: function () {
             // here we have to hide and should some elements in toolbar
-            var buttonText = globalInsideView ? 'Show outside view' : 'Show inside view';
+            var buttonText = this.isInsideView() ? 'Show outside view' : 'Show inside view';
+            var titleText = this.isInsideView() ? 'Inside view' : 'Outside view';
 
             this.$('#change-view-button').text(buttonText);
-
-            var titleText = globalInsideView ? 'Inside view' : 'Outside view';
-
             this.ui.$title.text(titleText);
 
             var selectedSashId = this.state.selectedSashId;
@@ -453,10 +457,10 @@ var app = app || {};
             this.$('.add-arched').toggle(!isArched);
 
             // Undo/Redo: Register buttons once!
-            if (!this.undoManager.registered) {
-                this.undoManager.registerButton('undo', this.ui.$undo);
-                this.undoManager.registerButton('redo', this.ui.$redo);
-                this.undoManager.registered = true;
+            if ( !this.undo_manager.registered ) {
+                this.undo_manager.registerButton('undo', this.ui.$undo);
+                this.undo_manager.registerButton('redo', this.ui.$redo);
+                this.undo_manager.registered = true;
             }
 
             // Additional overlay metrics
@@ -514,5 +518,4 @@ var app = app || {};
             });
         }
     });
-
 })();

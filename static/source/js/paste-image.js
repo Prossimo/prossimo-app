@@ -110,7 +110,8 @@ var app = app || {};
                 this.appendPasteCatcher();
             }
 
-            //  Intercept focus from Handsontable textarea
+            //  Intercept focus from Handsontable textarea. We only do this
+            //  when we're about to paste something into Customer Image cells
             $(document).on('focus', '.copyPaste', function () {
                 self.focusPasteCatcher();
             });

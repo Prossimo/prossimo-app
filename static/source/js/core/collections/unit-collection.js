@@ -18,8 +18,8 @@ var app = app || {};
             this.options = options || {};
             this.proxy_unit = new app.Unit(null, { proxy: true });
 
-            //  When parent project is set active, we validate unit positions
-            this.listenTo(this.options.project, 'set_active', this.validatePositions);
+            //  When parent project is fully loaded, we validate unit positions
+            this.listenTo(this.options.project, 'fully_loaded', this.validatePositions);
         },
         getNameTitleTypeHash: function (names) {
             return this.proxy_unit.getNameTitleTypeHash(names);
