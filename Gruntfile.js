@@ -68,6 +68,7 @@ module.exports = function (grunt) {
         'docs-import/views/document-selector-view.js',
         'docs-import/views/document-list-view.js',
         'drawing/module/drawing-utils.js',
+        'drawing/module/konva-clip-patch.js',
         'drawing/module/drawing-module.js',
         'drawing/module/layer-manager.js',
         'drawing/module/unit-drawer.js',

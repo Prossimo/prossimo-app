@@ -23,7 +23,16 @@ var app = app || {};
             this.$el.toggleClass('sidebar-hidden');
             this.updateDrawingView(true);
         },
+        getGlobalInsideView: function () {
+            return this.global_inside_view;
+        },
+        setGlobalInsideView: function (value) {
+            this.global_inside_view = value;
+        },
         initialize: function () {
+            //  Used to store external state for the drawing_view
+            this.global_inside_view = false;
+
             this.listenTo(app.current_project.settings, 'change', this.updateDrawingView);
         },
         updateDrawingView: function (update_rendered_flag) {
