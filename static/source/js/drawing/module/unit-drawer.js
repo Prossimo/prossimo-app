@@ -517,7 +517,7 @@ var app = app || {};
             _.extend(opts, {
                 width: width,
                 height: height,
-                name: 'frame',
+                name: 'flush-frame',
                 sectionId: params.sectionId
             });
 
@@ -538,7 +538,9 @@ var app = app || {};
                 bottom: module.getStyle('door_bottom')
             };
 
-            var group = new Konva.Group();
+            var group = new Konva.Group({
+                name: 'frame'
+            });
             var top = new Konva.Line({
                 points: [
                     0, 0,
@@ -601,7 +603,9 @@ var app = app || {};
 
             var style = module.getStyle('frame');
 
-            var group = new Konva.Group();
+            var group = new Konva.Group({
+                name: 'frame'
+            });
             var top = new Konva.Shape({
                 stroke: style.stroke,
                 strokeWidth: style.strokeWidth,
@@ -734,9 +738,6 @@ var app = app || {};
 
             var radius = model.getCircleRadius();
             var frameWidth = model.profile.get('frame_width');
-            // var sashFrameWidth = model.profile.get('sash_frame_width');
-
-            var muls = [];
 
             _.each(sections, function (section) {
                 sectionsGroup.add(section);
@@ -748,16 +749,10 @@ var app = app || {};
                         y: frameWidth + 4,
                         radius: radius - frameWidth - 4
                     });
-
-                    muls.push(section);
                 }
-            }.bind(this));
 
-            if ( !module.getState('openingView') ) {
-                _.each(muls, function (mullion) {
-                    mullion.moveToTop();
-                });
-            }
+                this.sortSection(section);
+            }.bind(this));
 
             sectionsGroup.scale({x: ratio, y: ratio});
 
@@ -766,6 +761,35 @@ var app = app || {};
 
             return sectionsGroup;
         },
+
+        sortSection: function (section) {
+            // child.attr.name in correct order
+            var sortingOrder = [
+                'filling',
+                'bars',
+                'direction',
+                'mullion',
+                'frame',
+                'selection',
+                'handle',
+                'index'
+            ];
+
+            _.each(sortingOrder, function (name) {
+                var _node;
+
+                if (section.attrs.name === name) {
+                    _node = section;
+                } else {
+                    _node = section.find('.' + name);
+                }
+
+                if (_node) {
+                    _node.moveToTop();
+                }
+            });
+        },
+
         createSections: function (rootSection) {
             var objects = [];
 
@@ -970,26 +994,6 @@ var app = app || {};
                 }
             }
 
-            if (sectionData.sashType !== 'fixed_in_frame') {
-
-                if (circleData) {
-                    frameGroup = this.createCircleSashFrame({
-                        frameWidth: frameWidth,
-                        section: sectionData,
-                        data: circleData
-                    });
-                } else {
-                    frameGroup = this.createFrame({
-                        width: sectionData.sashParams.width,
-                        height: sectionData.sashParams.height,
-                        frameWidth: frameWidth,
-                        sectionId: sectionData.id
-                    });
-                }
-
-                group.add(frameGroup);
-            }
-
             if (shouldDrawDirectionLine) {
                 var directionLine = this.createDirectionLine(sectionData);
 
@@ -1014,6 +1018,26 @@ var app = app || {};
                 }
 
                 group.add(directionLine);
+            }
+
+            if (sectionData.sashType !== 'fixed_in_frame') {
+
+                if (circleData) {
+                    frameGroup = this.createCircleSashFrame({
+                        frameWidth: frameWidth,
+                        section: sectionData,
+                        data: circleData
+                    });
+                } else {
+                    frameGroup = this.createFrame({
+                        width: sectionData.sashParams.width,
+                        height: sectionData.sashParams.height,
+                        frameWidth: frameWidth,
+                        sectionId: sectionData.id
+                    });
+                }
+
+                group.add(frameGroup);
             }
 
             var sashList = model.getSashList();
@@ -1132,12 +1156,11 @@ var app = app || {};
         },
         createDirectionLine: function (section) {
             var group = new Konva.Group({
-                name: 'directionLine'
+                name: 'direction'
             });
             var type = section.sashType;
             var style = module.getStyle('direction_line');
             var directionLine = new Konva.Shape({
-                name: 'directionLine',
                 stroke: style.stroke,
                 x: section.glassParams.x - section.sashParams.x,
                 y: section.glassParams.y - section.sashParams.y,
@@ -1276,7 +1299,7 @@ var app = app || {};
         },
         createIndexes: function (indexes) {
             var group = new Konva.Group({
-                name: 'sectionIndexes'
+                name: 'index'
             });
             var number;
 
@@ -1376,6 +1399,7 @@ var app = app || {};
                         ctx.fillStrokeShape(this);
                     }
                 };
+
                 // Draw filling
                 filling = new Konva.Shape(opts);
             }
@@ -1399,7 +1423,9 @@ var app = app || {};
             var fillWidth = params.width;
             var fillHeight = params.height;
 
-            var group = new Konva.Group();
+            var group = new Konva.Group({
+                name: 'bars'
+            });
             var bar;
 
             var hBarCount = section.bars.horizontal.length;
