@@ -893,7 +893,10 @@ var app = app || {};
 
             var shouldDrawHandle = this.shouldDrawHandle(sectionData.sashType);
 
+            var isSelected = (module.getState('selected:sash') === sectionData.id);
+
             var circleClip = {};
+            var frameGroup;
 
             if (circleData) {
                 var sashData = (function findSash(sectionId) {
@@ -951,6 +954,42 @@ var app = app || {};
                 group.add(bars);
             }
 
+            if (isFlushType && !hasSubSections) {
+                var flushFrame = new Konva.Group();
+
+                flushFrame.add( this.createFlushFrame({
+                    width: sectionData.sashParams.width,
+                    height: sectionData.sashParams.height,
+                    sectionId: sectionData.id
+                }) );
+
+                group.add(flushFrame);
+
+                if (circleData) {
+                    this.clipCircle(flushFrame, circleClip);
+                }
+            }
+
+            if (sectionData.sashType !== 'fixed_in_frame') {
+
+                if (circleData) {
+                    frameGroup = this.createCircleSashFrame({
+                        frameWidth: frameWidth,
+                        section: sectionData,
+                        data: circleData
+                    });
+                } else {
+                    frameGroup = this.createFrame({
+                        width: sectionData.sashParams.width,
+                        height: sectionData.sashParams.height,
+                        frameWidth: frameWidth,
+                        sectionId: sectionData.id
+                    });
+                }
+
+                group.add(frameGroup);
+            }
+
             if (shouldDrawDirectionLine) {
                 var directionLine = this.createDirectionLine(sectionData);
 
@@ -988,9 +1027,13 @@ var app = app || {};
                 group.add( this.createIndexes(indexes) );
             }
 
-            var frameGroup;
+            if (shouldDrawHandle) {
+                var handle = this.createHandle(sectionData, {
+                    frameWidth: frameWidth
+                });
 
-            var isSelected = (module.getState('selected:sash') === sectionData.id);
+                group.add(handle);
+            }
 
             if (isSelected) {
                 var selection = this.createSelectionShape(sectionData, {
@@ -1005,43 +1048,6 @@ var app = app || {};
                 }
 
                 group.add( selection );
-            }
-
-            if (isFlushType && !hasSubSections) {
-                frameGroup = this.createFlushFrame({
-                    width: sectionData.sashParams.width,
-                    height: sectionData.sashParams.height,
-                    sectionId: sectionData.id
-                });
-                group.add(frameGroup);
-            }
-
-            if (sectionData.sashType !== 'fixed_in_frame') {
-
-                if (circleData) {
-                    frameGroup = this.createCircleSashFrame({
-                        frameWidth: frameWidth,
-                        section: sectionData,
-                        data: circleData
-                    });
-                } else {
-                    frameGroup = this.createFrame({
-                        width: sectionData.sashParams.width,
-                        height: sectionData.sashParams.height,
-                        frameWidth: frameWidth,
-                        sectionId: sectionData.id
-                    });
-                }
-
-                group.add(frameGroup);
-            }
-
-            if (shouldDrawHandle) {
-                var handle = this.createHandle(sectionData, {
-                    frameWidth: frameWidth
-                });
-
-                group.add(handle);
             }
 
             return group;
