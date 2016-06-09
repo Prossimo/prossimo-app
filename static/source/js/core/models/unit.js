@@ -719,22 +719,21 @@ var app = app || {};
                 left: !!section.mullionEdges.left || false
             };
 
-            if ( result.edges.top === result.edges.right &&
-                 result.edges.top === result.edges.bottom &&
-                 result.edges.top === result.edges.left
+            // If we have a mullions all around the sash — it's rectangle!
+            // If we have no mullions around the sash — it's a circle!
+            // But if we have mullions at few edges — it's an arc!
+            if ( result.edges.top === result.edges.right ===
+                 result.edges.bottom === result.edges.left
             ) {
                 result.type = (result.edges.top === true) ? 'rect' : 'circle';
             } else {
                 result.type = 'arc';
             }
 
-            if (result.type === 'arc') {
-                root = this.generateFullRoot();
-
-                result.radius = Math.min( root.sashParams.width, root.sashParams.height ) / 2;
-            }
-
-            if (result.type === 'circle') {
+            // In this method we calculate the same data for arc and circle
+            // But other methods could use this helpful information about type.
+            // For example, it used in unit-drawer.js
+            if (result.type === 'circle' || result.type === 'arc') {
                 root = this.generateFullRoot();
 
                 result.circle = {
@@ -1747,6 +1746,12 @@ var app = app || {};
             }
 
             return trapezoid;
+        },
+        isCircleWindow: function () {
+            return (this.getCircleRadius() !== null);
+        },
+        isArchedWindow: function () {
+            return (this.getArchedPosition() !== null);
         },
         joinTrapezoid: function (sections, parent) {
             var trapezoid = getDefaultTrapezoid();

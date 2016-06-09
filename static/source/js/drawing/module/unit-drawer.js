@@ -154,8 +154,8 @@ var app = app || {};
                 model.profile.isThresholdPossible() &&
                 model.profile.get('low_threshold');
 
-            var isArchedWindow = (model.getArchedPosition() !== null);
-            var isCircleWindow = (model.getCircleRadius() !== null);
+            var isArchedWindow = model.isArchedWindow();
+            var isCircleWindow = model.isCircleWindow();
 
             // create main frame
             if (isDoorFrame) {
@@ -362,18 +362,6 @@ var app = app || {};
 
                         return r;
                     });
-
-                    // console.log(params.section.id);
-                    // console.log(edge);
-                    // console.log('--');
-                    // console.log('>P = ', points);
-                    // console.log('aP = ', absPoints);
-                    // console.log('C = ', absArcCenter);
-                    // console.log('R = ', opts.outerRadius - 1);
-                    // console.log('r = ', opts.innerRadius);
-                    // console.log('X = ', intersects);
-                    // console.log('abs = ', opts.absX, opts.absY);
-                    // console.log('rel = ', relPoints);
 
                     _.each(relPoints, function (point) {
                         linePoints.push(point.x);
@@ -884,7 +872,7 @@ var app = app || {};
 
             var trapezoid = (sectionData.trapezoid) ?
                             model.getTrapezoid(sectionData.id, module.getState('openingView')) : null;
-            var circleData = (model.getCircleRadius() !== null) ? model.getCircleSashData(sectionData.id) : null;
+            var circleData = (model.isCircleWindow()) ? model.getCircleSashData(sectionData.id) : null;
             var hasFrame = (sectionData.sashType !== 'fixed_in_frame');
             var frameWidth = hasFrame ? model.profile.get('sash_frame_width') : 0;
             var mainFrameWidth = model.profile.get('frame_width') / 2;
