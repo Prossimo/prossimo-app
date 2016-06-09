@@ -184,8 +184,11 @@ var app = app || {};
                     sectionId: root.id,
                     width: model.getInMetric('width', 'mm'),
                     height: model.getInMetric('height', 'mm'),
-                    frameWidth: model.profile.get('frame_width')
+                    frameWidth: model.profile.get('frame_width'),
+                    trapezoid: model.getTrapezoid(root.id, module.getState('openingView'))
                 });
+
+                module.utils.getMainFrameKinks(root);
             }
 
             frameGroup.scale({x: ratio, y: ratio});
@@ -454,43 +457,48 @@ var app = app || {};
             var height = params.height;
             var style = module.getStyle('frame');
 
+            var trapezoid = (params.trapezoid) ? params.trapezoid : model.getNullTrapezoid();
+
             var group = new Konva.Group({
                 name: 'frame',
                 sectionId: params.sectionId
             });
+
+            // @TODO: Add correction to corners!
+
             var top = new Konva.Line({
                 points: [
-                    0, 0,
-                    width, 0,
-                    width - frameWidth, frameWidth,
-                    frameWidth, frameWidth
+                    0 + trapezoid[0].x, 0 + trapezoid[0].y,
+                    width + trapezoid[1].x, 0 + trapezoid[1].y,
+                    width - frameWidth + trapezoid[1].x, frameWidth + trapezoid[1].y,
+                    frameWidth + trapezoid[0].x, frameWidth + trapezoid[0].y
                 ]
             });
 
             var left = new Konva.Line({
                 points: [
-                    0, 0,
-                    frameWidth, frameWidth,
-                    frameWidth, height - frameWidth,
-                    0, height
+                    0 + trapezoid[0].x, 0 + trapezoid[0].y,
+                    frameWidth + trapezoid[0].x, frameWidth + trapezoid[0].y,
+                    frameWidth + trapezoid[3].x, height - frameWidth + trapezoid[3].y,
+                    0 + trapezoid[3].x, height + trapezoid[3].y
                 ]
             });
 
             var bottom = new Konva.Line({
                 points: [
-                    0, height,
-                    frameWidth, height - frameWidth,
-                    width - frameWidth, height - frameWidth,
-                    width, height
+                    0 + trapezoid[3].x, height + trapezoid[3].y,
+                    frameWidth + trapezoid[3].x, height - frameWidth + trapezoid[3].y,
+                    width - frameWidth + trapezoid[2].x, height - frameWidth + trapezoid[2].y,
+                    width + trapezoid[2].x, height + trapezoid[2].y
                 ]
             });
 
             var right = new Konva.Line({
                 points: [
-                    width, 0,
-                    width, height,
-                    width - frameWidth, height - frameWidth,
-                    width - frameWidth, frameWidth
+                    width + trapezoid[1].x, 0 + trapezoid[1].y,
+                    width + trapezoid[2].x, height + trapezoid[2].y,
+                    width - frameWidth + trapezoid[2].x, height - frameWidth + trapezoid[2].y,
+                    width - frameWidth + trapezoid[1].x, frameWidth + trapezoid[1].y
                 ]
             });
 
@@ -850,11 +858,12 @@ var app = app || {};
                 name: 'sash'
             });
 
+            var trapezoid = (sectionData.trapezoid) ?
+                            model.getTrapezoid(sectionData.id, module.getState('openingView')) : null;
             var circleData = (model.getCircleRadius() !== null) ? model.getCircleSashData(sectionData.id) : null;
             var hasFrame = (sectionData.sashType !== 'fixed_in_frame');
             var frameWidth = hasFrame ? model.profile.get('sash_frame_width') : 0;
             var mainFrameWidth = model.profile.get('frame_width') / 2;
-
             var fill = module.utils.getSashParams(sectionData);
 
             var hasSubSections = sectionData.sections && sectionData.sections.length;
@@ -905,7 +914,8 @@ var app = app || {};
                     x: (circleData) ? fill.x - frameWidth : fill.x,
                     y: (circleData) ? fill.y - frameWidth : fill.y,
                     width: (circleData) ? fill.width + frameWidth : fill.width,
-                    height: (circleData) ? fill.height + frameWidth : fill.height
+                    height: (circleData) ? fill.height + frameWidth : fill.height,
+                    trapezoid: trapezoid
                 });
 
                 if (circleData) {
@@ -925,6 +935,10 @@ var app = app || {};
 
                 if (circleData) {
                     this.clipCircle(bars, circleClip);
+                }
+
+                if (sectionData.trapezoid) {
+                    // @TODO: Clip bars by trapezoid!
                 }
 
                 group.add(bars);
@@ -950,7 +964,10 @@ var app = app || {};
                             radius: circleData.radius + mainFrameWidth - 4
                         });
                     }
+                }
 
+                if (sectionData.trapezoid) {
+                    // @TODO: Clip lines by trapezoid
                 }
 
                 group.add(directionLine);
@@ -983,6 +1000,10 @@ var app = app || {};
                     this.clipCircle(selection, circleClip);
                 }
 
+                if (sectionData.trapezoid) {
+                    // @TODO: Clip selection by trapezoid
+                }
+
                 group.add( selection );
             }
 
@@ -990,7 +1011,8 @@ var app = app || {};
                 frameGroup = this.createFlushFrame({
                     width: sectionData.sashParams.width,
                     height: sectionData.sashParams.height,
-                    sectionId: sectionData.id
+                    sectionId: sectionData.id,
+                    trapezoid: trapezoid
                 });
                 group.add(frameGroup);
             }
@@ -1008,7 +1030,8 @@ var app = app || {};
                         width: sectionData.sashParams.width,
                         height: sectionData.sashParams.height,
                         frameWidth: frameWidth,
-                        sectionId: sectionData.id
+                        sectionId: sectionData.id,
+                        trapezoid: trapezoid
                     });
                 }
 

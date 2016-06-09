@@ -561,11 +561,6 @@ var app = app || {};
 
             return null;
         },
-        getTrapezoidParams: function (sectionId) {
-            var section = this.findSection(sectionId);
-
-            return section.trapezoid;
-        },
         setTrapezoidCorner: function (sectionId, cornerIndex, opts) {
             if ('x' in opts && 'y' in opts) {
                 this._updateSection(sectionId, function (section) {
@@ -919,6 +914,7 @@ var app = app || {};
 
                 // Reset bars parameter
                 section.bars = getDefaultBars();
+                section.trapezoid = getDefaultTrapezoid();
 
                 if ( section.fillingType && section.fillingName ) {
                     section.sections[0].fillingType = section.sections[1].fillingType = section.fillingType;
@@ -1272,6 +1268,8 @@ var app = app || {};
                 section.divider = null;
                 section.sections = [];
                 section.position = null;
+                section.trapezoid = getDefaultTrapezoid();
+                section.bars = getDefaultBars();
                 section.sashType = 'fixed_in_frame';
                 _.assign(section, getDefaultFillingType());
             });
@@ -1752,7 +1750,7 @@ var app = app || {};
         },
         joinTrapezoid: function (sections, parent) {
             var trapezoid = getDefaultTrapezoid();
-            // console.log('join', sections, 'into', parent.id, 'divider was', parent.divider);
+
             if (parent.divider === 'horizontal' || parent.divider === 'horizontal_invisible') {
                 trapezoid[0] = sections[0].trapezoid[0];
                 trapezoid[1] = sections[0].trapezoid[1];
@@ -1769,21 +1767,77 @@ var app = app || {};
         },
         splitTrapezoid: function (section) {
             var sections = section.sections;
-            // console.log('split', section.id, 'into', sections);
-            // console.log('split by', section.divider);
+            var midpoints = {
+                top: app.utils.geometry.getLineMidpoint(section.trapezoid[0], section.trapezoid[1]),
+                right: app.utils.geometry.getLineMidpoint(section.trapezoid[1], section.trapezoid[2]),
+                bottom: app.utils.geometry.getLineMidpoint(section.trapezoid[2], section.trapezoid[3]),
+                left: app.utils.geometry.getLineMidpoint(section.trapezoid[0], section.trapezoid[3])
+            };
+
             if (section.divider === 'horizontal' || section.divider === 'horizontal_invisible') {
+                // Top section.
+                // Set top points.
                 sections[0].trapezoid[0] = section.trapezoid[0];
                 sections[0].trapezoid[1] = section.trapezoid[1];
+                // Set zeros to middle points (bottom left & bottom right)
+                sections[0].trapezoid[2] = getZeroPoint();
+                sections[0].trapezoid[3] = getZeroPoint();
+                // Correct middle points usign midpoints.
+                sections[0].trapezoid[2].x += midpoints.right.x;
+                sections[0].trapezoid[3].x += midpoints.left.x;
+
+                // Bottom section.
+                // Set bottom points.
                 sections[1].trapezoid[2] = section.trapezoid[2];
                 sections[1].trapezoid[3] = section.trapezoid[3];
+                // Set zeros to middle points (top left & top right)
+                sections[1].trapezoid[1] = getZeroPoint();
+                sections[1].trapezoid[0] = getZeroPoint();
+                // Correct middle points usign midpoints.
+                sections[1].trapezoid[1].x += midpoints.right.x;
+                sections[1].trapezoid[0].x += midpoints.left.x;
             } else {
-                sections[0].trapezoid[0] = section.trapezoid[0];
-                sections[0].trapezoid[3] = section.trapezoid[3];
-                sections[1].trapezoid[1] = section.trapezoid[1];
-                sections[1].trapezoid[2] = section.trapezoid[2];
+                // Left section.
+                // Set left points.
+                sections[1].trapezoid[0] = section.trapezoid[0];
+                sections[1].trapezoid[3] = section.trapezoid[3];
+                // Set zeros to middle points (top right & bottom right)
+                sections[1].trapezoid[1] = getZeroPoint();
+                sections[1].trapezoid[2] = getZeroPoint();
+                // Correct middle points usign midpoints.
+                sections[1].trapezoid[1].y += midpoints.top.y;
+                sections[1].trapezoid[2].y += midpoints.bottom.y;
+
+                // Right section.
+                sections[0].trapezoid[1] = section.trapezoid[1];
+                sections[0].trapezoid[2] = section.trapezoid[2];
+                // Set zeros to middle points (top left & bottom left)
+                sections[0].trapezoid[0] = getZeroPoint();
+                sections[0].trapezoid[3] = getZeroPoint();
+                // Correct middle points usign midpoints.
+                sections[0].trapezoid[0].y += midpoints.top.y;
+                sections[0].trapezoid[3].y += midpoints.bottom.y;
             }
 
             return sections;
+        },
+        getNullTrapezoid: function () {
+            return getDefaultTrapezoid();
+        },
+        optimizeTrapezoid: function () {
+            // @TODO: Optimize trapezoid displacement.
+            //        Case 1).
+            //        If user set the same displacement at both corners of the same edge —
+            //        drop trapezoid values of one of parameters for this corners to zero,
+            //        but add their values to width/height.
+            //        For example: (3, 5) for top-left and (6, 5) for top-right should become
+            //        just a (3,0) and (6,0), but substract a five inches from height.
+            //        But really this should become a (0,0) and (3,0). See next Case.
+            //        Case 2).
+            //        Also this should substract difference between corners of the same edge.
+            //        For example, if user set next values to top-right corner and bottom-right:
+            //        (5, 0) for top-right and (10, 0) for bottom-right it should become to
+            //        (0,0) and (5,0) and substracted a 5 inches from width.
         }
     });
 

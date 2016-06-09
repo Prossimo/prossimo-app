@@ -44,24 +44,25 @@ var app = app || {};
 
                 return fill;
             },
-            getCornerPoints: function (sectionData, isAbsolute, withMullions) {
+            getCornerPoints: function (sectionData, isAbsolute) {
                 isAbsolute = isAbsolute || false;
-                withMullions = withMullions || false;
 
-                var fill = this.getSashParams(sectionData);
+                var fill = this.getSashParams(sectionData, isAbsolute);
                 var corners = [];
-                var add = (isAbsolute) ? {x: fill.x, y: fill.y} : {x: 0, y: 0};
-                var mullAdd = (withMullions) ?
-                              this.getMullionDisplacements(sectionData) : this.getMullionDisplacements(null);
+                var sash = 0; // Sash frame width
+
+                if (sectionData.sashType !== 'fixed_in_frame') {
+                    sash = module.get('model').profile.get('sash_frame_width');
+                }
 
                 // top-left
-                corners[0] = {x: 0 + add.x + mullAdd[0].x, y: 0 + add.y + mullAdd[0].y};
+                corners[0] = {x: 0 + sash, y: 0 + sash};
                 // top-right
-                corners[1] = {x: fill.width + add.x + mullAdd[1].x, y: 0 + add.y + mullAdd[1].y};
+                corners[1] = {x: fill.width + sash, y: 0 + sash};
                 // bottom-right
-                corners[2] = {x: fill.width + add.x + mullAdd[2].x, y: fill.height + add.y + mullAdd[2].y};
+                corners[2] = {x: fill.width + sash, y: fill.height + sash};
                 // bottom-left
-                corners[3] = {x: 0 + add.x + mullAdd[3].x, y: fill.height + add.y + mullAdd[3].y};
+                corners[3] = {x: 0 + sash, y: fill.height + sash};
 
                 return corners;
             },
@@ -79,44 +80,88 @@ var app = app || {};
 
                 return points;
             },
-            getMullionDisplacements: function (sectionData) {
-                var displacements = [
-                    {x: 0, y: 0},
-                    {x: 0, y: 0},
-                    {x: 0, y: 0},
-                    {x: 0, y: 0}
-                ];
+            getCornerExternality: function (sectionData) {
+                var corners = [true, true, true, true];
 
-                if (sectionData !== null) {
-                    var mulWidth = builder.get('model').profile.get('mullion_frame_width');
-
-                    _.each(sectionData.mullionEdges, function (edgeVal, edge) {
-                        if (edgeVal) {
-                            switch (edge) {
-                                case 'top':
-                                    displacements[0].x -= mulWidth;
-                                    displacements[1] = false;
-                                break;
-                                case 'right':
-                                    displacements[1] = false;
-                                    displacements[2] = false;
-                                break;
-                                case 'bottom':
-                                    displacements[2] = false;
-                                    displacements[3] = false;
-                                break;
-                                case 'left':
-                                    displacements[3] = false;
-                                    displacements[0] = false;
-                                break;
-                                default:
-                                break;
-                            }
+                _.each(sectionData.mullionEdges, function (edgeValue, edge) {
+                    if (edgeValue) {
+                        switch (edge) {
+                            case 'top':
+                                corners[0] = false;
+                                corners[1] = false;
+                            break;
+                            case 'right':
+                                corners[1] = false;
+                                corners[2] = false;
+                            break;
+                            case 'bottom':
+                                corners[2] = false;
+                                corners[3] = false;
+                            break;
+                            case 'left':
+                                corners[3] = false;
+                                corners[0] = false;
+                            break;
+                            default:
+                            break;
                         }
-                    });
-                }
+                    }
+                });
 
-                return displacements;
+                return corners;
+            },
+            getExternalCorners: function (corners, externality) {
+                return _.filter(corners, function (val, i) {
+                            return externality[i];
+                        });
+            },
+            getMainFrameKinks: function (root) {
+                var sections = [];
+                var corners = [];
+
+                // First of all, lets find all sections without childs
+                // Because only sections without childs have a trapezoid params (not zeroPoints)
+                function findSectionWithoutChilds(section) {
+                    if (section.sections.length) {
+                        _.each(section.sections, function (child) {
+                            findSectionWithoutChilds(child);
+                        });
+                    } else {
+                        sections.push(section);
+                    }
+                }
+                // And collect it into sections array
+                findSectionWithoutChilds(root);
+
+                // Next step: getCornerPoints with absolute position
+                _.each(sections, function (section) {
+                    var _corners;
+
+                    _corners = this.getCornerPoints(section, true);
+
+                    console.log(_corners);
+
+                    // Apply trapezoid params
+                    _.each(_corners, function (corner, i) {
+                        _corners[i].x += section.trapezoid[i].x;
+                        _corners[i].y += section.trapezoid[i].y;
+                    });
+                    // Save results into corners array
+                    corners = corners.concat(_corners);
+                }.bind(this));
+
+                // And finally, we need to find convex hull of points:
+                // 1. Sort X
+                corners.sort(app.utils.convex_hull.compareX);
+                // 2. Sort Y
+                corners.sort(app.utils.convex_hull.compareY);
+                // 3. Find convex hull
+                var hull = app.utils.convex_hull.find(corners);
+
+                // @TODO: Fix it. Now it works bad :(
+                console.log('<', corners);
+                console.log('>', hull);
+                console.log('=', app.utils.vector2d.clockwiseSort(hull));
             }
         };
     };

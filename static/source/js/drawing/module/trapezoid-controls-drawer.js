@@ -131,7 +131,7 @@ var app = app || {};
                 y: fill.y
             });
 
-            var corners = this.getAvailableControls(sectionData);
+            var corners = module.utils.getCornerExternality(sectionData);
             var trapezoid = module.get('model').getTrapezoid(sectionData.id, module.getState('openingView'));
             var cornerPoints = module.utils.getCornerPoints(sectionData);
 
@@ -170,36 +170,6 @@ var app = app || {};
         },
 
         // Utils
-        getAvailableControls: function (sectionData) {
-            var corners = [true, true, true, true];
-
-            _.each(sectionData.mullionEdges, function (edgeValue, edge) {
-                if (edgeValue) {
-                    switch (edge) {
-                        case 'top':
-                            corners[0] = false;
-                            corners[1] = false;
-                        break;
-                        case 'right':
-                            corners[1] = false;
-                            corners[2] = false;
-                        break;
-                        case 'bottom':
-                            corners[2] = false;
-                            corners[3] = false;
-                        break;
-                        case 'left':
-                            corners[3] = false;
-                            corners[0] = false;
-                        break;
-                        default:
-                        break;
-                    }
-                }
-            });
-
-            return corners;
-        },
         invertCornerIndex: function (cornerIndex) {
             var newIndex;
 

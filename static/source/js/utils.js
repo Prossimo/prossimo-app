@@ -431,6 +431,174 @@ var app = app || {};
                 }
 
                 return result;
+            },
+            getLineMidpoint: function (pointA, pointB) {
+                return {
+                    x: (pointA.x + pointB.x) / 2,
+                    y: (pointA.y + pointB.y) / 2
+                };
+            },
+            getClosestPoints: function (points) {
+                var point1 = null;
+                var point2 = null;
+                var distance = null;
+
+                // we will loop through all of the points
+                for (var i = 0; i < points.length; i = i + 1) {
+                    // compare this point with all of the points ahead of it in the array
+                    for (var j = i + 1; j < points.length; j = j + 1) {
+                        // compute distance using distance formula
+                        var curr = Math.sqrt(
+                            Math.pow(points[i][0] - points[j][0], 2) +
+                            Math.pow(points[i][1] - points[j][1], 2)
+                        );
+
+                        // compare this with our shortest distance
+                        // or set it if it's the first time we run
+                        if (distance === null || curr < distance) {
+                            distance = curr;
+                            point1 = points[i];
+                            point2 = points[j];
+                        }
+                    }
+                }
+
+                // point1 and point2 hold the closest points
+                // distance is the distance between the two points
+                return {
+                    point1: point1,
+                    point2: point2,
+                    distance: distance
+                };
+            }
+        },
+        convex_hull: {
+            // From https://github.com/mgomes/ConvexHull
+            // Modified for our project
+            compareX: function (a, b) {
+                return a.x - b.x;
+            },
+            compareY: function (a, b) {
+                return a.y - b.y;
+            },
+            // isLeft(): tests if a point is Left|On|Right of an infinite line.
+            //    Input:  three points P0, P1, and P2
+            //    Return: >0 for P2 left of the line through P0 and P1
+            //            =0 for P2 on the line
+            //            <0 for P2 right of the line
+            isLeft: function (P0, P1, P2) {
+                return (P1.x - P0.x) * (P2.y - P0.y) - (P2.x - P0.x) * (P1.y - P0.y);
+            },
+            // find(): A.M. Andrew's monotone chain 2D convex hull algorithm
+            // http://softsurfer.com/Archive/algorithm_0109/algorithm_0109.htm
+            //
+            //     Input:  P[] = an array of 2D points
+            //                   presorted by increasing x- and y-coordinates
+            //             n = the number of points in P[]
+            //     Return: H = an array of hull points
+            find: function (P, n) {
+                n = n || P.length;
+
+                var H = [];
+
+                // the output array H[] will be used as the stack
+                var bot = 0;
+                var top = (-1); // indices for bottom and top of the stack
+                var i; // array scan index
+                // Get the indices of points with min x-coord and min|max y-coord
+                var minmin = 0;
+                var minmax;
+                var xmin = P[0].x;
+
+                for (i = 1; i < n; i++) {
+                    if (P[i].x !== xmin) {
+                        break;
+                    }
+                }
+
+                minmax = i - 1;
+
+                if (minmax === n - 1) { // degenerate case: all x-coords == xmin
+                    H[++top] = P[minmin];
+
+                    if (P[minmax].y !== P[minmin].y) {// a nontrivial segment
+                        H[++top] = P[minmax];
+                    }
+
+                    H[++top] = P[minmin]; // add polygon endpoint
+                    return H;
+                }
+
+                // Get the indices of points with max x-coord and min|max y-coord
+                var maxmin;
+                var maxmax = n - 1;
+                var xmax = P[n - 1].x;
+
+                for (i = n - 2; i >= 0; i--) {
+                    if (P[i].x !== xmax) {
+                        break;
+                    }
+                }
+
+                maxmin = i + 1;
+
+                // Compute the lower hull on the stack H
+                H[++top] = P[minmin]; // push minmin point onto stack
+                i = minmax;
+
+                while (++i <= maxmin) {
+                    // the lower line joins P[minmin] with P[maxmin]
+                    if (app.utils.convex_hull.isLeft(P[minmin], P[maxmin], P[i]) >= 0 && i < maxmin) {
+                        continue; // ignore P[i] above or on the lower line
+                    }
+
+                    while (top > 0) { // there are at least 2 points on the stack
+                        // test if P[i] is left of the line at the stack top
+                        if (app.utils.convex_hull.isLeft(H[top - 1], H[top], P[i]) > 0) {
+                            break; // P[i] is a new hull vertex
+                        } else {
+                            top--; // pop top point off stack
+                        }
+                    }
+
+                    H[++top] = P[i]; // push P[i] onto stack
+                }
+
+                // Next, compute the upper hull on the stack H above the bottom hull
+                if (maxmax !== maxmin) { // if distinct xmax points
+                    H[++top] = P[maxmax]; // push maxmax point onto stack
+                }
+
+                bot = top; // the bottom point of the upper hull stack
+                i = maxmin;
+
+                while (--i >= minmax) {
+                    // the upper line joins P[maxmax] with P[minmax]
+                    if (app.utils.convex_hull.isLeft(P[maxmax], P[minmax], P[i]) >= 0 && i > minmax) {
+                        continue; // ignore P[i] below or on the upper line
+                    }
+
+                    while (top > bot) { // at least 2 points on the upper stack
+                        // test if P[i] is left of the line at the stack top
+                        if (app.utils.convex_hull.isLeft(H[top - 1], H[top], P[i]) > 0) {
+                            break;  // P[i] is a new hull vertex
+                        } else {
+                            top--; // pop top point off stack
+                        }
+                    }
+
+                    if (P[i].x === H[0].x && P[i].y === H[0].y) {
+                        return H; // special case (mgomes)
+                    }
+
+                    H[++top] = P[i]; // push P[i] onto stack
+                }
+
+                if (minmax !== minmin) {
+                    H[++top] = P[minmin]; // push joining endpoint onto stack
+                }
+
+                return H;
             }
         }
     };
