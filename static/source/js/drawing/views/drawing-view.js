@@ -103,11 +103,9 @@ var app = app || {};
             'command+y': 'handleRedoClick'
         },
         setGlobalInsideView: function (value) {
-            // this.options.parent_view.global_inside_view = value;
             this.options.parent_view.setGlobalInsideView(value);
         },
         isInsideView: function () {
-            // return this.options.parent_view.global_inside_view;
             return this.options.parent_view.getGlobalInsideView();
         },
         // Are we looking at unit from the opening side?
