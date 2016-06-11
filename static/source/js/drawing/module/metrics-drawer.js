@@ -933,7 +933,7 @@ var app = app || {};
             var verticalWholeMertic = this.createVerticalMetric(metricSize, vHeight, {
                 setter: function (val) {
                     val -= vCorrection.size;
-                    model.setInMetric('height', val, 'mm');
+                    model.updateDimension('height', val, 'mm');
                 },
                 getter: function () {
                     return model.getInMetric('height', 'mm') + vCorrection.size;
@@ -952,7 +952,7 @@ var app = app || {};
             var horizontalWholeMertic = this.createHorizontalMetric(hWidth, metricSize, {
                 setter: function (val) {
                     val -= hCorrection.size;
-                    model.setInMetric('width', val, 'mm');
+                    model.updateDimension('width', val, 'mm');
                 },
                 getter: function () {
                     return model.getInMetric('width', 'mm') + hCorrection.size;
@@ -1138,7 +1138,7 @@ var app = app || {};
                 {
                     setter: function (val) {
                         val -= vwCorrection.size;
-                        model.setInMetric('height', val, 'mm');
+                        model.updateDimension('height', val, 'mm');
                     },
                     getter: function () {
                         return ( model.getInMetric('height', 'mm') + vwCorrection.size);
@@ -1163,7 +1163,7 @@ var app = app || {};
                 {
                     setter: function (val) {
                         val -= hwCorrection.size;
-                        model.setInMetric('width', val, 'mm');
+                        model.updateDimension('width', val, 'mm');
                     },
                     getter: function () {
                         return ( model.getInMetric('width', 'mm') + hwCorrection.size);
