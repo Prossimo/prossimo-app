@@ -940,6 +940,14 @@ var app = app || {};
             var frameGroup;
 
             if (circleData) {
+
+                if (isFlushType) {
+                    fill.x += frameWidth;
+                    fill.y += frameWidth;
+                    fill.width += frameWidth;
+                    fill.height += frameWidth;
+                }
+
                 var sashData = (function findSash(sectionId) {
                     var section = model.getSection(sectionId);
 
