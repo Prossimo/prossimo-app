@@ -726,83 +726,110 @@ var app = app || {};
 
         // Create sections
         createSectionGroup: function (root) {
+            var drawer = this;
             // group for all nested elements
             var sectionsGroup = new Konva.Group();
 
             // create sections(sashes) recursively
-            var sections = this.createSections(root);
+            var sections = this.createSectionsTree(root);
 
             var radius = model.getCircleRadius();
             var frameWidth = model.profile.get('frame_width');
 
-            _.each(sections, function (section) {
-                sectionsGroup.add(section);
+            // Reverse sections array to sorting from the deepest children
+            // To make parent mullions lays over children sashes
+            if (!module.getState('openingView')) {
+                sections.reverse();
+            }
 
-                // Clip mullions that out over the edge of filling
-                if (section.attrs.name === 'mullion') {
-                    this.clipCircle( section, {
-                        x: frameWidth + 4,
-                        y: frameWidth + 4,
-                        radius: radius - frameWidth - 4
-                    });
+            // draw section group recursively
+            function drawSectionGroup( input ) {
+                if (input.length > 0 && input instanceof Array) {
+                    _.each(input, function (section) { drawSectionGroup(section); });
+                } else {
+                    sectionsGroup.add(input);
+
+                    // Clip mullions that out over the edge of filling
+                    if (input.attrs.name === 'mullion' && model.isCircleWindow()) {
+                        drawer.clipCircle( input, {
+                            x: frameWidth + 4,
+                            y: frameWidth + 4,
+                            radius: radius - frameWidth - 4
+                        });
+                    }
+
+                    drawer.sortSection(input);
                 }
+            }
 
-                this.sortSection(section);
-            }.bind(this));
-
+            drawSectionGroup( sections );
             sectionsGroup.scale({x: ratio, y: ratio});
 
             // Clip a whole unit
-            this.clipCircle( sectionsGroup );
+            if (model.isCircleWindow()) {
+                this.clipCircle( sectionsGroup );
+            }
 
             return sectionsGroup;
         },
 
-        sortSection: function (section) {
-            // child.attr.name in correct order
-            var sortingOrder = [
-                'filling',
-                'bars',
-                'direction',
-                'mullion',
-                'frame',
-                'selection',
-                'handle',
-                'index'
-            ];
+        sortSection: function (group) {
+            // group = sash or mullion
+            if (group.attrs.name === 'sash') {
+                // sort sash children:
+                var sortingOrder = [
+                    'filling',
+                    'bars',
+                    'direction',
+                    'frame',
+                    'selection',
+                    'handle',
+                    'index'
+                ];
 
-            _.each(sortingOrder, function (name) {
-                var _node;
-
-                if (section.attrs.name === name) {
-                    _node = section;
-                } else {
-                    _node = section.find('.' + name);
+                // Get section data
+                var section = model.getSection(group.attrs.sectionId);
+                // Make some correction in sorting order if section has...
+                if (
+                    section.fillingType === 'interior-flush-panel' && module.getState('openingView') ||
+                    section.fillingType === 'exterior-flush-panel' && !module.getState('openingView') ||
+                    section.fillingType === 'full-flush-panel'
+                ) {
+                    // Move frame before filling
+                    sortingOrder = app.utils.array.moveByValue(sortingOrder, 'frame', 'filling');
                 }
 
-                if (_node) {
-                    _node.moveToTop();
-                }
-            });
+                _.each(sortingOrder, function (name) {
+                    var _node = group.find('.' + name);
+
+                    if (_node.length > 0) {
+                        _node.moveToTop();
+                    }
+                });
+            }
         },
 
-        createSections: function (rootSection) {
+        createSectionsTree: function (rootSection) {
             var objects = [];
 
+            var sash = this.createSash(rootSection);
+
             if (rootSection.sections && rootSection.sections.length) {
+                var level = [];
                 var mullion = this.createMullion(rootSection);
 
                 objects.push(mullion);
 
                 // draw each child section
                 rootSection.sections.forEach(function (sectionData) {
-                    objects = objects.concat(this.createSections(sectionData));
+                    level = level.concat(this.createSectionsTree(sectionData));
                 }.bind(this));
+
+                level.push(sash);
+                objects.push(level);
+            } else {
+                objects.push(sash);
             }
-
-            var sash = this.createSash(rootSection);
-
-            objects.push(sash);
 
             return objects;
         },
@@ -810,7 +837,8 @@ var app = app || {};
             var style = module.getStyle('mullions');
             var fillStyle = module.getStyle('fillings');
             var group = new Konva.Group({
-                name: 'mullion'
+                name: 'mullion',
+                sectionId: section.id
             });
             var mullion = new Konva.Rect({
                 sectionId: section.id,
@@ -867,7 +895,8 @@ var app = app || {};
             var group = new Konva.Group({
                 x: sectionData.sashParams.x,
                 y: sectionData.sashParams.y,
-                name: 'sash'
+                name: 'sash',
+                sectionId: sectionData.id
             });
 
             var trapezoid = (sectionData.trapezoid) ?
@@ -899,6 +928,14 @@ var app = app || {};
             var frameGroup;
 
             if (circleData) {
+
+                if (isFlushType) {
+                    fill.x += frameWidth;
+                    fill.y += frameWidth;
+                    fill.width += frameWidth;
+                    fill.height += frameWidth;
+                }
+
                 var sashData = (function findSash(sectionId) {
                     var section = model.getSection(sectionId);
 
@@ -1385,6 +1422,7 @@ var app = app || {};
                     fill: style.glass.fill,
                     sceneFunc: sceneFunc
                 };
+
                 // Draw filling
                 filling = new Konva.Shape(opts);
             } else if (section.circular || params.radius) {
@@ -1397,7 +1435,7 @@ var app = app || {};
                     x: fillX + radius,
                     y: fillY + radius,
                     fill: style.glass.fill,
-                    radius: radius
+                    radius: radius + frameWidth + 10
                 };
                 // Draw filling
                 filling = new Konva.Circle(opts);
