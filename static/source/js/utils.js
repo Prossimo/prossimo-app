@@ -428,6 +428,44 @@ var app = app || {};
 
                 return result;
             }
+        },
+        array: {
+            moveByIndex: function (array, old_index, new_index) {
+                while (old_index < 0) {
+                    old_index += array.length;
+                }
+
+                while (new_index < 0) {
+                    new_index += array.length;
+                }
+
+                if (new_index >= array.length) {
+                    var k = new_index - array.length;
+
+                    while ((k--) + 1) {
+                        array.push(undefined);
+                    }
+                }
+
+                array.splice(new_index, 0, array.splice(old_index, 1)[0]);
+                return array;
+            },
+            moveByValue: function (array, findVal, targetVal, after) {
+                after = after || false;
+
+                var fi = array.indexOf(findVal);
+                var ti = array.indexOf(targetVal);
+
+                if (fi !== -1 && ti !== -1) {
+                    if (after && ti !== array.length) {
+                        ti++;
+                    }
+
+                    array.splice(ti, 0, array.splice(fi, 1)[0]);
+                }
+
+                return array;
+            }
         }
     };
 })();

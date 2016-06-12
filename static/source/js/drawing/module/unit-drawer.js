@@ -765,31 +765,40 @@ var app = app || {};
             return sectionsGroup;
         },
 
-        sortSection: function (section) {
-            // child.attr.name in correct order
-            var sortingOrder = [
-                'filling',
-                'bars',
-                'direction',
-                'frame',
-                'selection',
-                'handle',
-                'index'
-            ];
+        sortSection: function (group) {
+            // group = sash or mullion
+            if (group.attrs.name === 'sash') {
+                // sort sash children:
+                var sortingOrder = [
+                    'filling',
+                    'bars',
+                    'direction',
+                    'frame',
+                    'selection',
+                    'handle',
+                    'index'
+                ];
 
-            _.each(sortingOrder, function (name) {
-                var _node;
-
-                if (section.attrs.name === name) {
-                    _node = section;
-                } else {
-                    _node = section.find('.' + name);
+                // Get section data
+                var section = model.getSection(group.attrs.sectionId);
+                // Make some correction in sorting order if section has...
+                if (
+                    section.fillingType === 'interior-flush-panel' && module.getState('openingView') ||
+                    section.fillingType === 'exterior-flush-panel' && !module.getState('openingView') ||
+                    section.fillingType === 'full-flush-panel'
+                ) {
+                    // Move frame before filling
+                    sortingOrder = app.utils.array.moveByValue(sortingOrder, 'frame', 'filling');
                 }
 
-                if (_node.length > 0) {
-                    _node.moveToTop();
-                }
-            });
+                _.each(sortingOrder, function (name) {
+                    var _node = group.find('.' + name);
+
+                    if (_node.length > 0) {
+                        _node.moveToTop();
+                    }
+                });
+            }
         },
 
         createSectionsTree: function (rootSection) {
