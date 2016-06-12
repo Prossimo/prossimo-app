@@ -718,11 +718,12 @@ var app = app || {};
 
         // Create sections
         createSectionGroup: function (root) {
+            var drawer = this;
             // group for all nested elements
             var sectionsGroup = new Konva.Group();
 
             // create sections(sashes) recursively
-            var sections = this.createSections(root);
+            var sections = this.createSectionsTree(root);
 
             var radius = model.getCircleRadius();
             var frameWidth = model.profile.get('frame_width');
@@ -733,22 +734,27 @@ var app = app || {};
                 sections.reverse();
             }
 
-            // Sort each group in section and clip mullions to the circle
-            _.each(sections, function (section) {
-                sectionsGroup.add(section);
+            // draw section group recursively
+            function drawSectionGroup( input ) {
+                if (input.length > 0 && input instanceof Array) {
+                    _.each(input, function (section) { drawSectionGroup(section); });
+                } else {
+                    sectionsGroup.add(input);
 
-                // Clip mullions that out over the edge of filling
-                if (section.attrs.name === 'mullion' && model.isCircleWindow()) {
-                    this.clipCircle( section, {
-                        x: frameWidth + 4,
-                        y: frameWidth + 4,
-                        radius: radius - frameWidth - 4
-                    });
+                    // Clip mullions that out over the edge of filling
+                    if (input.attrs.name === 'mullion' && model.isCircleWindow()) {
+                        drawer.clipCircle( input, {
+                            x: frameWidth + 4,
+                            y: frameWidth + 4,
+                            radius: radius - frameWidth - 4
+                        });
+                    }
+
+                    drawer.sortSection(input);
                 }
+            }
 
-                this.sortSection(section);
-            }.bind(this));
-
+            drawSectionGroup( sections );
             sectionsGroup.scale({x: ratio, y: ratio});
 
             // Clip a whole unit
@@ -762,7 +768,6 @@ var app = app || {};
         sortSection: function (section) {
             // child.attr.name in correct order
             var sortingOrder = [
-                'mullion',
                 'filling',
                 'bars',
                 'direction',
@@ -787,23 +792,27 @@ var app = app || {};
             });
         },
 
-        createSections: function (rootSection) {
+        createSectionsTree: function (rootSection) {
             var objects = [];
 
+            var sash = this.createSash(rootSection);
+
             if (rootSection.sections && rootSection.sections.length) {
+                var level = [];
                 var mullion = this.createMullion(rootSection);
 
                 objects.push(mullion);
 
                 // draw each child section
                 rootSection.sections.forEach(function (sectionData) {
-                    objects = objects.concat(this.createSections(sectionData));
+                    level = level.concat(this.createSectionsTree(sectionData));
                 }.bind(this));
+
+                level.push(sash);
+                objects.push(level);
+            } else {
+                objects.push(sash);
             }
-
-            var sash = this.createSash(rootSection);
-
-            objects.push(sash);
 
             return objects;
         },
@@ -811,7 +820,8 @@ var app = app || {};
             var style = module.getStyle('mullions');
             var fillStyle = module.getStyle('fillings');
             var group = new Konva.Group({
-                name: 'mullion'
+                name: 'mullion',
+                sectionId: section.id
             });
             var mullion = new Konva.Rect({
                 sectionId: section.id,
@@ -868,7 +878,8 @@ var app = app || {};
             var group = new Konva.Group({
                 x: sectionData.sashParams.x,
                 y: sectionData.sashParams.y,
-                name: 'sash'
+                name: 'sash',
+                sectionId: sectionData.id
             });
 
             var circleData = (model.isCircleWindow()) ? model.getCircleSashData(sectionData.id) : null;
