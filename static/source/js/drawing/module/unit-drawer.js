@@ -727,11 +727,18 @@ var app = app || {};
             var radius = model.getCircleRadius();
             var frameWidth = model.profile.get('frame_width');
 
+            // Reverse sections array to sorting from the deepest children
+            // To make parent mullions lays over children sashes
+            if (!module.getState('openingView')) {
+                sections.reverse();
+            }
+
+            // Sort each group in section and clip mullions to the circle
             _.each(sections, function (section) {
                 sectionsGroup.add(section);
 
                 // Clip mullions that out over the edge of filling
-                if (section.attrs.name === 'mullion') {
+                if (section.attrs.name === 'mullion' && model.isCircleWindow()) {
                     this.clipCircle( section, {
                         x: frameWidth + 4,
                         y: frameWidth + 4,
@@ -745,7 +752,9 @@ var app = app || {};
             sectionsGroup.scale({x: ratio, y: ratio});
 
             // Clip a whole unit
-            this.clipCircle( sectionsGroup );
+            if (model.isCircleWindow()) {
+                this.clipCircle( sectionsGroup );
+            }
 
             return sectionsGroup;
         },
@@ -753,10 +762,10 @@ var app = app || {};
         sortSection: function (section) {
             // child.attr.name in correct order
             var sortingOrder = [
+                'mullion',
                 'filling',
                 'bars',
                 'direction',
-                'mullion',
                 'frame',
                 'selection',
                 'handle',
@@ -772,7 +781,7 @@ var app = app || {};
                     _node = section.find('.' + name);
                 }
 
-                if (_node) {
+                if (_node.length > 0) {
                     _node.moveToTop();
                 }
             });
