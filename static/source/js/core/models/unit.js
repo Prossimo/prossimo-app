@@ -673,8 +673,9 @@ var app = app || {};
             // If we have a mullions all around the sash — it's rectangle!
             // If we have no mullions around the sash — it's a circle!
             // But if we have mullions at few edges — it's an arc!
-            if ( result.edges.top === result.edges.right ===
-                 result.edges.bottom === result.edges.left
+            if ( result.edges.top === result.edges.right &&
+                 result.edges.top === result.edges.bottom &&
+                 result.edges.top === result.edges.left
             ) {
                 result.type = (result.edges.top === true) ? 'rect' : 'circle';
             } else {
