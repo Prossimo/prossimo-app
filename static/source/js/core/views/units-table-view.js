@@ -378,9 +378,22 @@ var app = app || {};
             var self = this;
             var setter;
 
-            setter = function (model, attr_name, val) {
-                return model.persist(attr_name, self.getSetterParser(column_name, val));
+            var setters_hash = {
+                width: function (model, attr_name, val) {
+                    return model.updateDimension(attr_name, self.getSetterParser(column_name, val));
+                },
+                height: function (model, attr_name, val) {
+                    return model.updateDimension(attr_name, self.getSetterParser(column_name, val));
+                }
             };
+
+            if ( setters_hash[column_name] ) {
+                setter = setters_hash[column_name];
+            } else {
+                setter = function (model, attr_name, val) {
+                    return model.persist(attr_name, self.getSetterParser(column_name, val));
+                };
+            }
 
             return setter.apply(this, arguments);
         },

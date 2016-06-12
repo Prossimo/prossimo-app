@@ -619,37 +619,36 @@ var app = app || {};
             this.persist('root_section', rootSection);
         },
         setCircular: function (sectionId, opts) {
-            this._updateSection(sectionId, function (section) {
-                if (opts.circular !== undefined) {
-                    // Set circular
-                    section.circular = !!opts.circular;
-                    // Reset bars
-                    section.bars = getDefaultBars();
-                }
-
-                if (section.circular) {
-                    // Set radius
-                    section.radius = opts.radius / 2;
-                } else {
-                    // Reset radius
-                    section.radius = 0;
-                }
-            });
+            //  Deep clone, same as above
+            var root_section = JSON.parse(JSON.stringify(this.get('root_section')));
+            var section = app.Unit.findSection(root_section, sectionId);
+            var update_data = {};
 
             if (opts.radius) {
-                // Set equal width and height
-                this.setInMetric('width', opts.radius, 'mm', true);
-                this.setInMetric('height', opts.radius, 'mm', true);
+                update_data.width = opts.radius * 2;
+                update_data.height = opts.radius * 2;
             }
+
+            //  Set circular and reset bars
+            if (opts.circular !== undefined) {
+                section.circular = !!opts.circular;
+                section.bars = getDefaultBars();
+            }
+
+            //  Set or reset radius
+            if (section.circular) {
+                section.radius = app.utils.convert.inches_to_mm(opts.radius);
+            } else {
+                section.radius = 0;
+            }
+
+            update_data.root_section = root_section;
+            this.persist(update_data);
         },
         toggleCircular: function (sectionId, val) {
-
             if (this.isRootSection(sectionId)) {
                 var section = this.getSection( sectionId );
-
-                var width = this.getInMetric('width', 'mm');
-                var height = this.getInMetric('height', 'mm');
-                var radius = Math.min(width, height);
+                var radius = Math.min(this.get('width'), this.get('height')) / 2;
 
                 this.setCircular(sectionId, {
                     circular: val || !section.circular,
@@ -1184,21 +1183,30 @@ var app = app || {};
 
             return app.utils.convert.inches_to_mm(this.get(attr));
         },
-        setInMetric: function (attr, val, metric, prevent) {
-            if (!metric || (['mm', 'inches'].indexOf(metric) === -1)) {
-                throw new Error('Set metric! "mm" or "inches"');
+        //  Inches by default, mm optional
+        updateDimension: function (attr, val, metric) {
+            var possible_metrics = ['mm', 'inches'];
+            var possible_dimensions = ['width', 'height'];
+
+            if ( !attr || possible_dimensions.indexOf(attr) === -1 ) {
+                throw new Error('Wrong dimension. Possible values: ' + possible_dimensions.join(', ') );
             }
 
-            val = (metric === 'inches') ? val : app.utils.convert.mm_to_inches(val);
+            if ( metric && possible_metrics.indexOf(metric) === -1 ) {
+                throw new Error('Wrong metric. Possible values: ' + possible_metrics.join(', ') );
+            }
 
-            this.set(attr, val);
+            //  No metric means inches
+            val = (!metric || metric === 'inches') ? val : app.utils.convert.mm_to_inches(val);
 
-            if (this.getCircleRadius() !== null && !prevent) {
-                var root = this.generateFullRoot();
+            if ( this.getCircleRadius() !== null ) {
+                var full_root = this.generateFullRoot();
 
-                this.setCircular( root.id, {
-                    radius: app.utils.convert.inches_to_mm(val)
-                } );
+                this.setCircular(full_root.id, {
+                    radius: val / 2
+                });
+            } else {
+                this.persist(attr, val);
             }
         },
         clearFrame: function () {

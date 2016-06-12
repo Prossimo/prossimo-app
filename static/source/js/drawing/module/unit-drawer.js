@@ -1375,6 +1375,12 @@ var app = app || {};
                     fill: style.glass.fill,
                     sceneFunc: sceneFunc
                 };
+
+                if (pattern) {
+                    console.log('!', pattern.src);
+                    opts.fill = '';
+                    opts.fillPatternImage = pattern;
+                }
                 // Draw filling
                 filling = new Konva.Shape(opts);
             } else if (section.circular || params.radius) {
@@ -1387,7 +1393,7 @@ var app = app || {};
                     x: fillX + radius,
                     y: fillY + radius,
                     fill: style.glass.fill,
-                    radius: radius
+                    radius: radius + frameWidth + 10
                 };
                 // Draw filling
                 filling = new Konva.Circle(opts);
