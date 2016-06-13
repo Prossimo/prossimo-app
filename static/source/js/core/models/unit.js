@@ -155,6 +155,18 @@ var app = app || {};
         return type;
     }
 
+    function findParent(root, childId) {
+        if (root.sections.length === 0) {
+            return null;
+        }
+
+        if (root.sections[0].id === childId || root.sections[1].id === childId) {
+            return root;
+        }
+
+        return findParent(root.sections[0], childId) || findParent(root.sections[1], childId);
+    }
+
     app.Unit = Backbone.Model.extend({
         defaults: function () {
             var defaults = {};
@@ -491,21 +503,26 @@ var app = app || {};
         isOpeningDirectionOutward: function () {
             return this.get('opening_direction') === 'Outward';
         },
-        isArchedPossible: function (sashId) {
-            // TODO: move function outside
-            // is it useful somewhere else ?
-            function findParent(root, childId) {
-                if (root.sections.length === 0) {
-                    return null;
-                }
+        isCircularPossible: function (sashId) {
+            var root = this.generateFullRoot();
+            var parent = findParent(root, sashId);
 
-                if (root.sections[0].id === childId || root.sections[1].id === childId) {
-                    return root;
-                }
-
-                return findParent(root.sections[0], childId) || findParent(root.sections[1], childId);
+            if (!parent) {
+                return true;
             }
 
+            return false;
+        },
+        getCircleRadius: function () {
+            var root = this.generateFullRoot();
+
+            if (root.circular) {
+                return root.radius;
+            }
+
+            return null;
+        },
+        isArchedPossible: function (sashId) {
             var root = this.generateFullRoot();
 
             if (app.Unit.findSection(root, sashId).sashType !== 'fixed_in_frame') {
@@ -549,7 +566,6 @@ var app = app || {};
 
             if (root.arched) {
                 return root.archPosition;
-                // return Math.min(this.getInMetric('width', 'mm') / 2, this.getInMetric('height', 'mm'));
             }
 
             while (true) {
@@ -601,6 +617,84 @@ var app = app || {};
             func(sectionToUpdate);
 
             this.persist('root_section', rootSection);
+        },
+        setCircular: function (sectionId, opts) {
+            //  Deep clone, same as above
+            var root_section = JSON.parse(JSON.stringify(this.get('root_section')));
+            var section = app.Unit.findSection(root_section, sectionId);
+            var update_data = {};
+
+            if (opts.radius) {
+                update_data.width = opts.radius * 2;
+                update_data.height = opts.radius * 2;
+            }
+
+            //  Set circular and reset bars
+            if (opts.circular !== undefined) {
+                section.circular = !!opts.circular;
+                section.bars = getDefaultBars();
+            }
+
+            //  Set or reset radius
+            if (section.circular) {
+                section.radius = app.utils.convert.inches_to_mm(opts.radius);
+            } else {
+                section.radius = 0;
+            }
+
+            update_data.root_section = root_section;
+            this.persist(update_data);
+        },
+        toggleCircular: function (sectionId, val) {
+            if (this.isRootSection(sectionId)) {
+                var section = this.getSection( sectionId );
+                var radius = Math.min(this.get('width'), this.get('height')) / 2;
+
+                this.setCircular(sectionId, {
+                    circular: val || !section.circular,
+                    radius: radius
+                });
+            }
+        },
+        getCircleSashData: function (sectionId) {
+            var root;
+            var section = this.getSection( sectionId );
+            var result = {};
+
+            result.sashParams = section.sashParams;
+            result.edges = {
+                top: !!section.mullionEdges.top || false,
+                right: !!section.mullionEdges.right || false,
+                bottom: !!section.mullionEdges.bottom || false,
+                left: !!section.mullionEdges.left || false
+            };
+
+            // If we have a mullions all around the sash — it's rectangle!
+            // If we have no mullions around the sash — it's a circle!
+            // But if we have mullions at few edges — it's an arc!
+            if ( result.edges.top === result.edges.right &&
+                 result.edges.top === result.edges.bottom &&
+                 result.edges.top === result.edges.left
+            ) {
+                result.type = (result.edges.top === true) ? 'rect' : 'circle';
+            } else {
+                result.type = 'arc';
+            }
+
+            // In this method we calculate the same data for arc and circle
+            // But other methods could use this helpful information about type.
+            // For example, it used in unit-drawer.js
+            if (result.type === 'circle' || result.type === 'arc') {
+                root = this.generateFullRoot();
+
+                result.circle = {
+                    x: root.sashParams.x,
+                    y: root.sashParams.y
+                };
+                result.radius = Math.min( root.sashParams.width, root.sashParams.height ) / 2;
+            }
+
+            return result;
         },
         setSectionSashType: function (sectionId, type) {
             if (!_.includes(SASH_TYPES, type)) {
@@ -1089,15 +1183,30 @@ var app = app || {};
 
             return app.utils.convert.inches_to_mm(this.get(attr));
         },
-        setInMetric: function (attr, val, metric) {
-            if (!metric || (['mm', 'inches'].indexOf(metric) === -1)) {
-                throw new Error('Set metric! "mm" or "inches"');
+        //  Inches by default, mm optional
+        updateDimension: function (attr, val, metric) {
+            var possible_metrics = ['mm', 'inches'];
+            var possible_dimensions = ['width', 'height'];
+
+            if ( !attr || possible_dimensions.indexOf(attr) === -1 ) {
+                throw new Error('Wrong dimension. Possible values: ' + possible_dimensions.join(', ') );
             }
 
-            if (metric === 'inches') {
-                this.set(attr, val);
+            if ( metric && possible_metrics.indexOf(metric) === -1 ) {
+                throw new Error('Wrong metric. Possible values: ' + possible_metrics.join(', ') );
+            }
+
+            //  No metric means inches
+            val = (!metric || metric === 'inches') ? val : app.utils.convert.mm_to_inches(val);
+
+            if ( this.getCircleRadius() !== null ) {
+                var full_root = this.generateFullRoot();
+
+                this.setCircular(full_root.id, {
+                    radius: val / 2
+                });
             } else {
-                this.set(attr, app.utils.convert.mm_to_inches(val));
+                this.persist(attr, val);
             }
         },
         clearFrame: function () {
@@ -1566,6 +1675,13 @@ var app = app || {};
         },
         getInvertedDivider: function (type) {
             return getInvertedDivider(type);
+        },
+
+        isCircleWindow: function () {
+            return (this.getCircleRadius() !== null);
+        },
+        isArchedWindow: function () {
+            return (this.getArchedPosition() !== null);
         }
     });
 

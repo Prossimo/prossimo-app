@@ -267,6 +267,205 @@ var app = app || {};
 
                 return a;
             }
+        },
+        vector2d: {
+            getVector: function (v) {
+                if (_.isObject(v) && 'x' in v && 'y' in v) {
+                    return v;
+                } else if (_.isArray(v) && v.length === 2) {
+                    return {x: v[0], y: v[1]};
+                } else if (_.isFunction(v)) {
+                    return app.utils.vector2d.getVector( v() );
+                } else if (_.isNumber(v)) {
+                    return {x: v, y: v};
+                }
+
+                return {x: 0, y: 0};
+            },
+            length: function (v) {
+                v = app.utils.vector2d.getVector(v);
+
+                return Math.sqrt( Math.pow(v.x, 2) + Math.pow(v.y, 2) );
+            },
+            normalize: function (v) {
+                v = app.utils.vector2d.getVector(v);
+
+                var len = app.utils.vector2d.length(v);
+
+                return {x: v.x / len, y: v.y / len };
+            },
+            add: function (v1, v2) {
+                v1 = app.utils.vector2d.getVector(v1);
+                v2 = app.utils.vector2d.getVector(v2);
+
+                return {x: v1.x + v2.x, y: v1.y + v2.y};
+            },
+            substract: function (v1, v2) {
+                v1 = app.utils.vector2d.getVector(v1);
+                v2 = app.utils.vector2d.getVector(v2);
+
+                return {x: v1.x - v2.x, y: v1.y - v2.y};
+            },
+            multiply: function (v1, v2) {
+                v1 = app.utils.vector2d.getVector(v1);
+                v2 = app.utils.vector2d.getVector(v2);
+
+                return {x: v1.x * v2.x, y: v1.y * v2.y};
+            },
+            divide: function (v1, v2) {
+                v1 = app.utils.vector2d.getVector(v1);
+                v2 = app.utils.vector2d.getVector(v2);
+
+                return {x: v1.x / v2.x, y: v1.y / v2.y};
+            },
+            scalar: function (v1, v2) {
+                var sc = app.utils.vector2d.multiply( v1, v2 );
+
+                return (sc.x + sc.y);
+            },
+            angle: function (v1, v2) {
+                var scalar = app.utils.vector2d.scalar(
+                    app.utils.vector2d.normalize(v1),
+                    app.utils.vector2d.normalize(v2)
+                );
+
+                scalar = (scalar < -1) ? -1 : (scalar > 1) ? 1 : scalar;
+
+                return Math.acos( scalar );
+            },
+            clockwiseSort: function (input) {
+                var base = Math.atan2(1, 0);
+
+                input = input.map(app.utils.vector2d.getVector);
+
+                return input.sort(function (a, b) {
+                    return Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x) +
+                            (Math.atan2(b.y, b.x) > base ? -2 * Math.PI : 0) +
+                            (Math.atan2(a.y, a.x) > base ? 2 * Math.PI : 0);
+                });
+            },
+            points_to_vectors: function (points, center) {
+                var result = [];
+
+                _.each(points, function (point) {
+                    var p = {
+                        x: point.x - center.x,
+                        y: point.y - center.y
+                    };
+
+                    p.y *= -1; // switch coordinate system
+
+                    result.push(p);
+                });
+
+                return result;
+            },
+            vectors_to_points: function (points, center) {
+                var result = [];
+
+                _.each(points, function (point) {
+                    var p = {
+                        x: point.x + center.x,
+                        y: (point.y * -1) + center.y
+                    };
+
+                    result.push(p);
+                });
+
+                return result;
+            }
+        },
+        angle: {
+            rad_to_deg: function (rad) {
+                return rad * 180 / Math.PI;
+            },
+            deg_to_rad: function (deg) {
+                return deg * Math.PI / 180;
+            }
+        },
+        geometry: {
+            intersectCircleLine: function (c, r, a1, a2, leave) {
+                // From lib: http://www.kevlindev.com/gui/math/intersection/#Anchor-intersectCircleLin-40934
+                // Modified for our task
+                function lerp(p1, p2, t) {
+                    return {
+                        x: p1.x + (p2.x - p1.x) * t,
+                        y: p1.y + (p2.y - p1.y) * t
+                    };
+                }
+
+                var result = (leave) ? [a2, a1] : [];
+                var a = (a2.x - a1.x) * (a2.x - a1.x) +
+                        (a2.y - a1.y) * (a2.y - a1.y);
+                var b = 2 * ( (a2.x - a1.x) * (a1.x - c.x) +
+                              (a2.y - a1.y) * (a1.y - c.y) );
+                var cc = c.x * c.x + c.y * c.y + a1.x * a1.x + a1.y * a1.y -
+                         2 * (c.x * a1.x + c.y * a1.y) - r * r;
+                var deter = b * b - 4 * a * cc;
+
+                if ( deter > 0 ) {
+                    var e = Math.sqrt(deter);
+                    var u1 = ( -b + e ) / ( 2 * a );
+                    var u2 = ( -b - e ) / ( 2 * a );
+
+                    if ( !((u1 < 0 || u1 > 1) && (u2 < 0 || u2 > 1)) ) {
+                        var obj;
+
+                        if ( u1 >= 0 && u1 <= 1) {
+                            obj = lerp(a1, a2, u1);
+                            obj.intersects = true;
+
+                            result[0] = obj;
+                        }
+
+                        if ( u2 >= 0 && u2 <= 1) {
+                            obj = lerp(a1, a2, u2);
+                            obj.intersects = true;
+                            result[1] = obj;
+                        }
+                    }
+                }
+
+                return result;
+            }
+        },
+        array: {
+            moveByIndex: function (array, old_index, new_index) {
+                while (old_index < 0) {
+                    old_index += array.length;
+                }
+
+                while (new_index < 0) {
+                    new_index += array.length;
+                }
+
+                if (new_index >= array.length) {
+                    var k = new_index - array.length;
+
+                    while ((k--) + 1) {
+                        array.push(undefined);
+                    }
+                }
+
+                array.splice(new_index, 0, array.splice(old_index, 1)[0]);
+                return array;
+            },
+            moveByValue: function (array, findVal, targetVal, after) {
+                after = after || false;
+
+                var fi = array.indexOf(findVal);
+                var ti = array.indexOf(targetVal);
+
+                if (fi !== -1 && ti !== -1) {
+                    if (after && ti !== array.length) {
+                        ti++;
+                    }
+
+                    array.splice(ti, 0, array.splice(fi, 1)[0]);
+                }
+
+                return array;
+            }
         }
     };
 })();
