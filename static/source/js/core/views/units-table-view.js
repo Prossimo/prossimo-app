@@ -685,8 +685,11 @@ var app = app || {};
 
             return properties_obj;
         },
-        //  Return all columns
-        //  TODO: describe this in a similar fashion as a following method
+        //  Returns column data in a HoT-specific format, for each column we
+        //  prepare the following:
+        //  - data function, a combination of getter and setter
+        //  - validation function (wrapper around model validation)
+        //  - various extra properties, depending on colulmn name or type
         getActiveTabColumnOptions: function () {
             var columns = [];
 

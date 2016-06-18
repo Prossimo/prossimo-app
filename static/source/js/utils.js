@@ -156,6 +156,8 @@ var app = app || {};
                 var result;
                 var match;
 
+                //  Captures everything with mm, cm, m: |500 mm|, |6-3 m|
+                var pattern_0 = /(\S*\d+)\s*(mm|cm|m)/i;
                 //  Captures |6'-2 1/2"|, |6 - 2 1/2|
                 var pattern_1 = /(\d+)\s*(\'|’|′)*\s*(-|–|—|‒|―|‐|−)\s*(\d+)\s(\d+)\s*\/\s*(\d+)\s*("|”|″)*/i;
                 //  Captures |5-2|, |8'-0|, |9-10"|, |2’–8”|, |2’–8.5”|, |2.5’−8.5”|
@@ -169,7 +171,16 @@ var app = app || {};
                 //  Captures |30|, |30 "|, |30"|, |30 ”|, |30.5 ”|
                 var pattern_6 = /(\d+(?:\.\d+)*)\s*("|”|″)*/i;
 
-                if ( pattern_1.test(size_string) ) {
+                if ( pattern_0.test(size_string) ) {
+                    match = pattern_0.exec(size_string);
+                    result = app.utils.convert.mm_to_inches(parseFloat(match[1].replace(',', '')));
+
+                    if ( match[2] === 'cm' ) {
+                        result *= 10;
+                    } else if ( match[2] === 'm' ) {
+                        result *= 1000;
+                    }
+                } else if ( pattern_1.test(size_string) ) {
                     match = pattern_1.exec(size_string);
                     result = parseFloat(match[1]) * 12 + parseFloat(match[4]) +
                         parseFloat(match[5]) / parseFloat(match[6]);

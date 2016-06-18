@@ -181,6 +181,20 @@ test('utils.parseFormat.dimension', function () {
     equal(p.dimension('4 ’ 6 1/2'), 54.5, 'Expected value is 54.5');
     equal(p.dimension('4\'6'), 54, 'Expected value is 54');
     equal(p.dimension('4’'), 48, 'Expected value is 48');
+
+    //  In metric
+    equal(p.dimension('30.5 mm').toFixed(5), 1.20079, 'Expected value is 1.2');
+    equal(p.dimension('4.5 mm').toFixed(5), 0.17717, 'Expected value is 0.17');
+    equal(p.dimension(' 30mm ').toFixed(5), 1.18110, 'Expected value is 1.18');
+    equal(p.dimension('303.5mm').toFixed(5), 11.94882, 'Expected value is 11.95');
+    equal(p.dimension('303,5mm').toFixed(5), 119.48819, 'Expected value is 119.49');
+    equal(p.dimension('3,303.5mm').toFixed(5), 130.05906, 'Expected value is 130.06');
+    equal(p.dimension('60 - 4 mm').toFixed(5), 0.15748, 'Expected value is 0.15');
+    equal(p.dimension('60  4 mm').toFixed(5), 0.15748, 'Expected value is 0.15');
+    equal(p.dimension('60\'4 mm').toFixed(5), 2.36220, 'Expected value is 2.36');
+
+    equal(p.dimension(' 30m ').toFixed(5), 1181.10236, 'Expected value is 1181.1');
+    equal(p.dimension('4.5 cm').toFixed(5), 1.77165, 'Expected value is 1.77');
 });
 
 test('utils.parseFormat.dimensions', function () {
@@ -215,6 +229,12 @@ test('utils.parseFormat.dimensions', function () {
 
     equal(p.dimensions('2’—8”', 'height'), 32, 'Expected value is 32');
     equal(p.dimensions('5’—0”', 'width'), 60, 'Expected value is 60');
+
+    //  In metric
+    deepEqual(p.dimensions('30.5 mm x 4.5 mm'), { width: 1.2007874015748032, height: 0.17716535433070868 },
+        'Expected value is { width: 1.2007874015748032, height: 0.17716535433070868 }');
+    deepEqual(p.dimensions('2mx5.5m'), { width: 78.74015748031496, height: 216.53543307086613 },
+        'Expected value is { width: 78.74015748031496, height: 216.53543307086613 }');
 });
 
 test('utils.parseFormat.percent', function () {
