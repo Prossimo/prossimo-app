@@ -18,6 +18,7 @@ var app = app || {};
         events: {
             'click @ui.$add_new_type': 'addNewFillingType',
             'click .js-remove-item': 'onRemoveItem',
+            'click .js-clone-item': 'onCloneItem',
             'click .js-move-item-up': 'onMoveItemUp',
             'click .js-move-item-down': 'onMoveItemDown',
             'click @ui.$undo': 'onUndo',
@@ -36,7 +37,7 @@ var app = app || {};
             this.table_update_timeout = null;
             this.dropdown_scroll_timer = null;
             this.columns = [
-                'move_item', 'name', 'supplier_name', 'type', 'remove_item'
+                'move_item', 'name', 'supplier_name', 'type', 'item_actions'
             ];
 
             this.undo_manager = new app.UndoManager({
@@ -75,6 +76,18 @@ var app = app || {};
 
                 if ( !target_object.get('is_base_type') ) {
                     target_object.destroy();
+                }
+            }
+        },
+        onCloneItem: function (e) {
+            var target_row = $(e.target).data('row');
+            var target_object;
+
+            if ( this.hot ) {
+                target_object = this.hot.getSourceData().at(target_row);
+
+                if ( !target_object.get('is_base_type') ) {
+                    target_object.duplicate();
                 }
             }
         },
@@ -186,9 +199,9 @@ var app = app || {};
                     readOnly: true,
                     renderer: app.hot_renderers.moveItemRenderer
                 },
-                remove_item: {
+                item_actions: {
                     readOnly: true,
-                    renderer: app.hot_renderers.removeItemRenderer
+                    renderer: app.hot_renderers.itemActionsRenderer
                 }
             };
 
@@ -261,7 +274,7 @@ var app = app || {};
         getCustomColumnHeader: function (column_name) {
             var custom_column_headers_hash = {
                 move_item: 'Move',
-                remove_item: ' '
+                item_actions: 'Actions'
             };
 
             return custom_column_headers_hash[column_name];

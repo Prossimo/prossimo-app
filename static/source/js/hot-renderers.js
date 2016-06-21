@@ -133,13 +133,15 @@ var app = app || {};
             }).length - 1;
 
             var $button_up = $('<button>', {
-                    class: 'btn btn-xs btn-move js-move-item-up glyphicon glyphicon-arrow-up',
-                    'data-row': row
-                });
+                class: 'btn btn-xs btn-move js-move-item-up glyphicon glyphicon-arrow-up',
+                'data-row': row,
+                title: 'Move Item Up'
+            });
             var $button_down = $('<button>', {
-                    class: 'btn btn-xs btn-move js-move-item-down glyphicon glyphicon-arrow-down',
-                    'data-row': row
-                });
+                class: 'btn btn-xs btn-move js-move-item-down glyphicon glyphicon-arrow-down',
+                'data-row': row,
+                title: 'Move Item Down'
+            });
 
             if ( is_first_item ) {
                 $button_up.addClass('disabled');
@@ -153,13 +155,29 @@ var app = app || {};
 
             return td;
         },
-        //  Add remove button to remove item from collection
-        removeItemRenderer: function (instance, td, row) {
+        //  Add remove and clone buttons to remove or clone unit in collection
+        itemActionsRenderer: function (instance, td, row) {
+            var item_has_only_default_attributes = instance.getSourceData().at(row) &&
+                instance.getSourceData().at(row).hasOnlyDefaultAttributes();
             var $td = $(td);
-            var $button = $('<button class="btn btn-xs js-remove-item"' +
-                'data-row="' + row + '">Remove</button>');
+            var $button_remove = $('<button>', {
+                class: 'btn btn-xs btn-remove js-remove-item',
+                'data-row': row,
+                text: 'Remove',
+                title: 'Remove Item'
+            });
+            var $button_clone = $('<button>', {
+                class: 'btn btn-xs btn-clone js-clone-item',
+                'data-row': row,
+                text: 'Clone',
+                title: 'Clone Item'
+            });
 
-            $td.empty().append($button);
+            if ( item_has_only_default_attributes ) {
+                $button_clone.attr('disabled', true);
+            }
+
+            $td.empty().append($button_remove.add($button_clone));
 
             return td;
         },

@@ -177,6 +177,9 @@ var app = app || {};
 
             return defaults;
         },
+        getNameAttribute: function () {
+            return 'mark';
+        },
         getDefaultValue: function (name, type) {
             var default_value = '';
 
@@ -367,6 +370,38 @@ var app = app || {};
         },
         hasDummyProfile: function () {
             return this.profile && this.profile.get('is_dummy');
+        },
+        hasOnlyDefaultAttributes: function () {
+            var has_only_defaults = true;
+
+            _.each(this.toJSON(), function (value, key) {
+                if ( key !== 'position' && has_only_defaults ) {
+                    var property_source = _.findWhere(UNIT_PROPERTIES, { name: key });
+                    var type = property_source ? property_source.type : undefined;
+
+                    if ( key === 'profile_id' ) {
+                        if ( app.settings && app.settings.getDefaultProfileId() !== value ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( key === 'profile_name' ) {
+                        var profile = app.settings && app.settings.getProfileByIdOrDummy(this.get('profile_id'));
+
+                        if ( profile && profile.get('name') !== value ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( key === 'root_section' ) {
+                        if ( JSON.stringify(_.omit(value, 'id')) !==
+                            JSON.stringify(_.omit(this.getDefaultValue('root_section'), 'id'))
+                        ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( this.getDefaultValue(key, type) !== value ) {
+                        has_only_defaults = false;
+                    }
+                }
+            }, this);
+
+            return has_only_defaults;
         },
         setDefaultFillingType: function () {
             var filling_type;

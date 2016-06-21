@@ -18,6 +18,7 @@ var app = app || {};
         events: {
             'click @ui.$add_new_profile': 'addNewProfile',
             'click .js-remove-item': 'onRemoveItem',
+            'click .js-clone-item': 'onCloneItem',
             'click .js-move-item-up': 'onMoveItemUp',
             'click .js-move-item-down': 'onMoveItemDown',
             'click @ui.$undo': 'onUndo',
@@ -40,7 +41,7 @@ var app = app || {};
                 'mullion_width', 'sash_frame_width', 'sash_frame_overlap', 'sash_mullion_overlap',
                 'frame_corners', 'sash_corners', 'low_threshold', 'threshold_width',
                 'frame_u_value', 'visible_frame_width_fixed', 'visible_frame_width_operable',
-                'spacer_thermal_bridge_value', 'remove_item'
+                'spacer_thermal_bridge_value', 'item_actions'
             ];
 
             this.undo_manager = new app.UndoManager({
@@ -77,6 +78,15 @@ var app = app || {};
             if ( this.hot ) {
                 target_object = this.hot.getSourceData().at(target_row);
                 target_object.destroy();
+            }
+        },
+        onCloneItem: function (e) {
+            var target_row = $(e.target).data('row');
+            var target_object;
+
+            if ( this.hot ) {
+                target_object = this.hot.getSourceData().at(target_row);
+                target_object.duplicate();
             }
         },
         onMoveItemUp: function (e) {
@@ -219,9 +229,9 @@ var app = app || {};
                     readOnly: true,
                     renderer: app.hot_renderers.moveItemRenderer
                 },
-                remove_item: {
+                item_actions: {
                     readOnly: true,
-                    renderer: app.hot_renderers.removeItemRenderer
+                    renderer: app.hot_renderers.itemActionsRenderer
                 },
                 system: {
                     type: 'dropdown',
@@ -311,7 +321,7 @@ var app = app || {};
                 visible_frame_width_fixed: 'Visible Frame Width Fixed',
                 visible_frame_width_operable: 'Visible Frame Width Operable',
                 move_item: 'Move',
-                remove_item: ' '
+                item_actions: 'Actions'
             };
 
             return custom_column_headers_hash[column_name];
