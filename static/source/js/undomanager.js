@@ -53,7 +53,14 @@ var app = app || {};
                     delete model.attributes.id;
                 }
 
-                collection.add(model, options);
+                var new_object = collection.add(model, options);
+
+                if ( new_object.hasOnlyDefaultAttributes() === false ) {
+                    model.persist({}, {
+                        validate: true,
+                        parse: true
+                    });
+                }
             },
             on: function (model, collection, options) {
                 return {

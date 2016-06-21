@@ -51,6 +51,53 @@ var app = app || {};
             } else {
                 this.save.apply(this, arguments);
             }
+        },
+        duplicate: function () {
+            if ( this.hasOnlyDefaultAttributes() ) {
+                throw new Error('Item could not be cloned: it has only default attributes, create a new one instead');
+            }
+
+            function getClonedItemName(name, name_attr, collection) {
+                var old_name = name ? name.replace(/\s*\(copy#(\d+)\)/, '') : 'New';
+                var possible_names = _.filter(collection.pluck(name_attr), function (value) {
+                    return value.indexOf(old_name) !== -1;
+                }, this);
+                var pattern = /(.*\S)\s*(\(copy#(\d+)\))/;
+                var new_name = old_name + ' (copy#1)';
+                var max_index = 0;
+
+                _.each(possible_names, function (item) {
+                    if ( pattern.test(item) ) {
+                        var match = pattern.exec(item);
+                        var current_index = parseInt(match[3]);
+
+                        old_name = match[1];
+                        max_index = current_index > max_index ? current_index : max_index;
+                    }
+                }, this);
+
+                if ( max_index > 0 ) {
+                    new_name = old_name + ' (copy#' + (max_index + 1) + ')';
+                }
+
+                return new_name;
+            }
+
+            if ( this.collection ) {
+                var name_attr = this.getNameAttribute();
+                var cloned_attributes = _.omit(this.toJSON(), 'id');
+
+                cloned_attributes[name_attr] = getClonedItemName(this.get(name_attr), name_attr, this.collection);
+
+                var new_object = this.collection.add(cloned_attributes);
+
+                new_object.persist({}, {
+                    validate: true,
+                    parse: true
+                });
+            } else {
+                throw new Error('Item could not be cloned: it does not belong to any collection');
+            }
         }
     });
 

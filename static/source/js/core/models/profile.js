@@ -66,6 +66,9 @@ var app = app || {};
 
             return defaults;
         },
+        getNameAttribute: function () {
+            return 'name';
+        },
         getDefaultValue: function (name, type) {
             var default_value = '';
 
@@ -205,6 +208,28 @@ var app = app || {};
             if ( options.validate && error_obj ) {
                 return error_obj;
             }
+        },
+        hasOnlyDefaultAttributes: function () {
+            var has_only_defaults = true;
+
+            _.each(this.toJSON(), function (value, key) {
+                if ( key !== 'position' && has_only_defaults ) {
+                    var property_source = _.findWhere(PROFILE_PROPERTIES, { name: key });
+                    var type = property_source ? property_source.type : undefined;
+
+                    if ( key === 'pricing_grids' ) {
+                        if ( JSON.stringify(value) !==
+                            JSON.stringify(this.getDefaultValue('pricing_grids'))
+                        ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( this.getDefaultValue(key, type) !== value ) {
+                        has_only_defaults = false;
+                    }
+                }
+            }, this);
+
+            return has_only_defaults;
         },
         isThresholdPossible: function () {
             return _.indexOf(TYPES_WITH_POSSIBLE_THRESHOLD, this.get('unit_type')) !== -1;

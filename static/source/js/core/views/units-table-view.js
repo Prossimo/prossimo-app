@@ -21,6 +21,7 @@ var app = app || {};
             'click @ui.$add_new_accessory': 'addNewAccessory',
             'click .nav-tabs a': 'onTabClick',
             'click .js-remove-item': 'onRemoveItem',
+            'click .js-clone-item': 'onCloneItem',
             'click .js-move-item-up': 'onMoveItemUp',
             'click .js-move-item-down': 'onMoveItemDown',
             'click @ui.$undo': 'onUndo',
@@ -52,7 +53,7 @@ var app = app || {};
                         'lock_mechanism', 'glazing_bead', 'gasket_color',
                         'hinge_style', 'opening_direction', 'threshold',
                         'internal_sill', 'external_sill', 'glazing', 'glazing_bar_type', 'glazing_bar_width',
-                        'uw', 'u_value', 'remove_item']
+                        'uw', 'u_value', 'item_actions']
                 },
                 prices: {
                     title: 'Prices',
@@ -62,7 +63,7 @@ var app = app || {};
                         'supplier_discount', 'unit_cost_discounted', 'subtotal_cost_discounted', 'price_markup',
                         'unit_price', 'subtotal_price', 'discount', 'unit_price_discounted',
                         'subtotal_price_discounted', 'subtotal_profit', 'total_square_feet', 'square_feet_price',
-                        'square_feet_price_discounted', 'remove_item']
+                        'square_feet_price_discounted', 'item_actions']
                 },
                 extras: {
                     title: 'Extras',
@@ -70,7 +71,7 @@ var app = app || {};
                     columns: ['move_item', 'description', 'quantity', 'extras_type', 'original_cost',
                         'original_currency', 'conversion_rate', 'unit_cost', 'price_markup',
                         'unit_price', 'subtotal_cost', 'subtotal_price', 'subtotal_profit',
-                        'remove_item']
+                        'item_actions']
                 },
                 project_info: {
                     title: 'Project Info',
@@ -208,6 +209,15 @@ var app = app || {};
             if ( this.hot ) {
                 target_object = this.hot.getSourceData().at(target_row);
                 target_object.destroy();
+            }
+        },
+        onCloneItem: function (e) {
+            var target_row = $(e.target).data('row');
+            var target_object;
+
+            if ( this.hot ) {
+                target_object = this.hot.getSourceData().at(target_row);
+                target_object.duplicate();
             }
         },
         onMoveItemUp: function (e) {
@@ -574,9 +584,9 @@ var app = app || {};
                     readOnly: true,
                     renderer: app.hot_renderers.moveItemRenderer
                 },
-                remove_item: {
+                item_actions: {
                     readOnly: true,
-                    renderer: app.hot_renderers.removeItemRenderer
+                    renderer: app.hot_renderers.itemActionsRenderer
                 },
                 internal_color: {
                     type: 'dropdown',
@@ -780,7 +790,7 @@ var app = app || {};
                 glazing_bar_width: 'Muntin Width',
                 u_value: 'U Value',
                 move_item: 'Move',
-                remove_item: ' ',
+                item_actions: 'Actions',
                 original_cost: project_settings && project_settings.get('pricing_mode') === 'estimates' ?
                     'Orig. Cost (est.)' : 'Orig. Cost',
                 original_currency: 'Orig. Curr.',
@@ -851,7 +861,7 @@ var app = app || {};
                 glazing: 300,
                 glazing_bar_type: 140,
                 glazing_bar_width: 100,
-                remove_item: 65,
+                item_actions: 110,
                 original_cost: 100,
                 unit_cost: 100,
                 subtotal_cost: 100,

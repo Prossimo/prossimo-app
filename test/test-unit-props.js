@@ -18,6 +18,15 @@ test('project basic tests', function () {
     ok(unit.get('height'), 'height should be defined');
 });
 
+test('default attributes', function (assert) {
+    var unit = new app.Unit();
+
+    ok(unit.hasOnlyDefaultAttributes(), 'Unit has only default attributes upon creation');
+
+    unit.set('width', 100);
+    assert.notOk(unit.hasOnlyDefaultAttributes(), 'Unit has non-default attributes after calling set()');
+});
+
 test('split by two parts', function () {
     var unit = new app.Unit({
         width: c.mm_to_inches(1000),

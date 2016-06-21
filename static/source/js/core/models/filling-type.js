@@ -30,6 +30,9 @@ var app = app || {};
 
             return defaults;
         },
+        getNameAttribute: function () {
+            return 'name';
+        },
         getDefaultValue: function (name, type) {
             var default_value = '';
 
@@ -111,6 +114,22 @@ var app = app || {};
             if ( options.validate && error_obj ) {
                 return error_obj;
             }
+        },
+        hasOnlyDefaultAttributes: function () {
+            var has_only_defaults = true;
+
+            _.each(this.toJSON(), function (value, key) {
+                if ( key !== 'position' && has_only_defaults ) {
+                    var property_source = _.findWhere(FILLING_TYPE_PROPERTIES, { name: key });
+                    var type = property_source ? property_source.type : undefined;
+
+                    if ( this.getDefaultValue(key, type) !== value ) {
+                        has_only_defaults = false;
+                    }
+                }
+            }, this);
+
+            return has_only_defaults;
         },
         //  Return { name: 'name', title: 'Title', type: 'type' } objects for
         //  each item in `names`. If `names` is empty, return everything
