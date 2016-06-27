@@ -32,6 +32,9 @@ var app = app || {};
 
             return defaults;
         },
+        getNameAttribute: function () {
+            return 'description';
+        },
         getDefaultValue: function (name, type) {
             var default_value = '';
 
@@ -103,6 +106,22 @@ var app = app || {};
             if ( options.validate && error_obj ) {
                 return error_obj;
             }
+        },
+        hasOnlyDefaultAttributes: function () {
+            var has_only_defaults = true;
+
+            _.each(this.toJSON(), function (value, key) {
+                if ( key !== 'position' && has_only_defaults ) {
+                    var property_source = _.findWhere(ACCESSORY_PROPERTIES, { name: key });
+                    var type = property_source ? property_source.type : undefined;
+
+                    if ( this.getDefaultValue(key, type) !== value ) {
+                        has_only_defaults = false;
+                    }
+                }
+            }, this);
+
+            return has_only_defaults;
         },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs

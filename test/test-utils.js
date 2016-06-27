@@ -181,6 +181,20 @@ test('utils.parseFormat.dimension', function () {
     equal(p.dimension('4 ’ 6 1/2'), 54.5, 'Expected value is 54.5');
     equal(p.dimension('4\'6'), 54, 'Expected value is 54');
     equal(p.dimension('4’'), 48, 'Expected value is 48');
+
+    //  In metric
+    equal(p.dimension('30.5 mm').toFixed(5), 1.20079, 'Expected value is 1.2');
+    equal(p.dimension('4.5 mm').toFixed(5), 0.17717, 'Expected value is 0.17');
+    equal(p.dimension(' 30mm ').toFixed(5), 1.18110, 'Expected value is 1.18');
+    equal(p.dimension('303.5mm').toFixed(5), 11.94882, 'Expected value is 11.95');
+    equal(p.dimension('303,5mm').toFixed(5), 119.48819, 'Expected value is 119.49');
+    equal(p.dimension('3,303.5mm').toFixed(5), 130.05906, 'Expected value is 130.06');
+    equal(p.dimension('60 - 4 mm').toFixed(5), 0.15748, 'Expected value is 0.15');
+    equal(p.dimension('60  4 mm').toFixed(5), 0.15748, 'Expected value is 0.15');
+    equal(p.dimension('60\'4 mm').toFixed(5), 2.36220, 'Expected value is 2.36');
+
+    equal(p.dimension(' 30m ').toFixed(5), 1181.10236, 'Expected value is 1181.1');
+    equal(p.dimension('4.5 cm').toFixed(5), 1.77165, 'Expected value is 1.77');
 });
 
 test('utils.parseFormat.dimensions', function () {
@@ -215,6 +229,12 @@ test('utils.parseFormat.dimensions', function () {
 
     equal(p.dimensions('2’—8”', 'height'), 32, 'Expected value is 32');
     equal(p.dimensions('5’—0”', 'width'), 60, 'Expected value is 60');
+
+    //  In metric
+    deepEqual(p.dimensions('30.5 mm x 4.5 mm'), { width: 1.2007874015748032, height: 0.17716535433070868 },
+        'Expected value is { width: 1.2007874015748032, height: 0.17716535433070868 }');
+    deepEqual(p.dimensions('2mx5.5m'), { width: 78.74015748031496, height: 216.53543307086613 },
+        'Expected value is { width: 78.74015748031496, height: 216.53543307086613 }');
 });
 
 test('utils.parseFormat.percent', function () {
@@ -276,4 +296,138 @@ test('utils.convert.mm_to_inches', function () {
     equal(c.mm_to_inches(508), 20, 'Expected value is 20');
     equal(c.mm_to_inches(25.4), 1, 'Expected value is 1');
     equal(c.mm_to_inches(0), 0, 'Expected value is 0');
+});
+
+//  ------------------------------------------------------------------------
+//  Test vector2d functions from utils.js
+//  ------------------------------------------------------------------------
+test('utils.vector2d.getVector', function () {
+    var v = app.utils.vector2d;
+
+    function func() {
+        return [this, Math.pow(this, 2)];
+    }
+
+    deepEqual(v.getVector({x: 5, y: 10}), {x: 5, y: 10}, 'Expected value is {x: 5, y: 10}');
+    deepEqual(v.getVector([1, 3]), {x: 1, y: 3}, 'Expected value is {x: 1, y: 3}');
+    deepEqual(v.getVector(3), {x: 3, y: 3}, 'Expected value is {x: 3, y: 3}');
+    deepEqual(v.getVector(func.bind(3)), {x: 3, y: 9}, 'Expected value is {x: 3, y: 9}');
+});
+
+test('utils.vector2d.length', function () {
+    var v = app.utils.vector2d;
+
+    equal(v.length({x: 3, y: 4}), 5, 'Expected value is 5');
+    equal(v.length({x: 0, y: 10}), 10, 'Expected value is 10');
+    equal(v.length({x: 1, y: 9}), 9.055385138137417, 'Expected value is 9.055385138137417');
+});
+
+test('utils.vector2d.normalize', function () {
+    var v = app.utils.vector2d;
+
+    deepEqual(v.normalize([1, 1]), {x: 0.7071067811865475, y: 0.7071067811865475},
+                    'Expected value is {x: 0.7071067811865475, y: 0.7071067811865475}');
+    deepEqual(v.normalize({x: 3, y: 4}), {x: 0.6, y: 0.8}, 'Expected value is {x: 0.6, y: 0.8}');
+    deepEqual(v.normalize({x: 0, y: 10}), {x: 0, y: 1}, 'Expected value is {x: 0, y: 1}');
+    deepEqual(v.normalize({x: 1, y: 9}), {x: 0.11043152607484653, y: 0.9938837346736188},
+                    'Expected value is {x: 0.11043152607484653, y: 0.9938837346736188}');
+});
+
+test('utils.vector2d.add', function () {
+    var v = app.utils.vector2d;
+
+    deepEqual(v.add([1, 1], [2, 4]), {x: 3, y: 5}, 'Expected value is {x: 3, y: 5}');
+    deepEqual(v.add([-3, -1], [2, 4]), {x: -1, y: 3}, 'Expected value is {x: -1, y: 3}');
+    deepEqual(v.add({x: 3, y: 4}, {x: 0, y: 1}), {x: 3, y: 5}, 'Expected value is {x: 3, y: 5}');
+});
+
+test('utils.vector2d.substract', function () {
+    var v = app.utils.vector2d;
+
+    deepEqual(v.substract([1, 1], [2, 4]), {x: -1, y: -3}, 'Expected value is {x: -1, y: -3}');
+    deepEqual(v.substract([-3, -1], [2, 4]), {x: -5, y: -5}, 'Expected value is {x: -5, y: -5}');
+    deepEqual(v.substract({x: 3, y: 4}, {x: 0, y: 1}), {x: 3, y: 3}, 'Expected value is {x: 3, y: 3}');
+});
+
+test('utils.vector2d.multiply', function () {
+    var v = app.utils.vector2d;
+
+    deepEqual(v.multiply([1, 1], [2, 4]), {x: 2, y: 4}, 'Expected value is {x: 2, y: 4}');
+    deepEqual(v.multiply([-3, -1], [2, 4]), {x: -6, y: -4}, 'Expected value is {x: -6, y: -4}');
+    deepEqual(v.multiply({x: 3, y: 4}, {x: 0, y: 1}), {x: 0, y: 4}, 'Expected value is {x: 0, y: 4}');
+});
+
+test('utils.vector2d.divide', function () {
+    var v = app.utils.vector2d;
+
+    deepEqual(v.divide([1, 1], [2, 4]), {x: 0.5, y: 0.25}, 'Expected value is {x: 0.5, y: 0.25}');
+    deepEqual(v.divide([-3, -1], [2, 4]), {x: -1.5, y: -0.25}, 'Expected value is {x: -1.5, y: -0.25}');
+    deepEqual(v.divide({x: 3, y: 4}, {x: 0.5, y: 1}), {x: 6, y: 4}, 'Expected value is {x: 6, y: 4}');
+});
+
+test('utils.vector2d.scalar', function () {
+    var v = app.utils.vector2d;
+
+    equal(v.scalar([1, 1], [2, 4]), 6, 'Expected value is 6');
+    equal(v.scalar([-3, -1], [2, 4]), -10, 'Expected value is -10');
+    equal(v.scalar({x: 3, y: 4}, {x: 0.5, y: 1}), 5.5, 'Expected value is 5.5');
+});
+
+test('utils.vector2d.angle', function () {
+    var v = app.utils.vector2d;
+
+    equal(v.angle([1, 0], [0, 1]), 1.5707963267948966, 'Expected value is 1.5707963267948966');
+    equal(v.angle([1, 1], [2, 4]), 0.32175055439664263, 'Expected value is 0.32175055439664263');
+    equal(v.angle([-3, -1], [2, 4]), 2.356194490192345, 'Expected value is 2.356194490192345');
+    equal(v.angle({x: 3, y: 4}, {x: 0.5, y: 1}), 0.17985349979247847, 'Expected value is 0.17985349979247847');
+});
+
+test('utils.vector2d.clockwiseSort', function () {
+    var v = app.utils.vector2d;
+
+    var toSort = _.shuffle([[0, 1], [1, 0], [0, -1], [-1, 0]]);
+    var sorted = [{x: 0, y: 1}, {x: 1, y: 0}, {x: 0, y: -1}, {x: -1, y: 0}];
+
+    deepEqual(v.clockwiseSort(toSort), sorted, 'Expected value is (0,1) (1,0) (0, -1) (-1, 0)');
+});
+
+test('utils.vector2d.points_to_vectors', function () {
+    var v = app.utils.vector2d;
+
+    var points = [{x: 3, y: 3}, {x: -1, y: -6}, {x: 0, y: 0}];
+    var center = {x: 1, y: 1};
+
+    var exp = [{x: 2, y: -2}, {x: -2, y: 7}, {x: -1, y: 1}];
+
+    deepEqual(v.points_to_vectors(points, center), exp, 'Points to vectors conversion');
+});
+test('utils.vector2d.vectors_to_points', function () {
+    var v = app.utils.vector2d;
+
+    var points = [{x: 2, y: -2}, {x: -2, y: 7}, {x: -1, y: 1}];
+    var center = {x: 1, y: 1};
+
+    var exp = [{x: 3, y: 3}, {x: -1, y: -6}, {x: 0, y: 0}];
+
+    deepEqual(v.vectors_to_points(points, center), exp, 'Vectors to points conversion');
+});
+
+//  ------------------------------------------------------------------------
+//  Test angle functions from utils.js
+//  ------------------------------------------------------------------------
+test('utils.angle.rad_to_deg', function () {
+    var a = app.utils.angle;
+
+    equal(a.rad_to_deg(0.5), 28.64788975654116, 'Expected value is 28.64788975654116');
+    equal(a.rad_to_deg(1), 57.29577951308232, 'Expected value is 57.29577951308232');
+    equal(a.rad_to_deg(-9.5), -544.309905374282, 'Expected value is -544.309905374282');
+});
+
+test('utils.angle.deg_to_rad', function () {
+    var a = app.utils.angle;
+
+    equal(a.deg_to_rad(90), 1.5707963267948966, 'Expected value is 1.5707963267948966');
+    equal(a.deg_to_rad(1), 0.017453292519943295, 'Expected value is 0.017453292519943295');
+    equal(a.deg_to_rad(180), 3.141592653589793, 'Expected value is 3.141592653589793');
+    equal(a.deg_to_rad(-180), -3.141592653589793, 'Expected value is -3.141592653589793');
 });
