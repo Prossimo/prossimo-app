@@ -367,10 +367,21 @@ var app = app || {};
                 glazing_bar_width: function (attr_name, val) {
                     return parseFloat(val);
                 },
+                //  Try to find profile by id first, then try by name
                 profile_id: function (attr_name, val) {
-                    var profile_id = app.settings && app.settings.getProfileIdByName(val);
+                    var profile_id = null;
+                    var profile_by_id =
+                        ( parseInt(val).toString() === val || parseInt(val) === val ) &&
+                        app.settings && app.settings.getProfileByIdOrDummy(parseInt(val));
+                    var profile_id_by_name = app.settings && app.settings.getProfileIdByName(val);
 
-                    return profile_id ? profile_id : null;
+                    if ( profile_by_id && profile_by_id.get('is_dummy') !== true ) {
+                        profile_id = profile_by_id.get('id');
+                    } else if ( profile_id_by_name ) {
+                        profile_id = profile_id_by_name;
+                    }
+
+                    return profile_id;
                 }
             };
 
