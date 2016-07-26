@@ -54,6 +54,7 @@ var app = app || {};
     var SASH_TYPES = [
         'tilt_turn_left', 'tilt_turn_right', 'fixed_in_frame', 'tilt_only',
         'turn_only_left', 'turn_only_right', 'fixed_in_sash',
+        'slide_left', 'slide_right',
         // additional types for solid doors
         'flush-turn-right', 'flush-turn-left', 'tilt_only_top_hung',
         'turn_only_right_hinge_hidden_latch', 'turn_only_left_hinge_hidden_latch'
@@ -66,6 +67,8 @@ var app = app || {};
         // deprecated
         // 'flush-turn-right': 'Flush Panel Right Hinge',
         // 'flush-turn-left': 'Flush Panel Left Hinge',
+        slide_left: 'Slide Left',
+        slide_right: 'Slide Right',
         fixed_in_frame: 'Fixed',
         fixed_in_sash: 'Fixed in Sash',
         tilt_only: 'Tilt Only',
