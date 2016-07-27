@@ -905,8 +905,6 @@ var app = app || {};
             var initialX = sectionData.sashParams.width / 2 + factors.offsetX * factors[direction].initialOffsetSign;
             var initialY = sectionData.sashParams.height / 2;
             var arrowParams = {
-                // x: 200
-                // y: 100,
                 points: [
                     initialX,
                     initialY,
@@ -914,6 +912,52 @@ var app = app || {};
                     initialY - factors.stepY,
                     initialX + factors.stepX * factors[direction].directionSign,
                     initialY - factors.stepY
+                ],
+                pointerLength: 10,
+                pointerWidth : 10,
+                fill: 'black',
+                stroke: 'black',
+                strokeWidth: 4,
+                name: 'index'
+            };
+            var arrow = new Konva.Arrow(arrowParams);
+            group.add(arrow);
+            return group;
+        },
+        drawTiltSlideDirection: function(sectionData, /*Konva.Group*/group) {
+            if(-1 == ['tilt_slide_left', 'tilt_slide_right'].indexOf(sectionData.sashType)) {
+                return group;
+            }
+
+            var direction = sectionData.sashType.split('_').pop();
+            var factors = {
+                offsetX: sectionData.sashParams.width / 10,
+                offsetY: sectionData.sashParams.height / 10,
+                stepX: sectionData.sashParams.width / 3,
+                stepY: sectionData.sashParams.height / 3,
+                left: {
+                    initialOffsetSign: 1,
+                    directionSign: -1
+                },
+                right: {
+                    initialOffsetSign: -1,
+                    directionSign: 1
+                }
+            };
+            var centerX = sectionData.sashParams.width / 2;
+            var centerY = sectionData.sashParams.height / 2;
+            var initialX = centerX + (centerX / 2 *  factors[direction].initialOffsetSign);
+            var initialY = centerY + factors.offsetY;
+            var arrowParams = {
+                points: [
+                    initialX,
+                    initialY,
+                    initialX + factors.stepX/4 * factors[direction].directionSign,
+                    initialY - factors.stepY,
+                    initialX + factors.stepX / 2 * factors[direction].directionSign,
+                    initialY,
+                    initialX + factors.stepX * factors[direction].directionSign,
+                    initialY
                 ],
                 pointerLength: 10,
                 pointerWidth : 10,
@@ -1134,6 +1178,7 @@ var app = app || {};
             }
 
             group = this.drawSlideDirection(sectionData, group);
+            this.drawTiltSlideDirection(sectionData, group);
 
             if (isSelected) {
                 var selection = this.createSelectionShape(sectionData, {
