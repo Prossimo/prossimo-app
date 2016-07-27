@@ -1204,8 +1204,8 @@ var app = app || {};
 
             if (
                     type !== 'fixed_in_frame' &&
-                    type !== 'slide_left' &&
-                    type !== 'slide_right' &&
+                    // type !== 'slide_left' &&
+                    // type !== 'slide_right' &&
                     (
                         type.indexOf('left') >= 0 ||
                         type.indexOf('right') >= 0 ||
@@ -1241,14 +1241,16 @@ var app = app || {};
             };
 
             if (type === 'tilt_turn_right' || type === 'turn_only_right' ||
-                type === 'slide-right' || type === 'flush-turn-right'
+                type === 'slide-right' || type === 'flush-turn-right' ||
+                type === 'slide_right' || type === 'tilt_slide_right'
             ) {
                 pos.x = offset;
                 pos.y = section.sashParams.height / 2;
             }
 
             if (type === 'tilt_turn_left' || type === 'turn_only_left' ||
-                type === 'slide-left' || type === 'flush-turn-left'
+                type === 'slide-left' || type === 'flush-turn-left' ||
+                type === 'slide_left' || type === 'tilt_slide_left'
             ) {
                 pos.x = section.sashParams.width - offset;
                 pos.y = section.sashParams.height / 2;
