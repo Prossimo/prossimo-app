@@ -1021,7 +1021,9 @@ var app = app || {};
             var shouldDrawDirectionLine = (-1 == [
                     'fixed_in_frame',
                     'slide_left',
-                    'slide_right'
+                    'slide_right',
+                    'tilt_slide_left',
+                    'tilt_slide_right'
                 ].indexOf(sectionData.sashType));
 
             var shouldDrawHandle = this.shouldDrawHandle(sectionData.sashType);
