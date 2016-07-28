@@ -889,10 +889,10 @@ var app = app || {};
 
             var direction = sectionData.sashType.split('_').pop();
             var factors = {
-                offsetX: sectionData.sashParams.width / 10,
-                offsetY: sectionData.sashParams.height / 10,
-                stepX: sectionData.sashParams.width / 10,
-                stepY: sectionData.sashParams.height /10,
+                offsetX: sectionData.sashParams.width / 3,
+                offsetY: sectionData.sashParams.height / 4,
+                stepX: sectionData.sashParams.width / 3,
+                stepY: sectionData.sashParams.height /3,
                 left: {
                     initialOffsetSign: 1,
                     directionSign: -1
@@ -903,7 +903,7 @@ var app = app || {};
                 }
             };
             var initialX = sectionData.sashParams.width / 2 + factors.offsetX * factors[direction].initialOffsetSign;
-            var initialY = sectionData.sashParams.height / 2;
+            var initialY = sectionData.sashParams.height / 2 + factors.offsetY;
             var arrowParams = {
                 points: [
                     initialX,
