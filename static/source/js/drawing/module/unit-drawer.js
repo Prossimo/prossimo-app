@@ -913,11 +913,11 @@ var app = app || {};
                     initialX + factors.stepX * factors[direction].directionSign,
                     initialY - factors.stepY
                 ],
-                pointerLength: 10,
-                pointerWidth : 10,
+                pointerLength: 1/ratio *2,
+                pointerWidth : 1/ratio *2,
                 fill: 'black',
                 stroke: 'black',
-                strokeWidth: 4,
+                strokeWidth: 1 /ratio,
                 name: 'index'
             };
             var arrow = new Konva.Arrow(arrowParams);
@@ -959,11 +959,11 @@ var app = app || {};
                     initialX + factors.stepX * factors[direction].directionSign,
                     initialY
                 ],
-                pointerLength: 10,
-                pointerWidth : 10,
+                pointerLength: 1 / ratio * 2,
+                pointerWidth : 1 / ratio * 2,
                 fill: 'black',
                 stroke: 'black',
-                strokeWidth: 4,
+                strokeWidth: 1 / ratio,
                 name: 'index'
             };
             var arrow = new Konva.Arrow(arrowParams);
@@ -1325,7 +1325,7 @@ var app = app || {};
             });
 
             if ((type.indexOf('_hinge_hidden_latch') !== -1)) {
-                directionLine.dash([10 / this.ratio, 10 / this.ratio]);
+                directionLine.dash([10 / ratio, 10 / ratio]);
             }
 
             // #192: Reverse hinge indicator for outside view
