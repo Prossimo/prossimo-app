@@ -68,8 +68,8 @@ var app = app || {};
         // deprecated
         // 'flush-turn-right': 'Flush Panel Right Hinge',
         // 'flush-turn-left': 'Flush Panel Left Hinge',
-        slide_left: 'Slide Left',
-        slide_right: 'Slide Right',
+        slide_left: 'Lift Slide Left',
+        slide_right: 'Lift Slide Right',
         tilt_slide_left: 'Tilt Slide Left',
         tilt_slide_right: 'Tilt Slide Right',
         fixed_in_frame: 'Fixed',
@@ -80,8 +80,8 @@ var app = app || {};
         turn_only_right: 'Turn Only Right Hinge',
         turn_only_left: 'Turn Only Left Hinge',
         tilt_only_top_hung: 'Tilt Only Top Hung',
-        'slide-right': 'Slide Right',
-        'slide-left': 'Slide Left',
+        'slide-right': 'Lift Slide Right',
+        'slide-left': 'Lift Slide Left',
         turn_only_right_hinge_hidden_latch: 'Turn Only Right Hinge Hidden Latch',
         turn_only_left_hinge_hidden_latch: 'Turn Only Left Hinge Hidden Latch'
     };
