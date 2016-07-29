@@ -894,12 +894,12 @@ var app = app || {};
                 stepX: sectionData.sashParams.width / 3,
                 stepY: sectionData.sashParams.height /3,
                 left: {
-                    initialOffsetSign: 1,
-                    directionSign: -1
-                },
-                right: {
                     initialOffsetSign: -1,
                     directionSign: 1
+                },
+                right: {
+                    initialOffsetSign: 1,
+                    directionSign: -1
                 }
             };
             var initialX = sectionData.sashParams.width / 2 + factors.offsetX * factors[direction].initialOffsetSign;
@@ -936,12 +936,12 @@ var app = app || {};
                 stepX: sectionData.sashParams.width / 3,
                 stepY: sectionData.sashParams.height / 3,
                 left: {
-                    initialOffsetSign: 1,
-                    directionSign: -1
-                },
-                right: {
                     initialOffsetSign: -1,
                     directionSign: 1
+                },
+                right: {
+                    initialOffsetSign: 1,
+                    directionSign: -1
                 }
             };
             var centerX = sectionData.sashParams.width / 2;
