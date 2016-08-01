@@ -891,8 +891,8 @@ var app = app || {};
             var factors = {
                 offsetX: sectionData.sashParams.width / 3,
                 offsetY: sectionData.sashParams.height / 4,
-                stepX: sectionData.sashParams.width / 3,
-                stepY: sectionData.sashParams.height /3,
+                stepX: 30 / ratio,
+                stepY: 30 / ratio,
                 left: {
                     initialOffsetSign: -1,
                     directionSign: 1
@@ -902,8 +902,8 @@ var app = app || {};
                     directionSign: -1
                 }
             };
-            var initialX = sectionData.sashParams.width / 2 + factors.offsetX * factors[direction].initialOffsetSign;
-            var initialY = sectionData.sashParams.height / 2 + factors.offsetY;
+            var initialX = sectionData.sashParams.width / 2 + (15 / ratio) * factors[direction].initialOffsetSign;
+            var initialY = sectionData.sashParams.height / 2 + (10 / ratio);
             var arrowParams = {
                 points: [
                     initialX,
@@ -931,10 +931,8 @@ var app = app || {};
 
             var direction = sectionData.sashType.split('_').pop();
             var factors = {
-                offsetX: sectionData.sashParams.width / 10,
-                offsetY: sectionData.sashParams.height / 10,
-                stepX: sectionData.sashParams.width / 3,
-                stepY: sectionData.sashParams.height / 3,
+                stepX: sectionData.sashParams.width / 5,
+                stepY: sectionData.sashParams.height / 5,
                 left: {
                     initialOffsetSign: -1,
                     directionSign: 1
@@ -946,17 +944,17 @@ var app = app || {};
             };
             var centerX = sectionData.sashParams.width / 2;
             var centerY = sectionData.sashParams.height / 2;
-            var initialX = centerX + (centerX / 2 *  factors[direction].initialOffsetSign);
-            var initialY = centerY + factors.offsetY;
+            var initialX = centerX + (factors.stepX / 2 *  factors[direction].initialOffsetSign);
+            var initialY = centerY + 10 / ratio;
             var arrowParams = {
                 points: [
                     initialX,
                     initialY,
-                    initialX + factors.stepX/4 * factors[direction].directionSign,
+                    initialX + factors.stepX/2 * factors[direction].directionSign,
                     initialY - factors.stepY,
-                    initialX + factors.stepX / 2 * factors[direction].directionSign,
+                    initialX + factors.stepX  * factors[direction].directionSign,
                     initialY,
-                    initialX + factors.stepX * factors[direction].directionSign,
+                    initialX + factors.stepX * 2 * factors[direction].directionSign,
                     initialY
                 ],
                 pointerLength: 1 / ratio * 2,
