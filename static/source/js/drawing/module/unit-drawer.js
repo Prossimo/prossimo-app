@@ -891,8 +891,8 @@ var app = app || {};
             var factors = {
                 offsetX: sectionData.sashParams.width / 3,
                 offsetY: sectionData.sashParams.height / 4,
-                stepX: 30 / ratio,
-                stepY: 30 / ratio,
+                stepX: 60 / ratio,
+                stepY: 60 / ratio,
                 left: {
                     initialOffsetSign: -1,
                     directionSign: 1
