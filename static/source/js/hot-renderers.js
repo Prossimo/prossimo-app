@@ -91,13 +91,8 @@ var app = app || {};
         thresholdCheckboxRenderer: function (instance, td, row, col) {
             var isThresholdEditable = instance.getSourceData().at(row) &&
                 instance.getSourceData().at(row).isThresholdEditable();
-
-            //  We need this because otherwise user will be able to paste
-            if ( isThresholdEditable ) {
-                instance.setCellMeta(row, col, 'readOnly', false);
-            } else {
-                instance.setCellMeta(row, col, 'readOnly', true);
-            }
+            
+            instance.setCellMeta(row, col, 'editor', false);
 
             Handsontable.renderers.CheckboxRenderer.apply(this, arguments);
 
