@@ -25,6 +25,14 @@ $(function () {
         app.dialogs = new app.Dialogs();
 
         app.main_navigation = new app.MainNavigationView({
+            dashboard: {
+                title: 'Dashboard',
+                path: 'dashboard',
+                icon_name: 'dashboard',
+                onShow: function () {
+                    app.main_region.show(new app.MainDashboardView())
+                }
+            },
             units_table: {
                 title: 'Units',
                 path: 'units',

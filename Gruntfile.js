@@ -90,6 +90,9 @@ module.exports = function (grunt) {
         'settings/views/pricing-grids-table-view.js',
         'supplier-request/views/main-supplier-request-view.js',
         'supplier-request/views/supplier-request-header-view.js',
+        'dashboard/views/project-totals-view.js',
+        'dashboard/views/project-info-view.js',
+        'dashboard/views/main-dashboard-view.js',
         'dialogs/views/base-dialog-view.js',
         'dialogs/views/login-dialog-view.js',
         'app.js'
@@ -301,9 +304,12 @@ module.exports = function (grunt) {
                     base: '.',
                     middleware: function (connect, options, middlewares) {
                         middlewares.unshift(function (req, res, next) {
+
+                            res.setHeader('Access-Control-Allow-Origin', '*');
                             if ( req.url === '/docs/' || req.url === '/drawing/' ||
                                  req.url === '/quote/' || req.url === '/settings/' ||
-                                 req.url === '/supplier/' || req.url === '/units/'
+                                 req.url === '/supplier/' || req.url === '/units/' ||
+                                 req.url === '/dashboard/'
                             ) {
                                 require('fs').createReadStream('index.html').pipe(res);
                             } else {
@@ -406,7 +412,7 @@ module.exports = function (grunt) {
                         },
                         {
                             match: 'api_base_path',
-                            replacement: 'http://127.0.0.1:8000/api'
+                            replacement: 'http://159.203.133.223/api/api'
                         }
                     ]
                 },
