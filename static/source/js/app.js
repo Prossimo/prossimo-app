@@ -1,6 +1,8 @@
 var app = app || {};
 
+//  TODO: move to utils maybe
 window.ENTER_KEY = 13;
+window.ESC_KEY = 27;
 
 $(function () {
     'use strict';

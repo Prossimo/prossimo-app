@@ -23,6 +23,12 @@ var app = app || {};
     var GLAZING_BAR_WIDTHS = [12, 22, 44];
     var OPENING_DIRECTIONS = ['Inward', 'Outward'];
 
+    var UNIT_ATTRIBUTES_POPULATED_FROM_DICTIONARIES = [
+        'internal_color', 'external_color', 'interior_handle', 'exterior_handle', 'hardware_type',
+        'lock_mechanism', 'glazing_bead', 'gasket_color', 'hinge_style', 'internal_sill', 'external_sill',
+        'glazing_bar_width', 'glazing_bar_type'
+    ];
+
     //  --------------------------------------------------------------------
     //  That's what we use for Profiles
     //  --------------------------------------------------------------------
@@ -79,6 +85,10 @@ var app = app || {};
                 api_base_path: this.get('api_base_path')
             });
 
+            this.dictionaries = new app.OptionsDictionaryCollection(null, {
+                api_base_path: this.get('api_base_path')
+            });
+
             this.project_settings = null;
 
             this.listenTo(app.vent, 'auth:initial_login', this.onInitialLogin);
@@ -98,10 +108,11 @@ var app = app || {};
         fetchData: function () {
             var d1 = $.Deferred();
             var d2 = $.Deferred();
+            var d3 = $.Deferred();
 
             app.vent.trigger('settings:fetch_data:start');
 
-            $.when(d1, d2).done(function () {
+            $.when(d1, d2, d3).done(function () {
                 app.vent.trigger('settings:fetch_data:stop');
             });
 
@@ -125,6 +136,19 @@ var app = app || {};
                 //  Validate positions on load
                 success: function (collection) {
                     d2.resolve('Loaded filling types');
+                    collection.validatePositions();
+                }
+            });
+
+            this.dictionaries.fetch({
+                url: this.get('api_base_path') + '/dictionaries/full-tree',
+                remove: false,
+                data: {
+                    limit: 0
+                },
+                //  Validate positions on load
+                success: function (collection) {
+                    d3.resolve('Loaded options dictionaries');
                     collection.validatePositions();
                 }
             });
@@ -219,6 +243,12 @@ var app = app || {};
         },
         getOpeningDirections: function () {
             return OPENING_DIRECTIONS;
+        },
+        getUnitAttributesPopulatedFromDictionaries: function () {
+            return UNIT_ATTRIBUTES_POPULATED_FROM_DICTIONARIES;
+        },
+        isPopulatedFromDictionary: function (attribute_name) {
+            return _.contains(this.getUnitAttributesPopulatedFromDictionaries(), attribute_name);
         }
     });
 })();

@@ -1,0 +1,39 @@
+<div class="dictionary-name">
+    <h2>Name</h2>
+</div>
+
+<div class="entry-table-container">
+    {{#if entries }}
+        <h3>Entries</h3>
+        <table class="options-table">
+            <thead>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Data</th>
+                <th>Position</th>
+            </thead>
+            <tbody>
+                {{#each entries }}
+                    <tr>
+                        <td>
+                            {{ id }}
+                        </td>
+                        <td>
+                            {{ name }}
+                        </td>
+                        <td>
+                            {{ price }}
+                        </td>
+                        <td>
+                            {{ data }}
+                        </td>
+                        <td>
+                            {{ position }}
+                        </td>
+                    </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    {{/if}}
+</div>

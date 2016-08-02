@@ -20,7 +20,9 @@ module.exports = function (grunt) {
         'backbone.KonvaView/backbone.KonvaView.js',
         'spin.js/spin.min.js',
         'mousetrap/mousetrap.min.js',
-        'backbone.marionette.keyshortcuts/backbone.marionette.keyshortcuts.js'
+        'backbone.marionette.keyshortcuts/backbone.marionette.keyshortcuts.js',
+        'Sortable/Sortable.min.js',
+        'Sortable/jquery.binding.js'
     ];
 
     var vendor_css_files = [
@@ -47,6 +49,8 @@ module.exports = function (grunt) {
         'core/models/project-settings.js',
         'core/models/project-file.js',
         'core/models/filling-type.js',
+        'core/models/options-dictionary.js',
+        'core/models/options-dictionary-entry.js',
         'core/models/settings.js',
         'core/collections/unit-collection.js',
         'core/collections/accessory-collection.js',
@@ -54,7 +58,10 @@ module.exports = function (grunt) {
         'core/collections/project-collection.js',
         'core/collections/project-file-collection.js',
         'core/collections/filling-type-collection.js',
+        'core/collections/options-dictionary-collection.js',
+        'core/collections/options-dictionary-entry-collection.js',
         'core/views/base/base-toggle-view.js',
+        'core/views/base/base-input-view.js',
         'core/views/main-navigation-view.js',
         'core/views/units-table-view.js',
         'core/views/units-table-total-prices-view.js',
@@ -88,6 +95,10 @@ module.exports = function (grunt) {
         'settings/views/profiles-table-view.js',
         'settings/views/filling-types-table-view.js',
         'settings/views/pricing-grids-table-view.js',
+        'settings/views/options-view.js',
+        'settings/views/options-dictionary-list-item-view.js',
+        'settings/views/options-dictionary-list-view.js',
+        'settings/views/options-dictionary-view.js',
         'supplier-request/views/main-supplier-request-view.js',
         'supplier-request/views/supplier-request-header-view.js',
         'dialogs/views/base-dialog-view.js',

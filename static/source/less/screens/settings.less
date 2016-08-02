@@ -156,62 +156,6 @@
 }
 
 
-//  FIXME: this is not used anymore, could be removed
-//  ------------------------------------------------------------------------
-//  UI Settings
-//  ------------------------------------------------------------------------
-
-.ui_settings-container {
-    padding: 1.5rem 3rem;
-    height: 100%;
-    flex: 1 1 auto;
-}
-
-.ui-settings ul {
-    display: table;
-    margin-top: 3rem;
-    padding-left: 0;
-    list-style-type: none;
-}
-
-.ui-settings li {
-    display: table-row;
-}
-
-.ui-settings ul .title,
-.ui-settings ul .value {
-    display: table-cell;
-    padding: 1rem 1.5rem 0.5rem;
-    border: 1px solid darken(@white, 15%);
-}
-
-.ui-settings ul .title + .value {
-    border-left: none;
-}
-
-.ui-settings li + li {
-    .value,
-    .title {
-        border-top: none;
-    }
-}
-
-.ui-settings ul p,
-.ui-settings ul button {
-    display: inline-block;
-    margin-right: 2rem;
-}
-
-.ui-settings ul h6 {
-    font-size: 1em;
-    font-weight: 700;
-}
-
-.ui-settings ul button {
-    border: 1px solid darken(@white, 30%);
-}
-
-
 //  ------------------------------------------------------------------------
 //  Pricing Grids
 //  ------------------------------------------------------------------------
@@ -276,4 +220,124 @@
 
 .pricing-grids-table-title .nav > li > a {
     border-color: darken(@white, 30%);
+}
+
+
+//  ------------------------------------------------------------------------
+//  Options
+//  ------------------------------------------------------------------------
+
+.options-container {
+    &:extend(.profiles-container all);
+    padding: 0;
+}
+
+.options-main-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+.options-dictionary-list-panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 300px;
+    bottom: 0;
+    padding: 1.5rem 3rem;
+    background-color: darken(@white, 15%);
+    border-right: 1px solid darken(@white, 30%);
+}
+
+.options-dictionary-list-panel h2 {
+    margin-bottom: 3rem;
+}
+
+.add-new-dictionary {
+    background-color: darken(@white, 5%);
+    border-color: darken(@white, 30%);
+
+    &:hover {
+        background-color: @white;
+    }
+}
+
+.options-list-container {
+    margin-left: -3rem;
+    margin-right: -3rem;
+    margin-top: 4rem;
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.options-list-item {
+    border-bottom: 1px solid darken(@white, 25%);
+
+    &:first-child {
+        border-top: 1px solid darken(@white, 25%);
+    }
+}
+
+.options-list-item.sortable-ghost {
+    opacity: 0.3;
+}
+
+.options-list-item a {
+    display: block;
+    padding: 0.8rem 3rem;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    cursor: pointer;
+    color: inherit;
+
+    &:hover {
+        background-color: darken(@white, 20%);
+    }
+}
+
+.options-list-container + p {
+    margin-top: 4rem;
+    color: lighten(@black, 40%)
+}
+
+.options-list-item a.is-active {
+    background-color: darken(@white, 25%);
+    color: @black;
+
+    span {
+        position: relative;
+        top: 0.4em;
+        float: right;
+        color: lighten(@black, 35%);
+        font-size: 0.8em;
+    }
+}
+
+.options-dictionary {
+    padding: 1em 2em 1em 330px;
+}
+
+.options-dictionary .dictionary-name {
+    max-width: 300px;
+}
+
+.options-dictionary .input-container {
+    margin-top: 2rem;
+    font-size: 1.1em;
+}
+
+.entry-table-container {
+    margin-top: 5rem;
+}
+
+//  TODO: rename
+.options-table {
+    width: 100%;
+}
+
+.options-table td,
+.options-table th {
+    border: 1px solid darken(@white, 30%);
+    padding: 0.5rem 2rem;
 }
