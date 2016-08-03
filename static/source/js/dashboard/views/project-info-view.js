@@ -21,7 +21,11 @@ var app = app || {};
             'click @ui.$edit_button': 'toggleEditMode'
         },
         toggleEditMode: function() {
-            this.state.set('editMode', !this.state.get('editMode'));
+            var editMode = this.state.get('editMode');
+            if(editMode) {
+                this.saveFormData();
+            }
+            this.state.set('editMode', !editMode);
         },
         initialize: function() {
             this.state = new Backbone.Model();
@@ -39,14 +43,21 @@ var app = app || {};
             this.enterMode();
         },
         enterViewMode: function() {
-            console.log(this.ui)
             this.ui.$content.html(this.viewTemplate(this.model.toJSON()));
         },
         enterEditMode: function() {
             this.ui.$content.html(this.editTemplate(this.model.toJSON()));
+        },
+        serializeData: function () {
+            return $.extend({}, this.model.toJSON(), {state:this.state.toJSON()});
+        },
+        saveFormData: function () {
+            var modelData = {};
+            $.map(this.$el.find('.form-horizontal').serializeArray(), function(item){
+                modelData[item.name] = item.value;
+            });
+
+            this.model.set(modelData);
         }
-        // serializeData: function () {
-        //     console.log(this.model.toJSON())
-        // }
     });
 })();

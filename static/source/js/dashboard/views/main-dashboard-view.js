@@ -8,7 +8,7 @@ var app = app || {};
 
     app.MainDashboardView = Marionette.ItemView.extend({
         tagName: 'div',
-        className: 'screen units-table-screen',
+        className: 'screen dashboard-screen',
         template: app.templates['dashboard/main-dashboard-view'],
         ui: {
             $totals: '#totals',
