@@ -36,13 +36,13 @@ var app = app || {};
             this.handleBarsNumberChange( 'horizontal' );
         },
         handleBarsNumberChange: function ( type ) {
-            if ( this.ui['$bar_' + type].val() < 0 ) {
+            if ( this.ui['$bar_' + type].val() < 0 || this.ui['$bar_' + type].val() > 100 ) {
                 this.ui['$bar_' + type].val(0);
                 this.showError();
 
                 return;
             }
-
+            // console.log(type, this.ui['$bar_' + type].val());
             this.section.bars = this.changeBarsNumber( type );
             this.saveBars();
         },
