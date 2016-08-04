@@ -41,14 +41,6 @@ $(function () {
                     app.main_region.show(new app.MainUnitsTableView());
                 }
             },
-            docs_import: {
-                title: 'Docs',
-                path: 'docs',
-                icon_name: 'file',
-                onShow: function () {
-                    app.main_region.show(new app.MainDocsImportView());
-                }
-            },
             drawing: {
                 title: 'Drawing',
                 path: 'drawing',

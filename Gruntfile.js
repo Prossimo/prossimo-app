@@ -92,6 +92,7 @@ module.exports = function (grunt) {
         'supplier-request/views/supplier-request-header-view.js',
         'dashboard/views/project-totals-view.js',
         'dashboard/views/project-info-view.js',
+        'dashboard/views/project-documents-view.js',
         'dashboard/views/main-dashboard-view.js',
         'dialogs/views/base-dialog-view.js',
         'dialogs/views/login-dialog-view.js',
@@ -306,10 +307,9 @@ module.exports = function (grunt) {
                         middlewares.unshift(function (req, res, next) {
 
                             res.setHeader('Access-Control-Allow-Origin', '*');
-                            if ( req.url === '/docs/' || req.url === '/drawing/' ||
+                            if ( req.url === '/dashboard/' || req.url === '/drawing/' ||
                                  req.url === '/quote/' || req.url === '/settings/' ||
-                                 req.url === '/supplier/' || req.url === '/units/' ||
-                                 req.url === '/dashboard/'
+                                 req.url === '/supplier/' || req.url === '/units/'
                             ) {
                                 require('fs').createReadStream('index.html').pipe(res);
                             } else {

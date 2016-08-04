@@ -12,9 +12,14 @@ var app = app || {};
         template: app.templates['dashboard/main-dashboard-view'],
         ui: {
             $totals: '#totals',
-            $project_info: '#project-info'
+            $project_info: '#project-info',
+            $documents: '#documents'
         },
         onRender: function () {
+            this.project_info_view = new app.ProjectInfoView({
+                model: app.current_project
+            });
+
             this.totals_view = new app.ProjectTotalsView({
                 model: app.current_project,
                 // collection: app.current_project.units,
@@ -22,11 +27,13 @@ var app = app || {};
                 parent_view: this,
             });
 
-            this.project_info_view = new app.ProjectInfoView({
+            this.documents_view = new app.ProjectDocumentsView({
                 model: app.current_project
-            })
+            });
+
             this.ui.$project_info.append(this.project_info_view.render().el);
             this.ui.$totals.append(this.totals_view.render().el);
+            this.ui.$documents.append(this.documents_view.render().el);
         },
         onDestroy: function () {
             this.totals_view.destroy();
