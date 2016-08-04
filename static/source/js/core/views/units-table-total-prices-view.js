@@ -9,7 +9,9 @@ var app = app || {};
         template: app.templates['core/units-table-total-prices-view'],
         initialize: function () {
             this.listenTo(this.options.units, 'change', this.render);
+            this.listenTo(this.options.units, 'remove', this.render);
             this.listenTo(this.options.extras, 'change', this.render);
+            this.listenTo(this.options.extras, 'remove', this.render);
         },
         serializeData: function () {
             var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
