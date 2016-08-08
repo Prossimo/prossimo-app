@@ -3,7 +3,9 @@
 //  inputs. Each input extends this view in its own way
 //  ------------------------------------------------------------------------
 
-/* global ENTER_KEY, ESC_KEY */
+var ENTER_KEY = 13;
+var ESC_KEY = 27;
+
 var app = app || {};
 
 (function () {

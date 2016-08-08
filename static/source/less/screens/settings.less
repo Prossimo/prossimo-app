@@ -288,8 +288,9 @@
     width: 100%;
     height: 100%;
     text-decoration: none;
-    cursor: pointer;
     color: inherit;
+    cursor: move;
+    cursor: -webkit-grabbing;
 
     &:hover {
         background-color: darken(@white, 20%);
@@ -322,7 +323,7 @@
     max-width: 300px;
 }
 
-.options-dictionary .input-container {
+.dictionary-name .input-container {
     margin-top: 2rem;
     font-size: 1.1em;
 }
@@ -331,13 +332,122 @@
     margin-top: 5rem;
 }
 
-//  TODO: rename
-.options-table {
+
+.options-dictionary-entries-table {
+    position: relative;
+}
+
+.options-dictionary-entries-table > h3 {
+    margin-bottom: 3rem;
+}
+
+.options-dictionary-entries-table > button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-color: lighten(@black, 60%);
+}
+
+.options-dictionary-entries-table table {
     width: 100%;
 }
 
-.options-table td,
-.options-table th {
-    border: 1px solid darken(@white, 30%);
-    padding: 0.5rem 2rem;
+.options-dictionary-entries-table table p {
+    display: inline-block;
+    margin: 0;
+    vertical-align: middle;
+}
+
+.options-dictionary-entries-table table button {
+    float: right;
+}
+
+.options-dictionary-entries-table thead tr {
+    border-top: 1px solid darken(@white, 30%);
+    border-bottom: 1px solid darken(@white, 30%);
+}
+
+.options-dictionary-entries-table tbody tr {
+    border-top: 1px solid darken(@white, 20%);
+    border-bottom: 1px solid darken(@white, 20%);
+}
+
+.options-dictionary-entries-table th {
+    padding: 0.5rem;
+}
+
+.options-dictionary-entries-table td {
+    padding: 0 0.5rem;
+    vertical-align: middle;
+}
+
+.options-dictionary-entries-table th.entry-name {
+    width: 55%;
+}
+
+.options-dictionary-entries-table td.entry-name {
+    padding: 0;
+    width: 55%;
+}
+
+.options-dictionary-entries-table th.entry-profiles,
+.options-dictionary-entries-table td.entry-profiles {
+    width: 35%;
+
+    button {
+        opacity: 0;
+    }
+}
+
+.options-dictionary-entries-table th.entry-remove,
+.options-dictionary-entries-table td.entry-remove {
+    width: 5%;
+    opacity: 0;
+}
+
+.options-dictionary-entries-table td.entry-drag {
+    opacity: 0;
+    border-color: transparent;
+    border-right-color: darken(@white, 30%);
+    padding: 0;
+    text-align: center;
+    color: darken(@white, 55%);
+    cursor: move;
+    cursor: -webkit-grabbing;
+    font-size: 1.1em;
+    width: 5%;
+}
+
+.options-dictionary-entries-table tr:hover {
+    td.entry-drag {
+        background-color: darken(@white, 15%);
+        opacity: 1;
+    }
+
+    td.entry-remove {
+        opacity: 1;
+    }
+
+    td.entry-profiles button {
+        opacity: 1;
+    }
+}
+
+.options-dictionary-entries-table tr.sortable-ghost {
+    opacity: 0.3;
+}
+
+.options-dictionary-entries-table .input-container .value,
+.options-dictionary-entries-table .input-container input {
+    border-color: transparent;
+}
+
+.options-dictionary-entries-table table + p {
+    margin-top: 3rem;
+    margin-left: 6%;
+    color: lighten(@black, 45%);
+}
+
+.options-dictionary-entries-table .no-entries-message {
+    padding: 1.5rem 5%;
 }

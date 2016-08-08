@@ -28,7 +28,10 @@ var app = app || {};
         initialize: function (models, options) {
             this.options = options || {};
             this.proxy_entry = new app.OptionsDictionaryEntry(null, { proxy: true });
-        },
+
+            //  When parent dictionary is fully loaded, we validate positions
+            this.listenTo(this.options.dictionary, 'fully_loaded', this.validatePositions);
+        }// ,
         // getNameTitleTypeHash: function (names) {
         //     return this.proxy_dictionary.getNameTitleTypeHash(names);
         // },

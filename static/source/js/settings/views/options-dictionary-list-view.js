@@ -31,6 +31,7 @@ var app = app || {};
             e.stopPropagation();
             this.collection.add(new_dictionary);
             this.ui.$add_new_dictionary.blur();
+            this.render();
         },
         setActiveItem: function (model) {
             this.options.parent_view.setActiveItem(model);
@@ -41,8 +42,6 @@ var app = app || {};
         onSort: function (event) {
             this.collection.setItemPosition(event.oldIndex, event.newIndex);
         },
-        //  FIXME: this doesn't work as intended, if dictionaries_length
-        //  is zero, we'll get an error
         serializeData: function () {
             return {
                 dictionaries_length: this.collection.length

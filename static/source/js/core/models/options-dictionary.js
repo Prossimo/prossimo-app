@@ -35,6 +35,9 @@ var app = app || {};
 
             return default_value;
         },
+        parse: function (data) {
+            return data;
+        },
         save: function () {
             return Backbone.Model.prototype.saveAndGetId.apply(this, arguments);
         },
@@ -45,12 +48,6 @@ var app = app || {};
             if ( method === 'create' || method === 'update' ) {
                 options.attrs = { dictionary: _.omit(model.toJSON(), properties_to_omit) };
             }
-
-            // if ( method === 'create' || method === 'update' ) {
-            //     options.attrs = { profile: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
-            //         pricing_grids: JSON.stringify(model.get('pricing_grids'))
-            //     }) };
-            // }
 
             return Backbone.sync.call(this, method, model, options);
         },
@@ -116,11 +113,40 @@ var app = app || {};
         },
         initialize: function (attributes, options) {
             this.options = options || {};
+            //  Was it fully loaded already? This means it was fetched and all
+            //  dependencies (units etc.) were processed correctly. This flag
+            //  could be used to tell if it's good to render any views
+            this._wasLoaded = false;
 
-            // if ( !this.options.proxy ) {
-            //     this.validatePricingGrids();
-            //     this.on('change:unit_type', this.onTypeUpdate, this);
-            // }
+            if ( !this.options.proxy ) {
+                this.entries = new app.OptionsDictionaryEntryCollection(null, { dictionary: this });
+                this.on('add', this.setDependencies, this);
+            }
+        },
+        setDependencies: function (model, response, options) {
+            var changed_flag = false;
+
+            //  If response is empty or there was an error
+            if ( !response && app.session.get('no_backend') !== true ||
+                options && options.xhr && options.xhr.status && options.xhr.status !== 200
+            ) {
+                return;
+            }
+
+            if ( this.get('entries') ) {
+                this.entries.set(this.get('entries'));
+                this.unset('entries', { silent: true });
+                changed_flag = true;
+            }
+
+            if ( changed_flag ) {
+                this.trigger('set_dependencies');
+            }
+
+            if ( !this._wasLoaded ) {
+                this._wasLoaded = true;
+                this.trigger('fully_loaded');
+            }
         }
     });
 })();

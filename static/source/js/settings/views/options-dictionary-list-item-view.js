@@ -13,7 +13,7 @@ var app = app || {};
         initialize: function () {
             this.listenTo(this.model, 'change:name', this.render);
         },
-        onItemClick: function (e) {
+        onItemClick: function () {
             this.options.parent_view.setActiveItem(this.model);
         },
         serializeData: function () {

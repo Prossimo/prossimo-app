@@ -8,30 +8,12 @@ var app = app || {};
         className: 'options-dictionary',
         template: app.templates['settings/options-dictionary-view'],
         ui: {
-            $name_container: '.dictionary-name'
+            $name_container: '.dictionary-name',
+            $entries_container: '.entry-table-container'
         },
         serializeData: function () {
             return {
-                name: this.model.get('name'),
-                // entries: this.model.entries ? this.model.entries.map(function (entry) {
-                //     return {
-                //         id: entry.id,
-                //         name: entry.get('name'),
-                //         price: entry.get('price'),
-                //         data: entry.get('data'),
-                //         position: entry.get('position')
-                //     };
-                // }) : []
-                //  TODO: this should be actual entries collection thing (like above), not an array
-                entries: this.model.get('entries') ? this.model.get('entries').map(function (entry) {
-                    return {
-                        id: entry.id,
-                        name: entry.name,
-                        price: entry.price,
-                        data: entry.data,
-                        position: entry.position
-                    };
-                }) : []
+                name: this.model.get('name')
             };
         },
         initialize: function () {
@@ -40,13 +22,22 @@ var app = app || {};
                 param: 'name',
                 input_type: 'text'
             });
+
+            this.entries_table_view = new app.OptionsDictionaryEntriesTableView({
+                collection: this.model.entries
+            });
         },
         onRender: function () {
             this.ui.$name_container.append(this.name_input_view.render().el);
+            this.ui.$entries_container.append(this.entries_table_view.render().el);
         },
         onDestroy: function () {
             if ( this.name_input_view ) {
                 this.name_input_view.destroy();
+            }
+
+            if ( this.entries_table_view ) {
+                this.entries_table_view.destroy();
             }
         }
     });

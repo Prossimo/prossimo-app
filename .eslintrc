@@ -2,8 +2,7 @@
     "parser": "espree",
     "env": {
         "browser": true,
-        "jasmine": true,
-        "node": true
+        "jasmine": true
     },
     "rules": {
         "no-alert": 0,
@@ -11,7 +10,6 @@
         "no-bitwise": 2,
         "no-caller": 2,
         "no-catch-shadow": 2,
-        "comma-dangle": 2,
         "no-underscore-dangle": 0,
         "no-cond-assign": 2,
         "no-console": 0,
@@ -28,7 +26,6 @@
         "no-empty": 2,
         "no-empty-class": 0,
         "no-empty-character-class": 2,
-        "no-empty-label": 2,
         "no-eq-null": 2,
         "no-eval": 2,
         "no-ex-assign": 2,
@@ -157,7 +154,6 @@
         "space-in-brackets": [0, "never"],
         "space-in-parens": [0, "never"],
         "space-infix-ops": 2,
-        "space-return-throw-case": 2,
         "space-unary-ops": [2, { "words": true, "nonwords": false }],
         "spaced-comment": 0,
         "spaced-line-comment": [0, "always"],

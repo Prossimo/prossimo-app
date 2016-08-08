@@ -98,11 +98,14 @@ module.exports = function (grunt) {
         'settings/views/options-view.js',
         'settings/views/options-dictionary-list-item-view.js',
         'settings/views/options-dictionary-list-view.js',
+        'settings/views/options-dictionary-entries-item-view.js',
+        'settings/views/options-dictionary-entries-table-view.js',
         'settings/views/options-dictionary-view.js',
         'supplier-request/views/main-supplier-request-view.js',
         'supplier-request/views/supplier-request-header-view.js',
         'dialogs/views/base-dialog-view.js',
         'dialogs/views/login-dialog-view.js',
+        'dialogs/views/options-profiles-table-dialog-view.js',
         'app.js'
     ];
 
