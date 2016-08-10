@@ -4,7 +4,6 @@ var app = app || {};
     'use strict';
 
     var PROJECT_PROPERTIES = [
-        { name: 'pipedrive_id', title: 'Pipedrive ID', type: 'string' },
         { name: 'client_name', title: 'Client Name', type: 'string' },
         { name: 'client_company_name', title: 'Company', type: 'string' },
         { name: 'client_phone', title: 'Phone', type: 'string' },

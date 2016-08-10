@@ -31,6 +31,9 @@ var app = app || {};
             this.state = new Backbone.Model();
             this.state.set('editMode', false);
             this.state.on('change:editMode', this.render);
+            this.model.on('change', function(){
+                this.model.save();
+            }.bind(this))
         },
         enterMode: function() {
             if(this.state.get('editMode')) {
