@@ -17,7 +17,7 @@ var app = app || {};
         },
         onRender: function () {
             this.project_info_view = new app.ProjectInfoView({
-                model: app.current_project
+                model: app.projects.findWhere({id:app.current_project.get('id')})
             });
 
             this.totals_view = new app.ProjectTotalsView({
