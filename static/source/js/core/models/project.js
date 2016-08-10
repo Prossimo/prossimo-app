@@ -12,7 +12,9 @@ var app = app || {};
         { name: 'project_name', title: 'Project Name', type: 'string' },
         { name: 'project_address', title: 'Project Address', type: 'string' },
         { name: 'quote_date', title: 'Quote Date', type: 'string' },
-        { name: 'quote_revision', title: 'Quote Revision', type: 'number' }
+        { name: 'quote_revision', title: 'Quote Revision', type: 'number' },
+        { name: 'shipping_notes', title: 'Shipping Notes', type: 'string'},
+        { name: 'project_notes', title: 'Project Notes', type: 'string'}
     ];
 
     app.Project = Backbone.Model.extend({
