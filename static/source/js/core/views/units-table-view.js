@@ -174,7 +174,10 @@ var app = app || {};
         },
         onCloneSelected: function () {
             if ( this.selected.length === 1 && this.hot ) {
-                this.hot.getSourceData().at(this.selected[0]).duplicate();
+                var selectedData = this.hot.getSourceData().at(this.selected[0]);
+                if (!selectedData.hasOnlyDefaultAttributes()) {
+                    selectedData.duplicate();
+                }
             }
         },
         toggleTableVisibility: function () {
@@ -986,7 +989,12 @@ var app = app || {};
                                 self.ui.$remove.removeClass('disabled');
                                 if ( startRow === endRow ) {
                                     self.selected = [startRow];
-                                    self.ui.$clone.removeClass('disabled');
+                                    var selectedData = self.hot.getSourceData().at(startRow);
+                                    if (selectedData.hasOnlyDefaultAttributes()) {
+                                        self.ui.$clone.addClass('disabled');
+                                    } else {
+                                        self.ui.$clone.removeClass('disabled');
+                                    }
                                 } else {
                                     var start = startRow, end = endRow;
                                     if ( startRow > endRow ) {
