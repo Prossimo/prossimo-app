@@ -1723,7 +1723,80 @@ var app = app || {};
         },
         isArchedWindow: function () {
             return (this.getArchedPosition() !== null);
+        },
+        /* trapezoid start */
+        isTrapezoid: function () {
+            var root = this.generateFullRoot();
+            return +root.id === 294;
+        },
+        getTrapezoidHeights: function (inside) {
+            if (typeof inside !== 'undefined') {
+                this.inside = inside;
+            }
+            var height = this.getInMetric('height', 'mm');
+            var left = height,
+                right = height - 300;
+            return (this.inside) ? { left: right, right: left } : { left: left, right: right };
+        },
+        getTrapezoidMaxHeight: function () {
+            var heights = this.getTrapezoidHeights();
+            return ( heights.left > heights.right ) ? heights.left : heights.right;
+        },
+        getTrapezoidInnerCorners: function (params) {
+            var heights = params.heights;
+            var width = params.width;
+            var frameWidth = params.frameWidth;
+            var maxHeight = params.maxHeight;
+            var corners = {};
+
+            if (typeof heights === 'object') {
+                var cornerLeft = Math.abs( ( Math.atan( ( ( maxHeight - heights.right ) - ( maxHeight - heights.left ) ) / ( width - 0 ) ) -
+                        Math.atan( ( maxHeight - ( maxHeight - heights.left ) ) / ( 0 - 0 ) ) ) / Math.PI * 180 ) / 2;
+                var cornerRight = Math.abs( 90 - cornerLeft );
+                corners = {
+                    left: {
+                        x: frameWidth,
+                        y: maxHeight - heights.left + ( Math.tan( ( 90 - cornerLeft ) / 180 * Math.PI ) * frameWidth )
+                    },
+                    right: {
+                        x: width - frameWidth,
+                        y: maxHeight - heights.right + ( Math.tan( ( 90 - cornerRight ) / 180 * Math.PI ) * frameWidth )
+                    }
+                };
+            }
+
+            return corners;
+        },
+        getMainTrapezoidInnerCorners: function () {
+            return this.getTrapezoidInnerCorners({
+                heights: this.getTrapezoidHeights(),
+                width: this.getInMetric('width', 'mm'),
+                frameWidth: this.profile.get('frame_width'),
+                maxHeight: this.getTrapezoidMaxHeight()
+            });
+        },
+        getTrapezoidCrossing: function (start, finish) {
+            var corners = this.getMainTrapezoidInnerCorners();
+            var x1 = start.x,
+                y1 = start.y,
+                x2 = finish.x,
+                y2 = finish.y,
+                x3 = corners.left.x,
+                y3 = corners.left.y,
+                x4 = corners.right.x,
+                y4 = corners.right.y;
+            var diff = ( ( ( y4 - y3 ) * ( x2 - x1 ) ) - ( ( x4 - x3 ) * ( y2 - y1 ) ) );
+            var Ua = ( ( ( x4 - x3 ) * ( y1 - y3 ) ) - ( ( y4 - y3 ) * ( x1 - x3 ) ) ) / diff;
+            var Ub = ( ( ( x2 - x1 ) * ( y1 - y3 ) ) - ( ( y2 - y1 ) * ( x1 - x3 ) ) ) / diff;
+            return ( Ua >=0 && Ua <= 1 && Ub >=0 && Ub <= 1 ) ? { x: x1 + ( Ua * (x2 - x1) ), y: y1 + ( Ua * (y2 - y1) ) } : false;
+        },
+        getLineCrossing: function (x, start, finish) {
+            return ( 0 - ( ( start.y - finish.y ) * x ) - ( ( start.x * finish.y ) - ( finish.x * start.y ) ) ) / ( finish.x - start.x );
+        },
+        getFrameOffset: function () {
+          return 34;
         }
+        /* trapezoid end */
     });
 
     // static function
