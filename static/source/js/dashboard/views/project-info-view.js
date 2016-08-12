@@ -50,6 +50,12 @@ var app = app || {};
         },
         enterEditMode: function() {
             this.ui.$content.html(this.editTemplate(this.model.toJSON()));
+            this.ui.$content.find('.date').datepicker({
+              // defaultViewDate: {
+              //   year: new Date().getFullYear()
+              // },
+              format: 'd MM, yyyy'
+            });
         },
         serializeData: function () {
             return $.extend({}, this.model.toJSON(), {state:this.state.toJSON()});
