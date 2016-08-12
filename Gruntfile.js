@@ -12,6 +12,7 @@ module.exports = function (grunt) {
         'bootstrap/js/tooltip.js',
         'bootstrap/js/popover.js',
         'bootstrap/js/modal.js',
+        'bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js',
         'bootstrap-select/dist/js/bootstrap-select.min.js',
         'bootstrap-toggle/js/bootstrap-toggle.min.js',
         'konva/konva.min.js',
@@ -26,7 +27,8 @@ module.exports = function (grunt) {
     var vendor_css_files = [
         'handsontable/dist/handsontable.full.min.css',
         'bootstrap-select/dist/css/bootstrap-select.min.css',
-        'bootstrap-toggle/css/bootstrap-toggle.min.css'
+        'bootstrap-toggle/css/bootstrap-toggle.min.css',
+        'bootstrap-datepicker/dist/css/bootstrap-datepicker3.standalone.min.css'
     ];
 
     var js_files = [
