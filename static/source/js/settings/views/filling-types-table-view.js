@@ -41,7 +41,7 @@ var app = app || {};
             this.table_update_timeout = null;
             this.dropdown_scroll_timer = null;
             this.columns = [
-                'move_item', 'name', 'supplier_name', 'type', 'item_actions'
+                'move_item', 'name', 'supplier_name', 'type'
             ];
 
             this.undo_manager = new app.UndoManager({
@@ -267,8 +267,7 @@ var app = app || {};
         },
         getCustomColumnHeader: function (column_name) {
             var custom_column_headers_hash = {
-                move_item: 'Move',
-                item_actions: 'Actions'
+                move_item: 'Move'
             };
 
             return custom_column_headers_hash[column_name];
