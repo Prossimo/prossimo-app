@@ -4,7 +4,6 @@ var app = app || {};
     'use strict';
 
     var PROJECT_PROPERTIES = [
-        { name: 'pipedrive_id', title: 'Pipedrive ID', type: 'string' },
         { name: 'client_name', title: 'Client Name', type: 'string' },
         { name: 'client_company_name', title: 'Company', type: 'string' },
         { name: 'client_phone', title: 'Phone', type: 'string' },
@@ -13,7 +12,9 @@ var app = app || {};
         { name: 'project_name', title: 'Project Name', type: 'string' },
         { name: 'project_address', title: 'Project Address', type: 'string' },
         { name: 'quote_date', title: 'Quote Date', type: 'string' },
-        { name: 'quote_revision', title: 'Quote Revision', type: 'number' }
+        { name: 'quote_revision', title: 'Quote Revision', type: 'number' },
+        { name: 'shipping_notes', title: 'Shipping Notes', type: 'string'},
+        { name: 'project_notes', title: 'Project Notes', type: 'string'}
     ];
 
     app.Project = Backbone.Model.extend({

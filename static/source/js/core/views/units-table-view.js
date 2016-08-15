@@ -13,7 +13,9 @@ var app = app || {};
             $add_new_unit: '.js-add-new-unit',
             $add_new_accessory: '.js-add-new-accessory',
             $undo: '.js-undo',
-            $redo: '.js-redo'
+            $redo: '.js-redo',
+            $remove: '.js-remove-unit',
+            $clone: '.js-clone-unit'
         },
         events: {
             'click .units-table-title': 'toggleTableVisibility',
@@ -25,7 +27,9 @@ var app = app || {};
             'click .js-move-item-up': 'onMoveItemUp',
             'click .js-move-item-down': 'onMoveItemDown',
             'click @ui.$undo': 'onUndo',
-            'click @ui.$redo': 'onRedo'
+            'click @ui.$redo': 'onRedo',
+            'click @ui.$remove': 'onRemoveSelected',
+            'click @ui.$clone': 'onCloneSelected'
         },
         keyShortcuts: {
             n: 'onNewUnitOrAccessory',
@@ -53,7 +57,7 @@ var app = app || {};
                         'lock_mechanism', 'glazing_bead', 'gasket_color',
                         'hinge_style', 'opening_direction', 'threshold',
                         'internal_sill', 'external_sill', 'glazing', 'glazing_bar_type', 'glazing_bar_width',
-                        'uw', 'u_value', 'item_actions']
+                        'uw', 'u_value']
                 },
                 prices: {
                     title: 'Prices',
@@ -63,23 +67,14 @@ var app = app || {};
                         'supplier_discount', 'unit_cost_discounted', 'subtotal_cost_discounted', 'price_markup',
                         'unit_price', 'subtotal_price', 'discount', 'unit_price_discounted',
                         'subtotal_price_discounted', 'subtotal_profit', 'total_square_feet', 'square_feet_price',
-                        'square_feet_price_discounted', 'item_actions']
+                        'square_feet_price_discounted']
                 },
                 extras: {
                     title: 'Extras',
                     collection: this.options.extras,
                     columns: ['move_item', 'description', 'quantity', 'extras_type', 'original_cost',
                         'original_currency', 'conversion_rate', 'unit_cost', 'price_markup',
-                        'unit_price', 'subtotal_cost', 'subtotal_price', 'subtotal_profit',
-                        'item_actions']
-                },
-                project_info: {
-                    title: 'Project Info',
-                    collection: app.projects,
-                    columns: ['pipedrive_id', 'project_name', 'client_name',
-                        'client_company_name', 'client_phone', 'client_email',
-                        'client_address', 'project_address', 'quote_date',
-                        'quote_revision', 'quote_number']
+                        'unit_price', 'subtotal_cost', 'subtotal_price', 'subtotal_profit']
                 }
             };
             this.active_tab = 'specs';
@@ -88,6 +83,8 @@ var app = app || {};
                 register: this.collection,
                 track: true
             });
+
+            this.selected = [];
 
             this.listenTo(this.collection, 'all', this.updateTable);
             this.listenTo(this.options.extras, 'all', this.updateTable);
@@ -156,6 +153,24 @@ var app = app || {};
         onRedo: function () {
             this.undo_manager.handler.redo();
             this.ui.$redo.blur();
+        },
+        onRemoveSelected: function () {
+            if ( this.selected.length && this.hot ) {
+                for (var i = this.selected.length - 1; i >= 0; i--) {
+                    this.hot.getSourceData().at(this.selected[i]).destroy();
+                }
+                this.selected = [];
+                this.hot.selectCell(0, 0, 0, 0, false);
+                this.hot.deselectCell();
+            }
+        },
+        onCloneSelected: function () {
+            if ( this.selected.length === 1 && this.hot ) {
+                var selectedData = this.hot.getSourceData().at(this.selected[0]);
+                if (!selectedData.hasOnlyDefaultAttributes()) {
+                    selectedData.duplicate();
+                }
+            }
         },
         toggleTableVisibility: function () {
             if ( !this.options.is_always_visible ) {
@@ -595,10 +610,6 @@ var app = app || {};
                     readOnly: true,
                     renderer: app.hot_renderers.moveItemRenderer
                 },
-                item_actions: {
-                    readOnly: true,
-                    renderer: app.hot_renderers.itemActionsRenderer
-                },
                 internal_color: {
                     type: 'dropdown',
                     source: _.union(
@@ -698,12 +709,6 @@ var app = app || {};
                 properties_obj = _.extend(properties_obj, properties_hash[column_name]);
             }
 
-            if ( _.indexOf(this.tabs.project_info.columns, column_name) !== -1 ) {
-                properties_obj = _.extend(properties_obj, {
-                    renderer: app.hot_renderers.projectInfoRenderer
-                });
-            }
-
             return properties_obj;
         },
         //  Returns column data in a HoT-specific format, for each column we
@@ -801,7 +806,6 @@ var app = app || {};
                 glazing_bar_width: 'Muntin Width',
                 u_value: 'U Value',
                 move_item: 'Move',
-                item_actions: 'Actions',
                 original_cost: project_settings && project_settings.get('pricing_mode') === 'estimates' ?
                     'Orig. Cost (est.)' : 'Orig. Cost',
                 original_currency: 'Orig. Curr.',
@@ -872,7 +876,6 @@ var app = app || {};
                 glazing: 300,
                 glazing_bar_type: 140,
                 glazing_bar_width: 100,
-                item_actions: 110,
                 original_cost: 100,
                 unit_cost: 100,
                 subtotal_cost: 100,
@@ -915,6 +918,9 @@ var app = app || {};
             function onBeforeKeyDown(event, onlyCtrlKeys) {
                 var isCtrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
 
+                if(isCtrlDown){
+                    event.stopImmediatePropagation();
+                }
                 //  Ctrl + Y || Ctrl + Shift + Z
                 if ( isCtrlDown && (event.keyCode === 89 || (event.shiftKey && event.keyCode === 90 )) ) {
                     self.onRedo();
@@ -965,6 +971,39 @@ var app = app || {};
                         enterMoves: { row: 1, col: 0 },
                         beforeKeyDown: function (e) {
                             onBeforeKeyDown(e, true);
+                        },
+                        afterSelection: function (startRow, startColumn, endRow, endColumn) {
+                            self.selected = [];
+                            if ( startColumn === 0 && endColumn === this.countCols() - 1 ) {
+                                self.ui.$remove.removeClass('disabled');
+                                if ( startRow === endRow ) {
+                                    self.selected = [startRow];
+                                    var selectedData = self.hot.getSourceData().at(startRow);
+                                    if (selectedData.hasOnlyDefaultAttributes()) {
+                                        self.ui.$clone.addClass('disabled');
+                                    } else {
+                                        self.ui.$clone.removeClass('disabled');
+                                    }
+                                } else {
+                                    var start = startRow, end = endRow;
+                                    if ( startRow > endRow ) {
+                                        start = endRow;
+                                        end = startRow;
+                                    }
+                                    for (var i = start; i <= end; i++) {
+                                        self.selected.push(i);
+                                    }
+                                    self.ui.$clone.addClass('disabled');
+                                }
+                            } else {
+                                self.ui.$remove.addClass('disabled');
+                                self.ui.$clone.addClass('disabled');
+                            }
+                        },
+                        afterDeselect: function () {
+                            if ( self.selected.length ) {
+                                this.selectCell(self.selected[0], 0, self.selected[self.selected.length - 1], this.countCols() - 1, false);
+                            }
                         }
                     });
                 }, 5);

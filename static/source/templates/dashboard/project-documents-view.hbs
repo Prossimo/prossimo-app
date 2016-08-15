@@ -1,0 +1,17 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Project Files</h3>
+    </div>
+    <div class="panel-body">
+        {{#if has_documents }}
+            <ul>
+                {{#each document_list}}
+                    <li><a class="type-{{ type }}" href="{{ url }}" target="_blank">{{ name }} <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span></a></li>
+                {{/each}}
+            </ul>
+        {{else}}
+            <h3>No Files</h3>
+            <p>This project doesn't appear to have any attached files.</p>
+        {{/if}}
+    </div>
+</div>
