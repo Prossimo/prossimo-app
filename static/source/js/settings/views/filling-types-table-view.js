@@ -13,7 +13,9 @@ var app = app || {};
             $hot_container: '.filling-types-handsontable-container',
             $add_new_type: '.js-add-new-filling-type',
             $undo: '.js-undo',
-            $redo: '.js-redo'
+            $redo: '.js-redo',
+            $remove: '.js-remove-unit',
+            $clone: '.js-clone-unit'
         },
         events: {
             'click @ui.$add_new_type': 'addNewFillingType',
@@ -22,7 +24,9 @@ var app = app || {};
             'click .js-move-item-up': 'onMoveItemUp',
             'click .js-move-item-down': 'onMoveItemDown',
             'click @ui.$undo': 'onUndo',
-            'click @ui.$redo': 'onRedo'
+            'click @ui.$redo': 'onRedo',
+            'click @ui.$remove': 'onRemoveSelected',
+            'click @ui.$clone': 'onCloneSelected'
         },
         keyShortcuts: {
             n: 'addNewFillingType',
@@ -67,27 +71,21 @@ var app = app || {};
             this.undo_manager.handler.redo();
             this.ui.$redo.blur();
         },
-        onRemoveItem: function (e) {
-            var target_row = $(e.target).data('row');
-            var target_object;
-
-            if ( this.hot ) {
-                target_object = this.hot.getSourceData().at(target_row);
-
-                if ( !target_object.get('is_base_type') ) {
-                    target_object.destroy();
+        onRemoveSelected: function () {
+            if ( this.selected.length && this.hot ) {
+                for (var i = this.selected.length - 1; i >= 0; i--) {
+                    this.hot.getSourceData().at(this.selected[i]).destroy();
                 }
+                this.selected = [];
+                this.hot.selectCell(0, 0, 0, 0, false);
+                this.hot.deselectCell();
             }
         },
-        onCloneItem: function (e) {
-            var target_row = $(e.target).data('row');
-            var target_object;
-
-            if ( this.hot ) {
-                target_object = this.hot.getSourceData().at(target_row);
-
-                if ( !target_object.get('is_base_type') ) {
-                    target_object.duplicate();
+        onCloneSelected: function () {
+            if ( this.selected.length === 1 && this.hot ) {
+                var selectedData = this.hot.getSourceData().at(this.selected[0]);
+                if (!selectedData.hasOnlyDefaultAttributes()) {
+                    selectedData.duplicate();
                 }
             }
         },
@@ -198,10 +196,6 @@ var app = app || {};
                 move_item: {
                     readOnly: true,
                     renderer: app.hot_renderers.moveItemRenderer
-                },
-                item_actions: {
-                    readOnly: true,
-                    renderer: app.hot_renderers.itemActionsRenderer
                 }
             };
 
@@ -340,6 +334,50 @@ var app = app || {};
                             enterMoves: { row: 1, col: 0 },
                             beforeKeyDown: function (e) {
                                 onBeforeKeyDown(e, true);
+                            },
+                            afterSelection: function (startRow, startColumn, endRow, endColumn) {
+                                self.selected = [];
+                                if ( startColumn === 0 && endColumn === this.countCols() - 1 ) {
+                                    //self.ui.$remove.removeClass('disabled');
+                                    if ( startRow === endRow ) {
+                                        self.selected = [startRow];
+                                        var selectedData = self.hot.getSourceData().at(startRow);
+                                        if(selectedData.get('is_base_type')) {
+                                            self.ui.$remove.addClass('disabled');
+                                            self.selected = [];
+                                        } else {
+                                            self.ui.$remove.removeClass('disabled');
+                                        }
+                                        if (selectedData.hasOnlyDefaultAttributes() || selectedData.get('is_base_type')) {
+                                            self.ui.$clone.addClass('disabled');
+                                        } else {
+                                            self.ui.$clone.removeClass('disabled');
+                                        }
+                                    } else {
+                                        var start = startRow, end = endRow;
+                                        if ( startRow > endRow ) {
+                                            start = endRow;
+                                            end = startRow;
+                                        }
+                                        for (var i = start; i <= end; i++) {
+                                            if(self.hot.getSourceData().at(i).get('is_base_type')) {
+                                                self.selected = [];
+                                                self.ui.$remove.addClass('disabled');
+                                                return;
+                                            }
+                                            self.selected.push(i);
+                                        }
+                                        self.ui.$clone.addClass('disabled');
+                                    }
+                                } else {
+                                    self.ui.$remove.addClass('disabled');
+                                    self.ui.$clone.addClass('disabled');
+                                }
+                            },
+                            afterDeselect: function () {
+                                if ( self.selected.length ) {
+                                    this.selectCell(self.selected[0], 0, self.selected[self.selected.length - 1], this.countCols() - 1, false);
+                                }
                             }
                         });
                     }
