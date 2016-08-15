@@ -75,14 +75,6 @@ var app = app || {};
                     columns: ['move_item', 'description', 'quantity', 'extras_type', 'original_cost',
                         'original_currency', 'conversion_rate', 'unit_cost', 'price_markup',
                         'unit_price', 'subtotal_cost', 'subtotal_price', 'subtotal_profit']
-                },
-                project_info: {
-                    title: 'Project Info',
-                    collection: app.projects,
-                    columns: ['pipedrive_id', 'project_name', 'client_name',
-                        'client_company_name', 'client_phone', 'client_email',
-                        'client_address', 'project_address', 'quote_date',
-                        'quote_revision', 'quote_number']
                 }
             };
             this.active_tab = 'specs';
@@ -715,12 +707,6 @@ var app = app || {};
 
             if ( properties_hash[column_name] ) {
                 properties_obj = _.extend(properties_obj, properties_hash[column_name]);
-            }
-
-            if ( _.indexOf(this.tabs.project_info.columns, column_name) !== -1 ) {
-                properties_obj = _.extend(properties_obj, {
-                    renderer: app.hot_renderers.projectInfoRenderer
-                });
             }
 
             return properties_obj;
