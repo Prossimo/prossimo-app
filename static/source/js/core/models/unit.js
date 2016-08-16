@@ -1727,7 +1727,7 @@ var app = app || {};
         /* trapezoid start */
         isTrapezoid: function () {
             var root = this.generateFullRoot();
-            return +root.id === 294;
+            return +root.id === 213;
         },
         getTrapezoidHeights: function (inside) {
             if (typeof inside !== 'undefined') {
@@ -1790,8 +1790,11 @@ var app = app || {};
             var Ub = ( ( ( x2 - x1 ) * ( y1 - y3 ) ) - ( ( y2 - y1 ) * ( x1 - x3 ) ) ) / diff;
             return ( Ua >=0 && Ua <= 1 && Ub >=0 && Ub <= 1 ) ? { x: x1 + ( Ua * (x2 - x1) ), y: y1 + ( Ua * (y2 - y1) ) } : false;
         },
-        getLineCrossing: function (x, start, finish) {
+        getLineCrossingX: function (x, start, finish) {
             return ( 0 - ( ( start.y - finish.y ) * x ) - ( ( start.x * finish.y ) - ( finish.x * start.y ) ) ) / ( finish.x - start.x );
+        },
+        getLineCrossingY: function (y, start, finish) {
+            return ( 0 - ( ( finish.x - start.x ) * y ) - ( ( start.x * finish.y ) - ( finish.x * start.y ) ) ) / ( start.y - finish.y );
         },
         getFrameOffset: function () {
           return 34;
