@@ -250,7 +250,7 @@ var app = app || {};
             return _.indexOf(TYPES_WITH_OUTSIDE_HANDLE, this.get('unit_type')) !== -1;
         },
         getThresholdType: function () {
-            var threshold_type = '--';
+            var threshold_type = '(None)';
 
             if ( this.isThresholdPossible() ) {
                 if ( this.get('low_threshold') === true ) {

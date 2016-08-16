@@ -7,6 +7,7 @@ var app = app || {};
     //  That's what we use for Units
     //  --------------------------------------------------------------------
 
+    //  TODO: remove
     var COLORS = ['White', 'Golden Oak', 'Mahagony', 'Grey'];
     var GASKET_COLORS = ['Black', 'Grey'];
     var INTERIOR_HANDLE_TYPES = [
@@ -23,6 +24,7 @@ var app = app || {};
     var GLAZING_BAR_WIDTHS = [12, 22, 44];
     var OPENING_DIRECTIONS = ['Inward', 'Outward'];
 
+    //  TODO: remove
     var UNIT_ATTRIBUTES_POPULATED_FROM_DICTIONARIES = [
         'internal_color', 'external_color', 'interior_handle', 'exterior_handle', 'hardware_type',
         'lock_mechanism', 'glazing_bead', 'gasket_color', 'hinge_style', 'internal_sill', 'external_sill',
@@ -173,19 +175,20 @@ var app = app || {};
                 return item.get('name');
             });
         },
-        getFillingTypeById: function (cid) {
-            return this.filling_types.get(cid);
-        },
-        getFillingTypeByName: function (name) {
-            return this.filling_types.findWhere({ name: name });
-        },
-        getAvailableFillingTypes: function () {
-            return this.filling_types.models;
-        },
-        getAvailableFillingTypeNames: function () {
-            return this.getAvailableFillingTypes().map(function (item) {
-                return item.get('name');
-            });
+        getProfileNamesByIds: function (ids_array) {
+            var name_list = [];
+
+            this.profiles.each(function (item) {
+                var index = ids_array.indexOf(item.id);
+
+                if ( index !== -1 ) {
+                    name_list.push({ index: index, name: item.get('name') });
+                }
+            }, this);
+
+            name_list = _.pluck(name_list, 'name');
+
+            return name_list;
         },
         getProfileByIdOrDummy: function (profile_id) {
             var profile = this.profiles.get(profile_id);
@@ -207,6 +210,20 @@ var app = app || {};
             }
 
             return default_profile_id;
+        },
+        getFillingTypeById: function (cid) {
+            return this.filling_types.get(cid);
+        },
+        getFillingTypeByName: function (name) {
+            return this.filling_types.findWhere({ name: name });
+        },
+        getAvailableFillingTypes: function () {
+            return this.filling_types.models;
+        },
+        getAvailableFillingTypeNames: function () {
+            return this.getAvailableFillingTypes().map(function (item) {
+                return item.get('name');
+            });
         },
         getColors: function () {
             return COLORS;
@@ -244,11 +261,44 @@ var app = app || {};
         getOpeningDirections: function () {
             return OPENING_DIRECTIONS;
         },
+        //  TODO: remove
         getUnitAttributesPopulatedFromDictionaries: function () {
             return UNIT_ATTRIBUTES_POPULATED_FROM_DICTIONARIES;
         },
+        //  TODO: remove
         isPopulatedFromDictionary: function (attribute_name) {
             return _.contains(this.getUnitAttributesPopulatedFromDictionaries(), attribute_name);
+        },
+        getAvailableOptions: function (dictionary_id, profile_id) {
+            var available_options = [];
+            var target_dictionary = this.dictionaries.get(dictionary_id);
+
+            if ( target_dictionary ) {
+                target_dictionary.entries.each(function (entry) {
+                    if ( entry.get('profiles').length && _.contains(entry.get('profiles'), profile_id) ) {
+                        available_options.push(entry);
+                    }
+                }, this);
+            }
+
+            return available_options;
+        },
+        getDictionaryIdByName: function (name) {
+            var target_dictionary = this.dictionaries.findWhere({name: name});
+
+            return target_dictionary ? target_dictionary.id : undefined;
+        },
+        getDictionaryEntryIdByName: function (dictionary_id, name) {
+            var target_dictionary = this.dictionaries.get(dictionary_id);
+            var target_entry = target_dictionary.entries.findWhere({name: name});
+
+            return target_entry ? target_entry.id : undefined;
+        },
+        getAvailableDictionaries: function () {
+            return this.dictionaries;
+        },
+        getAvailableDictionaryNames: function () {
+            return this.getAvailableDictionaries().pluck('name');
         }
     });
 })();

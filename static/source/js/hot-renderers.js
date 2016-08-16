@@ -181,10 +181,14 @@ var app = app || {};
 
             return td;
         },
-        //  Just replace visible cell value with "--"
-        disabledPropertyRenderer: function (instance, td) {
-            $(td).addClass('htDimmed').text('--');
-            return td;
+        //  Just replace visible cell value with "--" or another message
+        getDisabledPropertyRenderer: function (message) {
+            message = message || '--';
+
+            return function (instance, td) {
+                $(td).addClass('htDimmed').text(message);
+                return td;
+            };
         },
         //  Disable currently inactive projects in Project info tab
         projectInfoRenderer: function (instance, td, row, col) {

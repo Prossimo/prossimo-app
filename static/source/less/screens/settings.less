@@ -319,19 +319,28 @@
     padding: 1em 2em 1em 330px;
 }
 
-.options-dictionary .dictionary-name {
-    max-width: 300px;
+.options-dictionary .dictionary-inputs-container {
+    .clearfix();
 }
 
 .dictionary-name .input-container {
+    max-width: 300px;
     margin-top: 2rem;
     font-size: 1.1em;
+}
+
+.options-dictionary .dictionary-attribute {
+    margin-top: 4rem;
+}
+
+.dictionary-attribute .input-container {
+    margin-top: 2rem;
+    max-width: 300px;
 }
 
 .entry-table-container {
     margin-top: 5rem;
 }
-
 
 .options-dictionary-entries-table {
     position: relative;
@@ -397,6 +406,16 @@
     button {
         opacity: 0;
     }
+}
+
+.options-dictionary-entries-table .entry-profiles button {
+    max-width: 25%;
+    float: right;
+}
+
+.options-dictionary-entries-table .entry-profiles p {
+    .text-overflow();
+    max-width: 75%;
 }
 
 .options-dictionary-entries-table th.entry-remove,

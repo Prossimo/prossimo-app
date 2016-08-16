@@ -8,7 +8,7 @@ var app = app || {};
         className: 'options-main-container',
         template: false,
         initialize: function () {
-            this.active_item = undefined;
+            this.active_item = this.collection.at(0) || undefined;
 
             this.dictionary_list_view = new app.OptionsDictionaryListView({
                 collection: this.collection,

@@ -242,7 +242,7 @@ var app = app || {};
                         cell_properties.readOnly = true;
 
                         if ( _.contains(['name', 'type'], property) === false ) {
-                            cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
+                            cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer();
                         }
                     }
                 }

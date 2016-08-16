@@ -40,7 +40,8 @@ var app = app || {};
         { name: 'price_markup', title: 'Markup', type: 'number' },
         { name: 'discount', title: 'Discount', type: 'number' },
 
-        { name: 'position', title: 'Position', type: 'number' }
+        { name: 'position', title: 'Position', type: 'number' },
+        { name: 'unit_options', title: 'Unit Options', type: 'string' }
     ];
 
     //  We only enable those for editing on units where `isDoorType` is `true`
@@ -155,6 +156,10 @@ var app = app || {};
         return type;
     }
 
+    function getDefaultUnitOptions() {
+        return [];
+    }
+
     function findParent(root, childId) {
         if (root.sections.length === 0) {
             return null;
@@ -192,7 +197,8 @@ var app = app || {};
                 conversion_rate: 0.9,
                 price_markup: 2.3,
                 quantity: 1,
-                root_section: getSectionDefaults(name)
+                root_section: getSectionDefaults(name),
+                unit_options: getDefaultUnitOptions()
             };
 
             if ( app.settings ) {
@@ -222,7 +228,9 @@ var app = app || {};
             return Backbone.Model.prototype.saveAndGetId.apply(this, arguments);
         },
         sync: function (method, model, options) {
-            var properties_to_omit = ['id'];
+            //  FIXME: should actually persist unit_options
+            // var properties_to_omit = ['id'];
+            var properties_to_omit = ['id', 'unit_options'];
 
             if ( method === 'create' || method === 'update' ) {
                 options.attrs = { project_unit: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
@@ -371,6 +379,7 @@ var app = app || {};
         hasDummyProfile: function () {
             return this.profile && this.profile.get('is_dummy');
         },
+        //  TODO: add special case for `unit_options` attribute
         hasOnlyDefaultAttributes: function () {
             var has_only_defaults = true;
 
@@ -596,6 +605,7 @@ var app = app || {};
 
             return true;
         },
+        //  FIXME: this uses while true
         getArchedPosition: function () {
             var root = this.get('root_section');
 
@@ -1711,12 +1721,79 @@ var app = app || {};
         getInvertedDivider: function (type) {
             return getInvertedDivider(type);
         },
-
         isCircleWindow: function () {
             return (this.getCircleRadius() !== null);
         },
         isArchedWindow: function () {
             return (this.getArchedPosition() !== null);
+        },
+        //  Get list of options that are currently selected for this unit
+        //  TODO: we also need a function to get a list of "currently
+        //  effective" options: current options with the exception of options
+        //  affected by some restrictions (door only etc.), this one is what
+        //  we're going to show in the Quote etc.
+        getCurrentUnitOptions: function () {
+            var options_list = this.get('unit_options');
+            var result = [];
+
+            if ( app.settings ) {
+                _.each(options_list, function (list_item) {
+                    var target_dictionary = app.settings.dictionaries.get(list_item.dictionary_id);
+
+                    if ( target_dictionary ) {
+                        var target_entry = target_dictionary.entries.get(list_item.dictionary_entry_id);
+
+                        if ( target_entry ) {
+                            result.push(target_entry);
+                        }
+                    }
+                }, this);
+            }
+
+            return result;
+        },
+        //  Get list of options that are currently selected for this unit,
+        //  filtered by certain dictionary, e.g. "Interior Handle"
+        getCurrentUnitOptionsByDictionaryId: function (dictionary_id) {
+            return _.filter(this.getCurrentUnitOptions(), function (option) {
+                return option.collection.options.dictionary.id === dictionary_id;
+            }, this);
+        },
+        //  Get list of all possible variants from a certain dictionary that
+        //  could be selected for this unit
+        //  TODO: reimplement conditions like "Door Only" etc.
+        getAvailableOptionsByDictionaryId: function (dictionary_id) {
+            var result = [];
+            var profile_id = this.profile && this.profile.id;
+
+            if ( app.settings && profile_id ) {
+                result = app.settings.getAvailableOptions(dictionary_id, profile_id);
+            }
+
+            return result;
+        },
+        //  TODO: use `persist` function instead of `set`
+        persistOption: function (dictionary_id, dictionary_entry_id) {
+            var current_unit_options = _.sortBy(this.get('unit_options'), 'dictionary_id');
+            var new_unit_options = [];
+
+            _.each(current_unit_options, function (unit_option) {
+                if ( unit_option.dictionary_id !== dictionary_id ) {
+                    new_unit_options.push(unit_option);
+                }
+            }, this);
+
+            new_unit_options.push({
+                dictionary_id: dictionary_id,
+                dictionary_entry_id: dictionary_entry_id
+            });
+
+            new_unit_options = _.sortBy(new_unit_options, 'dictionary_id');
+
+            //  When arrays are the same, do nothing, otherwise persist
+            if ( JSON.stringify(current_unit_options) !== JSON.stringify(new_unit_options) ) {
+                this.set('unit_options', new_unit_options);
+            }
         }
     });
 

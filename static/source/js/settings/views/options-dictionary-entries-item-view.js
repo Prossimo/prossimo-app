@@ -8,7 +8,8 @@ var app = app || {};
         className: 'options-dictionary-entries-item',
         template: app.templates['settings/options-dictionary-entries-item-view'],
         ui: {
-            $name_container: '.entry-name'
+            $name_container: '.entry-name',
+            $profiles_list_container: '.entry-profiles p'
         },
         events: {
             'click .js-edit-entry-profiles': 'editProfiles',
@@ -19,15 +20,30 @@ var app = app || {};
                 active_entry: this.model
             });
         },
+        getProfilesNamesList: function () {
+            var profiles = this.model.get('profiles');
+            var profiles_names_list = [];
+
+            if ( profiles && profiles.length ) {
+                if ( app.settings ) {
+                    profiles_names_list = app.settings.getProfileNamesByIds(profiles.sort());
+                } else {
+                    profiles_names_list = profiles.sort();
+                }
+            }
+
+            return profiles_names_list;
+        },
         removeEntry: function () {
             this.model.destroy();
         },
         serializeData: function () {
+            var profiles = this.getProfilesNamesList();
+
             return {
                 name: this.model.get('name'),
-                //  TODO: we need a function to get a nice list of
-                //  profile names
-                profiles: this.model.get('profiles') ? this.model.get('profiles').sort().join(', ') : '--'
+                profiles: profiles,
+                profiles_string: profiles.length ? profiles.join(', ') : '--'
             };
         },
         initialize: function () {
@@ -37,16 +53,41 @@ var app = app || {};
                 input_type: 'text'
             });
 
-            //  TODO: render on profiles change, but probably have some nicer way to do this
-            // this.listenTo(this.model, 'change', this.render);
+            this.listenTo(this.model, 'change:profiles', function () {
+                this.render();
+                this.name_input_view.delegateEvents();
+            });
         },
         onRender: function () {
+            var profiles = this.serializeData().profiles;
+
             this.ui.$name_container.empty().append(this.name_input_view.render().el);
+
+            this.ui.$profiles_list_container.on('mouseenter', function () {
+                var $this = $(this);
+
+                if ( profiles && this.offsetWidth < this.scrollWidth ) {
+                    $this.tooltip({
+                        title: _.map(profiles, function (item) {
+                            return '<p>' + item + '</p>';
+                        }),
+                        html: true,
+                        trigger: 'manual'
+                    });
+                    $this.tooltip('show');
+                }
+            });
+            this.ui.$profiles_list_container.on('mouseleave', function () {
+                $(this).tooltip('hide').tooltip('destroy');
+            });
         },
         onDestroy: function () {
             if ( this.name_input_view ) {
                 this.name_input_view.destroy();
             }
+
+            this.ui.$profiles_list_container.off();
+            this.ui.$profiles_list_container.tooltip('destroy');
         }
     });
 })();

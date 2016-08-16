@@ -55,6 +55,12 @@ var app = app || {};
                         'internal_sill', 'external_sill', 'glazing', 'glazing_bar_type', 'glazing_bar_width',
                         'uw', 'u_value', 'item_actions']
                 },
+                unit_options: {
+                    title: 'Unit Options',
+                    collection: this.collection,
+                    columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing'],
+                    unit_options_columns: app.settings.getAvailableDictionaryNames()
+                },
                 prices: {
                     title: 'Prices',
                     collection: this.collection,
@@ -83,6 +89,16 @@ var app = app || {};
                 }
             };
             this.active_tab = 'specs';
+
+            //  If we have no columns for Unit Options tab, don't show the tab
+            if ( !this.tabs.unit_options.unit_options_columns.length ) {
+                delete this.tabs.unit_options;
+            } else {
+                this.tabs.unit_options.columns = _.union(
+                    this.tabs.unit_options.columns,
+                    this.tabs.unit_options.unit_options_columns
+                );
+            }
 
             this.undo_manager = new app.UndoManager({
                 register: this.collection,
@@ -339,6 +355,18 @@ var app = app || {};
 
             if ( getters_hash[column_name] ) {
                 getter = getters_hash[column_name];
+            } else if (
+                this.active_tab === 'unit_options' &&
+                _.contains(this.getActiveTab().unit_options_columns, column_name)
+            ) {
+                //  TODO: deal with multiple values per dictionary somehow
+                getter = function (model, attr_name) {
+                    var target_dictionary_id = app.settings.getDictionaryIdByName(attr_name);
+                    var current_options = target_dictionary_id ?
+                        model.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
+
+                    return current_options.length ? current_options[0].get('name') : '';
+                };
             } else {
                 getter = function (model, attr_name) {
                     return model.get(attr_name);
@@ -410,6 +438,21 @@ var app = app || {};
 
             if ( setters_hash[column_name] ) {
                 setter = setters_hash[column_name];
+            } else if (
+                this.active_tab === 'unit_options' &&
+                _.contains(this.getActiveTab().unit_options_columns, column_name)
+            ) {
+                setter = function (model, attr_name, val) {
+                    var target_dictionary_id = app.settings.getDictionaryIdByName(attr_name);
+
+                    if ( target_dictionary_id ) {
+                        var target_entry_id = app.settings.getDictionaryEntryIdByName(target_dictionary_id, val);
+
+                        if ( target_entry_id ) {
+                            return model.persistOption(target_dictionary_id, target_entry_id);
+                        }
+                    }
+                };
             } else {
                 setter = function (model, attr_name, val) {
                     return model.persist(attr_name, self.getSetterParser(column_name, val));
@@ -740,13 +783,39 @@ var app = app || {};
                     //  Gray out attrs that don't apply to the current unit
                     if ( item.isDoorOnlyAttribute(property) && !item.isDoorType() ) {
                         cell_properties.readOnly = true;
-                        cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
+                        cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer('(Doors Only)');
                     } else if ( item.isOperableOnlyAttribute(property) && !item.hasOperableSections() ) {
                         cell_properties.readOnly = true;
-                        cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
+                        cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer('(Operable Only)');
                     } else if ( item.isGlazingBarProperty(property) && !item.hasGlazingBars() ) {
                         cell_properties.readOnly = true;
-                        cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
+                        cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer('(Glazing Bars Only)');
+                    } else if (
+                        self.active_tab === 'unit_options' &&
+                        _.contains(self.getActiveTab().unit_options_columns, property)
+                    ) {
+                        var profile_id = item.profile && item.profile.id;
+                        var dictionary_id = app.settings.getDictionaryIdByName(property);
+                        var options = [];
+
+                        if ( profile_id && dictionary_id ) {
+                            options = app.settings.getAvailableOptions(dictionary_id, profile_id);
+                        }
+
+                        if ( options.length ) {
+                            cell_properties.type = 'dropdown';
+                            cell_properties.filter = false;
+                            cell_properties.strict = true;
+
+                            cell_properties.source = _.map(options, function (option) {
+                                return option.get('name');
+                            });
+                        } else {
+                            var message = profile_id ? '(No Variants)' : '(No Profile)';
+
+                            cell_properties.readOnly = true;
+                            cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer(message);
+                        }
                     }
                 }
 
@@ -866,7 +935,7 @@ var app = app || {};
                 glazing_bead: 100,
                 gasket_color: 100,
                 hinge_style: 280,
-                opening_direction: 100,
+                opening_direction: 110,
                 internal_sill: 100,
                 external_sill: 100,
                 glazing: 300,
@@ -896,6 +965,22 @@ var app = app || {};
                 project_address: 300,
                 quote_date: 120
             };
+
+            var unit_options_table_col_widths = {
+                'Interior Handle': 160,
+                'Exterior Handle': 160,
+                'Internal Sill': 100,
+                'External Sill': 100,
+                'External Color': 100,
+                'Internal Color': 100,
+                'Hardware Type': 120,
+                'Lock Mechanism': 120,
+                'Glazing Bead': 100,
+                'Gasket Color': 100,
+                'Hinge Style': 280
+            };
+
+            col_widths = _.extend({}, col_widths, unit_options_table_col_widths);
 
             var widths_table = _.map(this.getActiveTab().columns, function (item) {
                 return col_widths[item] ? col_widths[item] : 80;

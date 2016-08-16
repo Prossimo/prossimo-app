@@ -5,7 +5,7 @@ var app = app || {};
 
     var DICTIONARY_PROPERTIES = [
         { name: 'name', title: 'Name', type: 'string' },
-        { name: 'populates_attribute', title: 'Populates Attribute', type: 'string' },
+        { name: 'attribute_to_populate', title: 'Attribute to Populate', type: 'string' },
         { name: 'position', title: 'Position', type: 'number' }
     ];
 
@@ -41,9 +41,8 @@ var app = app || {};
         save: function () {
             return Backbone.Model.prototype.saveAndGetId.apply(this, arguments);
         },
-        //  TODO: populates_attribute should also be sent
         sync: function (method, model, options) {
-            var properties_to_omit = ['id', 'entries', 'populates_attribute'];
+            var properties_to_omit = ['id', 'entries'];
 
             if ( method === 'create' || method === 'update' ) {
                 options.attrs = { dictionary: _.omit(model.toJSON(), properties_to_omit) };
