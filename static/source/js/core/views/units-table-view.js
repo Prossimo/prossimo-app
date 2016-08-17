@@ -918,9 +918,16 @@ var app = app || {};
             function onBeforeKeyDown(event, onlyCtrlKeys) {
                 var isCtrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
 
-                if(isCtrlDown){
+                console.log('beforeKeyDown', event);
+                if(isCtrlDown && event.keyCode == 17){
+                  console.log('stop immediate', event);
                     event.stopImmediatePropagation();
+                    return;
                 }
+                if(isCtrlDown && event.keyCode == 67) {
+                  console.log('copy')
+                }
+
                 //  Ctrl + Y || Ctrl + Shift + Z
                 if ( isCtrlDown && (event.keyCode === 89 || (event.shiftKey && event.keyCode === 90 )) ) {
                     self.onRedo();
