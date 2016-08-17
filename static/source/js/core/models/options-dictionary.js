@@ -5,9 +5,17 @@ var app = app || {};
 
     var DICTIONARY_PROPERTIES = [
         { name: 'name', title: 'Name', type: 'string' },
-        { name: 'attribute_to_populate', title: 'Attribute to Populate', type: 'string' },
+        { name: 'rules_and_restrictions', title: 'Rules and Restrictions', type: 'string' },
         { name: 'position', title: 'Position', type: 'number' }
     ];
+
+    var POSSIBLE_RULES_AND_RESTRICTIONS = [
+        'DOOR_ONLY', 'OPERABLE_ONLY', 'GLAZING_BARS_ONLY'
+    ];
+
+    function getDefaultRulesAndRestrictions() {
+        return [];
+    }
 
     app.OptionsDictionary = Backbone.Model.extend({
         defaults: function () {
@@ -29,8 +37,16 @@ var app = app || {};
                 number: 0
             };
 
+            var name_value_hash = {
+                rules_and_restrictions: getDefaultRulesAndRestrictions()
+            };
+
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
                 default_value = type_value_hash[type];
+            }
+
+            if ( _.indexOf(_.keys(name_value_hash), name) !== -1 ) {
+                default_value = name_value_hash[name];
             }
 
             return default_value;
@@ -45,7 +61,9 @@ var app = app || {};
             var properties_to_omit = ['id', 'entries'];
 
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { dictionary: _.omit(model.toJSON(), properties_to_omit) };
+                options.attrs = { dictionary: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
+                    rules_and_restrictions: JSON.stringify(model.get('rules_and_restrictions'))
+                }) };
             }
 
             return Backbone.sync.call(this, method, model, options);
@@ -120,6 +138,29 @@ var app = app || {};
             if ( !this.options.proxy ) {
                 this.entries = new app.OptionsDictionaryEntryCollection(null, { dictionary: this });
                 this.on('add', this.setDependencies, this);
+                this.validateRulesAndRestrictions();
+            }
+        },
+        validateRulesAndRestrictions: function () {
+            var rules = this.get('rules_and_restrictions');
+            var rules_parsed;
+
+            if ( _.isString(rules) ) {
+                try {
+                    rules_parsed = JSON.parse(rules);
+                } catch (error) {
+                    // Do nothing
+                }
+
+                if ( rules_parsed ) {
+                    this.set('rules_and_restrictions', rules_parsed);
+                    return;
+                }
+            }
+
+            //  Works for arrays and object literals
+            if ( !_.isObject(rules_parsed) ) {
+                this.set('rules_and_restrictions', this.getDefaultValue('rules_and_restrictions'));
             }
         },
         setDependencies: function (model, response, options) {
@@ -146,6 +187,9 @@ var app = app || {};
                 this._wasLoaded = true;
                 this.trigger('fully_loaded');
             }
+        },
+        getPossibleRulesAndRestrictions: function () {
+            return POSSIBLE_RULES_AND_RESTRICTIONS;
         }
     });
 })();

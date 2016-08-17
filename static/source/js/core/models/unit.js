@@ -44,6 +44,7 @@ var app = app || {};
         { name: 'unit_options', title: 'Unit Options', type: 'string' }
     ];
 
+    //  TODO: remove all of this
     //  We only enable those for editing on units where `isDoorType` is `true`
     var DOOR_ONLY_PROPERTIES = ['exterior_handle', 'lock_mechanism'];
     //  Same as above, for `hasOperableSections`
@@ -1755,13 +1756,12 @@ var app = app || {};
         //  Get list of options that are currently selected for this unit,
         //  filtered by certain dictionary, e.g. "Interior Handle"
         getCurrentUnitOptionsByDictionaryId: function (dictionary_id) {
-            return _.filter(this.getCurrentUnitOptions(), function (option) {
-                return option.collection.options.dictionary.id === dictionary_id;
+            return _.filter(this.getCurrentUnitOptions(), function (unit_option) {
+                return unit_option.collection.options.dictionary.id === dictionary_id;
             }, this);
         },
         //  Get list of all possible variants from a certain dictionary that
         //  could be selected for this unit
-        //  TODO: reimplement conditions like "Door Only" etc.
         getAvailableOptionsByDictionaryId: function (dictionary_id) {
             var result = [];
             var profile_id = this.profile && this.profile.id;
@@ -1771,6 +1771,19 @@ var app = app || {};
             }
 
             return result;
+        },
+        checkIfRuleOrRestrictionApplies: function (condition) {
+            var condition_applies = false;
+
+            if ( condition === 'DOOR_ONLY' && !this.isDoorType() ) {
+                condition_applies = true;
+            } else if ( condition === 'OPERABLE_ONLY' && !this.hasOperableSections() ) {
+                condition_applies = true;
+            } else if ( condition === 'GLAZING_BARS_ONLY' && !this.hasGlazingBars() ) {
+                condition_applies = true;
+            }
+
+            return condition_applies;
         },
         //  TODO: use `persist` function instead of `set`
         persistOption: function (dictionary_id, dictionary_entry_id) {

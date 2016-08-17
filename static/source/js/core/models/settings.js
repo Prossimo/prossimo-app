@@ -24,13 +24,6 @@ var app = app || {};
     var GLAZING_BAR_WIDTHS = [12, 22, 44];
     var OPENING_DIRECTIONS = ['Inward', 'Outward'];
 
-    //  TODO: remove
-    var UNIT_ATTRIBUTES_POPULATED_FROM_DICTIONARIES = [
-        'internal_color', 'external_color', 'interior_handle', 'exterior_handle', 'hardware_type',
-        'lock_mechanism', 'glazing_bead', 'gasket_color', 'hinge_style', 'internal_sill', 'external_sill',
-        'glazing_bar_width', 'glazing_bar_type'
-    ];
-
     //  --------------------------------------------------------------------
     //  That's what we use for Profiles
     //  --------------------------------------------------------------------
@@ -260,14 +253,6 @@ var app = app || {};
         },
         getOpeningDirections: function () {
             return OPENING_DIRECTIONS;
-        },
-        //  TODO: remove
-        getUnitAttributesPopulatedFromDictionaries: function () {
-            return UNIT_ATTRIBUTES_POPULATED_FROM_DICTIONARIES;
-        },
-        //  TODO: remove
-        isPopulatedFromDictionary: function (attribute_name) {
-            return _.contains(this.getUnitAttributesPopulatedFromDictionaries(), attribute_name);
         },
         getAvailableOptions: function (dictionary_id, profile_id) {
             var available_options = [];

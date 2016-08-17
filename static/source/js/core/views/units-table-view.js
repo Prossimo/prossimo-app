@@ -779,6 +779,7 @@ var app = app || {};
                 var item = this.instance.getSourceData().at(row);
                 var property = self.getActiveTab().columns[col];
 
+                //  TODO: first three conditions are to be removed
                 if ( item && item instanceof app.Unit ) {
                     //  Gray out attrs that don't apply to the current unit
                     if ( item.isDoorOnlyAttribute(property) && !item.isDoorType() ) {
@@ -797,12 +798,43 @@ var app = app || {};
                         var profile_id = item.profile && item.profile.id;
                         var dictionary_id = app.settings.getDictionaryIdByName(property);
                         var options = [];
+                        var rules_and_restrictions = [];
+                        var is_restricted = false;
+                        var message = '--';
 
                         if ( profile_id && dictionary_id ) {
                             options = app.settings.getAvailableOptions(dictionary_id, profile_id);
                         }
 
-                        if ( options.length ) {
+                        if ( dictionary_id ) {
+                            rules_and_restrictions = app.settings.dictionaries.get(dictionary_id)
+                                .get('rules_and_restrictions');
+                        }
+
+                        //  We don't necessarily have something to do for each
+                        //  rule in the list, we're only interested in those
+                        //  where we have to disable cell editing
+                        _.each(rules_and_restrictions, function (rule) {
+                            var condition_applies = item.checkIfRuleOrRestrictionApplies(rule);
+
+                            if ( condition_applies && rule === 'DOOR_ONLY' ) {
+                                is_restricted = true;
+                                message = '(Doors Only)';
+                            } else if ( condition_applies && rule === 'OPERABLE_ONLY' ) {
+                                is_restricted = true;
+                                message = '(Operable Only)';
+                            } else if ( condition_applies && rule === 'GLAZING_BARS_ONLY' ) {
+                                is_restricted = true;
+                                message = '(Glazing Bars Only)';
+                            }
+                        }, this);
+
+                        //  If restrictions apply, disable editing
+                        if ( is_restricted ) {
+                            cell_properties.readOnly = true;
+                            cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer(message);
+                        //  If no restrictions apply, show options
+                        } else if ( options.length ) {
                             cell_properties.type = 'dropdown';
                             cell_properties.filter = false;
                             cell_properties.strict = true;
@@ -810,8 +842,9 @@ var app = app || {};
                             cell_properties.source = _.map(options, function (option) {
                                 return option.get('name');
                             });
+                        //  When we have no options, disable editing
                         } else {
-                            var message = profile_id ? '(No Variants)' : '(No Profile)';
+                            message = profile_id ? '(No Variants)' : '(No Profile)';
 
                             cell_properties.readOnly = true;
                             cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer(message);

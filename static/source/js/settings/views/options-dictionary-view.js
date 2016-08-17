@@ -9,7 +9,7 @@ var app = app || {};
         template: app.templates['settings/options-dictionary-view'],
         ui: {
             $name_container: '.dictionary-name',
-            $attribute_to_populate_container: '.dictionary-attribute',
+            $rules_and_restrictions_container: '.dictionary-restrictions',
             $entries_container: '.entry-table-container'
         },
         initialize: function () {
@@ -19,10 +19,11 @@ var app = app || {};
                 input_type: 'text'
             });
 
-            this.attribute_to_populate_input_view = new app.BaseInputView({
+            this.rules_and_restrictions_view = new app.BaseSelectView({
                 model: this.model,
-                param: 'attribute_to_populate',
-                input_type: 'text'
+                param: 'rules_and_restrictions',
+                values: this.model.getPossibleRulesAndRestrictions(),
+                multiple: true
             });
 
             this.entries_table_view = new app.OptionsDictionaryEntriesTableView({
@@ -31,7 +32,7 @@ var app = app || {};
         },
         onRender: function () {
             this.ui.$name_container.append(this.name_input_view.render().el);
-            this.ui.$attribute_to_populate_container.append(this.attribute_to_populate_input_view.render().el);
+            this.ui.$rules_and_restrictions_container.append(this.rules_and_restrictions_view.render().el);
             this.ui.$entries_container.append(this.entries_table_view.render().el);
         },
         onDestroy: function () {
@@ -39,8 +40,8 @@ var app = app || {};
                 this.name_input_view.destroy();
             }
 
-            if ( this.attribute_to_populate_container ) {
-                this.attribute_to_populate_container.destroy();
+            if ( this.rules_and_restrictions_view ) {
+                this.rules_and_restrictions_view.destroy();
             }
 
             if ( this.entries_table_view ) {

@@ -62,6 +62,7 @@ module.exports = function (grunt) {
         'core/collections/options-dictionary-entry-collection.js',
         'core/views/base/base-toggle-view.js',
         'core/views/base/base-input-view.js',
+        'core/views/base/base-select-view.js',
         'core/views/main-navigation-view.js',
         'core/views/units-table-view.js',
         'core/views/units-table-total-prices-view.js',
