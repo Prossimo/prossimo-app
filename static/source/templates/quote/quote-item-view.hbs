@@ -104,7 +104,7 @@
         <td class="product-description">
             <ul>
                 {{#each description.params }}
-                {{#if value }}<li class="{{ name }}"><strong>{{{ title }}}:</strong> <span>{{{ value }}}</span></li>{{/if}}
+                {{#if value }}<li><strong>{{{ title }}}:</strong> <span>{{{ value }}}</span></li>{{/if}}
                 {{/each}}
             </ul>
             {{#if notes }}<p class="notes"><strong>{{ notes }}</strong></p>{{/if}}

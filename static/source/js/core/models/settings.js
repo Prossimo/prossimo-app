@@ -7,7 +7,10 @@ var app = app || {};
     //  That's what we use for Units
     //  --------------------------------------------------------------------
 
-    //  TODO: remove
+    var GLAZING_BAR_WIDTHS = [12, 22, 44];
+    var OPENING_DIRECTIONS = ['Inward', 'Outward'];
+
+    //  TODO: remove, those are deprecated
     var COLORS = ['White', 'Golden Oak', 'Mahagony', 'Grey'];
     var GASKET_COLORS = ['Black', 'Grey'];
     var INTERIOR_HANDLE_TYPES = [
@@ -21,8 +24,6 @@ var app = app || {};
     ];
     var GLAZING_BEAD_TYPES = ['Rounded', 'Square'];
     var GLAZING_BAR_TYPES = ['Between panes', 'Surface glued', 'Surface glued (w/spacer)', 'True divided lite'];
-    var GLAZING_BAR_WIDTHS = [12, 22, 44];
-    var OPENING_DIRECTIONS = ['Inward', 'Outward'];
 
     //  --------------------------------------------------------------------
     //  That's what we use for Profiles

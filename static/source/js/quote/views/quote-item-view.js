@@ -90,10 +90,12 @@ var app = app || {};
             //  This is the list of params that we want to see in the quote. We
             //  throw out attributes that don't apply to the current unit
             var params_list = _.filter(
-                ['rough_opening', 'internal_color', 'external_color',
-                'interior_handle', 'exterior_handle', 'description', 'hardware_type',
-                'lock_mechanism', 'glazing_bead', 'gasket_color', 'hinge_style',
-                'opening_direction', 'internal_sill', 'external_sill', 'glazing_bar_type', 'glazing_bar_width'],
+                //  TODO: remove deprecated properties
+                // ['rough_opening', 'internal_color', 'external_color',
+                // 'interior_handle', 'exterior_handle', 'description', 'hardware_type',
+                // 'lock_mechanism', 'glazing_bead', 'gasket_color', 'hinge_style',
+                // 'opening_direction', 'internal_sill', 'external_sill', 'glazing_bar_type', 'glazing_bar_width'],
+                ['rough_opening', 'description', 'opening_direction', 'glazing_bar_width'],
             function (param) {
                 var condition = true;
 
@@ -167,20 +169,52 @@ var app = app || {};
                 sashes.push(sash_item);
             }, this);
 
-            //  TODO: we should only get titles at this points, not add any
-            //  new values to name_title_hash. The reason is that we could
-            //  remove some params like muntin type at the previous steps, but
-            //  add it back here, and we don't want to do that
+            //  Now get list of Unit Options applicable for this unit
+            var dictionaries = _.filter(app.settings.getAvailableDictionaryNames(), function (dictionary_name) {
+                var dictionary_id = app.settings.getDictionaryIdByName(dictionary_name);
+                var rules_and_restrictions = app.settings.dictionaries.get(dictionary_id)
+                    .get('rules_and_restrictions');
+                var is_restricted = false;
+
+                _.each(rules_and_restrictions, function (rule) {
+                    var condition_applies = this.model.checkIfRuleOrRestrictionApplies(rule);
+
+                    if ( !condition_applies && rule === 'DOOR_ONLY' ) {
+                        is_restricted = true;
+                    } else if ( !condition_applies && rule === 'OPERABLE_ONLY' ) {
+                        is_restricted = true;
+                    } else if ( !condition_applies && rule === 'GLAZING_BARS_ONLY' ) {
+                        is_restricted = true;
+                    }
+                }, this);
+
+                return !is_restricted;
+            }, this);
+
+            //  Here we form the final list of properties to be shown in the
+            //  Product Description column in the specific order. We do it in
+            //  four steps:
+            //  1. Add Size, Rough Opening and System (or Supplier System)
+            //  2. Add properties from the source_hash object, which contains
+            //  only those unit attributes that apply to the current unit
+            //  3. Add list of Unit Options that apply to the current unit
+            //  4. Add Threshold and U Value.
+            //  5. Override default titles for some properties but only if they
+            //  were included at steps 1-4
             var name_title_hash = _.extend({
                 size: 'Size <small class="size-label">WxH</small>',
                 rough_opening: 'Rough Opening <small class="size-label">WxH</small>',
                 system: 'System'
-            }, _.object( _.pluck(source_hash, 'name'), _.pluck(source_hash, 'title') ), {
+            }, _.object( _.pluck(source_hash, 'name'), _.pluck(source_hash, 'title') ),
+            _.object( dictionaries, dictionaries ), {
                 threshold: 'Threshold',
-                u_value: 'U Value',
+                u_value: 'U Value'
+            }, _.pick({
                 glazing_bar_type: 'Muntin Type',
                 glazing_bar_width: 'Muntin Width'
-            });
+            }, function (new_title, property_to_override) {
+                return _.contains(_.pluck(source_hash, 'name'), property_to_override);
+            }));
 
             var params_source = {
                 system: this.options.show_supplier_system ?
@@ -205,6 +239,16 @@ var app = app || {};
                         f.dimension(c.mm_to_inches(this.model.get('glazing_bar_width')), 'fraction', null, 'remove')
                     ) : false
             };
+
+            params_source = _.extend({}, params_source, _.object(dictionaries, _.map(dictionaries,
+                function (dictionary_name) {
+                    var dictionary_id = app.settings.getDictionaryIdByName(dictionary_name);
+                    var current_options = dictionary_id ?
+                        this.model.getCurrentUnitOptionsByDictionaryId(dictionary_id) : [];
+
+                    return current_options.length ? current_options[0].get('name') : false;
+                }, this)
+            ));
 
             var params = _.map(name_title_hash, function (item, key) {
                 return { name: key, title: item, value: params_source[key] !== undefined ?

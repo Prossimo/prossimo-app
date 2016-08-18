@@ -46,14 +46,19 @@ var app = app || {};
                 specs: {
                     title: 'Specs',
                     collection: this.collection,
+                    //  TODO: remove all the deprecated unit properties
+                    // columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing',
+                    //     'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'description',
+                    //     'notes', 'exceptions', 'profile_id', 'system', 'external_color',
+                    //     'internal_color', 'interior_handle', 'exterior_handle', 'hardware_type',
+                    //     'lock_mechanism', 'glazing_bead', 'gasket_color',
+                    //     'hinge_style', 'opening_direction', 'threshold',
+                    //     'internal_sill', 'external_sill', 'glazing', 'glazing_bar_type', 'glazing_bar_width',
+                    //     'uw', 'u_value', 'item_actions']
                     columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing',
                         'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'description',
-                        'notes', 'exceptions', 'profile_id', 'system', 'external_color',
-                        'internal_color', 'interior_handle', 'exterior_handle', 'hardware_type',
-                        'lock_mechanism', 'glazing_bead', 'gasket_color',
-                        'hinge_style', 'opening_direction', 'threshold',
-                        'internal_sill', 'external_sill', 'glazing', 'glazing_bar_type', 'glazing_bar_width',
-                        'uw', 'u_value', 'item_actions']
+                        'notes', 'exceptions', 'profile_id', 'system', 'opening_direction', 'threshold',
+                        'glazing', 'glazing_bar_width', 'uw', 'u_value', 'item_actions']
                 },
                 unit_options: {
                     title: 'Unit Options',
@@ -779,7 +784,7 @@ var app = app || {};
                 var item = this.instance.getSourceData().at(row);
                 var property = self.getActiveTab().columns[col];
 
-                //  TODO: first three conditions are to be removed
+                //  TODO: first two conditions are to be removed?
                 if ( item && item instanceof app.Unit ) {
                     //  Gray out attrs that don't apply to the current unit
                     if ( item.isDoorOnlyAttribute(property) && !item.isDoorType() ) {
@@ -790,7 +795,7 @@ var app = app || {};
                         cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer('(Operable Only)');
                     } else if ( item.isGlazingBarProperty(property) && !item.hasGlazingBars() ) {
                         cell_properties.readOnly = true;
-                        cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer('(Glazing Bars Only)');
+                        cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer('(Has no Bars)');
                     } else if (
                         self.active_tab === 'unit_options' &&
                         _.contains(self.getActiveTab().unit_options_columns, property)
@@ -817,15 +822,15 @@ var app = app || {};
                         _.each(rules_and_restrictions, function (rule) {
                             var condition_applies = item.checkIfRuleOrRestrictionApplies(rule);
 
-                            if ( condition_applies && rule === 'DOOR_ONLY' ) {
+                            if ( !condition_applies && rule === 'DOOR_ONLY' ) {
                                 is_restricted = true;
                                 message = '(Doors Only)';
-                            } else if ( condition_applies && rule === 'OPERABLE_ONLY' ) {
+                            } else if ( !condition_applies && rule === 'OPERABLE_ONLY' ) {
                                 is_restricted = true;
                                 message = '(Operable Only)';
-                            } else if ( condition_applies && rule === 'GLAZING_BARS_ONLY' ) {
+                            } else if ( !condition_applies && rule === 'GLAZING_BARS_ONLY' ) {
                                 is_restricted = true;
-                                message = '(Glazing Bars Only)';
+                                message = '(Has no Bars)';
                             }
                         }, this);
 

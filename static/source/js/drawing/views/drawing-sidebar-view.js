@@ -134,11 +134,17 @@ var app = app || {};
             var project_settings = app.settings.getProjectSettings();
             var active_unit;
 
+            //  TODO: remove deprecated properties
+            // var relevant_properties = [
+            //     'mark', 'width', 'height', 'description', 'notes',
+            //     'internal_color', 'external_color', 'gasket_color', 'uw',
+            //     'glazing', 'hinge_style', 'opening_direction', 'internal_sill',
+            //     'external_sill', 'glazing_bar_type', 'glazing_bar_width'
+            // ];
+
             var relevant_properties = [
-                'mark', 'width', 'height', 'description', 'notes',
-                'internal_color', 'external_color', 'gasket_color', 'uw',
-                'glazing', 'hinge_style', 'opening_direction', 'internal_sill',
-                'external_sill', 'glazing_bar_type', 'glazing_bar_width'
+                'mark', 'width', 'height', 'description', 'notes', 'exceptions',
+                'uw', 'glazing', 'opening_direction', 'glazing_bar_width'
             ];
 
             if ( this.options.parent_view.active_unit ) {
@@ -160,6 +166,56 @@ var app = app || {};
             }
 
             return active_unit_properties;
+        },
+        getActiveUnitOptions: function () {
+            var active_unit_options = [];
+            var options_list = app.settings.getAvailableDictionaryNames();
+            var active_unit;
+
+            if ( this.options.parent_view.active_unit ) {
+                active_unit = this.options.parent_view.active_unit;
+
+                active_unit_options = _.map(options_list, function (dictionary_name) {
+                    var dictionary_id = app.settings.getDictionaryIdByName(dictionary_name);
+                    var rules_and_restrictions;
+                    var value = '(None)';
+                    var is_restricted = false;
+                    var current_options = [];
+
+                    if ( dictionary_id ) {
+                        rules_and_restrictions = app.settings.dictionaries.get(dictionary_id)
+                            .get('rules_and_restrictions');
+                    }
+
+                    _.each(rules_and_restrictions, function (rule) {
+                        var condition_applies = active_unit.checkIfRuleOrRestrictionApplies(rule);
+
+                        if ( !condition_applies && rule === 'DOOR_ONLY' ) {
+                            is_restricted = true;
+                            value = '(Doors Only)';
+                        } else if ( !condition_applies && rule === 'OPERABLE_ONLY' ) {
+                            is_restricted = true;
+                            value = '(Operable Only)';
+                        } else if ( !condition_applies && rule === 'GLAZING_BARS_ONLY' ) {
+                            is_restricted = true;
+                            value = '(Has no Bars)';
+                        }
+                    }, this);
+
+                    if ( !is_restricted ) {
+                        current_options = dictionary_id ?
+                            active_unit.getCurrentUnitOptionsByDictionaryId(dictionary_id) : [];
+                        value = current_options.length ? current_options[0].get('name') : '(None)';
+                    }
+
+                    return {
+                        title: dictionary_name,
+                        value: value
+                    };
+                }, this);
+            }
+
+            return active_unit_options;
         },
         getActiveUnitProfileProperties: function () {
             var active_unit_profile_properties = [];
@@ -392,6 +448,7 @@ var app = app || {};
                 active_unit_image: this.getActiveUnitImage(),
                 active_unit_sashes: this.getActiveUnitSashList(),
                 active_unit_properties: tab_contents.active_unit_properties,
+                active_unit_options: this.getActiveUnitOptions(),
                 active_unit_profile_properties: tab_contents.active_unit_profile_properties,
                 active_unit_stats: tab_contents.active_unit_stats,
                 active_unit_estimated_section_prices: tab_contents.active_unit_estimated_section_prices,

@@ -11,25 +11,13 @@ var app = app || {};
         { name: 'description', title: 'Customer Description', type: 'string' },
         { name: 'notes', title: 'Notes', type: 'string' },
         { name: 'exceptions', title: 'Exceptions', type: 'string' },
-        { name: 'glazing_bar_type', title: 'Muntin (Glazing Bar) Type', type: 'string' },
         { name: 'glazing_bar_width', title: 'Glazing Bar Width (mm)', type: 'number' },
 
         { name: 'profile_name', title: 'Profile', type: 'string' },
         { name: 'profile_id', title: 'Profile', type: 'string' },
         { name: 'customer_image', title: 'Customer Image', type: 'string' },
-        { name: 'internal_color', title: 'Color Interior', type: 'string' },
-        { name: 'external_color', title: 'Color Exterior', type: 'string' },
-        { name: 'interior_handle', title: 'Interior Handle', type: 'string' },
-        { name: 'exterior_handle', title: 'Exterior Handle', type: 'string' },
-        { name: 'hardware_type', title: 'Hardware Type', type: 'string' },
-        { name: 'lock_mechanism', title: 'Lock Mechanism', type: 'string' },
-        { name: 'glazing_bead', title: 'Glazing Bead', type: 'string' },
 
-        { name: 'gasket_color', title: 'Gasket Color', type: 'string' },
-        { name: 'hinge_style', title: 'Hinge Style', type: 'string' },
         { name: 'opening_direction', title: 'Opening Direction', type: 'string' },
-        { name: 'internal_sill', title: 'Internal Sill', type: 'string' },
-        { name: 'external_sill', title: 'External Sill', type: 'string' },
         { name: 'glazing', title: 'Glass Packet / Panel Type', type: 'string' },
         { name: 'uw', title: 'Uw', type: 'number' },
 
@@ -41,7 +29,22 @@ var app = app || {};
         { name: 'discount', title: 'Discount', type: 'number' },
 
         { name: 'position', title: 'Position', type: 'number' },
-        { name: 'unit_options', title: 'Unit Options', type: 'string' }
+        { name: 'unit_options', title: 'Unit Options', type: 'string' },
+
+        //  README: the following properties are deprecated in favor of the
+        //  new Unit Options system. We are going to remove them soon
+        { name: 'glazing_bar_type', title: 'Muntin (Glazing Bar) Type', type: 'string' },
+        { name: 'internal_color', title: 'Color Interior', type: 'string' },
+        { name: 'external_color', title: 'Color Exterior', type: 'string' },
+        { name: 'interior_handle', title: 'Interior Handle', type: 'string' },
+        { name: 'exterior_handle', title: 'Exterior Handle', type: 'string' },
+        { name: 'hardware_type', title: 'Hardware Type', type: 'string' },
+        { name: 'lock_mechanism', title: 'Lock Mechanism', type: 'string' },
+        { name: 'glazing_bead', title: 'Glazing Bead', type: 'string' },
+        { name: 'gasket_color', title: 'Gasket Color', type: 'string' },
+        { name: 'hinge_style', title: 'Hinge Style', type: 'string' },
+        { name: 'internal_sill', title: 'Internal Sill', type: 'string' },
+        { name: 'external_sill', title: 'External Sill', type: 'string' }
     ];
 
     //  TODO: remove all of this
@@ -1729,10 +1732,6 @@ var app = app || {};
             return (this.getArchedPosition() !== null);
         },
         //  Get list of options that are currently selected for this unit
-        //  TODO: we also need a function to get a list of "currently
-        //  effective" options: current options with the exception of options
-        //  affected by some restrictions (door only etc.), this one is what
-        //  we're going to show in the Quote etc.
         getCurrentUnitOptions: function () {
             var options_list = this.get('unit_options');
             var result = [];
@@ -1775,11 +1774,11 @@ var app = app || {};
         checkIfRuleOrRestrictionApplies: function (condition) {
             var condition_applies = false;
 
-            if ( condition === 'DOOR_ONLY' && !this.isDoorType() ) {
+            if ( condition === 'DOOR_ONLY' && this.isDoorType() ) {
                 condition_applies = true;
-            } else if ( condition === 'OPERABLE_ONLY' && !this.hasOperableSections() ) {
+            } else if ( condition === 'OPERABLE_ONLY' && this.hasOperableSections() ) {
                 condition_applies = true;
-            } else if ( condition === 'GLAZING_BARS_ONLY' && !this.hasGlazingBars() ) {
+            } else if ( condition === 'GLAZING_BARS_ONLY' && this.hasGlazingBars() ) {
                 condition_applies = true;
             }
 
