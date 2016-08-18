@@ -159,10 +159,13 @@ var app = app || {};
 
             // create main frame
             if (isDoorFrame) {
-                frameGroup = this.createDoorFrame({
+                frameGroup = this.createDoorTrapezoidFrame({
                     sectionId: root.id,
                     width: model.getInMetric('width', 'mm'),
                     height: model.getInMetric('height', 'mm'),
+                    trapezoidHeights: model.getTrapezoidHeights(module.getState('insideView')),
+                    maxHeight: model.getTrapezoidMaxHeight(),
+                    trapezoidCorners: model.getMainTrapezoidInnerCorners(),
                     frameWidth: model.profile.get('frame_width')
                 });
             } else if (isArchedWindow) {
@@ -652,6 +655,7 @@ var app = app || {};
 
         // like common frame above but fully filled
         createFlushFrame: function (params) {
+            var section = params.section;
             var width = params.width;
             var height = params.height;
             var wrapper = {
@@ -659,6 +663,7 @@ var app = app || {};
                 y: params.section.y
             };
             var opts = {};
+            var frameWidth = model.profile.get('frame_width');
 
             // Extend opts with styles
             _.extend(opts, module.getStyle('flush_frame'));
@@ -670,9 +675,28 @@ var app = app || {};
                 sectionId: params.sectionId
             });
 
-            //flushhere
-
-            var rect = new Konva.Rect(opts);
+            var rect;
+            var corners = model.getMainTrapezoidInnerCorners();
+            var crossing = {
+                left: model.getLineCrossingX(section.sashParams.x, corners.left, corners.right),
+                right: model.getLineCrossingX(section.sashParams.x + section.sashParams.width, corners.left, corners.right)
+            };
+            if ( crossing.left > section.sashParams.y || crossing.right > section.sashParams.y ) {
+                if (section.sashParams.width >= section.glassParams.width) {
+                    opts.points = [
+                        0, crossing.left - frameWidth,
+                        width, crossing.right - frameWidth,
+                        width, height,
+                        0, height
+                    ];
+                    opts.closed = true;
+                    rect = new Konva.Line(opts);
+                } else {
+                    rect = new Konva.Rect(opts);
+                }
+            } else {
+                rect = new Konva.Rect(opts);
+            }
 
             return rect;
         },
@@ -733,6 +757,76 @@ var app = app || {};
                     width, height - thresholdWidth,
                     width, height,
                     0, height
+                ],
+                closed: true,
+                stroke: style.bottom.stroke,
+                strokeWidth: style.bottom.strokeWidth,
+                fill: style.bottom.fill
+            });
+
+            group.add(bottom);
+
+            return group;
+        },
+
+        createDoorTrapezoidFrame: function (params) {
+            var frameWidth = params.frameWidth;  // in mm
+            var thresholdWidth = model.profile.get('threshold_width');
+            var width = params.width;
+            var height = params.height;
+            var trapezoidHeights = params.trapezoidHeights;
+            var maxHeight = params.maxHeight;
+
+            var style = {
+                frame: module.getStyle('frame'),
+                bottom: module.getStyle('door_bottom')
+            };
+
+            var group = new Konva.Group({
+                name: 'frame'
+            });
+
+            var top = new Konva.Line({
+                points: [
+                    0, maxHeight - trapezoidHeights.left,
+                    width, maxHeight - trapezoidHeights.right,
+                    params.trapezoidCorners.right.x, params.trapezoidCorners.right.y,
+                    params.trapezoidCorners.left.x, params.trapezoidCorners.left.y
+                ]
+            });
+
+            var left = new Konva.Line({
+                points: [
+                    0, maxHeight - trapezoidHeights.left,
+                    params.trapezoidCorners.left.x, params.trapezoidCorners.left.y,
+                    frameWidth, maxHeight - thresholdWidth,
+                    0, maxHeight - thresholdWidth
+                ]
+            });
+
+            var right = new Konva.Line({
+                points: [
+                    width, maxHeight - trapezoidHeights.right,
+                    width, maxHeight - thresholdWidth,
+                    width - frameWidth, maxHeight - thresholdWidth,
+                    params.trapezoidCorners.right.x, params.trapezoidCorners.right.y
+                ]
+            });
+
+            group.add(top, left, right);
+
+            group.children
+                .closed(true)
+                .stroke(style.frame.stroke)
+                .strokeWidth(style.frame.strokeWidth)
+                .fill(style.frame.fill);
+
+            var bottom = new Konva.Line({
+                points: [
+                    0, maxHeight - thresholdWidth,
+                    width, maxHeight - thresholdWidth,
+                    width, maxHeight,
+                    0, maxHeight
                 ],
                 closed: true,
                 stroke: style.bottom.stroke,
@@ -1000,6 +1094,7 @@ var app = app || {};
                 left: model.getTrapezoidCrossing({ x: params.x, y: params.y }, { x: params.x, y: params.y + params.height }),
                 right: model.getTrapezoidCrossing({ x: params.x + params.width, y: params.y }, { x: params.x + params.width, y: params.y + params.height })
             };
+
             var mullion;
             if ( !crossing.left && !crossing.right ) {
                 mullion = new Konva.Rect({
@@ -1010,13 +1105,35 @@ var app = app || {};
                 });
                 mullion.setAttrs(section.mullionParams);
             } else {
-                mullion = new Konva.Line({
-                    points: [
-                        params.x, crossing.left.y,
-                        params.x + params.width, crossing.right.y,
+                var points = [
+                    params.x, crossing.left.y,
+                    params.x + params.width, crossing.right.y,
+                    params.x + params.width, params.y + params.height,
+                    params.x, params.y + params.height
+                ];
+                if (section.trapezoid && section.trapezoid.frame) {
+                    var inner = section.trapezoid.frame.inner;
+                    var topCrossing = {
+                        left: model.getLineCrossingX(
+                            params.x,
+                            { x: inner[0].x + section.sashParams.x, y: inner[0].y + section.sashParams.y },
+                            { x: inner[1].x + section.sashParams.x, y: inner[1].y + section.sashParams.y }
+                        ),
+                        right: model.getLineCrossingX(
+                            params.x + params.width,
+                            { x: inner[0].x + section.sashParams.x, y: inner[0].y + section.sashParams.y },
+                            { x: inner[1].x + section.sashParams.x, y: inner[1].y + section.sashParams.y }
+                        )
+                    };
+                    points = [
+                        params.x, topCrossing.left,
+                        params.x + params.width, topCrossing.right,
                         params.x + params.width, params.y + params.height,
                         params.x, params.y + params.height
-                    ],
+                    ];
+                }
+                mullion = new Konva.Line({
+                    points: points,
                     sectionId: section.id,
                     stroke: style.default.stroke,
                     fill: style.default.fill,
@@ -1194,9 +1311,10 @@ var app = app || {};
             var isFlushType = sectionData.fillingType &&
                 sectionData.fillingType.indexOf('flush') >= 0;
 
-            var shouldDrawFilling =
-                !hasSubSections && !isFlushType ||
-                !hasSubSections && model.isRootSection(sectionData.id) && isFlushType;
+            // var shouldDrawFilling =
+            //     !hasSubSections && !isFlushType ||
+            //     !hasSubSections && model.isRootSection(sectionData.id) && isFlushType;
+            var shouldDrawFilling = !hasSubSections && !isFlushType;
 
             var shouldDrawBars = shouldDrawFilling &&
                 !sectionData.fillingType || sectionData.fillingType === 'glass';
@@ -1513,8 +1631,8 @@ var app = app || {};
                     var height = section.glassParams.height;
 
                     if (section.trapezoid && section.trapezoid.frame) {
-                        var frameWidth = model.profile.get('frame_width');
-                        var corners = [section.trapezoid.frame.inner[0].y - frameWidth, section.trapezoid.frame.inner[1].y - frameWidth];
+                        var sashFrameWidth = model.profile.get('sash_frame_width');
+                        var corners = [section.trapezoid.frame.inner[0].y - sashFrameWidth, section.trapezoid.frame.inner[1].y - sashFrameWidth];
 
                         if (type.indexOf('right') >= 0 && (type.indexOf('slide') === -1)) {
                             ctx.moveTo(width, 0);
@@ -1958,15 +2076,9 @@ var app = app || {};
 
                 _to += fillY;
 
-                var crossing = model.getTrapezoidCrossing({
-                    x: space + section.glassParams.x,
-                    y: _from + section.glassParams.y
-                }, {
-                    x: space + section.glassParams.x,
-                    y: _to + section.glassParams.y
-                });
-
-                if (crossing) _from = crossing.y - section.glassParams.y;
+                if ( section.trapezoid && section.trapezoid.glass ) {
+                    _from = model.getLineCrossingX(space, section.trapezoid.glass[0], section.trapezoid.glass[1]);
+                }
 
                 bar = new Konva.Rect({
                     x: fillX + space - (glazing_bar_width / 2),
@@ -2036,8 +2148,10 @@ var app = app || {};
         createSelectionShape: function (section, params) {
             var fillX = params.x;
             var fillY = params.y;
-            var fillWidth = params.width;
-            var fillHeight = params.height;
+            // var fillWidth = params.width;
+            // var fillHeight = params.height;
+            var fillWidth = section.glassParams.width;
+            var fillHeight = section.glassParams.height;
             var wrapper = params.wrapper;
             var crossing = {
                 left: model.getTrapezoidCrossing({ x: wrapper.x, y: wrapper.y }, { x: wrapper.x, y: wrapper.y + fillHeight }),
@@ -2086,6 +2200,7 @@ var app = app || {};
                 });
             } else {
                 if ( !crossing.left && !crossing.right ) {
+
                     shape = new Konva.Rect({
                         width: section.sashParams.width,
                         height: section.sashParams.height,
