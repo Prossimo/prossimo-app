@@ -366,11 +366,11 @@ var app = app || {};
             function onBeforeKeyDown(event, onlyCtrlKeys) {
                 var isCtrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
 
-                if(isCtrlDown){//document.body has at least 17 listeners onkeydown.
+                if(isCtrlDown && event.keyCode == 17){//document.body has at least 17 listeners onkeydown.
                   //hitting ctrl on selection causes app stuck and app crash
                     event.stopImmediatePropagation();
+                    return;
                 }
-
                 //  Ctrl + Y || Ctrl + Shift + Z
                 if ( isCtrlDown && (event.keyCode === 89 || (event.shiftKey && event.keyCode === 90 )) ) {
                     self.onRedo();
