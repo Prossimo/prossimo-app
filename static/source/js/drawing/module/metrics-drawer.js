@@ -930,8 +930,9 @@ var app = app || {};
 
             // Vertical
             var vHeight = height + (vCorrection.size * ratio);
+
             var verticalWholeMertic = this.createVerticalMetric(metricSize, vHeight, {
-                setter: function (val) {
+                setter: (model.isTrapezoid()) ? false : function (val) {
                     val -= vCorrection.size;
                     model.updateDimension('height', val, 'mm');
                 },

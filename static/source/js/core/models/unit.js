@@ -6,7 +6,7 @@ var app = app || {};
     var UNIT_PROPERTIES = [
         { name: 'mark', title: 'Mark', type: 'string' },
         { name: 'width', title: 'Width (inches)', type: 'number' },
-        { name: 'height', title: 'Height (inches)', type: 'number' },
+        { name: 'height', title: 'Height (inches)', type: 'string' },
         { name: 'quantity', title: 'Quantity', type: 'number' },
         { name: 'description', title: 'Customer Description', type: 'string' },
         { name: 'notes', title: 'Notes', type: 'string' },
@@ -1727,15 +1727,15 @@ var app = app || {};
         /* trapezoid start */
         isTrapezoid: function () {
             var root = this.generateFullRoot();
-            return +root.id === 213;
+            return root.trapezoidHeights;
         },
         getTrapezoidHeights: function (inside) {
             if (typeof inside !== 'undefined') {
                 this.inside = inside;
             }
-            var height = this.getInMetric('height', 'mm');
-            var left = height,
-                right = height - 300;
+            var heights = this.get('root_section').trapezoidHeights;
+            var left = app.utils.convert.inches_to_mm(heights[0]);
+            var right = app.utils.convert.inches_to_mm(heights[1]);
             return (this.inside) ? { left: right, right: left } : { left: left, right: right };
         },
         getTrapezoidMaxHeight: function () {
