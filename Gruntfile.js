@@ -12,6 +12,7 @@ module.exports = function (grunt) {
         'bootstrap/js/tooltip.js',
         'bootstrap/js/popover.js',
         'bootstrap/js/modal.js',
+        'bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js',
         'bootstrap-select/dist/js/bootstrap-select.min.js',
         'bootstrap-toggle/js/bootstrap-toggle.min.js',
         'konva/konva.min.js',
@@ -26,7 +27,8 @@ module.exports = function (grunt) {
     var vendor_css_files = [
         'handsontable/dist/handsontable.full.min.css',
         'bootstrap-select/dist/css/bootstrap-select.min.css',
-        'bootstrap-toggle/css/bootstrap-toggle.min.css'
+        'bootstrap-toggle/css/bootstrap-toggle.min.css',
+        'bootstrap-datepicker/dist/css/bootstrap-datepicker3.standalone.min.css'
     ];
 
     var js_files = [
@@ -91,6 +93,10 @@ module.exports = function (grunt) {
         'settings/views/pricing-grids-table-view.js',
         'supplier-request/views/main-supplier-request-view.js',
         'supplier-request/views/supplier-request-header-view.js',
+        'dashboard/views/project-totals-view.js',
+        'dashboard/views/project-info-view.js',
+        'dashboard/views/project-documents-view.js',
+        'dashboard/views/main-dashboard-view.js',
         'dialogs/views/base-dialog-view.js',
         'dialogs/views/login-dialog-view.js',
         'app.js'
@@ -302,7 +308,9 @@ module.exports = function (grunt) {
                     base: '.',
                     middleware: function (connect, options, middlewares) {
                         middlewares.unshift(function (req, res, next) {
-                            if ( req.url === '/docs/' || req.url === '/drawing/' ||
+
+                            res.setHeader('Access-Control-Allow-Origin', '*');
+                            if ( req.url === '/dashboard/' || req.url === '/drawing/' ||
                                  req.url === '/quote/' || req.url === '/settings/' ||
                                  req.url === '/supplier/' || req.url === '/units/'
                             ) {
@@ -407,7 +415,7 @@ module.exports = function (grunt) {
                         },
                         {
                             match: 'api_base_path',
-                            replacement: 'http://127.0.0.1:8000/api'
+                            replacement: 'http://159.203.133.223/api/api'
                         }
                     ]
                 },

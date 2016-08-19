@@ -13,7 +13,10 @@ var app = app || {};
             $hot_container: '.profiles-handsontable-container',
             $add_new_profile: '.js-add-new-profile',
             $undo: '.js-undo',
-            $redo: '.js-redo'
+            $redo: '.js-redo',
+            $remove: '.js-remove-unit',
+            $clone: '.js-clone-unit'
+
         },
         events: {
             'click @ui.$add_new_profile': 'addNewProfile',
@@ -22,7 +25,9 @@ var app = app || {};
             'click .js-move-item-up': 'onMoveItemUp',
             'click .js-move-item-down': 'onMoveItemDown',
             'click @ui.$undo': 'onUndo',
-            'click @ui.$redo': 'onRedo'
+            'click @ui.$redo': 'onRedo',
+            'click @ui.$remove': 'onRemoveSelected',
+            'click @ui.$clone': 'onCloneSelected'
         },
         keyShortcuts: {
             n: 'addNewProfile',
@@ -41,7 +46,7 @@ var app = app || {};
                 'mullion_width', 'sash_frame_width', 'sash_frame_overlap', 'sash_mullion_overlap',
                 'frame_corners', 'sash_corners', 'low_threshold', 'threshold_width',
                 'frame_u_value', 'visible_frame_width_fixed', 'visible_frame_width_operable',
-                'spacer_thermal_bridge_value', 'item_actions'
+                'spacer_thermal_bridge_value'
             ];
 
             this.undo_manager = new app.UndoManager({
@@ -71,22 +76,22 @@ var app = app || {};
             this.undo_manager.handler.redo();
             this.ui.$redo.blur();
         },
-        onRemoveItem: function (e) {
-            var target_row = $(e.target).data('row');
-            var target_object;
-
-            if ( this.hot ) {
-                target_object = this.hot.getSourceData().at(target_row);
-                target_object.destroy();
+        onRemoveSelected: function () {
+            if ( this.selected.length && this.hot ) {
+                for (var i = this.selected.length - 1; i >= 0; i--) {
+                    this.hot.getSourceData().at(this.selected[i]).destroy();
+                }
+                this.selected = [];
+                this.hot.selectCell(0, 0, 0, 0, false);
+                this.hot.deselectCell();
             }
         },
-        onCloneItem: function (e) {
-            var target_row = $(e.target).data('row');
-            var target_object;
-
-            if ( this.hot ) {
-                target_object = this.hot.getSourceData().at(target_row);
-                target_object.duplicate();
+        onCloneSelected: function () {
+            if ( this.selected.length === 1 && this.hot ) {
+                var selectedData = this.hot.getSourceData().at(this.selected[0]);
+                if (!selectedData.hasOnlyDefaultAttributes()) {
+                    selectedData.duplicate();
+                }
             }
         },
         onMoveItemUp: function (e) {
@@ -229,10 +234,6 @@ var app = app || {};
                     readOnly: true,
                     renderer: app.hot_renderers.moveItemRenderer
                 },
-                item_actions: {
-                    readOnly: true,
-                    renderer: app.hot_renderers.itemActionsRenderer
-                },
                 system: {
                     type: 'dropdown',
                     source: _.union(
@@ -365,6 +366,11 @@ var app = app || {};
             function onBeforeKeyDown(event, onlyCtrlKeys) {
                 var isCtrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
 
+                if(isCtrlDown && event.keyCode == 17){//document.body has at least 17 listeners onkeydown.
+                  //hitting ctrl on selection causes app stuck and app crash
+                    event.stopImmediatePropagation();
+                    return;
+                }
                 //  Ctrl + Y || Ctrl + Shift + Z
                 if ( isCtrlDown && (event.keyCode === 89 || (event.shiftKey && event.keyCode === 90 )) ) {
                     self.onRedo();
@@ -397,6 +403,39 @@ var app = app || {};
                             enterMoves: { row: 1, col: 0 },
                             beforeKeyDown: function (e) {
                                 onBeforeKeyDown(e, true);
+                            },
+                            afterSelection: function (startRow, startColumn, endRow, endColumn) {
+                                self.selected = [];
+                                if ( startColumn === 0 && endColumn === this.countCols() - 1 ) {
+                                    self.ui.$remove.removeClass('disabled');
+                                    if ( startRow === endRow ) {
+                                        self.selected = [startRow];
+                                        var selectedData = self.hot.getSourceData().at(startRow);
+                                        if (selectedData.hasOnlyDefaultAttributes()) {
+                                            self.ui.$clone.addClass('disabled');
+                                        } else {
+                                            self.ui.$clone.removeClass('disabled');
+                                        }
+                                    } else {
+                                        var start = startRow, end = endRow;
+                                        if ( startRow > endRow ) {
+                                            start = endRow;
+                                            end = startRow;
+                                        }
+                                        for (var i = start; i <= end; i++) {
+                                            self.selected.push(i);
+                                        }
+                                        self.ui.$clone.addClass('disabled');
+                                    }
+                                } else {
+                                    self.ui.$remove.addClass('disabled');
+                                    self.ui.$clone.addClass('disabled');
+                                }
+                            },
+                            afterDeselect: function () {
+                                if ( self.selected.length ) {
+                                    this.selectCell(self.selected[0], 0, self.selected[self.selected.length - 1], this.countCols() - 1, false);
+                                }
                             }
                         });
                     }
