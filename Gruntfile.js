@@ -98,6 +98,7 @@ module.exports = function (grunt) {
         'dashboard/views/main-dashboard-view.js',
         'dialogs/views/base-dialog-view.js',
         'dialogs/views/login-dialog-view.js',
+        'dialogs/views/create-project-dialog-view.js',
         'app.js'
     ];
 
