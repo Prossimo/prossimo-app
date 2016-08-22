@@ -470,7 +470,6 @@ var app = app || {};
         hasDummyProfile: function () {
             return this.profile && this.profile.get('is_dummy');
         },
-        //  TODO: add special case for `unit_options` attribute
         hasOnlyDefaultAttributes: function () {
             var has_only_defaults = true;
 
@@ -493,6 +492,10 @@ var app = app || {};
                         if ( JSON.stringify(_.omit(value, 'id')) !==
                             JSON.stringify(_.omit(this.getDefaultValue('root_section'), 'id'))
                         ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( key === 'unit_options' ) {
+                        if ( JSON.stringify(this.getDefaultUnitOptions()) !== JSON.stringify(value) ) {
                             has_only_defaults = false;
                         }
                     } else if ( this.getDefaultValue(key, type) !== value ) {
