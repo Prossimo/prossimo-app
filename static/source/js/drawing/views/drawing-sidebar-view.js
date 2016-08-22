@@ -3,6 +3,8 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var UNSET_VALUE = '--';
+
     app.DrawingSidebarView = Marionette.ItemView.extend({
         tagName: 'div',
         className: 'drawing-sidebar',
@@ -188,15 +190,15 @@ var app = app || {};
                     }
 
                     _.each(rules_and_restrictions, function (rule) {
-                        var condition_applies = active_unit.checkIfRuleOrRestrictionApplies(rule);
+                        var restriction_applies = active_unit.checkIfRestrictionApplies(rule);
 
-                        if ( !condition_applies && rule === 'DOOR_ONLY' ) {
+                        if ( restriction_applies && rule === 'DOOR_ONLY' ) {
                             is_restricted = true;
                             value = '(Doors Only)';
-                        } else if ( !condition_applies && rule === 'OPERABLE_ONLY' ) {
+                        } else if ( restriction_applies && rule === 'OPERABLE_ONLY' ) {
                             is_restricted = true;
                             value = '(Operable Only)';
-                        } else if ( !condition_applies && rule === 'GLAZING_BARS_ONLY' ) {
+                        } else if ( restriction_applies && rule === 'GLAZING_BARS_ONLY' ) {
                             is_restricted = true;
                             value = '(Has no Bars)';
                         }
@@ -205,7 +207,7 @@ var app = app || {};
                     if ( !is_restricted ) {
                         current_options = dictionary_id ?
                             active_unit.getCurrentUnitOptionsByDictionaryId(dictionary_id) : [];
-                        value = current_options.length ? current_options[0].get('name') : '(None)';
+                        value = current_options.length ? current_options[0].get('name') : UNSET_VALUE;
                     }
 
                     return {

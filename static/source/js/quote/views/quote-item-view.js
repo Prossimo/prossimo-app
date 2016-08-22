@@ -177,13 +177,9 @@ var app = app || {};
                 var is_restricted = false;
 
                 _.each(rules_and_restrictions, function (rule) {
-                    var condition_applies = this.model.checkIfRuleOrRestrictionApplies(rule);
+                    var restriction_applies = this.model.checkIfRestrictionApplies(rule);
 
-                    if ( !condition_applies && rule === 'DOOR_ONLY' ) {
-                        is_restricted = true;
-                    } else if ( !condition_applies && rule === 'OPERABLE_ONLY' ) {
-                        is_restricted = true;
-                    } else if ( !condition_applies && rule === 'GLAZING_BARS_ONLY' ) {
+                    if ( restriction_applies ) {
                         is_restricted = true;
                     }
                 }, this);

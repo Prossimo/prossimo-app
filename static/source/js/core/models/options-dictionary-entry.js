@@ -3,6 +3,9 @@ var app = app || {};
 (function () {
     'use strict';
 
+    //  TODO: validation should prevent setting entry name to UNSET_VALUE
+    // var UNSET_VALUE = '--';
+
     //  TODO: we better have original_cost and original_currency here, similar
     //  to units / accessories, instead of price
     var ENTRY_PROPERTIES = [

@@ -160,10 +160,6 @@ var app = app || {};
         return type;
     }
 
-    function getDefaultUnitOptions() {
-        return [];
-    }
-
     function findParent(root, childId) {
         if (root.sections.length === 0) {
             return null;
@@ -201,8 +197,7 @@ var app = app || {};
                 conversion_rate: 0.9,
                 price_markup: 2.3,
                 quantity: 1,
-                root_section: getSectionDefaults(name),
-                unit_options: getDefaultUnitOptions()
+                root_section: getSectionDefaults(name)
             };
 
             if ( app.settings ) {
@@ -254,6 +249,21 @@ var app = app || {};
                 this.validateRootSection();
                 this.on('change:profile_id', this.setProfile, this);
                 this.on('change:glazing', this.setDefaultFillingType, this);
+
+                //  If we know that something was changed in dictionaries,
+                //  we have to re-validate our unit options
+                this.listenTo(app.vent, 'validate_units:dictionaries', function () {
+                    if ( this.isParentProjectActive() ) {
+                        this.validateUnitOptions();
+                    }
+                });
+
+                //  Same as above, but when this unit's project becomes active
+                this.listenTo(app.vent, 'current_project_changed', function () {
+                    if ( this.isParentProjectActive() ) {
+                        this.validateUnitOptions();
+                    }
+                });
             }
         },
         validateOpeningDirection: function () {
@@ -330,6 +340,81 @@ var app = app || {};
 
             return current_section;
         },
+        getDefaultUnitOptions: function () {
+            var default_options = [];
+
+            if ( app.settings ) {
+                app.settings.dictionaries.each(function (dictionary) {
+                    var dictionary_id = dictionary.id;
+                    var profile_id = this.profile && this.profile.id;
+                    var rules = dictionary.get('rules_and_restrictions');
+                    var is_optional = _.contains(rules, 'IS_OPTIONAL');
+
+                    if ( !is_optional && dictionary_id && profile_id ) {
+                        var option = app.settings.getDefaultOption(dictionary_id, profile_id);
+
+                        if ( option && option.id && dictionary.id ) {
+                            default_options.push({
+                                dictionary_id: dictionary.id,
+                                dictionary_entry_id: option.id
+                            });
+                        }
+                    }
+                }, this);
+            }
+
+            return default_options;
+        },
+        validateUnitOptions: function () {
+            var default_options = this.getDefaultUnitOptions();
+            var current_options = this.get('unit_options');
+            var current_options_parsed;
+
+            function getValidatedUnitOptions(model, currents, defaults) {
+                var options_to_set = [];
+
+                if ( app.settings ) {
+                    app.settings.dictionaries.each(function (dictionary) {
+                        var dictionary_id = dictionary.id;
+                        var profile_id = model.profile && model.profile.id;
+
+                        if ( dictionary_id && profile_id ) {
+                            var current_option = _.findWhere(currents, { dictionary_id: dictionary_id });
+                            var default_option = _.findWhere(defaults, { dictionary_id: dictionary_id });
+                            var target_entry = current_option &&
+                                dictionary.entries.get(current_option.dictionary_entry_id);
+
+                            if ( current_option && target_entry ) {
+                                options_to_set.push(current_option);
+                            } else if ( default_option ) {
+                                options_to_set.push(default_option);
+                            }
+                        }
+                    });
+                }
+
+                return options_to_set;
+            }
+
+            if ( _.isString(current_options) ) {
+                try {
+                    current_options_parsed = JSON.parse(current_options);
+                } catch (error) {
+                    // Do nothing
+                }
+
+                if ( current_options_parsed ) {
+                    this.set('unit_options', getValidatedUnitOptions(this, current_options_parsed, default_options));
+                    return;
+                }
+            }
+
+            if ( !_.isObject(current_options) ) {
+                this.set('unit_options', default_options);
+            } else {
+                this.set('unit_options', getValidatedUnitOptions(this, current_options, default_options));
+            }
+        },
         validate: function (attributes, options) {
             var error_obj = null;
 
@@ -379,6 +464,8 @@ var app = app || {};
             if ( this.profile && !this.hasDummyProfile() ) {
                 this.set('profile_name', this.profile.get('name'));
             }
+
+            this.validateUnitOptions();
         },
         hasDummyProfile: function () {
             return this.profile && this.profile.get('is_dummy');
@@ -1771,34 +1858,32 @@ var app = app || {};
 
             return result;
         },
-        checkIfRuleOrRestrictionApplies: function (condition) {
-            var condition_applies = false;
+        checkIfRestrictionApplies: function (restriction) {
+            var restriction_applies = false;
 
-            if ( condition === 'DOOR_ONLY' && this.isDoorType() ) {
-                condition_applies = true;
-            } else if ( condition === 'OPERABLE_ONLY' && this.hasOperableSections() ) {
-                condition_applies = true;
-            } else if ( condition === 'GLAZING_BARS_ONLY' && this.hasGlazingBars() ) {
-                condition_applies = true;
+            if ( restriction === 'DOOR_ONLY' && !this.isDoorType() ) {
+                restriction_applies = true;
+            } else if ( restriction === 'OPERABLE_ONLY' && !this.hasOperableSections() ) {
+                restriction_applies = true;
+            } else if ( restriction === 'GLAZING_BARS_ONLY' && !this.hasGlazingBars() ) {
+                restriction_applies = true;
             }
 
-            return condition_applies;
+            return restriction_applies;
         },
         //  TODO: use `persist` function instead of `set`
         persistOption: function (dictionary_id, dictionary_entry_id) {
             var current_unit_options = _.sortBy(this.get('unit_options'), 'dictionary_id');
-            var new_unit_options = [];
-
-            _.each(current_unit_options, function (unit_option) {
-                if ( unit_option.dictionary_id !== dictionary_id ) {
-                    new_unit_options.push(unit_option);
-                }
+            var new_unit_options = _.filter(current_unit_options, function (unit_option) {
+                return unit_option.dictionary_id !== dictionary_id;
             }, this);
 
-            new_unit_options.push({
-                dictionary_id: dictionary_id,
-                dictionary_entry_id: dictionary_entry_id
-            });
+            if ( dictionary_entry_id ) {
+                new_unit_options.push({
+                    dictionary_id: dictionary_id,
+                    dictionary_entry_id: dictionary_entry_id
+                });
+            }
 
             new_unit_options = _.sortBy(new_unit_options, 'dictionary_id');
 
@@ -1806,6 +1891,18 @@ var app = app || {};
             if ( JSON.stringify(current_unit_options) !== JSON.stringify(new_unit_options) ) {
                 this.set('unit_options', new_unit_options);
             }
+        },
+        //  Check if this unit belongs to the project which is currently active
+        isParentProjectActive: function () {
+            var is_active = false;
+
+            if ( app.current_project && this.collection && this.collection.options.project &&
+                this.collection.options.project === app.current_project
+            ) {
+                is_active = true;
+            }
+
+            return is_active;
         }
     });
 

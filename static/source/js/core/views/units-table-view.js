@@ -3,6 +3,8 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var UNSET_VALUE = '--';
+
     app.UnitsTableView = Marionette.ItemView.extend({
         tagName: 'div',
         className: 'units-table-container',
@@ -370,7 +372,7 @@ var app = app || {};
                     var current_options = target_dictionary_id ?
                         model.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
 
-                    return current_options.length ? current_options[0].get('name') : '';
+                    return current_options.length ? current_options[0].get('name') : UNSET_VALUE;
                 };
             } else {
                 getter = function (model, attr_name) {
@@ -455,6 +457,8 @@ var app = app || {};
 
                         if ( target_entry_id ) {
                             return model.persistOption(target_dictionary_id, target_entry_id);
+                        } else if ( val === UNSET_VALUE ) {
+                            return model.persistOption(target_dictionary_id, false);
                         }
                     }
                 };
@@ -524,6 +528,7 @@ var app = app || {};
 
             return validator;
         },
+        //  TODO: remove deprecated properties?
         getColumnExtraProperties: function (column_name) {
             var project_settings = app.settings.getProjectSettings();
             var properties_obj = {};
@@ -805,7 +810,8 @@ var app = app || {};
                         var options = [];
                         var rules_and_restrictions = [];
                         var is_restricted = false;
-                        var message = '--';
+                        var is_optional = false;
+                        var message = UNSET_VALUE;
 
                         if ( profile_id && dictionary_id ) {
                             options = app.settings.getAvailableOptions(dictionary_id, profile_id);
@@ -820,15 +826,17 @@ var app = app || {};
                         //  rule in the list, we're only interested in those
                         //  where we have to disable cell editing
                         _.each(rules_and_restrictions, function (rule) {
-                            var condition_applies = item.checkIfRuleOrRestrictionApplies(rule);
+                            var restriction_applies = item.checkIfRestrictionApplies(rule);
 
-                            if ( !condition_applies && rule === 'DOOR_ONLY' ) {
+                            if ( rule === 'IS_OPTIONAL' ) {
+                                is_optional = true;
+                            } else if ( restriction_applies && rule === 'DOOR_ONLY' ) {
                                 is_restricted = true;
                                 message = '(Doors Only)';
-                            } else if ( !condition_applies && rule === 'OPERABLE_ONLY' ) {
+                            } else if ( restriction_applies && rule === 'OPERABLE_ONLY' ) {
                                 is_restricted = true;
                                 message = '(Operable Only)';
-                            } else if ( !condition_applies && rule === 'GLAZING_BARS_ONLY' ) {
+                            } else if ( restriction_applies && rule === 'GLAZING_BARS_ONLY' ) {
                                 is_restricted = true;
                                 message = '(Has no Bars)';
                             }
@@ -847,6 +855,10 @@ var app = app || {};
                             cell_properties.source = _.map(options, function (option) {
                                 return option.get('name');
                             });
+
+                            if ( is_optional ) {
+                                cell_properties.source.unshift(UNSET_VALUE);
+                            }
                         //  When we have no options, disable editing
                         } else {
                             message = profile_id ? '(No Variants)' : '(No Profile)';

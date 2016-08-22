@@ -86,9 +86,28 @@ var app = app || {};
             });
 
             this.project_settings = null;
+            this._dependencies_changed = {};
 
             this.listenTo(app.vent, 'auth:initial_login', this.onInitialLogin);
             this.listenTo(app.vent, 'project_selector:fetch_current:stop', this.setProjectSettings);
+
+            //  When any dictionary or dictionary entry is changed, we remember
+            //  this fact to trigger an event later, when we switch screens
+            this.listenTo(this.dictionaries, 'change entries_change', function () {
+                this._dependencies_changed = _.extend({}, this._dependencies_changed, { dictionaries: true });
+            });
+        },
+        //  We trigger an event when dictionaries / profiles / filling types
+        //  have changed, so we get a chance to update units if needed
+        //  TODO: trigger events for profiles and filling types
+        onScreenChange: function () {
+            _.each(this._dependencies_changed, function (value, depencency_name) {
+                if ( depencency_name === 'dictionaries' ) {
+                    app.vent.trigger('validate_units:dictionaries');
+                }
+            }, this);
+
+            this._dependencies_changed = {};
         },
         setProjectSettings: function () {
             this.project_settings = app.current_project.settings;
@@ -98,6 +117,9 @@ var app = app || {};
         },
         onInitialLogin: function () {
             this.fetchData();
+
+            //  If we have a router, we want to monitor all changes
+            this.listenTo(app.router, 'route', this.onScreenChange);
         },
         //  We use deferred to wait for 2 requests (profiles and filling types)
         //  to finish before triggering event (and starting to load projects)
@@ -268,6 +290,13 @@ var app = app || {};
             }
 
             return available_options;
+        },
+        //  TODO: shoud use actual per-profile defaults mechanism, right now
+        //  it just gets the first option in the list
+        getDefaultOption: function (dictionary_id, profile_id) {
+            var available_options = this.getAvailableOptions(dictionary_id, profile_id);
+
+            return available_options.length ? available_options[0] : undefined;
         },
         getDictionaryIdByName: function (name) {
             var target_dictionary = this.dictionaries.findWhere({name: name});

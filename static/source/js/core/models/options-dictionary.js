@@ -10,7 +10,7 @@ var app = app || {};
     ];
 
     var POSSIBLE_RULES_AND_RESTRICTIONS = [
-        'DOOR_ONLY', 'OPERABLE_ONLY', 'GLAZING_BARS_ONLY'
+        'DOOR_ONLY', 'OPERABLE_ONLY', 'GLAZING_BARS_ONLY', 'IS_OPTIONAL'
     ];
 
     function getDefaultRulesAndRestrictions() {
@@ -139,6 +139,10 @@ var app = app || {};
                 this.entries = new app.OptionsDictionaryEntryCollection(null, { dictionary: this });
                 this.on('add', this.setDependencies, this);
                 this.validateRulesAndRestrictions();
+
+                this.listenTo(this.entries, 'change', function (e) {
+                    this.trigger('entries_change', e);
+                });
             }
         },
         validateRulesAndRestrictions: function () {
@@ -158,8 +162,7 @@ var app = app || {};
                 }
             }
 
-            //  Works for arrays and object literals
-            if ( !_.isObject(rules_parsed) ) {
+            if ( !_.isObject(rules) ) {
                 this.set('rules_and_restrictions', this.getDefaultValue('rules_and_restrictions'));
             }
         },
