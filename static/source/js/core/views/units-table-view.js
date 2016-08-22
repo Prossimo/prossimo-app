@@ -395,7 +395,6 @@ var app = app || {};
                     }
                     var heights = val.split('/');
                     if (heights.length < 2) {
-                        // height = (+val) ? +val : 0;
                         height = p.dimensions((+val) ? +val : 0, 'height');
                         if (rootSection) {
                             rootSection.trapezoidHeights = false;
@@ -410,6 +409,8 @@ var app = app || {};
                         } else {
                             if (rootSection) {
                                 rootSection.trapezoidHeights = [heights[0], heights[1]];
+                                rootSection.circular = false;
+                                rootSection.arched = false;
                             }
                             height = (heights[0] > heights[1]) ? heights[0] : heights[1];
                         }

@@ -546,13 +546,7 @@ var app = app || {};
         },
         isCircularPossible: function (sashId) {
             var root = this.generateFullRoot();
-            var parent = findParent(root, sashId);
-
-            if (!parent) {
-                return true;
-            }
-
-            return false;
+            return !findParent(root, sashId) && !root.trapezoidHeights;
         },
         getCircleRadius: function () {
             var root = this.generateFullRoot();
@@ -565,6 +559,10 @@ var app = app || {};
         },
         isArchedPossible: function (sashId) {
             var root = this.generateFullRoot();
+
+            if (root.trapezoidHeights) {
+                return false;
+            }
 
             if (app.Unit.findSection(root, sashId).sashType !== 'fixed_in_frame') {
                 return false;
