@@ -1620,6 +1620,8 @@ var app = app || {};
             });
             var type = section.sashType;
             var style = module.getStyle('direction_line');
+            var isAmerican = module.getState('hingeIndicatorMode') === 'american';
+            var isTrapezoid = false;
             var directionLine = new Konva.Shape({
                 stroke: style.stroke,
                 x: section.glassParams.x - section.sashParams.x,
@@ -1631,32 +1633,51 @@ var app = app || {};
                     var height = section.glassParams.height;
 
                     if (section.trapezoid && section.trapezoid.frame) {
+                        isTrapezoid = true;
                         var sashFrameWidth = model.profile.get('sash_frame_width');
                         var corners = [section.trapezoid.frame.inner[0].y - sashFrameWidth, section.trapezoid.frame.inner[1].y - sashFrameWidth];
 
                         if (type.indexOf('right') >= 0 && (type.indexOf('slide') === -1)) {
-                            ctx.moveTo(width, 0);
-                            ctx.lineTo(0, ( height - corners[1] ) / 2 );
-                            ctx.lineTo(width, height - corners[0]);
+                            if (isAmerican) {
+                                ctx.moveTo(width, 0);
+                                ctx.lineTo(0, ( height - corners[1] ) / 2 );
+                                ctx.lineTo(width, height - corners[0]);
+                            } else {
+                                ctx.moveTo(width, corners[1]);
+                                ctx.lineTo(0, ( ( height - corners[0] ) / 2 ) + corners[0] );
+                                ctx.lineTo(width, height);
+                            }
                         }
 
                         if (type.indexOf('left') >= 0 && (type.indexOf('slide') === -1)) {
-                            ctx.moveTo(0, 0);
-                            ctx.lineTo(width, ( height - corners[0] ) / 2 );
-                            ctx.lineTo(0, height - corners[1]);
+                            if (isAmerican) {
+                                ctx.moveTo(0, 0);
+                                ctx.lineTo(width, ( height - corners[0] ) / 2 );
+                                ctx.lineTo(0, height - corners[1]);
+                            } else {
+                                ctx.moveTo(0, corners[0]);
+                                ctx.lineTo(width, ( ( height - corners[1] ) / 2 ) + corners[1] );
+                                ctx.lineTo(0, height);
+                            }
                         }
 
                         if (type.indexOf('tilt_turn_') >= 0 || type.indexOf('slide') >= 0 || type === 'tilt_only') {
-                            ctx.moveTo(0, height - corners[1]);
-                            ctx.lineTo(width / 2, 0);
-                            ctx.lineTo(width, height - corners[0]);
+                            if (isAmerican) {
+                                ctx.moveTo(0, height - corners[1]);
+                                ctx.lineTo(width / 2, 0);
+                                ctx.lineTo(width, height - corners[0]);
+                            } else {
+                                ctx.moveTo(0, height);
+                                ctx.lineTo(width / 2, ( ( (corners[1] > corners[0]) ? corners[0] : corners[1] ) + ( Math.abs(corners[1] - corners[0]) / 2 ) ) );
+                                ctx.lineTo(width, height);
+                            }
                         }
 
-                        if (type === 'tilt_only_top_hung') {
-                            ctx.moveTo(0, 0);
-                            ctx.lineTo(width / 2, height);
-                            ctx.lineTo(width, 0);
-                        }
+                        // if (type === 'tilt_only_top_hung') {
+                        //     ctx.moveTo(0, 0);
+                        //     ctx.lineTo(width / 2, height);
+                        //     ctx.lineTo(width, 0);
+                        // }
                     } else {
                         if (type.indexOf('right') >= 0 && (type.indexOf('slide') === -1)) {
                             ctx.moveTo(width, height);
@@ -1692,7 +1713,7 @@ var app = app || {};
             }
 
             // #192: Reverse hinge indicator for outside view
-            if ( module.getState('hingeIndicatorMode') === 'american' ) {
+            if ( isAmerican && !isTrapezoid ) {
                 directionLine.scale({
                     x: -1,
                     y: -1
