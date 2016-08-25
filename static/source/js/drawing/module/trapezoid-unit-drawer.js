@@ -2113,6 +2113,12 @@ var app = app || {};
                 group.add(bar);
             }
 
+            var corners = model.getMainTrapezoidInnerCorners();
+            var glassCrossing = {
+                left: model.getLineCrossingX(section.glassParams.x, corners.left, corners.right),
+                right: model.getLineCrossingX(section.glassParams.x + section.glassParams.width, corners.left, corners.right)
+            };
+
             for (i = 0; i < hBarCount; i++) {
                 data = section.bars.horizontal[i];
                 space = data.position;
@@ -2150,15 +2156,21 @@ var app = app || {};
                     }
                 }
 
+                var barPositionY = fillY + space - (glazing_bar_width / 2);
+
                 bar = new Konva.Rect({
                     x: _from,
-                    y: fillY + space - (glazing_bar_width / 2),
+                    y: barPositionY,
                     width: _to - _from,
                     height: glazing_bar_width,
                     fill: style.normal.fill,
                     listening: false
                 });
-                group.add(bar);
+
+                if ( barPositionY > glassCrossing.left || barPositionY > glassCrossing.right ) {
+                    group.add(bar);
+                }
+
             }
 
             return group;
