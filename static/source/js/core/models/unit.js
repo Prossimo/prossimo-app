@@ -855,6 +855,7 @@ var app = app || {};
         },
         setSectionMullionPosition: function (id, pos) {
             this._updateSection(id, function (section) {
+                if ( section.minPosition && section.minPosition > pos ) pos = section.minPosition;
                 section.position = parseFloat(pos);
             });
         },
@@ -881,9 +882,32 @@ var app = app || {};
             }
 
             this._updateSection(sectionId, function (section) {
+
                 var full = this.generateFullRoot();
                 var fullSection = app.Unit.findSection(full, sectionId);
                 var measurementType = getInvertedDivider(type).replace(/_invisible/, '');
+                var position;
+
+                if (type === 'horizontal' || type === 'horizontal_invisible') {
+                    position = fullSection.openingParams.y + fullSection.openingParams.height / 2;
+                    if (this.isTrapezoid()) {
+                        var corners = this.getMainTrapezoidInnerCorners();
+                        var crossing = this.getLineCrossingY(position, corners.left, corners.right);
+                        var heights = this.getTrapezoidHeights();
+                        var minHeight = (heights.left > heights.right) ? heights.right : heights.left;
+                        var maxHeight = (heights.left < heights.right) ? heights.right : heights.left;
+                        if (crossing >= -100) {
+                            position = maxHeight - minHeight + 200;
+                            section.minPosition = position;
+                            if ( position > fullSection.sashParams.y + fullSection.sashParams.height ) {
+                                return false;
+                            }
+                        }
+                    }
+                    section.position = position;
+                } else {
+                    position = fullSection.openingParams.x + fullSection.openingParams.width / 2;
+                }
 
                 section.divider = type;
                 section.sections = [getSectionDefaults(), getSectionDefaults()];
@@ -901,11 +925,8 @@ var app = app || {};
                     section.sections[0].fillingName = section.sections[1].fillingName = section.fillingName;
                 }
 
-                if (type === 'horizontal' || type === 'horizontal_invisible') {
-                    section.position = fullSection.openingParams.y + fullSection.openingParams.height / 2;
-                } else {
-                    section.position = fullSection.openingParams.x + fullSection.openingParams.width / 2;
-                }
+                section.position = position;
+
             }.bind(this));
         },
         // after full calulcalation section will be something like:

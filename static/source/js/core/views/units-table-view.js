@@ -390,6 +390,23 @@ var app = app || {};
                 },
                 height: function (attr_name, val, model) {
                     var height, rootSection;
+                    var checkHorizontalSplit = function (rootSection, params) {
+                        if ( rootSection.sections && rootSection.sections.length ) {
+                            for (var i = 0; i < rootSection.sections.length; i++) {
+                                checkHorizontalSplit(rootSection.sections[i], params);
+                            }
+                        }
+                        if ( rootSection.divider && rootSection.divider === 'horizontal' && rootSection.position ) {
+                            var crossing = model.getLineCrossingY(rootSection.position, params.corners.left, params.corners.right);
+                            if (crossing >= -100) {
+                                var maxHeight = app.utils.convert.inches_to_mm(params.maxHeight);
+                                var minHeight = app.utils.convert.inches_to_mm(params.minHeight);
+                                var position = maxHeight - minHeight + 200;
+                                rootSection.minPosition = rootSection.position = position;
+                            }
+                        }
+                    };
+
                     if (model) {
                         rootSection = model.get('root_section');
                     }
@@ -411,6 +428,14 @@ var app = app || {};
                                 rootSection.trapezoidHeights = [heights[0], heights[1]];
                                 rootSection.circular = false;
                                 rootSection.arched = false;
+
+                                var params = {
+                                    corners: model.getMainTrapezoidInnerCorners(),
+                                    minHeight: (heights[0] > heights[1]) ? heights[1] : heights[0],
+                                    maxHeight: (heights[0] < heights[1]) ? heights[1] : heights[0]
+                                };
+
+                                checkHorizontalSplit(rootSection, params);
                             }
                             height = (heights[0] > heights[1]) ? heights[0] : heights[1];
                         }
@@ -960,15 +985,13 @@ var app = app || {};
             function onBeforeKeyDown(event, onlyCtrlKeys) {
                 var isCtrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
 
-                console.log('beforeKeyDown', event);
                 if(isCtrlDown && event.keyCode == 17){
-                  console.log('stop immediate', event);
                     event.stopImmediatePropagation();
                     return;
                 }
-                if(isCtrlDown && event.keyCode == 67) {
-                  console.log('copy')
-                }
+                // if(isCtrlDown && event.keyCode == 67) {
+                //   console.log('copy')
+                // }
 
                 //  Ctrl + Y || Ctrl + Shift + Z
                 if ( isCtrlDown && (event.keyCode === 89 || (event.shiftKey && event.keyCode === 90 )) ) {
