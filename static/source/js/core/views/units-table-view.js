@@ -88,14 +88,12 @@ var app = app || {};
 
             this.listenTo(this.collection, 'all', this.updateTable);
             this.listenTo(this.options.extras, 'all', this.updateTable);
-            this.listenTo(app.projects, 'all', this.updateTable);
             this.listenTo(this.options.parent_view, 'attach', this.updateTable);
 
             this.listenTo(app.current_project.settings, 'change', this.render);
 
             this.listenTo(this.collection, 'invalid', this.showValidationError);
             this.listenTo(this.options.extras, 'invalid', this.showValidationError);
-            this.listenTo(app.projects, 'invalid', this.showValidationError);
 
             this.listenTo(app.vent, 'paste_image', this.onPasteImage);
         },
@@ -213,8 +211,7 @@ var app = app || {};
                     item.is_active = key === this.active_tab;
                     return item;
                 }, this),
-                mode: this.getActiveTab().title === 'Extras' ? 'extras' :
-                    (this.getActiveTab().title === 'Project Info' ? 'none' : 'units'),
+                mode: this.getActiveTab().title === 'Extras' ? 'extras' : 'units',
                 table_visibility: this.table_visibility,
                 is_always_visible: this.options.is_always_visible
             };
@@ -341,9 +338,6 @@ var app = app || {};
                 },
                 square_feet_price_discounted: function (model) {
                     return model.getSquareFeetPriceDiscounted();
-                },
-                quote_number: function (model) {
-                    return model.getQuoteNumber();
                 },
                 original_cost: function (model) {
                     return model.getOriginalCost();
@@ -675,17 +669,6 @@ var app = app || {};
                     type: 'dropdown',
                     source: app.settings.getOpeningDirections()
                 },
-                pipedrive_id: {
-                    readOnly: true
-                },
-                quote_date: {
-                    type: 'date',
-                    dateFormat: 'DD MMMM, YYYY',
-                    correctFormat: true
-                },
-                quote_number: {
-                    readOnly: true
-                },
                 subtotal_profit: {
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('price_usd', true)
@@ -734,7 +717,7 @@ var app = app || {};
         },
         //  Redefine some cell-specific properties. This is mostly used to
         //  prevent editing of some attributes that shouldn't be editable for
-        //  a certain unit / accessory / project
+        //  a certain unit / accessory
         getActiveTabCellsSpecificOptions: function () {
             var self = this;
 
@@ -824,9 +807,7 @@ var app = app || {};
                 total_square_feet: 'Total ft<sup>2</sup>',
                 square_feet_price: 'Price / ft<sup>2</sup>',
                 square_feet_price_discounted: 'Price / ft<sup>2</sup> w/D',
-                subtotal_profit: 'Subt. Profit',
-                quote_revision: 'Quote Rev.',
-                quote_number: 'Quote #'
+                subtotal_profit: 'Subt. Profit'
             };
 
             return custom_column_headers_hash[column_name];
@@ -890,16 +871,7 @@ var app = app || {};
                 subtotal_price_discounted: 100,
                 subtotal_profit: 100,
                 square_feet_price_discounted: 100,
-                extras_type: 100,
-                pipedrive_id: 100,
-                project_name: 240,
-                client_name: 120,
-                client_company_name: 160,
-                client_phone: 180,
-                client_email: 220,
-                client_address: 300,
-                project_address: 300,
-                quote_date: 120
+                extras_type: 100
             };
 
             var widths_table = _.map(this.getActiveTab().columns, function (item) {

@@ -181,20 +181,6 @@ var app = app || {};
             $(td).addClass('htDimmed').text('--');
             return td;
         },
-        //  Disable currently inactive projects in Project info tab
-        projectInfoRenderer: function (instance, td, row, col) {
-            var is_current_project = instance.getSourceData().at(row) &&
-                instance.getSourceData().at(row) === app.current_project;
-
-            if ( !is_current_project ) {
-                instance.setCellMeta(row, col, 'readOnly', true);
-                $(td).addClass('htDimmed');
-            }
-
-            Handsontable.renderers.TextRenderer.apply(this, arguments);
-
-            return td;
-        },
         unitProfileRenderer: function (instance, td, row) {
             var current_unit = instance.getSourceData().at(row) &&
                 instance.getSourceData().at(row);
