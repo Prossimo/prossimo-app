@@ -307,8 +307,8 @@ module.exports = function (grunt) {
                     base: '.',
                     middleware: function (connect, options, middlewares) {
                         middlewares.unshift(function (req, res, next) {
-
                             res.setHeader('Access-Control-Allow-Origin', '*');
+
                             if ( req.url === '/dashboard/' || req.url === '/drawing/' ||
                                  req.url === '/quote/' || req.url === '/settings/' ||
                                  req.url === '/supplier/' || req.url === '/units/'
@@ -414,7 +414,7 @@ module.exports = function (grunt) {
                         },
                         {
                             match: 'api_base_path',
-                            replacement: 'http://159.203.133.223/api/api'
+                            replacement: 'http://127.0.0.1:8000/api'
                         }
                     ]
                 },
