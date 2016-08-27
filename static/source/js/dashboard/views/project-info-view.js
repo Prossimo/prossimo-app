@@ -20,30 +20,22 @@ var app = app || {};
             'click @ui.$edit_button': 'toggleEditMode'
         },
         toggleEditMode: function () {
-            var editMode = this.state.get('editMode');
-
-            if (editMode) {
+            if (this.editMode) {
                 this.saveFormData();
             }
 
-            this.state.set('editMode', !editMode);
-        },
-        initialize: function () {
-            this.state = new Backbone.Model();
-            this.state.set('editMode', false);
-            this.state.on('change:editMode', this.render);
+            this.editMode = !this.editMode;
+            this.render();
         },
         enterMode: function () {
-            if (this.state.get('editMode')) {
+            if (this.editMode) {
                 this.enterEditMode();
             } else {
                 this.enterViewMode();
             }
         },
-        onRender: function () {
-            this.enterMode();
-        },
         enterViewMode: function () {
+            this.ui.$content.find('.date').datepicker('destroy');
             this.ui.$content.html(this.viewTemplate(this.model.toJSON()));
         },
         enterEditMode: function () {
@@ -53,16 +45,25 @@ var app = app || {};
             });
         },
         serializeData: function () {
-            return $.extend({}, this.model.toJSON(), {state: this.state.toJSON()});
+            return _.extend({}, this.model.toJSON(), {editMode: this.editMode});
         },
         saveFormData: function () {
             var modelData = {};
 
-            $.map(this.$el.find('.form-horizontal').serializeArray(), function (item) {
+            _.map(this.$el.find('.form-horizontal').serializeArray(), function (item) {
                 modelData[item.name] = item.value;
             });
 
             this.model.persist(modelData);
+        },
+        initialize: function () {
+            this.editMode = false;
+        },
+        onRender: function () {
+            this.enterMode();
+        },
+        onDestroy: function () {
+            this.ui.$content.find('.date').datepicker('destroy');
         }
     });
 })();
