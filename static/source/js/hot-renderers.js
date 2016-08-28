@@ -150,32 +150,6 @@ var app = app || {};
 
             return td;
         },
-        //  Add remove and clone buttons to remove or clone unit in collection
-        itemActionsRenderer: function (instance, td, row) {
-            var item_has_only_default_attributes = instance.getSourceData().at(row) &&
-                instance.getSourceData().at(row).hasOnlyDefaultAttributes();
-            var $td = $(td);
-            var $button_remove = $('<button>', {
-                class: 'btn btn-xs btn-remove js-remove-item',
-                'data-row': row,
-                text: 'Remove',
-                title: 'Remove Item'
-            });
-            var $button_clone = $('<button>', {
-                class: 'btn btn-xs btn-clone js-clone-item',
-                'data-row': row,
-                text: 'Clone',
-                title: 'Clone Item'
-            });
-
-            if ( item_has_only_default_attributes ) {
-                $button_clone.attr('disabled', true);
-            }
-
-            $td.empty().append($button_remove.add($button_clone));
-
-            return td;
-        },
         //  Just replace visible cell value with "--"
         disabledPropertyRenderer: function (instance, td) {
             $(td).addClass('htDimmed').text('--');

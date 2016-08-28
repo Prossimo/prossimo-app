@@ -14,14 +14,11 @@ var app = app || {};
             $add_new_profile: '.js-add-new-profile',
             $undo: '.js-undo',
             $redo: '.js-redo',
-            $remove: '.js-remove-unit',
-            $clone: '.js-clone-unit'
-
+            $remove: '.js-remove-selected-items',
+            $clone: '.js-clone-selected-items'
         },
         events: {
             'click @ui.$add_new_profile': 'addNewProfile',
-            'click .js-remove-item': 'onRemoveItem',
-            'click .js-clone-item': 'onCloneItem',
             'click .js-move-item-up': 'onMoveItemUp',
             'click .js-move-item-down': 'onMoveItemDown',
             'click @ui.$undo': 'onUndo',
@@ -323,8 +320,7 @@ var app = app || {};
             var custom_column_headers_hash = {
                 visible_frame_width_fixed: 'Visible Frame Width Fixed',
                 visible_frame_width_operable: 'Visible Frame Width Operable',
-                move_item: 'Move',
-                item_actions: 'Actions'
+                move_item: 'Move'
             };
 
             return custom_column_headers_hash[column_name];

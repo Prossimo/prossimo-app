@@ -14,16 +14,14 @@ var app = app || {};
             $add_new_accessory: '.js-add-new-accessory',
             $undo: '.js-undo',
             $redo: '.js-redo',
-            $remove: '.js-remove-unit',
-            $clone: '.js-clone-unit'
+            $remove: '.js-remove-selected-items',
+            $clone: '.js-clone-selected-items'
         },
         events: {
             'click .units-table-title': 'toggleTableVisibility',
             'click @ui.$add_new_unit': 'addNewUnit',
             'click @ui.$add_new_accessory': 'addNewAccessory',
             'click .nav-tabs a': 'onTabClick',
-            'click .js-remove-item': 'onRemoveItem',
-            'click .js-clone-item': 'onCloneItem',
             'click .js-move-item-up': 'onMoveItemUp',
             'click .js-move-item-down': 'onMoveItemDown',
             'click @ui.$undo': 'onUndo',
@@ -215,24 +213,6 @@ var app = app || {};
                 table_visibility: this.table_visibility,
                 is_always_visible: this.options.is_always_visible
             };
-        },
-        onRemoveItem: function (e) {
-            var target_row = $(e.target).data('row');
-            var target_object;
-
-            if ( this.hot ) {
-                target_object = this.hot.getSourceData().at(target_row);
-                target_object.destroy();
-            }
-        },
-        onCloneItem: function (e) {
-            var target_row = $(e.target).data('row');
-            var target_object;
-
-            if ( this.hot ) {
-                target_object = this.hot.getSourceData().at(target_row);
-                target_object.duplicate();
-            }
         },
         onMoveItemUp: function (e) {
             var target_row = $(e.target).data('row');
