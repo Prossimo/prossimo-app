@@ -14,13 +14,11 @@ var app = app || {};
             $add_new_type: '.js-add-new-filling-type',
             $undo: '.js-undo',
             $redo: '.js-redo',
-            $remove: '.js-remove-unit',
-            $clone: '.js-clone-unit'
+            $remove: '.js-remove-selected-items',
+            $clone: '.js-clone-selected-items'
         },
         events: {
             'click @ui.$add_new_type': 'addNewFillingType',
-            'click .js-remove-item': 'onRemoveItem',
-            'click .js-clone-item': 'onCloneItem',
             'click .js-move-item-up': 'onMoveItemUp',
             'click .js-move-item-down': 'onMoveItemDown',
             'click @ui.$undo': 'onUndo',
@@ -76,6 +74,7 @@ var app = app || {};
                 for (var i = this.selected.length - 1; i >= 0; i--) {
                     this.hot.getSourceData().at(this.selected[i]).destroy();
                 }
+
                 this.selected = [];
                 this.hot.selectCell(0, 0, 0, 0, false);
                 this.hot.deselectCell();
@@ -84,6 +83,7 @@ var app = app || {};
         onCloneSelected: function () {
             if ( this.selected.length === 1 && this.hot ) {
                 var selectedData = this.hot.getSourceData().at(this.selected[0]);
+
                 if (!selectedData.hasOnlyDefaultAttributes()) {
                     selectedData.duplicate();
                 }
@@ -301,7 +301,7 @@ var app = app || {};
             function onBeforeKeyDown(event, onlyCtrlKeys) {
                 var isCtrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
 
-                if(isCtrlDown && event.keyCode == 17){
+                if (isCtrlDown && event.keyCode === 17) {
                     event.stopImmediatePropagation();
                     return;
                 }
@@ -341,36 +341,45 @@ var app = app || {};
                             },
                             afterSelection: function (startRow, startColumn, endRow, endColumn) {
                                 self.selected = [];
+
                                 if ( startColumn === 0 && endColumn === this.countCols() - 1 ) {
-                                    //self.ui.$remove.removeClass('disabled');
                                     if ( startRow === endRow ) {
                                         self.selected = [startRow];
                                         var selectedData = self.hot.getSourceData().at(startRow);
-                                        if(selectedData.get('is_base_type')) {
+
+                                        if (selectedData.get('is_base_type')) {
                                             self.ui.$remove.addClass('disabled');
                                             self.selected = [];
                                         } else {
                                             self.ui.$remove.removeClass('disabled');
                                         }
-                                        if (selectedData.hasOnlyDefaultAttributes() || selectedData.get('is_base_type')) {
+
+                                        if (selectedData.hasOnlyDefaultAttributes() ||
+                                            selectedData.get('is_base_type')
+                                        ) {
                                             self.ui.$clone.addClass('disabled');
                                         } else {
                                             self.ui.$clone.removeClass('disabled');
                                         }
                                     } else {
-                                        var start = startRow, end = endRow;
+                                        var start = startRow;
+                                        var end = endRow;
+
                                         if ( startRow > endRow ) {
                                             start = endRow;
                                             end = startRow;
                                         }
+
                                         for (var i = start; i <= end; i++) {
-                                            if(self.hot.getSourceData().at(i).get('is_base_type')) {
+                                            if (self.hot.getSourceData().at(i).get('is_base_type')) {
                                                 self.selected = [];
                                                 self.ui.$remove.addClass('disabled');
                                                 return;
                                             }
+
                                             self.selected.push(i);
                                         }
+
                                         self.ui.$clone.addClass('disabled');
                                     }
                                 } else {
@@ -380,7 +389,13 @@ var app = app || {};
                             },
                             afterDeselect: function () {
                                 if ( self.selected.length ) {
-                                    this.selectCell(self.selected[0], 0, self.selected[self.selected.length - 1], this.countCols() - 1, false);
+                                    this.selectCell(
+                                        self.selected[0],
+                                        0,
+                                        self.selected[self.selected.length - 1],
+                                        this.countCols() - 1,
+                                        false
+                                    );
                                 }
                             }
                         });
