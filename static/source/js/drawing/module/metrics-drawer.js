@@ -86,7 +86,7 @@ var app = app || {};
             controls = this.getControls(mullions);
 
             // Draw mullion metrics
-            group.add( this.createMullionMetrics(measurements, height) );
+            group.add( this.createMullionMetrics(measurements, width, height) );
 
             // Draw whole metrics
             group.add( this.createWholeMetrics(measurements, width, height) );
@@ -347,7 +347,7 @@ var app = app || {};
 
             return result;
         },
-        createMullionMetrics: function (mullions, height) {
+        createMullionMetrics: function (mullions, width, height) {
             var view = this;
             var group = new Konva.Group();
 
@@ -381,6 +381,12 @@ var app = app || {};
                                 x: -metricSize,
                                 y: mullion.offset * ratio
                             };
+                            if (model.isTrapezoid()) {
+                                var heights = model.getTrapezoidHeights();
+                                if (heights.right > heights.left) {
+                                    position.x = width;
+                                }
+                            }
                         }
 
                         if (mullions[type].length === 2) {
@@ -692,6 +698,13 @@ var app = app || {};
                             controlSize / 2;
                         position.x = -metricSize;
 
+                        if (model.isTrapezoid()) {
+                            var heights = model.getTrapezoidHeights();
+                            if (heights.right > heights.left) {
+                                position.x = width;
+                            }
+                        }
+
                         width_ = metricSize;
                         height_ = controlSize;
                     } else {
@@ -748,6 +761,13 @@ var app = app || {};
                             y: (invertedType === 'vertical') ? 0 + cor.pos : height
                         }
                     };
+
+                    if ( invertedType === 'vertical' && model.isTrapezoid() ) {
+                        var heights = model.getTrapezoidHeights();
+                        if (heights.right > heights.left) {
+                            params.position.x = width;
+                        }
+                    }
 
                     var frameControls = view.createWholeControls(
                         root_section.id,
@@ -932,9 +952,11 @@ var app = app || {};
             var vHeight = height + (vCorrection.size * ratio);
 
             var verticalWholeMertic = this.createVerticalMetric(metricSize, vHeight, {
-                setter: (model.isTrapezoid()) ? false : function (val) {
+                setter: function (val) {
                     val -= vCorrection.size;
-                    model.updateDimension('height', val, 'mm');
+                    (model.isTrapezoid())
+                        ? model.updateTrapezoidHeights('max', val)
+                        : model.updateDimension('height', val);
                 },
                 getter: function () {
                     return model.getInMetric('height', 'mm') + vCorrection.size;
@@ -944,6 +966,35 @@ var app = app || {};
                 x: -metricSize * (rows.horizontal + 1),
                 y: 0 + (vCorrection.pos * ratio)
             };
+
+            if (model.isTrapezoid()) {
+                var heights = model.getTrapezoidHeights();
+                if (heights.right > heights.left) {
+                    vPosition.x = metricSize * rows.horizontal + width;
+                }
+
+                // Second vertical whole metric for trapezoid
+                var minHeight = (heights.right > heights.left) ? heights.left : heights.right;
+                var maxHeight = (heights.right < heights.left) ? heights.left : heights.right;
+                var secondVerticalHeight = vHeight * ( ( minHeight / ( maxHeight / 100 ) ) / 100 );
+
+                var secondVerticalWholeMertic = this.createVerticalMetric(metricSize, secondVerticalHeight, {
+                    setter: function (val) {
+                        val -= vCorrection.size;
+                        model.updateTrapezoidHeights('min', val);
+                    },
+                    getter: function () {
+                        return minHeight + vCorrection.size;
+                    }
+                });
+                var secondVerticalPosition = {
+                    x: -metricSize * (rows.horizontal + 1),
+                    y: ( vCorrection.pos + maxHeight - minHeight ) * ratio
+                };
+                secondVerticalPosition.x = (heights.right > heights.left) ? -metricSize : width;
+                secondVerticalWholeMertic.position(secondVerticalPosition);
+                group.add(secondVerticalWholeMertic);
+            }
 
             verticalWholeMertic.position(vPosition);
             group.add(verticalWholeMertic);

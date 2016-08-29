@@ -894,9 +894,10 @@ var app = app || {};
                         var corners = this.getMainTrapezoidInnerCorners();
                         var crossing = this.getLineCrossingY(position, corners.left, corners.right);
                         var heights = this.getTrapezoidHeights();
+                        var width = this.getInMetric('width', 'mm');
                         var minHeight = (heights.left > heights.right) ? heights.right : heights.left;
                         var maxHeight = (heights.left < heights.right) ? heights.right : heights.left;
-                        if (crossing >= -100) {
+                        if ( crossing >= -100 && crossing <= width + 100 ) {
                             position = maxHeight - minHeight + 200;
                             section.minPosition = position;
                             if ( position > fullSection.sashParams.y + fullSection.sashParams.height ) {
@@ -904,7 +905,7 @@ var app = app || {};
                             }
                         }
                     }
-                    section.position = position;
+                    // section.position = position;
                 } else {
                     position = fullSection.openingParams.x + fullSection.openingParams.width / 2;
                 }
@@ -1817,6 +1818,66 @@ var app = app || {};
         },
         getFrameOffset: function () {
           return 34;
+        },
+        updateTrapezoidHeights: function (type, val) {
+            val  = app.utils.convert.mm_to_inches(val);
+            if (this.isTrapezoid()) {
+                var height;
+                var rootSection = this.get('root_section');
+                var heights = rootSection.trapezoidHeights;
+
+                if (type === 'min') {
+                    if (heights[0] > heights[1]) {
+                        heights[1] = val;
+                    } else {
+                        heights[0] = val;
+                    }
+                } else {
+                    if (heights[0] > heights[1]) {
+                        heights[0] = val;
+                    } else {
+                        heights[1] = val;
+                    }
+                }
+
+                if (heights[0] === heights[1]) {
+                    rootSection.trapezoidHeights = false;
+                    height = heights[0];
+                } else {
+                    var params = {
+                        corners: this.getMainTrapezoidInnerCorners(),
+                        minHeight: (heights[0] > heights[1]) ? heights[1] : heights[0],
+                        maxHeight: (heights[0] < heights[1]) ? heights[1] : heights[0]
+                    };
+                    height = params.maxHeight;
+                    rootSection.trapezoidHeights = heights;
+                    this.checkHorizontalSplit(rootSection, params);
+                    this.persist('root_section', rootSection);
+                }
+
+                if (this.get('height') === height) {
+                    this.trigger('change', this);
+                } else {
+                    this.updateDimension('height', height);
+                }
+
+            }
+        },
+        checkHorizontalSplit: function (rootSection, params) {
+            if ( rootSection.sections && rootSection.sections.length ) {
+                for (var i = 0; i < rootSection.sections.length; i++) {
+                    this.checkHorizontalSplit(rootSection.sections[i], params);
+                }
+            }
+            if ( rootSection.divider && rootSection.divider === 'horizontal' && rootSection.position ) {
+                var crossing = this.getLineCrossingY(rootSection.position, params.corners.left, params.corners.right);
+                if (crossing >= -100) {
+                    var maxHeight = app.utils.convert.inches_to_mm(params.maxHeight);
+                    var minHeight = app.utils.convert.inches_to_mm(params.minHeight);
+                    var position = maxHeight - minHeight + 250;
+                    rootSection.minPosition = rootSection.position = position;
+                }
+            }
         }
         /* trapezoid end */
     });
