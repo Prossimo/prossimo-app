@@ -33,8 +33,13 @@ var app = app || {};
             }
 
             if ( this.isNew() ) {
-                options.success = function (model, response) {
-                    processResponse('success', model, response);
+                options.success = function (model, response, backboneResponse) {
+                    if(null == response && backboneResponse) {
+                        // Fix bug with empty json response
+                        processResponse('success', model, backboneResponse.xhr);
+                    } else {
+                        processResponse('success', model, response);
+                    }
                 };
 
                 options.error = function (model, response) {

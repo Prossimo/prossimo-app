@@ -1,0 +1,19 @@
+{{> 'dialogs/partials/base-dialog-start-wrapper' }}
+<div class="create-project-box">
+    <form action="">
+        <input name="project_name" type="text" required class="form-control" placeholder="Project name">
+        <input name="client_name" type="text" class="form-control" placeholder="Client name">
+        <input name="company" type="text" class="form-control" placeholder="Company">
+        <input name="phone" type="text" class="form-control" placeholder="Phone">
+        <input name="email" type="text" class="form-control" placeholder="E-mail">
+        <input name="client_address" type="text" class="form-control" placeholder="Client address">
+        <input name="project_address" type="text" class="form-control" placeholder="Project address">
+        <input name="quote_revision" type="number" class="form-control" placeholder="Quote revision">
+        <input name="quote_date" type="text" class="form-control date" placeholder="Quote date">
+        <textarea name="project_notes" class="form-control" placeholder="Project notes"></textarea>
+        <textarea name="shipping_notes" class="form-control" placeholder="Shipping notes"></textarea>
+        <button type="submit" class="btn btn-save">Save</button>
+        <button type="button" class="btn btn-cancel" data-dismiss="modal">Cancel</button>
+    </form>
+</div>
+{{> 'dialogs/partials/base-dialog-end-wrapper' }}
