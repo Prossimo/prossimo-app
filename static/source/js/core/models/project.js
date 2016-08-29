@@ -31,8 +31,7 @@ var app = app || {};
             var default_value = '';
 
             var type_value_hash = {
-                number: 0,
-                pipedrive_id: null
+                number: 0
             };
 
             var name_value_hash = {

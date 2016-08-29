@@ -882,8 +882,8 @@ var app = app || {};
 
             return group;
         },
-        drawSlideDirection: function(sectionData, /*Konva.Group*/group) {
-            if(-1 == ['slide_left', 'slide_right'].indexOf(sectionData.sashType)) {
+        drawSlideDirection: function (sectionData, /*Konva.Group*/group) {
+            if ( ['slide_left', 'slide_right'].indexOf(sectionData.sashType) === -1 ) {
                 return group;
             }
 
@@ -913,19 +913,20 @@ var app = app || {};
                     initialX + factors.stepX * factors[direction].directionSign,
                     initialY - factors.stepY
                 ],
-                pointerLength: 1/ratio *2,
-                pointerWidth : 1/ratio *2,
+                pointerLength: 1 / ratio * 2,
+                pointerWidth: 1 / ratio * 2,
                 fill: 'black',
                 stroke: 'black',
-                strokeWidth: 1 /ratio,
+                strokeWidth: 1 / ratio,
                 name: 'index'
             };
             var arrow = new Konva.Arrow(arrowParams);
+
             group.add(arrow);
             return group;
         },
-        drawTiltSlideDirection: function(sectionData, /*Konva.Group*/group) {
-            if(-1 == ['tilt_slide_left', 'tilt_slide_right'].indexOf(sectionData.sashType)) {
+        drawTiltSlideDirection: function (sectionData, /*Konva.Group*/group) {
+            if ( ['tilt_slide_left', 'tilt_slide_right'].indexOf(sectionData.sashType) === -1 ) {
                 return group;
             }
 
@@ -944,27 +945,28 @@ var app = app || {};
             };
             var centerX = sectionData.sashParams.width / 2;
             var centerY = sectionData.sashParams.height / 2;
-            var initialX = centerX + (factors.stepX / 2 *  factors[direction].initialOffsetSign);
+            var initialX = centerX + (factors.stepX / 2 * factors[direction].initialOffsetSign);
             var initialY = centerY + 10 / ratio;
             var arrowParams = {
                 points: [
                     initialX,
                     initialY,
-                    initialX + factors.stepX/2 * factors[direction].directionSign,
+                    initialX + factors.stepX / 2 * factors[direction].directionSign,
                     initialY - factors.stepY,
-                    initialX + factors.stepX  * factors[direction].directionSign,
+                    initialX + factors.stepX * factors[direction].directionSign,
                     initialY,
                     initialX + factors.stepX * 2 * factors[direction].directionSign,
                     initialY
                 ],
                 pointerLength: 1 / ratio * 2,
-                pointerWidth : 1 / ratio * 2,
+                pointerWidth: 1 / ratio * 2,
                 fill: 'black',
                 stroke: 'black',
                 strokeWidth: 1 / ratio,
                 name: 'index'
             };
             var arrow = new Konva.Arrow(arrowParams);
+
             group.add(arrow);
             return group;
         },
@@ -1016,21 +1018,18 @@ var app = app || {};
             var shouldDrawBars = shouldDrawFilling &&
                 !sectionData.fillingType || sectionData.fillingType === 'glass';
 
-            var shouldDrawDirectionLine = (-1 == [
+            var shouldDrawDirectionLine = ([
                     'fixed_in_frame',
                     'slide_left',
                     'slide_right',
                     'tilt_slide_left',
                     'tilt_slide_right'
-                ].indexOf(sectionData.sashType));
+                ].indexOf(sectionData.sashType) === -1);
 
             var shouldDrawHandle = this.shouldDrawHandle(sectionData.sashType);
-
             var isSelected = (module.getState('selected:sash') === sectionData.id);
-
             var circleClip = {};
             var frameGroup;
-
 
             if (circleData) {
 
@@ -1204,8 +1203,6 @@ var app = app || {};
 
             if (
                     type !== 'fixed_in_frame' &&
-                    // type !== 'slide_left' &&
-                    // type !== 'slide_right' &&
                     (
                         type.indexOf('left') >= 0 ||
                         type.indexOf('right') >= 0 ||

@@ -21,7 +21,6 @@ $(function () {
     app.App = new Marionette.Application();
 
     app.App.on('start', function () {
-
         //  Register a communication channel for all events in the app
         app.vent = {};
         _.extend(app.vent, Backbone.Events);
@@ -43,7 +42,7 @@ $(function () {
                 path: 'dashboard',
                 icon_name: 'dashboard',
                 onShow: function () {
-                    app.main_region.show(new app.MainDashboardView())
+                    app.main_region.show(new app.MainDashboardView());
                 }
             },
             units_table: {
@@ -98,7 +97,6 @@ $(function () {
                 app.router.navigate('/units/', { trigger: true });
             }
         });
-
     });
 
     app.App.start();
