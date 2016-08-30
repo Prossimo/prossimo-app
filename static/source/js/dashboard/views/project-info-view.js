@@ -54,6 +54,10 @@ var app = app || {};
                 modelData[item.name] = item.value;
             });
 
+            if (this.model.get('project_name') !== modelData.project_name) {
+                app.top_bar_view.project_selector_view.setNewProjectName(modelData.project_name);
+            }
+
             this.model.persist(modelData);
         },
         initialize: function () {

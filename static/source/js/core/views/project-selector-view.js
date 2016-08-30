@@ -26,6 +26,11 @@ var app = app || {};
         fetchData: function () {
             this.fetchProjectList();
         },
+        setNewProjectName: function (newProjectName) {
+            var self = this;
+            self.ui.$select.find('option[value="' + self.ui.$select.val() + '"]').text(newProjectName);
+            self.ui.$select.selectpicker('refresh');
+        },
         fetchProjectList: function () {
             var self = this;
 
