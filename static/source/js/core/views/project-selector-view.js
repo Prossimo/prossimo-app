@@ -26,11 +26,9 @@ var app = app || {};
         fetchData: function () {
             this.fetchProjectList();
         },
-        setNewProjectName: function (newProjectName) {
-            var self = this;
-
-            self.ui.$select.find('option[value="' + self.ui.$select.val() + '"]').text(newProjectName);
-            self.ui.$select.selectpicker('refresh');
+        setNewProjectName: function (project) {
+            this.ui.$select.find('option[value="' + this.ui.$select.val() + '"]').text(project.get('project_name'));
+            this.ui.$select.selectpicker('refresh');
         },
         fetchProjectList: function () {
             var self = this;
@@ -118,6 +116,10 @@ var app = app || {};
 
                 self.render();
             });
+
+            app.current_project.off('change:project_name');
+            app.current_project.on('change:project_name', this.setNewProjectName.bind(this));
+
         },
         storeLastProject: function (new_id) {
             // Save selected project into a localStorage
