@@ -34,7 +34,7 @@ var app = app || {};
 
             if ( this.isNew() ) {
                 options.success = function (model, response, backboneResponse) {
-                    if(null == response && backboneResponse) {
+                    if ( response === null && backboneResponse ) {
                         // Fix bug with empty json response
                         processResponse('success', model, backboneResponse.xhr);
                     } else {

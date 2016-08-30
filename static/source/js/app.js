@@ -7,13 +7,13 @@ $(function () {
 
     // Fix bug with empty json response
     $.ajaxSetup({
-        dataFilter: function(rawData, type) {
-            if(rawData) {
+        dataFilter: function (rawData, type) {
+            if (rawData) {
                 return rawData;
-            } else {
-                if('json' === type) {
-                    return null;
-                }
+            }
+
+            if (type === 'json') {
+                return null;
             }
         }
     });

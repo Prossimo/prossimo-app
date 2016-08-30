@@ -27,6 +27,7 @@ var app = app || {};
             e.preventDefault();
 
             var newProject = new app.Project();
+
             newProject.set({
                 project_name: this.ui.$data_project_name.val().trim(),
                 client_name: this.ui.$data_client_name.val().trim(),
@@ -44,14 +45,17 @@ var app = app || {};
 
             this.$el.modal('hide');
 
-            newProject.on('sync', function(){
+            newProject.on('sync', function () {
                 app.top_bar_view.project_selector_view.fetchProjectList();
             });
 
             app.projects.create(newProject, {wait: true});
         },
         onRender: function () {
-            if (!this.$el.find('.modal-header').find('h4').length) this.$el.find('.modal-header').append('<h4></h4>');
+            if (!this.$el.find('.modal-header').find('h4').length) {
+                this.$el.find('.modal-header').append('<h4></h4>');
+            }
+
             this.$el.find('.modal-header').find('h4').text('Create project');
 
             this.ui.$form.find('.date').datepicker({
