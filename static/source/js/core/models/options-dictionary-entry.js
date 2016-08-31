@@ -20,6 +20,10 @@ var app = app || {};
         return _.extend({}, {});
     }
 
+    function getDefaultProfilesList() {
+        return [];
+    }
+
     app.OptionsDictionaryEntry = Backbone.Model.extend({
         defaults: function () {
             var defaults = {};
@@ -41,7 +45,8 @@ var app = app || {};
             };
 
             var name_value_hash = {
-                data: getDefaultEntryData()
+                data: getDefaultEntryData(),
+                profiles: getDefaultProfilesList()
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -67,6 +72,30 @@ var app = app || {};
             }
 
             return Backbone.sync.call(this, method, model, options);
+        },
+        hasOnlyDefaultAttributes: function () {
+            var has_only_defaults = true;
+
+            _.each(this.toJSON(), function (value, key) {
+                if ( key !== 'position' && has_only_defaults ) {
+                    var property_source = _.findWhere(ENTRY_PROPERTIES, { name: key });
+                    var type = property_source ? property_source.type : undefined;
+
+                    if ( key === 'data' ) {
+                        if ( JSON.stringify(value) !== JSON.stringify(this.getDefaultValue('data')) ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( key === 'profiles' ) {
+                        if ( JSON.stringify(value) !== JSON.stringify(this.getDefaultValue('profiles')) ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( this.getDefaultValue(key, type) !== value ) {
+                        has_only_defaults = false;
+                    }
+                }
+            }, this);
+
+            return has_only_defaults;
         },
         initialize: function (attributes, options) {
             this.options = options || {};

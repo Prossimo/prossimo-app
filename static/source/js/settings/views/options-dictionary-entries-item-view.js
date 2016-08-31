@@ -9,11 +9,15 @@ var app = app || {};
         template: app.templates['settings/options-dictionary-entries-item-view'],
         ui: {
             $name_container: '.entry-name',
-            $profiles_list_container: '.entry-profiles p'
+            $profiles_list_container: '.entry-profiles p',
+            $edit_profiles: '.js-edit-entry-profiles',
+            $clone: '.js-clone-entry',
+            $remove: '.js-remove-entry'
         },
         events: {
-            'click .js-edit-entry-profiles': 'editProfiles',
-            'click .js-remove-entry': 'removeEntry'
+            'click @ui.$edit_profiles': 'editProfiles',
+            'click @ui.$clone': 'cloneEntry',
+            'click @ui.$remove': 'removeEntry'
         },
         editProfiles: function () {
             app.dialogs.showDialog('options-profiles-table', {
@@ -37,6 +41,9 @@ var app = app || {};
         removeEntry: function () {
             this.model.destroy();
         },
+        cloneEntry: function () {
+            this.model.duplicate();
+        },
         serializeData: function () {
             var profiles = this.getProfilesNamesList();
 
@@ -45,18 +52,6 @@ var app = app || {};
                 profiles: profiles,
                 profiles_string: profiles.length ? profiles.join(', ') : '--'
             };
-        },
-        initialize: function () {
-            this.name_input_view = new app.BaseInputView({
-                model: this.model,
-                param: 'name',
-                input_type: 'text'
-            });
-
-            this.listenTo(this.model, 'change:profiles', function () {
-                this.render();
-                this.name_input_view.delegateEvents();
-            });
         },
         onRender: function () {
             var profiles = this.serializeData().profiles;
@@ -80,6 +75,12 @@ var app = app || {};
             this.ui.$profiles_list_container.on('mouseleave', function () {
                 $(this).tooltip('hide').tooltip('destroy');
             });
+
+            if ( this.model.hasOnlyDefaultAttributes() ) {
+                this.$el.addClass('is-new');
+            } else {
+                this.$el.removeClass('is-new');
+            }
         },
         onDestroy: function () {
             if ( this.name_input_view ) {
@@ -88,6 +89,19 @@ var app = app || {};
 
             this.ui.$profiles_list_container.off();
             this.ui.$profiles_list_container.tooltip('destroy');
+        },
+        initialize: function () {
+            this.name_input_view = new app.BaseInputView({
+                model: this.model,
+                param: 'name',
+                input_type: 'text',
+                placeholder: 'New Entry'
+            });
+
+            this.listenTo(this.model, 'change:profiles change:name', function () {
+                this.render();
+                this.name_input_view.delegateEvents();
+            });
         }
     });
 })();

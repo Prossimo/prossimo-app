@@ -10,7 +10,16 @@ var app = app || {};
         ui: {
             $name_container: '.dictionary-name',
             $rules_and_restrictions_container: '.dictionary-restrictions',
-            $entries_container: '.entry-table-container'
+            $entries_container: '.entry-table-container',
+            $remove: '.js-remove-dictionary',
+            $clone: '.js-clone-dictionary'
+        },
+        events: {
+            'click @ui.$remove': 'onRemove',
+            'click @ui.$clone': 'onClone'
+        },
+        onRemove: function () {
+            this.model.destroy();
         },
         initialize: function () {
             this.name_input_view = new app.BaseInputView({

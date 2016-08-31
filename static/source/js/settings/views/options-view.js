@@ -15,10 +15,24 @@ var app = app || {};
                 active_item: this.active_item,
                 parent_view: this
             });
+
+            //  Make first item in the collection active on current item remove
+            this.listenTo(this.collection, 'remove', function () {
+                this.setActiveItem(this.collection.at(0));
+            });
+
+            //  If new item was added to an empty collection, make it active
+            this.listenTo(this.collection, 'add', function () {
+                if ( this.collection.length === 1 ) {
+                    this.setActiveItem(this.collection.at(0));
+                }
+            });
         },
         setActiveItem: function (model) {
-            this.active_item = model;
-            this.render();
+            if ( model ) {
+                this.active_item = model;
+                this.render();
+            }
         },
         getActiveItem: function () {
             return this.active_item;

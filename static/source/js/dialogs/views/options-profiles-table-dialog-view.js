@@ -11,16 +11,13 @@ var app = app || {};
         },
         //  TODO: optimize so per-entry values are persisted all at once
         onDataChange: function (changes_array) {
-            var profiles = app.settings.profiles;
-            var entries = this.options.active_entry.collection;
-
             _.each(changes_array, function (change) {
                 var profile_index = change[0];
                 var entry_index = change[1];
                 var new_value = change[3];
 
-                var profile = profiles.at(profile_index);
-                var entry = entries.at(entry_index);
+                var profile = this.profiles.at(profile_index);
+                var entry = this.entries_filtered[entry_index];
                 var old_profiles_list;
                 var new_profiles_list;
 
@@ -40,21 +37,18 @@ var app = app || {};
             }, this);
         },
         createData: function () {
-            var profiles = app.settings.profiles;
-            var entries = this.options.active_entry.collection;
-
             return {
-                rowHeaders: profiles.map(function (profile) {
+                rowHeaders: this.profiles.map(function (profile) {
                     return profile.get('name');
                 }),
-                colHeaders: entries.map(function (entry) {
+                colHeaders: _.map(this.entries_filtered, function (entry) {
                     return entry.get('name');
                 }),
-                data: profiles.map(function (profile) {
-                    return entries.map(function (entry) {
+                data: this.profiles.map(function (profile) {
+                    return _.map(this.entries_filtered, function (entry) {
                         return _.contains(entry.get('profiles') || [], profile.id);
                     });
-                })
+                }, this)
             };
         },
         serializeData: function () {
@@ -88,6 +82,12 @@ var app = app || {};
                     })
                 });
             }
+        },
+        initialize: function () {
+            this.profiles = app.settings.profiles;
+            this.entries_filtered = this.options.active_entry.collection.filter(function (entry) {
+                return entry.get('name') && !entry.hasOnlyDefaultAttributes();
+            });
         }
     });
 })();

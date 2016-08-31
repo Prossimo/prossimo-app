@@ -100,11 +100,13 @@ var app = app || {};
         //  TODO: we could pass a formatter function to format a readable value
         serializeData: function () {
             var value = this.model.get(this.options.param);
+            var placeholder = this.options.placeholder || '';
 
             return {
                 input_type: this.options.input_type || 'text',
                 value: value,
-                readable_value: value
+                readable_value: value || placeholder,
+                show_placeholder: !value && placeholder
             };
         },
         onRender: function () {

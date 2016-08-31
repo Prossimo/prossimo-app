@@ -24,7 +24,6 @@ var app = app || {};
         addNewEntry: function (e) {
             var new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
             var new_entry = new app.OptionsDictionaryEntry({
-                name: 'New Entry',
                 position: new_position
             });
 

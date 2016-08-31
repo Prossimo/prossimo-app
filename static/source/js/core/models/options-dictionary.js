@@ -100,6 +100,28 @@ var app = app || {};
                 return error_obj;
             }
         },
+        hasOnlyDefaultAttributes: function () {
+            var has_only_defaults = true;
+
+            _.each(this.toJSON(), function (value, key) {
+                if ( key !== 'position' && has_only_defaults ) {
+                    var property_source = _.findWhere(DICTIONARY_PROPERTIES, { name: key });
+                    var type = property_source ? property_source.type : undefined;
+
+                    if ( key === 'rules_and_restrictions' ) {
+                        if ( JSON.stringify(value) !==
+                            JSON.stringify(this.getDefaultValue('rules_and_restrictions'))
+                        ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( this.getDefaultValue(key, type) !== value ) {
+                        has_only_defaults = false;
+                    }
+                }
+            }, this);
+
+            return has_only_defaults;
+        },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs
         getNameTitleTypeHash: function (names) {
