@@ -16,10 +16,23 @@ var app = app || {};
         },
         ui: {
             $container: 'tbody',
-            $add_new_entry: '.js-add-new-entry'
+            $add_new_entry: '.js-add-new-entry',
+            $undo: '.js-undo',
+            $redo: '.js-redo'
         },
         events: {
-            'click @ui.$add_new_entry': 'addNewEntry'
+            'click @ui.$add_new_entry': 'addNewEntry',
+            'click @ui.$undo': 'onUndo',
+            'click @ui.$redo': 'onRedo'
+        },
+        keyShortcuts: {
+            n: 'addNewEntry',
+            'ctrl+z': 'onUndo',
+            'command+z': 'onUndo',
+            'ctrl+shift+z': 'onRedo',
+            'command+shift+z': 'onRedo',
+            'ctrl+y': 'onRedo',
+            'command+y': 'onRedo'
         },
         addNewEntry: function (e) {
             var new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
@@ -31,6 +44,14 @@ var app = app || {};
             this.collection.add(new_entry);
             this.ui.$add_new_entry.blur();
             this.render();
+        },
+        onUndo: function () {
+            this.undo_manager.handler.undo();
+            this.ui.$undo.blur();
+        },
+        onRedo: function () {
+            this.undo_manager.handler.redo();
+            this.ui.$redo.blur();
         },
         onSort: function (event) {
             this.collection.setItemPosition(event.oldIndex, event.newIndex);
@@ -46,6 +67,11 @@ var app = app || {};
             };
         },
         initialize: function () {
+            this.undo_manager = new app.UndoManager({
+                register: this.collection,
+                track: true
+            });
+
             this.listenTo(this.collection, 'remove', this.onRemoveEntry);
         },
         onRender: function () {
@@ -58,6 +84,9 @@ var app = app || {};
                     self.onSort(event);
                 }
             });
+
+            this.undo_manager.registerButton('undo', this.ui.$undo);
+            this.undo_manager.registerButton('redo', this.ui.$redo);
         },
         onDestroy: function () {
             this.ui.$container.sortable('destroy');

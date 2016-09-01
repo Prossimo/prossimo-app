@@ -351,8 +351,6 @@
     }
 }
 
-
-
 .dictionary-actions {
     position: absolute;
     top: 3.5rem;
@@ -382,11 +380,24 @@
     margin-bottom: 3rem;
 }
 
-.options-dictionary-entries-table > button {
+.options-dictionary-entries-table .table-actions {
     position: absolute;
     top: 0;
     right: 0;
-    border-color: lighten(@black, 60%);
+
+    button {
+        display: block;
+        float: left;
+        border-color: lighten(@black, 60%);
+    }
+
+    .btn + .btn {
+        margin-left: 0.5rem;
+    }
+
+    .btn-xs + .btn:not(.btn-xs) {
+        margin-left: 1.5rem;
+    }
 }
 
 .options-dictionary-entries-table table {

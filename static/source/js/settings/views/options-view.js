@@ -7,27 +7,6 @@ var app = app || {};
         tagName: 'div',
         className: 'options-main-container',
         template: false,
-        initialize: function () {
-            this.active_item = this.collection.at(0) || undefined;
-
-            this.dictionary_list_view = new app.OptionsDictionaryListView({
-                collection: this.collection,
-                active_item: this.active_item,
-                parent_view: this
-            });
-
-            //  Make first item in the collection active on current item remove
-            this.listenTo(this.collection, 'remove', function () {
-                this.setActiveItem(this.collection.at(0));
-            });
-
-            //  If new item was added to an empty collection, make it active
-            this.listenTo(this.collection, 'add', function () {
-                if ( this.collection.length === 1 ) {
-                    this.setActiveItem(this.collection.at(0));
-                }
-            });
-        },
         setActiveItem: function (model) {
             if ( model ) {
                 this.active_item = model;
@@ -62,6 +41,27 @@ var app = app || {};
             if ( this.dictionary_view ) {
                 this.dictionary_view.destroy();
             }
+        },
+        initialize: function () {
+            this.active_item = this.collection.at(0) || undefined;
+
+            this.dictionary_list_view = new app.OptionsDictionaryListView({
+                collection: this.collection,
+                active_item: this.active_item,
+                parent_view: this
+            });
+
+            //  Make first item in the collection active on current item remove
+            this.listenTo(this.collection, 'remove', function () {
+                this.setActiveItem(this.collection.at(0));
+            });
+
+            //  If new item was added to an empty collection, make it active
+            this.listenTo(this.collection, 'add', function () {
+                if ( this.collection.length === 1 ) {
+                    this.setActiveItem(this.collection.at(0));
+                }
+            });
         }
     });
 })();
