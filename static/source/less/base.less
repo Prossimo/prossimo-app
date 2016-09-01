@@ -141,6 +141,7 @@ input.disabled {
 
 .input-container .edit {
     display: none;
+    position: relative;
 }
 
 .input-container .edit input {
@@ -149,6 +150,22 @@ input.disabled {
     border: 1px solid darken(@white, 20%);
     background-color: @white;
     color: @black;
+}
+
+.input-container .edit .revert-editable {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding-top: 0.7em;
+    width: 2em;
+    text-align: center;
+    cursor: pointer;
+    color: lighten(@black, 55%);
+
+    &:hover {
+        color: lighten(@black, 25%);
+    }
 }
 
 .input-container.is-edited {
@@ -164,6 +181,10 @@ input.disabled {
 .input-container.has-error {
     .edit input {
         border-color: @red;
+    }
+
+    .edit .revert-editable {
+        display: block;
     }
 }
 

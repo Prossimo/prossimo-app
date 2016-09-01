@@ -3,14 +3,15 @@ var app = app || {};
 (function () {
     'use strict';
 
-    //  TODO: validation should prevent setting entry name to UNSET_VALUE
-    // var UNSET_VALUE = '--';
+    var UNSET_VALUE = '--';
 
     //  TODO: we better have original_cost and original_currency here, similar
     //  to units / accessories, instead of price
     var ENTRY_PROPERTIES = [
         { name: 'name', title: 'Name', type: 'string' },
-        { name: 'price', title: 'Price', type: 'number' },
+        //  TODO: price should probably be a number, not a string as it is
+        //  currently set at the backend
+        { name: 'price', title: 'Price', type: 'string' },
         { name: 'data', title: 'Additional Data', type: 'string' },
         { name: 'position', title: 'Position', type: 'number' },
         { name: 'profiles', title: 'Profiles', type: 'array' }
@@ -73,6 +74,69 @@ var app = app || {};
 
             return Backbone.sync.call(this, method, model, options);
         },
+        validate: function (attributes, options) {
+            var error_obj = null;
+            var collection_names = this.collection && _.map(this.collection.without(this), function (item) {
+                return item.get('name');
+            });
+
+            //  We want to have unique option names across the collection
+            if ( options.validate && collection_names &&
+                _.contains(collection_names, attributes.name)
+            ) {
+                return {
+                    attribute_name: 'name',
+                    error_message: 'Entry name "' + attributes.name + '" is already used in this collection'
+                };
+            }
+
+            //  Don't allow option names that consist of numbers only ("123")
+            if ( options.validate && attributes.name &&
+                parseInt(attributes.name, 10).toString() === attributes.name
+            ) {
+                return {
+                    attribute_name: 'name',
+                    error_message: 'Entry name can\'t consist of only numbers'
+                };
+            }
+
+            //  Don't allow option names that is similar to UNSET_VALUE
+            if ( options.validate && attributes.name && UNSET_VALUE === attributes.name ) {
+                return {
+                    attribute_name: 'name',
+                    error_message: 'Entry name can\'t be set to ' + UNSET_VALUE
+                };
+            }
+
+            //  Simple type validation for numbers and booleans
+            _.find(attributes, function (value, key) {
+                var attribute_obj = this.getNameTitleTypeHash([key]);
+
+                attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
+
+                if ( attribute_obj && attribute_obj.type === 'number' &&
+                    (!_.isNumber(value) || _.isNaN(value))
+                ) {
+                    error_obj = {
+                        attribute_name: key,
+                        error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a number'
+                    };
+
+                    return false;
+                } else if ( attribute_obj && attribute_obj.type === 'boolean' && !_.isBoolean(value) ) {
+                    error_obj = {
+                        attribute_name: key,
+                        error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a boolean'
+                    };
+
+                    return false;
+                }
+            }, this);
+
+            if ( options.validate && error_obj ) {
+                return error_obj;
+            }
+        },
         hasOnlyDefaultAttributes: function () {
             var has_only_defaults = true;
 
@@ -96,6 +160,34 @@ var app = app || {};
             }, this);
 
             return has_only_defaults;
+        },
+        //  Return { name: 'name', title: 'Title' } pairs for each item in
+        //  `names` array. If the array is empty, return all possible pairs
+        getNameTitleTypeHash: function (names) {
+            var name_title_hash = [];
+
+            if ( !names ) {
+                names = _.pluck( ENTRY_PROPERTIES, 'name' );
+            }
+
+            _.each(ENTRY_PROPERTIES, function (item) {
+                if ( _.indexOf(names, item.name) !== -1 ) {
+                    name_title_hash.push({ name: item.name, title: item.title, type: item.type });
+                }
+            });
+
+            return name_title_hash;
+        },
+        getAttributeType: function (attribute_name) {
+            var name_title_hash = this.getNameTitleTypeHash();
+            var target_attribute = _.findWhere(name_title_hash, {name: attribute_name});
+
+            return target_attribute ? target_attribute.type : undefined;
+        },
+        getTitles: function (names) {
+            var name_title_hash = this.getNameTitleTypeHash(names);
+
+            return _.pluck(name_title_hash, 'title');
         },
         initialize: function (attributes, options) {
             this.options = options || {};

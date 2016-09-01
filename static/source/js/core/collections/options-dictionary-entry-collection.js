@@ -16,14 +16,6 @@ var app = app || {};
         reorder_property_name: 'entries',
         parse: function (data) {
             return data.entries || data;
-
-            // return _.map(data.dictionaries, function (dictionary) {
-            //     var keys_to_omit = ['units'];
-
-            //     return _.pick(dictionary, function (value, key) {
-            //         return !_.isNull(value) && !_.contains(keys_to_omit, key);
-            //     });
-            // });
         },
         initialize: function (models, options) {
             this.options = options || {};
@@ -31,15 +23,15 @@ var app = app || {};
 
             //  When parent dictionary is fully loaded, we validate positions
             this.listenTo(this.options.dictionary, 'fully_loaded', this.validatePositions);
-        }// ,
-        // getNameTitleTypeHash: function (names) {
-        //     return this.proxy_dictionary.getNameTitleTypeHash(names);
-        // },
-        // getTitles: function (names) {
-        //     return this.proxy_dictionary.getTitles(names);
-        // },
-        // getUnitTypes: function () {
-        //     return this.proxy_dictionary.getUnitTypes();
-        // }
+        },
+        getNameTitleTypeHash: function (names) {
+            return this.proxy_entry.getNameTitleTypeHash(names);
+        },
+        getTitles: function (names) {
+            return this.proxy_entry.getTitles(names);
+        },
+        getAttributeType: function () {
+            return this.proxy_entry.getAttributeType();
+        }
     });
 })();

@@ -14,16 +14,18 @@ var app = app || {};
     app.BaseInputView = Marionette.ItemView.extend({
         className: 'input-container',
         template: app.templates['core/base/base-input-view'],
-        events: {
-            'click .value': 'makeEditable',
-            'blur .edit input': 'stopEditing',
-            'keypress .edit input': 'confirmOnEnter',
-            'keydown .edit input': 'cancelOnEscape'
-        },
         ui: {
             $edit: '.edit',
             $input: '.edit input',
-            $value: '.value'
+            $value: '.value',
+            $revert: '.js-revert-editable'
+        },
+        events: {
+            'click @ui.$value': 'makeEditable',
+            'blur @ui.$input': 'stopEditing',
+            'keypress @ui.$input': 'confirmOnEnter',
+            'keydown @ui.$input': 'cancelOnEscape',
+            'click @ui.$revert': 'revertEditable'
         },
         makeEditable: function () {
             this.ui.$container.addClass('is-edited');

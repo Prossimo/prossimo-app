@@ -70,6 +70,29 @@ var app = app || {};
         },
         validate: function (attributes, options) {
             var error_obj = null;
+            var collection_names = this.collection && _.map(this.collection.without(this), function (item) {
+                return item.get('name');
+            });
+
+            //  We want to have unique dictionary names across the collection
+            if ( options.validate && collection_names &&
+                _.contains(collection_names, attributes.name)
+            ) {
+                return {
+                    attribute_name: 'name',
+                    error_message: 'Dictionary name "' + attributes.name + '" is already used in this collection'
+                };
+            }
+
+            //  Don't allow dictionary names that consist of numbers only ("123")
+            if ( options.validate && attributes.name &&
+                parseInt(attributes.name, 10).toString() === attributes.name
+            ) {
+                return {
+                    attribute_name: 'name',
+                    error_message: 'Dictionary name can\'t consist of only numbers'
+                };
+            }
 
             //  Simple type validation for numbers and booleans
             _.find(attributes, function (value, key) {

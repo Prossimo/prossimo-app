@@ -47,10 +47,10 @@ var app = app || {};
         //  Don't save anything if we have special flag on `app` or an attribute
         persist: function () {
             if ( app && app.session && app.session.get('no_backend') === true || this.get('no_backend') === true ) {
-                this.set.apply(this, arguments);
-            } else {
-                this.save.apply(this, arguments);
+                return this.set.apply(this, arguments);
             }
+
+            return this.save.apply(this, arguments);
         },
         duplicate: function () {
             if ( this.hasOnlyDefaultAttributes() ) {
