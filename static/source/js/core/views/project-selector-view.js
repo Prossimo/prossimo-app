@@ -54,7 +54,8 @@ var app = app || {};
             this.loadLastProject();
         },
         onChange: function () {
-            var new_id = this.ui.$select.val();
+            var hash = (window.location.hash) ? +window.location.hash.substr(1) : false;
+            var new_id = (hash) ? hash : this.ui.$select.val();
 
             this.setCurrentProject(new_id);
             this.storeLastProject(new_id);
