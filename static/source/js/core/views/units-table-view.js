@@ -1016,7 +1016,8 @@ var app = app || {};
                 quote_date: 120
             };
 
-            var unit_options_table_col_widths = {
+            //  Custom widths for some Unit Options columns
+            var unit_options_col_widths = {
                 'Interior Handle': 160,
                 'Exterior Handle': 160,
                 'Internal Sill': 100,
@@ -1030,7 +1031,17 @@ var app = app || {};
                 'Hinge Style': 280
             };
 
-            col_widths = _.extend({}, col_widths, unit_options_table_col_widths);
+            //  Calculate optimal width for Unit Options columns
+            unit_options_col_widths = _.object(
+                app.settings.getAvailableDictionaryNames(),
+                _.map(app.settings.getAvailableDictionaryNames(), function (dictionary_name) {
+                    var calculated_length = 30 + dictionary_name.length * 7;
+
+                    return unit_options_col_widths[dictionary_name] ?
+                        unit_options_col_widths[dictionary_name] : calculated_length;
+                }, this ));
+
+            col_widths = _.extend({}, col_widths, unit_options_col_widths);
 
             var widths_table = _.map(this.getActiveTab().columns, function (item) {
                 return col_widths[item] ? col_widths[item] : 80;

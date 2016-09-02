@@ -11,7 +11,7 @@ var app = app || {};
         { name: 'name', title: 'Name', type: 'string' },
         //  TODO: price should probably be a number, not a string as it is
         //  currently set at the backend
-        { name: 'price', title: 'Price', type: 'string' },
+        { name: 'price', title: 'Price', type: 'number' },
         { name: 'data', title: 'Additional Data', type: 'string' },
         { name: 'position', title: 'Position', type: 'number' },
         { name: 'profiles', title: 'Profiles', type: 'array' }
@@ -191,6 +191,17 @@ var app = app || {};
         },
         initialize: function (attributes, options) {
             this.options = options || {};
+
+            //  TODO: price should probably be a number, not a string as it is
+            //  currently set at the backend. This is a hack to fix some issues
+            //  with the current implementation
+            if ( !this.options.proxy ) {
+                var price = this.get('price');
+
+                if ( price && _.isString(price) ) {
+                    this.set('price', parseFloat(price));
+                }
+            }
         }
     });
 })();

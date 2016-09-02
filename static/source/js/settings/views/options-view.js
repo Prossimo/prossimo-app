@@ -10,8 +10,11 @@ var app = app || {};
         setActiveItem: function (model) {
             if ( model ) {
                 this.active_item = model;
-                this.render();
+            } else {
+                this.active_item = undefined;
             }
+
+            this.render();
         },
         getActiveItem: function () {
             return this.active_item;
@@ -21,11 +24,11 @@ var app = app || {};
                 this.$el.append(this.dictionary_list_view.render().el);
             }
 
-            if ( this.active_item ) {
-                if ( this.dictionary_view ) {
-                    this.dictionary_view.destroy();
-                }
+            if ( this.dictionary_view ) {
+                this.dictionary_view.destroy();
+            }
 
+            if ( this.active_item ) {
                 this.dictionary_view = new app.OptionsDictionaryView({
                     model: this.active_item
                 });
