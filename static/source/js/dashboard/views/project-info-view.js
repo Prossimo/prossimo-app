@@ -54,7 +54,7 @@ var app = app || {};
                 modelData[item.name] = item.value;
             });
 
-            this.model.persist(modelData);
+            this.model.persist(modelData, { wait: true, success: this.enterViewMode.bind(this) });
         },
         initialize: function () {
             this.editMode = false;

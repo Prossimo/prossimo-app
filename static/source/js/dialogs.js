@@ -11,6 +11,9 @@ var app = app || {};
             //  TODO: should belong somewhere else
             this.login_dialog = new app.LoginDialogView();
             this.registerDialog('login', this.login_dialog);
+
+            this.create_project_dialog = new app.CreateProjectDialogView();
+            this.registerDialog('createProject', this.create_project_dialog);
         },
         //  TODO: We should receive some options on register, like options we
         //  pass to modal.js or something else
