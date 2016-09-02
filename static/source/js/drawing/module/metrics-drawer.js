@@ -956,7 +956,7 @@ var app = app || {};
                     val -= vCorrection.size;
                     (model.isTrapezoid())
                         ? model.updateTrapezoidHeights('max', val)
-                        : model.updateDimension('height', val);
+                        : model.updateDimension('height', val, 'mm');
                 },
                 getter: function () {
                     return model.getInMetric('height', 'mm') + vCorrection.size;
@@ -969,15 +969,14 @@ var app = app || {};
 
             if (model.isTrapezoid()) {
                 var heights = model.getTrapezoidHeights();
+                var minHeight = (heights.right > heights.left) ? heights.left : heights.right;
+                var maxHeight = (heights.right < heights.left) ? heights.left : heights.right;
                 if (heights.right > heights.left) {
                     vPosition.x = metricSize * rows.horizontal + width;
                 }
 
                 // Second vertical whole metric for trapezoid
-                var minHeight = (heights.right > heights.left) ? heights.left : heights.right;
-                var maxHeight = (heights.right < heights.left) ? heights.left : heights.right;
                 var secondVerticalHeight = vHeight * ( ( minHeight / ( maxHeight / 100 ) ) / 100 );
-
                 var secondVerticalWholeMertic = this.createVerticalMetric(metricSize, secondVerticalHeight, {
                     setter: function (val) {
                         val -= vCorrection.size;
@@ -988,12 +987,26 @@ var app = app || {};
                     }
                 });
                 var secondVerticalPosition = {
-                    x: -metricSize * (rows.horizontal + 1),
+                    x: (heights.right > heights.left) ? -metricSize : width,
                     y: ( vCorrection.pos + maxHeight - minHeight ) * ratio
                 };
-                secondVerticalPosition.x = (heights.right > heights.left) ? -metricSize : width;
                 secondVerticalWholeMertic.position(secondVerticalPosition);
                 group.add(secondVerticalWholeMertic);
+
+                // Third vertical whole metric for trapezoid
+                var thirdVerticalHeight = vHeight - secondVerticalHeight;
+                var thirdVerticalWholeMertic = this.createVerticalMetric(metricSize, thirdVerticalHeight, {
+                    setter: function (val) {
+                        val -= vCorrection.size;
+                        model.updateTrapezoidHeights('min', maxHeight - val);
+                    },
+                    getter: function () {
+                        return maxHeight - minHeight + vCorrection.size;
+                    }
+                });
+                secondVerticalPosition.y = 0 + (vCorrection.pos * ratio);
+                thirdVerticalWholeMertic.position(secondVerticalPosition);
+                group.add(thirdVerticalWholeMertic);
             }
 
             verticalWholeMertic.position(vPosition);
