@@ -236,6 +236,10 @@
     position: relative;
     height: 100%;
     width: 100%;
+    display: flex;
+    flex-flow: column;
+    flex: 1 1 auto;
+    overflow: auto;
 }
 
 .options-dictionary-list-panel {
@@ -247,6 +251,7 @@
     padding: 1.5rem 3rem;
     background-color: darken(@white, 15%);
     border-right: 1px solid darken(@white, 30%);
+    overflow: auto;
 }
 
 .options-dictionary-list-panel h2 {
