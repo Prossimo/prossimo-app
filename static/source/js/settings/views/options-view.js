@@ -54,9 +54,11 @@ var app = app || {};
                 parent_view: this
             });
 
-            //  Make first item in the collection active on current item remove
-            this.listenTo(this.collection, 'remove', function () {
-                this.setActiveItem(this.collection.at(0));
+            //  Make next (or last) item in the collection active on remove
+            this.listenTo(this.collection, 'remove', function (removed_items, collection, options) {
+                var new_active_model = options.index && this.collection.at(options.index) || this.collection.last();
+
+                this.setActiveItem(new_active_model);
             });
 
             //  If new item was added to an empty collection, make it active
