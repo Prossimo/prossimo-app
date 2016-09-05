@@ -178,7 +178,7 @@ var app = app || {};
             var frameHeight = model.getInMetric('height', 'mm');
 
             var topOffset = 10 + 0.5; // we will add 0.5 pixel offset for better strokes
-            var wr = (stage.width() - metricSize * 2) / frameWidth;
+            var wr = (stage.width() - metricSize * 3.5) / frameWidth;
             var hr = (stage.height() - metricSize * 2 - topOffset) / frameHeight;
 
             var ratio = (Math.min(wr, hr) * 0.95);

@@ -179,7 +179,8 @@ var app = app || {};
         addNewUnit: function () {
             var new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
             var new_unit = new app.Unit({
-                position: new_position
+                position: new_position,
+                height: 0
             });
 
             this.collection.add(new_unit);
@@ -255,11 +256,22 @@ var app = app || {};
             var getter;
 
             var getters_hash = {
+                height: function (model) {
+                    var trapezoidHeights = model.get('root_section').trapezoidHeights;
+                    return (trapezoidHeights) ? trapezoidHeights[0] + ' / ' + trapezoidHeights[1] : model.get('height');
+                },
                 width_mm: function (model) {
                     return model.getWidthMM();
                 },
                 height_mm: function (model) {
-                    return model.getHeightMM();
+                    var trapezoidHeights = model.get('root_section').trapezoidHeights;
+                    if (trapezoidHeights) {
+                        trapezoidHeights = [
+                            app.utils.convert.inches_to_mm(trapezoidHeights[0]),
+                            app.utils.convert.inches_to_mm(trapezoidHeights[1])
+                        ];
+                    }
+                    return trapezoidHeights || model.getHeightMM();
                 },
                 dimensions: function (model) {
                     return f.dimensions(model.get('width'), model.get('height'), null,
@@ -352,8 +364,63 @@ var app = app || {};
                 width: function (attr_name, val) {
                     return p.dimensions(val, 'width');
                 },
-                height: function (attr_name, val) {
-                    return p.dimensions(val, 'height');
+                height: function (attr_name, val, model) {
+                    var height, rootSection;
+                    // var checkHorizontalSplit = function (rootSection, params) {
+                    //     if ( rootSection.sections && rootSection.sections.length ) {
+                    //         for (var i = 0; i < rootSection.sections.length; i++) {
+                    //             checkHorizontalSplit(rootSection.sections[i], params);
+                    //         }
+                    //     }
+                    //     if ( rootSection.divider && rootSection.divider === 'horizontal' && rootSection.position ) {
+                    //         var crossing = model.getLineCrossingY(rootSection.position, params.corners.left, params.corners.right);
+                    //         if (crossing >= -100) {
+                    //             var maxHeight = app.utils.convert.inches_to_mm(params.maxHeight);
+                    //             var minHeight = app.utils.convert.inches_to_mm(params.minHeight);
+                    //             var position = maxHeight - minHeight + 200;
+                    //             rootSection.minPosition = rootSection.position = position;
+                    //         }
+                    //     }
+                    // };
+
+                    if (model) {
+                        rootSection = model.get('root_section');
+                    }
+                    var heights = val.split('/');
+                    if (heights.length < 2) {
+                        height = p.dimensions((+val) ? +val : 0, 'height');
+                        if (rootSection) {
+                            rootSection.trapezoidHeights = false;
+                        }
+                    } else {
+                        heights = [(+heights[0]) ? +heights[0] : 0, (+heights[1]) ? +heights[1] : 0];
+                        if (heights[0] === heights[1]) {
+                            if (rootSection) {
+                                rootSection.trapezoidHeights = false;
+                            }
+                            height = heights[0];
+                        } else {
+                            if (rootSection) {
+                                rootSection.trapezoidHeights = [heights[0], heights[1]];
+                                rootSection.circular = false;
+                                rootSection.arched = false;
+
+                                var params = {
+                                    corners: model.getMainTrapezoidInnerCorners(),
+                                    minHeight: (heights[0] > heights[1]) ? heights[1] : heights[0],
+                                    maxHeight: (heights[0] < heights[1]) ? heights[1] : heights[0]
+                                };
+
+                                model.checkHorizontalSplit(rootSection, params);
+                            }
+                            height = (heights[0] > heights[1]) ? heights[0] : heights[1];
+                        }
+                        height = p.dimensions(height, 'height');
+                    }
+                    if (rootSection) {
+                        model.set('root_section', rootSection);
+                    }
+                    return height;
                 },
                 glazing_bar_width: function (attr_name, val) {
                     return parseFloat(val);
@@ -456,7 +523,7 @@ var app = app || {};
                 var attributes_object = {};
                 var model = this.instance.getSourceData().at(this.row);
 
-                attributes_object[column_name] = self.getSetterParser(column_name, value);
+                attributes_object[column_name] = self.getSetterParser(column_name, value, model);
 
                 if ( !model.validate || !model.validate(attributes_object, { validate: true }) ) {
                     callback(true);
@@ -496,7 +563,7 @@ var app = app || {};
                         project_settings.get('inches_display_mode') || null)
                 },
                 height: {
-                    renderer: app.hot_renderers.getFormattedRenderer('dimension', null,
+                    renderer: app.hot_renderers.getFormattedRenderer('dimension_heights', null,
                         project_settings.get('inches_display_mode') || null)
                 },
                 width_mm: {
@@ -505,7 +572,7 @@ var app = app || {};
                 },
                 height_mm: {
                     readOnly: true,
-                    renderer: app.hot_renderers.getFormattedRenderer('fixed_minimal')
+                    renderer: app.hot_renderers.getFormattedRenderer('fixed_heights')
                 },
                 dimensions: {
                     readOnly: true,
