@@ -92,12 +92,7 @@ var app = app || {};
             var isThresholdEditable = instance.getSourceData().at(row) &&
                 instance.getSourceData().at(row).isThresholdEditable();
 
-            //  We need this because otherwise user will be able to paste
-            if ( isThresholdEditable ) {
-                instance.setCellMeta(row, col, 'readOnly', false);
-            } else {
-                instance.setCellMeta(row, col, 'readOnly', true);
-            }
+            instance.setCellMeta(row, col, 'editor', false);
 
             Handsontable.renderers.CheckboxRenderer.apply(this, arguments);
 
@@ -155,32 +150,6 @@ var app = app || {};
 
             return td;
         },
-        //  Add remove and clone buttons to remove or clone unit in collection
-        itemActionsRenderer: function (instance, td, row) {
-            var item_has_only_default_attributes = instance.getSourceData().at(row) &&
-                instance.getSourceData().at(row).hasOnlyDefaultAttributes();
-            var $td = $(td);
-            var $button_remove = $('<button>', {
-                class: 'btn btn-xs btn-remove js-remove-item',
-                'data-row': row,
-                text: 'Remove',
-                title: 'Remove Item'
-            });
-            var $button_clone = $('<button>', {
-                class: 'btn btn-xs btn-clone js-clone-item',
-                'data-row': row,
-                text: 'Clone',
-                title: 'Clone Item'
-            });
-
-            if ( item_has_only_default_attributes ) {
-                $button_clone.attr('disabled', true);
-            }
-
-            $td.empty().append($button_remove.add($button_clone));
-
-            return td;
-        },
         //  Just replace visible cell value with "--" or another message
         getDisabledPropertyRenderer: function (message) {
             message = message || '--';
@@ -189,20 +158,6 @@ var app = app || {};
                 $(td).addClass('htDimmed').text(message);
                 return td;
             };
-        },
-        //  Disable currently inactive projects in Project info tab
-        projectInfoRenderer: function (instance, td, row, col) {
-            var is_current_project = instance.getSourceData().at(row) &&
-                instance.getSourceData().at(row) === app.current_project;
-
-            if ( !is_current_project ) {
-                instance.setCellMeta(row, col, 'readOnly', true);
-                $(td).addClass('htDimmed');
-            }
-
-            Handsontable.renderers.TextRenderer.apply(this, arguments);
-
-            return td;
         },
         unitProfileRenderer: function (instance, td, row) {
             var current_unit = instance.getSourceData().at(row) &&

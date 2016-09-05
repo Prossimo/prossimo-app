@@ -15,19 +15,21 @@ var app = app || {};
             $add_new_unit: '.js-add-new-unit',
             $add_new_accessory: '.js-add-new-accessory',
             $undo: '.js-undo',
-            $redo: '.js-redo'
+            $redo: '.js-redo',
+            $remove: '.js-remove-selected-items',
+            $clone: '.js-clone-selected-items'
         },
         events: {
             'click .units-table-title': 'toggleTableVisibility',
             'click @ui.$add_new_unit': 'addNewUnit',
             'click @ui.$add_new_accessory': 'addNewAccessory',
             'click .nav-tabs a': 'onTabClick',
-            'click .js-remove-item': 'onRemoveItem',
-            'click .js-clone-item': 'onCloneItem',
             'click .js-move-item-up': 'onMoveItemUp',
             'click .js-move-item-down': 'onMoveItemDown',
             'click @ui.$undo': 'onUndo',
-            'click @ui.$redo': 'onRedo'
+            'click @ui.$redo': 'onRedo',
+            'click @ui.$remove': 'onRemoveSelected',
+            'click @ui.$clone': 'onCloneSelected'
         },
         keyShortcuts: {
             n: 'onNewUnitOrAccessory',
@@ -56,11 +58,11 @@ var app = app || {};
                     //     'lock_mechanism', 'glazing_bead', 'gasket_color',
                     //     'hinge_style', 'opening_direction', 'threshold',
                     //     'internal_sill', 'external_sill', 'glazing', 'glazing_bar_type', 'glazing_bar_width',
-                    //     'uw', 'u_value', 'item_actions']
+                    //     'uw', 'u_value']
                     columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing',
                         'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'description',
                         'notes', 'exceptions', 'profile_id', 'system', 'opening_direction', 'threshold',
-                        'glazing', 'glazing_bar_width', 'uw', 'u_value', 'item_actions']
+                        'glazing', 'glazing_bar_width', 'uw', 'u_value']
                 },
                 unit_options: {
                     title: 'Unit Options',
@@ -76,23 +78,14 @@ var app = app || {};
                         'supplier_discount', 'unit_cost_discounted', 'subtotal_cost_discounted', 'price_markup',
                         'unit_price', 'subtotal_price', 'discount', 'unit_price_discounted',
                         'subtotal_price_discounted', 'subtotal_profit', 'total_square_feet', 'square_feet_price',
-                        'square_feet_price_discounted', 'item_actions']
+                        'square_feet_price_discounted']
                 },
                 extras: {
                     title: 'Extras',
                     collection: this.options.extras,
                     columns: ['move_item', 'description', 'quantity', 'extras_type', 'original_cost',
                         'original_currency', 'conversion_rate', 'unit_cost', 'price_markup',
-                        'unit_price', 'subtotal_cost', 'subtotal_price', 'subtotal_profit',
-                        'item_actions']
-                },
-                project_info: {
-                    title: 'Project Info',
-                    collection: app.projects,
-                    columns: ['pipedrive_id', 'project_name', 'client_name',
-                        'client_company_name', 'client_phone', 'client_email',
-                        'client_address', 'project_address', 'quote_date',
-                        'quote_revision', 'quote_number']
+                        'unit_price', 'subtotal_cost', 'subtotal_price', 'subtotal_profit']
                 }
             };
             this.active_tab = 'specs';
@@ -112,16 +105,16 @@ var app = app || {};
                 track: true
             });
 
+            this.selected = [];
+
             this.listenTo(this.collection, 'all', this.updateTable);
             this.listenTo(this.options.extras, 'all', this.updateTable);
-            this.listenTo(app.projects, 'all', this.updateTable);
             this.listenTo(this.options.parent_view, 'attach', this.updateTable);
 
             this.listenTo(app.current_project.settings, 'change', this.render);
 
             this.listenTo(this.collection, 'invalid', this.showValidationError);
             this.listenTo(this.options.extras, 'invalid', this.showValidationError);
-            this.listenTo(app.projects, 'invalid', this.showValidationError);
 
             this.listenTo(app.vent, 'paste_image', this.onPasteImage);
         },
@@ -180,6 +173,26 @@ var app = app || {};
             this.undo_manager.handler.redo();
             this.ui.$redo.blur();
         },
+        onRemoveSelected: function () {
+            if ( this.selected.length && this.hot ) {
+                for (var i = this.selected.length - 1; i >= 0; i--) {
+                    this.hot.getSourceData().at(this.selected[i]).destroy();
+                }
+
+                this.selected = [];
+                this.hot.selectCell(0, 0, 0, 0, false);
+                this.hot.deselectCell();
+            }
+        },
+        onCloneSelected: function () {
+            if ( this.selected.length === 1 && this.hot ) {
+                var selectedData = this.hot.getSourceData().at(this.selected[0]);
+
+                if (!selectedData.hasOnlyDefaultAttributes()) {
+                    selectedData.duplicate();
+                }
+            }
+        },
         toggleTableVisibility: function () {
             if ( !this.options.is_always_visible ) {
                 this.table_visibility = this.table_visibility === 'hidden' ? 'visible' : 'hidden';
@@ -219,29 +232,10 @@ var app = app || {};
                     item.is_active = key === this.active_tab;
                     return item;
                 }, this),
-                mode: this.getActiveTab().title === 'Extras' ? 'extras' :
-                    (this.getActiveTab().title === 'Project Info' ? 'none' : 'units'),
+                mode: this.getActiveTab().title === 'Extras' ? 'extras' : 'units',
                 table_visibility: this.table_visibility,
                 is_always_visible: this.options.is_always_visible
             };
-        },
-        onRemoveItem: function (e) {
-            var target_row = $(e.target).data('row');
-            var target_object;
-
-            if ( this.hot ) {
-                target_object = this.hot.getSourceData().at(target_row);
-                target_object.destroy();
-            }
-        },
-        onCloneItem: function (e) {
-            var target_row = $(e.target).data('row');
-            var target_object;
-
-            if ( this.hot ) {
-                target_object = this.hot.getSourceData().at(target_row);
-                target_object.duplicate();
-            }
         },
         onMoveItemUp: function (e) {
             var target_row = $(e.target).data('row');
@@ -347,9 +341,6 @@ var app = app || {};
                 },
                 square_feet_price_discounted: function (model) {
                     return model.getSquareFeetPriceDiscounted();
-                },
-                quote_number: function (model) {
-                    return model.getQuoteNumber();
                 },
                 original_cost: function (model) {
                     return model.getOriginalCost();
@@ -648,10 +639,6 @@ var app = app || {};
                     readOnly: true,
                     renderer: app.hot_renderers.moveItemRenderer
                 },
-                item_actions: {
-                    readOnly: true,
-                    renderer: app.hot_renderers.itemActionsRenderer
-                },
                 internal_color: {
                     type: 'dropdown',
                     source: _.union(
@@ -715,17 +702,6 @@ var app = app || {};
                     type: 'dropdown',
                     source: app.settings.getOpeningDirections()
                 },
-                pipedrive_id: {
-                    readOnly: true
-                },
-                quote_date: {
-                    type: 'date',
-                    dateFormat: 'DD MMMM, YYYY',
-                    correctFormat: true
-                },
-                quote_number: {
-                    readOnly: true
-                },
                 subtotal_profit: {
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('price_usd', true)
@@ -751,12 +727,6 @@ var app = app || {};
                 properties_obj = _.extend(properties_obj, properties_hash[column_name]);
             }
 
-            if ( _.indexOf(this.tabs.project_info.columns, column_name) !== -1 ) {
-                properties_obj = _.extend(properties_obj, {
-                    renderer: app.hot_renderers.projectInfoRenderer
-                });
-            }
-
             return properties_obj;
         },
         //  Returns column data in a HoT-specific format, for each column we
@@ -780,7 +750,7 @@ var app = app || {};
         },
         //  Redefine some cell-specific properties. This is mostly used to
         //  prevent editing of some attributes that shouldn't be editable for
-        //  a certain unit / accessory / project
+        //  a certain unit / accessory
         getActiveTabCellsSpecificOptions: function () {
             var self = this;
 
@@ -920,7 +890,6 @@ var app = app || {};
                 glazing_bar_width: 'Muntin Width',
                 u_value: 'U Value',
                 move_item: 'Move',
-                item_actions: 'Actions',
                 original_cost: project_settings && project_settings.get('pricing_mode') === 'estimates' ?
                     'Orig. Cost (est.)' : 'Orig. Cost',
                 original_currency: 'Orig. Curr.',
@@ -937,9 +906,7 @@ var app = app || {};
                 total_square_feet: 'Total ft<sup>2</sup>',
                 square_feet_price: 'Price / ft<sup>2</sup>',
                 square_feet_price_discounted: 'Price / ft<sup>2</sup> w/D',
-                subtotal_profit: 'Subt. Profit',
-                quote_revision: 'Quote Rev.',
-                quote_number: 'Quote #'
+                subtotal_profit: 'Subt. Profit'
             };
 
             return custom_column_headers_hash[column_name];
@@ -991,7 +958,6 @@ var app = app || {};
                 glazing: 300,
                 glazing_bar_type: 140,
                 glazing_bar_width: 100,
-                item_actions: 110,
                 original_cost: 100,
                 unit_cost: 100,
                 subtotal_cost: 100,
@@ -1004,16 +970,7 @@ var app = app || {};
                 subtotal_price_discounted: 100,
                 subtotal_profit: 100,
                 square_feet_price_discounted: 100,
-                extras_type: 100,
-                pipedrive_id: 100,
-                project_name: 240,
-                client_name: 120,
-                client_company_name: 160,
-                client_phone: 180,
-                client_email: 220,
-                client_address: 300,
-                project_address: 300,
-                quote_date: 120
+                extras_type: 100
             };
 
             //  Custom widths for some Unit Options columns
@@ -1060,6 +1017,11 @@ var app = app || {};
             //  (via backbone.marionette.keyshortcuts plugin) does not fire
             function onBeforeKeyDown(event, onlyCtrlKeys) {
                 var isCtrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
+
+                if ( isCtrlDown && event.keyCode === 17 ) {
+                    event.stopImmediatePropagation();
+                    return;
+                }
 
                 //  Ctrl + Y || Ctrl + Shift + Z
                 if ( isCtrlDown && (event.keyCode === 89 || (event.shiftKey && event.keyCode === 90 )) ) {
@@ -1111,6 +1073,51 @@ var app = app || {};
                         enterMoves: { row: 1, col: 0 },
                         beforeKeyDown: function (e) {
                             onBeforeKeyDown(e, true);
+                        },
+                        afterSelection: function (startRow, startColumn, endRow, endColumn) {
+                            self.selected = [];
+
+                            if ( startColumn === 0 && endColumn === this.countCols() - 1 ) {
+                                self.ui.$remove.removeClass('disabled');
+
+                                if ( startRow === endRow ) {
+                                    self.selected = [startRow];
+                                    var selectedData = self.hot.getSourceData().at(startRow);
+
+                                    if (selectedData.hasOnlyDefaultAttributes()) {
+                                        self.ui.$clone.addClass('disabled');
+                                    } else {
+                                        self.ui.$clone.removeClass('disabled');
+                                    }
+                                } else {
+                                    var start = startRow;
+                                    var end = endRow;
+
+                                    if ( startRow > endRow ) {
+                                        start = endRow;
+                                        end = startRow;
+                                    }
+
+                                    for (var i = start; i <= end; i++) {
+                                        self.selected.push(i);
+                                    }
+
+                                    self.ui.$clone.addClass('disabled');
+                                }
+                            } else {
+                                self.ui.$remove.addClass('disabled');
+                                self.ui.$clone.addClass('disabled');
+                            }
+                        },
+                        afterDeselect: function () {
+                            if ( self.selected.length ) {
+                                this.selectCell(
+                                    self.selected[0],
+                                    0,
+                                    self.selected[self.selected.length - 1],
+                                    this.countCols() - 1, false
+                                );
+                            }
                         }
                     });
                 }, 5);

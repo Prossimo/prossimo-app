@@ -1,17 +1,17 @@
+/**
+ * Created by devico on 01.08.16.
+ */
 var app = app || {};
 
 (function () {
     'use strict';
 
-    app.UnitsTableTotalPricesView = Marionette.ItemView.extend({
+    app.ProjectTotalsView = Marionette.ItemView.extend({
         tagName: 'div',
-        className: 'units-table-total-prices',
-        template: app.templates['core/units-table-total-prices-view'],
+        className: 'project-total-prices',
+        template: app.templates['dashboard/project-totals-view'],
         initialize: function () {
-            this.listenTo(this.options.units, 'change', this.render);
-            this.listenTo(this.options.units, 'remove', this.render);
-            this.listenTo(this.options.extras, 'change', this.render);
-            this.listenTo(this.options.extras, 'remove', this.render);
+            this.listenTo(app.current_project.settings, 'change', this.render);
         },
         serializeData: function () {
             var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;

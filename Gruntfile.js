@@ -12,6 +12,7 @@ module.exports = function (grunt) {
         'bootstrap/js/tooltip.js',
         'bootstrap/js/popover.js',
         'bootstrap/js/modal.js',
+        'bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js',
         'bootstrap-select/dist/js/bootstrap-select.min.js',
         'bootstrap-toggle/js/bootstrap-toggle.min.js',
         'konva/konva.min.js',
@@ -28,7 +29,8 @@ module.exports = function (grunt) {
     var vendor_css_files = [
         'handsontable/dist/handsontable.full.min.css',
         'bootstrap-select/dist/css/bootstrap-select.min.css',
-        'bootstrap-toggle/css/bootstrap-toggle.min.css'
+        'bootstrap-toggle/css/bootstrap-toggle.min.css',
+        'bootstrap-datepicker/dist/css/bootstrap-datepicker3.standalone.min.css'
     ];
 
     var js_files = [
@@ -73,9 +75,6 @@ module.exports = function (grunt) {
         'core/views/spinner-view.js',
         'core/views/top-bar-view.js',
         'units-table/views/main-units-table-view.js',
-        'docs-import/views/main-docs-import-view.js',
-        'docs-import/views/document-selector-view.js',
-        'docs-import/views/document-list-view.js',
         'drawing/module/konva-clip-patch.js',
         'drawing/module/drawing-module.js',
         'drawing/module/layer-manager.js',
@@ -104,6 +103,10 @@ module.exports = function (grunt) {
         'settings/views/options-dictionary-view.js',
         'supplier-request/views/main-supplier-request-view.js',
         'supplier-request/views/supplier-request-header-view.js',
+        'dashboard/views/project-totals-view.js',
+        'dashboard/views/project-info-view.js',
+        'dashboard/views/project-documents-view.js',
+        'dashboard/views/main-dashboard-view.js',
         'dialogs/views/base-dialog-view.js',
         'dialogs/views/login-dialog-view.js',
         'dialogs/views/options-profiles-table-dialog-view.js',
@@ -224,17 +227,6 @@ module.exports = function (grunt) {
                     }
                 ]
             },
-            pdfjs: {
-                files: [
-                    {
-                        expand: true,
-                        cwd: '<%= bowerUrl %>/pdfjs/build/generic/',
-                        src: ['**'],
-                        dest: '<%= buildUrl %>/pdfjs/',
-                        filter: 'isFile'
-                    }
-                ]
-            },
             images: {
                 expand: true,
                 cwd: '<%= sourceUrl %>/img/',
@@ -316,7 +308,9 @@ module.exports = function (grunt) {
                     base: '.',
                     middleware: function (connect, options, middlewares) {
                         middlewares.unshift(function (req, res, next) {
-                            if ( req.url === '/docs/' || req.url === '/drawing/' ||
+                            res.setHeader('Access-Control-Allow-Origin', '*');
+
+                            if ( req.url === '/dashboard/' || req.url === '/drawing/' ||
                                  req.url === '/quote/' || req.url === '/settings/' ||
                                  req.url === '/supplier/' || req.url === '/units/'
                             ) {
@@ -345,10 +339,6 @@ module.exports = function (grunt) {
                 files: ['<%= sourceUrl %>/less/**/*.less'],
                 tasks: ['gitinfo', 'less:dev']
             },
-            // uglify: {
-            //     files: ['<%= sourceUrl %>/js/**/*.js'],
-            //     tasks: ['gitinfo', 'uglify:build']
-            // },
             copy: {
                 files: ['<%= sourceUrl %>/js/**/*.js'],
                 tasks: ['copy:dev']
@@ -384,26 +374,6 @@ module.exports = function (grunt) {
         },
 
         replace: {
-            //  A cheap hack to trick pdfjs building script, it comes without
-            //  its own `.git` directory because it's installed via bower, so
-            //  building fails being unable to find certain SHA in the git
-            //  history. We just replace the SHA with our own number
-            pdfjs: {
-                options: {
-                    patterns: [
-                        {
-                            match: 'hash',
-                            replacement: '<%= hash %>'
-                        }
-                    ]
-                },
-                files: [
-                    {
-                        src: '<%= sourceUrl %>/pdfjs.config.tpl',
-                        dest: '<%= bowerUrl %>/pdfjs/pdfjs.config'
-                    }
-                ]
-            },
             dev: {
                 options: {
                     patterns: [
@@ -480,17 +450,6 @@ module.exports = function (grunt) {
                     }
                 },
                 command: 'ansible-playbook --private-key=files/id_rsa_root --inventory-file=hosts deploy.yml -e env=production'
-            },
-            build_pdfjs: {
-                options: {
-                    execOptions: {
-                        cwd: '<%= bowerUrl %>/pdfjs/'
-                    }
-                },
-                command: [
-                    'npm install',
-                    'node make generic'
-                ].join('&&')
             }
         }
     });
@@ -510,19 +469,14 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-shell');
     grunt.loadNpmTasks('grunt-jscs');
 
-    grunt.registerTask('pdfjs', ['gitinfo', 'replace:pdfjs', 'shell:build_pdfjs', 'copy:pdfjs']);
-
-    //  README: pdf building is commented out due to this issue:
-    //  https://bitbucket.org/prossimo/prossimo-app/issues/137
-    //  This is a temporary change
     grunt.registerTask('build', [
         'gitinfo', 'clean:build', 'handlebars:build', 'copy:vendor', 'uglify:build',
-        'copy:images', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:build'//, 'pdfjs'
+        'copy:images', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:build'
     ]);
 
     grunt.registerTask('dev', [
         'clean:build', 'handlebars:dev', 'copy:dev', 'copy:vendor', 'copy:images',
-        'less:dev', 'uglify:vendor_dev', 'cssmin:vendor_dev', 'replace:dev'//, 'pdfjs'
+        'less:dev', 'uglify:vendor_dev', 'cssmin:vendor_dev', 'replace:dev'
     ]);
 
     grunt.registerTask('test', ['jscs', 'eslint', 'qunit:basic']);

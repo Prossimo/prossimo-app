@@ -730,9 +730,9 @@ var app = app || {};
 
             // Reverse sections array to sorting from the deepest children
             // To make parent mullions lays over children sashes
-            if (!module.getState('openingView')) {
-                sections.reverse();
-            }
+            // if (!module.getState('openingView')) { comment when fix bug width different mullions width
+            //     sections.reverse();
+            // }
 
             // draw section group recursively
             function drawSectionGroup( input ) {
@@ -810,7 +810,10 @@ var app = app || {};
                 var level = [];
                 var mullion = this.createMullion(rootSection);
 
-                objects.push(mullion);
+                // fix bug width different mullion width
+                if (module.getState('openingView')) {
+                    objects.push(mullion);
+                }
 
                 // draw each child section
                 rootSection.sections.forEach(function (sectionData) {
@@ -819,6 +822,12 @@ var app = app || {};
 
                 level.push(sash);
                 objects.push(level);
+
+                // fix bug width different mullion width
+                if (!module.getState('openingView')) {
+                    objects.push(mullion);
+                }
+
             } else {
                 objects.push(sash);
             }
@@ -882,6 +891,94 @@ var app = app || {};
 
             return group;
         },
+        drawSlideDirection: function (sectionData, /*Konva.Group*/group) {
+            if ( ['slide_left', 'slide_right'].indexOf(sectionData.sashType) === -1 ) {
+                return group;
+            }
+
+            var direction = sectionData.sashType.split('_').pop();
+            var factors = {
+                offsetX: sectionData.sashParams.width / 3,
+                offsetY: sectionData.sashParams.height / 4,
+                stepX: 60 / ratio,
+                stepY: 60 / ratio,
+                left: {
+                    initialOffsetSign: -1,
+                    directionSign: 1
+                },
+                right: {
+                    initialOffsetSign: 1,
+                    directionSign: -1
+                }
+            };
+            var initialX = sectionData.sashParams.width / 2 + (15 / ratio) * factors[direction].initialOffsetSign;
+            var initialY = sectionData.sashParams.height / 2 + (10 / ratio);
+            var arrowParams = {
+                points: [
+                    initialX,
+                    initialY,
+                    initialX,
+                    initialY - factors.stepY,
+                    initialX + factors.stepX * factors[direction].directionSign,
+                    initialY - factors.stepY
+                ],
+                pointerLength: 1 / ratio * 2,
+                pointerWidth: 1 / ratio * 2,
+                fill: 'black',
+                stroke: 'black',
+                strokeWidth: 1 / ratio,
+                name: 'index'
+            };
+            var arrow = new Konva.Arrow(arrowParams);
+
+            group.add(arrow);
+            return group;
+        },
+        drawTiltSlideDirection: function (sectionData, /*Konva.Group*/group) {
+            if ( ['tilt_slide_left', 'tilt_slide_right'].indexOf(sectionData.sashType) === -1 ) {
+                return group;
+            }
+
+            var direction = sectionData.sashType.split('_').pop();
+            var factors = {
+                stepX: sectionData.sashParams.width / 5,
+                stepY: sectionData.sashParams.height / 5,
+                left: {
+                    initialOffsetSign: -1,
+                    directionSign: 1
+                },
+                right: {
+                    initialOffsetSign: 1,
+                    directionSign: -1
+                }
+            };
+            var centerX = sectionData.sashParams.width / 2;
+            var centerY = sectionData.sashParams.height / 2;
+            var initialX = centerX + (factors.stepX / 2 * factors[direction].initialOffsetSign);
+            var initialY = centerY + 10 / ratio;
+            var arrowParams = {
+                points: [
+                    initialX,
+                    initialY,
+                    initialX + factors.stepX / 2 * factors[direction].directionSign,
+                    initialY - factors.stepY,
+                    initialX + factors.stepX * factors[direction].directionSign,
+                    initialY,
+                    initialX + factors.stepX * 2 * factors[direction].directionSign,
+                    initialY
+                ],
+                pointerLength: 1 / ratio * 2,
+                pointerWidth: 1 / ratio * 2,
+                fill: 'black',
+                stroke: 'black',
+                strokeWidth: 1 / ratio,
+                name: 'index'
+            };
+            var arrow = new Konva.Arrow(arrowParams);
+
+            group.add(arrow);
+            return group;
+        },
         /* eslint-disable max-statements */
         createSash: function (sectionData) {
             var group = new Konva.Group({
@@ -930,12 +1027,16 @@ var app = app || {};
             var shouldDrawBars = shouldDrawFilling &&
                 !sectionData.fillingType || sectionData.fillingType === 'glass';
 
-            var shouldDrawDirectionLine = sectionData.sashType !== 'fixed_in_frame';
+            var shouldDrawDirectionLine = ([
+                    'fixed_in_frame',
+                    'slide_left',
+                    'slide_right',
+                    'tilt_slide_left',
+                    'tilt_slide_right'
+                ].indexOf(sectionData.sashType) === -1);
 
             var shouldDrawHandle = this.shouldDrawHandle(sectionData.sashType);
-
             var isSelected = (module.getState('selected:sash') === sectionData.id);
-
             var circleClip = {};
             var frameGroup;
 
@@ -1084,6 +1185,9 @@ var app = app || {};
                 group.add(handle);
             }
 
+            group = this.drawSlideDirection(sectionData, group);
+            this.drawTiltSlideDirection(sectionData, group);
+
             if (isSelected) {
                 var selection = this.createSelectionShape(sectionData, {
                     x: fill.x,
@@ -1143,14 +1247,16 @@ var app = app || {};
             };
 
             if (type === 'tilt_turn_right' || type === 'turn_only_right' ||
-                type === 'slide-right' || type === 'flush-turn-right'
+                type === 'slide-right' || type === 'flush-turn-right' ||
+                type === 'slide_left' || type === 'tilt_slide_left'
             ) {
                 pos.x = offset;
                 pos.y = section.sashParams.height / 2;
             }
 
             if (type === 'tilt_turn_left' || type === 'turn_only_left' ||
-                type === 'slide-left' || type === 'flush-turn-left'
+                type === 'slide-left' || type === 'flush-turn-left' ||
+                type === 'slide_right' || type === 'tilt_slide_right'
             ) {
                 pos.x = section.sashParams.width - offset;
                 pos.y = section.sashParams.height / 2;
@@ -1223,7 +1329,7 @@ var app = app || {};
             });
 
             if ((type.indexOf('_hinge_hidden_latch') !== -1)) {
-                directionLine.dash([10 / this.ratio, 10 / this.ratio]);
+                directionLine.dash([10 / ratio, 10 / ratio]);
             }
 
             // #192: Reverse hinge indicator for outside view

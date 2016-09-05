@@ -13,3 +13,4 @@ split
 *.sublime*
 /index.html
 /login.html
+.idea

@@ -6,7 +6,6 @@ $(function () {
     app.App = new Marionette.Application();
 
     app.App.on('start', function () {
-
         //  Register a communication channel for all events in the app
         app.vent = {};
         _.extend(app.vent, Backbone.Events);
@@ -23,20 +22,20 @@ $(function () {
         app.dialogs = new app.Dialogs();
 
         app.main_navigation = new app.MainNavigationView({
+            dashboard: {
+                title: 'Dashboard',
+                path: 'dashboard',
+                icon_name: 'dashboard',
+                onShow: function () {
+                    app.main_region.show(new app.MainDashboardView());
+                }
+            },
             units_table: {
                 title: 'Units',
                 path: 'units',
                 icon_name: 'th',
                 onShow: function () {
                     app.main_region.show(new app.MainUnitsTableView());
-                }
-            },
-            docs_import: {
-                title: 'Docs',
-                path: 'docs',
-                icon_name: 'file',
-                onShow: function () {
-                    app.main_region.show(new app.MainDocsImportView());
                 }
             },
             drawing: {
@@ -83,7 +82,6 @@ $(function () {
                 app.router.navigate('/units/', { trigger: true });
             }
         });
-
     });
 
     app.App.start();

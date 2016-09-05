@@ -1,0 +1,29 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Project Totals</h3>
+    </div>
+    <div class="panel-body">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label class="col-sm-4">Grand Total{{#if is_price_estimated}} <small>(est.)</small>{{/if}}</label>
+                <div class="col-sm-8">{{ grand_total }}</div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-4">Total Cost{{#if is_price_estimated}} <small>(est.)</small>{{/if}}</label>
+                <div class="col-sm-8">{{ total_cost }}</div>
+            </div>
+            <div class="{{#if is_profit_negative }}is-negative{{/if}}{{#if is_profit_above_threshold }} is-good{{/if}} form-group">
+                <label class="col-sm-4">Profit{{#if is_price_estimated}} <small>(est.)</small>{{/if}}</label>
+                <div class="value col-sm-8">{{ profit }} <span class="percent">({{ profit_percent }} of G.T.)</span></div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-4">Total Area</label>
+                <div class="col-sm-8">{{{ total_area }}}</div>
+            </div>
+            <div class="form-group" title="Subtotal for Units / Total Area">
+                <label class="col-sm-4">Avg. Price/ft<sup>2</sup></label>
+                <div class="col-sm-8">{{{ price_per_square_foot }}}</div>
+            </div>
+        </div>
+    </div>
+</div>
