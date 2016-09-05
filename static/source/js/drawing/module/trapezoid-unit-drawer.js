@@ -987,9 +987,9 @@ var app = app || {};
 
             // Reverse sections array to sorting from the deepest children
             // To make parent mullions lays over children sashes
-            if (!module.getState('openingView')) {
-                sections.reverse();
-            }
+            // if (!module.getState('openingView')) { comment when fix bug width different mullions width
+            //     sections.reverse();
+            // }
 
             // draw section group recursively
             function drawSectionGroup( input ) {
@@ -1067,7 +1067,10 @@ var app = app || {};
                 var level = [];
                 var mullion = this.createMullion(rootSection);
 
-                objects.push(mullion);
+                // fix bug width different mullion width
+                if (module.getState('openingView')) {
+                    objects.push(mullion);
+                }
 
                 // draw each child section
                 rootSection.sections.forEach(function (sectionData) {
@@ -1076,6 +1079,12 @@ var app = app || {};
 
                 level.push(sash);
                 objects.push(level);
+
+                // fix bug width different mullion width
+                if (!module.getState('openingView')) {
+                    objects.push(mullion);
+                }
+
             } else {
                 objects.push(sash);
             }
