@@ -180,7 +180,8 @@ var app = app || {};
             var new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
             var new_unit = new app.Unit({
                 position: new_position,
-                height: 0
+                width: 10,
+                height: 10
             });
 
             this.collection.add(new_unit);
@@ -362,38 +363,22 @@ var app = app || {};
                     return p.percent(val);
                 },
                 width: function (attr_name, val) {
-                    return p.dimensions(val, 'width');
+                    return p.dimensions((+val > 10) ? +val : 10, 'width');
                 },
                 height: function (attr_name, val, model) {
                     var height, rootSection;
-                    // var checkHorizontalSplit = function (rootSection, params) {
-                    //     if ( rootSection.sections && rootSection.sections.length ) {
-                    //         for (var i = 0; i < rootSection.sections.length; i++) {
-                    //             checkHorizontalSplit(rootSection.sections[i], params);
-                    //         }
-                    //     }
-                    //     if ( rootSection.divider && rootSection.divider === 'horizontal' && rootSection.position ) {
-                    //         var crossing = model.getLineCrossingY(rootSection.position, params.corners.left, params.corners.right);
-                    //         if (crossing >= -100) {
-                    //             var maxHeight = app.utils.convert.inches_to_mm(params.maxHeight);
-                    //             var minHeight = app.utils.convert.inches_to_mm(params.minHeight);
-                    //             var position = maxHeight - minHeight + 200;
-                    //             rootSection.minPosition = rootSection.position = position;
-                    //         }
-                    //     }
-                    // };
 
                     if (model) {
                         rootSection = model.get('root_section');
                     }
                     var heights = val.split('/');
                     if (heights.length < 2) {
-                        height = p.dimensions((+val) ? +val : 0, 'height');
+                        height = p.dimensions((+val > 10) ? +val : 10, 'height');
                         if (rootSection) {
                             rootSection.trapezoidHeights = false;
                         }
                     } else {
-                        heights = [(+heights[0]) ? +heights[0] : 0, (+heights[1]) ? +heights[1] : 0];
+                        heights = [(+heights[0] > 10) ? +heights[0] : 10, (+heights[1] > 10) ? +heights[1] : 10];
                         if (heights[0] === heights[1]) {
                             if (rootSection) {
                                 rootSection.trapezoidHeights = false;
