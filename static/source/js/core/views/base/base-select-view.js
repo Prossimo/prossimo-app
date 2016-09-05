@@ -33,6 +33,14 @@ var app = app || {};
                 }, this)
             };
         },
+        enable: function () {
+            this.ui.$select.prop('disabled', false);
+            this.ui.$select.selectpicker('refresh');
+        },
+        disable: function () {
+            this.ui.$select.prop('disabled', true);
+            this.ui.$select.selectpicker('refresh');
+        },
         initialize: function (options) {
             var default_options = {
                 size: 'normal',

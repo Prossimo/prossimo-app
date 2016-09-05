@@ -89,7 +89,9 @@ var app = app || {};
             this.undo_manager.registerButton('redo', this.ui.$redo);
         },
         onDestroy: function () {
-            this.ui.$container.sortable('destroy');
+            if ( this._isRendered ) {
+                this.ui.$container.sortable('destroy');
+            }
         }
     });
 })();

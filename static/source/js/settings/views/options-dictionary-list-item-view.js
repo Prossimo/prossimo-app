@@ -18,10 +18,13 @@ var app = app || {};
         },
         serializeData: function () {
             var active_item = this.options.parent_view.getActiveItem();
+            var placeholder = this.options.placeholder || 'New Dictionary';
+            var name = this.model.get('name') || '';
 
             return {
                 is_active: active_item && active_item === this.model,
-                name: this.model.get('name')
+                readable_name: name || placeholder,
+                show_placeholder: !name && placeholder
             };
         }
     });
