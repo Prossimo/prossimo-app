@@ -10,11 +10,10 @@ var app = app || {};
         tagName: 'div',
         className: 'project-total-prices',
         template: app.templates['dashboard/project-totals-view'],
-        initialize: function() {
-            this.listenTo(app.current_project.settings, 'change', this.render)
+        initialize: function () {
+            this.listenTo(app.current_project.settings, 'change', this.render);
         },
         serializeData: function () {
-            console.log(this.model.toJSON())
             var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
             var total_prices = this.model ? this.model.getTotalPrices() : undefined;
             var total_area = this.model ? this.model.units.getTotalSquareFeet() : undefined;

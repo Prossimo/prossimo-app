@@ -67,9 +67,6 @@ module.exports = function (grunt) {
         'core/views/spinner-view.js',
         'core/views/top-bar-view.js',
         'units-table/views/main-units-table-view.js',
-        'docs-import/views/main-docs-import-view.js',
-        'docs-import/views/document-selector-view.js',
-        'docs-import/views/document-list-view.js',
         'drawing/module/konva-clip-patch.js',
         'drawing/module/drawing-module.js',
         'drawing/module/layer-manager.js',
@@ -216,17 +213,6 @@ module.exports = function (grunt) {
                     }
                 ]
             },
-            pdfjs: {
-                files: [
-                    {
-                        expand: true,
-                        cwd: '<%= bowerUrl %>/pdfjs/build/generic/',
-                        src: ['**'],
-                        dest: '<%= buildUrl %>/pdfjs/',
-                        filter: 'isFile'
-                    }
-                ]
-            },
             images: {
                 expand: true,
                 cwd: '<%= sourceUrl %>/img/',
@@ -308,8 +294,8 @@ module.exports = function (grunt) {
                     base: '.',
                     middleware: function (connect, options, middlewares) {
                         middlewares.unshift(function (req, res, next) {
-
                             res.setHeader('Access-Control-Allow-Origin', '*');
+
                             if ( req.url === '/dashboard/' || req.url === '/drawing/' ||
                                  req.url === '/quote/' || req.url === '/settings/' ||
                                  req.url === '/supplier/' || req.url === '/units/'
@@ -339,10 +325,6 @@ module.exports = function (grunt) {
                 files: ['<%= sourceUrl %>/less/**/*.less'],
                 tasks: ['gitinfo', 'less:dev']
             },
-            // uglify: {
-            //     files: ['<%= sourceUrl %>/js/**/*.js'],
-            //     tasks: ['gitinfo', 'uglify:build']
-            // },
             copy: {
                 files: ['<%= sourceUrl %>/js/**/*.js'],
                 tasks: ['copy:dev']
@@ -378,26 +360,6 @@ module.exports = function (grunt) {
         },
 
         replace: {
-            //  A cheap hack to trick pdfjs building script, it comes without
-            //  its own `.git` directory because it's installed via bower, so
-            //  building fails being unable to find certain SHA in the git
-            //  history. We just replace the SHA with our own number
-            pdfjs: {
-                options: {
-                    patterns: [
-                        {
-                            match: 'hash',
-                            replacement: '<%= hash %>'
-                        }
-                    ]
-                },
-                files: [
-                    {
-                        src: '<%= sourceUrl %>/pdfjs.config.tpl',
-                        dest: '<%= bowerUrl %>/pdfjs/pdfjs.config'
-                    }
-                ]
-            },
             dev: {
                 options: {
                     patterns: [
@@ -415,7 +377,7 @@ module.exports = function (grunt) {
                         },
                         {
                             match: 'api_base_path',
-                            replacement: 'http://159.203.133.223/api/api'
+                            replacement: 'http://127.0.0.1:8000/api'
                         }
                     ]
                 },
@@ -474,17 +436,6 @@ module.exports = function (grunt) {
                     }
                 },
                 command: 'ansible-playbook --private-key=files/id_rsa_root --inventory-file=hosts deploy.yml -e env=production'
-            },
-            build_pdfjs: {
-                options: {
-                    execOptions: {
-                        cwd: '<%= bowerUrl %>/pdfjs/'
-                    }
-                },
-                command: [
-                    'npm install',
-                    'node make generic'
-                ].join('&&')
             }
         }
     });
@@ -504,19 +455,14 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-shell');
     grunt.loadNpmTasks('grunt-jscs');
 
-    grunt.registerTask('pdfjs', ['gitinfo', 'replace:pdfjs', 'shell:build_pdfjs', 'copy:pdfjs']);
-
-    //  README: pdf building is commented out due to this issue:
-    //  https://bitbucket.org/prossimo/prossimo-app/issues/137
-    //  This is a temporary change
     grunt.registerTask('build', [
         'gitinfo', 'clean:build', 'handlebars:build', 'copy:vendor', 'uglify:build',
-        'copy:images', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:build'//, 'pdfjs'
+        'copy:images', 'less:build', 'uglify:vendor', 'cssmin:vendor', 'replace:build'
     ]);
 
     grunt.registerTask('dev', [
         'clean:build', 'handlebars:dev', 'copy:dev', 'copy:vendor', 'copy:images',
-        'less:dev', 'uglify:vendor_dev', 'cssmin:vendor_dev', 'replace:dev'//, 'pdfjs'
+        'less:dev', 'uglify:vendor_dev', 'cssmin:vendor_dev', 'replace:dev'
     ]);
 
     grunt.registerTask('test', ['jscs', 'eslint', 'qunit:basic']);
