@@ -233,9 +233,7 @@ var app = app || {};
             return Backbone.Model.prototype.saveAndGetId.apply(this, arguments);
         },
         sync: function (method, model, options) {
-            //  FIXME: should actually persist unit_options
-            // var properties_to_omit = ['id'];
-            var properties_to_omit = ['id', 'unit_options'];
+            var properties_to_omit = ['id'];
 
             if ( method === 'create' || method === 'update' ) {
                 options.attrs = { project_unit: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
@@ -1880,7 +1878,6 @@ var app = app || {};
 
             return restriction_applies;
         },
-        //  TODO: use `persist` function instead of `set`
         persistOption: function (dictionary_id, dictionary_entry_id) {
             var current_unit_options = _.sortBy(this.get('unit_options'), 'dictionary_id');
             var new_unit_options = _.filter(current_unit_options, function (unit_option) {
@@ -1898,7 +1895,7 @@ var app = app || {};
 
             //  When arrays are the same, do nothing, otherwise persist
             if ( JSON.stringify(current_unit_options) !== JSON.stringify(new_unit_options) ) {
-                this.set('unit_options', new_unit_options);
+                this.persist('unit_options', new_unit_options);
             }
         },
         //  Check if this unit belongs to the project which is currently active
