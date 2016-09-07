@@ -39,6 +39,7 @@ module.exports = function (grunt) {
         'router.js',
         'dialogs.js',
         'utils.js',
+        'schema.js',
         'paste-image.js',
         'hot-renderers.js',
         'undomanager.js',

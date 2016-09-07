@@ -9,8 +9,7 @@ var app = app || {};
     //  to units / accessories, instead of price
     var ENTRY_PROPERTIES = [
         { name: 'name', title: 'Name', type: 'string' },
-        //  TODO: price should probably be a number, not a string as it is
-        //  currently set at the backend
+        //  TODO: price should be a number on the backend as well
         { name: 'price', title: 'Price', type: 'number' },
         { name: 'data', title: 'Additional Data', type: 'string' },
         { name: 'position', title: 'Position', type: 'number' },
@@ -26,6 +25,7 @@ var app = app || {};
     }
 
     app.OptionsDictionaryEntry = Backbone.Model.extend({
+        schema: app.schema.createSchema(ENTRY_PROPERTIES),
         defaults: function () {
             var defaults = {};
 
@@ -73,6 +73,11 @@ var app = app || {};
             }
 
             return Backbone.sync.call(this, method, model, options);
+        },
+        parse: function (data) {
+            var entry_data = data && data.entry ? data.entry : data;
+
+            return app.schema.parseAccordingToSchema(entry_data, this.schema);
         },
         validate: function (attributes, options) {
             var error_obj = null;
@@ -191,17 +196,6 @@ var app = app || {};
         },
         initialize: function (attributes, options) {
             this.options = options || {};
-
-            //  TODO: price should probably be a number, not a string as it is
-            //  currently set at the backend. This is a hack to fix some issues
-            //  with the current implementation
-            if ( !this.options.proxy ) {
-                var price = this.get('price');
-
-                if ( price && _.isString(price) ) {
-                    this.set('price', parseFloat(price));
-                }
-            }
         }
     });
 })();

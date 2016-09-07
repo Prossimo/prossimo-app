@@ -5,6 +5,7 @@ var app = app || {};
 
     app.OptionsDictionaryEntryCollection = Backbone.Collection.extend({
         model: app.OptionsDictionaryEntry,
+        reorder_property_name: 'entries',
         url: function () {
             return app.settings.get('api_base_path') + '/dictionaries/' +
                 this.options.dictionary.get('id') + '/entries';
@@ -13,9 +14,10 @@ var app = app || {};
             return app.settings.get('api_base_path') + '/dictionaries/' +
                 this.options.dictionary.get('id') + '/reorder_entries';
         },
-        reorder_property_name: 'entries',
         parse: function (data) {
-            return data.entries || data;
+            //  We do this check to avoid confusion with native JS
+            //  Array.prototype.etries() method
+            return !_.isArray(data) && data.entries ? data.entries : data;
         },
         initialize: function (models, options) {
             this.options = options || {};

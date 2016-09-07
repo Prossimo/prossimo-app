@@ -21,6 +21,7 @@ var app = app || {};
     ];
 
     app.FillingType = Backbone.Model.extend({
+        schema: app.schema.createSchema(FILLING_TYPE_PROPERTIES),
         defaults: function () {
             var defaults = {};
 
@@ -66,6 +67,11 @@ var app = app || {};
             }
 
             return Backbone.sync.call(this, method, model, options);
+        },
+        parse: function (data) {
+            var filling_type_data = data && data.filling_type ? data.filling_type : data;
+
+            return app.schema.parseAccordingToSchema(filling_type_data, this.schema);
         },
         initialize: function (attributes, options) {
             this.options = options || {};

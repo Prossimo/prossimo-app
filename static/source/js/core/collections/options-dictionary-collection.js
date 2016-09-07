@@ -5,13 +5,13 @@ var app = app || {};
 
     app.OptionsDictionaryCollection = Backbone.Collection.extend({
         model: app.OptionsDictionary,
+        reorder_property_name: 'dictionaries',
         url: function () {
             return (this.options.api_base_path ? this.options.api_base_path : '') + '/dictionaries';
         },
         reorder_url: function () {
             return (this.options.api_base_path ? this.options.api_base_path : '') + '/reorder_dictionaries';
         },
-        reorder_property_name: 'dictionaries',
         parse: function (data) {
             return data.dictionaries || data;
         },

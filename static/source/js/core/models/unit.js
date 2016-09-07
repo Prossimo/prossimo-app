@@ -29,7 +29,8 @@ var app = app || {};
         { name: 'discount', title: 'Discount', type: 'number' },
 
         { name: 'position', title: 'Position', type: 'number' },
-        { name: 'unit_options', title: 'Unit Options', type: 'string' },
+        { name: 'unit_options', title: 'Unit Options', type: 'array' },
+        { name: 'root_section', title: 'Root Section', type: 'object' },
 
         //  README: the following properties are deprecated in favor of the
         //  new Unit Options system. We are going to remove them soon
@@ -179,6 +180,7 @@ var app = app || {};
     }
 
     app.Unit = Backbone.Model.extend({
+        schema: app.schema.createSchema(UNIT_PROPERTIES),
         defaults: function () {
             var defaults = {};
 
@@ -242,6 +244,11 @@ var app = app || {};
             }
 
             return Backbone.sync.call(this, method, model, options);
+        },
+        parse: function (data) {
+            var unit_data = data && data.unit ? data.unit : data;
+
+            return app.schema.parseAccordingToSchema(unit_data, this.schema);
         },
         initialize: function (attributes, options) {
             this.options = options || {};

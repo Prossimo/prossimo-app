@@ -18,6 +18,7 @@ var app = app || {};
     }
 
     app.OptionsDictionary = Backbone.Model.extend({
+        schema: app.schema.createSchema(DICTIONARY_PROPERTIES),
         defaults: function () {
             var defaults = {};
 
@@ -52,7 +53,14 @@ var app = app || {};
             return default_value;
         },
         parse: function (data) {
-            return data;
+            var dictionary_data = data && data.dictionary ? data.dictionary : data;
+            var filtered_data = app.schema.parseAccordingToSchema(dictionary_data, this.schema);
+
+            if ( dictionary_data && dictionary_data.entries ) {
+                filtered_data.entries = dictionary_data.entries;
+            }
+
+            return filtered_data;
         },
         save: function () {
             return Backbone.Model.prototype.saveAndGetId.apply(this, arguments);
@@ -222,7 +230,7 @@ var app = app || {};
             }
 
             if ( this.get('entries') ) {
-                this.entries.set(this.get('entries'));
+                this.entries.set(this.get('entries'), { parse: true });
                 this.unset('entries', { silent: true });
                 changed_flag = true;
             }

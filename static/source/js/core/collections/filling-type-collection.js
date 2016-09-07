@@ -5,21 +5,15 @@ var app = app || {};
 
     app.FillingTypeCollection = Backbone.Collection.extend({
         model: app.FillingType,
+        reorder_property_name: 'filling_types',
         url: function () {
             return (this.options.api_base_path ? this.options.api_base_path : '') + '/fillingtypes';
         },
         reorder_url: function () {
             return (this.options.api_base_path ? this.options.api_base_path : '') + '/reorder_fillingtypes';
         },
-        reorder_property_name: 'filling_types',
         parse: function (data) {
-            return _.map(data.filling_types, function (filling_type) {
-                var keys_to_omit = ['units'];
-
-                return _.pick(filling_type, function (value, key) {
-                    return !_.isNull(value) && !_.contains(keys_to_omit, key);
-                });
-            });
+            return data.filling_types || data;
         },
         getMaxPosition: function () {
             var filtered = _.map(this.filter(function (model) {
