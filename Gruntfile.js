@@ -378,6 +378,10 @@ module.exports = function (grunt) {
                         {
                             match: 'api_base_path',
                             replacement: 'http://127.0.0.1:8000/api'
+                        },
+                        {
+                            match: 'pdf_api_base_path',
+                            replacement: 'http://localhost:8080'
                         }
                     ]
                 },

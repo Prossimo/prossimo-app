@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="latest-commit-sha" value="@@hash">
     <meta name="api-base-path" value=@@api_base_path>
+    <meta name="pdf-api-base-path" value=@@pdf_api_base_path>
     <title>Prossimo App (current version: @@hash)</title>
 
     <link rel="stylesheet" href="/static/public/css/vendor.@@hash.min.css" media="all">
