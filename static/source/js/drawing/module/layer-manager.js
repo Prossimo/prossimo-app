@@ -11,6 +11,7 @@ var app = app || {};
         initialize: function (opts) {
             this.layers = {};
 
+            this.trapezoid = opts.builder.get('model').isTrapezoid();
             this.createLayers( opts.layers );
 
             // Start listening update on builder
@@ -26,7 +27,7 @@ var app = app || {};
 
             var defaultLayers = {
                 unit: {
-                    DrawerClass: app.Drawers.UnitDrawer,
+                    DrawerClass: (this.trapezoid) ? app.Drawers.TrapezoidUnitDrawer : app.Drawers.UnitDrawer,
                     zIndex: 0,
                     visible: true,
                     active: true

@@ -8,7 +8,7 @@ var app = app || {};
     var ratio;
 
     app.Drawers = app.Drawers || {};
-    app.Drawers.UnitDrawer = Backbone.KonvaView.extend({
+    app.Drawers.TrapezoidUnitDrawer = Backbone.KonvaView.extend({
         initialize: function (params) {
             module = params.builder;
 
@@ -159,10 +159,13 @@ var app = app || {};
 
             // create main frame
             if (isDoorFrame) {
-                frameGroup = this.createDoorFrame({
+                frameGroup = this.createDoorTrapezoidFrame({
                     sectionId: root.id,
                     width: model.getInMetric('width', 'mm'),
                     height: model.getInMetric('height', 'mm'),
+                    trapezoidHeights: model.getTrapezoidHeights(module.getState('insideView')),
+                    maxHeight: model.getTrapezoidMaxHeight(),
+                    trapezoidCorners: model.getMainTrapezoidInnerCorners(),
                     frameWidth: model.profile.get('frame_width')
                 });
             } else if (isArchedWindow) {
@@ -180,10 +183,13 @@ var app = app || {};
                     frameWidth: model.profile.get('frame_width')
                 });
             } else {
-                frameGroup = this.createFrame({
+                frameGroup = this.createTrapezoidFrame({
                     sectionId: root.id,
                     width: model.getInMetric('width', 'mm'),
                     height: model.getInMetric('height', 'mm'),
+                    trapezoidHeights: model.getTrapezoidHeights(module.getState('insideView')),
+                    maxHeight: model.getTrapezoidMaxHeight(),
+                    trapezoidCorners: model.getMainTrapezoidInnerCorners(),
                     frameWidth: model.profile.get('frame_width')
                 });
             }
@@ -493,11 +499,171 @@ var app = app || {};
 
             return group;
         },
-        // like common frame above but fully filled
-        createFlushFrame: function (params) {
+
+        createTrapezoidFrame: function (params) {
+            var frameWidth = params.frameWidth;
             var width = params.width;
             var height = params.height;
+            var trapezoidHeights = params.trapezoidHeights;
+            var maxHeight = params.maxHeight;
+            var style = module.getStyle('frame');
+
+            var group = new Konva.Group({
+                name: 'frame',
+                sectionId: params.sectionId
+            });
+
+            var top = new Konva.Line({
+                points: [
+                    0, maxHeight - trapezoidHeights.left,
+                    width, maxHeight - trapezoidHeights.right,
+                    params.trapezoidCorners.right.x, params.trapezoidCorners.right.y,
+                    params.trapezoidCorners.left.x, params.trapezoidCorners.left.y
+                ]
+            });
+
+            var left = new Konva.Line({
+                points: [
+                    0, maxHeight - trapezoidHeights.left,
+                    params.trapezoidCorners.left.x, params.trapezoidCorners.left.y,
+                    frameWidth, maxHeight - frameWidth,
+                    0, maxHeight
+                ]
+            });
+
+            var bottom = new Konva.Line({
+                points: [
+                    0, maxHeight,
+                    frameWidth, maxHeight - frameWidth,
+                    width - frameWidth, maxHeight - frameWidth,
+                    width, maxHeight
+                ]
+            });
+
+            var right = new Konva.Line({
+                points: [
+                    width, maxHeight - trapezoidHeights.right,
+                    width, maxHeight,
+                    width - frameWidth, maxHeight - frameWidth,
+                    params.trapezoidCorners.right.x, params.trapezoidCorners.right.y
+                ]
+            });
+
+            group.add(top, left, bottom, right);
+
+            // add styles for borders
+            group.children
+                .closed(true)
+                .stroke(style.stroke)
+                .strokeWidth(style.strokeWidth)
+                .fill(style.fill);
+
+            return group;
+        },
+
+        createInnerTrapezoidFrame: function (section, params) {
+            var frameWidth = params.frameWidth;
+            var width = params.width;
+            var height = params.height;
+            var frameX = params.x;
+            var frameY = params.y;
+            var frameOffset = model.getFrameOffset();
+            var innerCorners = model.getMainTrapezoidInnerCorners();
+            var newLeftY = model.getLineCrossingX(frameX, innerCorners.left, innerCorners.right)  - frameY;
+            var newRightY = model.getLineCrossingX(frameX + width, innerCorners.left, innerCorners.right) - frameY;
+            var maxHeight = height;
+
+            var corners = model.getTrapezoidInnerCorners({
+                heights: { left: height - newLeftY, right: height - newRightY },
+                width: width,
+                frameWidth: frameWidth,
+                maxHeight: height
+            });
+
+            var points = {
+                inner: [
+                    { x: corners.left.x, y: corners.left.y - frameOffset },
+                    { x: corners.right.x, y: corners.right.y - frameOffset },
+                    { x: width - frameWidth, y: maxHeight - frameWidth },
+                    { x: frameWidth, y: maxHeight - frameWidth }
+                ],
+                outer: [
+                    { x: 0, y: newLeftY - frameOffset },
+                    { x: width, y: newRightY - frameOffset },
+                    { x: width, y: maxHeight },
+                    { x: 0, y: maxHeight }
+                ]
+            };
+
+            if (!section.trapezoid) section.trapezoid = {};
+            section.trapezoid.frame = points;
+
+            var style = module.getStyle('frame');
+
+            var group = new Konva.Group({
+                name: 'frame',
+                sectionId: params.sectionId
+            });
+
+            var top = new Konva.Line({
+                points: [
+                    points.outer[0].x, points.outer[0].y,
+                    points.outer[1].x, points.outer[1].y,
+                    points.inner[1].x, points.inner[1].y,
+                    points.inner[0].x, points.inner[0].y
+                ]
+            });
+
+            var left = new Konva.Line({
+                points: [
+                    points.outer[0].x, points.outer[0].y,
+                    points.inner[0].x, points.inner[0].y,
+                    points.inner[3].x, points.inner[3].y,
+                    points.outer[3].x, points.outer[3].y
+                ]
+            });
+
+            var bottom = new Konva.Line({
+                points: [
+                    points.inner[3].x, points.inner[3].y,
+                    points.inner[2].x, points.inner[2].y,
+                    points.outer[2].x, points.outer[2].y,
+                    points.outer[3].x, points.outer[3].y
+                ]
+            });
+
+            var right = new Konva.Line({
+                points: [
+                    points.outer[1].x, points.outer[1].y,
+                    points.outer[2].x, points.outer[2].y,
+                    points.inner[2].x, points.inner[2].y,
+                    points.inner[1].x, points.inner[1].y
+                ]
+            });
+
+            group.add(top, left, bottom, right);
+
+            // add styles for borders
+            group.children
+                .closed(true)
+                .stroke(style.stroke)
+                .strokeWidth(style.strokeWidth)
+                .fill(style.fill);
+
+            return group;
+        },
+
+        // like common frame above but fully filled
+        createFlushFrame: function (params) {
+            var section = params.section;
+            var width = params.width;
+            var height = params.height;
+            var wrapper = {
+                x: params.section.x,
+                y: params.section.y
+            };
             var opts = {};
+            var frameWidth = model.profile.get('frame_width');
 
             // Extend opts with styles
             _.extend(opts, module.getStyle('flush_frame'));
@@ -509,7 +675,28 @@ var app = app || {};
                 sectionId: params.sectionId
             });
 
-            var rect = new Konva.Rect(opts);
+            var rect;
+            var corners = model.getMainTrapezoidInnerCorners();
+            var crossing = {
+                left: model.getLineCrossingX(section.sashParams.x, corners.left, corners.right),
+                right: model.getLineCrossingX(section.sashParams.x + section.sashParams.width, corners.left, corners.right)
+            };
+            if ( crossing.left > section.sashParams.y || crossing.right > section.sashParams.y ) {
+                if (section.sashParams.width >= section.glassParams.width) {
+                    opts.points = [
+                        0, crossing.left - frameWidth,
+                        width, crossing.right - frameWidth,
+                        width, height,
+                        0, height
+                    ];
+                    opts.closed = true;
+                    rect = new Konva.Line(opts);
+                } else {
+                    rect = new Konva.Rect(opts);
+                }
+            } else {
+                rect = new Konva.Rect(opts);
+            }
 
             return rect;
         },
@@ -570,6 +757,76 @@ var app = app || {};
                     width, height - thresholdWidth,
                     width, height,
                     0, height
+                ],
+                closed: true,
+                stroke: style.bottom.stroke,
+                strokeWidth: style.bottom.strokeWidth,
+                fill: style.bottom.fill
+            });
+
+            group.add(bottom);
+
+            return group;
+        },
+
+        createDoorTrapezoidFrame: function (params) {
+            var frameWidth = params.frameWidth;  // in mm
+            var thresholdWidth = model.profile.get('threshold_width');
+            var width = params.width;
+            var height = params.height;
+            var trapezoidHeights = params.trapezoidHeights;
+            var maxHeight = params.maxHeight;
+
+            var style = {
+                frame: module.getStyle('frame'),
+                bottom: module.getStyle('door_bottom')
+            };
+
+            var group = new Konva.Group({
+                name: 'frame'
+            });
+
+            var top = new Konva.Line({
+                points: [
+                    0, maxHeight - trapezoidHeights.left,
+                    width, maxHeight - trapezoidHeights.right,
+                    params.trapezoidCorners.right.x, params.trapezoidCorners.right.y,
+                    params.trapezoidCorners.left.x, params.trapezoidCorners.left.y
+                ]
+            });
+
+            var left = new Konva.Line({
+                points: [
+                    0, maxHeight - trapezoidHeights.left,
+                    params.trapezoidCorners.left.x, params.trapezoidCorners.left.y,
+                    frameWidth, maxHeight - thresholdWidth,
+                    0, maxHeight - thresholdWidth
+                ]
+            });
+
+            var right = new Konva.Line({
+                points: [
+                    width, maxHeight - trapezoidHeights.right,
+                    width, maxHeight - thresholdWidth,
+                    width - frameWidth, maxHeight - thresholdWidth,
+                    params.trapezoidCorners.right.x, params.trapezoidCorners.right.y
+                ]
+            });
+
+            group.add(top, left, right);
+
+            group.children
+                .closed(true)
+                .stroke(style.frame.stroke)
+                .strokeWidth(style.frame.strokeWidth)
+                .fill(style.frame.fill);
+
+            var bottom = new Konva.Line({
+                points: [
+                    0, maxHeight - thresholdWidth,
+                    width, maxHeight - thresholdWidth,
+                    width, maxHeight,
+                    0, maxHeight
                 ],
                 closed: true,
                 stroke: style.bottom.stroke,
@@ -841,14 +1098,59 @@ var app = app || {};
                 name: 'mullion',
                 sectionId: section.id
             });
-            var mullion = new Konva.Rect({
-                sectionId: section.id,
-                stroke: style.default.stroke,
-                fill: style.default.fill,
-                strokeWidth: style.default.strokeWidth
-            });
+            var params = section.mullionParams;
+            var crossing = {
+                left: model.getTrapezoidCrossing({ x: params.x, y: params.y }, { x: params.x, y: params.y + params.height }),
+                right: model.getTrapezoidCrossing({ x: params.x + params.width, y: params.y }, { x: params.x + params.width, y: params.y + params.height })
+            };
 
-            mullion.setAttrs(section.mullionParams);
+            var mullion;
+            if ( !crossing.left && !crossing.right ) {
+                mullion = new Konva.Rect({
+                    sectionId: section.id,
+                    stroke: style.default.stroke,
+                    fill: style.default.fill,
+                    strokeWidth: style.default.strokeWidth
+                });
+                mullion.setAttrs(section.mullionParams);
+            } else {
+                var points = [
+                    params.x, crossing.left.y,
+                    params.x + params.width, crossing.right.y,
+                    params.x + params.width, params.y + params.height,
+                    params.x, params.y + params.height
+                ];
+                if (section.trapezoid && section.trapezoid.frame) {
+                    var inner = section.trapezoid.frame.inner;
+                    var topCrossing = {
+                        left: model.getLineCrossingX(
+                            params.x,
+                            { x: inner[0].x + section.sashParams.x, y: inner[0].y + section.sashParams.y },
+                            { x: inner[1].x + section.sashParams.x, y: inner[1].y + section.sashParams.y }
+                        ),
+                        right: model.getLineCrossingX(
+                            params.x + params.width,
+                            { x: inner[0].x + section.sashParams.x, y: inner[0].y + section.sashParams.y },
+                            { x: inner[1].x + section.sashParams.x, y: inner[1].y + section.sashParams.y }
+                        )
+                    };
+                    points = [
+                        params.x, topCrossing.left,
+                        params.x + params.width, topCrossing.right,
+                        params.x + params.width, params.y + params.height,
+                        params.x, params.y + params.height
+                    ];
+                }
+                mullion = new Konva.Line({
+                    points: points,
+                    sectionId: section.id,
+                    stroke: style.default.stroke,
+                    fill: style.default.fill,
+                    strokeWidth: style.default.strokeWidth,
+                    closed : true
+                });
+            }
+
             var isVerticalInvisible = (
                 section.divider === 'vertical_invisible'
             );
@@ -891,8 +1193,8 @@ var app = app || {};
 
             return group;
         },
-        drawSlideDirection: function (sectionData, /*Konva.Group*/group) {
-            if ( ['slide_left', 'slide_right'].indexOf(sectionData.sashType) === -1 ) {
+        drawSlideDirection: function(sectionData, /*Konva.Group*/group) {
+            if(-1 == ['slide_left', 'slide_right'].indexOf(sectionData.sashType)) {
                 return group;
             }
 
@@ -922,20 +1224,19 @@ var app = app || {};
                     initialX + factors.stepX * factors[direction].directionSign,
                     initialY - factors.stepY
                 ],
-                pointerLength: 1 / ratio * 2,
-                pointerWidth: 1 / ratio * 2,
+                pointerLength: 1/ratio *2,
+                pointerWidth : 1/ratio *2,
                 fill: 'black',
                 stroke: 'black',
-                strokeWidth: 1 / ratio,
+                strokeWidth: 1 /ratio,
                 name: 'index'
             };
             var arrow = new Konva.Arrow(arrowParams);
-
             group.add(arrow);
             return group;
         },
-        drawTiltSlideDirection: function (sectionData, /*Konva.Group*/group) {
-            if ( ['tilt_slide_left', 'tilt_slide_right'].indexOf(sectionData.sashType) === -1 ) {
+        drawTiltSlideDirection: function(sectionData, /*Konva.Group*/group) {
+            if(-1 == ['tilt_slide_left', 'tilt_slide_right'].indexOf(sectionData.sashType)) {
                 return group;
             }
 
@@ -954,33 +1255,33 @@ var app = app || {};
             };
             var centerX = sectionData.sashParams.width / 2;
             var centerY = sectionData.sashParams.height / 2;
-            var initialX = centerX + (factors.stepX / 2 * factors[direction].initialOffsetSign);
+            var initialX = centerX + (factors.stepX / 2 *  factors[direction].initialOffsetSign);
             var initialY = centerY + 10 / ratio;
             var arrowParams = {
                 points: [
                     initialX,
                     initialY,
-                    initialX + factors.stepX / 2 * factors[direction].directionSign,
+                    initialX + factors.stepX/2 * factors[direction].directionSign,
                     initialY - factors.stepY,
-                    initialX + factors.stepX * factors[direction].directionSign,
+                    initialX + factors.stepX  * factors[direction].directionSign,
                     initialY,
                     initialX + factors.stepX * 2 * factors[direction].directionSign,
                     initialY
                 ],
                 pointerLength: 1 / ratio * 2,
-                pointerWidth: 1 / ratio * 2,
+                pointerWidth : 1 / ratio * 2,
                 fill: 'black',
                 stroke: 'black',
                 strokeWidth: 1 / ratio,
                 name: 'index'
             };
             var arrow = new Konva.Arrow(arrowParams);
-
             group.add(arrow);
             return group;
         },
         /* eslint-disable max-statements */
         createSash: function (sectionData) {
+
             var group = new Konva.Group({
                 x: sectionData.sashParams.x,
                 y: sectionData.sashParams.y,
@@ -992,7 +1293,6 @@ var app = app || {};
             var hasFrame = (sectionData.sashType !== 'fixed_in_frame');
             var frameWidth = hasFrame ? model.profile.get('sash_frame_width') : 0;
             var mainFrameWidth = model.profile.get('frame_width') / 2;
-
             var fill = {};
 
             if (_.includes(['full-flush-panel', 'exterior-flush-panel'], sectionData.fillingType) &&
@@ -1003,7 +1303,7 @@ var app = app || {};
                 fill.width = sectionData.openingParams.width;
                 fill.height = sectionData.openingParams.height;
             } else if (_.includes(['full-flush-panel', 'interior-flush-panel'], sectionData.fillingType) &&
-                        module.getState('openingView')
+                module.getState('openingView')
             ) {
                 fill.x = 0;
                 fill.y = 0;
@@ -1020,25 +1320,29 @@ var app = app || {};
             var isFlushType = sectionData.fillingType &&
                 sectionData.fillingType.indexOf('flush') >= 0;
 
-            var shouldDrawFilling =
-                !hasSubSections && !isFlushType ||
-                !hasSubSections && model.isRootSection(sectionData.id) && isFlushType;
+            // var shouldDrawFilling =
+            //     !hasSubSections && !isFlushType ||
+            //     !hasSubSections && model.isRootSection(sectionData.id) && isFlushType;
+            var shouldDrawFilling = !hasSubSections && !isFlushType;
 
             var shouldDrawBars = shouldDrawFilling &&
                 !sectionData.fillingType || sectionData.fillingType === 'glass';
 
-            var shouldDrawDirectionLine = ([
-                    'fixed_in_frame',
-                    'slide_left',
-                    'slide_right',
-                    'tilt_slide_left',
-                    'tilt_slide_right'
-                ].indexOf(sectionData.sashType) === -1);
+            var shouldDrawDirectionLine = (-1 == [
+                'fixed_in_frame',
+                'slide_left',
+                'slide_right',
+                'tilt_slide_left',
+                'tilt_slide_right'
+            ].indexOf(sectionData.sashType));
 
             var shouldDrawHandle = this.shouldDrawHandle(sectionData.sashType);
+
             var isSelected = (module.getState('selected:sash') === sectionData.id);
+
             var circleClip = {};
             var frameGroup;
+
 
             if (circleData) {
 
@@ -1079,7 +1383,11 @@ var app = app || {};
                     x: (circleData) ? fill.x - frameWidth : fill.x,
                     y: (circleData) ? fill.y - frameWidth : fill.y,
                     width: (circleData) ? fill.width + frameWidth : fill.width,
-                    height: (circleData) ? fill.height + frameWidth : fill.height
+                    height: (circleData) ? fill.height + frameWidth : fill.height,
+                    wrapper: {
+                        x: sectionData.sashParams.x,
+                        y: sectionData.sashParams.y
+                    }
                 });
 
                 if (circleData) {
@@ -1108,9 +1416,12 @@ var app = app || {};
                 var flushFrame = new Konva.Group();
 
                 flushFrame.add( this.createFlushFrame({
+                    section: sectionData,
                     width: sectionData.sashParams.width,
                     height: sectionData.sashParams.height,
-                    sectionId: sectionData.id
+                    sectionId: sectionData.id,
+                    x: fill.x,
+                    y: fill.y
                 }) );
 
                 group.add(flushFrame);
@@ -1155,12 +1466,25 @@ var app = app || {};
                         data: circleData
                     });
                 } else {
-                    frameGroup = this.createFrame({
-                        width: sectionData.sashParams.width,
-                        height: sectionData.sashParams.height,
-                        frameWidth: frameWidth,
-                        sectionId: sectionData.id
-                    });
+                    var params = sectionData.sashParams;
+                    var innerCorners = model.getMainTrapezoidInnerCorners();
+                    if ( params.y < innerCorners.left.y || params.y < innerCorners.right.y ) {
+                        frameGroup = this.createInnerTrapezoidFrame(sectionData, {
+                            width: sectionData.sashParams.width,
+                            height: sectionData.sashParams.height,
+                            x: params.x,
+                            y: params.y,
+                            frameWidth: frameWidth,
+                            sectionId: sectionData.id
+                        });
+                    } else {
+                        frameGroup = this.createFrame({
+                            width: sectionData.sashParams.width,
+                            height: sectionData.sashParams.height,
+                            frameWidth: frameWidth,
+                            sectionId: sectionData.id
+                        });
+                    }
                 }
 
                 group.add(frameGroup);
@@ -1193,7 +1517,11 @@ var app = app || {};
                     x: fill.x,
                     y: fill.y,
                     width: fill.width,
-                    height: fill.height
+                    height: fill.height,
+                    wrapper: {
+                        x: sectionData.sashParams.x,
+                        y: sectionData.sashParams.y
+                    }
                 });
 
                 if (circleData) {
@@ -1211,13 +1539,15 @@ var app = app || {};
             var typeResult = false;
 
             if (
-                    type !== 'fixed_in_frame' &&
-                    (
-                        type.indexOf('left') >= 0 ||
-                        type.indexOf('right') >= 0 ||
-                        type === 'tilt_only'
-                    ) &&
-                    (type.indexOf('_hinge_hidden_latch') === -1)
+                type !== 'fixed_in_frame' &&
+                // type !== 'slide_left' &&
+                // type !== 'slide_right' &&
+                (
+                    type.indexOf('left') >= 0 ||
+                    type.indexOf('right') >= 0 ||
+                    type === 'tilt_only'
+                ) &&
+                (type.indexOf('_hinge_hidden_latch') === -1)
             ) {
                 typeResult = true;
             }
@@ -1227,12 +1557,12 @@ var app = app || {};
             // 2a). it's inside view
             // 2b). it's outside view & profile hasOutsideHandle (for example, door)
             result = (
-                        typeResult &&
-                        (
-                            (module.getState('insideView')) ||
-                            (!module.getState('insideView') && model.profile.hasOutsideHandle())
-                        )
-                );
+                typeResult &&
+                (
+                    (module.getState('insideView')) ||
+                    (!module.getState('insideView') && model.profile.hasOutsideHandle())
+                )
+            );
 
             return result;
         },
@@ -1246,25 +1576,33 @@ var app = app || {};
                 rotation: 0
             };
 
-            if (type === 'tilt_turn_right' || type === 'turn_only_right' ||
+            if ( type === 'tilt_turn_right' || type === 'turn_only_right' ||
                 type === 'slide-right' || type === 'flush-turn-right' ||
-                type === 'slide_left' || type === 'tilt_slide_left'
-            ) {
+                type === 'slide_left' || type === 'tilt_slide_left' )
+            {
                 pos.x = offset;
-                pos.y = section.sashParams.height / 2;
+                pos.y = (section.trapezoid && section.trapezoid.frame)
+                ? section.trapezoid.frame.outer[0].y + ( ( section.trapezoid.frame.outer[3].y - section.trapezoid.frame.outer[0].y ) / 2 )
+                : section.sashParams.height / 2;
             }
 
-            if (type === 'tilt_turn_left' || type === 'turn_only_left' ||
+            if ( type === 'tilt_turn_left' || type === 'turn_only_left' ||
                 type === 'slide-left' || type === 'flush-turn-left' ||
-                type === 'slide_right' || type === 'tilt_slide_right'
-            ) {
+                type === 'slide_right' || type === 'tilt_slide_right' )
+            {
                 pos.x = section.sashParams.width - offset;
-                pos.y = section.sashParams.height / 2;
+                pos.y = (section.trapezoid && section.trapezoid.frame)
+                    ? section.trapezoid.frame.outer[1].y + ( ( section.trapezoid.frame.outer[2].y - section.trapezoid.frame.outer[1].y ) / 2 )
+                    : section.sashParams.height / 2;
             }
 
             if (type === 'tilt_only') {
                 pos.x = section.sashParams.width / 2;
-                pos.y = offset;
+                pos.y = (section.trapezoid && section.trapezoid.frame)
+                    ? ( Math.abs( section.trapezoid.frame.outer[0].y - section.trapezoid.frame.outer[1].y ) / 2 ) + offset
+                    + ( ( section.trapezoid.frame.outer[0].y > section.trapezoid.frame.outer[1].y ) ? section.trapezoid.frame.outer[1].y : section.trapezoid.frame.outer[0].y )
+                    : offset;
+
                 pos.rotation = 90;
             }
 
@@ -1291,37 +1629,88 @@ var app = app || {};
             });
             var type = section.sashType;
             var style = module.getStyle('direction_line');
+            var isAmerican = module.getState('hingeIndicatorMode') === 'american';
+            var isTrapezoid = false;
             var directionLine = new Konva.Shape({
                 stroke: style.stroke,
                 x: section.glassParams.x - section.sashParams.x,
                 y: section.glassParams.y - section.sashParams.y,
                 sceneFunc: function (ctx) {
                     ctx.beginPath();
+
                     var width = section.glassParams.width;
                     var height = section.glassParams.height;
 
-                    if (type.indexOf('right') >= 0 && (type.indexOf('slide') === -1)) {
-                        ctx.moveTo(width, height);
-                        ctx.lineTo(0, height / 2);
-                        ctx.lineTo(width, 0);
-                    }
+                    if (section.trapezoid && section.trapezoid.frame) {
+                        isTrapezoid = true;
+                        var sashFrameWidth = model.profile.get('sash_frame_width');
+                        var corners = [section.trapezoid.frame.inner[0].y - sashFrameWidth, section.trapezoid.frame.inner[1].y - sashFrameWidth];
 
-                    if (type.indexOf('left') >= 0 && (type.indexOf('slide') === -1)) {
-                        ctx.moveTo(0, 0);
-                        ctx.lineTo(width, height / 2);
-                        ctx.lineTo(0, height);
-                    }
+                        if (type.indexOf('right') >= 0 && (type.indexOf('slide') === -1)) {
+                            if (isAmerican) {
+                                ctx.moveTo(width, 0);
+                                ctx.lineTo(0, ( height - corners[1] ) / 2 );
+                                ctx.lineTo(width, height - corners[0]);
+                            } else {
+                                ctx.moveTo(width, corners[1]);
+                                ctx.lineTo(0, ( ( height - corners[0] ) / 2 ) + corners[0] );
+                                ctx.lineTo(width, height);
+                            }
+                        }
 
-                    if (type.indexOf('tilt_turn_') >= 0 || type.indexOf('slide') >= 0 || type === 'tilt_only') {
-                        ctx.moveTo(0, height);
-                        ctx.lineTo(width / 2, 0);
-                        ctx.lineTo(width, height);
-                    }
+                        if (type.indexOf('left') >= 0 && (type.indexOf('slide') === -1)) {
+                            if (isAmerican) {
+                                ctx.moveTo(0, 0);
+                                ctx.lineTo(width, ( height - corners[0] ) / 2 );
+                                ctx.lineTo(0, height - corners[1]);
+                            } else {
+                                ctx.moveTo(0, corners[0]);
+                                ctx.lineTo(width, ( ( height - corners[1] ) / 2 ) + corners[1] );
+                                ctx.lineTo(0, height);
+                            }
+                        }
 
-                    if (type === 'tilt_only_top_hung') {
-                        ctx.moveTo(0, 0);
-                        ctx.lineTo(width / 2, height);
-                        ctx.lineTo(width, 0);
+                        if (type.indexOf('tilt_turn_') >= 0 || type.indexOf('slide') >= 0 || type === 'tilt_only') {
+                            if (isAmerican) {
+                                ctx.moveTo(0, height - corners[1]);
+                                ctx.lineTo(width / 2, 0);
+                                ctx.lineTo(width, height - corners[0]);
+                            } else {
+                                ctx.moveTo(0, height);
+                                ctx.lineTo(width / 2, ( ( (corners[1] > corners[0]) ? corners[0] : corners[1] ) + ( Math.abs(corners[1] - corners[0]) / 2 ) ) );
+                                ctx.lineTo(width, height);
+                            }
+                        }
+
+                        // if (type === 'tilt_only_top_hung') {
+                        //     ctx.moveTo(0, 0);
+                        //     ctx.lineTo(width / 2, height);
+                        //     ctx.lineTo(width, 0);
+                        // }
+                    } else {
+                        if (type.indexOf('right') >= 0 && (type.indexOf('slide') === -1)) {
+                            ctx.moveTo(width, height);
+                            ctx.lineTo(0, height / 2);
+                            ctx.lineTo(width, 0);
+                        }
+
+                        if (type.indexOf('left') >= 0 && (type.indexOf('slide') === -1)) {
+                            ctx.moveTo(0, 0);
+                            ctx.lineTo(width, height / 2);
+                            ctx.lineTo(0, height);
+                        }
+
+                        if (type.indexOf('tilt_turn_') >= 0 || type.indexOf('slide') >= 0 || type === 'tilt_only') {
+                            ctx.moveTo(0, height);
+                            ctx.lineTo(width / 2, 0);
+                            ctx.lineTo(width, height);
+                        }
+
+                        if (type === 'tilt_only_top_hung') {
+                            ctx.moveTo(0, 0);
+                            ctx.lineTo(width / 2, height);
+                            ctx.lineTo(width, 0);
+                        }
                     }
 
                     ctx.strokeShape(this);
@@ -1333,7 +1722,7 @@ var app = app || {};
             }
 
             // #192: Reverse hinge indicator for outside view
-            if ( module.getState('hingeIndicatorMode') === 'american' ) {
+            if ( isAmerican && !isTrapezoid ) {
                 directionLine.scale({
                     x: -1,
                     y: -1
@@ -1353,10 +1742,10 @@ var app = app || {};
             var result = [];
 
             indexes = indexes || {
-                main: 0,
-                add: null,
-                parent: null
-            };
+                    main: 0,
+                    add: null,
+                    parent: null
+                };
 
             i = i || 0;
 
@@ -1381,7 +1770,7 @@ var app = app || {};
                     result = result.concat( view.createSectionIndexes(section, indexes, j) );
                 });
 
-            // If section haven't a children sections — create Index for it
+                // If section haven't a children sections — create Index for it
             } else {
                 var text = (indexes.main + 1);
                 var position = {
@@ -1414,6 +1803,22 @@ var app = app || {};
                             width: size.width,
                             height: size.height
                         };
+                    }
+                }
+
+                var glassParams = mainSection.glassParams;
+                var crossing = {
+                    left: model.getTrapezoidCrossing({ x: glassParams.x, y: glassParams.y }, { x: glassParams.x, y: glassParams.y + glassParams.height }),
+                    right: model.getTrapezoidCrossing({ x: glassParams.x + glassParams.width, y: glassParams.y }, { x: glassParams.x + glassParams.width, y: glassParams.y + glassParams.height })
+                };
+                if ( crossing.left && crossing.right ) {
+                    var diff = (crossing.left.y > crossing.right.y) ?
+                    crossing.left.y - ( ( crossing.left.y - crossing.right.y ) / 2 ) :
+                    crossing.right.y - ( ( crossing.right.y - crossing.left.y ) / 2 );
+                    diff -= glassParams.y;
+                    if (diff > 0) {
+                        size.height -= diff;
+                        position.y += diff;
                     }
                 }
 
@@ -1460,10 +1865,17 @@ var app = app || {};
             var fillY = params.y;
             var fillWidth = params.width;
             var fillHeight = params.height;
+            var wrapper = params.wrapper;
+            var crossing = {
+                left: model.getTrapezoidCrossing({ x: wrapper.x, y: wrapper.y }, { x: wrapper.x, y: wrapper.y + fillHeight }),
+                right: model.getTrapezoidCrossing({ x: wrapper.x + fillWidth, y: wrapper.y }, { x: wrapper.x + fillWidth, y: wrapper.y + fillHeight })
+            };
             var group = new Konva.Group({name: 'filling'});
             var filling;
             var sceneFunc;
             var opts;
+            var frameWidth = params.frameWidth || model.profile.get('frame_width');
+            var frameOffset = model.getFrameOffset();
 
             var style = module.getStyle('fillings');
 
@@ -1494,7 +1906,6 @@ var app = app || {};
                 filling = new Konva.Shape(opts);
             } else if (section.circular || params.radius) {
                 // Circular
-                var frameWidth = params.frameWidth || model.profile.get('frame_width');
                 var radius = params.radius || section.radius - frameWidth;
 
                 opts = {
@@ -1508,29 +1919,130 @@ var app = app || {};
                 filling = new Konva.Circle(opts);
             } else {
                 // Default
-                opts = {
-                    sectionId: section.id,
-                    x: fillX,
-                    y: fillY,
-                    width: fillWidth,
-                    height: fillHeight,
-                    fill: style.glass.fill,
-                    sceneFunc: function (ctx) {
-                        ctx.beginPath();
-                        ctx.rect(0, 0, this.width(), this.height());
-                        // draw louver lines
-                        if (section.fillingType === 'louver') {
-                            var offset = 40;
-
-                            for (var i = 0; i < this.height() / offset; i++) {
-                                ctx.moveTo(0, i * offset);
-                                ctx.lineTo(this.width(), i * offset);
+                if ( !crossing.left && !crossing.right ) {
+                    opts = {
+                        sectionId: section.id,
+                        x: fillX,
+                        y: fillY,
+                        width: fillWidth,
+                        height: fillHeight,
+                        fill: style.glass.fill,
+                        sceneFunc: function (ctx) {
+                            ctx.beginPath();
+                            ctx.rect(0, 0, this.width(), this.height());
+                            // draw louver lines
+                            if (section.fillingType === 'louver') {
+                                var offset = 40;
+                                for (var i = 0; i < this.height() / offset; i++) {
+                                    ctx.moveTo(0, i * offset);
+                                    ctx.lineTo(this.width(), i * offset);
+                                }
                             }
+                            ctx.fillStrokeShape(this);
+                        }
+                    };
+                } else {
+                    if (section.sashType === 'fixed_in_frame') {
+                        var emptyCrossing = (!crossing.left || !crossing.right) ? ( (!crossing.left) ? 'left' : 'right' ) : '';
+
+                        if (emptyCrossing) {
+                            var innerCorners = model.getMainTrapezoidInnerCorners();
+                            crossing[emptyCrossing] = {
+                                x: (emptyCrossing === 'left') ? 0 : fillWidth,
+                                y: model.getLineCrossingX( ( (emptyCrossing === 'left') ? wrapper.x : wrapper.x + fillWidth ),
+                                    { x: innerCorners.left.x, y: innerCorners.left.y },
+                                    { x: innerCorners.right.x, y: innerCorners.right.y } )
+                            };
                         }
 
-                        ctx.fillStrokeShape(this);
+                        if (!section.trapezoid) section.trapezoid = {};
+                        section.trapezoid.glass = [
+                            { x: 0, y: crossing.left.y - wrapper.y },
+                            { x: fillWidth, y: crossing.right.y - wrapper.y },
+                            { x: fillWidth, y: fillHeight },
+                            { x: 0, y: fillHeight }
+                        ];
+                        var points = section.trapezoid.glass;
+
+                        opts = {
+                            sectionId: section.id,
+                            x: fillX,
+                            y: fillY,
+                            width: fillWidth,
+                            height: fillHeight,
+                            fill: style.glass.fill,
+                            sceneFunc: function (ctx) {
+                                ctx.beginPath();
+                                ctx.moveTo(points[0].x, points[0].y);
+                                ctx.lineTo(points[1].x, points[1].y);
+                                ctx.lineTo(points[2].x, points[2].y);
+                                ctx.lineTo(points[3].x, points[3].y);
+                                ctx.closePath();
+
+                                if (section.fillingType === 'louver') {
+                                    var offset = 40;
+                                    for (var i = 0; i < this.height() / offset; i++) {
+                                        var crossing = model.getLineCrossingY(i * offset, { x: points[0].x, y: points[0].y }, { x: points[1].x, y: points[1].y });
+                                        if ( points[0].y < points[1].y && crossing > 0 ) {
+                                            ctx.moveTo(0, i * offset);
+                                            ctx.lineTo(( (this.width() < crossing) ? this.width() : crossing ), i * offset);
+                                        } else if ( points[0].y > points[1].y && crossing < this.width() ) {
+                                            ctx.moveTo(( (crossing > 0) ? crossing : 0 ), i * offset);
+                                            ctx.lineTo(this.width(), i * offset);
+                                        }
+                                    }
+                                }
+                                ctx.fillStrokeShape(this);
+                            }
+                        };
+                    } else {
+                        crossing = {
+                            left: model.getTrapezoidCrossing({ x: wrapper.x + fillX, y: 0 }, { x: wrapper.x + fillX, y: fillHeight }),
+                            right: model.getTrapezoidCrossing({ x: wrapper.x + fillX + fillWidth, y: 0 }, { x: wrapper.x + fillX + fillWidth, y: fillHeight })
+                        };
+
+                        if (!section.trapezoid) section.trapezoid = {};
+                        section.trapezoid.glass = [
+                            { x: 0, y: crossing.left.y - frameWidth },
+                            { x: fillWidth, y: crossing.right.y - frameWidth },
+                            { x: fillWidth, y: fillHeight },
+                            { x: 0, y: fillHeight }
+                        ];
+                        var points = section.trapezoid.glass;
+
+                        opts = {
+                            sectionId: section.id,
+                            x: params.x,
+                            y: params.y,
+                            width: params.width,
+                            height: params.height,
+                            fill: style.glass.fill,
+                            sceneFunc: function (ctx) {
+                                ctx.beginPath();
+                                ctx.moveTo(points[0].x, points[0].y);
+                                ctx.lineTo(points[1].x, points[1].y);
+                                ctx.lineTo(points[2].x, points[2].y);
+                                ctx.lineTo(points[3].x, points[3].y);
+                                ctx.closePath();
+
+                                if (section.fillingType === 'louver') {
+                                    var offset = 40;
+                                    for (var i = 0; i < this.height() / offset; i++) {
+                                        var crossing = model.getLineCrossingY(i * offset, { x: points[0].x, y: points[0].y }, { x: points[1].x, y: points[1].y });
+                                        if ( points[0].y < points[1].y && crossing > 0 ) {
+                                            ctx.moveTo(0, i * offset);
+                                            ctx.lineTo(( (this.width() < crossing) ? this.width() : crossing ), i * offset);
+                                        } else if ( points[0].y > points[1].y && crossing < this.width() ) {
+                                            ctx.moveTo(( (crossing > 0) ? crossing : 0 ), i * offset);
+                                            ctx.lineTo(this.width(), i * offset);
+                                        }
+                                    }
+                                }
+                                ctx.fillStrokeShape(this);
+                            }
+                        };
                     }
-                };
+                }
 
                 // Draw filling
                 filling = new Konva.Shape(opts);
@@ -1571,6 +2083,7 @@ var app = app || {};
             var _from;
             var _to;
             var tbar;
+            var heights = model.getTrapezoidHeights();
 
             for (var i = 0; i < vBarCount; i++) {
                 data = section.bars.vertical[i];
@@ -1593,6 +2106,10 @@ var app = app || {};
 
                 _to += fillY;
 
+                if ( section.trapezoid && section.trapezoid.glass ) {
+                    _from = model.getLineCrossingX(space, section.trapezoid.glass[0], section.trapezoid.glass[1]);
+                }
+
                 bar = new Konva.Rect({
                     x: fillX + space - (glazing_bar_width / 2),
                     y: _from,
@@ -1601,8 +2118,15 @@ var app = app || {};
                     fill: style.normal.fill,
                     listening: false
                 });
+
                 group.add(bar);
             }
+
+            var corners = model.getMainTrapezoidInnerCorners();
+            var glassCrossing = {
+                left: model.getLineCrossingX(section.glassParams.x, corners.left, corners.right),
+                right: model.getLineCrossingX(section.glassParams.x + section.glassParams.width, corners.left, corners.right)
+            };
 
             for (i = 0; i < hBarCount; i++) {
                 data = section.bars.horizontal[i];
@@ -1625,15 +2149,37 @@ var app = app || {};
 
                 _to += fillX;
 
+                var crossing = model.getTrapezoidCrossing({
+                    x: _from + section.glassParams.x,
+                    y: space + section.glassParams.y
+                }, {
+                    x: _to + section.glassParams.x,
+                    y: space + section.glassParams.y
+                });
+
+                if (crossing) {
+                    if (heights.left > heights.right) {
+                        _to = crossing.x - section.glassParams.x;
+                    } else {
+                        _from = crossing.x - section.glassParams.x;
+                    }
+                }
+
+                var barPositionY = fillY + space - (glazing_bar_width / 2);
+
                 bar = new Konva.Rect({
                     x: _from,
-                    y: fillY + space - (glazing_bar_width / 2),
+                    y: barPositionY,
                     width: _to - _from,
                     height: glazing_bar_width,
                     fill: style.normal.fill,
                     listening: false
                 });
-                group.add(bar);
+
+                if ( barPositionY > glassCrossing.left || barPositionY > glassCrossing.right ) {
+                    group.add(bar);
+                }
+
             }
 
             return group;
@@ -1644,8 +2190,15 @@ var app = app || {};
         createSelectionShape: function (section, params) {
             var fillX = params.x;
             var fillY = params.y;
-            var fillWidth = params.width;
-            var fillHeight = params.height;
+            // var fillWidth = params.width;
+            // var fillHeight = params.height;
+            var fillWidth = section.glassParams.width;
+            var fillHeight = section.glassParams.height;
+            var wrapper = params.wrapper;
+            var crossing = {
+                left: model.getTrapezoidCrossing({ x: wrapper.x, y: wrapper.y }, { x: wrapper.x, y: wrapper.y + fillHeight }),
+                right: model.getTrapezoidCrossing({ x: wrapper.x + fillWidth, y: wrapper.y }, { x: wrapper.x + fillWidth, y: wrapper.y + fillHeight })
+            };
             var style = module.getStyle('selection');
 
             var group = new Konva.Group({
@@ -1688,12 +2241,70 @@ var app = app || {};
                     fill: style.fill
                 });
             } else {
-                // usual rect
-                shape = new Konva.Rect({
-                    width: section.sashParams.width,
-                    height: section.sashParams.height,
-                    fill: style.fill
-                });
+                if ( !crossing.left && !crossing.right ) {
+
+                    shape = new Konva.Rect({
+                        width: section.sashParams.width,
+                        height: section.sashParams.height,
+                        fill: style.fill
+                    });
+                } else {
+                    if (section.sashType === 'fixed_in_frame') {
+                        var points;
+                        if (section.trapezoid && section.trapezoid.glass) {
+                            points = [
+                                section.trapezoid.glass[0].x, section.trapezoid.glass[0].y,
+                                section.trapezoid.glass[1].x, section.trapezoid.glass[1].y,
+                                section.trapezoid.glass[2].x, section.trapezoid.glass[2].y,
+                                section.trapezoid.glass[3].x, section.trapezoid.glass[3].y
+
+                            ];
+                        } else {
+                            points = [
+                                0, crossing.left.y - wrapper.y,
+                                fillWidth, crossing.right.y - wrapper.y,
+                                fillWidth, fillHeight,
+                                0, fillHeight
+                            ];
+                        }
+                        shape = new Konva.Line({
+                            points: points,
+                            fill: style.fill,
+                            closed : true
+                        });
+                    } else {
+                        var frameWidth = model.profile.get('frame_width');
+                        var innerCorners = model.getMainTrapezoidInnerCorners();
+
+                        var crossing = {
+                            left: model.getLineCrossingX(wrapper.x, {
+                                x: innerCorners.left.x,
+                                y: innerCorners.left.y - frameWidth
+                            }, {
+                                x: innerCorners.right.x,
+                                y: innerCorners.right.y - frameWidth
+                            }),
+                            right: model.getLineCrossingX(wrapper.x + section.sashParams.width, {
+                                x: innerCorners.left.x,
+                                y: innerCorners.left.y - frameWidth
+                            }, {
+                                x: innerCorners.right.x,
+                                y: innerCorners.right.y - frameWidth
+                            })
+                        };
+
+                        shape = new Konva.Line({
+                            points: [
+                                0, crossing.left,
+                                section.sashParams.width, crossing.right,
+                                section.sashParams.width, section.sashParams.height,
+                                0, section.sashParams.height
+                            ],
+                            fill: style.fill,
+                            closed : true
+                        });
+                    }
+                }
             }
 
             group.add( shape );

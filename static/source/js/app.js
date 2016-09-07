@@ -5,10 +5,22 @@ window.ENTER_KEY = 13;
 $(function () {
     'use strict';
 
+    // Fix bug with empty json response
+    $.ajaxSetup({
+        dataFilter: function (rawData, type) {
+            if (rawData) {
+                return rawData;
+            }
+
+            if (type === 'json') {
+                return null;
+            }
+        }
+    });
+
     app.App = new Marionette.Application();
 
     app.App.on('start', function () {
-
         //  Register a communication channel for all events in the app
         app.vent = {};
         _.extend(app.vent, Backbone.Events);
@@ -30,7 +42,7 @@ $(function () {
                 path: 'dashboard',
                 icon_name: 'dashboard',
                 onShow: function () {
-                    app.main_region.show(new app.MainDashboardView())
+                    app.main_region.show(new app.MainDashboardView());
                 }
             },
             units_table: {
@@ -85,7 +97,6 @@ $(function () {
                 app.router.navigate('/units/', { trigger: true });
             }
         });
-
     });
 
     app.App.start();

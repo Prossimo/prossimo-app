@@ -15,58 +15,55 @@ var app = app || {};
         ui: {
             $content: '#project-info-content',
             $edit_button: '.toggle-edit-mode'
-
         },
         events: {
             'click @ui.$edit_button': 'toggleEditMode'
         },
-        toggleEditMode: function() {
-            var editMode = this.state.get('editMode');
-            if(editMode) {
+        toggleEditMode: function () {
+            if (this.editMode) {
                 this.saveFormData();
             }
-            this.state.set('editMode', !editMode);
+
+            this.editMode = !this.editMode;
+            this.render();
         },
-        initialize: function() {
-            this.state = new Backbone.Model();
-            this.state.set('editMode', false);
-            this.state.on('change:editMode', this.render);
-            this.model.on('change', function(){
-                this.model.save();
-            }.bind(this))
-        },
-        enterMode: function() {
-            if(this.state.get('editMode')) {
+        enterMode: function () {
+            if (this.editMode) {
                 this.enterEditMode();
             } else {
                 this.enterViewMode();
             }
         },
-        onRender: function() {
-            this.enterMode();
-        },
-        enterViewMode: function() {
+        enterViewMode: function () {
+            this.ui.$content.find('.date').datepicker('destroy');
             this.ui.$content.html(this.viewTemplate(this.model.toJSON()));
         },
-        enterEditMode: function() {
+        enterEditMode: function () {
             this.ui.$content.html(this.editTemplate(this.model.toJSON()));
             this.ui.$content.find('.date').datepicker({
-              // defaultViewDate: {
-              //   year: new Date().getFullYear()
-              // },
-              format: 'd MM, yyyy'
+                format: 'd MM, yyyy'
             });
         },
         serializeData: function () {
-            return $.extend({}, this.model.toJSON(), {state:this.state.toJSON()});
+            return _.extend({}, this.model.toJSON(), {editMode: this.editMode});
         },
         saveFormData: function () {
             var modelData = {};
-            $.map(this.$el.find('.form-horizontal').serializeArray(), function(item){
+
+            _.map(this.$el.find('.form-horizontal').serializeArray(), function (item) {
                 modelData[item.name] = item.value;
             });
 
-            this.model.set(modelData);
+            this.model.persist(modelData, { wait: true, success: this.enterViewMode.bind(this) });
+        },
+        initialize: function () {
+            this.editMode = false;
+        },
+        onRender: function () {
+            this.enterMode();
+        },
+        onDestroy: function () {
+            this.ui.$content.find('.date').datepicker('destroy');
         }
     });
 })();
