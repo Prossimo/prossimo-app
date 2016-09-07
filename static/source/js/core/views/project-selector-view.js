@@ -26,6 +26,10 @@ var app = app || {};
         fetchData: function () {
             this.fetchProjectList();
         },
+        setNewProjectName: function (project) {
+            this.ui.$select.find('option[value="' + project.id + '"]').text(project.get('project_name'));
+            this.ui.$select.selectpicker('refresh');
+        },
         fetchProjectList: function () {
             var self = this;
 
@@ -110,6 +114,7 @@ var app = app || {};
                     }, self);
                 }
 
+                self.listenTo(app.current_project, 'change:project_name', self.setNewProjectName);
                 self.render();
             });
         },

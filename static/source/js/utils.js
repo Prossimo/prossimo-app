@@ -87,6 +87,18 @@ var app = app || {};
 
                 return (value_feet ? value_feet + '′−' : '' ) + value_inches + '″';
             },
+            dimension_heights: function (value, decimal_format, inches_display_mode, zero_inch_display_mode) {
+                var result;
+                var heights = value.toString().split('/');
+                if (heights.length > 1) {
+                    result = this.dimension(heights[0], decimal_format, inches_display_mode, zero_inch_display_mode);
+                    result += ' / ';
+                    result += this.dimension(heights[1], decimal_format, inches_display_mode, zero_inch_display_mode);
+                } else {
+                    result = this.dimension(value, decimal_format, inches_display_mode, zero_inch_display_mode);
+                }
+                return result;
+            },
             dimensions: function (width, height, decimal_format, inches_display_mode) {
                 return this.dimension(width, decimal_format, inches_display_mode) +
                     ' x ' + this.dimension(height, decimal_format, inches_display_mode);
@@ -135,6 +147,11 @@ var app = app || {};
                 }
 
                 return result;
+            },
+            fixed_heights: function (value, num) {
+                return (typeof value === 'number')
+                    ? this.fixed_minimal(value, num)
+                    : this.fixed_minimal(value[0], num) + ' / ' + this.fixed_minimal(value[1], num);
             },
             square_feet: function (value, num, format) {
                 format = (format && _.indexOf(['normal', 'sup'], format) !== -1) ?
@@ -236,7 +253,6 @@ var app = app || {};
                         height: height
                     };
                 }
-
                 return result;
             },
             percent: function (string) {
