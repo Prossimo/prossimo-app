@@ -30,32 +30,14 @@ var app = app || {};
 
         { name: 'position', title: 'Position', type: 'number' },
         { name: 'unit_options', title: 'Unit Options', type: 'array' },
-        { name: 'root_section', title: 'Root Section', type: 'object' },
-
-        //  README: the following properties are deprecated in favor of the
-        //  new Unit Options system. We are going to remove them soon
-        { name: 'glazing_bar_type', title: 'Muntin (Glazing Bar) Type', type: 'string' },
-        { name: 'internal_color', title: 'Color Interior', type: 'string' },
-        { name: 'external_color', title: 'Color Exterior', type: 'string' },
-        { name: 'interior_handle', title: 'Interior Handle', type: 'string' },
-        { name: 'exterior_handle', title: 'Exterior Handle', type: 'string' },
-        { name: 'hardware_type', title: 'Hardware Type', type: 'string' },
-        { name: 'lock_mechanism', title: 'Lock Mechanism', type: 'string' },
-        { name: 'glazing_bead', title: 'Glazing Bead', type: 'string' },
-        { name: 'gasket_color', title: 'Gasket Color', type: 'string' },
-        { name: 'hinge_style', title: 'Hinge Style', type: 'string' },
-        { name: 'internal_sill', title: 'Internal Sill', type: 'string' },
-        { name: 'external_sill', title: 'External Sill', type: 'string' }
+        { name: 'root_section', title: 'Root Section', type: 'object' }
     ];
 
-    //  TODO: remove all of this
-    //  We only enable those for editing on units where `isDoorType` is `true`
-    var DOOR_ONLY_PROPERTIES = ['exterior_handle', 'lock_mechanism'];
-    //  Same as above, for `hasOperableSections`
-    var OPERABLE_ONLY_PROPERTIES = ['interior_handle', 'exterior_handle', 'hardware_type',
-        'hinge_style', 'opening_direction'];
+    //  We only allow editing these attributes for units where
+    //  `hasOperableSections` is `true`
+    var OPERABLE_ONLY_PROPERTIES = ['opening_direction'];
     //  Same as above, for `hasGlazingBars`
-    var GLAZING_BAR_PROPERTIES = ['glazing_bar_type', 'glazing_bar_width'];
+    var GLAZING_BAR_PROPERTIES = ['glazing_bar_width'];
 
     var SASH_TYPES = [
         'tilt_turn_left', 'tilt_turn_right', 'fixed_in_frame', 'tilt_only',
@@ -209,13 +191,6 @@ var app = app || {};
             };
 
             if ( app.settings ) {
-                name_value_hash.internal_color = app.settings.getColors()[0];
-                name_value_hash.external_color = app.settings.getColors()[0];
-                name_value_hash.interior_handle = app.settings.getInteriorHandleTypes()[0];
-                name_value_hash.glazing_bead = app.settings.getGlazingBeadTypes()[0];
-                name_value_hash.gasket_color = app.settings.getGasketColors()[0];
-                name_value_hash.hinge_style = app.settings.getHingeTypes()[0];
-                name_value_hash.glazing_bar_type = app.settings.getGlazingBarTypes()[0];
                 name_value_hash.glazing_bar_width = app.settings.getGlazingBarWidths()[0];
                 name_value_hash.opening_direction = app.settings.getOpeningDirections()[0];
                 name_value_hash.glazing = app.settings.getAvailableFillingTypeNames()[0];
@@ -645,9 +620,6 @@ var app = app || {};
             }
 
             return is_door_type;
-        },
-        isDoorOnlyAttribute: function (attribute_name) {
-            return _.indexOf(DOOR_ONLY_PROPERTIES, attribute_name) !== -1;
         },
         isOpeningDirectionOutward: function () {
             return this.get('opening_direction') === 'Outward';

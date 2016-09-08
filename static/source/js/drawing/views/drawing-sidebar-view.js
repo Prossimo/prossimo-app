@@ -136,14 +136,6 @@ var app = app || {};
             var project_settings = app.settings.getProjectSettings();
             var active_unit;
 
-            //  TODO: remove deprecated properties
-            // var relevant_properties = [
-            //     'mark', 'width', 'height', 'description', 'notes',
-            //     'internal_color', 'external_color', 'gasket_color', 'uw',
-            //     'glazing', 'hinge_style', 'opening_direction', 'internal_sill',
-            //     'external_sill', 'glazing_bar_type', 'glazing_bar_width'
-            // ];
-
             var relevant_properties = [
                 'mark', 'width', 'height', 'description', 'notes', 'exceptions',
                 'uw', 'glazing', 'opening_direction', 'glazing_bar_width'

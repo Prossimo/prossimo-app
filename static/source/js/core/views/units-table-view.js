@@ -50,15 +50,6 @@ var app = app || {};
                 specs: {
                     title: 'Specs',
                     collection: this.collection,
-                    //  TODO: remove all the deprecated unit properties
-                    // columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing',
-                    //     'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'description',
-                    //     'notes', 'exceptions', 'profile_id', 'system', 'external_color',
-                    //     'internal_color', 'interior_handle', 'exterior_handle', 'hardware_type',
-                    //     'lock_mechanism', 'glazing_bead', 'gasket_color',
-                    //     'hinge_style', 'opening_direction', 'threshold',
-                    //     'internal_sill', 'external_sill', 'glazing', 'glazing_bar_type', 'glazing_bar_width',
-                    //     'uw', 'u_value']
                     columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing',
                         'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'description',
                         'notes', 'exceptions', 'profile_id', 'system', 'opening_direction', 'threshold',
@@ -519,7 +510,6 @@ var app = app || {};
 
             return validator;
         },
-        //  TODO: remove deprecated properties?
         getColumnExtraProperties: function (column_name) {
             var project_settings = app.settings.getProjectSettings();
             var properties_obj = {};
@@ -639,64 +629,15 @@ var app = app || {};
                     readOnly: true,
                     renderer: app.hot_renderers.moveItemRenderer
                 },
-                internal_color: {
-                    type: 'dropdown',
-                    source: _.union(
-                        app.settings.getColors(),
-                        this.getActiveTab().collection.pluck('internal_color')
-                    ).sort()
-                },
-                external_color: {
-                    type: 'dropdown',
-                    source: _.union(
-                        app.settings.getColors(),
-                        this.getActiveTab().collection.pluck('external_color')
-                    ).sort()
-                },
-                interior_handle: {
-                    type: 'dropdown',
-                    source: _.union(
-                        app.settings.getInteriorHandleTypes(),
-                        this.getActiveTab().collection.pluck('interior_handle')
-                    ).sort()
-                },
-                hinge_style: {
-                    type: 'dropdown',
-                    source: _.union(
-                        app.settings.getHingeTypes(),
-                        this.getActiveTab().collection.pluck('hinge_style')
-                    ).sort()
-                },
-                glazing_bead: {
-                    type: 'dropdown',
-                    source: _.union(
-                        app.settings.getGlazingBeadTypes(),
-                        this.getActiveTab().collection.pluck('glazing_bead')
-                    ).sort()
-                },
                 glazing: {
                     type: 'dropdown',
                     source: app.settings.getAvailableFillingTypeNames()
-                },
-                glazing_bar_type: {
-                    type: 'dropdown',
-                    source: _.union(
-                        app.settings.getGlazingBarTypes(),
-                        this.getActiveTab().collection.pluck('glazing_bar_type')
-                    ).sort()
                 },
                 glazing_bar_width: {
                     type: 'dropdown',
                     source: app.settings.getGlazingBarWidths().map(function (item) {
                         return item.toString();
                     })
-                },
-                gasket_color: {
-                    type: 'dropdown',
-                    source: _.union(
-                        app.settings.getGasketColors(),
-                        this.getActiveTab().collection.pluck('gasket_color')
-                    ).sort()
                 },
                 opening_direction: {
                     type: 'dropdown',
@@ -759,13 +700,8 @@ var app = app || {};
                 var item = this.instance.getSourceData().at(row);
                 var property = self.getActiveTab().columns[col];
 
-                //  TODO: first two conditions are to be removed?
                 if ( item && item instanceof app.Unit ) {
-                    //  Gray out attrs that don't apply to the current unit
-                    if ( item.isDoorOnlyAttribute(property) && !item.isDoorType() ) {
-                        cell_properties.readOnly = true;
-                        cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer('(Doors Only)');
-                    } else if ( item.isOperableOnlyAttribute(property) && !item.hasOperableSections() ) {
+                    if ( item.isOperableOnlyAttribute(property) && !item.hasOperableSections() ) {
                         cell_properties.readOnly = true;
                         cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer('(Operable Only)');
                     } else if ( item.isGlazingBarProperty(property) && !item.hasGlazingBars() ) {
@@ -882,11 +818,8 @@ var app = app || {};
                 rough_opening: 'Rough Opening',
                 customer_image: 'Customer Img.',
                 system: 'System',
-                external_color: 'Color Ext.',
-                internal_color: 'Color Int.',
                 opening_direction: 'Opening Dir.',
                 threshold: 'Threshold',
-                glazing_bar_type: 'Muntin Type',
                 glazing_bar_width: 'Muntin Width',
                 u_value: 'U Value',
                 move_item: 'Move',
@@ -943,20 +876,8 @@ var app = app || {};
                 exceptions: 240,
                 profile_id: 200,
                 system: 200,
-                external_color: 100,
-                internal_color: 100,
-                interior_handle: 160,
-                exterior_handle: 160,
-                hardware_type: 120,
-                lock_mechanism: 120,
-                glazing_bead: 100,
-                gasket_color: 100,
-                hinge_style: 280,
                 opening_direction: 110,
-                internal_sill: 100,
-                external_sill: 100,
                 glazing: 300,
-                glazing_bar_type: 140,
                 glazing_bar_width: 100,
                 original_cost: 100,
                 unit_cost: 100,

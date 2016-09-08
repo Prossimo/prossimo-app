@@ -90,18 +90,11 @@ var app = app || {};
             //  This is the list of params that we want to see in the quote. We
             //  throw out attributes that don't apply to the current unit
             var params_list = _.filter(
-                //  TODO: remove deprecated properties
-                // ['rough_opening', 'internal_color', 'external_color',
-                // 'interior_handle', 'exterior_handle', 'description', 'hardware_type',
-                // 'lock_mechanism', 'glazing_bead', 'gasket_color', 'hinge_style',
-                // 'opening_direction', 'internal_sill', 'external_sill', 'glazing_bar_type', 'glazing_bar_width'],
                 ['rough_opening', 'description', 'opening_direction', 'glazing_bar_width'],
             function (param) {
                 var condition = true;
 
-                if ( this.model.isDoorOnlyAttribute(param) && !this.model.isDoorType() ) {
-                    condition = false;
-                } else if ( this.model.isOperableOnlyAttribute(param) && !this.model.hasOperableSections() ) {
+                if ( this.model.isOperableOnlyAttribute(param) && !this.model.hasOperableSections() ) {
                     condition = false;
                 } else if ( this.model.isGlazingBarProperty(param) && !this.model.hasGlazingBars() ) {
                     condition = false;
@@ -206,7 +199,6 @@ var app = app || {};
                 threshold: 'Threshold',
                 u_value: 'U Value'
             }, _.pick({
-                glazing_bar_type: 'Muntin Type',
                 glazing_bar_width: 'Muntin Width'
             }, function (new_title, property_to_override) {
                 return _.contains(_.pluck(source_hash, 'name'), property_to_override);
@@ -228,7 +220,6 @@ var app = app || {};
                         c.inches_to_mm(this.model.getRoughOpeningHeight())) :
                     f.dimensions(this.model.getRoughOpeningWidth(), this.model.getRoughOpeningHeight(),
                         null, project_settings.get('inches_display_mode') || null),
-                glazing_bar_type: this.model.hasGlazingBars() ? this.model.get('glazing_bar_type') : false,
                 glazing_bar_width: this.model.hasGlazingBars() ?
                     (
                         this.options.show_sizes_in_mm ? f.dimension_mm(this.model.get('glazing_bar_width')) :
