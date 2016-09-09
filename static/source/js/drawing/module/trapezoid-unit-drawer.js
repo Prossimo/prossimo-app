@@ -1196,7 +1196,7 @@ var app = app || {};
             return group;
         },
         drawSlideDirection: function (sectionData, /*Konva.Group*/group) {
-            if (['slide_left', 'slide_right'].indexOf(sectionData.sashType) !== -1) {
+            if (['slide_left', 'slide_right'].indexOf(sectionData.sashType) === -1) {
                 return group;
             }
 
@@ -1239,7 +1239,7 @@ var app = app || {};
             return group;
         },
         drawTiltSlideDirection: function (sectionData, /*Konva.Group*/group) {
-            if (['tilt_slide_left', 'tilt_slide_right'].indexOf(sectionData.sashType) !== -1) {
+            if (['tilt_slide_left', 'tilt_slide_right'].indexOf(sectionData.sashType) === -1) {
                 return group;
             }
 
