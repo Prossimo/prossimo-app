@@ -4,12 +4,12 @@ var app = app || {};
     'use strict';
 
     var BASE_TYPES = [
-        { name: 'glass', title: 'Glass' },
-        { name: 'recessed', title: 'Recessed' },
-        { name: 'interior-flush-panel', title: 'Interior Flush Panel' },
-        { name: 'exterior-flush-panel', title: 'Exterior Flush Panel' },
-        { name: 'full-flush-panel', title: 'Full Flush Panel' },
-        { name: 'louver', title: 'Louver' }
+        { name: 'glass', title: 'Glass', weight: 0.2 },
+        { name: 'recessed', title: 'Recessed', weight: 1.3 },
+        { name: 'interior-flush-panel', title: 'Interior Flush Panel', weight: 0.4 },
+        { name: 'exterior-flush-panel', title: 'Exterior Flush Panel', weight: 0.5 },
+        { name: 'full-flush-panel', title: 'Full Flush Panel', weight: 0.6 },
+        { name: 'louver', title: 'Louver', weight: 0.7 }
     ];
 
     var FILLING_TYPE_PROPERTIES = [
@@ -17,7 +17,8 @@ var app = app || {};
         { name: 'supplier_name', title: 'Supplier Name', type: 'string' },
         { name: 'type', title: 'Type', type: 'string' },
         { name: 'is_base_type', title: 'Is Base Type', type: 'boolean' },
-        { name: 'position', title: 'Position', type: 'number' }
+        { name: 'position', title: 'Position', type: 'number' },
+        { name: 'weight', title: 'Weight (kg/m2)', type: 'float' }
     ];
 
     app.FillingType = Backbone.Model.extend({

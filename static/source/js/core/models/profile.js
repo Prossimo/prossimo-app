@@ -29,7 +29,8 @@ var app = app || {};
         { name: 'low_threshold', title: 'Low Threshold', type: 'boolean' },
         { name: 'frame_u_value', title: 'Frame U Value', type: 'number' },
         { name: 'spacer_thermal_bridge_value', title: 'Spacer Thermal Bridge Value', type: 'number' },
-        { name: 'position', title: 'Position', type: 'number' }
+        { name: 'position', title: 'Position', type: 'number' },
+        { name: 'weight', title: 'Weight (kg/m2)', type: 'float' }
     ];
 
     function getDefaultPricingGrids() {
@@ -96,6 +97,11 @@ var app = app || {};
 
             if ( _.indexOf(_.keys(name_value_hash), name) !== -1 ) {
                 default_value = name_value_hash[name];
+            }
+
+            // remove when weight add to backend
+            if (name === 'weight') {
+                default_value = 1;
             }
 
             return default_value;

@@ -1316,6 +1316,7 @@ var app = app || {};
 
             if ( current_root.sections.length === 0 ) {
                 result.glasses.push({
+                    type: current_root.fillingType,
                     width: current_root.glassParams.width,
                     height: current_root.glassParams.height
                 });
@@ -1370,6 +1371,14 @@ var app = app || {};
         //  These values could be used as a base to calculate estimated
         //  cost of options for the unit
         getLinearAndAreaStats: function () {
+
+            var fillingWeight = {};
+            app.settings.filling_types.each(function (filling) {
+                fillingWeight[filling.get('type')] = filling.get('weight');
+            });
+
+            var profileWeight = this.profile.get('weight');
+
             var sizes = this.getSizes();
             var result = {
                 frame: {
@@ -1386,7 +1395,8 @@ var app = app || {};
                 },
                 glasses: {
                     area: 0,
-                    area_both_sides: 0
+                    area_both_sides: 0,
+                    weight: 0
                 },
                 openings: {
                     area: 0
@@ -1406,7 +1416,8 @@ var app = app || {};
                     linear: 0,
                     linear_without_intersections: 0,
                     area: 0,
-                    area_both_sides: 0
+                    area_both_sides: 0,
+                    weight: 0
                 }
             };
 
@@ -1475,8 +1486,10 @@ var app = app || {};
             });
 
             _.each(sizes.glasses, function (glass) {
-                result.glasses.area += getArea(glass.width, glass.height);
+                var area = getArea(glass.width, glass.height);
+                result.glasses.area += area;
                 result.glasses.area_both_sides += getArea(glass.width, glass.height) * 2;
+                result.glasses.weight += area * fillingWeight[glass.type];
             });
 
             result.profile_total.linear = result.frame.linear + result.sashes.linear + result.mullions.linear;
@@ -1484,6 +1497,7 @@ var app = app || {};
                 result.sashes.linear_without_intersections + result.mullions.linear;
             result.profile_total.area = result.frame.area + result.sashes.area + result.mullions.area;
             result.profile_total.area_both_sides = result.profile_total.area * 2;
+            result.profile_total.weight = result.profile_total.linear * profileWeight;
 
             return result;
         },

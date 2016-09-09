@@ -300,7 +300,8 @@ var app = app || {};
                     linear: 'Total Linear',
                     linear_without_intersections: 'Total Linear (Without Intersections)',
                     area: 'Total Area',
-                    area_both_sides: 'Total Area (Both Sides)'
+                    area_both_sides: 'Total Area (Both Sides)',
+                    weight: 'Total Weight'
                 };
                 var data_groups = _.keys(group_titles);
                 var group_data = {};
@@ -312,11 +313,19 @@ var app = app || {};
                         if ( item[group_name] ) {
                             group_data[group_name] = group_data[group_name] || [];
 
+                            var value;
+                            if (group_name.indexOf('linear') !== -1) {
+                                value = f.dimension_mm(item[group_name]);
+                            } else if (group_name === 'weight') {
+                                value = f.weight(item[group_name]);
+                            } else {
+                                value = f.square_meters(item[group_name]);
+                            }
+
                             group_data[group_name].push({
                                 key: key,
                                 title: titles[key],
-                                value: group_name.indexOf('linear') !== -1 ?
-                                    f.dimension_mm(item[group_name]) : f.square_meters(item[group_name]),
+                                value: value,
                                 is_total: key === 'profile_total'
                             });
 

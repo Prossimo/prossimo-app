@@ -53,6 +53,7 @@ var app = app || {};
                 base_types.push(new app.FillingType({
                     name: item.title,
                     type: item.name,
+                    weight: item.weight,
                     is_base_type: true,
                     no_backend: true
                 }));
