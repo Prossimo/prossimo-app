@@ -259,6 +259,7 @@ var app = app || {};
             var getters_hash = {
                 height: function (model) {
                     var trapezoidHeights = model.get('root_section').trapezoidHeights;
+
                     return (trapezoidHeights) ? trapezoidHeights[0] + ' / ' + trapezoidHeights[1] : model.get('height');
                 },
                 width_mm: function (model) {
@@ -266,12 +267,14 @@ var app = app || {};
                 },
                 height_mm: function (model) {
                     var trapezoidHeights = model.get('root_section').trapezoidHeights;
+
                     if (trapezoidHeights) {
                         trapezoidHeights = [
                             app.utils.convert.inches_to_mm(trapezoidHeights[0]),
                             app.utils.convert.inches_to_mm(trapezoidHeights[1])
                         ];
                     }
+
                     return trapezoidHeights || model.getHeightMM();
                 },
                 dimensions: function (model) {
@@ -366,23 +369,29 @@ var app = app || {};
                     return p.dimensions((+val > 10) ? +val : 10, 'width');
                 },
                 height: function (attr_name, val, model) {
-                    var height, rootSection;
+                    var height;
+                    var rootSection;
 
                     if (model) {
                         rootSection = model.get('root_section');
                     }
+
                     var heights = val.split('/');
+
                     if (heights.length < 2) {
                         height = p.dimensions((+val > 10) ? +val : 10, 'height');
+
                         if (rootSection) {
                             rootSection.trapezoidHeights = false;
                         }
                     } else {
                         heights = [(+heights[0] > 10) ? +heights[0] : 10, (+heights[1] > 10) ? +heights[1] : 10];
+
                         if (heights[0] === heights[1]) {
                             if (rootSection) {
                                 rootSection.trapezoidHeights = false;
                             }
+
                             height = heights[0];
                         } else {
                             if (rootSection) {
@@ -398,13 +407,17 @@ var app = app || {};
 
                                 model.checkHorizontalSplit(rootSection, params);
                             }
+
                             height = (heights[0] > heights[1]) ? heights[0] : heights[1];
                         }
+
                         height = p.dimensions(height, 'height');
                     }
+
                     if (rootSection) {
                         model.set('root_section', rootSection);
                     }
+
                     return height;
                 },
                 glazing_bar_width: function (attr_name, val) {
