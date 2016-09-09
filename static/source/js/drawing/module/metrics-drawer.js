@@ -381,8 +381,10 @@ var app = app || {};
                                 x: -metricSize,
                                 y: mullion.offset * ratio
                             };
+
                             if (model.isTrapezoid()) {
                                 var heights = model.getTrapezoidHeights();
+
                                 if (heights.right > heights.left) {
                                     position.x = width;
                                 }
@@ -700,6 +702,7 @@ var app = app || {};
 
                         if (model.isTrapezoid()) {
                             var heights = model.getTrapezoidHeights();
+
                             if (heights.right > heights.left) {
                                 position.x = width;
                             }
@@ -764,6 +767,7 @@ var app = app || {};
 
                     if ( invertedType === 'vertical' && model.isTrapezoid() ) {
                         var heights = model.getTrapezoidHeights();
+
                         if (heights.right > heights.left) {
                             params.position.x = width;
                         }
@@ -954,9 +958,12 @@ var app = app || {};
             var verticalWholeMertic = this.createVerticalMetric(metricSize, vHeight, {
                 setter: function (val) {
                     val -= vCorrection.size;
-                    (model.isTrapezoid())
-                        ? model.updateTrapezoidHeights('max', val)
-                        : model.updateDimension('height', val, 'mm');
+
+                    if (model.isTrapezoid()) {
+                        model.updateTrapezoidHeights('max', val);
+                    } else {
+                        model.updateDimension('height', val, 'mm');
+                    }
                 },
                 getter: function () {
                     return model.getInMetric('height', 'mm') + vCorrection.size;
@@ -971,6 +978,7 @@ var app = app || {};
                 var heights = model.getTrapezoidHeights();
                 var minHeight = (heights.right > heights.left) ? heights.left : heights.right;
                 var maxHeight = (heights.right < heights.left) ? heights.left : heights.right;
+
                 if (heights.right > heights.left) {
                     vPosition.x = metricSize * rows.horizontal + width;
                 }
@@ -990,6 +998,7 @@ var app = app || {};
                     x: (heights.right > heights.left) ? -metricSize : width,
                     y: ( vCorrection.pos + maxHeight - minHeight ) * ratio
                 };
+
                 secondVerticalWholeMertic.position(secondVerticalPosition);
                 group.add(secondVerticalWholeMertic);
 
@@ -1004,6 +1013,7 @@ var app = app || {};
                         return maxHeight - minHeight + vCorrection.size;
                     }
                 });
+
                 secondVerticalPosition.y = 0 + (vCorrection.pos * ratio);
                 thirdVerticalWholeMertic.position(secondVerticalPosition);
                 group.add(thirdVerticalWholeMertic);
