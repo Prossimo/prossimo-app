@@ -1371,13 +1371,12 @@ var app = app || {};
         //  These values could be used as a base to calculate estimated
         //  cost of options for the unit
         getLinearAndAreaStats: function () {
-
+            var profileWeight = this.profile.get('weight_per_length');
             var fillingWeight = {};
-            app.settings.filling_types.each(function (filling) {
-                fillingWeight[filling.get('type')] = filling.get('weight');
-            });
 
-            var profileWeight = this.profile.get('weight');
+            app.settings.filling_types.each(function (filling) {
+                fillingWeight[filling.get('type')] = filling.get('weight_per_area');
+            });
 
             var sizes = this.getSizes();
             var result = {
@@ -1487,6 +1486,7 @@ var app = app || {};
 
             _.each(sizes.glasses, function (glass) {
                 var area = getArea(glass.width, glass.height);
+
                 result.glasses.area += area;
                 result.glasses.area_both_sides += getArea(glass.width, glass.height) * 2;
                 result.glasses.weight += area * fillingWeight[glass.type];

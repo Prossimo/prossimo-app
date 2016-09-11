@@ -39,7 +39,7 @@ var app = app || {};
             this.table_update_timeout = null;
             this.dropdown_scroll_timer = null;
             this.columns = [
-                'move_item', 'name', 'supplier_name', 'type', 'weight'
+                'move_item', 'name', 'supplier_name', 'type', 'weight_per_area'
             ];
 
             this.undo_manager = new app.UndoManager({
@@ -235,7 +235,7 @@ var app = app || {};
                     if ( item.get('is_base_type') ) {
                         cell_properties.readOnly = true;
 
-                        if ( _.contains(['name', 'type', 'weight'], property) === false ) {
+                        if ( _.contains(['name', 'type'], property) === false ) {
                             cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
                         }
                     }
