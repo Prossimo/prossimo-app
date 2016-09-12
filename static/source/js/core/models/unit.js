@@ -194,6 +194,7 @@ var app = app || {};
             };
 
             var name_value_hash = {
+                height: '0',
                 original_currency: 'EUR',
                 conversion_rate: 0.9,
                 price_markup: 2.3,

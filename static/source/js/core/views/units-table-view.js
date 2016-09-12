@@ -179,9 +179,7 @@ var app = app || {};
         addNewUnit: function () {
             var new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
             var new_unit = new app.Unit({
-                position: new_position,
-                width: 10,
-                height: 10
+                position: new_position
             });
 
             this.collection.add(new_unit);
