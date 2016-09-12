@@ -90,6 +90,7 @@ var app = app || {};
             dimension_heights: function (value, decimal_format, inches_display_mode, zero_inch_display_mode) {
                 var result;
                 var heights = value.toString().split('|');
+
                 if (heights.length > 1) {
                     result = this.dimension(heights[0], decimal_format, inches_display_mode, zero_inch_display_mode);
                     result += ' | ';
@@ -254,6 +255,7 @@ var app = app || {};
                         height: height
                     };
                 }
+
                 return result;
             },
             percent: function (string) {
