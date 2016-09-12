@@ -259,7 +259,7 @@ var app = app || {};
             var getters_hash = {
                 height: function (model) {
                     var trapezoidHeights = model.get('root_section').trapezoidHeights;
-                    return (trapezoidHeights) ? trapezoidHeights[0] + ' / ' + trapezoidHeights[1] : model.get('height');
+                    return (trapezoidHeights) ? trapezoidHeights[0] + ' | ' + trapezoidHeights[1] : model.get('height');
                 },
                 width_mm: function (model) {
                     return model.getWidthMM();
@@ -363,7 +363,7 @@ var app = app || {};
                     return p.percent(val);
                 },
                 width: function (attr_name, val) {
-                    return p.dimensions((+val > 10) ? +val : 10, 'width');
+                    return p.dimensions(val, 'width');
                 },
                 height: function (attr_name, val, model) {
                     var height, rootSection;
@@ -371,14 +371,14 @@ var app = app || {};
                     if (model) {
                         rootSection = model.get('root_section');
                     }
-                    var heights = val.split('/');
+                    var heights = val.split('|');
                     if (heights.length < 2) {
-                        height = p.dimensions((+val > 10) ? +val : 10, 'height');
+                        height = p.dimensions(val, 'height');
                         if (rootSection) {
                             rootSection.trapezoidHeights = false;
                         }
                     } else {
-                        heights = [(+heights[0] > 10) ? +heights[0] : 10, (+heights[1] > 10) ? +heights[1] : 10];
+                        heights = [p.dimensions(heights[0], 'height'), p.dimensions(heights[1], 'height')];
                         if (heights[0] === heights[1]) {
                             if (rootSection) {
                                 rootSection.trapezoidHeights = false;
@@ -400,7 +400,6 @@ var app = app || {};
                             }
                             height = (heights[0] > heights[1]) ? heights[0] : heights[1];
                         }
-                        height = p.dimensions(height, 'height');
                     }
                     if (rootSection) {
                         model.set('root_section', rootSection);
