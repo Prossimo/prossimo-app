@@ -1820,7 +1820,8 @@ var app = app || {};
           return 34;
         },
         updateTrapezoidHeights: function (type, val) {
-            val  = app.utils.convert.mm_to_inches(val);
+            val = app.utils.parseFormat.dimensions(val, 'height');
+            val = app.utils.convert.mm_to_inches(val);
             if (this.isTrapezoid()) {
                 var height;
                 var rootSection = this.get('root_section');
