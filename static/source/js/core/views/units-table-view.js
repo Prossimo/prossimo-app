@@ -179,9 +179,7 @@ var app = app || {};
         addNewUnit: function () {
             var new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
             var new_unit = new app.Unit({
-                position: new_position,
-                width: 10,
-                height: 10
+                position: new_position
             });
 
             this.collection.add(new_unit);
@@ -259,6 +257,7 @@ var app = app || {};
             var getters_hash = {
                 height: function (model) {
                     var trapezoidHeights = model.get('root_section').trapezoidHeights;
+
                     return (trapezoidHeights) ? trapezoidHeights[0] + ' | ' + trapezoidHeights[1] : model.get('height');
                 },
                 width_mm: function (model) {
@@ -370,18 +369,21 @@ var app = app || {};
                 height: function (attr_name, val, model) {
                     var height;
                     var rootSection;
+                    var heights = val.split('|');
 
                     if (model) {
                         rootSection = model.get('root_section');
                     }
-                    var heights = val.split('|');
+
                     if (heights.length < 2) {
                         height = p.dimensions(val, 'height');
+
                         if (rootSection) {
                             rootSection.trapezoidHeights = false;
                         }
                     } else {
                         heights = [p.dimensions(heights[0], 'height'), p.dimensions(heights[1], 'height')];
+
                         if (heights[0] === heights[1]) {
                             if (rootSection) {
                                 rootSection.trapezoidHeights = false;
