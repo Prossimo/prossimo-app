@@ -1839,8 +1839,8 @@ var app = app || {};
             return 34;
         },
         updateTrapezoidHeights: function (type, val) {
+            val = app.utils.parseFormat.dimensions(val, 'height');
             val = app.utils.convert.mm_to_inches(val);
-
             if (this.isTrapezoid()) {
                 var height;
                 var rootSection = this.get('root_section');
@@ -1898,7 +1898,6 @@ var app = app || {};
                     var maxHeight = app.utils.convert.inches_to_mm(params.maxHeight);
                     var minHeight = app.utils.convert.inches_to_mm(params.minHeight);
                     var position = maxHeight - minHeight + 250;
-
                     rootSection.minPosition = rootSection.position = position;
                 }
             }
