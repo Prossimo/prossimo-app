@@ -194,7 +194,10 @@ var app = app || {};
                     height: frameOnScreenHeight
                 },
                 center: {
-                    x: Math.round(stage.width() / 2 - frameOnScreenWidth / 2 + ((isTrapezoid) ? metricSize / 2 : metricSize)) + 0.5,
+                    x: Math.round(
+                        stage.width() / 2 - frameOnScreenWidth / 2 +
+                        ((isTrapezoid) ? metricSize / 2 : metricSize)
+                    ) + 0.5,
                     y: topOffset
                 }
             };
