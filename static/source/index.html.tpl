@@ -6,6 +6,8 @@
     <meta name="api-base-path" value=@@api_base_path>
     <title>Prossimo App (current version: @@hash)</title>
 
+    <link rel="shortcut icon" href="/static/public/img/favicon.png">
+
     <link rel="stylesheet" href="/static/public/css/vendor.@@hash.min.css" media="all">
     <link rel="stylesheet" href="/static/public/css/styles.@@hash.css" media="all">
     <link rel="stylesheet" href="/static/public/css/print.@@hash.css" media="print">
