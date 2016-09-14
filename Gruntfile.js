@@ -381,7 +381,7 @@ module.exports = function (grunt) {
                         },
                         {
                             match: 'pdf_api_base_path',
-                            replacement: 'http://localhost:8080'
+                            replacement: '/print'
                         }
                     ]
                 },
@@ -406,6 +406,10 @@ module.exports = function (grunt) {
                         {
                             match: 'api_base_path',
                             replacement: '/api/api'
+                        },
+                        {
+                            match: 'pdf_api_base_path',
+                            replacement: '/print'
                         }
 
                     ]
