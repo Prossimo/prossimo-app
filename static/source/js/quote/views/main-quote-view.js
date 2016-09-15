@@ -18,10 +18,12 @@ var app = app || {};
         },
         getDownloadPdfUrl: function () {
             var url = app.settings.get('pdf_api_base_path');
+
             url += '/quote';
             url += '/' + app.current_project.get('id');
             url += '/' + app.current_project.get('project_name');
             url += '/' + window.localStorage.getItem('authToken');
+
             return url;
         },
         onRender: function () {

@@ -381,7 +381,7 @@ module.exports = function (grunt) {
                         },
                         {
                             match: 'pdf_api_base_path',
-                            replacement: '/print'
+                            replacement: 'http://127.0.0.1:8080/print'
                         }
                     ]
                 },
