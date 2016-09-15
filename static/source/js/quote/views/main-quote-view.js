@@ -11,6 +11,21 @@ var app = app || {};
             $header_container: '.quote-header-container',
             $table_container: '.quote-table-container'
         },
+        serializeData: function () {
+            return {
+                urlToDownloadPdf: this.getDownloadPdfUrl()
+            };
+        },
+        getDownloadPdfUrl: function () {
+            var url = app.settings.get('pdf_api_base_path');
+
+            url += '/quote';
+            url += '/' + app.current_project.get('id');
+            url += '/' + app.current_project.get('project_name');
+            url += '/' + window.localStorage.getItem('authToken');
+
+            return url;
+        },
         onRender: function () {
             this.units_table_view = new app.UnitsTableView({
                 collection: app.current_project.units,

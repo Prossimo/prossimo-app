@@ -36,7 +36,8 @@ var app = app || {};
     //  --------------------------------------------------------------------
 
     var SETTINGS_PROPERTIES = [
-        { name: 'api_base_path', title: 'API Base Path', type: 'string' }
+        { name: 'api_base_path', title: 'API Base Path', type: 'string' },
+        { name: 'pdf_api_base_path', title: 'PDF API Base Path', type: 'string' }
     ];
 
     app.Settings = Backbone.Model.extend({
@@ -57,7 +58,8 @@ var app = app || {};
             };
 
             var name_value_hash = {
-                api_base_path: $('meta[name="api-base-path"]').attr('value') || '/api'
+                api_base_path: $('meta[name="api-base-path"]').attr('value') || '/api',
+                pdf_api_base_path: $('meta[name="pdf-api-base-path"]').attr('value') || ''
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
