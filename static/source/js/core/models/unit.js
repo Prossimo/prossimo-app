@@ -1497,7 +1497,7 @@ var app = app || {};
                 result.sashes.linear_without_intersections + result.mullions.linear;
             result.profile_total.area = result.frame.area + result.sashes.area + result.mullions.area;
             result.profile_total.area_both_sides = result.profile_total.area * 2;
-            result.profile_total.weight = result.profile_total.linear * profileWeight;
+            result.profile_total.weight = (result.profile_total.linear / 1000) * profileWeight;
 
             return result;
         },
