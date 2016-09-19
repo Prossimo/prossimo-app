@@ -1316,6 +1316,7 @@ var app = app || {};
 
             if ( current_root.sections.length === 0 ) {
                 result.glasses.push({
+                    name: current_root.fillingName,
                     type: current_root.fillingType,
                     width: current_root.glassParams.width,
                     height: current_root.glassParams.height
@@ -1374,9 +1375,11 @@ var app = app || {};
             var profileWeight = this.profile.get('weight_per_length');
             var fillingWeight = {};
 
-            app.settings.filling_types.each(function (filling) {
-                fillingWeight[filling.get('type')] = filling.get('weight_per_area');
-            });
+            if (app.settings && app.settings.filling_types) {
+                app.settings.filling_types.each(function (filling) {
+                    fillingWeight[filling.get('name')] = filling.get('weight_per_area');
+                });
+            }
 
             var sizes = this.getSizes();
             var result = {
@@ -1436,6 +1439,16 @@ var app = app || {};
                 return app.utils.math.square_meters(width, height);
             }
 
+            function isBaseFilling(name) {
+                var result = false;
+                if (app.settings && app.settings.filling_types) {
+                    result = app.settings.filling_types.find(function (filling) {
+                        return filling.get('name') === name && filling.get('is_base_type');
+                    });
+                }
+                return result;
+            }
+
             result.frame.linear = getProfilePerimeter(sizes.frame.width, sizes.frame.height);
             result.frame.linear_without_intersections =
                 getProfilePerimeterWithoutIntersections(sizes.frame.width, sizes.frame.height, sizes.frame.frame_width);
@@ -1484,17 +1497,27 @@ var app = app || {};
                 result.openings.area += getArea(opening.width, opening.height);
             });
 
+            var HasBaseFilling = false;
             _.each(sizes.glasses, function (glass) {
                 var area = getArea(glass.width, glass.height);
 
                 result.glasses.area += area;
                 result.glasses.area_both_sides += getArea(glass.width, glass.height) * 2;
-                result.glasses.weight += area * fillingWeight[glass.type];
+                if (fillingWeight[glass.name]) {
+                    result.glasses.weight += area * fillingWeight[glass.name];
+                }
+                if (isBaseFilling(glass.name)) {
+                    HasBaseFilling = true;
+                }
             });
+
+            if (HasBaseFilling) {
+                result.glasses.weight = -1;
+            }
 
             result.profile_total.linear = result.frame.linear + result.sashes.linear + result.mullions.linear;
             result.profile_total.linear_without_intersections = result.frame.linear_without_intersections +
-                result.sashes.linear_without_intersections + result.mullions.linear;
+            result.sashes.linear_without_intersections + result.mullions.linear;
             result.profile_total.area = result.frame.area + result.sashes.area + result.mullions.area;
             result.profile_total.area_both_sides = result.profile_total.area * 2;
             result.profile_total.weight = (result.profile_total.linear / 1000) * profileWeight;

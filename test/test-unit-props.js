@@ -809,15 +809,15 @@ test('Unit weight calculations function', function () {
         width: c.mm_to_inches(800),
         height: c.mm_to_inches(1650)
     };
-    var createFilling = function (type, weight) {
-        var attrs = { type: type, weight: weight };
+    var createFilling = function (type, name, weight) {
+        var attrs = { type: type, name: name, weight_per_area: weight };
         return {get: function(attr) {
             return attrs[attr];
         }};
     };
     var fillings = _([
-        createFilling('glass', 0.2),
-        createFilling('recessed', 0.8)
+        createFilling('glass', 'Test glass', 0.2),
+        createFilling('recessed', 'Test recessed', 0.8)
     ]);
     var profileWeight = 1.5;
 
@@ -832,7 +832,7 @@ test('Unit weight calculations function', function () {
         sash_frame_width: 82,
         sash_frame_overlap: 34,
         sash_mullion_overlap: 34,
-        weight: profileWeight
+        weight_per_length: profileWeight
     });
     app.settings = {
         filling_types: fillings
@@ -856,11 +856,13 @@ test('Unit weight calculations function', function () {
     // run tests for different filling types
     fillings.each(function (filling) {
         // set filling type and get unit stats
-        unit.setFillingType(unit.get('root_section').id, filling.get('type'));
+        unit.setFillingType(unit.get('root_section').id, filling.get('type'), filling.get('name'));
         var stats = unit.getLinearAndAreaStats();
         // tests
-        equal(roundWeight(stats.glasses.area * filling.get('weight')), roundWeight(stats.glasses.weight), 'Glasses weight for glass type: "' + filling.get('type') + '"');
+        equal(roundWeight(stats.glasses.area * filling.get('weight_per_area')), roundWeight(stats.glasses.weight), 'Glasses weight for glass type: "' + filling.get('type') + '"');
         equal(roundWeight((stats.profile_total.linear / 1000) * profileWeight), roundWeight(stats.profile_total.weight), 'Profile weight for glass type: "' + filling.get('type') + '"');
     });
+
+    delete app.settings;
 
 });
