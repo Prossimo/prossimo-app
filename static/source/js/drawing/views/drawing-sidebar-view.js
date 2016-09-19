@@ -339,9 +339,21 @@ var app = app || {};
                             'openings', 'glazing_bars'], param.key);
                     });
 
+                    // Check base filling type in weight estimates
+                    var hasBaseFilling = false;
+                    if (title.toLowerCase().indexOf('weight') !== -1) {
+                        _.each(group_data[key], function (data) {
+                            if (data.key === 'glasses' && parseInt(data.value) === -1)  {
+                                hasBaseFilling = true;
+                            }
+
+                        }, this);
+                    }
+
                     stats_data.push({
                         title: title,
-                        data: group_data[key]
+                        data: group_data[key],
+                        hasBaseFilling: hasBaseFilling
                     });
                 }, this);
             }

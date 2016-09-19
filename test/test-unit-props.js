@@ -797,3 +797,72 @@ test('hasGlazingBars function', function () {
     equal(unit_1.hasGlazingBars(), false, 'Unit 1 is not expected to have bars');
     equal(unit_2.hasGlazingBars(), true, 'Unit 2 is expected to have bars');
 });
+
+//  ------------------------------------------------------------------------
+//  Unit weight estimates
+//  ------------------------------------------------------------------------
+
+test('Unit weight calculations function', function () {
+
+    // create default values
+    var unitSizes = {
+        width: c.mm_to_inches(800),
+        height: c.mm_to_inches(1650)
+    };
+    var createFilling = function (type, name, weight) {
+        var attrs = { type: type, name: name, weight_per_area: weight };
+        return {get: function(attr) {
+            return attrs[attr];
+        }};
+    };
+    var fillings = _([
+        createFilling('glass', 'Test glass', 0.2),
+        createFilling('recessed', 'Test recessed', 0.8)
+    ]);
+    var profileWeight = 1.5;
+
+    // set values
+    var unit = new app.Unit({
+        width: unitSizes.width,
+        height: unitSizes.height
+    });
+    unit.profile = new app.Profile({
+        frame_width: 70,
+        mullion_width: 92,
+        sash_frame_width: 82,
+        sash_frame_overlap: 34,
+        sash_mullion_overlap: 34,
+        weight_per_length: profileWeight
+    });
+    app.settings = {
+        filling_types: fillings
+    };
+
+    // spit sections and add sash
+    var root_id = unit.get('root_section').id;
+    unit.splitSection(root_id, 'horizontal');
+    unit.setSectionMullionPosition(root_id, 1308);
+    var full_root = unit.generateFullRoot();
+    var top_section = full_root.sections[0];
+    var bottom_section = full_root.sections[1];
+    unit.setSectionSashType(top_section.id, 'tilt_turn_left');
+    unit.setSectionSashType(bottom_section.id, 'turn_only_left');
+
+    // round function
+    var roundWeight = function(weight) {
+        return parseFloat(weight.toFixed(10));
+    };
+
+    // run tests for different filling types
+    fillings.each(function (filling) {
+        // set filling type and get unit stats
+        unit.setFillingType(unit.get('root_section').id, filling.get('type'), filling.get('name'));
+        var stats = unit.getLinearAndAreaStats();
+        // tests
+        equal(roundWeight(stats.glasses.area * filling.get('weight_per_area')), roundWeight(stats.glasses.weight), 'Glasses weight for glass type: "' + filling.get('type') + '"');
+        equal(roundWeight((stats.profile_total.linear / 1000) * profileWeight), roundWeight(stats.profile_total.weight), 'Profile weight for glass type: "' + filling.get('type') + '"');
+    });
+
+    delete app.settings;
+
+});
