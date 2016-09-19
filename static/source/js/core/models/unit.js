@@ -1268,6 +1268,7 @@ var app = app || {};
 
             //  No metric means inches
             val = (!metric || metric === 'inches') ? val : app.utils.convert.mm_to_inches(val);
+
             if ( this.getCircleRadius() !== null ) {
                 var full_root = this.generateFullRoot();
 
@@ -1283,6 +1284,7 @@ var app = app || {};
                     minHeight: (val[0] > val[1]) ? val[1] : val[0],
                     maxHeight: (val[0] < val[1]) ? val[1] : val[0]
                 };
+
                 this.checkHorizontalSplit(rootSection, params);
                 this.persist(attr, (val[0] > val[1]) ? val[0] : val[1]);
             } else if (attr === 'height' && !_.isArray(val) && this.isTrapezoid()) {
@@ -1927,16 +1929,19 @@ var app = app || {};
         },
         getTrapezoidHeight: function () {
             var trapezoidHeights = this.get('root_section').trapezoidHeights;
+
             return (trapezoidHeights) ? trapezoidHeights[0] + ' | ' + trapezoidHeights[1] : this.get('height');
         },
         getTrapezoidHeightMM: function () {
             var trapezoidHeights = this.get('root_section').trapezoidHeights;
+
             if (trapezoidHeights) {
                 trapezoidHeights = [
                     app.utils.convert.inches_to_mm(trapezoidHeights[0]),
                     app.utils.convert.inches_to_mm(trapezoidHeights[1])
                 ];
             }
+
             return trapezoidHeights || app.utils.convert.inches_to_mm(this.get('height'));
         }
         /* trapezoid end */

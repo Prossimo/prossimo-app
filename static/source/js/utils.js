@@ -247,10 +247,12 @@ var app = app || {};
 
                 if (typeof height === 'string') {
                     var heights = height.split('|');
+
                     if (heights.length < 2) {
                         height = this.dimension(height);
                     } else {
                         height = [this.dimension(heights[0]), this.dimension(heights[1])];
+
                         if (height[0] === height[1]) {
                             height = height[0];
                         }
