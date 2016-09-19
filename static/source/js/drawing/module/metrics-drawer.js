@@ -958,12 +958,7 @@ var app = app || {};
             var verticalWholeMertic = this.createVerticalMetric(metricSize, vHeight, {
                 setter: function (val) {
                     val -= vCorrection.size;
-
-                    if (model.isTrapezoid()) {
-                        model.updateTrapezoidHeights('max', val);
-                    } else {
-                        model.updateDimension('height', val, 'mm');
-                    }
+                    model.updateDimension('height_max', val, 'mm');
                 },
                 getter: function () {
                     return model.getInMetric('height', 'mm') + vCorrection.size;
@@ -988,7 +983,7 @@ var app = app || {};
                 var secondVerticalWholeMertic = this.createVerticalMetric(metricSize, secondVerticalHeight, {
                     setter: function (val) {
                         val -= vCorrection.size;
-                        model.updateTrapezoidHeights('min', val);
+                        model.updateDimension('height_min', val, 'mm');
                     },
                     getter: function () {
                         return minHeight + vCorrection.size;
@@ -1007,7 +1002,7 @@ var app = app || {};
                 var thirdVerticalWholeMertic = this.createVerticalMetric(metricSize, thirdVerticalHeight, {
                     setter: function (val) {
                         val -= vCorrection.size;
-                        model.updateTrapezoidHeights('min', maxHeight - val);
+                        model.updateDimension('height_min', maxHeight - val, 'mm');
                     },
                     getter: function () {
                         return maxHeight - minHeight + vCorrection.size;

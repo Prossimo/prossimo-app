@@ -256,24 +256,13 @@ var app = app || {};
 
             var getters_hash = {
                 height: function (model) {
-                    var trapezoidHeights = model.get('root_section').trapezoidHeights;
-
-                    return (trapezoidHeights) ? trapezoidHeights[0] + ' | ' + trapezoidHeights[1] : model.get('height');
+                    return model.getTrapezoidHeight();
                 },
                 width_mm: function (model) {
                     return model.getWidthMM();
                 },
                 height_mm: function (model) {
-                    var trapezoidHeights = model.get('root_section').trapezoidHeights;
-
-                    if (trapezoidHeights) {
-                        trapezoidHeights = [
-                            app.utils.convert.inches_to_mm(trapezoidHeights[0]),
-                            app.utils.convert.inches_to_mm(trapezoidHeights[1])
-                        ];
-                    }
-
-                    return trapezoidHeights || model.getHeightMM();
+                    return model.getTrapezoidHeightMM();
                 },
                 dimensions: function (model) {
                     return f.dimensions(model.get('width'), model.get('height'), null,
@@ -366,54 +355,8 @@ var app = app || {};
                 width: function (attr_name, val) {
                     return p.dimensions(val, 'width');
                 },
-                height: function (attr_name, val, model) {
-                    var height;
-                    var rootSection;
-                    var heights = val.split('|');
-
-                    if (model) {
-                        rootSection = model.get('root_section');
-                    }
-
-                    if (heights.length < 2) {
-                        height = p.dimensions(val, 'height');
-
-                        if (rootSection) {
-                            rootSection.trapezoidHeights = false;
-                        }
-                    } else {
-                        heights = [p.dimensions(heights[0], 'height'), p.dimensions(heights[1], 'height')];
-
-                        if (heights[0] === heights[1]) {
-                            if (rootSection) {
-                                rootSection.trapezoidHeights = false;
-                            }
-
-                            height = heights[0];
-                        } else {
-                            if (rootSection) {
-                                rootSection.trapezoidHeights = [heights[0], heights[1]];
-                                rootSection.circular = false;
-                                rootSection.arched = false;
-
-                                var params = {
-                                    corners: model.getMainTrapezoidInnerCorners(),
-                                    minHeight: (heights[0] > heights[1]) ? heights[1] : heights[0],
-                                    maxHeight: (heights[0] < heights[1]) ? heights[1] : heights[0]
-                                };
-
-                                model.checkHorizontalSplit(rootSection, params);
-                            }
-
-                            height = (heights[0] > heights[1]) ? heights[0] : heights[1];
-                        }
-                    }
-
-                    if (rootSection) {
-                        model.set('root_section', rootSection);
-                    }
-
-                    return height;
+                height: function (attr_name, val) {
+                    return p.dimensions(val, 'height');
                 },
                 glazing_bar_width: function (attr_name, val) {
                     return parseFloat(val);

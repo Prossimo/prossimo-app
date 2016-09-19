@@ -159,15 +159,24 @@ var app = app || {};
 
             // create main frame
             if (isDoorFrame) {
-                frameGroup = this.createDoorTrapezoidFrame({
-                    sectionId: root.id,
-                    width: model.getInMetric('width', 'mm'),
-                    height: model.getInMetric('height', 'mm'),
-                    trapezoidHeights: model.getTrapezoidHeights(module.getState('insideView')),
-                    maxHeight: model.getTrapezoidMaxHeight(),
-                    trapezoidCorners: model.getMainTrapezoidInnerCorners(),
-                    frameWidth: model.profile.get('frame_width')
-                });
+                if (model.isTrapezoid()) {
+                    frameGroup = this.createDoorTrapezoidFrame({
+                        sectionId: root.id,
+                        width: model.getInMetric('width', 'mm'),
+                        height: model.getInMetric('height', 'mm'),
+                        trapezoidHeights: model.getTrapezoidHeights(module.getState('insideView')),
+                        maxHeight: model.getTrapezoidMaxHeight(),
+                        trapezoidCorners: model.getMainTrapezoidInnerCorners(),
+                        frameWidth: model.profile.get('frame_width')
+                    });
+                } else {
+                    frameGroup = this.createDoorFrame({
+                        sectionId: root.id,
+                        width: model.getInMetric('width', 'mm'),
+                        height: model.getInMetric('height', 'mm'),
+                        frameWidth: model.profile.get('frame_width')
+                    });
+                }
             } else if (isArchedWindow) {
                 frameGroup = this.createArchedFrame({
                     sectionId: root.id,
@@ -183,15 +192,24 @@ var app = app || {};
                     frameWidth: model.profile.get('frame_width')
                 });
             } else {
-                frameGroup = this.createTrapezoidFrame({
-                    sectionId: root.id,
-                    width: model.getInMetric('width', 'mm'),
-                    height: model.getInMetric('height', 'mm'),
-                    trapezoidHeights: model.getTrapezoidHeights(module.getState('insideView')),
-                    maxHeight: model.getTrapezoidMaxHeight(),
-                    trapezoidCorners: model.getMainTrapezoidInnerCorners(),
-                    frameWidth: model.profile.get('frame_width')
-                });
+                if (model.isTrapezoid()) {
+                    frameGroup = this.createTrapezoidFrame({
+                        sectionId: root.id,
+                        width: model.getInMetric('width', 'mm'),
+                        height: model.getInMetric('height', 'mm'),
+                        trapezoidHeights: model.getTrapezoidHeights(module.getState('insideView')),
+                        maxHeight: model.getTrapezoidMaxHeight(),
+                        trapezoidCorners: model.getMainTrapezoidInnerCorners(),
+                        frameWidth: model.profile.get('frame_width')
+                    });
+                } else {
+                    frameGroup = this.createFrame({
+                        sectionId: root.id,
+                        width: model.getInMetric('width', 'mm'),
+                        height: model.getInMetric('height', 'mm'),
+                        frameWidth: model.profile.get('frame_width')
+                    });
+                }
             }
 
             frameGroup.scale({x: ratio, y: ratio});

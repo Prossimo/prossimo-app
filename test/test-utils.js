@@ -235,6 +235,18 @@ test('utils.parseFormat.dimensions', function () {
         'Expected value is { width: 1.2007874015748032, height: 0.17716535433070868 }');
     deepEqual(p.dimensions('2mx5.5m'), { width: 78.74015748031496, height: 216.53543307086613 },
         'Expected value is { width: 78.74015748031496, height: 216.53543307086613 }');
+
+    //  Trazepoids (height pairs are split with a | vertical line)
+    deepEqual(p.dimensions('33 3/8 | 192 "', 'height'), [33.375, 192], 'Expected pair of values');
+    deepEqual(p.dimensions('6\'-2 1/2" | 381 mm', 'height'), [74.5, 15], 'Expected pair of values');
+    deepEqual(p.dimensions('33 3/8 | 66 3/8', 'height'), [33.375, 66.375], 'Expected pair of values');
+    deepEqual(p.dimensions('33 3/8 | 33 3/8', 'height'), 33.375, 'Expected one value as pairs are equal');
+
+    equal(p.dimensions('2’—8” | 2’—4” X 5’—0”', 'width'), 32, 'Expected only the first value to be recognized for width');
+    equal(p.dimensions('2’—8” | 2’—4” X 5’—0”', 'height'), 60, 'Expected height to be 60');
+    deepEqual(p.dimensions('5’—0” X 2’—8” | 2’—4”', 'height'), [32, 28], 'Expected height to be array');
+    deepEqual(p.dimensions('5’—0” X 2’—8” | 2’—4”'), { width: 60, height: [32, 28] }, 'Expected height to be array');
+    deepEqual(p.dimensions('2’—8” | 2’—4” X 5’—0”'), { width: 32, height: 60 }, 'Expected only the first value to be recognized for width');
 });
 
 test('utils.parseFormat.percent', function () {
