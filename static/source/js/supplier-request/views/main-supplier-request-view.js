@@ -22,6 +22,7 @@ var app = app || {};
             url += '/supplier';
             url += '/' + app.current_project.get('id');
             url += '/' + app.current_project.get('project_name');
+            url += '/' + app.current_project.get('quote_revision');
             url += '/' + window.localStorage.getItem('authToken');
 
             return url;
