@@ -13,19 +13,8 @@ var app = app || {};
         },
         serializeData: function () {
             return {
-                urlToDownloadPdf: this.getDownloadPdfUrl()
+                urlToDownloadPdf: app.settings.getPdfDownloadUrl('supplier')
             };
-        },
-        getDownloadPdfUrl: function () {
-            var url = app.settings.get('pdf_api_base_path');
-
-            url += '/supplier';
-            url += '/' + app.current_project.get('id');
-            url += '/' + app.current_project.get('project_name');
-            url += '/' + app.current_project.get('quote_revision');
-            url += '/' + window.localStorage.getItem('authToken');
-
-            return url;
         },
         onRender: function () {
             this.request_header_view = new app.SupplierRequestHeaderView({

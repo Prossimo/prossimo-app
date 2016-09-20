@@ -72,6 +72,25 @@ var app = app || {};
 
             return default_value;
         },
+        getPdfDownloadUrl: function (quote_type) {
+            quote_type = _.contains(['quote', 'supplier'], quote_type) ? quote_type : 'quote';
+
+            var base_url = this.get('pdf_api_base_path');
+            var url = '/:type/:id/:name/:revision/:token';
+            var replacement_table = {
+                ':type': quote_type,
+                ':id': app.current_project.id,
+                ':name': app.current_project.get('project_name'),
+                ':revision': app.current_project.get('quote_revision'),
+                ':token': window.localStorage.getItem('authToken')
+            };
+
+            url = url.replace(/:\w+/g, function (match) {
+                return replacement_table[match] || match;
+            });
+
+            return base_url + url;
+        },
         initialize: function () {
             this.profiles = new app.ProfileCollection(null, {
                 api_base_path: this.get('api_base_path')
