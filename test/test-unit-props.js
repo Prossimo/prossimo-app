@@ -797,3 +797,54 @@ test('hasGlazingBars function', function () {
     equal(unit_1.hasGlazingBars(), false, 'Unit 1 is not expected to have bars');
     equal(unit_2.hasGlazingBars(), true, 'Unit 2 is expected to have bars');
 });
+
+test('getSashOpeningSize function', function () {
+
+    // create default values
+    var unitSizes = {
+        width: c.mm_to_inches(800),
+        height: c.mm_to_inches(1650)
+    };
+
+    // set values
+    var unit = new app.Unit({
+        width: unitSizes.width,
+        height: unitSizes.height
+    });
+    unit.profile = new app.Profile({
+        frame_width: 70,
+        mullion_width: 92,
+        sash_frame_width: 82,
+        sash_frame_overlap: 34,
+        sash_mullion_overlap: 34,
+        clear_width_deduction: 50
+    });
+
+
+    // spit sections and add sash
+    var root_id = unit.get('root_section').id;
+    unit.splitSection(root_id, 'horizontal');
+    unit.setSectionMullionPosition(root_id, 930);
+    var full_root = unit.generateFullRoot();
+    var top_section = full_root.sections[0];
+    var bottom_section = full_root.sections[1];
+
+    // get sash list
+    var sashList = unit.getSashList();
+    equal(unit.getSashOpeningSize(sashList[0].opening), undefined, 'Top sash(Fixed), normal size');
+    equal(unit.getSashOpeningSize(sashList[1].opening), undefined, 'Bottom sash(Fixed), normal size');
+    equal(unit.getSashOpeningSize(sashList[0].opening, 'egress', sashList[0].type), undefined, 'Top sash(Fixed), egress size');
+    equal(unit.getSashOpeningSize(sashList[1].opening, 'egress', sashList[1].type), undefined, 'Bottom sash(Fixed), egress size');
+
+    // set types
+    unit.setSectionSashType(top_section.id, 'tilt_only');
+    unit.setSectionSashType(bottom_section.id, 'tilt_turn_left');
+
+    // get sash list
+    sashList = unit.getSashList();
+    equal(unit.getSashOpeningSize(sashList[0].opening), "26″ x 32 1/16″ (5.78 ft<sup>2</sup>)", 'Top sash(Tilt Only), normal size');
+    equal(unit.getSashOpeningSize(sashList[1].opening), "26″ x 23 3/4″ (4.29 ft<sup>2</sup>)", 'Bottom sash(Tilt-turn Left Hinge), normal size');
+    equal(unit.getSashOpeningSize(sashList[0].opening, 'egress', sashList[0].type), undefined, 'Top sash(Tilt Only), egress size');
+    equal(unit.getSashOpeningSize(sashList[1].opening, 'egress', sashList[1].type), "24″ x 23 3/4″ (3.97 ft<sup>2</sup>)", 'Bottom sash(Tilt-turn Left Hinge), egress size');
+
+});

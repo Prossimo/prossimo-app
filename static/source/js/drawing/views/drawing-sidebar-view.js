@@ -230,22 +230,11 @@ var app = app || {};
 
                 _.each(sash_list_source, function (source_item, index) {
                     var sash_item = {};
-                    var opening_size;
-                    var opening_area;
                     var section_info;
-
                     sash_item.name = 'Sash #' + (index + 1);
                     sash_item.type = source_item.type;
-
-                    if ( source_item.opening.height && source_item.opening.width ) {
-                        opening_size = f.dimensions(c.mm_to_inches(source_item.opening.width),
-                            c.mm_to_inches(source_item.opening.height), 'fraction', 'inches_only');
-
-                        opening_area = f.square_feet(m.square_feet(c.mm_to_inches(source_item.opening.width),
-                            c.mm_to_inches(source_item.opening.height)), 2, 'sup');
-
-                        sash_item.opening_size = opening_size + ' (' + opening_area + ')';
-                    }
+                    sash_item.opening_size = this.options.parent_view.active_unit.getSashOpeningSize(source_item.opening);
+                    sash_item.egress_opening_size = this.options.parent_view.active_unit.getSashOpeningSize(source_item.opening, 'egress', source_item.type);
 
                     //  Child sections
                     if ( source_item.sections.length ) {

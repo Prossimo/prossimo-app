@@ -30,7 +30,7 @@ var app = app || {};
         { name: 'frame_u_value', title: 'Frame U Value', type: 'number' },
         { name: 'spacer_thermal_bridge_value', title: 'Spacer Thermal Bridge Value', type: 'number' },
         { name: 'position', title: 'Position', type: 'number' },
-        { name: 'clear_width_deduction', title: 'Clear width deduction', type: 'float' }
+        { name: 'clear_width_deduction', title: 'Clear width deduction (mm)', type: 'number' }
     ];
 
     function getDefaultPricingGrids() {
