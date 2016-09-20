@@ -43,7 +43,7 @@ var app = app || {};
                 'mullion_width', 'sash_frame_width', 'sash_frame_overlap', 'sash_mullion_overlap',
                 'frame_corners', 'sash_corners', 'low_threshold', 'threshold_width',
                 'frame_u_value', 'visible_frame_width_fixed', 'visible_frame_width_operable',
-                'spacer_thermal_bridge_value'
+                'spacer_thermal_bridge_value', 'clear_width_deduction'
             ];
 
             this.undo_manager = new app.UndoManager({
