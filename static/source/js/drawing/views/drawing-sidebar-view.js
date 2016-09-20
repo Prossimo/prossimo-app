@@ -231,10 +231,17 @@ var app = app || {};
                 _.each(sash_list_source, function (source_item, index) {
                     var sash_item = {};
                     var section_info;
+
                     sash_item.name = 'Sash #' + (index + 1);
                     sash_item.type = source_item.type;
-                    sash_item.opening_size = this.options.parent_view.active_unit.getSashOpeningSize(source_item.opening);
-                    sash_item.egress_opening_size = this.options.parent_view.active_unit.getSashOpeningSize(source_item.opening, 'egress', source_item.type);
+                    sash_item.opening_size = this.options.parent_view.active_unit.getSashOpeningSize(
+                        source_item.opening
+                    );
+                    sash_item.egress_opening_size = this.options.parent_view.active_unit.getSashOpeningSize(
+                        source_item.opening,
+                        'egress',
+                        source_item.type
+                    );
 
                     //  Child sections
                     if ( source_item.sections.length ) {

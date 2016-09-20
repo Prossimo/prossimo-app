@@ -1783,10 +1783,12 @@ var app = app || {};
             var m = app.utils.math;
             var egressEabledTypes = [SASH_TYPE_NAME_MAP.tilt_turn_right, SASH_TYPE_NAME_MAP.tilt_turn_left,
                 SASH_TYPE_NAME_MAP.turn_only_right, SASH_TYPE_NAME_MAP.turn_only_left,
-                SASH_TYPE_NAME_MAP.turn_only_right_hinge_hidden_latch, SASH_TYPE_NAME_MAP.turn_only_left_hinge_hidden_latch];
+                SASH_TYPE_NAME_MAP.turn_only_right_hinge_hidden_latch,
+                SASH_TYPE_NAME_MAP.turn_only_left_hinge_hidden_latch];
 
             if (sizeType === 'egress') {
                 var clear_width_deduction = this.profile.get('clear_width_deduction');
+
                 if (clear_width_deduction && egressEabledTypes.indexOf(sashType) !== -1) {
                     openingSizes.width -= clear_width_deduction;
                 } else {
@@ -1799,6 +1801,7 @@ var app = app || {};
                     c.mm_to_inches(openingSizes.height), 'fraction', 'inches_only');
                 var opening_area = f.square_feet(m.square_feet(c.mm_to_inches(openingSizes.width),
                     c.mm_to_inches(openingSizes.height)), 2, 'sup');
+
                 result = opening_size + ' (' + opening_area + ')';
             }
 
