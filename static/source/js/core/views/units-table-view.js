@@ -152,9 +152,16 @@ var app = app || {};
         },
         onRemoveSelected: function () {
             if ( this.selected.length && this.hot ) {
-                for (var i = this.selected.length - 1; i >= 0; i--) {
-                    this.hot.getSourceData().at(this.selected[i]).destroy();
-                }
+                var selected = this.selected;
+                var newCollection = [];
+
+                this.collection.forEach(function (unit, idx) {
+                    if (selected.indexOf(idx) === -1) {
+                        newCollection.push(unit);
+                    }
+                });
+
+                this.collection.reset(newCollection);
 
                 this.selected = [];
                 this.hot.selectCell(0, 0, 0, 0, false);
@@ -883,7 +890,7 @@ var app = app || {};
                 //  Ctrl + Y || Ctrl + Shift + Z
                 if ( isCtrlDown && (event.keyCode === 89 || (event.shiftKey && event.keyCode === 90 )) ) {
                     self.onRedo();
-                //  Ctrl + Z
+                    //  Ctrl + Z
                 } else if ( isCtrlDown && event.keyCode === 90 ) {
                     self.onUndo();
                 } else if ( !onlyCtrlKeys && !isCtrlDown && event.keyCode === 78 ) {
@@ -917,7 +924,7 @@ var app = app || {};
                         rowHeaders: true,
                         rowHeights: function () {
                             return _.contains(self.getActiveTab().columns, 'drawing') ||
-                                _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
+                            _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
                         },
                         colWidths: self.getActiveTabColWidths(),
                         trimDropdown: false,
