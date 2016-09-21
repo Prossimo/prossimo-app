@@ -81,7 +81,7 @@ var app = app || {};
                 ':type': quote_type,
                 ':id': app.current_project.id,
                 ':name': encodeURIComponent(app.current_project.get('project_name')),
-                ':revision': app.current_project.get('quote_revision') + "",
+                ':revision': String(app.current_project.get('quote_revision')),
                 ':token': window.localStorage.getItem('authToken')
             };
 
