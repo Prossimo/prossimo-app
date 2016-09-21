@@ -177,9 +177,10 @@ var app = app || {};
             var frameWidth = model.getInMetric('width', 'mm');
             var frameHeight = model.getInMetric('height', 'mm');
 
+            var isTrapezoid = model.isTrapezoid();
             var topOffset = 10 + 0.5; // we will add 0.5 pixel offset for better strokes
-            var wr = (stage.width() - metricSize * 3.5) / frameWidth;
-            var hr = (stage.height() - metricSize * 2 - topOffset) / frameHeight;
+            var wr = (stage.width() - metricSize * 2) / frameWidth;
+            var hr = (stage.height() - metricSize * ((isTrapezoid) ? 3 : 2) - topOffset) / frameHeight;
 
             var ratio = (Math.min(wr, hr) * 0.95);
 
@@ -193,7 +194,10 @@ var app = app || {};
                     height: frameOnScreenHeight
                 },
                 center: {
-                    x: Math.round(stage.width() / 2 - frameOnScreenWidth / 2 + metricSize) + 0.5,
+                    x: Math.round(
+                        stage.width() / 2 - frameOnScreenWidth / 2 +
+                        ((isTrapezoid) ? metricSize / 2 : metricSize)
+                    ) + 0.5,
                     y: topOffset
                 }
             };

@@ -194,6 +194,7 @@ var app = app || {};
             };
 
             var name_value_hash = {
+                height: '0',
                 original_currency: 'EUR',
                 conversion_rate: 0.9,
                 price_markup: 2.3,
@@ -546,6 +547,7 @@ var app = app || {};
         },
         isCircularPossible: function (sashId) {
             var root = this.generateFullRoot();
+
             return !findParent(root, sashId) && !root.trapezoidHeights;
         },
         getCircleRadius: function () {
@@ -855,7 +857,10 @@ var app = app || {};
         },
         setSectionMullionPosition: function (id, pos) {
             this._updateSection(id, function (section) {
-                if ( section.minPosition && section.minPosition > pos ) pos = section.minPosition;
+                if ( section.minPosition && section.minPosition > pos ) {
+                    pos = section.minPosition;
+                }
+
                 section.position = parseFloat(pos);
             });
         },
@@ -890,6 +895,7 @@ var app = app || {};
 
                 if (type === 'horizontal' || type === 'horizontal_invisible') {
                     position = fullSection.openingParams.y + fullSection.openingParams.height / 2;
+
                     if (this.isTrapezoid()) {
                         var corners = this.getMainTrapezoidInnerCorners();
                         var crossing = this.getLineCrossingY(position, corners.left, corners.right);
@@ -897,9 +903,11 @@ var app = app || {};
                         var width = this.getInMetric('width', 'mm');
                         var minHeight = (heights.left > heights.right) ? heights.right : heights.left;
                         var maxHeight = (heights.left < heights.right) ? heights.right : heights.left;
+
                         if ( crossing >= -100 && crossing <= width + 100 ) {
                             position = maxHeight - minHeight + 200;
                             section.minPosition = position;
+
                             if ( position > fullSection.sashParams.y + fullSection.sashParams.height ) {
                                 return false;
                             }
@@ -1246,8 +1254,9 @@ var app = app || {};
         },
         //  Inches by default, mm optional
         updateDimension: function (attr, val, metric) {
+            var rootSection = this.get('root_section');
             var possible_metrics = ['mm', 'inches'];
-            var possible_dimensions = ['width', 'height'];
+            var possible_dimensions = ['width', 'height', 'height_max', 'height_min'];
 
             if ( !attr || possible_dimensions.indexOf(attr) === -1 ) {
                 throw new Error('Wrong dimension. Possible values: ' + possible_dimensions.join(', ') );
@@ -1266,6 +1275,29 @@ var app = app || {};
                 this.setCircular(full_root.id, {
                     radius: val / 2
                 });
+            } else if (attr === 'height' && _.isArray(val) && val.length > 1) {
+                rootSection.trapezoidHeights = [val[0], val[1]];
+                rootSection.circular = false;
+                rootSection.arched = false;
+                var params = {
+                    corners: this.getMainTrapezoidInnerCorners(),
+                    minHeight: (val[0] > val[1]) ? val[1] : val[0],
+                    maxHeight: (val[0] < val[1]) ? val[1] : val[0]
+                };
+
+                this.checkHorizontalSplit(rootSection, params);
+                this.persist(attr, (val[0] > val[1]) ? val[0] : val[1]);
+            } else if (attr === 'height' && !_.isArray(val) && this.isTrapezoid()) {
+                rootSection.trapezoidHeights = false;
+                this.persist('height', val);
+            } else if (attr === 'height_max') {
+                if (this.isTrapezoid()) {
+                    this.updateTrapezoidHeight('max', val);
+                } else {
+                    this.persist('height', val);
+                }
+            } else if (attr === 'height_min') {
+                this.updateTrapezoidHeight('min', val);
             } else {
                 this.persist(attr, val);
             }
@@ -1747,19 +1779,23 @@ var app = app || {};
         /* trapezoid start */
         isTrapezoid: function () {
             var root = this.generateFullRoot();
+
             return root.trapezoidHeights;
         },
         getTrapezoidHeights: function (inside) {
             if (typeof inside !== 'undefined') {
                 this.inside = inside;
             }
+
             var heights = this.get('root_section').trapezoidHeights;
             var left = app.utils.convert.inches_to_mm(heights[0]);
             var right = app.utils.convert.inches_to_mm(heights[1]);
+
             return (this.inside) ? { left: right, right: left } : { left: left, right: right };
         },
         getTrapezoidMaxHeight: function () {
             var heights = this.getTrapezoidHeights();
+
             return ( heights.left > heights.right ) ? heights.left : heights.right;
         },
         getTrapezoidInnerCorners: function (params) {
@@ -1770,9 +1806,12 @@ var app = app || {};
             var corners = {};
 
             if (typeof heights === 'object') {
-                var cornerLeft = Math.abs( ( Math.atan( ( ( maxHeight - heights.right ) - ( maxHeight - heights.left ) ) / ( width - 0 ) ) -
-                        Math.atan( ( maxHeight - ( maxHeight - heights.left ) ) / ( 0 - 0 ) ) ) / Math.PI * 180 ) / 2;
+                var cornerLeft = Math.abs(
+                    ( Math.atan( ( ( maxHeight - heights.right ) - ( maxHeight - heights.left ) ) / ( width - 0 ) ) -
+                    Math.atan( ( maxHeight - ( maxHeight - heights.left ) ) / ( 0 - 0 ) ) ) / Math.PI * 180
+                ) / 2;
                 var cornerRight = Math.abs( 90 - cornerLeft );
+
                 corners = {
                     left: {
                         x: frameWidth,
@@ -1797,31 +1836,35 @@ var app = app || {};
         },
         getTrapezoidCrossing: function (start, finish) {
             var corners = this.getMainTrapezoidInnerCorners();
-            var x1 = start.x,
-                y1 = start.y,
-                x2 = finish.x,
-                y2 = finish.y,
-                x3 = corners.left.x,
-                y3 = corners.left.y,
-                x4 = corners.right.x,
-                y4 = corners.right.y;
+            var x1 = start.x;
+            var y1 = start.y;
+            var x2 = finish.x;
+            var y2 = finish.y;
+            var x3 = corners.left.x;
+            var y3 = corners.left.y;
+            var x4 = corners.right.x;
+            var y4 = corners.right.y;
             var diff = ( ( ( y4 - y3 ) * ( x2 - x1 ) ) - ( ( x4 - x3 ) * ( y2 - y1 ) ) );
             var Ua = ( ( ( x4 - x3 ) * ( y1 - y3 ) ) - ( ( y4 - y3 ) * ( x1 - x3 ) ) ) / diff;
             var Ub = ( ( ( x2 - x1 ) * ( y1 - y3 ) ) - ( ( y2 - y1 ) * ( x1 - x3 ) ) ) / diff;
-            return ( Ua >=0 && Ua <= 1 && Ub >=0 && Ub <= 1 ) ? { x: x1 + ( Ua * (x2 - x1) ), y: y1 + ( Ua * (y2 - y1) ) } : false;
+
+            return ( Ua >= 0 && Ua <= 1 && Ub >= 0 && Ub <= 1 ) ?
+                { x: x1 + ( Ua * (x2 - x1) ), y: y1 + ( Ua * (y2 - y1) ) } :
+                false;
         },
         getLineCrossingX: function (x, start, finish) {
-            return ( 0 - ( ( start.y - finish.y ) * x ) - ( ( start.x * finish.y ) - ( finish.x * start.y ) ) ) / ( finish.x - start.x );
+            return ( 0 - ( ( start.y - finish.y ) * x ) - ( ( start.x * finish.y ) - ( finish.x * start.y ) ) ) /
+                ( finish.x - start.x );
         },
         getLineCrossingY: function (y, start, finish) {
-            return ( 0 - ( ( finish.x - start.x ) * y ) - ( ( start.x * finish.y ) - ( finish.x * start.y ) ) ) / ( start.y - finish.y );
+            return ( 0 - ( ( finish.x - start.x ) * y ) - ( ( start.x * finish.y ) - ( finish.x * start.y ) ) ) /
+                ( start.y - finish.y );
         },
         getFrameOffset: function () {
-          return 34;
+            return 34;
         },
-        updateTrapezoidHeights: function (type, val) {
-            val = app.utils.parseFormat.dimensions(val, 'height');
-            val = app.utils.convert.mm_to_inches(val);
+        updateTrapezoidHeight: function (type, val) {
+
             if (this.isTrapezoid()) {
                 var height;
                 var rootSection = this.get('root_section');
@@ -1850,6 +1893,7 @@ var app = app || {};
                         minHeight: (heights[0] > heights[1]) ? heights[1] : heights[0],
                         maxHeight: (heights[0] < heights[1]) ? heights[1] : heights[0]
                     };
+
                     height = params.maxHeight;
                     rootSection.trapezoidHeights = heights;
                     this.checkHorizontalSplit(rootSection, params);
@@ -1870,15 +1914,35 @@ var app = app || {};
                     this.checkHorizontalSplit(rootSection.sections[i], params);
                 }
             }
+
             if ( rootSection.divider && rootSection.divider === 'horizontal' && rootSection.position ) {
                 var crossing = this.getLineCrossingY(rootSection.position, params.corners.left, params.corners.right);
+
                 if (crossing >= -100) {
                     var maxHeight = app.utils.convert.inches_to_mm(params.maxHeight);
                     var minHeight = app.utils.convert.inches_to_mm(params.minHeight);
                     var position = maxHeight - minHeight + 250;
+
                     rootSection.minPosition = rootSection.position = position;
                 }
             }
+        },
+        getTrapezoidHeight: function () {
+            var trapezoidHeights = this.get('root_section').trapezoidHeights;
+
+            return (trapezoidHeights) ? trapezoidHeights[0] + ' | ' + trapezoidHeights[1] : this.get('height');
+        },
+        getTrapezoidHeightMM: function () {
+            var trapezoidHeights = this.get('root_section').trapezoidHeights;
+
+            if (trapezoidHeights) {
+                trapezoidHeights = [
+                    app.utils.convert.inches_to_mm(trapezoidHeights[0]),
+                    app.utils.convert.inches_to_mm(trapezoidHeights[1])
+                ];
+            }
+
+            return trapezoidHeights || app.utils.convert.inches_to_mm(this.get('height'));
         }
         /* trapezoid end */
     });

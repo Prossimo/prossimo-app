@@ -94,7 +94,7 @@ $(function () {
             Backbone.history.start({ pushState: true });
 
             if ( Backbone.history.fragment === '' ) {
-                app.router.navigate('/units/', { trigger: true });
+                app.router.navigate('/dashboard/', { trigger: true });
             }
         });
     });
