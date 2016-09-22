@@ -13,22 +13,19 @@
 //  ------------------------------------------------------------------------
 
 .quote-screen {
+    position: absolute;
+    top: 45px;
+    left: 0;
+    width: 100%;
+    height: calc(~'100% - 45px');
     display: flex;
     flex-flow: column;
 }
 
 .quote-outer-container {
-    padding: 2rem;
+    padding: 0 2rem 2rem 2rem;
     flex: 1 1 auto;
     overflow: auto;
-    .controls-container {
-        margin: 0 0 2rem;
-        .btn {
-            background: #ddd;
-            border: 1px solid #a6a6a6;
-            color: #333;
-        }
-    }
 }
 
 .quote-container {

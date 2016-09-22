@@ -6,7 +6,7 @@ var app = app || {};
     app.MainSupplierRequestView = Marionette.ItemView.extend({
         tagName: 'div',
         className: 'screen supplier-request-screen',
-        template: app.templates['supplier-request/main-supplier-request-view'],
+        template: app.templates['docs/supplier-request/main-supplier-request-view'],
         ui: {
             $header_container: '.supplier-request-header-container',
             $table_container: '.supplier-request-table-container'

@@ -61,20 +61,12 @@ $(function () {
                     app.main_region.show(new app.MainDrawingView());
                 }
             },
-            quote: {
-                title: 'Quote',
-                path: 'quote',
-                icon_name: 'shopping-cart',
+            docs: {
+                title: 'Docs',
+                path: 'docs',
+                icon_name: 'duplicate',
                 onShow: function () {
-                    app.main_region.show(new app.MainQuoteView());
-                }
-            },
-            supplier_request: {
-                title: 'Supplier',
-                path: 'supplier',
-                icon_name: 'send',
-                onShow: function () {
-                    app.main_region.show(new app.MainSupplierRequestView());
+                    app.main_region.show(new app.MainDocsView());
                 }
             },
             settings: {

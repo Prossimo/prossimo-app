@@ -4,7 +4,7 @@ var app = app || {};
     'use strict';
 
     app.QuoteExtrasTableView = Marionette.CompositeView.extend({
-        template: app.templates['quote/quote-extras-table-view'],
+        template: app.templates['docs/quote/quote-extras-table-view'],
         childView: app.QuoteExtrasItemView,
         childViewContainer: '.quote-extras-table-body',
         childViewOptions: function () {

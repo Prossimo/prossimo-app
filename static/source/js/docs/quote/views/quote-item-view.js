@@ -6,7 +6,7 @@ var app = app || {};
     app.QuoteItemView = Marionette.ItemView.extend({
         tagName: 'div',
         className: 'quote-item',
-        template: app.templates['quote/quote-item-view'],
+        template: app.templates['docs/quote/quote-item-view'],
         initialize: function () {
             this.listenTo(this.model, 'change', this.render);
         },
