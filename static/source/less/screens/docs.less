@@ -1,0 +1,57 @@
+
+.docs-screen {
+  display: flex;
+  flex-flow: column;
+}
+
+.docs-controls-container {
+  display: flex;
+  align-items: center;
+  height: 45px;
+  padding: 0 2rem;
+  border-bottom: 1px solid #d9d9d9;
+  a {
+    padding: 3px 15px;
+    margin-right: 2rem;
+    background: #ddd;
+    border: 1px solid #a6a6a6;
+    color: #333;
+    &.switch-docs {
+      position: relative;
+      display: flex;
+      overflow: hidden;
+      width: 200px;
+      padding: 3px 0;
+      transition: .3s;
+      &:hover {
+        background: #eee;
+      }
+      &:focus {
+        box-shadow: none;
+      }
+      .bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 50%;
+        height: 100%;
+        border-radius: 4px;
+        background: #fff;
+        border: 1px solid #a6a6a6;
+        transform: translateX(50%);
+        transition: .5s;
+      }
+      &.quote .bg {
+        transform: translateX(0);
+      }
+      &.supplier .bg {
+        transform: translateX(100%);
+      }
+      .type {
+        position: relative;
+        display: block;
+        width: 50%;
+      }
+    }
+  }
+}

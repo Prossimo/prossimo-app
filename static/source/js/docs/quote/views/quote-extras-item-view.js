@@ -6,7 +6,7 @@ var app = app || {};
     app.QuoteExtrasItemView = Marionette.ItemView.extend({
         tagName: 'tr',
         className: 'quote-extras-item',
-        template: app.templates['quote/quote-extras-item-view'],
+        template: app.templates['docs/quote/quote-extras-item-view'],
         getPrices: function () {
             var f = app.utils.format;
             var unit_price = this.model.getUnitPrice();

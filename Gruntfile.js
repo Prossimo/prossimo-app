@@ -78,18 +78,19 @@ module.exports = function (grunt) {
         'drawing/views/drawing-sidebar-view.js',
         'drawing/module/glazing-drawer.js',
         'drawing/views/drawing-glazing-view.js',
-        'quote/views/main-quote-view.js',
-        'quote/views/quote-item-view.js',
-        'quote/views/quote-extras-item-view.js',
-        'quote/views/quote-header-view.js',
-        'quote/views/quote-table-view.js',
-        'quote/views/quote-extras-table-view.js',
+        'docs/views/main-docs-view.js',
+        'docs/quote/views/main-quote-view.js',
+        'docs/quote/views/quote-item-view.js',
+        'docs/quote/views/quote-extras-item-view.js',
+        'docs/quote/views/quote-header-view.js',
+        'docs/quote/views/quote-table-view.js',
+        'docs/quote/views/quote-extras-table-view.js',
+        'docs/supplier-request/views/main-supplier-request-view.js',
+        'docs/supplier-request/views/supplier-request-header-view.js',
         'settings/views/main-settings-view.js',
         'settings/views/profiles-table-view.js',
         'settings/views/filling-types-table-view.js',
         'settings/views/pricing-grids-table-view.js',
-        'supplier-request/views/main-supplier-request-view.js',
-        'supplier-request/views/supplier-request-header-view.js',
         'dashboard/views/project-totals-view.js',
         'dashboard/views/project-info-view.js',
         'dashboard/views/project-documents-view.js',
@@ -298,8 +299,8 @@ module.exports = function (grunt) {
                             res.setHeader('Access-Control-Allow-Origin', '*');
 
                             if ( req.url === '/dashboard/' || req.url === '/drawing/' ||
-                                 req.url === '/quote/' || req.url === '/settings/' ||
-                                 req.url === '/supplier/' || req.url === '/units/'
+                                 req.url === '/docs/' || req.url === '/settings/' ||
+                                 req.url === '/units/'
                             ) {
                                 require('fs').createReadStream('index.html').pipe(res);
                             } else {

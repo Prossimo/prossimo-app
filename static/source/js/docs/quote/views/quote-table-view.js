@@ -4,7 +4,7 @@ var app = app || {};
     'use strict';
 
     app.QuoteTableView = Marionette.CompositeView.extend({
-        template: app.templates['quote/quote-table-view'],
+        template: app.templates['docs/quote/quote-table-view'],
         childView: app.QuoteItemView,
         childViewContainer: '.quote-table-body',
         reorderOnSort: true,

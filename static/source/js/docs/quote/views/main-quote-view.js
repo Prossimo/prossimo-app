@@ -6,7 +6,7 @@ var app = app || {};
     app.MainQuoteView = Marionette.ItemView.extend({
         tagName: 'div',
         className: 'screen quote-screen',
-        template: app.templates['quote/main-quote-view'],
+        template: app.templates['docs/quote/main-quote-view'],
         ui: {
             $header_container: '.quote-header-container',
             $table_container: '.quote-table-container'
