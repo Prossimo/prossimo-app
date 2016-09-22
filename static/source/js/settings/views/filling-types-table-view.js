@@ -186,6 +186,10 @@ var app = app || {};
                 }
             }
 
+            var format_hash = {
+                weight_per_area: { format: '0,0[.]000' }
+            };
+
             var properties_hash = {
                 type: {
                     type: 'dropdown',
@@ -198,6 +202,10 @@ var app = app || {};
                     renderer: app.hot_renderers.moveItemRenderer
                 }
             };
+
+            if ( format_hash[column_name] ) {
+                properties_obj = _.extend(properties_obj, format_hash[column_name]);
+            }
 
             if ( properties_hash[column_name] ) {
                 properties_obj = _.extend(properties_obj, properties_hash[column_name]);
