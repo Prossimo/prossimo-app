@@ -1452,6 +1452,9 @@ var app = app || {};
                     area: 0,
                     area_both_sides: 0,
                     weight: 0
+                },
+                unit_total: {
+                    weight: 0
                 }
             };
 
@@ -1548,16 +1551,19 @@ var app = app || {};
                 }
             });
 
-            if (hasBaseFilling) {
-                result.glasses.weight = -1;
-            }
-
             result.profile_total.linear = result.frame.linear + result.sashes.linear + result.mullions.linear;
             result.profile_total.linear_without_intersections = result.frame.linear_without_intersections +
             result.sashes.linear_without_intersections + result.mullions.linear;
             result.profile_total.area = result.frame.area + result.sashes.area + result.mullions.area;
             result.profile_total.area_both_sides = result.profile_total.area * 2;
             result.profile_total.weight = (result.profile_total.linear / 1000) * profileWeight;
+
+            //  Calculate total unit weight, but only if there are no base fillings
+            if (hasBaseFilling) {
+                result.glasses.weight = -1;
+            } else {
+                result.unit_total.weight = result.profile_total.weight + result.glasses.weight;
+            }
 
             return result;
         },

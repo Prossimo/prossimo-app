@@ -292,7 +292,8 @@ var app = app || {};
                 profile_total: 'Profile Total',
                 glasses: 'Fillings',
                 openings: 'Openings',
-                glazing_bars: 'Glazing Bars'
+                glazing_bars: 'Glazing Bars',
+                unit_total: 'Unit Total'
             };
 
             if ( this.options.parent_view.active_unit ) {
@@ -327,9 +328,8 @@ var app = app || {};
                                 key: key,
                                 title: titles[key],
                                 value: value,
-                                is_total: key === 'profile_total'
+                                is_total: key === 'profile_total' && group_name !== 'weight' || key === 'unit_total'
                             });
-
                         }
                     }, this);
                 }, this);
@@ -337,7 +337,7 @@ var app = app || {};
                 _.each(group_titles, function (title, key) {
                     group_data[key] = _.sortBy(group_data[key], function (param) {
                         return _.indexOf(['frame', 'sashes', 'mullions', 'profile_total', 'glasses',
-                            'openings', 'glazing_bars'], param.key);
+                            'openings', 'glazing_bars', 'unit_total'], param.key);
                     });
 
                     // Check base filling type in weight estimates
