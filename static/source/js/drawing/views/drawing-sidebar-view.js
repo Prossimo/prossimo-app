@@ -306,6 +306,7 @@ var app = app || {};
                 };
                 var data_groups = _.keys(group_titles);
                 var group_data = {};
+                var hasBaseFilling = this.options.parent_view.active_unit.hasBaseFilling();
 
                 unit_stats = this.options.parent_view.active_unit.getLinearAndAreaStats();
 
@@ -340,21 +341,10 @@ var app = app || {};
                             'openings', 'glazing_bars', 'unit_total'], param.key);
                     });
 
-                    // Check base filling type in weight estimates
-                    var hasBaseFilling = false;
-
-                    if (title.toLowerCase().indexOf('weight') !== -1) {
-                        _.each(group_data[key], function (data) {
-                            if (data.key === 'glasses' && parseInt(data.value) === -1) {
-                                hasBaseFilling = true;
-                            }
-                        }, this);
-                    }
-
                     stats_data.push({
                         title: title,
                         data: group_data[key],
-                        hasBaseFilling: hasBaseFilling
+                        hasBaseFilling: title.toLowerCase().indexOf('weight') !== -1 && hasBaseFilling
                     });
                 }, this);
             }

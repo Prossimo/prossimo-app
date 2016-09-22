@@ -1400,6 +1400,25 @@ var app = app || {};
 
             return result;
         },
+        hasBaseFilling: function () {
+            var has_base_filling = false;
+            var sizes = this.getSizes();
+
+            if (app.settings && app.settings.filling_types) {
+                _.find(sizes.glasses, function (glass) {
+                    var is_base = app.settings.filling_types.find(function (filling) {
+                        return filling.get('name') === glass.name && filling.get('is_base_type') === true;
+                    });
+
+                    if ( is_base ) {
+                        has_base_filling = true;
+                        return true;
+                    }
+                });
+            }
+
+            return has_base_filling;
+        },
         //  Get linear and area size stats for various parts of the window.
         //  These values could be used as a base to calculate estimated
         //  cost of options for the unit
@@ -1474,18 +1493,6 @@ var app = app || {};
                 return app.utils.math.square_meters(width, height);
             }
 
-            function isBaseFilling(name) {
-                var is_base = false;
-
-                if (app.settings && app.settings.filling_types) {
-                    is_base = app.settings.filling_types.find(function (filling) {
-                        return filling.get('name') === name && filling.get('is_base_type');
-                    });
-                }
-
-                return is_base;
-            }
-
             result.frame.linear = getProfilePerimeter(sizes.frame.width, sizes.frame.height);
             result.frame.linear_without_intersections =
                 getProfilePerimeterWithoutIntersections(sizes.frame.width, sizes.frame.height, sizes.frame.frame_width);
@@ -1534,7 +1541,7 @@ var app = app || {};
                 result.openings.area += getArea(opening.width, opening.height);
             });
 
-            var hasBaseFilling = false;
+            var hasBaseFilling = this.hasBaseFilling();
 
             _.each(sizes.glasses, function (glass) {
                 var area = getArea(glass.width, glass.height);
@@ -1544,10 +1551,6 @@ var app = app || {};
 
                 if (fillingWeight[glass.name]) {
                     result.glasses.weight += area * fillingWeight[glass.name];
-                }
-
-                if (isBaseFilling(glass.name)) {
-                    hasBaseFilling = true;
                 }
             });
 
