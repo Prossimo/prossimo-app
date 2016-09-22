@@ -11,6 +11,11 @@ var app = app || {};
             $header_container: '.quote-header-container',
             $table_container: '.quote-table-container'
         },
+        serializeData: function () {
+            return {
+                urlToDownloadPdf: app.settings.getPdfDownloadUrl('quote')
+            };
+        },
         onRender: function () {
             this.units_table_view = new app.UnitsTableView({
                 collection: app.current_project.units,
