@@ -36,7 +36,8 @@ var app = app || {};
     //  --------------------------------------------------------------------
 
     var SETTINGS_PROPERTIES = [
-        { name: 'api_base_path', title: 'API Base Path', type: 'string' }
+        { name: 'api_base_path', title: 'API Base Path', type: 'string' },
+        { name: 'pdf_api_base_path', title: 'PDF API Base Path', type: 'string' }
     ];
 
     app.Settings = Backbone.Model.extend({
@@ -57,7 +58,8 @@ var app = app || {};
             };
 
             var name_value_hash = {
-                api_base_path: $('meta[name="api-base-path"]').attr('value') || '/api'
+                api_base_path: $('meta[name="api-base-path"]').attr('value') || '/api',
+                pdf_api_base_path: $('meta[name="pdf-api-base-path"]').attr('value') || ''
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -69,6 +71,25 @@ var app = app || {};
             }
 
             return default_value;
+        },
+        getPdfDownloadUrl: function (quote_type) {
+            quote_type = _.contains(['quote', 'supplier'], quote_type) ? quote_type : 'quote';
+
+            var base_url = this.get('pdf_api_base_path');
+            var url = '/:type/:id/:name/:revision/:token';
+            var replacement_table = {
+                ':type': quote_type,
+                ':id': app.current_project.id,
+                ':name': encodeURIComponent(app.current_project.get('project_name')),
+                ':revision': String(app.current_project.get('quote_revision')),
+                ':token': window.localStorage.getItem('authToken')
+            };
+
+            url = url.replace(/:\w+/g, function (match) {
+                return replacement_table[match] || match;
+            });
+
+            return base_url + url;
         },
         initialize: function () {
             this.profiles = new app.ProfileCollection(null, {
