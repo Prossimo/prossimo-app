@@ -311,9 +311,10 @@ var app = app || {};
                 _.each(unit_stats, function (item, key) {
                     _.each(data_groups, function (group_name) {
                         if ( item[group_name] ) {
+                            var value;
+
                             group_data[group_name] = group_data[group_name] || [];
 
-                            var value;
                             if (group_name.indexOf('linear') !== -1) {
                                 value = f.dimension_mm(item[group_name]);
                             } else if (group_name === 'weight') {
@@ -341,12 +342,12 @@ var app = app || {};
 
                     // Check base filling type in weight estimates
                     var hasBaseFilling = false;
+
                     if (title.toLowerCase().indexOf('weight') !== -1) {
                         _.each(group_data[key], function (data) {
-                            if (data.key === 'glasses' && parseInt(data.value) === -1)  {
+                            if (data.key === 'glasses' && parseInt(data.value) === -1) {
                                 hasBaseFilling = true;
                             }
-
                         }, this);
                     }
 

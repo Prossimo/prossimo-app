@@ -1472,13 +1472,15 @@ var app = app || {};
             }
 
             function isBaseFilling(name) {
-                var result = false;
+                var is_base = false;
+
                 if (app.settings && app.settings.filling_types) {
-                    result = app.settings.filling_types.find(function (filling) {
+                    is_base = app.settings.filling_types.find(function (filling) {
                         return filling.get('name') === name && filling.get('is_base_type');
                     });
                 }
-                return result;
+
+                return is_base;
             }
 
             result.frame.linear = getProfilePerimeter(sizes.frame.width, sizes.frame.height);
@@ -1529,21 +1531,24 @@ var app = app || {};
                 result.openings.area += getArea(opening.width, opening.height);
             });
 
-            var HasBaseFilling = false;
+            var hasBaseFilling = false;
+
             _.each(sizes.glasses, function (glass) {
                 var area = getArea(glass.width, glass.height);
 
                 result.glasses.area += area;
                 result.glasses.area_both_sides += getArea(glass.width, glass.height) * 2;
+
                 if (fillingWeight[glass.name]) {
                     result.glasses.weight += area * fillingWeight[glass.name];
                 }
+
                 if (isBaseFilling(glass.name)) {
-                    HasBaseFilling = true;
+                    hasBaseFilling = true;
                 }
             });
 
-            if (HasBaseFilling) {
+            if (hasBaseFilling) {
                 result.glasses.weight = -1;
             }
 
