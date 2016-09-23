@@ -875,10 +875,17 @@ var app = app || {};
             function onBeforeKeyDown(event, onlyCtrlKeys) {
                 var isCtrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
 
-                if ( isCtrlDown && event.keyCode === 17 ) {
+                var selection = (self.hot && self.hot.getSelected()) || false;
+                var isFullRowSelected = false;
+                if (selection.length) {
+                    isFullRowSelected = selection[3] == selection[3] - selection[1];
+                }
+
+                if (isCtrlDown && event.keyCode == 17 && isFullRowSelected) {
                     event.stopImmediatePropagation();
                     return;
                 }
+
 
                 //  Ctrl + Y || Ctrl + Shift + Z
                 if ( isCtrlDown && (event.keyCode === 89 || (event.shiftKey && event.keyCode === 90 )) ) {
