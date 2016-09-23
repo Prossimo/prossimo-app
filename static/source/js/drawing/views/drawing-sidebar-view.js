@@ -292,7 +292,8 @@ var app = app || {};
                 profile_total: 'Profile Total',
                 glasses: 'Fillings',
                 openings: 'Openings',
-                glazing_bars: 'Glazing Bars'
+                glazing_bars: 'Glazing Bars',
+                unit_total: 'Unit Total'
             };
 
             if ( this.options.parent_view.active_unit ) {
@@ -300,26 +301,36 @@ var app = app || {};
                     linear: 'Total Linear',
                     linear_without_intersections: 'Total Linear (Without Intersections)',
                     area: 'Total Area',
-                    area_both_sides: 'Total Area (Both Sides)'
+                    area_both_sides: 'Total Area (Both Sides)',
+                    weight: 'Total Weight'
                 };
                 var data_groups = _.keys(group_titles);
                 var group_data = {};
+                var hasBaseFilling = this.options.parent_view.active_unit.hasBaseFilling();
 
                 unit_stats = this.options.parent_view.active_unit.getLinearAndAreaStats();
 
                 _.each(unit_stats, function (item, key) {
                     _.each(data_groups, function (group_name) {
                         if ( item[group_name] ) {
+                            var value;
+
                             group_data[group_name] = group_data[group_name] || [];
+
+                            if (group_name.indexOf('linear') !== -1) {
+                                value = f.dimension_mm(item[group_name]);
+                            } else if (group_name === 'weight') {
+                                value = f.weight(item[group_name]);
+                            } else {
+                                value = f.square_meters(item[group_name]);
+                            }
 
                             group_data[group_name].push({
                                 key: key,
                                 title: titles[key],
-                                value: group_name.indexOf('linear') !== -1 ?
-                                    f.dimension_mm(item[group_name]) : f.square_meters(item[group_name]),
-                                is_total: key === 'profile_total'
+                                value: value,
+                                is_total: key === 'profile_total' && group_name !== 'weight' || key === 'unit_total'
                             });
-
                         }
                     }, this);
                 }, this);
@@ -327,12 +338,13 @@ var app = app || {};
                 _.each(group_titles, function (title, key) {
                     group_data[key] = _.sortBy(group_data[key], function (param) {
                         return _.indexOf(['frame', 'sashes', 'mullions', 'profile_total', 'glasses',
-                            'openings', 'glazing_bars'], param.key);
+                            'openings', 'glazing_bars', 'unit_total'], param.key);
                     });
 
                     stats_data.push({
                         title: title,
-                        data: group_data[key]
+                        data: group_data[key],
+                        hasBaseFilling: title.toLowerCase().indexOf('weight') !== -1 && hasBaseFilling
                     });
                 }, this);
             }

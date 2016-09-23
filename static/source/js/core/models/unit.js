@@ -1348,6 +1348,8 @@ var app = app || {};
 
             if ( current_root.sections.length === 0 ) {
                 result.glasses.push({
+                    name: current_root.fillingName,
+                    type: current_root.fillingType,
                     width: current_root.glassParams.width,
                     height: current_root.glassParams.height
                 });
@@ -1398,10 +1400,38 @@ var app = app || {};
 
             return result;
         },
+        hasBaseFilling: function () {
+            var has_base_filling = false;
+            var sizes = this.getSizes();
+
+            if (app.settings && app.settings.filling_types) {
+                _.find(sizes.glasses, function (glass) {
+                    var is_base = app.settings.filling_types.find(function (filling) {
+                        return filling.get('name') === glass.name && filling.get('is_base_type') === true;
+                    });
+
+                    if ( is_base ) {
+                        has_base_filling = true;
+                        return true;
+                    }
+                });
+            }
+
+            return has_base_filling;
+        },
         //  Get linear and area size stats for various parts of the window.
         //  These values could be used as a base to calculate estimated
         //  cost of options for the unit
         getLinearAndAreaStats: function () {
+            var profileWeight = this.profile.get('weight_per_length');
+            var fillingWeight = {};
+
+            if (app.settings && app.settings.filling_types) {
+                app.settings.filling_types.each(function (filling) {
+                    fillingWeight[filling.get('name')] = filling.get('weight_per_area');
+                });
+            }
+
             var sizes = this.getSizes();
             var result = {
                 frame: {
@@ -1418,7 +1448,8 @@ var app = app || {};
                 },
                 glasses: {
                     area: 0,
-                    area_both_sides: 0
+                    area_both_sides: 0,
+                    weight: 0
                 },
                 openings: {
                     area: 0
@@ -1438,7 +1469,11 @@ var app = app || {};
                     linear: 0,
                     linear_without_intersections: 0,
                     area: 0,
-                    area_both_sides: 0
+                    area_both_sides: 0,
+                    weight: 0
+                },
+                unit_total: {
+                    weight: 0
                 }
             };
 
@@ -1506,16 +1541,32 @@ var app = app || {};
                 result.openings.area += getArea(opening.width, opening.height);
             });
 
+            var hasBaseFilling = this.hasBaseFilling();
+
             _.each(sizes.glasses, function (glass) {
-                result.glasses.area += getArea(glass.width, glass.height);
+                var area = getArea(glass.width, glass.height);
+
+                result.glasses.area += area;
                 result.glasses.area_both_sides += getArea(glass.width, glass.height) * 2;
+
+                if (fillingWeight[glass.name]) {
+                    result.glasses.weight += area * fillingWeight[glass.name];
+                }
             });
 
             result.profile_total.linear = result.frame.linear + result.sashes.linear + result.mullions.linear;
             result.profile_total.linear_without_intersections = result.frame.linear_without_intersections +
-                result.sashes.linear_without_intersections + result.mullions.linear;
+            result.sashes.linear_without_intersections + result.mullions.linear;
             result.profile_total.area = result.frame.area + result.sashes.area + result.mullions.area;
             result.profile_total.area_both_sides = result.profile_total.area * 2;
+            result.profile_total.weight = (result.profile_total.linear / 1000) * profileWeight;
+
+            //  Calculate total unit weight, but only if there are no base fillings
+            if (hasBaseFilling) {
+                result.glasses.weight = -1;
+            } else {
+                result.unit_total.weight = result.profile_total.weight + result.glasses.weight;
+            }
 
             return result;
         },
