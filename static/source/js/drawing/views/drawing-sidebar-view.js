@@ -292,7 +292,8 @@ var app = app || {};
                 profile_total: 'Profile Total',
                 glasses: 'Fillings',
                 openings: 'Openings',
-                glazing_bars: 'Glazing Bars'
+                glazing_bars: 'Glazing Bars',
+                unit_total: 'Unit Total'
             };
 
             if ( this.options.parent_view.active_unit ) {
@@ -305,15 +306,17 @@ var app = app || {};
                 };
                 var data_groups = _.keys(group_titles);
                 var group_data = {};
+                var hasBaseFilling = this.options.parent_view.active_unit.hasBaseFilling();
 
                 unit_stats = this.options.parent_view.active_unit.getLinearAndAreaStats();
 
                 _.each(unit_stats, function (item, key) {
                     _.each(data_groups, function (group_name) {
                         if ( item[group_name] ) {
+                            var value;
+
                             group_data[group_name] = group_data[group_name] || [];
 
-                            var value;
                             if (group_name.indexOf('linear') !== -1) {
                                 value = f.dimension_mm(item[group_name]);
                             } else if (group_name === 'weight') {
@@ -326,9 +329,8 @@ var app = app || {};
                                 key: key,
                                 title: titles[key],
                                 value: value,
-                                is_total: key === 'profile_total'
+                                is_total: key === 'profile_total' && group_name !== 'weight' || key === 'unit_total'
                             });
-
                         }
                     }, this);
                 }, this);
@@ -336,24 +338,13 @@ var app = app || {};
                 _.each(group_titles, function (title, key) {
                     group_data[key] = _.sortBy(group_data[key], function (param) {
                         return _.indexOf(['frame', 'sashes', 'mullions', 'profile_total', 'glasses',
-                            'openings', 'glazing_bars'], param.key);
+                            'openings', 'glazing_bars', 'unit_total'], param.key);
                     });
-
-                    // Check base filling type in weight estimates
-                    var hasBaseFilling = false;
-                    if (title.toLowerCase().indexOf('weight') !== -1) {
-                        _.each(group_data[key], function (data) {
-                            if (data.key === 'glasses' && parseInt(data.value) === -1)  {
-                                hasBaseFilling = true;
-                            }
-
-                        }, this);
-                    }
 
                     stats_data.push({
                         title: title,
                         data: group_data[key],
-                        hasBaseFilling: hasBaseFilling
+                        hasBaseFilling: title.toLowerCase().indexOf('weight') !== -1 && hasBaseFilling
                     });
                 }, this);
             }

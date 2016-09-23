@@ -215,7 +215,8 @@ var app = app || {};
                 sash_frame_overlap: { format: '0,0[.]00' },
                 sash_mullion_overlap: { format: '0,0[.]00' },
                 frame_u_value: { format: '0,0[.]00' },
-                spacer_thermal_bridge_value: { format: '0,0[.]00' }
+                spacer_thermal_bridge_value: { format: '0,0[.]00' },
+                weight_per_length: { format: '0,0[.]000' }
             };
 
             var properties_hash = {
