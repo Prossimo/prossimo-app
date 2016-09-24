@@ -308,8 +308,14 @@ var app = app || {};
             //  (via backbone.marionette.keyshortcuts plugin) does not fire
             function onBeforeKeyDown(event, onlyCtrlKeys) {
                 var isCtrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
+                var selection = (self.hot && self.hot.getSelected()) || false;
+                var isFullRowSelected = false;
 
-                if (isCtrlDown && event.keyCode === 17) {
+                if (selection.length) {
+                    isFullRowSelected = selection[3] === selection[3] - selection[1];
+                }
+
+                if (isCtrlDown && event.keyCode === 17 && isFullRowSelected) {
                     event.stopImmediatePropagation();
                     return;
                 }

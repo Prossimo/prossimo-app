@@ -364,10 +364,16 @@ var app = app || {};
             //  (via backbone.marionette.keyshortcuts plugin) does not fire
             function onBeforeKeyDown(event, onlyCtrlKeys) {
                 var isCtrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
+                var selection = (self.hot && self.hot.getSelected()) || false;
+                var isFullRowSelected = false;
+
+                if (selection.length) {
+                    isFullRowSelected = selection[3] === selection[3] - selection[1];
+                }
 
                 //  document.body has at least 17 listeners onkeydown.
                 //  hitting ctrl on selection causes app stuck and app crash
-                if (isCtrlDown && event.keyCode === 17) {
+                if (isCtrlDown && event.keyCode === 17 && isFullRowSelected) {
                     event.stopImmediatePropagation();
                     return;
                 }
