@@ -26,6 +26,13 @@ var app = app || {};
                     return new app.OptionsProfilesTableDialogView(view_options);
                 }
             });
+
+            this.registerDialog({
+                name: 'createProject',
+                getView: function (view_options) {
+                    return new app.CreateProjectDialogView(view_options);
+                }
+            });
         },
         registerDialog: function (options) {
             this.registered_dialogs[options.name] = options;

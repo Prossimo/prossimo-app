@@ -6,7 +6,7 @@ var app = app || {};
     var UNIT_PROPERTIES = [
         { name: 'mark', title: 'Mark', type: 'string' },
         { name: 'width', title: 'Width (inches)', type: 'number' },
-        { name: 'height', title: 'Height (inches)', type: 'number' },
+        { name: 'height', title: 'Height (inches)', type: 'string' },
         { name: 'quantity', title: 'Quantity', type: 'number' },
         { name: 'description', title: 'Customer Description', type: 'string' },
         { name: 'notes', title: 'Notes', type: 'string' },
@@ -183,6 +183,7 @@ var app = app || {};
             };
 
             var name_value_hash = {
+                height: '0',
                 original_currency: 'EUR',
                 conversion_rate: 0.9,
                 price_markup: 2.3,
@@ -626,13 +627,8 @@ var app = app || {};
         },
         isCircularPossible: function (sashId) {
             var root = this.generateFullRoot();
-            var parent = findParent(root, sashId);
 
-            if (!parent) {
-                return true;
-            }
-
-            return false;
+            return !findParent(root, sashId) && !root.trapezoidHeights;
         },
         getCircleRadius: function () {
             var root = this.generateFullRoot();
@@ -645,6 +641,10 @@ var app = app || {};
         },
         isArchedPossible: function (sashId) {
             var root = this.generateFullRoot();
+
+            if (root.trapezoidHeights) {
+                return false;
+            }
 
             if (app.Unit.findSection(root, sashId).sashType !== 'fixed_in_frame') {
                 return false;
@@ -938,6 +938,10 @@ var app = app || {};
         },
         setSectionMullionPosition: function (id, pos) {
             this._updateSection(id, function (section) {
+                if ( section.minPosition && section.minPosition > pos ) {
+                    pos = section.minPosition;
+                }
+
                 section.position = parseFloat(pos);
             });
         },
@@ -964,9 +968,36 @@ var app = app || {};
             }
 
             this._updateSection(sectionId, function (section) {
+
                 var full = this.generateFullRoot();
                 var fullSection = app.Unit.findSection(full, sectionId);
                 var measurementType = getInvertedDivider(type).replace(/_invisible/, '');
+                var position;
+
+                if (type === 'horizontal' || type === 'horizontal_invisible') {
+                    position = fullSection.openingParams.y + fullSection.openingParams.height / 2;
+
+                    if (this.isTrapezoid()) {
+                        var corners = this.getMainTrapezoidInnerCorners();
+                        var crossing = this.getLineCrossingY(position, corners.left, corners.right);
+                        var heights = this.getTrapezoidHeights();
+                        var width = this.getInMetric('width', 'mm');
+                        var minHeight = (heights.left > heights.right) ? heights.right : heights.left;
+                        var maxHeight = (heights.left < heights.right) ? heights.right : heights.left;
+
+                        if ( crossing >= -100 && crossing <= width + 100 ) {
+                            position = maxHeight - minHeight + 200;
+                            section.minPosition = position;
+
+                            if ( position > fullSection.sashParams.y + fullSection.sashParams.height ) {
+                                return false;
+                            }
+                        }
+                    }
+                    // section.position = position;
+                } else {
+                    position = fullSection.openingParams.x + fullSection.openingParams.width / 2;
+                }
 
                 section.divider = type;
                 section.sections = [getSectionDefaults(), getSectionDefaults()];
@@ -984,11 +1015,8 @@ var app = app || {};
                     section.sections[0].fillingName = section.sections[1].fillingName = section.fillingName;
                 }
 
-                if (type === 'horizontal' || type === 'horizontal_invisible') {
-                    section.position = fullSection.openingParams.y + fullSection.openingParams.height / 2;
-                } else {
-                    section.position = fullSection.openingParams.x + fullSection.openingParams.width / 2;
-                }
+                section.position = position;
+
             }.bind(this));
         },
         // after full calulcalation section will be something like:
@@ -1307,8 +1335,9 @@ var app = app || {};
         },
         //  Inches by default, mm optional
         updateDimension: function (attr, val, metric) {
+            var rootSection = this.get('root_section');
             var possible_metrics = ['mm', 'inches'];
-            var possible_dimensions = ['width', 'height'];
+            var possible_dimensions = ['width', 'height', 'height_max', 'height_min'];
 
             if ( !attr || possible_dimensions.indexOf(attr) === -1 ) {
                 throw new Error('Wrong dimension. Possible values: ' + possible_dimensions.join(', ') );
@@ -1327,6 +1356,29 @@ var app = app || {};
                 this.setCircular(full_root.id, {
                     radius: val / 2
                 });
+            } else if (attr === 'height' && _.isArray(val) && val.length > 1) {
+                rootSection.trapezoidHeights = [val[0], val[1]];
+                rootSection.circular = false;
+                rootSection.arched = false;
+                var params = {
+                    corners: this.getMainTrapezoidInnerCorners(),
+                    minHeight: (val[0] > val[1]) ? val[1] : val[0],
+                    maxHeight: (val[0] < val[1]) ? val[1] : val[0]
+                };
+
+                this.checkHorizontalSplit(rootSection, params);
+                this.persist(attr, (val[0] > val[1]) ? val[0] : val[1]);
+            } else if (attr === 'height' && !_.isArray(val) && this.isTrapezoid()) {
+                rootSection.trapezoidHeights = false;
+                this.persist('height', val);
+            } else if (attr === 'height_max') {
+                if (this.isTrapezoid()) {
+                    this.updateTrapezoidHeight('max', val);
+                } else {
+                    this.persist('height', val);
+                }
+            } else if (attr === 'height_min') {
+                this.updateTrapezoidHeight('min', val);
             } else {
                 this.persist(attr, val);
             }
@@ -1377,6 +1429,8 @@ var app = app || {};
 
             if ( current_root.sections.length === 0 ) {
                 result.glasses.push({
+                    name: current_root.fillingName,
+                    type: current_root.fillingType,
                     width: current_root.glassParams.width,
                     height: current_root.glassParams.height
                 });
@@ -1427,10 +1481,38 @@ var app = app || {};
 
             return result;
         },
+        hasBaseFilling: function () {
+            var has_base_filling = false;
+            var sizes = this.getSizes();
+
+            if (app.settings && app.settings.filling_types) {
+                _.find(sizes.glasses, function (glass) {
+                    var is_base = app.settings.filling_types.find(function (filling) {
+                        return filling.get('name') === glass.name && filling.get('is_base_type') === true;
+                    });
+
+                    if ( is_base ) {
+                        has_base_filling = true;
+                        return true;
+                    }
+                });
+            }
+
+            return has_base_filling;
+        },
         //  Get linear and area size stats for various parts of the window.
         //  These values could be used as a base to calculate estimated
         //  cost of options for the unit
         getLinearAndAreaStats: function () {
+            var profileWeight = this.profile.get('weight_per_length');
+            var fillingWeight = {};
+
+            if (app.settings && app.settings.filling_types) {
+                app.settings.filling_types.each(function (filling) {
+                    fillingWeight[filling.get('name')] = filling.get('weight_per_area');
+                });
+            }
+
             var sizes = this.getSizes();
             var result = {
                 frame: {
@@ -1447,7 +1529,8 @@ var app = app || {};
                 },
                 glasses: {
                     area: 0,
-                    area_both_sides: 0
+                    area_both_sides: 0,
+                    weight: 0
                 },
                 openings: {
                     area: 0
@@ -1467,7 +1550,11 @@ var app = app || {};
                     linear: 0,
                     linear_without_intersections: 0,
                     area: 0,
-                    area_both_sides: 0
+                    area_both_sides: 0,
+                    weight: 0
+                },
+                unit_total: {
+                    weight: 0
                 }
             };
 
@@ -1535,16 +1622,32 @@ var app = app || {};
                 result.openings.area += getArea(opening.width, opening.height);
             });
 
+            var hasBaseFilling = this.hasBaseFilling();
+
             _.each(sizes.glasses, function (glass) {
-                result.glasses.area += getArea(glass.width, glass.height);
+                var area = getArea(glass.width, glass.height);
+
+                result.glasses.area += area;
                 result.glasses.area_both_sides += getArea(glass.width, glass.height) * 2;
+
+                if (fillingWeight[glass.name]) {
+                    result.glasses.weight += area * fillingWeight[glass.name];
+                }
             });
 
             result.profile_total.linear = result.frame.linear + result.sashes.linear + result.mullions.linear;
             result.profile_total.linear_without_intersections = result.frame.linear_without_intersections +
-                result.sashes.linear_without_intersections + result.mullions.linear;
+            result.sashes.linear_without_intersections + result.mullions.linear;
             result.profile_total.area = result.frame.area + result.sashes.area + result.mullions.area;
             result.profile_total.area_both_sides = result.profile_total.area * 2;
+            result.profile_total.weight = (result.profile_total.linear / 1000) * profileWeight;
+
+            //  Calculate total unit weight, but only if there are no base fillings
+            if (hasBaseFilling) {
+                result.glasses.weight = -1;
+            } else {
+                result.unit_total.weight = result.profile_total.weight + result.glasses.weight;
+            }
 
             return result;
         },
@@ -1888,7 +1991,176 @@ var app = app || {};
             }
 
             return is_active;
+        },
+        /* trapezoid start */
+        isTrapezoid: function () {
+            var root = this.generateFullRoot();
+
+            return root.trapezoidHeights;
+        },
+        getTrapezoidHeights: function (inside) {
+            if (typeof inside !== 'undefined') {
+                this.inside = inside;
+            }
+
+            var heights = this.get('root_section').trapezoidHeights;
+            var left = app.utils.convert.inches_to_mm(heights[0]);
+            var right = app.utils.convert.inches_to_mm(heights[1]);
+
+            return (this.inside) ? { left: right, right: left } : { left: left, right: right };
+        },
+        getTrapezoidMaxHeight: function () {
+            var heights = this.getTrapezoidHeights();
+
+            return ( heights.left > heights.right ) ? heights.left : heights.right;
+        },
+        getTrapezoidInnerCorners: function (params) {
+            var heights = params.heights;
+            var width = params.width;
+            var frameWidth = params.frameWidth;
+            var maxHeight = params.maxHeight;
+            var corners = {};
+
+            if (typeof heights === 'object') {
+                var cornerLeft = Math.abs(
+                    ( Math.atan( ( ( maxHeight - heights.right ) - ( maxHeight - heights.left ) ) / ( width - 0 ) ) -
+                    Math.atan( ( maxHeight - ( maxHeight - heights.left ) ) / ( 0 - 0 ) ) ) / Math.PI * 180
+                ) / 2;
+                var cornerRight = Math.abs( 90 - cornerLeft );
+
+                corners = {
+                    left: {
+                        x: frameWidth,
+                        y: maxHeight - heights.left + ( Math.tan( ( 90 - cornerLeft ) / 180 * Math.PI ) * frameWidth )
+                    },
+                    right: {
+                        x: width - frameWidth,
+                        y: maxHeight - heights.right + ( Math.tan( ( 90 - cornerRight ) / 180 * Math.PI ) * frameWidth )
+                    }
+                };
+            }
+
+            return corners;
+        },
+        getMainTrapezoidInnerCorners: function () {
+            return this.getTrapezoidInnerCorners({
+                heights: this.getTrapezoidHeights(),
+                width: this.getInMetric('width', 'mm'),
+                frameWidth: this.profile.get('frame_width'),
+                maxHeight: this.getTrapezoidMaxHeight()
+            });
+        },
+        getTrapezoidCrossing: function (start, finish) {
+            var corners = this.getMainTrapezoidInnerCorners();
+            var x1 = start.x;
+            var y1 = start.y;
+            var x2 = finish.x;
+            var y2 = finish.y;
+            var x3 = corners.left.x;
+            var y3 = corners.left.y;
+            var x4 = corners.right.x;
+            var y4 = corners.right.y;
+            var diff = ( ( ( y4 - y3 ) * ( x2 - x1 ) ) - ( ( x4 - x3 ) * ( y2 - y1 ) ) );
+            var Ua = ( ( ( x4 - x3 ) * ( y1 - y3 ) ) - ( ( y4 - y3 ) * ( x1 - x3 ) ) ) / diff;
+            var Ub = ( ( ( x2 - x1 ) * ( y1 - y3 ) ) - ( ( y2 - y1 ) * ( x1 - x3 ) ) ) / diff;
+
+            return ( Ua >= 0 && Ua <= 1 && Ub >= 0 && Ub <= 1 ) ?
+                { x: x1 + ( Ua * (x2 - x1) ), y: y1 + ( Ua * (y2 - y1) ) } :
+                false;
+        },
+        getLineCrossingX: function (x, start, finish) {
+            return ( 0 - ( ( start.y - finish.y ) * x ) - ( ( start.x * finish.y ) - ( finish.x * start.y ) ) ) /
+                ( finish.x - start.x );
+        },
+        getLineCrossingY: function (y, start, finish) {
+            return ( 0 - ( ( finish.x - start.x ) * y ) - ( ( start.x * finish.y ) - ( finish.x * start.y ) ) ) /
+                ( start.y - finish.y );
+        },
+        getFrameOffset: function () {
+            return 34;
+        },
+        updateTrapezoidHeight: function (type, val) {
+
+            if (this.isTrapezoid()) {
+                var height;
+                var rootSection = this.get('root_section');
+                var heights = rootSection.trapezoidHeights;
+
+                if (type === 'min') {
+                    if (heights[0] > heights[1]) {
+                        heights[1] = val;
+                    } else {
+                        heights[0] = val;
+                    }
+                } else {
+                    if (heights[0] > heights[1]) {
+                        heights[0] = val;
+                    } else {
+                        heights[1] = val;
+                    }
+                }
+
+                if (heights[0] === heights[1]) {
+                    rootSection.trapezoidHeights = false;
+                    height = heights[0];
+                } else {
+                    var params = {
+                        corners: this.getMainTrapezoidInnerCorners(),
+                        minHeight: (heights[0] > heights[1]) ? heights[1] : heights[0],
+                        maxHeight: (heights[0] < heights[1]) ? heights[1] : heights[0]
+                    };
+
+                    height = params.maxHeight;
+                    rootSection.trapezoidHeights = heights;
+                    this.checkHorizontalSplit(rootSection, params);
+                    this.persist('root_section', rootSection);
+                }
+
+                if (this.get('height') === height) {
+                    this.trigger('change', this);
+                } else {
+                    this.updateDimension('height', height);
+                }
+
+            }
+        },
+        checkHorizontalSplit: function (rootSection, params) {
+            if ( rootSection.sections && rootSection.sections.length ) {
+                for (var i = 0; i < rootSection.sections.length; i++) {
+                    this.checkHorizontalSplit(rootSection.sections[i], params);
+                }
+            }
+
+            if ( rootSection.divider && rootSection.divider === 'horizontal' && rootSection.position ) {
+                var crossing = this.getLineCrossingY(rootSection.position, params.corners.left, params.corners.right);
+
+                if (crossing >= -100) {
+                    var maxHeight = app.utils.convert.inches_to_mm(params.maxHeight);
+                    var minHeight = app.utils.convert.inches_to_mm(params.minHeight);
+                    var position = maxHeight - minHeight + 250;
+
+                    rootSection.minPosition = rootSection.position = position;
+                }
+            }
+        },
+        getTrapezoidHeight: function () {
+            var trapezoidHeights = this.get('root_section').trapezoidHeights;
+
+            return (trapezoidHeights) ? trapezoidHeights[0] + ' | ' + trapezoidHeights[1] : this.get('height');
+        },
+        getTrapezoidHeightMM: function () {
+            var trapezoidHeights = this.get('root_section').trapezoidHeights;
+
+            if (trapezoidHeights) {
+                trapezoidHeights = [
+                    app.utils.convert.inches_to_mm(trapezoidHeights[0]),
+                    app.utils.convert.inches_to_mm(trapezoidHeights[1])
+                ];
+            }
+
+            return trapezoidHeights || app.utils.convert.inches_to_mm(this.get('height'));
         }
+        /* trapezoid end */
     });
 
     // static function

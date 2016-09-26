@@ -80,6 +80,7 @@ module.exports = function (grunt) {
         'drawing/module/drawing-module.js',
         'drawing/module/layer-manager.js',
         'drawing/module/unit-drawer.js',
+        'drawing/module/trapezoid-unit-drawer.js',
         'drawing/module/metrics-drawer.js',
         'drawing/views/main-drawing-view.js',
         'drawing/views/drawing-view.js',
@@ -111,6 +112,7 @@ module.exports = function (grunt) {
         'dialogs/views/base-dialog-view.js',
         'dialogs/views/login-dialog-view.js',
         'dialogs/views/options-profiles-table-dialog-view.js',
+        'dialogs/views/create-project-dialog-view.js',
         'app.js'
     ];
 
@@ -393,6 +395,10 @@ module.exports = function (grunt) {
                         {
                             match: 'api_base_path',
                             replacement: 'http://127.0.0.1:8000/api'
+                        },
+                        {
+                            match: 'pdf_api_base_path',
+                            replacement: 'http://127.0.0.1:8080/print'
                         }
                     ]
                 },
@@ -417,6 +423,10 @@ module.exports = function (grunt) {
                         {
                             match: 'api_base_path',
                             replacement: '/api/api'
+                        },
+                        {
+                            match: 'pdf_api_base_path',
+                            replacement: '/print'
                         }
 
                     ]

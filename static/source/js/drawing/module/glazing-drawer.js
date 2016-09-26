@@ -125,8 +125,8 @@ var app = app || {};
         // Get methods
         getBarsCount: function () {
             return {
-                horizontal: this.section.bars.horizontal.length,
-                vertical: this.section.bars.vertical.length
+                horizontal: (this.section) ? this.section.bars.horizontal.length : 0,
+                vertical: (this.section) ? this.section.bars.vertical.length : 0
             };
         },
         getBarPosition: function ( type, bar ) {
@@ -154,7 +154,11 @@ var app = app || {};
             return position;
         },
         getBarsWithSpaces: function ( section ) {
-            var bars = JSON.parse( JSON.stringify( section.bars ) );
+            var bars;
+
+            if (section) {
+                bars = JSON.parse( JSON.stringify( section.bars ) );
+            }
 
             _.each(bars, function ( group ) {
                 var spaceUsed = 0;
@@ -169,8 +173,8 @@ var app = app || {};
         },
         getSize: function () {
             return {
-                width: this.section.glassParams.width,
-                height: this.section.glassParams.height
+                width: (this.section) ? this.section.glassParams.width : 0,
+                height: (this.section) ? this.section.glassParams.height : 0
             };
         },
         // Drawer custom methods

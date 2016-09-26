@@ -51,11 +51,17 @@ var app = app || {};
                 dimension: function () {
                     return f.dimension.apply(this, arguments);
                 },
+                dimension_heights: function () {
+                    return f.dimension_heights.apply(this, arguments);
+                },
                 percent: function () {
                     return f.percent.apply(this, arguments);
                 },
                 fixed_minimal: function () {
                     return f.fixed_minimal.apply(this, arguments);
+                },
+                fixed_heights: function () {
+                    return f.fixed_heights.apply(this, arguments);
                 },
                 fixed: function () {
                     return f.fixed.apply(this, arguments);

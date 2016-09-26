@@ -17,7 +17,8 @@ var app = app || {};
         { name: 'supplier_name', title: 'Supplier Name', type: 'string' },
         { name: 'type', title: 'Type', type: 'string' },
         { name: 'is_base_type', title: 'Is Base Type', type: 'boolean' },
-        { name: 'position', title: 'Position', type: 'number' }
+        { name: 'position', title: 'Position', type: 'number' },
+        { name: 'weight_per_area', title: 'Weight per Area (kg/m2)', type: 'number' }
     ];
 
     app.FillingType = Backbone.Model.extend({

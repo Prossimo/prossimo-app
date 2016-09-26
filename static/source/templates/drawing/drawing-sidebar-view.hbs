@@ -71,7 +71,7 @@
                     </tr>
                     {{#if opening_size }}
                     <tr>
-                        <td class="title">Clear Opening / Ventilation Area</td>
+                        <td class="title">Vent Opn. Size</td>
                         <td class="value">{{{ opening_size }}}</td>
                     </tr>
                     {{/if}}
@@ -139,17 +139,24 @@
 {{#if tabs.active_unit_stats.is_active }}
     <div class="active-unit-profile-properties">
         {{#each active_unit_stats }}
-        <table>
-            <h4>{{ title }}</h4>
-            <tbody>
-                {{#each data }}
-                <tr{{#if is_total }} class="total"{{/if}}>
-                    <td class="title">{{ title }}</td>
-                    <td class="value">{{{ value }}}</td>
-                </tr>
-                {{/each}}
-            </tbody>
-        </table>
+            {{#if hasBaseFilling }}
+                <table>
+                    <h4>{{ title }}</h4>
+                    <p class="weight-base-filling-error">Unit should not have any base filling types</p>
+                </table>
+            {{else}}
+                <table>
+                    <h4>{{ title }}</h4>
+                    <tbody>
+                    {{#each data }}
+                        <tr{{#if is_total }} class="total"{{/if}}>
+                            <td class="title">{{ title }}</td>
+                            <td class="value">{{{ value }}}</td>
+                        </tr>
+                    {{/each}}
+                    </tbody>
+                </table>
+            {{/if}}
         {{/each}}
     </div>
 {{/if}}

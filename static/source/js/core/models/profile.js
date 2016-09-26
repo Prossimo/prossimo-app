@@ -30,7 +30,8 @@ var app = app || {};
         { name: 'frame_u_value', title: 'Frame U Value', type: 'number' },
         { name: 'spacer_thermal_bridge_value', title: 'Spacer Thermal Bridge Value', type: 'number' },
         { name: 'position', title: 'Position', type: 'number' },
-        { name: 'pricing_grids', title: 'Pricing Grids', type: 'string' }
+        { name: 'pricing_grids', title: 'Pricing Grids', type: 'string' },
+        { name: 'weight_per_length', title: 'Weight per Length (kg/m)', type: 'number' }
     ];
 
     function getDefaultPricingGrids() {

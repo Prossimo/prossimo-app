@@ -87,6 +87,20 @@ var app = app || {};
 
                 return (value_feet ? value_feet + '′−' : '' ) + value_inches + '″';
             },
+            dimension_heights: function (value, decimal_format, inches_display_mode, zero_inch_display_mode) {
+                var result;
+                var heights = value.toString().split('|');
+
+                if (heights.length > 1) {
+                    result = this.dimension(heights[0], decimal_format, inches_display_mode, zero_inch_display_mode);
+                    result += ' | ';
+                    result += this.dimension(heights[1], decimal_format, inches_display_mode, zero_inch_display_mode);
+                } else {
+                    result = this.dimension(value, decimal_format, inches_display_mode, zero_inch_display_mode);
+                }
+
+                return result;
+            },
             dimensions: function (width, height, decimal_format, inches_display_mode) {
                 return this.dimension(width, decimal_format, inches_display_mode) +
                     ' x ' + this.dimension(height, decimal_format, inches_display_mode);
@@ -136,6 +150,11 @@ var app = app || {};
 
                 return result;
             },
+            fixed_heights: function (value, num) {
+                return (typeof value === 'number')
+                    ? this.fixed_minimal(value, num)
+                    : this.fixed_minimal(value[0], num) + ' | ' + this.fixed_minimal(value[1], num);
+            },
             square_feet: function (value, num, format) {
                 format = (format && _.indexOf(['normal', 'sup'], format) !== -1) ?
                     format : 'normal';
@@ -149,6 +168,9 @@ var app = app || {};
                     format : 'sup';
                 return this.fixed_minimal(value, num) + (format === 'sup' ?
                     ' m<sup>2</sup>' : ' sq.m');
+            },
+            weight: function (value) {
+                return this.fixed_minimal(value, 3) + ' kg';
             }
         },
         parseFormat: {
@@ -220,10 +242,26 @@ var app = app || {};
                 if ( pattern.test(size_string) ) {
                     match = pattern.exec(size_string);
                     width = this.dimension(match[1]);
-                    height = this.dimension(match[2]);
+                    height = match[2];
                 } else {
                     width = this.dimension(size_string);
-                    height = this.dimension(size_string);
+                    height = size_string;
+                }
+
+                if (typeof height === 'string') {
+                    var heights = height.split('|');
+
+                    if (heights.length < 2) {
+                        height = this.dimension(height);
+                    } else {
+                        height = [this.dimension(heights[0]), this.dimension(heights[1])];
+
+                        if (height[0] === height[1]) {
+                            height = height[0];
+                        }
+                    }
+                } else {
+                    height = this.dimension(height);
                 }
 
                 if ( attr === 'width' ) {

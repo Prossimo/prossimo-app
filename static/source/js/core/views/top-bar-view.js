@@ -10,12 +10,14 @@ var app = app || {};
         ui: {
             $container: '.top-bar-container',
             $project_selector_container: '.project-selector-container',
+            $create_project_button: '.create-project-button',
             $status_panel_container: '.status-panel-container',
             $settings_toggle: '.project-settings-toggle',
             $spinner_container: '.spinner-container'
         },
         events: {
-            'click @ui.$settings_toggle': 'onSettingsToggle'
+            'click @ui.$settings_toggle': 'onSettingsToggle',
+            'click @ui.$create_project_button': 'onOpenProjectForm'
         },
         initialize: function () {
             this.project_selector_view = new app.ProjectSelectorView({ collection: this.collection });
@@ -33,6 +35,9 @@ var app = app || {};
             if ( !this.isToggleDisabled() ) {
                 this.$el.toggleClass('is-project-settings-panel-open');
             }
+        },
+        onOpenProjectForm: function () {
+            app.dialogs.showDialog('createProject');
         },
         onCurrentProjectLoaded: function () {
             if ( !this.isToggleDisabled() ) {

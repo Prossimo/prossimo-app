@@ -26,6 +26,10 @@ var app = app || {};
         fetchData: function () {
             this.fetchProjectList();
         },
+        setNewProjectName: function (project) {
+            this.ui.$select.find('option[value="' + project.id + '"]').text(project.get('project_name'));
+            this.ui.$select.selectpicker('refresh');
+        },
         fetchProjectList: function () {
             var self = this;
 
@@ -50,7 +54,8 @@ var app = app || {};
             this.loadLastProject();
         },
         onChange: function () {
-            var new_id = this.ui.$select.val();
+            var hash = (window.location.hash) ? parseInt(window.location.hash.substr(1), 10) : false;
+            var new_id = (hash) ? hash : this.ui.$select.val();
 
             this.setCurrentProject(new_id);
             this.storeLastProject(new_id);
@@ -110,6 +115,7 @@ var app = app || {};
                     }, self);
                 }
 
+                self.listenTo(app.current_project, 'change:project_name', self.setNewProjectName);
                 self.render();
             });
         },

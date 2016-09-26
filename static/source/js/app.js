@@ -3,6 +3,19 @@ var app = app || {};
 $(function () {
     'use strict';
 
+    // Fix bug with empty json response
+    $.ajaxSetup({
+        dataFilter: function (rawData, type) {
+            if (rawData) {
+                return rawData;
+            }
+
+            if (type === 'json') {
+                return null;
+            }
+        }
+    });
+
     app.App = new Marionette.Application();
 
     app.App.on('start', function () {
@@ -79,7 +92,7 @@ $(function () {
             Backbone.history.start({ pushState: true });
 
             if ( Backbone.history.fragment === '' ) {
-                app.router.navigate('/units/', { trigger: true });
+                app.router.navigate('/dashboard/', { trigger: true });
             }
         });
     });

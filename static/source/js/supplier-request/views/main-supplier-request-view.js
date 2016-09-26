@@ -11,6 +11,11 @@ var app = app || {};
             $header_container: '.supplier-request-header-container',
             $table_container: '.supplier-request-table-container'
         },
+        serializeData: function () {
+            return {
+                urlToDownloadPdf: app.settings.getPdfDownloadUrl('supplier')
+            };
+        },
         onRender: function () {
             this.request_header_view = new app.SupplierRequestHeaderView({
                 model: app.current_project

@@ -269,11 +269,14 @@ var app = app || {};
             var getter;
 
             var getters_hash = {
+                height: function (model) {
+                    return model.getTrapezoidHeight();
+                },
                 width_mm: function (model) {
                     return model.getWidthMM();
                 },
                 height_mm: function (model) {
-                    return model.getHeightMM();
+                    return model.getTrapezoidHeightMM();
                 },
                 dimensions: function (model) {
                     return f.dimensions(model.get('width'), model.get('height'), null,
@@ -499,7 +502,7 @@ var app = app || {};
                 var attributes_object = {};
                 var model = this.instance.getSourceData().at(this.row);
 
-                attributes_object[column_name] = self.getSetterParser(column_name, value);
+                attributes_object[column_name] = self.getSetterParser(column_name, value, model);
 
                 if ( !model.validate || !model.validate(attributes_object, { validate: true }) ) {
                     callback(true);
@@ -539,7 +542,7 @@ var app = app || {};
                         project_settings.get('inches_display_mode') || null)
                 },
                 height: {
-                    renderer: app.hot_renderers.getFormattedRenderer('dimension', null,
+                    renderer: app.hot_renderers.getFormattedRenderer('dimension_heights', null,
                         project_settings.get('inches_display_mode') || null)
                 },
                 width_mm: {
@@ -548,7 +551,7 @@ var app = app || {};
                 },
                 height_mm: {
                     readOnly: true,
-                    renderer: app.hot_renderers.getFormattedRenderer('fixed_minimal')
+                    renderer: app.hot_renderers.getFormattedRenderer('fixed_heights')
                 },
                 dimensions: {
                     readOnly: true,
@@ -938,8 +941,14 @@ var app = app || {};
             //  (via backbone.marionette.keyshortcuts plugin) does not fire
             function onBeforeKeyDown(event, onlyCtrlKeys) {
                 var isCtrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
+                var selection = (self.hot && self.hot.getSelected()) || false;
+                var isFullRowSelected = false;
 
-                if ( isCtrlDown && event.keyCode === 17 ) {
+                if (selection.length) {
+                    isFullRowSelected = selection[3] === selection[3] - selection[1];
+                }
+
+                if (isCtrlDown && event.keyCode === 17 && isFullRowSelected) {
                     event.stopImmediatePropagation();
                     return;
                 }
