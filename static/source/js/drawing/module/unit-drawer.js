@@ -1270,6 +1270,7 @@ var app = app || {};
 
             // Create a group of 2 paths (stroke and backdrop) from SVG path data
             // Original SVG file at /design/handle.svg
+            // Duplicate code: /static/source/js/drawing/module/trapezoid-unit-drawer.js:1638
             var handle = new Konva.Group({
                 name: 'handle',
                 x: pos.x - 15,  // If created paths are offset, use Inkscape's Save as -> Optimized SVG
