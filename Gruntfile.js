@@ -67,6 +67,7 @@ module.exports = function (grunt) {
         'core/views/spinner-view.js',
         'core/views/top-bar-view.js',
         'units-table/views/main-units-table-view.js',
+        'drawing/module/handle-data.js',
         'drawing/module/konva-clip-patch.js',
         'drawing/module/drawing-module.js',
         'drawing/module/layer-manager.js',
