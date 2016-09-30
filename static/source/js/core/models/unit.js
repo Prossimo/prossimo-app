@@ -1833,6 +1833,67 @@ var app = app || {};
 
             return root.trapezoidHeights;
         },
+
+        /* Determines if the unit has at least one horizontal mullion */
+        hasHorizontalMullion: function () {
+            return this.getMullions().reduce(function (previous, current) {
+                return previous || (current.type === 'horizontal' || current.type === 'horizontal_invisible');
+            }, false);
+        },
+
+        /* Determines the number of vertical metric columns on the unit drawing's left and right sides
+         * Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js */
+        leftMetricCount: function (isInsideView) {
+
+            // Inside view //
+
+            // Trapezoid units have reversed metrics on the inside view, except for arched trapezoids
+            if (isInsideView && this.isTrapezoid() && !this.isArchedWindow()) {
+                return this.rightMetricCount();
+            }
+
+            // All views //
+
+            // Trapezoid units always have one metric on the left
+            if (this.isTrapezoid()) {
+                return 1;
+
+            // Arched units always have two metrics on the left
+            } else if (this.isArchedWindow()) {
+                return 2;
+
+            // For regular units, at least one horizontal mullion adds the second metric
+            } else {
+                return (this.hasHorizontalMullion()) ? 2 : 1;
+            }
+        },
+
+        /* Determines the number of vertical metric columns on the unit drawing's right side
+         * Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js */
+        rightMetricCount: function (isInsideView) {
+
+            // Inside view //
+
+            // Trapezoid units have reversed metrics on the inside view, except for arched trapezoids
+            if (isInsideView && this.isTrapezoid() && !this.isArchedWindow()) {
+                return this.leftMetricCount();
+            }
+
+            // All views //
+
+            // Arched trapezoid units always have two metrics on the right
+            if (this.isTrapezoid() && this.isArchedWindow()) {
+                return 2;
+
+            // For regular trapezoid units, at least one horizontal mullion adds the second metric
+            } else if (this.isTrapezoid()) {
+                return (this.hasHorizontalMullion()) ? 2 : 1;
+
+            // Non-trapezoid units don't have metrics on the right
+            } else {
+                return 0;
+            }
+        },
         getTrapezoidHeights: function (inside) {
             if (typeof inside !== 'undefined') {
                 this.inside = inside;
