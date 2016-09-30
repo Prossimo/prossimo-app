@@ -5,21 +5,15 @@ var app = app || {};
 
     app.ProfileCollection = Backbone.Collection.extend({
         model: app.Profile,
+        reorder_property_name: 'profiles',
         url: function () {
             return (this.options.api_base_path ? this.options.api_base_path : '') + '/profiles';
         },
         reorder_url: function () {
             return (this.options.api_base_path ? this.options.api_base_path : '') + '/reorder_profiles';
         },
-        reorder_property_name: 'profiles',
         parse: function (data) {
-            return _.map(data.profiles, function (profile) {
-                var keys_to_omit = ['units'];
-
-                return _.pick(profile, function (value, key) {
-                    return !_.isNull(value) && !_.contains(keys_to_omit, key);
-                });
-            });
+            return data.profiles || data;
         },
         initialize: function (models, options) {
             this.options = options || {};

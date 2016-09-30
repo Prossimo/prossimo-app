@@ -3,30 +3,33 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var BASE_TYPES = [
-        { name: 'glass', title: 'Glass' },
-        { name: 'recessed', title: 'Recessed' },
-        { name: 'interior-flush-panel', title: 'Interior Flush Panel' },
-        { name: 'exterior-flush-panel', title: 'Exterior Flush Panel' },
-        { name: 'full-flush-panel', title: 'Full Flush Panel' },
-        { name: 'louver', title: 'Louver' }
-    ];
+    var UNSET_VALUE = '--';
 
-    var FILLING_TYPE_PROPERTIES = [
-        { name: 'name', title: 'Prossimo Name', type: 'string' },
-        { name: 'supplier_name', title: 'Supplier Name', type: 'string' },
-        { name: 'type', title: 'Type', type: 'string' },
-        { name: 'is_base_type', title: 'Is Base Type', type: 'boolean' },
+    //  TODO: we better have original_cost and original_currency here, similar
+    //  to units / accessories, instead of price
+    var ENTRY_PROPERTIES = [
+        { name: 'name', title: 'Name', type: 'string' },
+        //  TODO: price should be a number on the backend as well
+        { name: 'price', title: 'Price', type: 'number' },
+        { name: 'data', title: 'Additional Data', type: 'string' },
         { name: 'position', title: 'Position', type: 'number' },
-        { name: 'weight_per_area', title: 'Weight per Area (kg/m2)', type: 'number' }
+        { name: 'profiles', title: 'Profiles', type: 'array' }
     ];
 
-    app.FillingType = Backbone.Model.extend({
-        schema: app.schema.createSchema(FILLING_TYPE_PROPERTIES),
+    function getDefaultEntryData() {
+        return _.extend({}, {});
+    }
+
+    function getDefaultProfilesList() {
+        return [];
+    }
+
+    app.OptionsDictionaryEntry = Backbone.Model.extend({
+        schema: app.schema.createSchema(ENTRY_PROPERTIES),
         defaults: function () {
             var defaults = {};
 
-            _.each(FILLING_TYPE_PROPERTIES, function (item) {
+            _.each(ENTRY_PROPERTIES, function (item) {
                 defaults[item.name] = this.getDefaultValue(item.name, item.type);
             }, this);
 
@@ -39,12 +42,12 @@ var app = app || {};
             var default_value = '';
 
             var type_value_hash = {
-                number: 0,
-                boolean: false
+                number: 0
             };
 
             var name_value_hash = {
-                type: this.getBaseTypes()[0].name
+                data: getDefaultEntryData(),
+                profiles: getDefaultProfilesList()
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -61,21 +64,20 @@ var app = app || {};
             return Backbone.Model.prototype.saveAndGetId.apply(this, arguments);
         },
         sync: function (method, model, options) {
-            var properties_to_omit = ['id', 'is_base_type'];
+            var properties_to_omit = ['id'];
 
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { filling_type: _.omit(model.toJSON(), properties_to_omit) };
+                options.attrs = { entry: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
+                    data: JSON.stringify(model.get('data'))
+                }) };
             }
 
             return Backbone.sync.call(this, method, model, options);
         },
         parse: function (data) {
-            var filling_type_data = data && data.filling_type ? data.filling_type : data;
+            var entry_data = data && data.entry ? data.entry : data;
 
-            return app.schema.parseAccordingToSchema(filling_type_data, this.schema);
-        },
-        initialize: function (attributes, options) {
-            this.options = options || {};
+            return app.schema.parseAccordingToSchema(entry_data, this.schema);
         },
         validate: function (attributes, options) {
             var error_obj = null;
@@ -83,13 +85,31 @@ var app = app || {};
                 return item.get('name');
             });
 
-            //  We want to have unique profile names across the collection
+            //  We want to have unique option names across the collection
             if ( options.validate && collection_names &&
                 _.contains(collection_names, attributes.name)
             ) {
                 return {
                     attribute_name: 'name',
-                    error_message: 'Filling type name "' + attributes.name + '" is already used in this collection'
+                    error_message: 'Entry name "' + attributes.name + '" is already used in this collection'
+                };
+            }
+
+            //  Don't allow option names that consist of numbers only ("123")
+            if ( options.validate && attributes.name &&
+                parseInt(attributes.name, 10).toString() === attributes.name
+            ) {
+                return {
+                    attribute_name: 'name',
+                    error_message: 'Entry name can\'t consist of only numbers'
+                };
+            }
+
+            //  Don't allow option names that is similar to UNSET_VALUE
+            if ( options.validate && attributes.name && UNSET_VALUE === attributes.name ) {
+                return {
+                    attribute_name: 'name',
+                    error_message: 'Entry name can\'t be set to ' + UNSET_VALUE
                 };
             }
 
@@ -127,10 +147,18 @@ var app = app || {};
 
             _.each(this.toJSON(), function (value, key) {
                 if ( key !== 'position' && has_only_defaults ) {
-                    var property_source = _.findWhere(FILLING_TYPE_PROPERTIES, { name: key });
+                    var property_source = _.findWhere(ENTRY_PROPERTIES, { name: key });
                     var type = property_source ? property_source.type : undefined;
 
-                    if ( this.getDefaultValue(key, type) !== value ) {
+                    if ( key === 'data' ) {
+                        if ( JSON.stringify(value) !== JSON.stringify(this.getDefaultValue('data')) ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( key === 'profiles' ) {
+                        if ( JSON.stringify(value) !== JSON.stringify(this.getDefaultValue('profiles')) ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( this.getDefaultValue(key, type) !== value ) {
                         has_only_defaults = false;
                     }
                 }
@@ -138,16 +166,16 @@ var app = app || {};
 
             return has_only_defaults;
         },
-        //  Return { name: 'name', title: 'Title', type: 'type' } objects for
-        //  each item in `names`. If `names` is empty, return everything
+        //  Return { name: 'name', title: 'Title' } pairs for each item in
+        //  `names` array. If the array is empty, return all possible pairs
         getNameTitleTypeHash: function (names) {
             var name_title_hash = [];
 
             if ( !names ) {
-                names = _.pluck( FILLING_TYPE_PROPERTIES, 'name' );
+                names = _.pluck( ENTRY_PROPERTIES, 'name' );
             }
 
-            _.each(FILLING_TYPE_PROPERTIES, function (item) {
+            _.each(ENTRY_PROPERTIES, function (item) {
                 if ( _.indexOf(names, item.name) !== -1 ) {
                     name_title_hash.push({ name: item.name, title: item.title, type: item.type });
                 }
@@ -155,16 +183,19 @@ var app = app || {};
 
             return name_title_hash;
         },
+        getAttributeType: function (attribute_name) {
+            var name_title_hash = this.getNameTitleTypeHash();
+            var target_attribute = _.findWhere(name_title_hash, {name: attribute_name});
+
+            return target_attribute ? target_attribute.type : undefined;
+        },
         getTitles: function (names) {
             var name_title_hash = this.getNameTitleTypeHash(names);
 
             return _.pluck(name_title_hash, 'title');
         },
-        getBaseTypes: function () {
-            return BASE_TYPES;
-        },
-        getBaseTypeTitle: function (name) {
-            return _.findWhere(this.getBaseTypes(), { name: name }).title || '';
+        initialize: function (attributes, options) {
+            this.options = options || {};
         }
     });
 })();

@@ -1,7 +1,5 @@
 var app = app || {};
 
-window.ENTER_KEY = 13;
-
 $(function () {
     'use strict';
 
