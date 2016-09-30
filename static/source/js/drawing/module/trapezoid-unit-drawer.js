@@ -1633,20 +1633,32 @@ var app = app || {};
                 pos.rotation = 90;
             }
 
-            var handle = new Konva.Shape({
+            // Create a group of 2 paths (stroke and backdrop) from SVG path data
+            // Original SVG file at /design/handle.svg
+            // Duplicate code: /static/source/js/drawing/module/unit-drawer.js:1273
+            var handle = new Konva.Group({
                 name: 'handle',
-                x: pos.x,
-                y: pos.y,
+                x: pos.x - 15,  // If created paths are offset, use Inkscape's Save as -> Optimized SVG
+                y: pos.y - 22,
                 rotation: pos.rotation,
-                stroke: style.stroke,
-                fill: style.fill,
-                sceneFunc: function (ctx) {
-                    ctx.beginPath();
-                    ctx.rect(-23, -23, 46, 55);
-                    ctx.rect(-14, -5, 28, 90);
-                    ctx.fillStrokeShape(this);
+                scale: {
+                    x: 1,
+                    y: 1
                 }
             });
+            var handleBg = new Konva.Path({
+                name: 'handleBg',
+                fill: style.fill,
+                data: app.handle_data.fill
+            });
+            var handleStroke = new Konva.Path({
+                name: 'handleStroke',
+                stroke: style.stroke,
+                strokeWidth: 1,
+                data: app.handle_data.stroke
+            });
+
+            handle.add(handleBg, handleStroke);
 
             return handle;
         },

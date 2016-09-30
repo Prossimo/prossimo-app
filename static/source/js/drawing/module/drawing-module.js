@@ -268,7 +268,7 @@ var app = app || {};
                     }
                 },
                 handle: {
-                    fill: 'rgba(0,0,0,0.2)',
+                    fill: 'white',
                     stroke: 'black'
                 },
                 direction_line: {
