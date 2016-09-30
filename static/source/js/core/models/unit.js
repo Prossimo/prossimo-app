@@ -1840,6 +1840,7 @@ var app = app || {};
                 return previous || (current.type === 'horizontal' || current.type === 'horizontal_invisible');
             }, false);
         },
+        /* eslint-disable no-else-return */
 
         /* Determines the number of vertical metric columns on the unit drawing's left and right sides
          * Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js */
@@ -1894,6 +1895,7 @@ var app = app || {};
                 return 0;
             }
         },
+        /* eslint-enable no-else-return */
         getTrapezoidHeights: function (inside) {
             if (typeof inside !== 'undefined') {
                 this.inside = inside;

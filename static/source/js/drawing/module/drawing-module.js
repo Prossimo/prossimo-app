@@ -190,8 +190,8 @@ var app = app || {};
 
             // Shift drawing right or left depending on metrics displayed
             // Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js
-            var metricShiftX = 0;
-            metricShiftX -= (2 - model.leftMetricCount(isInsideView)) * metricSize / 2;
+            var metricShiftX = 0 - (2 - model.leftMetricCount(isInsideView)) * metricSize / 2;
+
             if (model.rightMetricCount() > 1) {
                 metricShiftX -= (model.rightMetricCount(isInsideView) - 1) * metricSize / 2;
             }
