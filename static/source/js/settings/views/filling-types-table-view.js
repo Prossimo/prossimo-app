@@ -39,7 +39,7 @@ var app = app || {};
             this.table_update_timeout = null;
             this.dropdown_scroll_timer = null;
             this.columns = [
-                'move_item', 'name', 'supplier_name', 'type'
+                'move_item', 'name', 'supplier_name', 'type', 'weight_per_area'
             ];
 
             this.undo_manager = new app.UndoManager({
@@ -186,6 +186,10 @@ var app = app || {};
                 }
             }
 
+            var format_hash = {
+                weight_per_area: { format: '0,0[.]000' }
+            };
+
             var properties_hash = {
                 type: {
                     type: 'dropdown',
@@ -198,6 +202,10 @@ var app = app || {};
                     renderer: app.hot_renderers.moveItemRenderer
                 }
             };
+
+            if ( format_hash[column_name] ) {
+                properties_obj = _.extend(properties_obj, format_hash[column_name]);
+            }
 
             if ( properties_hash[column_name] ) {
                 properties_obj = _.extend(properties_obj, properties_hash[column_name]);
@@ -236,7 +244,7 @@ var app = app || {};
                         cell_properties.readOnly = true;
 
                         if ( _.contains(['name', 'type'], property) === false ) {
-                            cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
+                            cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer();
                         }
                     }
                 }
@@ -300,8 +308,14 @@ var app = app || {};
             //  (via backbone.marionette.keyshortcuts plugin) does not fire
             function onBeforeKeyDown(event, onlyCtrlKeys) {
                 var isCtrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
+                var selection = (self.hot && self.hot.getSelected()) || false;
+                var isFullRowSelected = false;
 
-                if (isCtrlDown && event.keyCode === 17) {
+                if (selection.length) {
+                    isFullRowSelected = selection[3] === selection[3] - selection[1];
+                }
+
+                if (isCtrlDown && event.keyCode === 17 && isFullRowSelected) {
                     event.stopImmediatePropagation();
                     return;
                 }

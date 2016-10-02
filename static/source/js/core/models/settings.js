@@ -7,19 +7,6 @@ var app = app || {};
     //  That's what we use for Units
     //  --------------------------------------------------------------------
 
-    var COLORS = ['White', 'Golden Oak', 'Mahagony', 'Grey'];
-    var GASKET_COLORS = ['Black', 'Grey'];
-    var INTERIOR_HANDLE_TYPES = [
-        'White Plastic-No Lock', 'Brushed Silver Metal-No Lock', 'Brass Metal-No Lock',
-        'Brown Plastic-No Lock', 'White Plastic-W/Lock + Key', 'Brushed Silver Metal-W/Lock + Key',
-        'Brass Metal-W/Lock + Key', 'Brown Plastic-W/Lock + Key'
-    ];
-    var HINGE_TYPES = [
-        'Flush Mount-White Plastic Cover', 'Flush Mount-Brown Plastic Cover',
-        'Flush Mount-Brushed Silver Metal Cover', 'Flush Mount-Brass Metal Cover'
-    ];
-    var GLAZING_BEAD_TYPES = ['Rounded', 'Square'];
-    var GLAZING_BAR_TYPES = ['Between panes', 'Surface glued', 'Surface glued (w/spacer)', 'True divided lite'];
     var GLAZING_BAR_WIDTHS = [12, 22, 44];
     var OPENING_DIRECTIONS = ['Inward', 'Outward'];
 
@@ -81,7 +68,7 @@ var app = app || {};
                 ':type': quote_type,
                 ':id': app.current_project.id,
                 ':name': encodeURIComponent(app.current_project.get('project_name')),
-                ':revision': app.current_project.get('quote_revision') + "",
+                ':revision': String(app.current_project.get('quote_revision')),
                 ':token': window.localStorage.getItem('authToken')
             };
 
@@ -100,10 +87,33 @@ var app = app || {};
                 api_base_path: this.get('api_base_path')
             });
 
+            this.dictionaries = new app.OptionsDictionaryCollection(null, {
+                api_base_path: this.get('api_base_path')
+            });
+
             this.project_settings = null;
+            this._dependencies_changed = {};
 
             this.listenTo(app.vent, 'auth:initial_login', this.onInitialLogin);
             this.listenTo(app.vent, 'project_selector:fetch_current:stop', this.setProjectSettings);
+
+            //  When any dictionary or dictionary entry is changed, we remember
+            //  this fact to trigger an event later, when we switch screens
+            this.listenTo(this.dictionaries, 'change entries_change', function () {
+                this._dependencies_changed = _.extend({}, this._dependencies_changed, { dictionaries: true });
+            });
+        },
+        //  We trigger an event when dictionaries / profiles / filling types
+        //  have changed, so we get a chance to update units if needed
+        //  TODO: trigger events for profiles and filling types
+        onScreenChange: function () {
+            _.each(this._dependencies_changed, function (value, depencency_name) {
+                if ( depencency_name === 'dictionaries' ) {
+                    app.vent.trigger('validate_units:dictionaries');
+                }
+            }, this);
+
+            this._dependencies_changed = {};
         },
         setProjectSettings: function () {
             this.project_settings = app.current_project.settings;
@@ -113,16 +123,20 @@ var app = app || {};
         },
         onInitialLogin: function () {
             this.fetchData();
+
+            //  If we have a router, we want to monitor all changes
+            this.listenTo(app.router, 'route', this.onScreenChange);
         },
         //  We use deferred to wait for 2 requests (profiles and filling types)
         //  to finish before triggering event (and starting to load projects)
         fetchData: function () {
             var d1 = $.Deferred();
             var d2 = $.Deferred();
+            var d3 = $.Deferred();
 
             app.vent.trigger('settings:fetch_data:start');
 
-            $.when(d1, d2).done(function () {
+            $.when(d1, d2, d3).done(function () {
                 app.vent.trigger('settings:fetch_data:stop');
             });
 
@@ -149,6 +163,19 @@ var app = app || {};
                     collection.validatePositions();
                 }
             });
+
+            this.dictionaries.fetch({
+                url: this.get('api_base_path') + '/dictionaries/full-tree',
+                remove: false,
+                data: {
+                    limit: 0
+                },
+                //  Validate positions on load
+                success: function (collection) {
+                    d3.resolve('Loaded options dictionaries');
+                    collection.validatePositions();
+                }
+            });
         },
         getNameTitleTypeHash: function (names) {
             var name_title_type_hash = {};
@@ -170,19 +197,20 @@ var app = app || {};
                 return item.get('name');
             });
         },
-        getFillingTypeById: function (cid) {
-            return this.filling_types.get(cid);
-        },
-        getFillingTypeByName: function (name) {
-            return this.filling_types.findWhere({ name: name });
-        },
-        getAvailableFillingTypes: function () {
-            return this.filling_types.models;
-        },
-        getAvailableFillingTypeNames: function () {
-            return this.getAvailableFillingTypes().map(function (item) {
-                return item.get('name');
-            });
+        getProfileNamesByIds: function (ids_array) {
+            var name_list = [];
+
+            this.profiles.each(function (item) {
+                var index = ids_array.indexOf(item.id);
+
+                if ( index !== -1 ) {
+                    name_list.push({ index: index, name: item.get('name') });
+                }
+            }, this);
+
+            name_list = _.pluck(name_list, 'name');
+
+            return name_list;
         },
         getProfileByIdOrDummy: function (profile_id) {
             var profile = this.profiles.get(profile_id);
@@ -205,23 +233,19 @@ var app = app || {};
 
             return default_profile_id;
         },
-        getColors: function () {
-            return COLORS;
+        getFillingTypeById: function (cid) {
+            return this.filling_types.get(cid);
         },
-        getInteriorHandleTypes: function () {
-            return INTERIOR_HANDLE_TYPES;
+        getFillingTypeByName: function (name) {
+            return this.filling_types.findWhere({ name: name });
         },
-        getHingeTypes: function () {
-            return HINGE_TYPES;
+        getAvailableFillingTypes: function () {
+            return this.filling_types.models;
         },
-        getGlazingBeadTypes: function () {
-            return GLAZING_BEAD_TYPES;
-        },
-        getGasketColors: function () {
-            return GASKET_COLORS;
-        },
-        getGlazingBarTypes: function () {
-            return GLAZING_BAR_TYPES;
+        getAvailableFillingTypeNames: function () {
+            return this.getAvailableFillingTypes().map(function (item) {
+                return item.get('name');
+            });
         },
         getGlazingBarWidths: function () {
             return GLAZING_BAR_WIDTHS;
@@ -240,6 +264,44 @@ var app = app || {};
         },
         getOpeningDirections: function () {
             return OPENING_DIRECTIONS;
+        },
+        getAvailableOptions: function (dictionary_id, profile_id) {
+            var available_options = [];
+            var target_dictionary = this.dictionaries.get(dictionary_id);
+
+            if ( target_dictionary ) {
+                target_dictionary.entries.each(function (entry) {
+                    if ( entry.get('profiles').length && _.contains(entry.get('profiles'), profile_id) ) {
+                        available_options.push(entry);
+                    }
+                }, this);
+            }
+
+            return available_options;
+        },
+        //  TODO: shoud use actual per-profile defaults mechanism, right now
+        //  it just gets the first option in the list
+        getDefaultOption: function (dictionary_id, profile_id) {
+            var available_options = this.getAvailableOptions(dictionary_id, profile_id);
+
+            return available_options.length ? available_options[0] : undefined;
+        },
+        getDictionaryIdByName: function (name) {
+            var target_dictionary = this.dictionaries.findWhere({name: name});
+
+            return target_dictionary ? target_dictionary.id : undefined;
+        },
+        getDictionaryEntryIdByName: function (dictionary_id, name) {
+            var target_dictionary = this.dictionaries.get(dictionary_id);
+            var target_entry = target_dictionary.entries.findWhere({name: name});
+
+            return target_entry ? target_entry.id : undefined;
+        },
+        getAvailableDictionaries: function () {
+            return this.dictionaries;
+        },
+        getAvailableDictionaryNames: function () {
+            return this.getAvailableDictionaries().pluck('name');
         }
     });
 })();

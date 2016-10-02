@@ -23,6 +23,7 @@ var app = app || {};
     ];
 
     app.Accessory = Backbone.Model.extend({
+        schema: app.schema.createSchema(ACCESSORY_PROPERTIES),
         defaults: function () {
             var defaults = {};
 
@@ -71,6 +72,11 @@ var app = app || {};
             }
 
             return Backbone.sync.call(this, method, model, options);
+        },
+        parse: function (data) {
+            var accessory_data = data && data.accessory ? data.accessory : data;
+
+            return app.schema.parseAccordingToSchema(accessory_data, this.schema);
         },
         initialize: function (attributes, options) {
             this.options = options || {};

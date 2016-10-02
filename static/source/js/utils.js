@@ -168,6 +168,9 @@ var app = app || {};
                     format : 'sup';
                 return this.fixed_minimal(value, num) + (format === 'sup' ?
                     ' m<sup>2</sup>' : ' sq.m');
+            },
+            weight: function (value) {
+                return this.fixed_minimal(value, 3) + ' kg';
             }
         },
         parseFormat: {

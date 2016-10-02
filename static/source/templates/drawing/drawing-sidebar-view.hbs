@@ -46,6 +46,19 @@
                 {{/each}}
             </tbody>
         </table>
+        {{#if active_unit_options }}
+            <h4>Unit Options</h4>
+            <table>
+            <tbody>
+                {{#each active_unit_options }}
+                <tr>
+                    <td class="title">{{ title }}</td>
+                    <td class="value">{{ value }}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        {{/if}}
         {{#if active_unit_sashes }}
             <h4>Sash List</h4>
             {{#each active_unit_sashes }}
@@ -126,17 +139,24 @@
 {{#if tabs.active_unit_stats.is_active }}
     <div class="active-unit-profile-properties">
         {{#each active_unit_stats }}
-        <table>
-            <h4>{{ title }}</h4>
-            <tbody>
-                {{#each data }}
-                <tr{{#if is_total }} class="total"{{/if}}>
-                    <td class="title">{{ title }}</td>
-                    <td class="value">{{{ value }}}</td>
-                </tr>
-                {{/each}}
-            </tbody>
-        </table>
+            {{#if hasBaseFilling }}
+                <table>
+                    <h4>{{ title }}</h4>
+                    <p class="weight-base-filling-error">Unit should not have any base filling types</p>
+                </table>
+            {{else}}
+                <table>
+                    <h4>{{ title }}</h4>
+                    <tbody>
+                    {{#each data }}
+                        <tr{{#if is_total }} class="total"{{/if}}>
+                            <td class="title">{{ title }}</td>
+                            <td class="value">{{{ value }}}</td>
+                        </tr>
+                    {{/each}}
+                    </tbody>
+                </table>
+            {{/if}}
         {{/each}}
     </div>
 {{/if}}

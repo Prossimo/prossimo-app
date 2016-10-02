@@ -14,6 +14,21 @@
     background-color: multiply(@zebra-row-color, darken(@dimmed-cell-color, 1%));
 }
 
+//  Dropdown
+
+.handsontable.listbox tbody tr td.htDimmed,
+.handsontable.listbox tbody tr:nth-child(2n) td.htDimmed {
+    background-color: darken(@white, 5%);
+}
+
+.handsontable.listbox tbody tr td.current,
+.handsontable.listbox tbody tr:nth-child(2n) td.current {
+    background-color: darken(@white, 20%);
+}
+
+
+//  Buttons inside table
+
 .handsontable .btn-move {
     font-size: 8px;
 }

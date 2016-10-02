@@ -9,13 +9,7 @@ var app = app || {};
             return app.settings.get('api_base_path') + '/projects';
         },
         parse: function (data) {
-            return _.map(data.projects, function (project) {
-                var keys_to_omit = ['sync_datetime'];
-
-                return _.pick(project, function (value, key) {
-                    return !_.isNull(value) && !_.contains(keys_to_omit, key);
-                });
-            });
+            return data.projects || data;
         },
         comparator: function (item) {
             return item.id;

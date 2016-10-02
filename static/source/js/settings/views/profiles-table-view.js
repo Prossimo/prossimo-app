@@ -39,7 +39,7 @@ var app = app || {};
             this.table_update_timeout = null;
             this.dropdown_scroll_timer = null;
             this.columns = [
-                'move_item', 'name', 'unit_type', 'system', 'supplier_system', 'frame_width',
+                'move_item', 'name', 'unit_type', 'system', 'supplier_system', 'weight_per_length', 'frame_width',
                 'mullion_width', 'sash_frame_width', 'sash_frame_overlap', 'sash_mullion_overlap',
                 'frame_corners', 'sash_corners', 'low_threshold', 'threshold_width',
                 'frame_u_value', 'visible_frame_width_fixed', 'visible_frame_width_operable',
@@ -215,7 +215,8 @@ var app = app || {};
                 sash_frame_overlap: { format: '0,0[.]00' },
                 sash_mullion_overlap: { format: '0,0[.]00' },
                 frame_u_value: { format: '0,0[.]00' },
-                spacer_thermal_bridge_value: { format: '0,0[.]00' }
+                spacer_thermal_bridge_value: { format: '0,0[.]00' },
+                weight_per_length: { format: '0,0[.]000' }
             };
 
             var properties_hash = {
@@ -363,10 +364,16 @@ var app = app || {};
             //  (via backbone.marionette.keyshortcuts plugin) does not fire
             function onBeforeKeyDown(event, onlyCtrlKeys) {
                 var isCtrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
+                var selection = (self.hot && self.hot.getSelected()) || false;
+                var isFullRowSelected = false;
+
+                if (selection.length) {
+                    isFullRowSelected = selection[3] === selection[3] - selection[1];
+                }
 
                 //  document.body has at least 17 listeners onkeydown.
                 //  hitting ctrl on selection causes app stuck and app crash
-                if (isCtrlDown && event.keyCode === 17) {
+                if (isCtrlDown && event.keyCode === 17 && isFullRowSelected) {
                     event.stopImmediatePropagation();
                     return;
                 }
