@@ -17,6 +17,7 @@ var app = app || {};
             $data_project_address: '.modal-body form input[name="project_address"]',
             $data_quote_revision: '.modal-body form input[name="quote_revision"]',
             $data_quote_date: '.modal-body form input[name="quote_date"]',
+            $project_file_info: 'modal-body form input[name="project_file_info"]',
             $data_project_notes: '.modal-body form textarea[name="project_notes"]',
             $data_shipping_notes: '.modal-body form textarea[name="shipping_notes"]'
         },
@@ -48,8 +49,36 @@ var app = app || {};
             newProject.on('sync', function () {
                 app.top_bar_view.project_selector_view.fetchProjectList();
             });
-
             app.projects.create(newProject, {wait: true});
+            this.saveFile();
+
+        },
+        saveFile: function () {
+            var token = window.localStorage.getItem('authToken');
+            var d = $.Deferred();
+            $.ajax({
+                dataType: "json",
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader("Accept", "application/json");
+                    // xhr.setRequestHeader("ContenInvalid JWT Tokent-type", "application/json; charset=utf-8");
+                    xhr.setRequestHeader("Authorization", "Bearer " + token);
+                },
+                url: app.settings.get('api_base_path') + '/files/handlers',
+                success: function (data, textStatus) {
+                    alert ('upload success!');
+                    d.resolve({
+                        success: true,
+                    });
+                },
+                error: function(error, txtStatus) {
+                    alert ('upload failed!');
+                    d.reject({
+                        success: false,
+                        errors: txtStatus
+                    });
+                }
+            });
+            return d.promise();
         },
         onRender: function () {
             if (!this.$el.find('.modal-header').find('h4').length) {
