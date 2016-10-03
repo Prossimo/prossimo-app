@@ -18,11 +18,36 @@ var app = app || {};
             $data_quote_revision: '.modal-body form input[name="quote_revision"]',
             $data_quote_date: '.modal-body form input[name="quote_date"]',
             $data_project_notes: '.modal-body form textarea[name="project_notes"]',
-            $data_shipping_notes: '.modal-body form textarea[name="shipping_notes"]'
+            $data_shipping_notes: '.modal-body form textarea[name="shipping_notes"]',
+            
+            $data_project_files: '.modal-body form input[name="project_files"]',
         },
         events: {
-            'submit form': 'addNewProject'
+            'submit form': 'addNewProject',
+            'change .modal-body form input[name="project_files"]': 'fileOpen',
+            'drop .dropZone': 'fileOpenDrop',
+            'dragover .dropZone': 'dragOverEffect',
+            'dragleave .dropZone': 'dragLeaveEffect',
         },
+        fileOpenDrop : function (e){
+            //console.log(e.originalEvent.dataTransfer.files);
+            this.ui.$data_project_files[0].files=e.originalEvent.dataTransfer.files;
+            e.preventDefault();
+            return false;
+        },
+        fileOpen: function (e){
+            console.log(e.originalEvent.target.files)
+            e.preventDefault();
+            return false;
+        },
+        dragOverEffect: function (e){
+            this.$('.dropZone').addClass('fileTarget');
+            return false;
+        },
+        dragLeaveEffect: function (e){
+            this.$('.dropZone').removeClass('fileTarget');
+            return false;
+        },  
         addNewProject: function (e) {
             e.preventDefault();
 
@@ -39,9 +64,22 @@ var app = app || {};
                 quote_revision: this.ui.$data_quote_revision.val().trim(),
                 quote_date: this.ui.$data_quote_date.val().trim(),
                 project_notes: this.ui.$data_project_notes.val().trim(),
-                shipping_notes: this.ui.$data_shipping_notes.val().trim()
-
+                shipping_notes: this.ui.$data_shipping_notes.val().trim(),
+                
+                /*
+                 * Here we should upload files on server.
+                 * Depends on backend upload methods will be different
+                 * for example  we could use https://github.com/homeslicesolutions/backbone-model-file-upload
+                 * so we should 
+                 *  specify fileAttribute: 'project_files' 
+                 *  set 'project_files' attr
+                 *  
+                 * Collection create will call model.save() method
+                 */
+                project_files: this.ui.$data_project_files[0].files,
             });
+            
+            
 
             this.$el.modal('hide');
 
