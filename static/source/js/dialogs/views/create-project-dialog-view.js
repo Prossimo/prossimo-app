@@ -50,35 +50,37 @@ var app = app || {};
                 app.top_bar_view.project_selector_view.fetchProjectList();
             });
             app.projects.create(newProject, {wait: true});
-            this.saveFile();
-
+            this.saveFile.call(this, $('input[name="project_file_info"]')[0].files[0]);
+            // this.$el.find('#project_file_info').on('change', function(e) {
+            //                 var self= this;
+            //                 self.saveFile.call(self, e.currentTarget.files[0]);
+            //             });
         },
-        saveFile: function () {
+        saveFile: function(file) {
+            var self = this;
             var token = window.localStorage.getItem('authToken');
-            var d = $.Deferred();
-            $.ajax({
-                dataType: "json",
-                beforeSend: function(xhr) {
-                    xhr.setRequestHeader("Accept", "application/json");
-                    // xhr.setRequestHeader("ContenInvalid JWT Tokent-type", "application/json; charset=utf-8");
-                    xhr.setRequestHeader("Authorization", "Bearer " + token);
-                },
+            var reader = new FileReader();
+            reader.onload = function(e) {
+            var data = reader.result;
+            Backbone.ajax({
+                method: 'POST',
                 url: app.settings.get('api_base_path') + '/files/handlers',
-                success: function (data, textStatus) {
-                    alert ('upload success!');
-                    d.resolve({
-                        success: true,
-                    });
-                },
-                error: function(error, txtStatus) {
-                    alert ('upload failed!');
-                    d.reject({
-                        success: false,
-                        errors: txtStatus
+                data: data,
+                beforeSend: function(xhr) {
+                        xhr.setRequestHeader("Accept", "application/json");
+                        // xhr.setRequestHeader("ContenInvalid JWT Tokent-type", "application/json; charset=utf-8");
+                        xhr.setRequestHeader("Authorization", "Bearer " + token);
+                    },
+                    processData: false,
+                    success: function(data, textStatus, jqXHR) {
+                            alert('success!');
+                    },
+                    error: function() {
+                            alert('upload fail!');
+                        }
                     });
                 }
-            });
-            return d.promise();
+                    reader.readAsDataURL(file);  // base64 encoded TODO: replace with BSON
         },
         onRender: function () {
             if (!this.$el.find('.modal-header').find('h4').length) {
