@@ -24,17 +24,12 @@ var app = app || {};
         },
         events: {
             'submit form': 'addNewProject',
-            'change .modal-body form input[name="project_files"]': 'fileOpen',
             'drop .dropZone': 'fileOpenDrop',
             'dragover .dropZone': 'dragOverEffect',
             'dragleave .dropZone': 'dragLeaveEffect',
         },
         fileOpenDrop : function (e){
             this.ui.$data_project_files[0].files=e.originalEvent.dataTransfer.files;
-            e.preventDefault();
-            return false;
-        },
-        fileOpen: function (e){
             e.preventDefault();
             return false;
         },
