@@ -30,13 +30,11 @@ var app = app || {};
             'dragleave .dropZone': 'dragLeaveEffect',
         },
         fileOpenDrop : function (e){
-            //console.log(e.originalEvent.dataTransfer.files);
             this.ui.$data_project_files[0].files=e.originalEvent.dataTransfer.files;
             e.preventDefault();
             return false;
         },
         fileOpen: function (e){
-            console.log(e.originalEvent.target.files)
             e.preventDefault();
             return false;
         },
