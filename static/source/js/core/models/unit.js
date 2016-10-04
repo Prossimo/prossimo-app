@@ -697,6 +697,29 @@ var app = app || {};
                 });
             }
         },
+        /* Switches to a different drawing module by recreating unit's .drawer object */
+        toDrawer: function (drawerType) {
+            var currentDrawer = app.main_region.currentView.drawing_view.module;
+            var currentUnit = app.main_region.currentView.drawing_view.module.layerManager.layers.unit;
+            var DrawerClass = (drawerType === 'trapezoid') ? app.Drawers.TrapezoidUnitDrawer : app.Drawers.UnitDrawer;
+
+            currentUnit.drawer = new DrawerClass({
+                layer: currentUnit.layer,
+                stage: currentDrawer.get('stage'),
+                builder: currentDrawer,
+                metricSize: currentDrawer.get('metricSize'),
+                data: currentUnit
+            });
+            currentDrawer.update();
+        },
+        /* Switches to trapezoid drawing module */
+        toTrapezoidDrawer: function () {
+            this.toDrawer('trapezoid');
+        },
+        /* Switches to regular drawing module */
+        toRegularDrawer: function () {
+            this.toDrawer('regular');
+        },
         getCircleSashData: function (sectionId) {
             var root;
             var section = this.getSection( sectionId );
@@ -1266,8 +1289,12 @@ var app = app || {};
                 throw new Error('Wrong metric. Possible values: ' + possible_metrics.join(', ') );
             }
 
-            //  No metric means inches
-            val = (!metric || metric === 'inches') ? val : app.utils.convert.mm_to_inches(val);
+            // Convert to inches if metric is present and it isn't inches. No metric means inches
+            if (_.isArray(val) && (metric && metric !== 'inches')) {
+                val = val.map(app.utils.convert.mm_to_inches);
+            } else if (metric && metric !== 'inches') {
+                val = app.utils.convert.mm_to_inches(val);
+            }
 
             if ( this.getCircleRadius() !== null ) {
                 var full_root = this.generateFullRoot();
@@ -1275,7 +1302,9 @@ var app = app || {};
                 this.setCircular(full_root.id, {
                     radius: val / 2
                 });
+
             } else if (attr === 'height' && _.isArray(val) && val.length > 1) {
+                // Trapezoid heights
                 rootSection.trapezoidHeights = [val[0], val[1]];
                 rootSection.circular = false;
                 rootSection.arched = false;
@@ -1287,9 +1316,16 @@ var app = app || {};
 
                 this.checkHorizontalSplit(rootSection, params);
                 this.persist(attr, (val[0] > val[1]) ? val[0] : val[1]);
+
+                if (!this.isTrapezoidDrawer()) { this.toTrapezoidDrawer(); }
+
             } else if (attr === 'height' && !_.isArray(val) && this.isTrapezoid()) {
+                // Regular height to trapezoid
                 rootSection.trapezoidHeights = false;
                 this.persist('height', val);
+
+                if (this.isTrapezoidDrawer()) { this.toRegularDrawer(); }
+
             } else if (attr === 'height_max') {
                 if (this.isTrapezoid()) {
                     this.updateTrapezoidHeight('max', val);
@@ -1832,6 +1868,12 @@ var app = app || {};
             var root = this.generateFullRoot();
 
             return root.trapezoidHeights;
+        },
+        /* Determines if drawing module for the current unit is the trapezoid drawing module */
+        isTrapezoidDrawer: function () {
+            var drawer = app.main_region.currentView.drawing_view.module.layerManager.layers.unit.drawer;
+
+            return drawer.constructor === app.Drawers.TrapezoidUnitDrawer;
         },
         getTrapezoidHeights: function (inside) {
             if (typeof inside !== 'undefined') {

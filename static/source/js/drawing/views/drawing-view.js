@@ -408,14 +408,26 @@ var app = app || {};
                     if (e.keyCode === 13) {  // enter
                         var _value = this.value;
                         var sign = 1;
+                        var inches;
+                        var mm;
 
                         if (_value[0] === '-') {
                             sign = (params.canBeNegative) ? -1 : 1;
                             _value = _value.slice(1);
                         }
 
-                        var inches = app.utils.parseFormat.dimension(_value);
-                        var mm = app.utils.convert.inches_to_mm(inches) * sign;
+                        // If `|' is present, params.setter() will get a trapezoid heights array
+                        if (_value.indexOf('|') !== -1 && _value.split('|')[0] !== _value.split('|')[1]) {
+                            inches = app.utils.parseFormat.dimensions(_value, 'height');
+                            mm = inches.map(function (value) {
+                                return app.utils.convert.inches_to_mm(value) * sign;
+                            });
+
+                        // Otherwise, it will receive a generic dimension number in mm
+                        } else {
+                            inches = app.utils.parseFormat.dimension(_value);
+                            mm = app.utils.convert.inches_to_mm(inches) * sign;
+                        }
 
                         params.setter(mm, view);
 

@@ -957,8 +957,20 @@ var app = app || {};
 
             var verticalWholeMertic = this.createVerticalMetric(metricSize, vHeight, {
                 setter: function (val) {
-                    val -= vCorrection.size;
-                    model.updateDimension('height_max', val, 'mm');
+
+                    // If trapezoid heights array, apply correction to each height
+                    if (_.isArray(val)) {
+                        val.forEach(function (value) {
+                            value -= vCorrection.size;
+                        });
+
+                        model.updateDimension('height', val, 'mm');
+
+                    // Otherwise, just set the corrected height
+                    } else {
+                        val -= vCorrection.size;
+                        model.updateDimension('height_max', val, 'mm');
+                    }
                 },
                 getter: function () {
                     return model.getInMetric('height', 'mm') + vCorrection.size;
