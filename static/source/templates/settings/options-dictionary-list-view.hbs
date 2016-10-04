@@ -1,0 +1,10 @@
+<h2>Options Dictionaries</h2>
+
+<button class="btn add-new-dictionary js-add-new-dictionary">Add new dictionary</button>
+
+<ul class="options-list-container{{#unless dictionaries_length }} hidden{{/unless}}"></ul>
+{{#if dictionaries_length }}
+    <p>Drag items in list to reorder.</p>
+{{else}}
+    <p>No dictionaries to show. Please create one.</p>
+{{/if}}

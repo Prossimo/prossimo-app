@@ -3,6 +3,8 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var UNSET_VALUE = '--';
+
     app.UnitsTableView = Marionette.ItemView.extend({
         tagName: 'div',
         className: 'units-table-container',
@@ -50,12 +52,14 @@ var app = app || {};
                     collection: this.collection,
                     columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing',
                         'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'description',
-                        'notes', 'exceptions', 'profile_id', 'system', 'external_color',
-                        'internal_color', 'interior_handle', 'exterior_handle', 'hardware_type',
-                        'lock_mechanism', 'glazing_bead', 'gasket_color',
-                        'hinge_style', 'opening_direction', 'threshold',
-                        'internal_sill', 'external_sill', 'glazing', 'glazing_bar_type', 'glazing_bar_width',
-                        'uw', 'u_value']
+                        'notes', 'exceptions', 'profile_id', 'system', 'opening_direction', 'threshold',
+                        'glazing', 'glazing_bar_width', 'uw', 'u_value']
+                },
+                unit_options: {
+                    title: 'Unit Options',
+                    collection: this.collection,
+                    columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing'],
+                    unit_options_columns: app.settings.getAvailableDictionaryNames()
                 },
                 prices: {
                     title: 'Prices',
@@ -76,6 +80,16 @@ var app = app || {};
                 }
             };
             this.active_tab = 'specs';
+
+            //  If we have no columns for Unit Options tab, don't show the tab
+            if ( !this.tabs.unit_options.unit_options_columns.length ) {
+                delete this.tabs.unit_options;
+            } else {
+                this.tabs.unit_options.columns = _.union(
+                    this.tabs.unit_options.columns,
+                    this.tabs.unit_options.unit_options_columns
+                );
+            }
 
             this.undo_manager = new app.UndoManager({
                 register: this.collection,
@@ -333,6 +347,18 @@ var app = app || {};
 
             if ( getters_hash[column_name] ) {
                 getter = getters_hash[column_name];
+            } else if (
+                this.active_tab === 'unit_options' &&
+                _.contains(this.getActiveTab().unit_options_columns, column_name)
+            ) {
+                //  TODO: deal with multiple values per dictionary somehow
+                getter = function (model, attr_name) {
+                    var target_dictionary_id = app.settings.getDictionaryIdByName(attr_name);
+                    var current_options = target_dictionary_id ?
+                        model.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
+
+                    return current_options.length ? current_options[0].get('name') : UNSET_VALUE;
+                };
             } else {
                 getter = function (model, attr_name) {
                     return model.get(attr_name);
@@ -404,6 +430,23 @@ var app = app || {};
 
             if ( setters_hash[column_name] ) {
                 setter = setters_hash[column_name];
+            } else if (
+                this.active_tab === 'unit_options' &&
+                _.contains(this.getActiveTab().unit_options_columns, column_name)
+            ) {
+                setter = function (model, attr_name, val) {
+                    var target_dictionary_id = app.settings.getDictionaryIdByName(attr_name);
+
+                    if ( target_dictionary_id ) {
+                        var target_entry_id = app.settings.getDictionaryEntryIdByName(target_dictionary_id, val);
+
+                        if ( target_entry_id ) {
+                            return model.persistOption(target_dictionary_id, target_entry_id);
+                        } else if ( val === UNSET_VALUE ) {
+                            return model.persistOption(target_dictionary_id, false);
+                        }
+                    }
+                };
             } else {
                 setter = function (model, attr_name, val) {
                     return model.persist(attr_name, self.getSetterParser(column_name, val));
@@ -589,64 +632,15 @@ var app = app || {};
                     readOnly: true,
                     renderer: app.hot_renderers.moveItemRenderer
                 },
-                internal_color: {
-                    type: 'dropdown',
-                    source: _.union(
-                        app.settings.getColors(),
-                        this.getActiveTab().collection.pluck('internal_color')
-                    ).sort()
-                },
-                external_color: {
-                    type: 'dropdown',
-                    source: _.union(
-                        app.settings.getColors(),
-                        this.getActiveTab().collection.pluck('external_color')
-                    ).sort()
-                },
-                interior_handle: {
-                    type: 'dropdown',
-                    source: _.union(
-                        app.settings.getInteriorHandleTypes(),
-                        this.getActiveTab().collection.pluck('interior_handle')
-                    ).sort()
-                },
-                hinge_style: {
-                    type: 'dropdown',
-                    source: _.union(
-                        app.settings.getHingeTypes(),
-                        this.getActiveTab().collection.pluck('hinge_style')
-                    ).sort()
-                },
-                glazing_bead: {
-                    type: 'dropdown',
-                    source: _.union(
-                        app.settings.getGlazingBeadTypes(),
-                        this.getActiveTab().collection.pluck('glazing_bead')
-                    ).sort()
-                },
                 glazing: {
                     type: 'dropdown',
                     source: app.settings.getAvailableFillingTypeNames()
-                },
-                glazing_bar_type: {
-                    type: 'dropdown',
-                    source: _.union(
-                        app.settings.getGlazingBarTypes(),
-                        this.getActiveTab().collection.pluck('glazing_bar_type')
-                    ).sort()
                 },
                 glazing_bar_width: {
                     type: 'dropdown',
                     source: app.settings.getGlazingBarWidths().map(function (item) {
                         return item.toString();
                     })
-                },
-                gasket_color: {
-                    type: 'dropdown',
-                    source: _.union(
-                        app.settings.getGasketColors(),
-                        this.getActiveTab().collection.pluck('gasket_color')
-                    ).sort()
                 },
                 opening_direction: {
                     type: 'dropdown',
@@ -710,16 +704,77 @@ var app = app || {};
                 var property = self.getActiveTab().columns[col];
 
                 if ( item && item instanceof app.Unit ) {
-                    //  Gray out attrs that don't apply to the current unit
-                    if ( item.isDoorOnlyAttribute(property) && !item.isDoorType() ) {
+                    if ( item.isOperableOnlyAttribute(property) && !item.hasOperableSections() ) {
                         cell_properties.readOnly = true;
-                        cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
-                    } else if ( item.isOperableOnlyAttribute(property) && !item.hasOperableSections() ) {
-                        cell_properties.readOnly = true;
-                        cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
+                        cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer('(Operable Only)');
                     } else if ( item.isGlazingBarProperty(property) && !item.hasGlazingBars() ) {
                         cell_properties.readOnly = true;
-                        cell_properties.renderer = app.hot_renderers.disabledPropertyRenderer;
+                        cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer('(Has no Bars)');
+                    } else if (
+                        self.active_tab === 'unit_options' &&
+                        _.contains(self.getActiveTab().unit_options_columns, property)
+                    ) {
+                        var profile_id = item.profile && item.profile.id;
+                        var dictionary_id = app.settings.getDictionaryIdByName(property);
+                        var options = [];
+                        var rules_and_restrictions = [];
+                        var is_restricted = false;
+                        var is_optional = false;
+                        var message = UNSET_VALUE;
+
+                        if ( profile_id && dictionary_id ) {
+                            options = app.settings.getAvailableOptions(dictionary_id, profile_id);
+                        }
+
+                        if ( dictionary_id ) {
+                            rules_and_restrictions = app.settings.dictionaries.get(dictionary_id)
+                                .get('rules_and_restrictions');
+                        }
+
+                        //  We don't necessarily have something to do for each
+                        //  rule in the list, we're only interested in those
+                        //  where we have to disable cell editing
+                        _.each(rules_and_restrictions, function (rule) {
+                            var restriction_applies = item.checkIfRestrictionApplies(rule);
+
+                            if ( rule === 'IS_OPTIONAL' ) {
+                                is_optional = true;
+                            } else if ( restriction_applies && rule === 'DOOR_ONLY' ) {
+                                is_restricted = true;
+                                message = '(Doors Only)';
+                            } else if ( restriction_applies && rule === 'OPERABLE_ONLY' ) {
+                                is_restricted = true;
+                                message = '(Operable Only)';
+                            } else if ( restriction_applies && rule === 'GLAZING_BARS_ONLY' ) {
+                                is_restricted = true;
+                                message = '(Has no Bars)';
+                            }
+                        }, this);
+
+                        //  If restrictions apply, disable editing
+                        if ( is_restricted ) {
+                            cell_properties.readOnly = true;
+                            cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer(message);
+                        //  If no restrictions apply, show options
+                        } else if ( options.length ) {
+                            cell_properties.type = 'dropdown';
+                            cell_properties.filter = false;
+                            cell_properties.strict = true;
+
+                            cell_properties.source = _.map(options, function (option) {
+                                return option.get('name');
+                            });
+
+                            if ( is_optional ) {
+                                cell_properties.source.unshift(UNSET_VALUE);
+                            }
+                        //  When we have no options, disable editing
+                        } else {
+                            message = profile_id ? '(No Variants)' : '(No Profile)';
+
+                            cell_properties.readOnly = true;
+                            cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer(message);
+                        }
                     }
                 }
 
@@ -766,11 +821,8 @@ var app = app || {};
                 rough_opening: 'Rough Opening',
                 customer_image: 'Customer Img.',
                 system: 'System',
-                external_color: 'Color Ext.',
-                internal_color: 'Color Int.',
                 opening_direction: 'Opening Dir.',
                 threshold: 'Threshold',
-                glazing_bar_type: 'Muntin Type',
                 glazing_bar_width: 'Muntin Width',
                 u_value: 'U Value',
                 move_item: 'Move',
@@ -827,20 +879,8 @@ var app = app || {};
                 exceptions: 240,
                 profile_id: 200,
                 system: 200,
-                external_color: 100,
-                internal_color: 100,
-                interior_handle: 160,
-                exterior_handle: 160,
-                hardware_type: 120,
-                lock_mechanism: 120,
-                glazing_bead: 100,
-                gasket_color: 100,
-                hinge_style: 280,
-                opening_direction: 100,
-                internal_sill: 100,
-                external_sill: 100,
+                opening_direction: 110,
                 glazing: 300,
-                glazing_bar_type: 140,
                 glazing_bar_width: 100,
                 original_cost: 100,
                 unit_cost: 100,
@@ -856,6 +896,33 @@ var app = app || {};
                 square_feet_price_discounted: 100,
                 extras_type: 100
             };
+
+            //  Custom widths for some Unit Options columns
+            var unit_options_col_widths = {
+                'Interior Handle': 160,
+                'Exterior Handle': 160,
+                'Internal Sill': 100,
+                'External Sill': 100,
+                'External Color': 100,
+                'Internal Color': 100,
+                'Hardware Type': 120,
+                'Lock Mechanism': 120,
+                'Glazing Bead': 100,
+                'Gasket Color': 100,
+                'Hinge Style': 280
+            };
+
+            //  Calculate optimal width for Unit Options columns
+            unit_options_col_widths = _.object(
+                app.settings.getAvailableDictionaryNames(),
+                _.map(app.settings.getAvailableDictionaryNames(), function (dictionary_name) {
+                    var calculated_length = 30 + dictionary_name.length * 7;
+
+                    return unit_options_col_widths[dictionary_name] ?
+                        unit_options_col_widths[dictionary_name] : calculated_length;
+                }, this ));
+
+            col_widths = _.extend({}, col_widths, unit_options_col_widths);
 
             var widths_table = _.map(this.getActiveTab().columns, function (item) {
                 return col_widths[item] ? col_widths[item] : 80;

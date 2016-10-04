@@ -4,38 +4,65 @@
     min-height: 50px;
 }
 
-.create-project-modal {
-    .modal-header {
-        h4 {
-            margin: 0 5px;
-        }
-    }
-  .modal-body {
-    form {
-      margin-top: .5rem;
-      input {
+
+//  ------------------------------------------------------------------------
+//  Options / Profiles availability modal
+//  ------------------------------------------------------------------------
+
+.options-profiles-table-modal h3 {
+    margin-top: 1rem;
+    margin-bottom: 3rem;
+}
+
+.options-profiles-table-modal .modal-dialog {
+    width: 800px;
+}
+
+.options-profiles-table-scroll-wrapper {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 400px;
+    background-color: #d9d9d9;
+}
+
+
+//  ------------------------------------------------------------------------
+//  Create project modal
+//  ------------------------------------------------------------------------
+
+.create-project-modal .modal-header h4 {
+    margin: 0 5px;
+}
+
+.create-project-modal .modal-body form {
+    margin-top: .5rem;
+
+    input {
         margin-bottom: 1.5rem;
         border-color: darken(@white, 35%);
+
         &:focus {
-          box-shadow: none;
-          border-color: darken(@white, 60%);
+            box-shadow: none;
+            border-color: darken(@white, 60%);
         }
-      }
-      textarea {
+    }
+
+    textarea {
         min-width: 100%;
         max-width: 100%;
         margin-bottom: 1.5rem;
         border-color: darken(@white, 35%);
+
         &:focus {
-          box-shadow: none;
-          border-color: darken(@white, 60%);
+            box-shadow: none;
+            border-color: darken(@white, 60%);
         }
-      }
-      .btn {
+    }
+
+    .btn {
         &:extend(.btn-default all);
         margin: .5rem 1rem 0 0;
         border-color: darken(@white, 35%);
-      }
     }
-  }
 }

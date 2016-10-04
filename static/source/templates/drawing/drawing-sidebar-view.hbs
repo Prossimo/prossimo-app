@@ -46,6 +46,19 @@
                 {{/each}}
             </tbody>
         </table>
+        {{#if active_unit_options }}
+            <h4>Unit Options</h4>
+            <table>
+            <tbody>
+                {{#each active_unit_options }}
+                <tr>
+                    <td class="title">{{ title }}</td>
+                    <td class="value">{{ value }}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        {{/if}}
         {{#if active_unit_sashes }}
             <h4>Sash List</h4>
             {{#each active_unit_sashes }}

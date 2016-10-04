@@ -10,7 +10,8 @@ var app = app || {};
         ui: {
             $profiles_container: '.profiles-container',
             $filling_types_container: '.filling_types-container',
-            $pricing_grids_container: '.pricing_grids-container'
+            $pricing_grids_container: '.pricing_grids-container',
+            $options_container: '.options-container'
         },
         events: {
             'click .nav-tabs a': 'onTabClick'
@@ -25,6 +26,9 @@ var app = app || {};
                 },
                 pricing_grids: {
                     title: 'Pricing Grids'
+                },
+                options: {
+                    title: 'Options'
                 }
             };
             this.active_tab = 'profiles';
@@ -77,6 +81,17 @@ var app = app || {};
             } else if ( this.pricing_grids_table_view ) {
                 this.pricing_grids_table_view.destroy();
             }
+
+            if ( this.active_tab === 'options' ) {
+                this.options_view = new app.OptionsView({
+                    collection: app.settings.dictionaries,
+                    parent_view: this
+                });
+
+                this.ui.$options_container.append(this.options_view.render().el);
+            } else if ( this.options_view ) {
+                this.options_view.destroy();
+            }
         },
         serializeData: function () {
             return {
@@ -97,6 +112,10 @@ var app = app || {};
 
             if ( this.pricing_grids_table_view ) {
                 this.pricing_grids_table_view.destroy();
+            }
+
+            if ( this.options_view ) {
+                this.options_view.destroy();
             }
         }
     });

@@ -5,6 +5,7 @@ var app = app || {};
 
     app.UnitCollection = Backbone.Collection.extend({
         model: app.Unit,
+        reorder_property_name: 'units',
         url: function () {
             return app.settings.get('api_base_path') +
                 '/projects/' + this.options.project.get('id') + '/units';
@@ -13,7 +14,6 @@ var app = app || {};
             return app.settings.get('api_base_path') +
                 '/projects/' + this.options.project.get('id') + '/reorder_units';
         },
-        reorder_property_name: 'units',
         initialize: function (models, options) {
             this.options = options || {};
             this.proxy_unit = new app.Unit(null, { proxy: true });

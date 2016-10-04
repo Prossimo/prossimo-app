@@ -6,6 +6,7 @@ var app = app || {};
     app.ProjectFile = Backbone.Model.extend({
         defaults: {
             name: '',
+            uuid: '',
             type: '',
             url: ''
         }

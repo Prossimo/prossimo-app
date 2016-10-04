@@ -11,25 +11,13 @@ var app = app || {};
         { name: 'description', title: 'Customer Description', type: 'string' },
         { name: 'notes', title: 'Notes', type: 'string' },
         { name: 'exceptions', title: 'Exceptions', type: 'string' },
-        { name: 'glazing_bar_type', title: 'Muntin (Glazing Bar) Type', type: 'string' },
         { name: 'glazing_bar_width', title: 'Glazing Bar Width (mm)', type: 'number' },
 
         { name: 'profile_name', title: 'Profile', type: 'string' },
         { name: 'profile_id', title: 'Profile', type: 'string' },
         { name: 'customer_image', title: 'Customer Image', type: 'string' },
-        { name: 'internal_color', title: 'Color Interior', type: 'string' },
-        { name: 'external_color', title: 'Color Exterior', type: 'string' },
-        { name: 'interior_handle', title: 'Interior Handle', type: 'string' },
-        { name: 'exterior_handle', title: 'Exterior Handle', type: 'string' },
-        { name: 'hardware_type', title: 'Hardware Type', type: 'string' },
-        { name: 'lock_mechanism', title: 'Lock Mechanism', type: 'string' },
-        { name: 'glazing_bead', title: 'Glazing Bead', type: 'string' },
 
-        { name: 'gasket_color', title: 'Gasket Color', type: 'string' },
-        { name: 'hinge_style', title: 'Hinge Style', type: 'string' },
         { name: 'opening_direction', title: 'Opening Direction', type: 'string' },
-        { name: 'internal_sill', title: 'Internal Sill', type: 'string' },
-        { name: 'external_sill', title: 'External Sill', type: 'string' },
         { name: 'glazing', title: 'Glass Packet / Panel Type', type: 'string' },
         { name: 'uw', title: 'Uw', type: 'number' },
 
@@ -40,16 +28,16 @@ var app = app || {};
         { name: 'price_markup', title: 'Markup', type: 'number' },
         { name: 'discount', title: 'Discount', type: 'number' },
 
-        { name: 'position', title: 'Position', type: 'number' }
+        { name: 'position', title: 'Position', type: 'number' },
+        { name: 'unit_options', title: 'Unit Options', type: 'array' },
+        { name: 'root_section', title: 'Root Section', type: 'object' }
     ];
 
-    //  We only enable those for editing on units where `isDoorType` is `true`
-    var DOOR_ONLY_PROPERTIES = ['exterior_handle', 'lock_mechanism'];
-    //  Same as above, for `hasOperableSections`
-    var OPERABLE_ONLY_PROPERTIES = ['interior_handle', 'exterior_handle', 'hardware_type',
-        'hinge_style', 'opening_direction'];
+    //  We only allow editing these attributes for units where
+    //  `hasOperableSections` is `true`
+    var OPERABLE_ONLY_PROPERTIES = ['opening_direction'];
     //  Same as above, for `hasGlazingBars`
-    var GLAZING_BAR_PROPERTIES = ['glazing_bar_type', 'glazing_bar_width'];
+    var GLAZING_BAR_PROPERTIES = ['glazing_bar_width'];
 
     var SASH_TYPES = [
         'tilt_turn_left', 'tilt_turn_right', 'fixed_in_frame', 'tilt_only',
@@ -174,6 +162,7 @@ var app = app || {};
     }
 
     app.Unit = Backbone.Model.extend({
+        schema: app.schema.createSchema(UNIT_PROPERTIES),
         defaults: function () {
             var defaults = {};
 
@@ -203,13 +192,6 @@ var app = app || {};
             };
 
             if ( app.settings ) {
-                name_value_hash.internal_color = app.settings.getColors()[0];
-                name_value_hash.external_color = app.settings.getColors()[0];
-                name_value_hash.interior_handle = app.settings.getInteriorHandleTypes()[0];
-                name_value_hash.glazing_bead = app.settings.getGlazingBeadTypes()[0];
-                name_value_hash.gasket_color = app.settings.getGasketColors()[0];
-                name_value_hash.hinge_style = app.settings.getHingeTypes()[0];
-                name_value_hash.glazing_bar_type = app.settings.getGlazingBarTypes()[0];
                 name_value_hash.glazing_bar_width = app.settings.getGlazingBarWidths()[0];
                 name_value_hash.opening_direction = app.settings.getOpeningDirections()[0];
                 name_value_hash.glazing = app.settings.getAvailableFillingTypeNames()[0];
@@ -239,6 +221,11 @@ var app = app || {};
 
             return Backbone.sync.call(this, method, model, options);
         },
+        parse: function (data) {
+            var unit_data = data && data.unit ? data.unit : data;
+
+            return app.schema.parseAccordingToSchema(unit_data, this.schema);
+        },
         initialize: function (attributes, options) {
             this.options = options || {};
             this.profile = null;
@@ -249,6 +236,21 @@ var app = app || {};
                 this.validateRootSection();
                 this.on('change:profile_id', this.setProfile, this);
                 this.on('change:glazing', this.setDefaultFillingType, this);
+
+                //  If we know that something was changed in dictionaries,
+                //  we have to re-validate our unit options
+                this.listenTo(app.vent, 'validate_units:dictionaries', function () {
+                    if ( this.isParentProjectActive() ) {
+                        this.validateUnitOptions();
+                    }
+                });
+
+                //  Same as above, but when this unit's project becomes active
+                this.listenTo(app.vent, 'current_project_changed', function () {
+                    if ( this.isParentProjectActive() ) {
+                        this.validateUnitOptions();
+                    }
+                });
             }
         },
         validateOpeningDirection: function () {
@@ -325,6 +327,81 @@ var app = app || {};
 
             return current_section;
         },
+        getDefaultUnitOptions: function () {
+            var default_options = [];
+
+            if ( app.settings ) {
+                app.settings.dictionaries.each(function (dictionary) {
+                    var dictionary_id = dictionary.id;
+                    var profile_id = this.profile && this.profile.id;
+                    var rules = dictionary.get('rules_and_restrictions');
+                    var is_optional = _.contains(rules, 'IS_OPTIONAL');
+
+                    if ( !is_optional && dictionary_id && profile_id ) {
+                        var option = app.settings.getDefaultOption(dictionary_id, profile_id);
+
+                        if ( option && option.id && dictionary.id ) {
+                            default_options.push({
+                                dictionary_id: dictionary.id,
+                                dictionary_entry_id: option.id
+                            });
+                        }
+                    }
+                }, this);
+            }
+
+            return default_options;
+        },
+        validateUnitOptions: function () {
+            var default_options = this.getDefaultUnitOptions();
+            var current_options = this.get('unit_options');
+            var current_options_parsed;
+
+            function getValidatedUnitOptions(model, currents, defaults) {
+                var options_to_set = [];
+
+                if ( app.settings ) {
+                    app.settings.dictionaries.each(function (dictionary) {
+                        var dictionary_id = dictionary.id;
+                        var profile_id = model.profile && model.profile.id;
+
+                        if ( dictionary_id && profile_id ) {
+                            var current_option = _.findWhere(currents, { dictionary_id: dictionary_id });
+                            var default_option = _.findWhere(defaults, { dictionary_id: dictionary_id });
+                            var target_entry = current_option &&
+                                dictionary.entries.get(current_option.dictionary_entry_id);
+
+                            if ( current_option && target_entry ) {
+                                options_to_set.push(current_option);
+                            } else if ( default_option ) {
+                                options_to_set.push(default_option);
+                            }
+                        }
+                    });
+                }
+
+                return options_to_set;
+            }
+
+            if ( _.isString(current_options) ) {
+                try {
+                    current_options_parsed = JSON.parse(current_options);
+                } catch (error) {
+                    // Do nothing
+                }
+
+                if ( current_options_parsed ) {
+                    this.set('unit_options', getValidatedUnitOptions(this, current_options_parsed, default_options));
+                    return;
+                }
+            }
+
+            if ( !_.isObject(current_options) ) {
+                this.set('unit_options', default_options);
+            } else {
+                this.set('unit_options', getValidatedUnitOptions(this, current_options, default_options));
+            }
+        },
         validate: function (attributes, options) {
             var error_obj = null;
 
@@ -374,6 +451,8 @@ var app = app || {};
             if ( this.profile && !this.hasDummyProfile() ) {
                 this.set('profile_name', this.profile.get('name'));
             }
+
+            this.validateUnitOptions();
         },
         hasDummyProfile: function () {
             return this.profile && this.profile.get('is_dummy');
@@ -400,6 +479,10 @@ var app = app || {};
                         if ( JSON.stringify(_.omit(value, 'id')) !==
                             JSON.stringify(_.omit(this.getDefaultValue('root_section'), 'id'))
                         ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( key === 'unit_options' ) {
+                        if ( JSON.stringify(this.getDefaultUnitOptions()) !== JSON.stringify(value) ) {
                             has_only_defaults = false;
                         }
                     } else if ( this.getDefaultValue(key, type) !== value ) {
@@ -539,9 +622,6 @@ var app = app || {};
 
             return is_door_type;
         },
-        isDoorOnlyAttribute: function (attribute_name) {
-            return _.indexOf(DOOR_ONLY_PROPERTIES, attribute_name) !== -1;
-        },
         isOpeningDirectionOutward: function () {
             return this.get('opening_direction') === 'Outward';
         },
@@ -602,6 +682,7 @@ var app = app || {};
 
             return true;
         },
+        //  FIXME: this uses while true
         getArchedPosition: function () {
             var root = this.get('root_section');
 
@@ -1856,12 +1937,96 @@ var app = app || {};
         getInvertedDivider: function (type) {
             return getInvertedDivider(type);
         },
-
         isCircleWindow: function () {
             return (this.getCircleRadius() !== null);
         },
         isArchedWindow: function () {
             return (this.getArchedPosition() !== null);
+        },
+        //  Get list of options that are currently selected for this unit
+        getCurrentUnitOptions: function () {
+            var options_list = this.get('unit_options');
+            var result = [];
+
+            if ( app.settings ) {
+                _.each(options_list, function (list_item) {
+                    var target_dictionary = app.settings.dictionaries.get(list_item.dictionary_id);
+
+                    if ( target_dictionary ) {
+                        var target_entry = target_dictionary.entries.get(list_item.dictionary_entry_id);
+
+                        if ( target_entry ) {
+                            result.push(target_entry);
+                        }
+                    }
+                }, this);
+            }
+
+            return result;
+        },
+        //  Get list of options that are currently selected for this unit,
+        //  filtered by certain dictionary, e.g. "Interior Handle"
+        getCurrentUnitOptionsByDictionaryId: function (dictionary_id) {
+            return _.filter(this.getCurrentUnitOptions(), function (unit_option) {
+                return unit_option.collection.options.dictionary.id === dictionary_id;
+            }, this);
+        },
+        //  Get list of all possible variants from a certain dictionary that
+        //  could be selected for this unit
+        getAvailableOptionsByDictionaryId: function (dictionary_id) {
+            var result = [];
+            var profile_id = this.profile && this.profile.id;
+
+            if ( app.settings && profile_id ) {
+                result = app.settings.getAvailableOptions(dictionary_id, profile_id);
+            }
+
+            return result;
+        },
+        checkIfRestrictionApplies: function (restriction) {
+            var restriction_applies = false;
+
+            if ( restriction === 'DOOR_ONLY' && !this.isDoorType() ) {
+                restriction_applies = true;
+            } else if ( restriction === 'OPERABLE_ONLY' && !this.hasOperableSections() ) {
+                restriction_applies = true;
+            } else if ( restriction === 'GLAZING_BARS_ONLY' && !this.hasGlazingBars() ) {
+                restriction_applies = true;
+            }
+
+            return restriction_applies;
+        },
+        persistOption: function (dictionary_id, dictionary_entry_id) {
+            var current_unit_options = _.sortBy(this.get('unit_options'), 'dictionary_id');
+            var new_unit_options = _.filter(current_unit_options, function (unit_option) {
+                return unit_option.dictionary_id !== dictionary_id;
+            }, this);
+
+            if ( dictionary_entry_id ) {
+                new_unit_options.push({
+                    dictionary_id: dictionary_id,
+                    dictionary_entry_id: dictionary_entry_id
+                });
+            }
+
+            new_unit_options = _.sortBy(new_unit_options, 'dictionary_id');
+
+            //  When arrays are the same, do nothing, otherwise persist
+            if ( JSON.stringify(current_unit_options) !== JSON.stringify(new_unit_options) ) {
+                this.persist('unit_options', new_unit_options);
+            }
+        },
+        //  Check if this unit belongs to the project which is currently active
+        isParentProjectActive: function () {
+            var is_active = false;
+
+            if ( app.current_project && this.collection && this.collection.options.project &&
+                this.collection.options.project === app.current_project
+            ) {
+                is_active = true;
+            }
+
+            return is_active;
         },
         /* trapezoid start */
         isTrapezoid: function () {
@@ -1875,6 +2040,69 @@ var app = app || {};
 
             return drawer.constructor === app.Drawers.TrapezoidUnitDrawer;
         },
+
+        /* Determines if the unit has at least one horizontal mullion */
+        hasHorizontalMullion: function () {
+            return this.getMullions().reduce(function (previous, current) {
+                return previous || (current.type === 'horizontal' || current.type === 'horizontal_invisible');
+            }, false);
+        },
+        /* eslint-disable no-else-return */
+
+        /* Determines the number of vertical metric columns on the unit drawing's left and right sides
+         * Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js */
+        leftMetricCount: function (isInsideView) {
+
+            // Inside view //
+
+            // Trapezoid units have reversed metrics on the inside view, except for arched trapezoids
+            if (isInsideView && this.isTrapezoid() && !this.isArchedWindow()) {
+                return this.rightMetricCount();
+            }
+
+            // All views //
+
+            // Trapezoid units always have one metric on the left
+            if (this.isTrapezoid()) {
+                return 1;
+
+            // Arched units always have two metrics on the left
+            } else if (this.isArchedWindow()) {
+                return 2;
+
+            // For regular units, at least one horizontal mullion adds the second metric
+            } else {
+                return (this.hasHorizontalMullion()) ? 2 : 1;
+            }
+        },
+
+        /* Determines the number of vertical metric columns on the unit drawing's right side
+         * Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js */
+        rightMetricCount: function (isInsideView) {
+
+            // Inside view //
+
+            // Trapezoid units have reversed metrics on the inside view, except for arched trapezoids
+            if (isInsideView && this.isTrapezoid() && !this.isArchedWindow()) {
+                return this.leftMetricCount();
+            }
+
+            // All views //
+
+            // Arched trapezoid units always have two metrics on the right
+            if (this.isTrapezoid() && this.isArchedWindow()) {
+                return 2;
+
+            // For regular trapezoid units, at least one horizontal mullion adds the second metric
+            } else if (this.isTrapezoid()) {
+                return (this.hasHorizontalMullion()) ? 2 : 1;
+
+            // Non-trapezoid units don't have metrics on the right
+            } else {
+                return 0;
+            }
+        },
+        /* eslint-enable no-else-return */
         getTrapezoidHeights: function (inside) {
             if (typeof inside !== 'undefined') {
                 this.inside = inside;
