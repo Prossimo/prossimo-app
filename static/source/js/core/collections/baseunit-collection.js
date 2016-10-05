@@ -3,8 +3,8 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.UnitCollection = Backbone.Collection.extend({
-        model: app.Unit,
+    app.BaseunitCollection = Backbone.Collection.extend({
+        model: app.Baseunit,
         reorder_property_name: 'units',
         url: function () {
             return app.settings.get('api_base_path') +

@@ -3,7 +3,36 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var UNIT_PROPERTIES = [];
+    var PROJECT_UNIT_PROPERTIES = [
+        { name: 'type', title: 'Type', type: 'string' },
+        { name: 'mark', title: 'Mark', type: 'string' },
+        { name: 'width', title: 'Width (inches)', type: 'number' },
+        { name: 'height', title: 'Height (inches)', type: 'string' },
+        { name: 'quantity', title: 'Quantity', type: 'number' },
+        { name: 'description', title: 'Customer Description', type: 'string' },
+        { name: 'notes', title: 'Notes', type: 'string' },
+        { name: 'exceptions', title: 'Exceptions', type: 'string' },
+        { name: 'glazing_bar_width', title: 'Glazing Bar Width (mm)', type: 'number' },
+
+        { name: 'profile_name', title: 'Profile', type: 'string' },
+        { name: 'profile_id', title: 'Profile', type: 'string' },
+        { name: 'customer_image', title: 'Customer Image', type: 'string' },
+
+        { name: 'opening_direction', title: 'Opening Direction', type: 'string' },
+        { name: 'glazing', title: 'Glass Packet / Panel Type', type: 'string' },
+        { name: 'uw', title: 'Uw', type: 'number' },
+
+        { name: 'original_cost', title: 'Original Cost', type: 'number' },
+        { name: 'original_currency', title: 'Original Currency', type: 'string' },
+        { name: 'conversion_rate', title: 'Conversion Rate', type: 'number' },
+        { name: 'supplier_discount', title: 'Supplier Discount', type: 'number' },
+        { name: 'price_markup', title: 'Markup', type: 'number' },
+        { name: 'discount', title: 'Discount', type: 'number' },
+
+        { name: 'position', title: 'Position', type: 'number' },
+        { name: 'unit_options', title: 'Unit Options', type: 'array' },
+        { name: 'root_section', title: 'Root Section', type: 'object' }
+    ];
 
     //  We only allow editing these attributes for units where
     //  `hasOperableSections` is `true`
@@ -133,12 +162,12 @@ var app = app || {};
         return findParent(root.sections[0], childId) || findParent(root.sections[1], childId);
     }
 
-    app.Unit = app.Baseunit.extend({
-        schema: app.schema.createSchema(UNIT_PROPERTIES),
+    app.Baseunit = Backbone.Model.extend({
+        schema: app.schema.createSchema(PROJECT_UNIT_PROPERTIES),
         defaults: function () {
             var defaults = {};
 
-            _.each(UNIT_PROPERTIES, function (item) {
+            _.each(PROJECT_UNIT_PROPERTIES, function (item) {
                 defaults[item.name] = this.getDefaultValue(item.name, item.type);
             }, this);
 
@@ -155,7 +184,6 @@ var app = app || {};
             };
 
             var name_value_hash = {
-                type: 'unit',
                 height: '0',
                 original_currency: 'EUR',
                 conversion_rate: 0.9,
@@ -435,7 +463,7 @@ var app = app || {};
 
             _.each(this.toJSON(), function (value, key) {
                 if ( key !== 'position' && has_only_defaults ) {
-                    var property_source = _.findWhere(UNIT_PROPERTIES, { name: key });
+                    var property_source = _.findWhere(PROJECT_UNIT_PROPERTIES, { name: key });
                     var type = property_source ? property_source.type : undefined;
 
                     if ( key === 'profile_id' ) {
@@ -488,10 +516,10 @@ var app = app || {};
             var name_title_hash = [];
 
             if ( !names ) {
-                names = _.pluck( UNIT_PROPERTIES, 'name' );
+                names = _.pluck( PROJECT_UNIT_PROPERTIES, 'name' );
             }
 
-            _.each(UNIT_PROPERTIES, function (item) {
+            _.each(PROJECT_UNIT_PROPERTIES, function (item) {
                 if ( _.indexOf(names, item.name) !== -1 ) {
                     name_title_hash.push({ name: item.name, title: item.title, type: item.type });
                 }
@@ -582,7 +610,7 @@ var app = app || {};
             return this.getTotalSquareFeet() ? this.getSubtotalPriceDiscounted() / this.getTotalSquareFeet() : 0;
         },
         getSection: function (sectionId) {
-            return app.Unit.findSection(this.generateFullRoot(), sectionId);
+            return app.Baseunit.findSection(this.generateFullRoot(), sectionId);
         },
         //  Right now we think that door is something where profile
         //  returns `true` on `hasOutsideHandle` call
@@ -619,7 +647,7 @@ var app = app || {};
                 return false;
             }
 
-            if (app.Unit.findSection(root, sashId).sashType !== 'fixed_in_frame') {
+            if (app.Baseunit.findSection(root, sashId).sashType !== 'fixed_in_frame') {
                 return false;
             }
 
@@ -707,7 +735,7 @@ var app = app || {};
             // HAH, dirty deep clone, rewrite when you have good mood for it
             // we have to make deep clone and backbone will trigger change event
             var rootSection = JSON.parse(JSON.stringify(this.get('root_section')));
-            var sectionToUpdate = app.Unit.findSection(rootSection, sectionId);
+            var sectionToUpdate = app.Baseunit.findSection(rootSection, sectionId);
 
             func(sectionToUpdate);
 
@@ -716,7 +744,7 @@ var app = app || {};
         setCircular: function (sectionId, opts) {
             //  Deep clone, same as above
             var root_section = JSON.parse(JSON.stringify(this.get('root_section')));
-            var section = app.Unit.findSection(root_section, sectionId);
+            var section = app.Baseunit.findSection(root_section, sectionId);
             var update_data = {};
 
             if (opts.radius) {
@@ -798,7 +826,7 @@ var app = app || {};
             }
 
             var full = this.generateFullRoot();
-            var fullSection = app.Unit.findSection(full, sectionId);
+            var fullSection = app.Baseunit.findSection(full, sectionId);
 
             // Update section
             this._updateSection(sectionId, function (section) {
@@ -903,7 +931,7 @@ var app = app || {};
 
             //  We also change all nested sections recursively
             var full = this.generateFullRoot();
-            var fullSection = app.Unit.findSection(full, sectionId);
+            var fullSection = app.Baseunit.findSection(full, sectionId);
 
             _.each(fullSection.sections, function (childSection) {
                 this.setFillingType(childSection.id, type, name);
@@ -943,7 +971,7 @@ var app = app || {};
             this._updateSection(sectionId, function (section) {
 
                 var full = this.generateFullRoot();
-                var fullSection = app.Unit.findSection(full, sectionId);
+                var fullSection = app.Baseunit.findSection(full, sectionId);
                 var measurementType = getInvertedDivider(type).replace(/_invisible/, '');
                 var position;
 
@@ -1241,13 +1269,13 @@ var app = app || {};
         // so this function check all parent
         canAddSashToSection: function (sectionId) {
             var fullRoot = this.generateFullRoot();
-            var section = app.Unit.findSection(fullRoot, sectionId);
+            var section = app.Baseunit.findSection(fullRoot, sectionId);
 
             if (section.parentId === undefined) {
                 return true;
             }
 
-            var parentSection = app.Unit.findSection(fullRoot, section.parentId);
+            var parentSection = app.Baseunit.findSection(fullRoot, section.parentId);
 
             if (parentSection.sashType !== 'fixed_in_frame') {
                 return false;
@@ -2202,7 +2230,7 @@ var app = app || {};
     // static function
     // it will find section with passed id from passed section and all its children
     // via nested search
-    app.Unit.findSection = function (section, sectionId) {
+    app.Baseunit.findSection = function (section, sectionId) {
         function findNested(sec, id) {
             if (sec.id === id) {
                 return sec;
