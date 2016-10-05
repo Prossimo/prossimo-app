@@ -115,16 +115,46 @@ var app = app || {};
 
             return result;
         },
-        // Itterate each layer
+        // Iterate each layer
         each: function (callback) {
             _.each(this.layers, callback);
         },
         update: function () {
+            var self = this;
+            var isTrapezoidDrawer = (this.getLayer('unit').drawer.constructor === app.Drawers.TrapezoidUnitDrawer);
+            this.trapezoid = this.getOption('builder').get('model').isTrapezoid();
+
             this.each(function (layer) {
+
+                if (layer.name === 'unit' && self.trapezoid && !isTrapezoidDrawer) {
+                    self.toTrapezoidDrawer();
+                } else if (layer.name === 'unit' && !self.trapezoid && isTrapezoidDrawer) {
+                    self.toRegularDrawer();
+                }
+
                 if (layer.visible) {
                     layer.drawer.render();
                 }
             });
+        },
+        // Switch unit DrawerClass
+        toDrawer: function (drawerType) {
+            var unitLayer = this.getOption('layers').unit;
+            var NewDrawerClass = (drawerType === 'trapezoid') ? app.Drawers.TrapezoidUnitDrawer : app.Drawers.UnitDrawer;
+
+            unitLayer.drawer = new NewDrawerClass({
+                layer: unitLayer.layer,
+                stage: this.getOption('stage'),
+                builder: this.getOption('builder'),
+                metricSize: this.getOption('metricSize'),
+                data: unitLayer
+            });
+        },
+        toTrapezoidDrawer: function () {
+            this.toDrawer('trapezoid');
+        },
+        toRegularDrawer: function () {
+            this.toDrawer('regular');
         },
         // Handler
         handleKeyEvents: function (event) {
