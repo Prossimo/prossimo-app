@@ -3,7 +3,35 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var UNIT_PROPERTIES = [];
+    var UNIT_PROPERTIES = [
+        { name: 'mark', title: 'Mark', type: 'string' },
+        { name: 'width', title: 'Width (inches)', type: 'number' },
+        { name: 'height', title: 'Height (inches)', type: 'string' },
+        { name: 'quantity', title: 'Quantity', type: 'number' },
+        { name: 'description', title: 'Customer Description', type: 'string' },
+        { name: 'notes', title: 'Notes', type: 'string' },
+        { name: 'exceptions', title: 'Exceptions', type: 'string' },
+        { name: 'glazing_bar_width', title: 'Glazing Bar Width (mm)', type: 'number' },
+
+        { name: 'profile_name', title: 'Profile', type: 'string' },
+        { name: 'profile_id', title: 'Profile', type: 'string' },
+        { name: 'customer_image', title: 'Customer Image', type: 'string' },
+
+        { name: 'opening_direction', title: 'Opening Direction', type: 'string' },
+        { name: 'glazing', title: 'Glass Packet / Panel Type', type: 'string' },
+        { name: 'uw', title: 'Uw', type: 'number' },
+
+        { name: 'original_cost', title: 'Original Cost', type: 'number' },
+        { name: 'original_currency', title: 'Original Currency', type: 'string' },
+        { name: 'conversion_rate', title: 'Conversion Rate', type: 'number' },
+        { name: 'supplier_discount', title: 'Supplier Discount', type: 'number' },
+        { name: 'price_markup', title: 'Markup', type: 'number' },
+        { name: 'discount', title: 'Discount', type: 'number' },
+
+        { name: 'position', title: 'Position', type: 'number' },
+        { name: 'unit_options', title: 'Unit Options', type: 'array' },
+        { name: 'root_section', title: 'Root Section', type: 'object' }
+    ];
 
     //  We only allow editing these attributes for units where
     //  `hasOperableSections` is `true`
@@ -133,7 +161,7 @@ var app = app || {};
         return findParent(root.sections[0], childId) || findParent(root.sections[1], childId);
     }
 
-    app.Unit = app.Baseunit.extend({
+    app.Unit = Backbone.Model.extend({
         schema: app.schema.createSchema(UNIT_PROPERTIES),
         defaults: function () {
             var defaults = {};
@@ -155,7 +183,6 @@ var app = app || {};
             };
 
             var name_value_hash = {
-                type: 'unit',
                 height: '0',
                 original_currency: 'EUR',
                 conversion_rate: 0.9,

@@ -39,7 +39,6 @@ $(document).ready(function () {
 
     var test_project_units_data = [
         {
-            type: 'multiunit',
             mark: 'A',
             width: 62,
             height: 96,

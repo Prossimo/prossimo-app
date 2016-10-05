@@ -118,7 +118,7 @@ var app = app || {};
             this._wasLoaded = false;
 
             if ( !this.options.proxy ) {
-                this.units = new app.BaseunitCollection(null, { project: this });
+                this.units = new app.UnitCollection(null, { project: this });
                 this.extras = new app.AccessoryCollection(null, { project: this });
                 this.files = new app.ProjectFileCollection(null, { project: this });
                 this.settings = new app.ProjectSettings(null, { project: this });
