@@ -122,13 +122,15 @@ var app = app || {};
         update: function () {
             var self = this;
             var isTrapezoidDrawer = (this.getLayer('unit').drawer.constructor === app.Drawers.TrapezoidUnitDrawer);
-            this.trapezoid = this.getOption('builder').get('model').isTrapezoid();
+            var isTrapezoid = this.getOption('builder').get('model').isTrapezoid();
+
+            this.trapezoid = isTrapezoid;
 
             this.each(function (layer) {
 
-                if (layer.name === 'unit' && self.trapezoid && !isTrapezoidDrawer) {
+                if (layer.name === 'unit' && isTrapezoid && !isTrapezoidDrawer) {
                     self.toTrapezoidDrawer();
-                } else if (layer.name === 'unit' && !self.trapezoid && isTrapezoidDrawer) {
+                } else if (layer.name === 'unit' && !isTrapezoid && isTrapezoidDrawer) {
                     self.toRegularDrawer();
                 }
 
@@ -140,9 +142,9 @@ var app = app || {};
         // Switch unit DrawerClass
         toDrawer: function (drawerType) {
             var unitLayer = this.getOption('layers').unit;
-            var NewDrawerClass = (drawerType === 'trapezoid') ? app.Drawers.TrapezoidUnitDrawer : app.Drawers.UnitDrawer;
+            var DrawerClass = (drawerType === 'trapezoid') ? app.Drawers.TrapezoidUnitDrawer : app.Drawers.UnitDrawer;
 
-            unitLayer.drawer = new NewDrawerClass({
+            unitLayer.drawer = new DrawerClass({
                 layer: unitLayer.layer,
                 stage: this.getOption('stage'),
                 builder: this.getOption('builder'),
