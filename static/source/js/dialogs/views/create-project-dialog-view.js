@@ -8,6 +8,7 @@ var app = app || {};
         template: app.templates['dialogs/create-project-dialog-view'],
         ui: {
             $form: '.modal-body form',
+            $filesRegion: '.form-control-files',
             $data_project_name: '.modal-body form input[name="project_name"]',
             $data_client_name: '.modal-body form input[name="client_name"]',
             $data_company: '.modal-body form input[name="company"]',
@@ -40,7 +41,7 @@ var app = app || {};
                 quote_date: this.ui.$data_quote_date.val().trim(),
                 project_notes: this.ui.$data_project_notes.val().trim(),
                 shipping_notes: this.ui.$data_shipping_notes.val().trim()
-
+                // preloaded_files: this.files.collecctions.toJSON() || []
             });
 
             this.$el.modal('hide');
@@ -55,6 +56,13 @@ var app = app || {};
             if (!this.$el.find('.modal-header').find('h4').length) {
                 this.$el.find('.modal-header').append('<h4></h4>');
             }
+
+            this.files = new app.FileUploaderView({
+                maxLength: 2
+            });
+
+            this.files.render()
+                .$el.appendTo( this.ui.$filesRegion );
 
             this.$el.find('.modal-header').find('h4').text('Create project');
 
