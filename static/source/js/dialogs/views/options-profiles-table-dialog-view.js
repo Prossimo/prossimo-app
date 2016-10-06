@@ -20,14 +20,21 @@ var app = app || {};
                 var entry = this.entries_filtered[entry_index];
                 var old_profiles_list;
                 var new_profiles_list;
+                var profile_to_remove;
+                var profile_to_add;
 
                 if ( new_value === false || new_value === 'false' ) {
                     old_profiles_list = entry.get('profiles');
-                    new_profiles_list = _.without(old_profiles_list, profile.id);
+                    profile_to_remove = _.findWhere(old_profiles_list, { id: profile.id });
+                    new_profiles_list = _.without(old_profiles_list, profile_to_remove);
                     new_profiles_list.sort();
                 } else if ( new_value === true || new_value === 'true' ) {
                     old_profiles_list = entry.get('profiles');
-                    new_profiles_list = _.union(old_profiles_list, [profile.id]);
+                    profile_to_add = {
+                        id: profile.id,
+                        is_default: false
+                    };
+                    new_profiles_list = _.union(old_profiles_list, [profile_to_add]);
                     new_profiles_list.sort();
                 }
 
@@ -46,7 +53,7 @@ var app = app || {};
                 }),
                 data: this.profiles.map(function (profile) {
                     return _.map(this.entries_filtered, function (entry) {
-                        return _.contains(entry.get('profiles') || [], profile.id);
+                        return _.contains(_.pluck(entry.get('profiles'), 'id') || [], profile.id);
                     });
                 }, this)
             };
