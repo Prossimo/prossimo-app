@@ -17,12 +17,12 @@ var app = app || {};
             $data_project_address: '.modal-body form input[name="project_address"]',
             $data_quote_revision: '.modal-body form input[name="quote_revision"]',
             $data_quote_date: '.modal-body form input[name="quote_date"]',
-            $project_file_info: 'modal-body form input[name="project_file_info"]',
             $data_project_notes: '.modal-body form textarea[name="project_notes"]',
             $data_shipping_notes: '.modal-body form textarea[name="shipping_notes"]'
         },
         events: {
-            'submit form': 'addNewProject'
+            'submit form': 'addNewProject',
+            'click #labelupload': 'saveFile'
         },
         addNewProject: function (e) {
             e.preventDefault();
@@ -50,37 +50,94 @@ var app = app || {};
                 app.top_bar_view.project_selector_view.fetchProjectList();
             });
             app.projects.create(newProject, {wait: true});
-            this.saveFile.call(this, $('input[name="project_file_info"]')[0].files[0]);
-            // this.$el.find('#project_file_info').on('change', function(e) {
-            //                 var self= this;
-            //                 self.saveFile.call(self, e.currentTarget.files[0]);
-            //             });
         },
-        saveFile: function(file) {
-            var self = this;
+        saveFile: function() {
+            'use strict';
             var token = window.localStorage.getItem('authToken');
-            var reader = new FileReader();
-            reader.onload = function(e) {
-            var data = reader.result;
-            Backbone.ajax({
-                method: 'POST',
+            $('#fileupload').fileupload({
                 url: app.settings.get('api_base_path') + '/files/handlers',
-                data: data,
                 beforeSend: function(xhr) {
-                        xhr.setRequestHeader("Accept", "application/json");
-                        // xhr.setRequestHeader("ContenInvalid JWT Tokent-type", "application/json; charset=utf-8");
-                        xhr.setRequestHeader("Authorization", "Bearer " + token);
-                    },
-                    processData: false,
-                    success: function(data, textStatus, jqXHR) {
-                            alert('success!');
-                    },
-                    error: function() {
-                            alert('upload fail!');
-                        }
-                    });
+                    xhr.setRequestHeader("Accept", "application/json");
+                    xhr.setRequestHeader("Authorization", "Bearer " + token);
+                },
+                dataType: 'json',
+                autoUpload: false,
+                acceptFileTypes: /(\.|\/)(gif|jpe?g|png|pdf|docx?|rtf|xlsx?)$/i,
+                maxFileSize: 99999000,
+                disableImageResize: /Android(?!.*Chrome)|Opera/
+                        .test(window.navigator.userAgent),
+                previewMaxWidth: 100,
+                previewMaxHeight: 100,
+                previewCrop: true
+            }).on('fileuploadadd', function (e, data) {
+                data.context = $('<button/>').text('Upload')
+                .appendTo('#files')
+                .click(function () {
+                    data.submit();
+                });
+
+                data.context = $('<div/>').appendTo('#files');
+
+                $.each(data.files, function (index, file) {
+                    var node = $('<p/>')
+                        .append($('<span/>').text(file.name));
+                    if (!index) {
+
+                    }
+                    node.appendTo(data.context);
+                });
+            }).on('fileuploadprocessalways', function (e, data) {
+                var index = data.index,
+                    file = data.files[index],
+                    node = $(data.context.children()[index]);
+                if (file.preview) {
+                    node
+                        .prepend('<br>')
+                        .prepend(file.preview);
                 }
-                    reader.readAsDataURL(file);  // base64 encoded TODO: replace with BSON
+                if (file.error) {
+                    node
+                        .append('<br>')
+                        .append($('<span class="text-danger"/>').text(file.error));
+                }
+                if (index + 1 === data.files.length) {
+                    data.context.find('button')
+                        .text('Upload')
+                        .prop('disabled', !!data.files.error);
+                }
+            }).on('fileuploadprogressall', function (e, data) {
+                var progress = parseInt(data.loaded / data.total * 100, 10);
+                $('#progress .progress-bar').css(
+                        'width',
+                        progress + '%'
+                );
+            }).on('fileuploaddone', function (e, data) {
+                console.log(data);
+                $.each(data.result.files, function (index, file) {
+                    if (file.url) {
+                        var link = $('<a>')
+                                .attr('target', '_blank')
+                                .prop('href', file.url);
+                        $(data.context.children()[index])
+                                .wrap(link);
+                    } else if (file.error) {
+                        var error = $('<span class="text-danger"/>').text(file.error);
+                        $(data.context.children()[index])
+                                .append('<br>')
+                                .append(error);
+                    }
+                });
+            }).on('fileuploadfail', function (e, data) {
+                console.log(data);
+                $.each(data.files, function (index) {
+                    var error = $('<span class="text-danger"/>').text('File upload failed.');
+                    $(data.context.children()[index])
+                            .append('<br>')
+                            .append(error);
+                });
+            }).prop('disabled', !$.support.fileInput)
+                    .parent().addClass($.support.fileInput ? undefined : 'disabled');
+
         },
         onRender: function () {
             if (!this.$el.find('.modal-header').find('h4').length) {
