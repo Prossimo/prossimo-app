@@ -51,14 +51,14 @@ var app = app || {};
             });
             app.projects.create(newProject, {wait: true});
         },
-        saveFile: function() {
-            'use strict';
+        saveFile: function () {
             var token = window.localStorage.getItem('authToken');
+
             $('#fileupload').fileupload({
                 url: app.settings.get('api_base_path') + '/files/handlers',
-                beforeSend: function(xhr) {
-                    xhr.setRequestHeader("Accept", "application/json");
-                    xhr.setRequestHeader("Authorization", "Bearer " + token);
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Accept', 'application/json');
+                    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
                 },
                 dataType: 'json',
                 autoUpload: false,
@@ -81,25 +81,30 @@ var app = app || {};
                 $.each(data.files, function (index, file) {
                     var node = $('<p/>')
                         .append($('<span/>').text(file.name));
-                    if (!index) {
 
+                    if (!index) {
+                        return;
                     }
+
                     node.appendTo(data.context);
                 });
             }).on('fileuploadprocessalways', function (e, data) {
-                var index = data.index,
-                    file = data.files[index],
-                    node = $(data.context.children()[index]);
+                var index = data.index;
+                var file = data.files[index];
+                var node = $(data.context.children()[index]);
+
                 if (file.preview) {
                     node
                         .prepend('<br>')
                         .prepend(file.preview);
                 }
+
                 if (file.error) {
                     node
                         .append('<br>')
                         .append($('<span class="text-danger"/>').text(file.error));
                 }
+
                 if (index + 1 === data.files.length) {
                     data.context.find('button')
                         .text('Upload')
@@ -107,6 +112,7 @@ var app = app || {};
                 }
             }).on('fileuploadprogressall', function (e, data) {
                 var progress = parseInt(data.loaded / data.total * 100, 10);
+
                 $('#progress .progress-bar').css(
                         'width',
                         progress + '%'
@@ -118,10 +124,12 @@ var app = app || {};
                         var link = $('<a>')
                                 .attr('target', '_blank')
                                 .prop('href', file.url);
+
                         $(data.context.children()[index])
                                 .wrap(link);
                     } else if (file.error) {
                         var error = $('<span class="text-danger"/>').text(file.error);
+
                         $(data.context.children()[index])
                                 .append('<br>')
                                 .append(error);
@@ -131,6 +139,7 @@ var app = app || {};
                 console.log(data);
                 $.each(data.files, function (index) {
                     var error = $('<span class="text-danger"/>').text('File upload failed.');
+
                     $(data.context.children()[index])
                             .append('<br>')
                             .append(error);
