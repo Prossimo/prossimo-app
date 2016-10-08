@@ -178,6 +178,7 @@ var app = app || {};
             var frameHeight = model.getInMetric('height', 'mm');
 
             var isTrapezoid = model.isTrapezoid();
+            var isInsideView = this.state.insideView;
             var topOffset = 10 + 0.5; // we will add 0.5 pixel offset for better strokes
             var wr = (stage.width() - metricSize * 2) / frameWidth;
             var hr = (stage.height() - metricSize * ((isTrapezoid) ? 3 : 2) - topOffset) / frameHeight;
@@ -187,6 +188,14 @@ var app = app || {};
             var frameOnScreenWidth = frameWidth * ratio;
             var frameOnScreenHeight = frameHeight * ratio;
 
+            // Shift drawing right or left depending on metrics displayed
+            // Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js
+            var metricShiftX = 0 - (2 - model.leftMetricCount(isInsideView)) * metricSize / 2;
+
+            if (model.rightMetricCount() > 1) {
+                metricShiftX -= (model.rightMetricCount(isInsideView) - 1) * metricSize / 2;
+            }
+
             var sizes = {
                 ratio: ratio,
                 screen: {
@@ -195,8 +204,9 @@ var app = app || {};
                 },
                 center: {
                     x: Math.round(
-                        stage.width() / 2 - frameOnScreenWidth / 2 +
-                        ((isTrapezoid) ? metricSize / 2 : metricSize)
+                        stage.width() / 2 - frameOnScreenWidth / 2
+                        + ((isTrapezoid) ? metricSize / 2 : metricSize)
+                        + metricShiftX
                     ) + 0.5,
                     y: topOffset
                 }
