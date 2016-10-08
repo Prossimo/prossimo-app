@@ -10,6 +10,23 @@
         <input name="project_address" type="text" class="form-control" placeholder="Project address">
         <input name="quote_revision" type="number" class="form-control" placeholder="Quote revision">
         <input name="quote_date" type="text" class="form-control date" placeholder="Quote date">
+        <div class="form-group">
+            <!-- The fileinput-button span is used to style the file input field as button -->
+            <label for="fileupload" class="btn btn-info" id="labelupload"><i class="glyphicon glyphicon-plus"></i> Select Files To Upload</label>
+            <span class="btn btn-success file-button hidden">
+                <span>Select files to upload...</span>
+                <!-- The file input field used as target for the file upload widget -->
+                <input id="fileupload" type="file" name="files[]" multiple>
+            </span>
+            <br>
+            <br>
+            <!-- The global progress bar -->
+            <div id="progress" class="progress">
+                <div class="progress-bar progress-bar-success"></div>
+            </div>
+            <!-- The container for the uploaded files -->
+            <div id="files" class="files"></div>
+        </div>
         <textarea name="project_notes" class="form-control" placeholder="Project notes"></textarea>
         <textarea name="shipping_notes" class="form-control" placeholder="Shipping notes"></textarea>
         <button type="submit" class="btn btn-save">Save</button>
