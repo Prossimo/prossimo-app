@@ -83,7 +83,8 @@ var app = app || {};
                         .append($('<span/>').text(file.name));
 
                     if (!index) {
-                        return;
+                        var node = $('<p/>')
+                            .append($('<span/>').text(file.name));
                     }
 
                     node.appendTo(data.context);

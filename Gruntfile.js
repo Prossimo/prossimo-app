@@ -4,15 +4,6 @@ module.exports = function (grunt) {
     var vendor_js_files = [
         'jquery/dist/jquery.min.js',
         'jquery-file-upload/js/jquery.uploadfile.js',
-        'blueimp-file-upload/js/jquery.fileupload.js',
-        'blueimp-file-upload/js/jquery.fileupload-process.js',
-        'blueimp-file-upload/js/jquery.fileupload-image.js',
-        'blueimp-file-upload/js/jquery.fileupload-audio.js',
-        'blueimp-file-upload/js/jquery.fileupload-video.js',
-        'blueimp-file-upload/js/jquery.fileupload-validate.js',
-        'blueimp-file-upload/js/jquery.fileupload-jquery-ui.js',
-        'blueimp-file-upload/js/jquery.fileupload-ui.js',
-        'blueimp-file-upload/js/jquery.iframe-transport.js',
         'handlebars/handlebars.runtime.min.js',
         'underscore/underscore-min.js',
         'backbone/backbone-min.js',
@@ -40,11 +31,7 @@ module.exports = function (grunt) {
         'handsontable/dist/handsontable.full.min.css',
         'bootstrap-select/dist/css/bootstrap-select.min.css',
         'bootstrap-toggle/css/bootstrap-toggle.min.css',
-        'bootstrap-datepicker/dist/css/bootstrap-datepicker3.standalone.min.css',
-        'blueimp-file-upload/css/jquery.fileupload-noscript.css',
-        'blueimp-file-upload/css/jquery.fileupload-ui-noscript.css',
-        'blueimp-file-upload/css/jquery.fileupload-ui.css',
-        'blueimp-file-upload/css/jquery.fileupload.css',
+        'bootstrap-datepicker/dist/css/bootstrap-datepicker3.standalone.min.css'
     ];
 
     var js_files = [
