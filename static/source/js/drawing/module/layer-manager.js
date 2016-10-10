@@ -12,6 +12,7 @@ var app = app || {};
             this.layers = {};
 
             this.trapezoid = opts.builder.get('model').isTrapezoid();
+            this.multiunit = opts.builder.get('model').isMultiunit();
             this.createLayers( opts.layers );
 
             // Start listening update on builder
@@ -19,15 +20,24 @@ var app = app || {};
         },
         // Create layers on init
         createLayers: function (layerOpts) {
+            var DrawerClass;
             var defaultLayer = {
                 zIndex: 0,
                 visible: true,
                 active: true
             };
 
+            if (this.trapezoid) {
+                DrawerClass = app.Drawers.TrapezoidUnitDrawer;
+            } else if (this.multiunit) {
+                DrawerClass = app.Drawers.UnitDrawer;
+            } else {
+                DrawerClass = app.Drawers.UnitDrawer;
+            }
+
             var defaultLayers = {
                 unit: {
-                    DrawerClass: (this.trapezoid) ? app.Drawers.TrapezoidUnitDrawer : app.Drawers.UnitDrawer,
+                    DrawerClass: DrawerClass,
                     zIndex: 0,
                     visible: true,
                     active: true
