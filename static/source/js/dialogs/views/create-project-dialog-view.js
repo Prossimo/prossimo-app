@@ -79,6 +79,7 @@ var app = app || {};
                             alert('upload fail!');
                         }
                     });
+
                 }
                     reader.readAsDataURL(file);  // base64 encoded TODO: replace with BSON
         },
