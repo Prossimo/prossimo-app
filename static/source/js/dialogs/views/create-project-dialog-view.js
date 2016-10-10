@@ -17,12 +17,12 @@ var app = app || {};
             $data_project_address: '.modal-body form input[name="project_address"]',
             $data_quote_revision: '.modal-body form input[name="quote_revision"]',
             $data_quote_date: '.modal-body form input[name="quote_date"]',
-            $project_file_info: 'modal-body form input[name="project_file_info"]',
             $data_project_notes: '.modal-body form textarea[name="project_notes"]',
             $data_shipping_notes: '.modal-body form textarea[name="shipping_notes"]'
         },
         events: {
-            'submit form': 'addNewProject'
+            'submit form': 'addNewProject',
+            'click #labelupload': 'saveFile'
         },
         addNewProject: function (e) {
             e.preventDefault();
@@ -50,20 +50,11 @@ var app = app || {};
                 app.top_bar_view.project_selector_view.fetchProjectList();
             });
             app.projects.create(newProject, {wait: true});
-            this.saveFile.call(this, $('input[name="project_file_info"]')[0].files[0]);
-            // this.$el.find('#project_file_info').on('change', function(e) {
-            //                 var self= this;
-            //                 self.saveFile.call(self, e.currentTarget.files[0]);
-            //             });
         },
-        saveFile: function(file) {
-            var self = this;
+        saveFile: function () {
             var token = window.localStorage.getItem('authToken');
-            var reader = new FileReader();
-            reader.onload = function(e) {
-            var data = reader.result;
-            Backbone.ajax({
-                method: 'POST',
+
+            $('#fileupload').fileupload({
                 url: app.settings.get('api_base_path') + '/files/handlers',
                 data: data,
                 beforeSend: function(xhr) {
@@ -80,8 +71,6 @@ var app = app || {};
                         }
                     });
 
-                }
-                    reader.readAsDataURL(file);  // base64 encoded TODO: replace with BSON
         },
         onRender: function () {
             if (!this.$el.find('.modal-header').find('h4').length) {
