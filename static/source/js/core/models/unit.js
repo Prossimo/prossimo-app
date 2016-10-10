@@ -338,7 +338,7 @@ var app = app || {};
                     var is_optional = _.contains(rules, 'IS_OPTIONAL');
 
                     if ( !is_optional && dictionary_id && profile_id ) {
-                        var option = app.settings.getDefaultOption(dictionary_id, profile_id);
+                        var option = app.settings.getDefaultOrFirstAvailableOption(dictionary_id, profile_id);
 
                         if ( option && option.id && dictionary.id ) {
                             default_options.push({

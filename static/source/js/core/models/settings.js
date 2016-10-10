@@ -265,13 +265,16 @@ var app = app || {};
         getOpeningDirections: function () {
             return OPENING_DIRECTIONS;
         },
+        //  TODO: add `default_first` param to make default entry the first in the list
         getAvailableOptions: function (dictionary_id, profile_id) {
             var available_options = [];
             var target_dictionary = this.dictionaries.get(dictionary_id);
 
             if ( target_dictionary ) {
                 target_dictionary.entries.each(function (entry) {
-                    if ( entry.get('profiles').length && _.contains(entry.get('profiles'), profile_id) ) {
+                    if ( entry.get('profiles').length &&
+                        _.contains(_.pluck(entry.get('profiles'), 'id'), profile_id)
+                    ) {
                         available_options.push(entry);
                     }
                 }, this);
@@ -279,12 +282,32 @@ var app = app || {};
 
             return available_options;
         },
-        //  TODO: shoud use actual per-profile defaults mechanism, right now
-        //  it just gets the first option in the list
         getDefaultOption: function (dictionary_id, profile_id) {
             var available_options = this.getAvailableOptions(dictionary_id, profile_id);
 
+            var default_option = _.find(available_options, function (entry) {
+                var entry_profiles = entry.get('profiles');
+                var entry_to_profile_connection = _.findWhere(entry_profiles, { id: profile_id });
+
+                return entry_to_profile_connection && entry_to_profile_connection.is_default === true;
+            });
+
+            return default_option || undefined;
+        },
+        getFirstAvailableOption: function (dictionary_id, profile_id) {
+            var available_options = this.getAvailableOptions(dictionary_id, profile_id);
+
             return available_options.length ? available_options[0] : undefined;
+        },
+        //  This function use a composition of two functions above
+        getDefaultOrFirstAvailableOption: function (dictionary_id, profile_id) {
+            var target_option = this.getDefaultOption(dictionary_id, profile_id);
+
+            if ( !target_option ) {
+                target_option = this.getFirstAvailableOption(dictionary_id, profile_id);
+            }
+
+            return target_option;
         },
         getDictionaryIdByName: function (name) {
             var target_dictionary = this.dictionaries.findWhere({name: name});

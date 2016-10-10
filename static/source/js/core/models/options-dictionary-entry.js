@@ -68,7 +68,9 @@ var app = app || {};
 
             if ( method === 'create' || method === 'update' ) {
                 options.attrs = { entry: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
-                    data: JSON.stringify(model.get('data'))
+                    //  TODO: we need to parse this value first, then we could
+                    //  stringify it with no problems
+                    data: _.isString(model.get('data')) ? model.get('data') : JSON.stringify(model.get('data'))
                 }) };
             }
 
