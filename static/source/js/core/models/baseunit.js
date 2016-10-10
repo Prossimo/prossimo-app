@@ -3,8 +3,8 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var PROJECT_UNIT_PROPERTIES = [
-        { name: 'type', title: 'Type', type: 'string' },
+    var BASEUNIT_PROPERTIES = [
+        { name: 'unit_type', title: 'Type', type: 'string' },
         { name: 'mark', title: 'Mark', type: 'string' },
         { name: 'width', title: 'Width (inches)', type: 'number' },
         { name: 'height', title: 'Height (inches)', type: 'string' },
@@ -163,11 +163,10 @@ var app = app || {};
     }
 
     app.Baseunit = Backbone.Model.extend({
-        schema: app.schema.createSchema(PROJECT_UNIT_PROPERTIES),
         defaults: function () {
             var defaults = {};
 
-            _.each(PROJECT_UNIT_PROPERTIES, function (item) {
+            _.each(BASEUNIT_PROPERTIES, function (item) {
                 defaults[item.name] = this.getDefaultValue(item.name, item.type);
             }, this);
 
@@ -184,6 +183,7 @@ var app = app || {};
             };
 
             var name_value_hash = {
+                unit_type: 'unit',
                 height: '0',
                 original_currency: 'EUR',
                 conversion_rate: 0.9,
@@ -463,7 +463,7 @@ var app = app || {};
 
             _.each(this.toJSON(), function (value, key) {
                 if ( key !== 'position' && has_only_defaults ) {
-                    var property_source = _.findWhere(PROJECT_UNIT_PROPERTIES, { name: key });
+                    var property_source = _.findWhere(BASEUNIT_PROPERTIES, { name: key });
                     var type = property_source ? property_source.type : undefined;
 
                     if ( key === 'profile_id' ) {
@@ -516,10 +516,10 @@ var app = app || {};
             var name_title_hash = [];
 
             if ( !names ) {
-                names = _.pluck( PROJECT_UNIT_PROPERTIES, 'name' );
+                names = _.pluck( BASEUNIT_PROPERTIES, 'name' );
             }
 
-            _.each(PROJECT_UNIT_PROPERTIES, function (item) {
+            _.each(BASEUNIT_PROPERTIES, function (item) {
                 if ( _.indexOf(names, item.name) !== -1 ) {
                     name_title_hash.push({ name: item.name, title: item.title, type: item.type });
                 }
@@ -2225,6 +2225,9 @@ var app = app || {};
             return trapezoidHeights || app.utils.convert.inches_to_mm(this.get('height'));
         }
         /* trapezoid end */
+    },
+    {
+        schema: app.schema.createSchema(BASEUNIT_PROPERTIES)
     });
 
     // static function
