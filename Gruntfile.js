@@ -30,7 +30,11 @@ module.exports = function (grunt) {
         'handsontable/dist/handsontable.full.min.css',
         'bootstrap-select/dist/css/bootstrap-select.min.css',
         'bootstrap-toggle/css/bootstrap-toggle.min.css',
-        'bootstrap-datepicker/dist/css/bootstrap-datepicker3.standalone.min.css'
+        'bootstrap-datepicker/dist/css/bootstrap-datepicker3.standalone.min.css',
+        'blueimp-file-upload/css/jquery.fileupload-noscript.css',
+        'blueimp-file-upload/css/jquery.fileupload-ui-noscript.css',
+        'blueimp-file-upload/css/jquery.fileupload-ui.css',
+        'blueimp-file-upload/css/jquery.fileupload.css',
     ];
 
     var js_files = [
