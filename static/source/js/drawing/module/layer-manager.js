@@ -30,7 +30,7 @@ var app = app || {};
             if (this.trapezoid) {
                 DrawerClass = app.Drawers.TrapezoidUnitDrawer;
             } else if (this.multiunit) {
-                DrawerClass = app.Drawers.UnitDrawer;
+                DrawerClass = app.Drawers.MultiunitDrawer;
             } else {
                 DrawerClass = app.Drawers.UnitDrawer;
             }
