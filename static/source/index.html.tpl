@@ -13,6 +13,11 @@
     <link rel="stylesheet" href="/static/public/css/styles.@@hash.css" media="all">
     <link rel="stylesheet" href="/static/public/css/print.@@hash.css" media="print">
 
+    <link rel="stylesheet" href="/bower_components/blueimp-file-upload/css/jquery.fileupload.css">
+    <link rel="stylesheet" href="/bower_components/blueimp-file-upload/css/jquery.fileupload-ui.css">
+    <link rel="stylesheet" href="/bower_components/blueimp-file-upload/css/jquery.fileupload-noscript.css">
+    <link rel="stylesheet" href="/bower_components/blueimp-file-upload/css/jquery.fileupload-ui-noscript.css">
+
     <script src="/static/public/js/vendor.@@hash.min.js"></script>
     <script src="/static/public/js/templates.@@hash.js"></script>
 
@@ -23,5 +28,16 @@
     <header id="header" class="header"></header>
     <main id="main" class="main"></main>
     <div id="dialogs" class="dialog-container"></div>
+
+    <script src="/bower_components/blueimp-file-upload/js/vendor/jquery.ui.widget.js"></script>
+    <script src="/bower_components/blueimp-load-image/js/load-image.all.min.js"></script>
+    <script src="/bower_components/blueimp-canvas-to-blob/js/canvas-to-blob.min.js"></script>
+    <script src="/bower_components/blueimp-file-upload/js/jquery.iframe-transport.js"></script>
+    <script src="/bower_components/blueimp-file-upload/js/jquery.fileupload.js"></script>
+    <script src="/bower_components/blueimp-file-upload/js/jquery.fileupload-process.js"></script>
+    <script src="/bower_components/blueimp-file-upload/js/jquery.fileupload-image.js"></script>
+    <script src="/bower_components/blueimp-file-upload/js/jquery.fileupload-audio.js"></script>
+    <script src="/bower_components/blueimp-file-upload/js/jquery.fileupload-video.js"></script>
+    <script src="/bower_components/blueimp-file-upload/js/jquery.fileupload-validate.js"></script>
 </body>
 </html>
