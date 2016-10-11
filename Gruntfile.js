@@ -3,7 +3,6 @@ module.exports = function (grunt) {
 
     var vendor_js_files = [
         'jquery/dist/jquery.min.js',
-        'jquery-file-upload/js/jquery.uploadfile.js',
         'handlebars/handlebars.runtime.min.js',
         'underscore/underscore-min.js',
         'backbone/backbone-min.js',
