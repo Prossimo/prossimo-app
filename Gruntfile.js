@@ -84,6 +84,7 @@ module.exports = function (grunt) {
         'drawing/module/layer-manager.js',
         'drawing/module/unit-drawer.js',
         'drawing/module/trapezoid-unit-drawer.js',
+        'drawing/module/multiunit-drawer.js',
         'drawing/module/metrics-drawer.js',
         'drawing/views/main-drawing-view.js',
         'drawing/views/drawing-view.js',
