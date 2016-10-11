@@ -1347,8 +1347,12 @@ var app = app || {};
                 throw new Error('Wrong metric. Possible values: ' + possible_metrics.join(', ') );
             }
 
-            //  No metric means inches
-            val = (!metric || metric === 'inches') ? val : app.utils.convert.mm_to_inches(val);
+            // Convert to inches if metric is present and it isn't inches. No metric means inches
+            if (_.isArray(val) && (metric && metric !== 'inches')) {
+                val = val.map(app.utils.convert.mm_to_inches);
+            } else if (metric && metric !== 'inches') {
+                val = app.utils.convert.mm_to_inches(val);
+            }
 
             if ( this.getCircleRadius() !== null ) {
                 var full_root = this.generateFullRoot();
