@@ -51,6 +51,10 @@ var app = app || {};
 
     var SASH_TYPES_WITH_OPENING = _.without(SASH_TYPES, 'fixed_in_frame');
     var OPERABLE_SASH_TYPES = _.without(SASH_TYPES, 'fixed_in_frame', 'fixed_in_sash');
+    var EGRESS_ENABLED_TYPES = [
+        'tilt_turn_right', 'tilt_turn_left', 'turn_only_right', 'turn_only_left',
+        'turn_only_right_hinge_hidden_latch', 'turn_only_left_hinge_hidden_latch'
+    ];
 
     var SASH_TYPE_NAME_MAP = {
         // deprecated
@@ -1699,6 +1703,7 @@ var app = app || {};
                 ((current_root.sashType === 'fixed_in_frame') && (current_root.sections.length === 0)) ||
                 ((current_root.sashType !== 'fixed_in_frame') && (current_root.sections.length))
             ) {
+                current_sash.original_type = current_root.sashType;
                 current_sash.type = this.getSashName(current_root.sashType, reverse_hinges);
                 current_sash.filling.width = current_root.glassParams.width;
                 current_sash.filling.height = current_root.glassParams.height;
@@ -1911,33 +1916,52 @@ var app = app || {};
         isArchedWindow: function () {
             return (this.getArchedPosition() !== null);
         },
-        getSashOpeningSize: function (openingSizes, sizeType, sashType) {
-            var result;
-            var f = app.utils.format;
+        isEgressEnabledType: function (sash_type) {
+            return _.indexOf(EGRESS_ENABLED_TYPES, sash_type) !== -1;
+        },
+        //  Source is in mms. Result is in inches by default, millimeters optional
+        getSashOpeningSize: function (openingSizes_mm, sizeType, sashType, result_metric) {
+            var possible_metrics = ['mm', 'inches'];
             var c = app.utils.convert;
             var m = app.utils.math;
-            var egressEabledTypes = [SASH_TYPE_NAME_MAP.tilt_turn_right, SASH_TYPE_NAME_MAP.tilt_turn_left,
-                SASH_TYPE_NAME_MAP.turn_only_right, SASH_TYPE_NAME_MAP.turn_only_left,
-                SASH_TYPE_NAME_MAP.turn_only_right_hinge_hidden_latch,
-                SASH_TYPE_NAME_MAP.turn_only_left_hinge_hidden_latch];
+            var result;
+
+            if ( result_metric && possible_metrics.indexOf(result_metric) === -1 ) {
+                throw new Error('Wrong metric. Possible values: ' + possible_metrics.join(', ') );
+            }
+
+            //  Set inches by default
+            if ( !result_metric ) {
+                result_metric = 'inches';
+            }
 
             if (sizeType === 'egress') {
                 var clear_width_deduction = this.profile.get('clear_width_deduction');
 
-                if (clear_width_deduction && egressEabledTypes.indexOf(sashType) !== -1) {
-                    openingSizes.width -= clear_width_deduction;
+                if ( clear_width_deduction && this.isEgressEnabledType(sashType) ) {
+                    openingSizes_mm.width -= clear_width_deduction;
                 } else {
-                    return result;
+                    return undefined;
                 }
             }
 
-            if ( openingSizes && openingSizes.height && openingSizes.width ) {
-                var opening_size = f.dimensions(c.mm_to_inches(openingSizes.width),
-                    c.mm_to_inches(openingSizes.height), 'fraction', 'inches_only');
-                var opening_area = f.square_feet(m.square_feet(c.mm_to_inches(openingSizes.width),
-                    c.mm_to_inches(openingSizes.height)), 2, 'sup');
+            if ( openingSizes_mm && openingSizes_mm.height && openingSizes_mm.width ) {
+                var opening_area = (result_metric === 'inches') ?
+                    m.square_feet(
+                        c.mm_to_inches(openingSizes_mm.width),
+                        c.mm_to_inches(openingSizes_mm.height)
+                    ) :
+                    m.square_meters(openingSizes_mm.width, openingSizes_mm.height);
 
-                result = opening_size + ' (' + opening_area + ')';
+                result = {
+                    height: (result_metric === 'inches') ?
+                        c.mm_to_inches(openingSizes_mm.height) :
+                        openingSizes_mm.height,
+                    width: (result_metric === 'inches') ?
+                        c.mm_to_inches(openingSizes_mm.width) :
+                        openingSizes_mm.width,
+                    area: opening_area
+                };
             }
 
             return result;

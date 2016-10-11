@@ -281,16 +281,33 @@ var app = app || {};
                 _.each(sash_list_source, function (source_item, index) {
                     var sash_item = {};
                     var section_info;
+                    var opening_size_data;
+                    var egress_opening_size_data;
 
                     sash_item.name = 'Sash #' + (index + 1);
                     sash_item.type = source_item.type;
-                    sash_item.opening_size = this.options.parent_view.active_unit.getSashOpeningSize(
+
+                    opening_size_data = this.options.parent_view.active_unit.getSashOpeningSize(
                         source_item.opening
                     );
-                    sash_item.egress_opening_size = this.options.parent_view.active_unit.getSashOpeningSize(
+                    sash_item.opening_size = opening_size_data && f.dimensions_and_area(
+                        opening_size_data.width,
+                        opening_size_data.height,
+                        undefined,
+                        undefined,
+                        opening_size_data.area
+                    );
+                    egress_opening_size_data = this.options.parent_view.active_unit.getSashOpeningSize(
                         source_item.opening,
                         'egress',
-                        source_item.type
+                        source_item.original_type
+                    );
+                    sash_item.egress_opening_size = egress_opening_size_data && f.dimensions_and_area(
+                        egress_opening_size_data.width,
+                        egress_opening_size_data.height,
+                        undefined,
+                        undefined,
+                        egress_opening_size_data.area
                     );
 
                     //  Child sections

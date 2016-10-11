@@ -32,7 +32,7 @@ var app = app || {};
         { name: 'position', title: 'Position', type: 'number' },
         { name: 'pricing_grids', title: 'Pricing Grids', type: 'string' },
         { name: 'weight_per_length', title: 'Weight per Length (kg/m)', type: 'number' },
-        { name: 'clear_width_deduction', title: 'Clear width deduction (mm)', type: 'number' }
+        { name: 'clear_width_deduction', title: 'Clear Width Deduction (mm)', type: 'number' }
     ];
 
     function getDefaultPricingGrids() {

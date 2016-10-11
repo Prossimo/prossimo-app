@@ -836,12 +836,19 @@ test('getSashOpeningSize function', function () {
     // get sash list
     var sashList = unit.getSashList();
 
-    equal(unit.getSashOpeningSize(sashList[0].opening), undefined, 'Top sash(Fixed), normal size');
-    equal(unit.getSashOpeningSize(sashList[1].opening), undefined, 'Bottom sash(Fixed), normal size');
-    equal(unit.getSashOpeningSize(sashList[0].opening, 'egress', sashList[0].type), undefined,
-        'Top sash(Fixed), egress size');
-    equal(unit.getSashOpeningSize(sashList[1].opening, 'egress', sashList[1].type), undefined,
-        'Bottom sash(Fixed), egress size');
+    //  These tests are supposed to return undefined, because of Fixed type
+    equal(unit.getSashOpeningSize(sashList[0].opening), undefined, 'Top sash (Fixed), normal size');
+    equal(unit.getSashOpeningSize(sashList[1].opening), undefined, 'Bottom sash (Fixed), normal size');
+    equal(
+        unit.getSashOpeningSize(sashList[0].opening, 'egress', sashList[0].original_type),
+        undefined,
+        'Top sash (Fixed), egress size'
+    );
+    equal(
+        unit.getSashOpeningSize(sashList[1].opening, 'egress', sashList[1].original_type),
+        undefined,
+        'Bottom sash (Fixed), egress size'
+    );
 
     // set types
     unit.setSectionSashType(top_section.id, 'tilt_only');
@@ -849,14 +856,38 @@ test('getSashOpeningSize function', function () {
 
     // get sash list
     sashList = unit.getSashList();
-    equal(unit.getSashOpeningSize(sashList[0].opening), '26″ x 32 1/16″ (5.78 ft<sup>2</sup>)',
-        'Top sash(Tilt Only), normal size');
-    equal(unit.getSashOpeningSize(sashList[1].opening), '26″ x 23 3/4″ (4.29 ft<sup>2</sup>)',
-        'Bottom sash(Tilt-turn Left Hinge), normal size');
-    equal(unit.getSashOpeningSize(sashList[0].opening, 'egress', sashList[0].type), undefined,
-        'Top sash(Tilt Only), egress size');
-    equal(unit.getSashOpeningSize(sashList[1].opening, 'egress', sashList[1].type),
-        '24″ x 23 3/4″ (3.97 ft<sup>2</sup>)', 'Bottom sash(Tilt-turn Left Hinge), egress size');
+    deepEqual(
+        unit.getSashOpeningSize(sashList[0].opening),
+        {
+            area: 5.782803232273132,
+            height: 32.04724409448819,
+            width: 25.984251968503937
+        },
+        'Top sash (Tilt Only), normal size (26″ x 32 1/16″ (5.78 ft<sup>2</sup>))'
+    );
+    deepEqual(
+        unit.getSashOpeningSize(sashList[1].opening),
+        {
+            area: 4.290925248517166,
+            height: 23.77952755905513,
+            width: 25.984251968503937
+        },
+        'Bottom sash (Tilt-turn Left Hinge), normal size (26″ x 23 3/4″ (4.29 ft<sup>2</sup>))'
+    );
+    equal(
+        unit.getSashOpeningSize(sashList[0].opening, 'egress', sashList[0].original_type),
+        undefined,
+        'Top sash (Tilt Only), egress size'
+    );
+    deepEqual(
+        unit.getSashOpeningSize(sashList[1].opening, 'egress', sashList[1].original_type),
+        {
+            area: 3.965855153932532,
+            height: 23.77952755905513,
+            width: 24.015748031496063
+        },
+        'Bottom sash (Tilt-turn Left Hinge), egress size (24″ x 23 3/4″ (3.97 ft<sup>2</sup>))'
+    );
 });
 
 //  ------------------------------------------------------------------------
