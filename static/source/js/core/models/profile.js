@@ -30,6 +30,8 @@ var app = app || {};
         { name: 'frame_u_value', title: 'Frame U Value', type: 'number' },
         { name: 'spacer_thermal_bridge_value', title: 'Spacer Thermal Bridge Value', type: 'number' },
         { name: 'position', title: 'Position', type: 'number' },
+        { name: 'pricing_grids', title: 'Pricing Grids', type: 'string' },
+        { name: 'weight_per_length', title: 'Weight per Length (kg/m)', type: 'number' },
         { name: 'clear_width_deduction', title: 'Clear width deduction (mm)', type: 'number' }
     ];
 
@@ -58,6 +60,7 @@ var app = app || {};
     }
 
     app.Profile = Backbone.Model.extend({
+        schema: app.schema.createSchema(PROFILE_PROPERTIES),
         defaults: function () {
             var defaults = {};
 
@@ -114,6 +117,11 @@ var app = app || {};
             }
 
             return Backbone.sync.call(this, method, model, options);
+        },
+        parse: function (data) {
+            var profile_data = data && data.profile ? data.profile : data;
+
+            return app.schema.parseAccordingToSchema(profile_data, this.schema);
         },
         initialize: function (attributes, options) {
             this.options = options || {};
@@ -251,7 +259,7 @@ var app = app || {};
             return _.indexOf(TYPES_WITH_OUTSIDE_HANDLE, this.get('unit_type')) !== -1;
         },
         getThresholdType: function () {
-            var threshold_type = '--';
+            var threshold_type = '(None)';
 
             if ( this.isThresholdPossible() ) {
                 if ( this.get('low_threshold') === true ) {

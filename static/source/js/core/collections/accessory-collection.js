@@ -3,8 +3,20 @@ var app = app || {};
 (function () {
     'use strict';
 
+    //  Helper function. Get total price for the subset of collection
+    function getPrice(collection) {
+        var total_price = 0;
+
+        _.each(collection, function (item) {
+            total_price += item.getSubtotalPriceDiscounted();
+        });
+
+        return total_price;
+    }
+
     app.AccessoryCollection = Backbone.Collection.extend({
         model: app.Accessory,
+        reorder_property_name: 'accessories',
         url: function () {
             return app.settings.get('api_base_path') +
                 '/projects/' + this.options.project.get('id') + '/accessories';
@@ -13,7 +25,6 @@ var app = app || {};
             return app.settings.get('api_base_path') +
                 '/projects/' + this.options.project.get('id') + '/reorder_accessories';
         },
-        reorder_property_name: 'accessories',
         initialize: function (models, options) {
             this.options = options || {};
             this.proxy_accessory = new app.Accessory(null, { proxy: true });
@@ -79,27 +90,17 @@ var app = app || {};
 
             return total_cost;
         },
-        //  Helper function
-        getPrice: function (collection) {
-            var total_price = 0;
-
-            _.each(collection, function (item) {
-                total_price += item.getSubtotalPriceDiscounted();
-            });
-
-            return total_price;
-        },
         getRegularItemsPrice: function () {
-            return this.getPrice(this.getRegularItems());
+            return getPrice(this.getRegularItems());
         },
         getOptionalItemsPrice: function () {
-            return this.getPrice(this.getOptionalItems());
+            return getPrice(this.getOptionalItems());
         },
         getHiddenPrice: function () {
-            return this.getPrice(this.getHiddenItems());
+            return getPrice(this.getHiddenItems());
         },
         getShippingPrice: function () {
-            return this.getPrice(this.getShipping());
+            return getPrice(this.getShipping());
         },
         getTotalTaxPercent: function () {
             var base_value = 0;

@@ -408,14 +408,21 @@ var app = app || {};
                     if (e.keyCode === 13) {  // enter
                         var _value = this.value;
                         var sign = 1;
+                        var mm;
 
                         if (_value[0] === '-') {
                             sign = (params.canBeNegative) ? -1 : 1;
                             _value = _value.slice(1);
                         }
 
-                        var inches = app.utils.parseFormat.dimension(_value);
-                        var mm = app.utils.convert.inches_to_mm(inches) * sign;
+                        var splitHeightsRequested = _value.indexOf('|') !== -1;
+                        var isVerticalWholeMetric = params.name === 'vertical_whole_metric';
+                        var attr = (splitHeightsRequested && isVerticalWholeMetric) ? 'height' : 'width';
+                        var inches = app.utils.parseFormat.dimensions(_value, attr);
+
+                        mm = (_.isArray(inches)) ?
+                               inches.map(function (value) { return app.utils.convert.inches_to_mm(value) * sign; })
+                             : app.utils.convert.inches_to_mm(inches) * sign;
 
                         params.setter(mm, view);
 

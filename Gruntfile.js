@@ -21,7 +21,9 @@ module.exports = function (grunt) {
         'backbone.KonvaView/backbone.KonvaView.js',
         'spin.js/spin.min.js',
         'mousetrap/mousetrap.min.js',
-        'backbone.marionette.keyshortcuts/backbone.marionette.keyshortcuts.js'
+        'backbone.marionette.keyshortcuts/backbone.marionette.keyshortcuts.js',
+        'Sortable/Sortable.min.js',
+        'Sortable/jquery.binding.js'
     ];
 
     var vendor_css_files = [
@@ -37,6 +39,7 @@ module.exports = function (grunt) {
         'router.js',
         'dialogs.js',
         'utils.js',
+        'schema.js',
         'paste-image.js',
         'hot-renderers.js',
         'undomanager.js',
@@ -49,6 +52,8 @@ module.exports = function (grunt) {
         'core/models/project-settings.js',
         'core/models/project-file.js',
         'core/models/filling-type.js',
+        'core/models/options-dictionary.js',
+        'core/models/options-dictionary-entry.js',
         'core/models/settings.js',
         'core/collections/unit-collection.js',
         'core/collections/accessory-collection.js',
@@ -56,7 +61,11 @@ module.exports = function (grunt) {
         'core/collections/project-collection.js',
         'core/collections/project-file-collection.js',
         'core/collections/filling-type-collection.js',
+        'core/collections/options-dictionary-collection.js',
+        'core/collections/options-dictionary-entry-collection.js',
         'core/views/base/base-toggle-view.js',
+        'core/views/base/base-input-view.js',
+        'core/views/base/base-select-view.js',
         'core/views/main-navigation-view.js',
         'core/views/units-table-view.js',
         'core/views/units-table-total-prices-view.js',
@@ -67,6 +76,7 @@ module.exports = function (grunt) {
         'core/views/spinner-view.js',
         'core/views/top-bar-view.js',
         'units-table/views/main-units-table-view.js',
+        'drawing/module/handle-data.js',
         'drawing/module/konva-clip-patch.js',
         'drawing/module/drawing-module.js',
         'drawing/module/layer-manager.js',
@@ -88,6 +98,12 @@ module.exports = function (grunt) {
         'settings/views/profiles-table-view.js',
         'settings/views/filling-types-table-view.js',
         'settings/views/pricing-grids-table-view.js',
+        'settings/views/options-view.js',
+        'settings/views/options-dictionary-list-item-view.js',
+        'settings/views/options-dictionary-list-view.js',
+        'settings/views/options-dictionary-entries-item-view.js',
+        'settings/views/options-dictionary-entries-table-view.js',
+        'settings/views/options-dictionary-view.js',
         'supplier-request/views/main-supplier-request-view.js',
         'supplier-request/views/supplier-request-header-view.js',
         'dashboard/views/project-totals-view.js',
@@ -96,6 +112,7 @@ module.exports = function (grunt) {
         'dashboard/views/main-dashboard-view.js',
         'dialogs/views/base-dialog-view.js',
         'dialogs/views/login-dialog-view.js',
+        'dialogs/views/options-profiles-table-dialog-view.js',
         'dialogs/views/create-project-dialog-view.js',
         'app.js'
     ];
@@ -383,6 +400,10 @@ module.exports = function (grunt) {
                         {
                             match: 'pdf_api_base_path',
                             replacement: 'http://127.0.0.1:8080/print'
+                        },
+                        {
+                            match: 'favicon',
+                            replacement: 'favicon-dev.png'
                         }
                     ]
                 },
@@ -411,8 +432,11 @@ module.exports = function (grunt) {
                         {
                             match: 'pdf_api_base_path',
                             replacement: '/print'
+                        },
+                        {
+                            match: 'favicon',
+                            replacement: 'favicon.png'
                         }
-
                     ]
                 },
                 files: [

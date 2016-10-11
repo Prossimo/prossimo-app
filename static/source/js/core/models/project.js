@@ -14,10 +14,12 @@ var app = app || {};
         { name: 'quote_date', title: 'Quote Date', type: 'string' },
         { name: 'quote_revision', title: 'Quote Revision', type: 'number' },
         { name: 'shipping_notes', title: 'Shipping Notes', type: 'string'},
-        { name: 'project_notes', title: 'Project Notes', type: 'string'}
+        { name: 'project_notes', title: 'Project Notes', type: 'string'},
+        { name: 'settings', title: 'Settings', type: 'object' }
     ];
 
     app.Project = Backbone.Model.extend({
+        schema: app.schema.createSchema(PROJECT_PROPERTIES),
         defaults: function () {
             var defaults = {};
 
@@ -52,7 +54,7 @@ var app = app || {};
             return Backbone.Model.prototype.saveAndGetId.apply(this, arguments);
         },
         sync: function (method, model, options) {
-            var properties_to_omit = ['id', 'sync_datetime'];
+            var properties_to_omit = ['id'];
 
             if ( method === 'update' || method === 'create' ) {
                 options.attrs = { project: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
@@ -82,40 +84,25 @@ var app = app || {};
         },
         parse: function (data) {
             var project_data = data && data.project ? data.project : data;
+            var filtered_data = app.schema.parseAccordingToSchema(project_data, this.schema);
 
-            var filtered_data = project_data ?
-                _.pick(project_data, function (value, key) {
-                    var keys_to_omit = ['sync_datetime'];
-
-                    return !_.isNull(value) && !_.contains(keys_to_omit, key);
-                }) : project_data;
-
-            if ( filtered_data && filtered_data.files ) {
-                filtered_data.files = _.map(filtered_data.files, function (file) {
+            //  This is different from other dependencies because we don't use
+            //  schema for project-file currently. This is also the reason we
+            //  don't use { parse: true } for files in setDependencies() here
+            if ( project_data && project_data.files ) {
+                filtered_data.files = _.map(project_data.files, function (file) {
                     return _.pick(file, function (value) {
                         return !_.isNull(value);
                     });
                 });
             }
 
-            if ( filtered_data && filtered_data.accessories ) {
-                filtered_data.accessories = _.map(filtered_data.accessories, function (accessory) {
-                    var keys_to_omit = ['sync_datetime'];
-
-                    return _.pick(accessory, function (value, key) {
-                        return !_.isNull(value) && !_.contains(keys_to_omit, key);
-                    });
-                });
+            if ( project_data && project_data.accessories ) {
+                filtered_data.accessories = project_data.accessories;
             }
 
-            if ( filtered_data && filtered_data.units ) {
-                filtered_data.units = _.map(filtered_data.units, function (unit) {
-                    var keys_to_omit = ['project', 'profile'];
-
-                    return _.pick(unit, function (value, key) {
-                        return !_.isNull(value) && !_.contains(keys_to_omit, key);
-                    });
-                });
+            if ( project_data && project_data.units ) {
+                filtered_data.units = project_data.units;
             }
 
             return filtered_data;
@@ -152,20 +139,20 @@ var app = app || {};
             }
 
             if ( this.get('units') ) {
-                this.units.set(this.get('units'));
+                this.units.set(this.get('units'), { parse: true });
                 this.unset('units', { silent: true });
                 changed_flag = true;
             }
 
             if ( this.get('accessories') ) {
-                this.extras.set(this.get('accessories'));
+                this.extras.set(this.get('accessories'), { parse: true });
                 this.extras.trigger('loaded');
                 this.unset('accessories', { silent: true });
                 changed_flag = true;
             }
 
             if ( this.get('files') ) {
-                this.files.set(this.get('files'));
+                this.files.set(this.get('files'), { parse: true });
                 this.unset('files', { silent: true });
                 changed_flag = true;
             }

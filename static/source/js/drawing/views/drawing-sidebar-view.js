@@ -3,6 +3,8 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var UNSET_VALUE = '--';
+
     app.DrawingSidebarView = Marionette.ItemView.extend({
         tagName: 'div',
         className: 'drawing-sidebar',
@@ -135,10 +137,8 @@ var app = app || {};
             var active_unit;
 
             var relevant_properties = [
-                'mark', 'width', 'height', 'description', 'notes',
-                'internal_color', 'external_color', 'gasket_color', 'uw',
-                'glazing', 'hinge_style', 'opening_direction', 'internal_sill',
-                'external_sill', 'glazing_bar_type', 'glazing_bar_width'
+                'mark', 'width', 'height', 'description', 'notes', 'exceptions',
+                'uw', 'glazing', 'opening_direction', 'glazing_bar_width'
             ];
 
             if ( this.options.parent_view.active_unit ) {
@@ -160,6 +160,56 @@ var app = app || {};
             }
 
             return active_unit_properties;
+        },
+        getActiveUnitOptions: function () {
+            var active_unit_options = [];
+            var options_list = app.settings.getAvailableDictionaryNames();
+            var active_unit;
+
+            if ( this.options.parent_view.active_unit ) {
+                active_unit = this.options.parent_view.active_unit;
+
+                active_unit_options = _.map(options_list, function (dictionary_name) {
+                    var dictionary_id = app.settings.getDictionaryIdByName(dictionary_name);
+                    var rules_and_restrictions;
+                    var value = '(None)';
+                    var is_restricted = false;
+                    var current_options = [];
+
+                    if ( dictionary_id ) {
+                        rules_and_restrictions = app.settings.dictionaries.get(dictionary_id)
+                            .get('rules_and_restrictions');
+                    }
+
+                    _.each(rules_and_restrictions, function (rule) {
+                        var restriction_applies = active_unit.checkIfRestrictionApplies(rule);
+
+                        if ( restriction_applies && rule === 'DOOR_ONLY' ) {
+                            is_restricted = true;
+                            value = '(Doors Only)';
+                        } else if ( restriction_applies && rule === 'OPERABLE_ONLY' ) {
+                            is_restricted = true;
+                            value = '(Operable Only)';
+                        } else if ( restriction_applies && rule === 'GLAZING_BARS_ONLY' ) {
+                            is_restricted = true;
+                            value = '(Has no Bars)';
+                        }
+                    }, this);
+
+                    if ( !is_restricted ) {
+                        current_options = dictionary_id ?
+                            active_unit.getCurrentUnitOptionsByDictionaryId(dictionary_id) : [];
+                        value = current_options.length ? current_options[0].get('name') : UNSET_VALUE;
+                    }
+
+                    return {
+                        title: dictionary_name,
+                        value: value
+                    };
+                }, this);
+            }
+
+            return active_unit_options;
         },
         getActiveUnitProfileProperties: function () {
             var active_unit_profile_properties = [];
@@ -288,7 +338,8 @@ var app = app || {};
                 profile_total: 'Profile Total',
                 glasses: 'Fillings',
                 openings: 'Openings',
-                glazing_bars: 'Glazing Bars'
+                glazing_bars: 'Glazing Bars',
+                unit_total: 'Unit Total'
             };
 
             if ( this.options.parent_view.active_unit ) {
@@ -296,26 +347,36 @@ var app = app || {};
                     linear: 'Total Linear',
                     linear_without_intersections: 'Total Linear (Without Intersections)',
                     area: 'Total Area',
-                    area_both_sides: 'Total Area (Both Sides)'
+                    area_both_sides: 'Total Area (Both Sides)',
+                    weight: 'Total Weight'
                 };
                 var data_groups = _.keys(group_titles);
                 var group_data = {};
+                var hasBaseFilling = this.options.parent_view.active_unit.hasBaseFilling();
 
                 unit_stats = this.options.parent_view.active_unit.getLinearAndAreaStats();
 
                 _.each(unit_stats, function (item, key) {
                     _.each(data_groups, function (group_name) {
                         if ( item[group_name] ) {
+                            var value;
+
                             group_data[group_name] = group_data[group_name] || [];
+
+                            if (group_name.indexOf('linear') !== -1) {
+                                value = f.dimension_mm(item[group_name]);
+                            } else if (group_name === 'weight') {
+                                value = f.weight(item[group_name]);
+                            } else {
+                                value = f.square_meters(item[group_name]);
+                            }
 
                             group_data[group_name].push({
                                 key: key,
                                 title: titles[key],
-                                value: group_name.indexOf('linear') !== -1 ?
-                                    f.dimension_mm(item[group_name]) : f.square_meters(item[group_name]),
-                                is_total: key === 'profile_total'
+                                value: value,
+                                is_total: key === 'profile_total' && group_name !== 'weight' || key === 'unit_total'
                             });
-
                         }
                     }, this);
                 }, this);
@@ -323,12 +384,13 @@ var app = app || {};
                 _.each(group_titles, function (title, key) {
                     group_data[key] = _.sortBy(group_data[key], function (param) {
                         return _.indexOf(['frame', 'sashes', 'mullions', 'profile_total', 'glasses',
-                            'openings', 'glazing_bars'], param.key);
+                            'openings', 'glazing_bars', 'unit_total'], param.key);
                     });
 
                     stats_data.push({
                         title: title,
-                        data: group_data[key]
+                        data: group_data[key],
+                        hasBaseFilling: title.toLowerCase().indexOf('weight') !== -1 && hasBaseFilling
                     });
                 }, this);
             }
@@ -388,6 +450,7 @@ var app = app || {};
                 active_unit_image: this.getActiveUnitImage(),
                 active_unit_sashes: this.getActiveUnitSashList(),
                 active_unit_properties: tab_contents.active_unit_properties,
+                active_unit_options: this.getActiveUnitOptions(),
                 active_unit_profile_properties: tab_contents.active_unit_profile_properties,
                 active_unit_stats: tab_contents.active_unit_stats,
                 active_unit_estimated_section_prices: tab_contents.active_unit_estimated_section_prices,

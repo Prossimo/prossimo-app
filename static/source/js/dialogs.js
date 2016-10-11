@@ -8,41 +8,58 @@ var app = app || {};
         initialize: function () {
             this.registered_dialogs = {};
 
-            //  TODO: should belong somewhere else
-            this.login_dialog = new app.LoginDialogView();
-            this.registerDialog('login', this.login_dialog);
+            //  TODO: register dialogs somewhere else?
+            this.registerDialog({
+                name: 'login',
+                getView: function (view_options) {
+                    return new app.LoginDialogView(view_options);
+                },
+                modal_options: {
+                    backdrop: 'static',
+                    keyboard: false
+                }
+            });
 
-            this.create_project_dialog = new app.CreateProjectDialogView();
-            this.registerDialog('createProject', this.create_project_dialog);
+            this.registerDialog({
+                name: 'options-profiles-table',
+                getView: function (view_options) {
+                    return new app.OptionsProfilesTableDialogView(view_options);
+                }
+            });
+
+            this.registerDialog({
+                name: 'createProject',
+                getView: function (view_options) {
+                    return new app.CreateProjectDialogView(view_options);
+                }
+            });
         },
-        //  TODO: We should receive some options on register, like options we
-        //  pass to modal.js or something else
-        registerDialog: function (dialog_name, dialog_view) {
-            this.registered_dialogs[dialog_name] = dialog_view;
+        registerDialog: function (options) {
+            this.registered_dialogs[options.name] = options;
         },
-        showDialog: function (dialog_name) {
+        showDialog: function (dialog_name, dialog_view_options) {
             if ( this.registered_dialogs[dialog_name] ) {
-                //  TODO: do we actually want prevent destroy? maybe creating
-                //  them each time would be better? Like in navigation
-                this.show(this.registered_dialogs[dialog_name], {
-                    preventDestroy: true,
-                    forceShow: true
-                });
+                this.show(this.registered_dialogs[dialog_name].getView(dialog_view_options));
 
-                //  TODO: we only want to set keyboard and show options like
-                //  this for login modal, all other possible modals shoulm't
-                //  have them (but we only have login modal currently)
+                //  FIXME: keyboard option does not work as intended, probably
+                //  conflicts with hotkeys plugin we use
                 if ( this.currentView ) {
-                    this.currentView.$el.modal({
-                        backdrop: 'static',
-                        keyboard: false,
+                    var default_modal_options = {
+                        backdrop: true,
+                        keyboard: true,
                         show: true
-                    });
+                    };
+                    var modal_options = _.extend({}, default_modal_options,
+                        this.registered_dialogs[dialog_name].modal_options);
+
+                    this.currentView.$el.modal(modal_options);
                 }
             }
         },
         onSwapOut: function (view) {
-            view.$el.modal('hide');
+            if (view) {
+                view.$el.modal('hide');
+            }
         }
     });
 })();

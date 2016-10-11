@@ -30,7 +30,7 @@ var app = app || {};
         },
         attemptToLogin: function () {
             var username = this.ui.$username_input.val().trim();
-            var password = this.ui.$password_input.val().trim();
+            var password = this.ui.$password_input.val();
 
             if ( username && password ) {
                 this.startRequest(username, password);

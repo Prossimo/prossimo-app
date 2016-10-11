@@ -17,10 +17,12 @@ var app = app || {};
         { name: 'supplier_name', title: 'Supplier Name', type: 'string' },
         { name: 'type', title: 'Type', type: 'string' },
         { name: 'is_base_type', title: 'Is Base Type', type: 'boolean' },
-        { name: 'position', title: 'Position', type: 'number' }
+        { name: 'position', title: 'Position', type: 'number' },
+        { name: 'weight_per_area', title: 'Weight per Area (kg/m2)', type: 'number' }
     ];
 
     app.FillingType = Backbone.Model.extend({
+        schema: app.schema.createSchema(FILLING_TYPE_PROPERTIES),
         defaults: function () {
             var defaults = {};
 
@@ -66,6 +68,11 @@ var app = app || {};
             }
 
             return Backbone.sync.call(this, method, model, options);
+        },
+        parse: function (data) {
+            var filling_type_data = data && data.filling_type ? data.filling_type : data;
+
+            return app.schema.parseAccordingToSchema(filling_type_data, this.schema);
         },
         initialize: function (attributes, options) {
             this.options = options || {};

@@ -798,8 +798,11 @@ test('hasGlazingBars function', function () {
     equal(unit_2.hasGlazingBars(), true, 'Unit 2 is expected to have bars');
 });
 
-test('getSashOpeningSize function', function () {
+//  ------------------------------------------------------------------------
+//  Test sizes for Clear Opening / Egress Clear Opening
+//  ------------------------------------------------------------------------
 
+test('getSashOpeningSize function', function () {
     // create default values
     var unitSizes = {
         width: c.mm_to_inches(800),
@@ -811,6 +814,7 @@ test('getSashOpeningSize function', function () {
         width: unitSizes.width,
         height: unitSizes.height
     });
+
     unit.profile = new app.Profile({
         frame_width: 70,
         mullion_width: 92,
@@ -820,9 +824,9 @@ test('getSashOpeningSize function', function () {
         clear_width_deduction: 50
     });
 
-
     // spit sections and add sash
     var root_id = unit.get('root_section').id;
+
     unit.splitSection(root_id, 'horizontal');
     unit.setSectionMullionPosition(root_id, 930);
     var full_root = unit.generateFullRoot();
@@ -831,10 +835,13 @@ test('getSashOpeningSize function', function () {
 
     // get sash list
     var sashList = unit.getSashList();
+
     equal(unit.getSashOpeningSize(sashList[0].opening), undefined, 'Top sash(Fixed), normal size');
     equal(unit.getSashOpeningSize(sashList[1].opening), undefined, 'Bottom sash(Fixed), normal size');
-    equal(unit.getSashOpeningSize(sashList[0].opening, 'egress', sashList[0].type), undefined, 'Top sash(Fixed), egress size');
-    equal(unit.getSashOpeningSize(sashList[1].opening, 'egress', sashList[1].type), undefined, 'Bottom sash(Fixed), egress size');
+    equal(unit.getSashOpeningSize(sashList[0].opening, 'egress', sashList[0].type), undefined,
+        'Top sash(Fixed), egress size');
+    equal(unit.getSashOpeningSize(sashList[1].opening, 'egress', sashList[1].type), undefined,
+        'Bottom sash(Fixed), egress size');
 
     // set types
     unit.setSectionSashType(top_section.id, 'tilt_only');
@@ -842,9 +849,111 @@ test('getSashOpeningSize function', function () {
 
     // get sash list
     sashList = unit.getSashList();
-    equal(unit.getSashOpeningSize(sashList[0].opening), "26″ x 32 1/16″ (5.78 ft<sup>2</sup>)", 'Top sash(Tilt Only), normal size');
-    equal(unit.getSashOpeningSize(sashList[1].opening), "26″ x 23 3/4″ (4.29 ft<sup>2</sup>)", 'Bottom sash(Tilt-turn Left Hinge), normal size');
-    equal(unit.getSashOpeningSize(sashList[0].opening, 'egress', sashList[0].type), undefined, 'Top sash(Tilt Only), egress size');
-    equal(unit.getSashOpeningSize(sashList[1].opening, 'egress', sashList[1].type), "24″ x 23 3/4″ (3.97 ft<sup>2</sup>)", 'Bottom sash(Tilt-turn Left Hinge), egress size');
+    equal(unit.getSashOpeningSize(sashList[0].opening), '26″ x 32 1/16″ (5.78 ft<sup>2</sup>)',
+        'Top sash(Tilt Only), normal size');
+    equal(unit.getSashOpeningSize(sashList[1].opening), '26″ x 23 3/4″ (4.29 ft<sup>2</sup>)',
+        'Bottom sash(Tilt-turn Left Hinge), normal size');
+    equal(unit.getSashOpeningSize(sashList[0].opening, 'egress', sashList[0].type), undefined,
+        'Top sash(Tilt Only), egress size');
+    equal(unit.getSashOpeningSize(sashList[1].opening, 'egress', sashList[1].type),
+        '24″ x 23 3/4″ (3.97 ft<sup>2</sup>)', 'Bottom sash(Tilt-turn Left Hinge), egress size');
+});
 
+//  ------------------------------------------------------------------------
+//  Unit weight estimates
+//  ------------------------------------------------------------------------
+
+test('Unit weight calculations function', function () {
+    var createFilling = function (type, name, weight) {
+        var attrs = { type: type, name: name, weight_per_area: weight };
+
+        return {
+            get: function (attr) {
+                return attrs[attr];
+            }
+        };
+    };
+
+    // create default values
+    var unitSizes = {
+        width: c.mm_to_inches(800),
+        height: c.mm_to_inches(1650)
+    };
+    var fillings = _([
+        createFilling('glass', 'Test glass', 0.2),
+        createFilling('recessed', 'Test recessed', 0.8)
+    ]);
+    var profileWeight = 1.5;
+
+    // set values
+    var unit = new app.Unit({
+        width: unitSizes.width,
+        height: unitSizes.height
+    });
+
+    unit.profile = new app.Profile({
+        frame_width: 70,
+        mullion_width: 92,
+        sash_frame_width: 82,
+        sash_frame_overlap: 34,
+        sash_mullion_overlap: 34,
+        weight_per_length: profileWeight
+    });
+    app.settings = {
+        filling_types: fillings
+    };
+
+    // spit sections and add sash
+    var root_id = unit.get('root_section').id;
+
+    unit.splitSection(root_id, 'horizontal');
+    unit.setSectionMullionPosition(root_id, 1308);
+
+    var full_root = unit.generateFullRoot();
+    var top_section = full_root.sections[0];
+    var bottom_section = full_root.sections[1];
+
+    unit.setSectionSashType(top_section.id, 'tilt_turn_left');
+    unit.setSectionSashType(bottom_section.id, 'turn_only_left');
+
+    // round function
+    var roundWeight = function (weight) {
+        return parseFloat(weight.toFixed(10));
+    };
+
+    var stats;
+
+    // run tests for different filling types
+    fillings.each(function (filling) {
+        // set filling type and get unit stats
+        unit.setFillingType(unit.get('root_section').id, filling.get('type'), filling.get('name'));
+        stats = unit.getLinearAndAreaStats();
+
+        // tests
+        equal(
+            roundWeight(stats.glasses.area * filling.get('weight_per_area')),
+            roundWeight(stats.glasses.weight),
+            'Glasses weight for glass type: "' + filling.get('type') + '"'
+        );
+    });
+
+    //  Now set different fillings for top and bottom sashes
+    unit.setFillingType(top_section.id, fillings._wrapped[0].get('type'), fillings._wrapped[0].get('name'));
+    unit.setFillingType(bottom_section.id, fillings._wrapped[1].get('type'), fillings._wrapped[1].get('name'));
+
+    stats = unit.getLinearAndAreaStats();
+
+    //  Check that profile weight is calculated properly
+    equal(
+        roundWeight((stats.profile_total.linear / 1000) * profileWeight),
+        roundWeight(stats.profile_total.weight),
+        'Profile weight calculation'
+    );
+
+    //  Now compare with pre-calculated values
+    equal(stats.profile_total.weight.toFixed(3), 17.370, 'Profile weight matches pre-calculated value');
+    equal(stats.glasses.weight.toFixed(3), 0.182, 'Glasses weight matches pre-calculated value');
+    equal(stats.unit_total.weight.toFixed(3), 0.182 + 17.370, 'Total unit weight matches pre-calculated value');
+
+    delete app.settings;
 });
