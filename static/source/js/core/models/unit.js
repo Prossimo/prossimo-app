@@ -2002,12 +2002,6 @@ var app = app || {};
 
             return root.trapezoidHeights;
         },
-        /* Determines if drawing module for the current unit is the trapezoid drawing module */
-        // isTrapezoidDrawer: function () {
-        //     var drawer = app.main_region.currentView.drawing_view.module.layerManager.layers.unit.drawer;
-        //
-        //     return drawer.constructor === app.Drawers.TrapezoidUnitDrawer;
-        // },
 
         /* Determines if the unit has at least one horizontal mullion */
         hasHorizontalMullion: function () {
