@@ -16,6 +16,12 @@ var app = app || {};
             this.stage = params.stage;
 
             model = module.get('model');
+
+            if (model.constructor === app.Multiunit) {
+                // FIXME Make it get mu drawer active submodel, not hardcoded [0]
+                // FIXME or maybe don't
+                model = model.get('root_section').subModels[0];
+            }
         },
         el: function () {
             var group = new Konva.Group();

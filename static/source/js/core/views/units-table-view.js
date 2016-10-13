@@ -52,8 +52,8 @@ var app = app || {};
                     collection: this.collection,
                     columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing',
                         'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'description',
-                        'notes', 'exceptions', 'profile_id', 'unit_type', 'system', 'opening_direction', 'threshold',
-                        'glazing', 'glazing_bar_width', 'uw', 'u_value']
+                        'notes', 'exceptions', 'profile_id', 'unit_composition', 'system', 'opening_direction',
+                        'threshold', 'glazing', 'glazing_bar_width', 'uw', 'u_value']
                 },
                 unit_options: {
                     title: 'Unit Options',
@@ -321,10 +321,10 @@ var app = app || {};
                 subtotal_profit: function (model) {
                     return model.getSubtotalProfit();
                 },
-                unit_type: function (model) {
+                unit_composition: function (model) {
                     var unitType;
 
-                    if (model.get('unit_type') === 'multiunit') {
+                    if (model.get('unit_composition') === 'multiunit') {
                         unitType = 'Multi-frame';
                     } else {
                         unitType = 'Single-frame';
@@ -831,7 +831,7 @@ var app = app || {};
                 dimensions: 'Dimensions',
                 rough_opening: 'Rough Opening',
                 customer_image: 'Customer Img.',
-                unit_type: 'Unit Type',
+                unit_composition: 'Composition',
                 system: 'System',
                 opening_direction: 'Opening Dir.',
                 threshold: 'Threshold',
@@ -890,7 +890,7 @@ var app = app || {};
                 notes: 240,
                 exceptions: 240,
                 profile_id: 200,
-                unit_type: 200,
+                unit_composition: 200,
                 system: 200,
                 opening_direction: 110,
                 glazing: 300,

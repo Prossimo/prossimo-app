@@ -39,8 +39,8 @@ $(document).ready(function () {
 
     var test_project_units_data = [
         {
-            unit_type: 'multiunit',
-            multiunit_units: ['c187', 'c218'],
+            unit_composition: 'multiunit',
+            multiunit_units: ['7986', '19991', '123123'],
             mark: 'A',
             width: 62,
             height: 96,

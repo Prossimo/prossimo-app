@@ -4,7 +4,7 @@ var app = app || {};
     'use strict';
 
     var BASEUNIT_PROPERTIES = [
-        { name: 'unit_type', title: 'Type', type: 'string' },
+        { name: 'unit_composition', title: 'Type', type: 'string' },
         { name: 'mark', title: 'Mark', type: 'string' },
         { name: 'width', title: 'Width (inches)', type: 'number' },
         { name: 'height', title: 'Height (inches)', type: 'string' },
@@ -183,7 +183,7 @@ var app = app || {};
             };
 
             var name_value_hash = {
-                unit_type: 'unit',
+                unit_composition: 'singleunit',
                 height: '0',
                 original_currency: 'EUR',
                 conversion_rate: 0.9,
@@ -1067,6 +1067,15 @@ var app = app || {};
                         this.profile.get('frame_width') - this.profile.get('threshold_width')
                 };
                 rootSection.thresholdEdge = true;
+            }
+
+            if (this.isMultiunit() && this.collection && this.get('multiunit_units')) {
+                var self = this;
+                var multiunitUnits = this.get('multiunit_units');
+
+                rootSection.subModels = multiunitUnits
+                    .map(function (id) { return self.collection.getByRootId(id); })
+                    .filter(function (subModel) { return !_.isUndefined(subModel); });
             }
 
             openingParams = openingParams || defaultParams;

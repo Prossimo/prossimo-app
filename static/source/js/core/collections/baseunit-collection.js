@@ -27,15 +27,20 @@ var app = app || {};
 
             if (_.isArray(models)) {  // Array of models / attribute objects
                 models.forEach(function (model) { self.add(model, options); });
-            } else if (!this._isModel(models) && (models.unit_type || models.width || models.mark)) {// Attribute object
+            } else if (!this._isModel(models) && (models.unit_composition || models.width || models.mark)) { // Attr obj
                 var attributes = models;
-                var UnitClass = (attributes.unit_type === 'multiunit') ? app.Multiunit : app.Unit;
+                var UnitClass = (attributes.unit_composition === 'multiunit') ? app.Multiunit : app.Unit;
                 var model = new UnitClass(attributes);
 
                 return Backbone.Collection.prototype.add.call(this, model, options);
             } else {  // Model or random junk
                 return Backbone.Collection.prototype.add.call(this, models, options);
             }
+        },
+        getByRootId: function (id) {
+            return _.find(this.models, function (model) {
+                return model.get('root_section').id === id;
+            });
         },
         getNameTitleTypeHash: function (names) {
             return this.proxy_unit.getNameTitleTypeHash(names);
