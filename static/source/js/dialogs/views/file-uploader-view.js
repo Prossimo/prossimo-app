@@ -57,7 +57,7 @@ var app = app || {};
         },
 
         onRender: function () {
-            var fUplad = this.$el.find('input[type="file"]').fileupload(_.extend({
+            this.fUplad = this.$el.find('input[type="file"]').fileupload(_.extend({
                 url: app.settings.get('api_base_path') + this.options.apiRouter,
                 beforeSend: function (xhr) {
                     xhr.setRequestHeader('Authorization', 'Bearer ' + window.localStorage.getItem('authToken'));
@@ -74,7 +74,10 @@ var app = app || {};
                 always: this.always.bind(this)
             }, this.options.fileUpload || {}));
 
-            fUplad.on('fileuploadadd', this.abortUpload.bind(this));
+            this.fUplad.on('fileuploadadd', this.abortUpload.bind(this));
+        },
+        onDestroy: function () {
+            this.fUplad.fileupload('xd');
         },
         send: function (e, data) {
             _.each(data.files, function (file) {
