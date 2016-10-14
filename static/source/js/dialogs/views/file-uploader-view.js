@@ -60,7 +60,6 @@ var app = app || {};
             var fUplad = this.$el.find('input[type="file"]').fileupload(_.extend({
                 url: app.settings.get('api_base_path') + this.options.apiRouter,
                 beforeSend: function (xhr) {
-                    xhr.setRequestHeader('Accept", "application/json');
                     xhr.setRequestHeader('Authorization', 'Bearer ' + window.localStorage.getItem('authToken'));
                 },
                 previewCrop: true,
