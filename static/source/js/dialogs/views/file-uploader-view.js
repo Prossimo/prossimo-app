@@ -76,6 +76,17 @@ var app = app || {};
 
             this.fUplad.on('fileuploadadd', this.abortUpload.bind(this));
         },
+        templateHelpers: function () {
+            var isMultiple = true;
+
+            if (this.options.maxLength == 1) {
+                isMultiple = false;
+            }
+
+            return {
+                isMultiple: isMultiple
+            };
+        },
         onDestroy: function () {
             this.fUplad.fileupload('xd');
         },
