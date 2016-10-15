@@ -40,8 +40,8 @@ var app = app || {};
                 quote_revision: this.ui.$data_quote_revision.val().trim(),
                 quote_date: this.ui.$data_quote_date.val().trim(),
                 project_notes: this.ui.$data_project_notes.val().trim(),
-                shipping_notes: this.ui.$data_shipping_notes.val().trim()
-                // preloaded_files: this.files.collecctions.toJSON() || []
+                shipping_notes: this.ui.$data_shipping_notes.val().trim(),
+                preloaded_files: this.files.getAllUuidFiles()
             });
 
             this.$el.modal('hide');

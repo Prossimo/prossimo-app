@@ -1,10 +1,9 @@
 var app = app || {};
+var WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">' +
+    'Warning !, your browser does not support Flash and HTML5: [</div>';
 
 (function () {
     'use strict';
-
-    var WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">' +
-        'Warning !, your browser does not support Flash and HTML5: [</div>';
 
     app.FileUploaderView = Marionette.ItemView.extend({
         className: 'uploader-container',
@@ -79,7 +78,7 @@ var app = app || {};
         templateHelpers: function () {
             var isMultiple = true;
 
-            if (this.options.maxLength == 1) {
+            if (this.options.maxLength === 1) {
                 isMultiple = false;
             }
 
@@ -89,6 +88,9 @@ var app = app || {};
         },
         onDestroy: function () {
             this.fUplad.fileupload('xd');
+        },
+        getAllUuidFiles: function () {
+            return this.collection.pluck('uuid') || [];
         },
         send: function (e, data) {
             _.each(data.files, function (file) {
@@ -154,7 +156,7 @@ var app = app || {};
                 delBtn
                     .on('click', function () {
                         this.deletePreview(file.previeContainer);
-                        this.collection.remove(fileModel);
+                        fileModel.destroy();
                     }.bind(this))
                     .appendTo(file.previeContainer);
             }.bind(this));
