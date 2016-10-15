@@ -1,11 +1,22 @@
 <form method="post" enctype="multipart/form-data">
-    <span class="uploader-file__preview-container"></span>
-    <a class="add uploader-file__preview-item uploader-file__preview-item_new">
-        <input name="files[]" class="uploader-file__input" type="file"
-               accept="image/*,application/pdf,application/msword,application/rtf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-               {{#if isMultiple}}multiple{{/if}}
-        />
-        <span class="uploader-file__drag-n-drop">or drag\'n\'drop</span>
-        <span class="uploader-file__drag-n-drop__zone">Drop files there</span>
-    </a>
+    <span class="uploader-file__preview-container {{#unless isShowPreview}}uploader-file__preview-container_nopreview{{/unless}}"></span>
+    {{#if isShowPreview}}
+        <a class="add uploader-file__preview-item uploader-file__preview-item_new">
+            <input name="files[]" class="uploader-file__input" type="file"
+                   accept="image/*,application/pdf,application/msword,application/rtf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                   {{#if isMultiple}}multiple{{/if}}
+            />
+            <span class="uploader-file__drag-n-drop">or drag\'n\'drop</span>
+            <span class="uploader-file__drag-n-drop__zone">Drop files there</span>
+        </a>
+    {{else}}
+        <button type="button" class="add btn btn-success btn-sm">
+            <i class="glyphicon glyphicon-plus"></i>
+            <span>Select files to upload...</span>
+            <input name="files[]" class="uploader-file__input" type="file"
+                   accept="image/*,application/pdf,application/msword,application/rtf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                   {{#if isMultiple}}multiple{{/if}}
+            />
+        </button>
+    {{/if}}
 </form>

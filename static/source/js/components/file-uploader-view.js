@@ -25,6 +25,7 @@ var WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">' +
                 progressLabelText: 'loading',
                 deleteBtnText: 'delete',
                 deleteBtnClass: 'uploader-file__preview-delete',
+                deleteBtnNoPreviewClass: 'uploader-file__preview-delete glyphicon glyphicon-remove',
                 errorLoadText: 'error loading'
             },
             fileUpload: {
@@ -34,6 +35,7 @@ var WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">' +
                 minFileSize: 100,
                 disableImageResize: /Android(?!.*Chrome)|Opera/.test(window.navigator.userAgent)
             },
+            showPreview: true,
             apiRouter: '/files/handlers',
             maxLength: false
         },
@@ -83,7 +85,8 @@ var WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">' +
             }
 
             return {
-                isMultiple: isMultiple
+                isMultiple: isMultiple,
+                isShowPreview: this.options.showPreview
             };
         },
         onDestroy: function () {
@@ -108,7 +111,7 @@ var WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">' +
             _.each(data.files, function (file) {
                 file.previeContainer = this.createEmptyPreview();
 
-                if (file.preview && !file.error) {
+                if (file.preview && !file.error && this.options.showPreview) {
                     file.previeContainer.prepend(file.preview);
                 }
 
@@ -148,10 +151,20 @@ var WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">' +
 
                 file.previeContainer.data('cid', fileModel.cid);
 
-                var delBtn = $('<span>', {
-                    class: this.options.previewOpts.deleteBtnClass,
-                    html: this.options.previewOpts.deleteBtnText
-                });
+                var delBtnOptions = function () {
+                    if (this.options.showPreview) {
+                        return {
+                            class: this.options.previewOpts.deleteBtnClass,
+                            html: this.options.previewOpts.deleteBtnText
+                        };
+                    }
+
+                    return {
+                        class: this.options.previewOpts.deleteBtnNoPreviewClass
+                    };
+                }.bind(this);
+
+                var delBtn = $('<span>', delBtnOptions());
 
                 delBtn
                     .on('click', function () {
@@ -206,7 +219,7 @@ var WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">' +
 
                 progressEL.appendTo(el.find('.' + options.progressWrapper));
 
-                if (options.progressLabelText) {
+                if (options.progressLabelText && !this.options.showPreview) {
                     progressEL
                         .closest('.' + options.progressWrapper)
                         .find('span')

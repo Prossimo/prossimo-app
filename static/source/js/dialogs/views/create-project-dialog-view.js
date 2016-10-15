@@ -58,7 +58,7 @@ var app = app || {};
             }
 
             this.files = new app.FileUploaderView({
-                maxLength: 2
+                maxLength: 10
             });
 
             this.files.render()

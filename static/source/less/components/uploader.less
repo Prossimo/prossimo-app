@@ -2,7 +2,49 @@
 @red: #ff4b00;
 
 .uploader-container {
+  margin-bottom: 1.5rem;
+
   .uploader-file__preview-container {
+    &.uploader-file__preview-container_nopreview {
+      display: block;
+      .clearfix();
+
+      .uploader-file__preview-item {
+        display: block;
+        margin-bottom: 5px;
+        height: auto;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      .uploader-file__preview-title {
+        width: auto;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      .uploader-file__preview-delete {
+        width: auto;
+        height: auto;
+        background: inherit;
+        color: #a94442;
+        right: 3px;
+        top: 4px;
+        line-height: normal;
+      }
+
+      .uploader-file__preview-progress-container {
+        display: block;
+        margin: 0 0 2px;
+
+        .ico-progress {
+          top: 0;
+          margin-top: 0;
+        }
+      }
+    }
   }
 }
 
@@ -41,6 +83,7 @@
     padding: 4px;
     display: block;
     font-size: smaller;
+    text-overflow: ellipsis;
     background-color: rgba(255, 255, 255, 0.55);
   }
 }
@@ -87,6 +130,7 @@
 }
 
 .add {
+  position: relative;
   &.show_dnd {
     background: none;
     .uploader-file__drag-n-drop__zone {
