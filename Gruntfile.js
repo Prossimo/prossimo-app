@@ -123,7 +123,7 @@ module.exports = function (grunt) {
         'dialogs/views/base-dialog-view.js',
         'dialogs/views/login-dialog-view.js',
         'dialogs/views/options-profiles-table-dialog-view.js',
-        'dialogs/views/file-uploader-view.js',
+        'components/file-uploader-view.js',
         'dialogs/views/create-project-dialog-view.js',
         'app.js'
     ];
