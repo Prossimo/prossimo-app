@@ -75,6 +75,12 @@
                         <td class="value">{{{ opening_size }}}</td>
                     </tr>
                     {{/if}}
+                    {{#if egress_opening_size }}
+                        <tr>
+                            <td class="title">Egress Clear Opening</td>
+                            <td class="value">{{{ egress_opening_size }}}</td>
+                        </tr>
+                    {{/if}}
                     {{#if sections}}
                         {{#if daylight_sum }}
                         <tr>

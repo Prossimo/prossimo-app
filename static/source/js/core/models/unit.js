@@ -51,6 +51,10 @@ var app = app || {};
 
     var SASH_TYPES_WITH_OPENING = _.without(SASH_TYPES, 'fixed_in_frame');
     var OPERABLE_SASH_TYPES = _.without(SASH_TYPES, 'fixed_in_frame', 'fixed_in_sash');
+    var EGRESS_ENABLED_TYPES = [
+        'tilt_turn_right', 'tilt_turn_left', 'turn_only_right', 'turn_only_left',
+        'turn_only_right_hinge_hidden_latch', 'turn_only_left_hinge_hidden_latch'
+    ];
 
     var SASH_TYPE_NAME_MAP = {
         // deprecated
@@ -1347,8 +1351,12 @@ var app = app || {};
                 throw new Error('Wrong metric. Possible values: ' + possible_metrics.join(', ') );
             }
 
-            //  No metric means inches
-            val = (!metric || metric === 'inches') ? val : app.utils.convert.mm_to_inches(val);
+            // Convert to inches if metric is present and it isn't inches. No metric means inches
+            if (_.isArray(val) && (metric && metric !== 'inches')) {
+                val = val.map(app.utils.convert.mm_to_inches);
+            } else if (metric && metric !== 'inches') {
+                val = app.utils.convert.mm_to_inches(val);
+            }
 
             if ( this.getCircleRadius() !== null ) {
                 var full_root = this.generateFullRoot();
@@ -1695,6 +1703,7 @@ var app = app || {};
                 ((current_root.sashType === 'fixed_in_frame') && (current_root.sections.length === 0)) ||
                 ((current_root.sashType !== 'fixed_in_frame') && (current_root.sections.length))
             ) {
+                current_sash.original_type = current_root.sashType;
                 current_sash.type = this.getSashName(current_root.sashType, reverse_hinges);
                 current_sash.filling.width = current_root.glassParams.width;
                 current_sash.filling.height = current_root.glassParams.height;
@@ -1907,6 +1916,56 @@ var app = app || {};
         isArchedWindow: function () {
             return (this.getArchedPosition() !== null);
         },
+        isEgressEnabledType: function (sash_type) {
+            return _.indexOf(EGRESS_ENABLED_TYPES, sash_type) !== -1;
+        },
+        //  Source is in mms. Result is in inches by default, millimeters optional
+        getSashOpeningSize: function (openingSizes_mm, sizeType, sashType, result_metric) {
+            var possible_metrics = ['mm', 'inches'];
+            var c = app.utils.convert;
+            var m = app.utils.math;
+            var result;
+
+            if ( result_metric && possible_metrics.indexOf(result_metric) === -1 ) {
+                throw new Error('Wrong metric. Possible values: ' + possible_metrics.join(', ') );
+            }
+
+            //  Set inches by default
+            if ( !result_metric ) {
+                result_metric = 'inches';
+            }
+
+            if (sizeType === 'egress') {
+                var clear_width_deduction = this.profile.get('clear_width_deduction');
+
+                if ( clear_width_deduction && this.isEgressEnabledType(sashType) ) {
+                    openingSizes_mm.width -= clear_width_deduction;
+                } else {
+                    return undefined;
+                }
+            }
+
+            if ( openingSizes_mm && openingSizes_mm.height && openingSizes_mm.width ) {
+                var opening_area = (result_metric === 'inches') ?
+                    m.square_feet(
+                        c.mm_to_inches(openingSizes_mm.width),
+                        c.mm_to_inches(openingSizes_mm.height)
+                    ) :
+                    m.square_meters(openingSizes_mm.width, openingSizes_mm.height);
+
+                result = {
+                    height: (result_metric === 'inches') ?
+                        c.mm_to_inches(openingSizes_mm.height) :
+                        openingSizes_mm.height,
+                    width: (result_metric === 'inches') ?
+                        c.mm_to_inches(openingSizes_mm.width) :
+                        openingSizes_mm.width,
+                    area: opening_area
+                };
+            }
+
+            return result;
+        },
         //  Get list of options that are currently selected for this unit
         getCurrentUnitOptions: function () {
             var options_list = this.get('unit_options');
@@ -1998,6 +2057,69 @@ var app = app || {};
 
             return root.trapezoidHeights;
         },
+
+        /* Determines if the unit has at least one horizontal mullion */
+        hasHorizontalMullion: function () {
+            return this.getMullions().reduce(function (previous, current) {
+                return previous || (current.type === 'horizontal' || current.type === 'horizontal_invisible');
+            }, false);
+        },
+        /* eslint-disable no-else-return */
+
+        /* Determines the number of vertical metric columns on the unit drawing's left and right sides
+         * Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js */
+        leftMetricCount: function (isInsideView) {
+
+            // Inside view //
+
+            // Trapezoid units have reversed metrics on the inside view, except for arched trapezoids
+            if (isInsideView && this.isTrapezoid() && !this.isArchedWindow()) {
+                return this.rightMetricCount();
+            }
+
+            // All views //
+
+            // Trapezoid units always have one metric on the left
+            if (this.isTrapezoid()) {
+                return 1;
+
+            // Arched units always have two metrics on the left
+            } else if (this.isArchedWindow()) {
+                return 2;
+
+            // For regular units, at least one horizontal mullion adds the second metric
+            } else {
+                return (this.hasHorizontalMullion()) ? 2 : 1;
+            }
+        },
+
+        /* Determines the number of vertical metric columns on the unit drawing's right side
+         * Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js */
+        rightMetricCount: function (isInsideView) {
+
+            // Inside view //
+
+            // Trapezoid units have reversed metrics on the inside view, except for arched trapezoids
+            if (isInsideView && this.isTrapezoid() && !this.isArchedWindow()) {
+                return this.leftMetricCount();
+            }
+
+            // All views //
+
+            // Arched trapezoid units always have two metrics on the right
+            if (this.isTrapezoid() && this.isArchedWindow()) {
+                return 2;
+
+            // For regular trapezoid units, at least one horizontal mullion adds the second metric
+            } else if (this.isTrapezoid()) {
+                return (this.hasHorizontalMullion()) ? 2 : 1;
+
+            // Non-trapezoid units don't have metrics on the right
+            } else {
+                return 0;
+            }
+        },
+        /* eslint-enable no-else-return */
         getTrapezoidHeights: function (inside) {
             if (typeof inside !== 'undefined') {
                 this.inside = inside;

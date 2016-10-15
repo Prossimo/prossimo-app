@@ -107,29 +107,59 @@ var app = app || {};
             //  Add section for each sash (Sash #N title + sash properties)
             _.each(sash_list_source, function (source_item, index) {
                 var sash_item = {};
-                var opening_size;
-                var opening_area;
+                var opening_size_data;
+                var egress_opening_size_data;
                 var section_info;
 
                 sash_item.name = 'Sash #' + (index + 1);
                 sash_item.type = source_item.type;
 
                 if ( source_item.opening.height && source_item.opening.width ) {
-                    opening_size = this.options.show_sizes_in_mm ?
-                        f.dimensions_mm(source_item.opening.width, source_item.opening.height) :
-                        f.dimensions(
-                            c.mm_to_inches(source_item.opening.width),
-                            c.mm_to_inches(source_item.opening.height),
-                            'fraction',
-                            'inches_only'
-                        );
+                    opening_size_data = this.model.getSashOpeningSize(
+                        source_item.opening,
+                        undefined,
+                        undefined,
+                        this.options.show_sizes_in_mm ? 'mm' : 'inches'
+                    );
 
-                    opening_area = this.options.show_sizes_in_mm ?
-                        f.square_meters(m.square_meters(source_item.opening.width, source_item.opening.height)) :
-                        f.square_feet(m.square_feet(c.mm_to_inches(source_item.opening.width),
-                            c.mm_to_inches(source_item.opening.height)), 2, 'sup');
+                    if ( opening_size_data ) {
+                        sash_item.opening_size = this.options.show_sizes_in_mm ?
+                            f.dimensions_and_area_mm(
+                                opening_size_data.width,
+                                opening_size_data.height,
+                                opening_size_data.area
+                            ) :
+                            f.dimensions_and_area(
+                                opening_size_data.width,
+                                opening_size_data.height,
+                                undefined,
+                                undefined,
+                                opening_size_data.area
+                            );
+                    }
 
-                    sash_item.opening_size = opening_size + ' (' + opening_area + ')';
+                    egress_opening_size_data = this.model.getSashOpeningSize(
+                        source_item.opening,
+                        'egress',
+                        source_item.original_type,
+                        this.options.show_sizes_in_mm ? 'mm' : 'inches'
+                    );
+
+                    if ( egress_opening_size_data ) {
+                        sash_item.egress_opening_size = this.options.show_sizes_in_mm ?
+                            f.dimensions_and_area_mm(
+                                egress_opening_size_data.width,
+                                egress_opening_size_data.height,
+                                egress_opening_size_data.area
+                            ) :
+                            f.dimensions_and_area(
+                                egress_opening_size_data.width,
+                                egress_opening_size_data.height,
+                                undefined,
+                                undefined,
+                                egress_opening_size_data.area
+                            );
+                    }
                 }
 
                 //  Child sections
