@@ -266,6 +266,7 @@ var app = app || {};
             return OPENING_DIRECTIONS;
         },
         //  TODO: add `default_first` param to make default entry the first in the list
+        //  TODO: use `getEntriesAvailableForProfile` function from collection
         getAvailableOptions: function (dictionary_id, profile_id) {
             var available_options = [];
             var target_dictionary = this.dictionaries.get(dictionary_id);
@@ -282,6 +283,7 @@ var app = app || {};
 
             return available_options;
         },
+        //  TODO: use `getDefaultEntryForProfile` function from collection
         getDefaultOption: function (dictionary_id, profile_id) {
             var available_options = this.getAvailableOptions(dictionary_id, profile_id);
 

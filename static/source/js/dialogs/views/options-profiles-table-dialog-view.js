@@ -147,7 +147,7 @@ var app = app || {};
                     //  to server, just set it locally
                     if ( profile_to_unset && profile_to_unset.is_default === true ) {
                         profile_to_unset.is_default = false;
-                        old_entry.set('profiles', old_entry_profiles);
+                        old_entry.persist('profiles', old_entry_profiles);
                     }
                 }
             }
