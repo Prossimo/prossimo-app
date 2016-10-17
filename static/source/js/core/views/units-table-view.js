@@ -979,9 +979,9 @@ var app = app || {};
                     }
                 });
 
-                //  We use setTimeout because we want to wait until flexbox
+                //  We use defer because we want to wait until flexbox
                 //  sizes are calculated properly
-                setTimeout(function () {
+                _.defer(function () {
                     self.hot = new Handsontable(self.ui.$hot_container[0], {
                         data: self.getActiveTab().collection,
                         columns: self.getActiveTabColumnOptions(),
@@ -998,6 +998,7 @@ var app = app || {};
                             return self.getActiveTab().collection.length;
                         },
                         fixedColumnsLeft: fixed_columns_count,
+                        stretchH: 'all',
                         viewportRowRenderingOffset: 300,
                         viewportColumnRenderingOffset: 50,
                         enterMoves: { row: 1, col: 0 },
@@ -1050,7 +1051,7 @@ var app = app || {};
                             }
                         }
                     });
-                }, 5);
+                });
 
                 this.appendPopovers();
 
