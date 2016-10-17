@@ -52,8 +52,8 @@ var app = app || {};
                     collection: this.collection,
                     columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing',
                         'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'description',
-                        'notes', 'exceptions', 'profile_id', 'system', 'opening_direction', 'threshold',
-                        'glazing', 'glazing_bar_width', 'uw', 'u_value']
+                        'notes', 'exceptions', 'rough_opening', 'profile_id', 'system', 'opening_direction',
+                        'threshold', 'glazing', 'glazing_bar_width', 'uw', 'u_value']
                 },
                 unit_options: {
                     title: 'Unit Options',
@@ -82,7 +82,7 @@ var app = app || {};
             this.active_tab = 'specs';
 
             //  If we have no columns for Unit Options tab, don't show the tab
-            if ( !this.tabs.unit_options.unit_options_columns.length ) {
+            if (!this.tabs.unit_options.unit_options_columns.length) {
                 delete this.tabs.unit_options;
             } else {
                 this.tabs.unit_options.columns = _.union(
@@ -137,12 +137,12 @@ var app = app || {};
             var previous_collection;
             var active_collection;
 
-            if ( _.contains(_.keys(this.tabs), tab_name) ) {
+            if (_.contains(_.keys(this.tabs), tab_name)) {
                 previous_collection = this.getActiveTab().collection;
                 this.active_tab = tab_name;
                 active_collection = this.getActiveTab().collection;
 
-                if ( previous_collection !== active_collection ) {
+                if (previous_collection !== active_collection) {
                     this.undo_manager.manager.clear();
                     this.undo_manager.manager.unregisterAll();
                     this.undo_manager.manager.register(active_collection);
@@ -165,7 +165,7 @@ var app = app || {};
             this.ui.$redo.blur();
         },
         onRemoveSelected: function () {
-            if ( this.selected.length && this.hot ) {
+            if (this.selected.length && this.hot) {
                 for (var i = this.selected.length - 1; i >= 0; i--) {
                     this.hot.getSourceData().at(this.selected[i]).destroy();
                 }
@@ -176,7 +176,7 @@ var app = app || {};
             }
         },
         onCloneSelected: function () {
-            if ( this.selected.length === 1 && this.hot ) {
+            if (this.selected.length === 1 && this.hot) {
                 var selectedData = this.hot.getSourceData().at(this.selected[0]);
 
                 if (!selectedData.hasOnlyDefaultAttributes()) {
@@ -185,7 +185,7 @@ var app = app || {};
             }
         },
         toggleTableVisibility: function () {
-            if ( !this.options.is_always_visible ) {
+            if (!this.options.is_always_visible) {
                 this.table_visibility = this.table_visibility === 'hidden' ? 'visible' : 'hidden';
                 this.render();
             }
@@ -211,9 +211,9 @@ var app = app || {};
         onNewUnitOrAccessory: function (e) {
             var active_tab = this.getActiveTab();
 
-            if ( this.table_visibility === 'visible' && active_tab.collection === this.collection ) {
+            if (this.table_visibility === 'visible' && active_tab.collection === this.collection) {
                 this.addNewUnit(e);
-            } else if ( this.table_visibility === 'visible' && active_tab.collection === this.options.extras ) {
+            } else if (this.table_visibility === 'visible' && active_tab.collection === this.options.extras) {
                 this.addNewAccessory(e);
             }
         },
@@ -232,7 +232,7 @@ var app = app || {};
             var target_row = $(e.target).data('row');
             var target_object;
 
-            if ( this.hot && $(e.target).hasClass('disabled') === false ) {
+            if (this.hot && $(e.target).hasClass('disabled') === false) {
                 target_object = this.hot.getSourceData().at(target_row);
                 this.hot.getSourceData().moveItemUp(target_object);
             }
@@ -241,20 +241,20 @@ var app = app || {};
             var target_row = $(e.target).data('row');
             var target_object;
 
-            if ( this.hot && $(e.target).hasClass('disabled') === false ) {
+            if (this.hot && $(e.target).hasClass('disabled') === false) {
                 target_object = this.hot.getSourceData().at(target_row);
                 this.hot.getSourceData().moveItemDown(target_object);
             }
         },
         onPasteImage: function (data) {
-            if ( this.hot ) {
+            if (this.hot) {
                 //  Selected cells are returned in the format:
                 //  [starting_cell_column_num, starting_cell_row_num,
                 //   ending_cell_column_num, ending_cell_row_num]
                 var selected_cells = this.hot.getSelected();
 
                 //  Paste to each selected sell.
-                if ( selected_cells && selected_cells.length ) {
+                if (selected_cells && selected_cells.length) {
                     for (var x = selected_cells[0]; x <= selected_cells[2]; x++) {
                         for (var y = selected_cells[1]; y <= selected_cells[3]; y++) {
                             this.hot.setDataAtCell(x, y, data);
@@ -345,7 +345,7 @@ var app = app || {};
                 }
             };
 
-            if ( getters_hash[column_name] ) {
+            if (getters_hash[column_name]) {
                 getter = getters_hash[column_name];
             } else if (
                 this.active_tab === 'unit_options' &&
@@ -395,9 +395,9 @@ var app = app || {};
                         app.settings && app.settings.getProfileByIdOrDummy(parseInt(val));
                     var profile_id_by_name = app.settings && app.settings.getProfileIdByName(val);
 
-                    if ( profile_by_id && profile_by_id.get('is_dummy') !== true ) {
+                    if (profile_by_id && profile_by_id.get('is_dummy') !== true) {
                         profile_id = profile_by_id.get('id');
-                    } else if ( profile_id_by_name ) {
+                    } else if (profile_id_by_name) {
                         profile_id = profile_id_by_name;
                     }
 
@@ -405,7 +405,7 @@ var app = app || {};
                 }
             };
 
-            if ( parsers_hash[column_name] ) {
+            if (parsers_hash[column_name]) {
                 parser = parsers_hash[column_name];
             } else {
                 parser = function (attr_name, val) {
@@ -428,7 +428,7 @@ var app = app || {};
                 }
             };
 
-            if ( setters_hash[column_name] ) {
+            if (setters_hash[column_name]) {
                 setter = setters_hash[column_name];
             } else if (
                 this.active_tab === 'unit_options' &&
@@ -437,12 +437,12 @@ var app = app || {};
                 setter = function (model, attr_name, val) {
                     var target_dictionary_id = app.settings.getDictionaryIdByName(attr_name);
 
-                    if ( target_dictionary_id ) {
+                    if (target_dictionary_id) {
                         var target_entry_id = app.settings.getDictionaryEntryIdByName(target_dictionary_id, val);
 
-                        if ( target_entry_id ) {
+                        if (target_entry_id) {
                             return model.persistOption(target_dictionary_id, target_entry_id);
-                        } else if ( val === UNSET_VALUE ) {
+                        } else if (val === UNSET_VALUE) {
                             return model.persistOption(target_dictionary_id, false);
                         }
                     }
@@ -459,8 +459,8 @@ var app = app || {};
             var self = this;
 
             return function (unit_model, value) {
-                if ( unit_model ) {
-                    if ( _.isUndefined(value) ) {
+                if (unit_model) {
+                    if (_.isUndefined(value)) {
                         return self.getGetterFunction(unit_model, column_name);
                     }
 
@@ -469,7 +469,7 @@ var app = app || {};
             };
         },
         showValidationError: function (model, error) {
-            if ( this.hot && model.collection === this.getActiveTab().collection ) {
+            if (this.hot && model.collection === this.getActiveTab().collection) {
                 var hot = this.hot;
                 var self = this;
 
@@ -504,7 +504,7 @@ var app = app || {};
 
                 attributes_object[column_name] = self.getSetterParser(column_name, value, model);
 
-                if ( !model.validate || !model.validate(attributes_object, { validate: true }) ) {
+                if (!model.validate || !model.validate(attributes_object, {validate: true})) {
                     callback(true);
                 } else {
                     callback(false);
@@ -522,18 +522,18 @@ var app = app || {};
             var original_type = names_title_type_hash.length &&
                 names_title_type_hash[0].type || undefined;
 
-            if ( original_type ) {
-                if ( original_type === 'number' ) {
+            if (original_type) {
+                if (original_type === 'number') {
                     properties_obj.type = 'numeric';
                 }
             }
 
             var format_hash = {
-                quantity: { format: '0,0[.]00' },
-                original_cost: { format: '0,0[.]00' },
-                conversion_rate: { format: '0[.]00000' },
-                price_markup: { format: '0,0[.]00' },
-                uw: { format: '0[.]00' }
+                quantity: {format: '0,0[.]00'},
+                original_cost: {format: '0,0[.]00'},
+                conversion_rate: {format: '0[.]00000'},
+                price_markup: {format: '0,0[.]00'},
+                uw: {format: '0[.]00'}
             };
 
             var properties_hash = {
@@ -593,8 +593,8 @@ var app = app || {};
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('fixed', 3)
                 },
-                system: { readOnly: true },
-                threshold: { readOnly: true },
+                system: {readOnly: true},
+                threshold: {readOnly: true},
                 mark: {
                     width: 100
                 },
@@ -663,11 +663,11 @@ var app = app || {};
                 }
             };
 
-            if ( format_hash[column_name] ) {
+            if (format_hash[column_name]) {
                 properties_obj = _.extend(properties_obj, format_hash[column_name]);
             }
 
-            if ( properties_hash[column_name] ) {
+            if (properties_hash[column_name]) {
                 properties_obj = _.extend(properties_obj, properties_hash[column_name]);
             }
 
@@ -703,11 +703,11 @@ var app = app || {};
                 var item = this.instance.getSourceData().at(row);
                 var property = self.getActiveTab().columns[col];
 
-                if ( item && item instanceof app.Unit ) {
-                    if ( item.isOperableOnlyAttribute(property) && !item.hasOperableSections() ) {
+                if (item && item instanceof app.Unit) {
+                    if (item.isOperableOnlyAttribute(property) && !item.hasOperableSections()) {
                         cell_properties.readOnly = true;
                         cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer('(Operable Only)');
-                    } else if ( item.isGlazingBarProperty(property) && !item.hasGlazingBars() ) {
+                    } else if (item.isGlazingBarProperty(property) && !item.hasGlazingBars()) {
                         cell_properties.readOnly = true;
                         cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer('(Has no Bars)');
                     } else if (
@@ -722,11 +722,11 @@ var app = app || {};
                         var is_optional = false;
                         var message = UNSET_VALUE;
 
-                        if ( profile_id && dictionary_id ) {
+                        if (profile_id && dictionary_id) {
                             options = app.settings.getAvailableOptions(dictionary_id, profile_id);
                         }
 
-                        if ( dictionary_id ) {
+                        if (dictionary_id) {
                             rules_and_restrictions = app.settings.dictionaries.get(dictionary_id)
                                 .get('rules_and_restrictions');
                         }
@@ -737,26 +737,26 @@ var app = app || {};
                         _.each(rules_and_restrictions, function (rule) {
                             var restriction_applies = item.checkIfRestrictionApplies(rule);
 
-                            if ( rule === 'IS_OPTIONAL' ) {
+                            if (rule === 'IS_OPTIONAL') {
                                 is_optional = true;
-                            } else if ( restriction_applies && rule === 'DOOR_ONLY' ) {
+                            } else if (restriction_applies && rule === 'DOOR_ONLY') {
                                 is_restricted = true;
                                 message = '(Doors Only)';
-                            } else if ( restriction_applies && rule === 'OPERABLE_ONLY' ) {
+                            } else if (restriction_applies && rule === 'OPERABLE_ONLY') {
                                 is_restricted = true;
                                 message = '(Operable Only)';
-                            } else if ( restriction_applies && rule === 'GLAZING_BARS_ONLY' ) {
+                            } else if (restriction_applies && rule === 'GLAZING_BARS_ONLY') {
                                 is_restricted = true;
                                 message = '(Has no Bars)';
                             }
                         }, this);
 
                         //  If restrictions apply, disable editing
-                        if ( is_restricted ) {
+                        if (is_restricted) {
                             cell_properties.readOnly = true;
                             cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer(message);
-                        //  If no restrictions apply, show options
-                        } else if ( options.length ) {
+                            //  If no restrictions apply, show options
+                        } else if (options.length) {
                             cell_properties.type = 'dropdown';
                             cell_properties.filter = false;
                             cell_properties.strict = true;
@@ -765,10 +765,10 @@ var app = app || {};
                                 return option.get('name');
                             });
 
-                            if ( is_optional ) {
+                            if (is_optional) {
                                 cell_properties.source.unshift(UNSET_VALUE);
                             }
-                        //  When we have no options, disable editing
+                            //  When we have no options, disable editing
                         } else {
                             message = profile_id ? '(No Variants)' : '(No Profile)';
 
@@ -795,9 +795,9 @@ var app = app || {};
                 var original_header = active_tab.collection.getTitles([column_name]);
                 var title = '';
 
-                if ( custom_header ) {
+                if (custom_header) {
                     title = custom_header;
-                } else if ( original_header && original_header[0] ) {
+                } else if (original_header && original_header[0]) {
                     title = original_header[0];
                 } else {
                     title = column_name;
@@ -852,14 +852,14 @@ var app = app || {};
 
             //  We don't want to update table on validation errors, we have
             //  a special function for that
-            if ( e === 'invalid' ) {
+            if (e === 'invalid') {
                 return;
             }
 
-            if ( this.hot ) {
+            if (this.hot) {
                 clearTimeout(this.table_update_timeout);
                 this.table_update_timeout = setTimeout(function () {
-                    if ( !self.isDestroyed ) {
+                    if (!self.isDestroyed) {
                         self.hot.loadData(self.getActiveTab().collection);
                     }
                 }, 20);
@@ -920,7 +920,7 @@ var app = app || {};
 
                     return unit_options_col_widths[dictionary_name] ?
                         unit_options_col_widths[dictionary_name] : calculated_length;
-                }, this ));
+                }, this));
 
             col_widths = _.extend({}, col_widths, unit_options_col_widths);
 
@@ -954,19 +954,19 @@ var app = app || {};
                 }
 
                 //  Ctrl + Y || Ctrl + Shift + Z
-                if ( isCtrlDown && (event.keyCode === 89 || (event.shiftKey && event.keyCode === 90 )) ) {
+                if (isCtrlDown && (event.keyCode === 89 || (event.shiftKey && event.keyCode === 90 ))) {
                     self.onRedo();
-                //  Ctrl + Z
-                } else if ( isCtrlDown && event.keyCode === 90 ) {
+                    //  Ctrl + Z
+                } else if (isCtrlDown && event.keyCode === 90) {
                     self.onUndo();
-                } else if ( !onlyCtrlKeys && !isCtrlDown && event.keyCode === 78 ) {
+                } else if (!onlyCtrlKeys && !isCtrlDown && event.keyCode === 78) {
                     self.onNewUnitOrAccessory(event);
                     event.preventDefault();
                     event.stopPropagation();
                 }
             }
 
-            if ( is_visible ) {
+            if (is_visible) {
                 var dropdown_scroll_reset = false;
 
                 var fixed_columns = ['mark', 'quantity', 'width', 'height', 'drawing'];
@@ -974,7 +974,7 @@ var app = app || {};
                 var fixed_columns_count = 0;
 
                 _.each(fixed_columns, function (column) {
-                    if ( _.indexOf(active_tab_columns, column) !== -1 ) {
+                    if (_.indexOf(active_tab_columns, column) !== -1) {
                         fixed_columns_count += 1;
                     }
                 });
@@ -990,7 +990,7 @@ var app = app || {};
                         rowHeaders: true,
                         rowHeights: function () {
                             return _.contains(self.getActiveTab().columns, 'drawing') ||
-                                _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
+                            _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
                         },
                         colWidths: self.getActiveTabColWidths(),
                         trimDropdown: false,
@@ -1000,17 +1000,17 @@ var app = app || {};
                         fixedColumnsLeft: fixed_columns_count,
                         viewportRowRenderingOffset: 300,
                         viewportColumnRenderingOffset: 50,
-                        enterMoves: { row: 1, col: 0 },
+                        enterMoves: {row: 1, col: 0},
                         beforeKeyDown: function (e) {
                             onBeforeKeyDown(e, true);
                         },
                         afterSelection: function (startRow, startColumn, endRow, endColumn) {
                             self.selected = [];
 
-                            if ( startColumn === 0 && endColumn === this.countCols() - 1 ) {
+                            if (startColumn === 0 && endColumn === this.countCols() - 1) {
                                 self.ui.$remove.removeClass('disabled');
 
-                                if ( startRow === endRow ) {
+                                if (startRow === endRow) {
                                     self.selected = [startRow];
                                     var selectedData = self.hot.getSourceData().at(startRow);
 
@@ -1023,7 +1023,7 @@ var app = app || {};
                                     var start = startRow;
                                     var end = endRow;
 
-                                    if ( startRow > endRow ) {
+                                    if (startRow > endRow) {
                                         start = endRow;
                                         end = startRow;
                                     }
@@ -1040,7 +1040,7 @@ var app = app || {};
                             }
                         },
                         afterDeselect: function () {
-                            if ( self.selected.length ) {
+                            if (self.selected.length) {
                                 this.selectCell(
                                     self.selected[0],
                                     0,
@@ -1058,7 +1058,7 @@ var app = app || {};
                 this.dropdown_scroll_timer = setInterval(function () {
                     var editor = self.hot && self.hot.getActiveEditor();
 
-                    if ( editor && editor.htContainer && !dropdown_scroll_reset ) {
+                    if (editor && editor.htContainer && !dropdown_scroll_reset) {
                         dropdown_scroll_reset = true;
                         editor.htContainer.scrollIntoView(false);
                     } else {
@@ -1066,7 +1066,7 @@ var app = app || {};
                     }
                 }, 100);
 
-                if ( this.total_prices_view ) {
+                if (this.total_prices_view) {
                     this.total_prices_view.destroy();
                 }
 
@@ -1082,7 +1082,7 @@ var app = app || {};
                 this.undo_manager.registerButton('redo', this.ui.$redo);
 
                 $(window).off('keydown').on('keydown', function (e) {
-                    if ( !e.isDuplicate && $(e.target).hasClass('copyPaste') ) {
+                    if (!e.isDuplicate && $(e.target).hasClass('copyPaste')) {
                         onBeforeKeyDown(e);
                     }
                 });
@@ -1093,11 +1093,11 @@ var app = app || {};
             this.$el.off('show.bs.popover');
             this.$el.popover('destroy');
 
-            if ( this.hot ) {
+            if (this.hot) {
                 this.hot.destroy();
             }
 
-            if ( this.total_prices_view ) {
+            if (this.total_prices_view) {
                 this.total_prices_view.destroy();
             }
 
