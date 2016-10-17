@@ -6,6 +6,7 @@
     "deploy": "grunt deploy"
   },
   "devDependencies": {
+    "backbone.marionette.keyshortcuts": "^1.0.2",
     "grunt": "^1.0.0",
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-connect": "^1.0.1",
@@ -21,6 +22,7 @@
     "grunt-jscs": "^2.6.0",
     "grunt-replace": "~0.11.0",
     "grunt-shell": "~1.1.2",
+    "mousetrap": "^1.6.0",
     "qunitjs": "^1.21.0",
     "resemblejs": "^2.2.0"
   }
