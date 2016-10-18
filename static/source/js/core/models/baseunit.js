@@ -613,9 +613,7 @@ var app = app || {};
             return this.getTotalSquareFeet() ? this.getSubtotalPriceDiscounted() / this.getTotalSquareFeet() : 0;
         },
         getSection: function (sectionId) {
-            var model = (this.activeSubunit) ? this.activeSubunit : this;
-
-            return app.Baseunit.findSection(model.generateFullRoot(), sectionId);
+            return app.Baseunit.findSection(this.generateFullRoot(), sectionId);
         },
         //  Right now we think that door is something where profile
         //  returns `true` on `hasOutsideHandle` call
@@ -646,7 +644,7 @@ var app = app || {};
             return null;
         },
         isArchedPossible: function (sashId) {
-            var root = (this.activeSubunit) ? this.activeSubunit.generateFullRoot() : this.generateFullRoot();
+            var root = this.generateFullRoot();
 
             if (root.trapezoidHeights) {
                 return false;
@@ -831,7 +829,7 @@ var app = app || {};
                 return;
             }
 
-            var full = (this.activeSubunit) ? this.activeSubunit.generateFullRoot() : this.generateFullRoot();
+            var full = this.generateFullRoot();
             var fullSection = app.Baseunit.findSection(full, sectionId);
 
             // Update section
@@ -976,7 +974,7 @@ var app = app || {};
 
             this._updateSection(sectionId, function (section) {
 
-                var full = (this.activeSubunit) ? this.activeSubunit.generateFullRoot() : this.generateFullRoot();
+                var full = this.generateFullRoot();
                 var fullSection = app.Baseunit.findSection(full, sectionId);
                 var measurementType = getInvertedDivider(type).replace(/_invisible/, '');
                 var position;
@@ -1045,32 +1043,34 @@ var app = app || {};
         //     }]
         // }
         generateFullRoot: function (rootSection, openingParams) {
-            rootSection = rootSection || JSON.parse(JSON.stringify(this.get('root_section')));
+            var unit = (this.activeSubunit) ? this.activeSubunit : this;
+
+            rootSection = rootSection || JSON.parse(JSON.stringify(unit.get('root_section')));
             var defaultParams = {
                 x: 0,
                 y: 0,
-                width: this.getInMetric('width', 'mm'),
-                height: this.getInMetric('height', 'mm')
+                width: unit.getInMetric('width', 'mm'),
+                height: unit.getInMetric('height', 'mm')
             };
 
-            if (rootSection.id === this.get('root_section').id) {
+            if (rootSection.id === unit.get('root_section').id) {
                 defaultParams = {
-                    x: this.profile.get('frame_width'),
-                    y: this.profile.get('frame_width'),
-                    width: this.getInMetric('width', 'mm') - this.profile.get('frame_width') * 2,
-                    height: this.getInMetric('height', 'mm') - this.profile.get('frame_width') * 2
+                    x: unit.profile.get('frame_width'),
+                    y: unit.profile.get('frame_width'),
+                    width: unit.getInMetric('width', 'mm') - unit.profile.get('frame_width') * 2,
+                    height: unit.getInMetric('height', 'mm') - unit.profile.get('frame_width') * 2
                 };
             }
 
-            if (rootSection.id === this.get('root_section').id &&
-                    this.profile.isThresholdPossible() &&
-                    this.profile.get('low_threshold')) {
+            if (rootSection.id === unit.get('root_section').id &&
+                    unit.profile.isThresholdPossible() &&
+                    unit.profile.get('low_threshold')) {
                 defaultParams = {
-                    x: this.profile.get('frame_width'),
-                    y: this.profile.get('frame_width'),
-                    width: this.getInMetric('width', 'mm') - this.profile.get('frame_width') * 2,
-                    height: this.getInMetric('height', 'mm') -
-                        this.profile.get('frame_width') - this.profile.get('threshold_width')
+                    x: unit.profile.get('frame_width'),
+                    y: unit.profile.get('frame_width'),
+                    width: unit.getInMetric('width', 'mm') - unit.profile.get('frame_width') * 2,
+                    height: unit.getInMetric('height', 'mm') -
+                        unit.profile.get('frame_width') - unit.profile.get('threshold_width')
                 };
                 rootSection.thresholdEdge = true;
             }
@@ -1086,8 +1086,8 @@ var app = app || {};
             var bottomOverlap = 0;
             var leftOverlap = 0;
             var rightOverlap = 0;
-            var frameOverlap = this.profile.get('sash_frame_overlap');
-            var mullionOverlap = this.profile.get('sash_mullion_overlap');
+            var frameOverlap = unit.profile.get('sash_frame_overlap');
+            var mullionOverlap = unit.profile.get('sash_mullion_overlap');
             var thresholdOverlap = mullionOverlap;
 
             if (hasFrame) {
@@ -1097,7 +1097,7 @@ var app = app || {};
                 if (rootSection.mullionEdges.left === 'vertical') {
                     leftOverlap = mullionOverlap;
                 } else if (rootSection.mullionEdges.left === 'vertical_invisible') {
-                    leftOverlap = this.profile.get('mullion_width') / 2;
+                    leftOverlap = unit.profile.get('mullion_width') / 2;
                 } else {
                     leftOverlap = frameOverlap;
                 }
@@ -1105,7 +1105,7 @@ var app = app || {};
                 if (rootSection.mullionEdges.right === 'vertical') {
                     rightOverlap = mullionOverlap;
                 } else if (rootSection.mullionEdges.right === 'vertical_invisible') {
-                    rightOverlap = this.profile.get('mullion_width') / 2;
+                    rightOverlap = unit.profile.get('mullion_width') / 2;
                 } else {
                     rightOverlap = frameOverlap;
                 }
@@ -1120,7 +1120,7 @@ var app = app || {};
             rootSection.sashParams.x = rootSection.openingParams.x - leftOverlap;
             rootSection.sashParams.y = rootSection.openingParams.y - topOverlap;
 
-            var frameWidth = hasFrame ? this.profile.get('sash_frame_width') : 0;
+            var frameWidth = hasFrame ? unit.profile.get('sash_frame_width') : 0;
 
             rootSection.glassParams.x = rootSection.sashParams.x + frameWidth;
             rootSection.glassParams.y = rootSection.sashParams.y + frameWidth;
@@ -1135,16 +1135,16 @@ var app = app || {};
                 };
 
                 if (rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible') {
-                    mullionAttrs.x = position - this.profile.get('mullion_width') / 2;
+                    mullionAttrs.x = position - unit.profile.get('mullion_width') / 2;
                     mullionAttrs.y = rootSection.glassParams.y;
-                    mullionAttrs.width = this.profile.get('mullion_width');
+                    mullionAttrs.width = unit.profile.get('mullion_width');
                     mullionAttrs.height = rootSection.glassParams.height;
 
                 } else {
                     mullionAttrs.x = rootSection.glassParams.x;
-                    mullionAttrs.y = position - this.profile.get('mullion_width') / 2;
+                    mullionAttrs.y = position - unit.profile.get('mullion_width') / 2;
                     mullionAttrs.width = rootSection.glassParams.width;
-                    mullionAttrs.height = this.profile.get('mullion_width');
+                    mullionAttrs.height = unit.profile.get('mullion_width');
                 }
 
                 rootSection.mullionParams = mullionAttrs;
@@ -1160,7 +1160,7 @@ var app = app || {};
                 sectionData.parentId = rootSection.id;
 
                 // Correction params. Needed for sections in operable sash
-                var corr = -1 * (this.profile.get('sash_frame_width') - this.profile.get('sash_frame_overlap'));
+                var corr = -1 * (unit.profile.get('sash_frame_width') - unit.profile.get('sash_frame_overlap'));
                 var correction = {
                     x: 0,
                     y: 0,
@@ -1197,12 +1197,12 @@ var app = app || {};
 
                     if (i === 0) {
                         sectionParams.width = position - rootSection.openingParams.x -
-                            this.profile.get('mullion_width') / 2;
+                            unit.profile.get('mullion_width') / 2;
                         sectionData.mullionEdges.right = rootSection.divider;
                     } else {
-                        sectionParams.x = position + this.profile.get('mullion_width') / 2;
+                        sectionParams.x = position + unit.profile.get('mullion_width') / 2;
                         sectionParams.width = openingParams.width + openingParams.x -
-                            position - this.profile.get('mullion_width') / 2;
+                            position - unit.profile.get('mullion_width') / 2;
                         sectionData.mullionEdges.left = rootSection.divider;
                     }
 
@@ -1215,12 +1215,12 @@ var app = app || {};
                     if (i === 0) {
                         sectionData.mullionEdges.bottom = rootSection.divider;
                         sectionParams.height = position - rootSection.openingParams.y -
-                            this.profile.get('mullion_width') / 2;
+                            unit.profile.get('mullion_width') / 2;
                         sectionData.thresholdEdge = false;
                     } else {
-                        sectionParams.y = position + this.profile.get('mullion_width') / 2;
+                        sectionParams.y = position + unit.profile.get('mullion_width') / 2;
                         sectionParams.height = openingParams.height + openingParams.y - position -
-                            this.profile.get('mullion_width') / 2;
+                            unit.profile.get('mullion_width') / 2;
                         sectionData.mullionEdges.top = rootSection.divider;
                     }
                 }
@@ -1231,8 +1231,8 @@ var app = app || {};
                 sectionParams.width += correction.width;
                 sectionParams.height += correction.height;
 
-                return this.generateFullRoot(sectionData, sectionParams);
-            }.bind(this));
+                return unit.generateFullRoot(sectionData, sectionParams);
+            }.bind(unit));
             return rootSection;
         },
         generateFullReversedRoot: function (rootSection) {
@@ -1274,7 +1274,7 @@ var app = app || {};
         // it is not possible to add sash inside another sash
         // so this function check all parent
         canAddSashToSection: function (sectionId) {
-            var fullRoot = (this.activeSubunit) ? this.activeSubunit.generateFullRoot() : this.generateFullRoot();
+            var fullRoot = this.generateFullRoot();
             var section = app.Baseunit.findSection(fullRoot, sectionId);
 
             if (section.parentId === undefined) {
