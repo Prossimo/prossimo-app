@@ -1942,7 +1942,7 @@ var app = app || {};
             var profile_id = this.profile && this.profile.id;
 
             if ( app.settings && profile_id ) {
-                result = app.settings.getAvailableOptions(dictionary_id, profile_id);
+                result = app.settings.getAvailableOptions(dictionary_id, profile_id, true);
             }
 
             return result;

@@ -265,34 +265,32 @@ var app = app || {};
         getOpeningDirections: function () {
             return OPENING_DIRECTIONS;
         },
-        //  TODO: add `default_first` param to make default entry the first in the list
-        //  TODO: use `getEntriesAvailableForProfile` function from collection
-        getAvailableOptions: function (dictionary_id, profile_id) {
-            var available_options = [];
+        getAvailableOptions: function (dictionary_id, profile_id, put_default_first) {
             var target_dictionary = this.dictionaries.get(dictionary_id);
+            var available_options = [];
+            var default_option;
+
+            put_default_first = put_default_first || false;
 
             if ( target_dictionary ) {
-                target_dictionary.entries.each(function (entry) {
-                    if ( entry.get('profiles').length &&
-                        _.contains(_.pluck(entry.get('profiles'), 'id'), profile_id)
-                    ) {
-                        available_options.push(entry);
-                    }
-                }, this);
+                available_options = target_dictionary.entries.getEntriesAvailableForProfile(profile_id);
+                default_option = target_dictionary.entries.getDefaultEntryForProfile(profile_id);
+            }
+
+            //  Union merges arrays and removes duplicates
+            if ( put_default_first && default_option && available_options.length > 1 ) {
+                available_options = _.union([default_option], available_options);
             }
 
             return available_options;
         },
-        //  TODO: use `getDefaultEntryForProfile` function from collection
         getDefaultOption: function (dictionary_id, profile_id) {
-            var available_options = this.getAvailableOptions(dictionary_id, profile_id);
+            var target_dictionary = this.dictionaries.get(dictionary_id);
+            var default_option;
 
-            var default_option = _.find(available_options, function (entry) {
-                var entry_profiles = entry.get('profiles');
-                var entry_to_profile_connection = _.findWhere(entry_profiles, { id: profile_id });
-
-                return entry_to_profile_connection && entry_to_profile_connection.is_default === true;
-            });
+            if ( target_dictionary ) {
+                default_option = target_dictionary.entries.getDefaultEntryForProfile(profile_id);
+            }
 
             return default_option || undefined;
         },

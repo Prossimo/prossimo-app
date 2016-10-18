@@ -239,6 +239,18 @@ test('dictionary entry profile availability functions from settings.js', functio
         'Get entries available for a not existing dictionary'
     );
 
+    //  Test same function, but in "put default option first" mode
+    deepEqual(
+        getNames(app.settings.getAvailableOptions(1, 4, true)),
+        ['Brown Plastic Handle', 'White Plastic Handle'],
+        'Get entries available for a certain profile, put default option first'
+    );
+    deepEqual(
+        getNames(app.settings.getAvailableOptions(1, 4, false)),
+        ['White Plastic Handle', 'Brown Plastic Handle'],
+        'Get entries available for a certain profile, do not put default option first'
+    );
+
     //  Test function getDefaultOption
     equal(
         app.settings.getDefaultOption(1, 5).get('name'),
