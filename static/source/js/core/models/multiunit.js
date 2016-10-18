@@ -30,7 +30,9 @@ var app = app || {};
 
             if (!this.subunits) {
                 this.subunits = new app.BaseunitCollection();
-                this.listenTo(this.subunits, 'change', function () { self.trigger('change', arguments); });
+                this.listenTo(this.subunits, 'change', function () {  // Trigger self change if any subunit changes
+                    self.trigger.apply(this, ['change'].concat(Array.prototype.slice.call(arguments)));
+                });
             }
 
             var unitIds = this.get('multiunit_subunits');
