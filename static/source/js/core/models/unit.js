@@ -8,7 +8,7 @@ var app = app || {};
     app.Unit = app.Baseunit.extend({
         schema: _.defaults(app.schema.createSchema(UNIT_PROPERTIES), app.Baseunit.schema),
         defaults: function () {
-            var defaults = app.Baseunit.prototype.defaults.call(this);
+            var defaults = app.Baseunit.prototype.defaults.apply(this, arguments);
 
             _.each(UNIT_PROPERTIES, function (item) {
                 defaults[item.name] = this.getDefaultValue(item.name, item.type);

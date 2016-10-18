@@ -2,6 +2,7 @@ var app = app || {};
 
 (function () {
     'use strict';
+    var self;
 
     var BASEUNIT_PROPERTIES = [
         { name: 'unit_composition', title: 'Type', type: 'string' },
@@ -228,6 +229,8 @@ var app = app || {};
             return app.schema.parseAccordingToSchema(unit_data, this.schema);
         },
         initialize: function (attributes, options) {
+            self = this;
+
             this.options = options || {};
             this.profile = null;
 
@@ -610,7 +613,9 @@ var app = app || {};
             return this.getTotalSquareFeet() ? this.getSubtotalPriceDiscounted() / this.getTotalSquareFeet() : 0;
         },
         getSection: function (sectionId) {
-            return app.Baseunit.findSection(this.generateFullRoot(), sectionId);
+            var model = (this.activeSubunit) ? this.activeSubunit : this;
+
+            return app.Baseunit.findSection(model.generateFullRoot(), sectionId);
         },
         //  Right now we think that door is something where profile
         //  returns `true` on `hasOutsideHandle` call
@@ -641,7 +646,7 @@ var app = app || {};
             return null;
         },
         isArchedPossible: function (sashId) {
-            var root = this.generateFullRoot();
+            var root = (this.activeSubunit) ? this.activeSubunit.generateFullRoot() : this.generateFullRoot();
 
             if (root.trapezoidHeights) {
                 return false;
@@ -734,12 +739,13 @@ var app = app || {};
         _updateSection: function (sectionId, func) {
             // HAH, dirty deep clone, rewrite when you have good mood for it
             // we have to make deep clone and backbone will trigger change event
-            var rootSection = JSON.parse(JSON.stringify(this.get('root_section')));
-            var sectionToUpdate = app.Baseunit.findSection(rootSection, sectionId);
+            var unit = (this.activeSubunit) ? this.activeSubunit : this;
+            var rootSectionClone = JSON.parse(JSON.stringify(unit.get('root_section')));
+            var sectionToUpdate = app.Baseunit.findSection(rootSectionClone, sectionId);
 
             func(sectionToUpdate);
 
-            this.persist('root_section', rootSection);
+            unit.persist('root_section', rootSectionClone);
         },
         setCircular: function (sectionId, opts) {
             //  Deep clone, same as above
@@ -825,7 +831,7 @@ var app = app || {};
                 return;
             }
 
-            var full = this.generateFullRoot();
+            var full = (this.activeSubunit) ? this.activeSubunit.generateFullRoot() : this.generateFullRoot();
             var fullSection = app.Baseunit.findSection(full, sectionId);
 
             // Update section
@@ -970,7 +976,7 @@ var app = app || {};
 
             this._updateSection(sectionId, function (section) {
 
-                var full = this.generateFullRoot();
+                var full = (this.activeSubunit) ? this.activeSubunit.generateFullRoot() : this.generateFullRoot();
                 var fullSection = app.Baseunit.findSection(full, sectionId);
                 var measurementType = getInvertedDivider(type).replace(/_invisible/, '');
                 var position;
@@ -1067,15 +1073,6 @@ var app = app || {};
                         this.profile.get('frame_width') - this.profile.get('threshold_width')
                 };
                 rootSection.thresholdEdge = true;
-            }
-
-            if (this.isMultiunit() && this.collection && this.get('multiunit_units')) {
-                var self = this;
-                var multiunitUnits = this.get('multiunit_units');
-
-                rootSection.subModels = multiunitUnits
-                    .map(function (id) { return self.collection.getByRootId(id); })
-                    .filter(function (subModel) { return !_.isUndefined(subModel); });
             }
 
             openingParams = openingParams || defaultParams;
@@ -1277,7 +1274,7 @@ var app = app || {};
         // it is not possible to add sash inside another sash
         // so this function check all parent
         canAddSashToSection: function (sectionId) {
-            var fullRoot = this.generateFullRoot();
+            var fullRoot = (this.activeSubunit) ? this.activeSubunit.generateFullRoot() : this.generateFullRoot();
             var section = app.Baseunit.findSection(fullRoot, sectionId);
 
             if (section.parentId === undefined) {

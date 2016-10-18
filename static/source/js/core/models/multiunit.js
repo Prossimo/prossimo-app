@@ -2,21 +2,42 @@ var app = app || {};
 
 (function () {
     'use strict';
+    var self;
 
     var MULTIUNIT_PROPERTIES = [
-        { name: 'multiunit_units', title: 'Units', type: 'array' }
+        { name: 'multiunit_subunits', title: 'Units', type: 'array' }
     ];
 
     app.Multiunit = app.Baseunit.extend({
         schema: _.defaults(app.schema.createSchema(MULTIUNIT_PROPERTIES), app.Baseunit.schema),
         defaults: function () {
-            var defaults = app.Baseunit.prototype.defaults.call(this);
+            var defaults = app.Baseunit.prototype.defaults.apply(this, arguments);
 
             _.each(MULTIUNIT_PROPERTIES, function (item) {
                 defaults[item.name] = this.getDefaultValue(item.name, item.type);
             }, this);
 
             return defaults;
+        },
+        initialize: function (attributes, options) {
+            self = this;
+
+            app.Baseunit.prototype.initialize.apply(this, arguments);
+
+        },
+        populateSubunits: function () {
+            if (!this.collection) { return; }
+
+            if (!this.subunits) {
+                this.subunits = new app.BaseunitCollection();
+                this.listenTo(this.subunits, 'change', function () { self.trigger('change', arguments); });
+            }
+
+            var unitIds = this.get('multiunit_subunits');
+
+            this.subunits.add(unitIds
+                .map(function (id) { return self.collection.getByRootId(id); })
+                .filter(function (subunit) { return !_.isUndefined(subunit); }));
         }
     });
 })();
