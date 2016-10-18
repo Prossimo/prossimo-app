@@ -318,6 +318,11 @@ var app = app || {};
         },
         getDictionaryEntryIdByName: function (dictionary_id, name) {
             var target_dictionary = this.dictionaries.get(dictionary_id);
+
+            if (!target_dictionary) {
+                throw new Error('No dictionary with id=' + dictionary_id);
+            }
+
             var target_entry = target_dictionary.entries.findWhere({name: name});
 
             return target_entry ? target_entry.id : undefined;
