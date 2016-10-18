@@ -723,7 +723,7 @@ var app = app || {};
                         var message = UNSET_VALUE;
 
                         if ( profile_id && dictionary_id ) {
-                            options = app.settings.getAvailableOptions(dictionary_id, profile_id);
+                            options = app.settings.getAvailableOptions(dictionary_id, profile_id, true);
                         }
 
                         if ( dictionary_id ) {
