@@ -23,7 +23,17 @@ module.exports = function (grunt) {
         'mousetrap/mousetrap.min.js',
         'backbone.marionette.keyshortcuts/backbone.marionette.keyshortcuts.js',
         'Sortable/Sortable.min.js',
-        'Sortable/jquery.binding.js'
+        'Sortable/jquery.binding.js',
+        'blueimp-load-image/js/load-image.all.min.js',
+        'blueimp-canvas-to-blob/js/canvas-to-blob.min.js',
+        'blueimp-file-upload/js/vendor/jquery.ui.widget.js',
+        'blueimp-file-upload/js/jquery.iframe-transport.js',
+        'blueimp-file-upload/js/jquery.fileupload.js',
+        'blueimp-file-upload/js/jquery.fileupload-process.js',
+        'blueimp-file-upload/js/jquery.fileupload-image.js',
+        'blueimp-file-upload/js/jquery.fileupload-audio.js',
+        'blueimp-file-upload/js/jquery.fileupload-video.js',
+        'blueimp-file-upload/js/jquery.fileupload-validate.js'
     ];
 
     var vendor_css_files = [
@@ -113,6 +123,7 @@ module.exports = function (grunt) {
         'dialogs/views/base-dialog-view.js',
         'dialogs/views/login-dialog-view.js',
         'dialogs/views/options-profiles-table-dialog-view.js',
+        'components/file-uploader-view.js',
         'dialogs/views/create-project-dialog-view.js',
         'app.js'
     ];
