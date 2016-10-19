@@ -20,10 +20,13 @@ module.exports = function (grunt) {
         'Backbone.Undo.js/Backbone.Undo.js',
         'backbone.KonvaView/backbone.KonvaView.js',
         'spin.js/spin.min.js',
-        'mousetrap/mousetrap.min.js',
-        'backbone.marionette.keyshortcuts/backbone.marionette.keyshortcuts.js',
         'Sortable/Sortable.min.js',
         'Sortable/jquery.binding.js'
+    ];
+
+    var vendor_npm_modules = [
+        'mousetrap/mousetrap.min.js',
+        'backbone.marionette.keyshortcuts/backbone.marionette.keyshortcuts.js'
     ];
 
     var vendor_css_files = [
@@ -125,7 +128,8 @@ module.exports = function (grunt) {
         sourceUrl: 'static/source',
         buildUrl: 'static/public',
         fontsUrl: 'static/fonts',
-        bowerUrl: 'bower_components',
+        bowerPatch: 'bower_components',
+        npmPatch: 'node_modules',
 
         gitinfo: {},
         hash: '<%= gitinfo.local.branch.current.shortSHA %>',
@@ -135,7 +139,7 @@ module.exports = function (grunt) {
                 options: {
                     modifyVars: {
                         fontsPath: '"../../<%= fontsUrl %>"',
-                        bowerPath: '"../../<%= bowerUrl %>"'
+                        bowerPath: '"../../<%= bowerPatch %>"'
                     }
                 },
                 files: {
@@ -147,7 +151,7 @@ module.exports = function (grunt) {
                 options: {
                     modifyVars: {
                         fontsPath: '"../../<%= fontsUrl %>"',
-                        bowerPath: '"../../<%= bowerUrl %>"'
+                        bowerPath: '"../../<%= bowerPatch %>"'
                     }
                 },
                 files: {
@@ -210,21 +214,28 @@ module.exports = function (grunt) {
                 files: [
                     {
                         expand: true,
-                        cwd: '<%= bowerUrl %>',
+                        cwd: '<%= bowerPatch %>',
                         src: vendor_js_files,
                         dest: '<%= buildUrl %>/js/vendor/',
                         filter: 'isFile'
                     },
                     {
                         expand: true,
-                        cwd: '<%= bowerUrl %>',
+                        cwd: '<%= npmPatch %>',
+                        src: vendor_npm_modules,
+                        dest: '<%= buildUrl %>/js/vendor/',
+                        filter: 'isFile'
+                    },
+                    {
+                        expand: true,
+                        cwd: '<%= bowerPatch %>',
                         src: vendor_css_files,
                         dest: '<%= buildUrl %>/css/vendor/',
                         filter: 'isFile'
                     },
                     {
                         expand: true,
-                        cwd: '<%= bowerUrl %>/bootstrap/fonts',
+                        cwd: '<%= bowerPatch %>/bootstrap/fonts',
                         src: ['**'],
                         dest: '<%= buildUrl %>/fonts/',
                         filter: 'isFile'
@@ -245,7 +256,7 @@ module.exports = function (grunt) {
                 files: {
                     '<%= buildUrl %>/css/vendor.dev.min.css':
                         vendor_css_files.map(function (component) {
-                            return '<%= bowerUrl %>/' + component;
+                            return '<%= bowerPatch %>/' + component;
                         })
                 }
             },
@@ -253,7 +264,7 @@ module.exports = function (grunt) {
                 files: {
                     '<%= buildUrl %>/css/vendor.<%= hash %>.min.css':
                         vendor_css_files.map(function (component) {
-                            return '<%= bowerUrl %>/' + component;
+                            return '<%= bowerPatch %>/' + component;
                         })
                 }
             }
@@ -272,7 +283,7 @@ module.exports = function (grunt) {
                 files: {
                     '<%= buildUrl %>/js/vendor.dev.min.js':
                         vendor_js_files.map(function (component) {
-                            return '<%= bowerUrl %>/' + component;
+                            return '<%= bowerPatch %>/' + component;
                         })
                 }
             },
@@ -288,7 +299,7 @@ module.exports = function (grunt) {
                 files: {
                     '<%= buildUrl %>/js/vendor.<%= hash %>.min.js':
                         vendor_js_files.map(function (component) {
-                            return '<%= bowerUrl %>/' + component;
+                            return '<%= bowerPatch %>/' + component;
                         })
                 }
             },
