@@ -68,7 +68,9 @@ var app = app || {};
 
             if ( method === 'create' || method === 'update' ) {
                 options.attrs = { entry: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
-                    data: JSON.stringify(model.get('data'))
+                    //  TODO: we need to parse this value first, then we could
+                    //  stringify it with no problem
+                    data: _.isString(model.get('data')) ? model.get('data') : JSON.stringify(model.get('data'))
                 }) };
             }
 
@@ -193,6 +195,20 @@ var app = app || {};
             var name_title_hash = this.getNameTitleTypeHash(names);
 
             return _.pluck(name_title_hash, 'title');
+        },
+        isAvailableForProfile: function (profile_id) {
+            return this.get('profiles') && _.contains(_.pluck(this.get('profiles'), 'id'), profile_id);
+        },
+        isDefaultForProfile: function (profile_id) {
+            var is_default = false;
+
+            if ( this.isAvailableForProfile(profile_id) ) {
+                var connection = _.findWhere(this.get('profiles'), { id: profile_id });
+
+                is_default = connection.is_default || false;
+            }
+
+            return is_default;
         },
         initialize: function (attributes, options) {
             this.options = options || {};

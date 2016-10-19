@@ -25,14 +25,14 @@ var app = app || {};
             });
         },
         getProfilesNamesList: function () {
-            var profiles = this.model.get('profiles');
+            var profiles_ids = _.pluck(this.model.get('profiles'), 'id');
             var profiles_names_list = [];
 
-            if ( profiles && profiles.length ) {
+            if ( profiles_ids && profiles_ids.length ) {
                 if ( app.settings ) {
-                    profiles_names_list = app.settings.getProfileNamesByIds(profiles.sort());
+                    profiles_names_list = app.settings.getProfileNamesByIds(profiles_ids.sort());
                 } else {
-                    profiles_names_list = profiles.sort();
+                    profiles_names_list = profiles_ids.sort();
                 }
             }
 
