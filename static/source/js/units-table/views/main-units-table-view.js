@@ -20,7 +20,7 @@ var app = app || {};
 
             this.ui.$wrapper.append(this.units_table_view.render().el);
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.units_table_view.destroy();
         }
     });

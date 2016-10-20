@@ -255,7 +255,7 @@ var app = app || {};
                 });
             }
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             if ( this.hot ) {
                 this.hot.destroy();
             }

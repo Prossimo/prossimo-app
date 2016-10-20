@@ -82,7 +82,7 @@ var app = app || {};
                 this.$el.removeClass('is-new');
             }
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             if ( this.name_input_view ) {
                 this.name_input_view.destroy();
             }

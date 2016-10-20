@@ -36,7 +36,7 @@ var app = app || {};
                 this.$el.append(this.dictionary_view.render().el);
             }
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             if ( this.dictionary_list_view ) {
                 this.dictionary_list_view.destroy();
             }

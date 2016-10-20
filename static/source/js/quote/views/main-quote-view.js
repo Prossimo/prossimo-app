@@ -38,7 +38,7 @@ var app = app || {};
             this.ui.$header_container.append(this.quote_header_view.render().el);
             this.ui.$table_container.append(this.quote_table_view.render().el);
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.units_table_view.destroy();
             this.quote_header_view.destroy();
             this.quote_table_view.destroy();

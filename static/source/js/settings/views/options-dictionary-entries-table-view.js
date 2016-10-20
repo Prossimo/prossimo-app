@@ -88,7 +88,7 @@ var app = app || {};
             this.undo_manager.registerButton('undo', this.ui.$undo);
             this.undo_manager.registerButton('redo', this.ui.$redo);
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             if ( this._isRendered ) {
                 this.ui.$container.sortable('destroy');
             }

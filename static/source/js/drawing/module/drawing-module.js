@@ -448,7 +448,7 @@ var app = app || {};
 
             return img;
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             var stage = this.get('stage');
             var is_predefined = this.get('is_stage_predefined');
 

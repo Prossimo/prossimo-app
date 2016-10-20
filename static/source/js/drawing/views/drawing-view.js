@@ -277,7 +277,7 @@ var app = app || {};
             this.bindModuleEvents();
         },
         // Marrionente lifecycle method
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.stage.destroy();
             this.unbindModuleEvents();
 

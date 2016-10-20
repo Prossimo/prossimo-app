@@ -53,7 +53,7 @@ var app = app || {};
 
             this.updateSize( 570, (window.innerHeight - 200) );
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.ui.$modal.remove();
             this.stage.destroy();
 

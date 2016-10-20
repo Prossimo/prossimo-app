@@ -484,7 +484,7 @@ var app = app || {};
                 }
             });
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             clearInterval(this.dropdown_scroll_timer);
 
             if ( this.hot ) {

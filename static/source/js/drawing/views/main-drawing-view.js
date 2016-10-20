@@ -77,7 +77,7 @@ var app = app || {};
                 this.drawing_view.trigger('update_rendered');
             }
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.sidebar_view.destroy();
 
             if ( this.drawing_view ) {

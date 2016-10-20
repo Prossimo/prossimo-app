@@ -36,7 +36,7 @@ var app = app || {};
             this.ui.$header_container.append(this.request_header_view.render().el);
             this.ui.$table_container.append(this.request_table_view.render().el);
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.request_header_view.destroy();
             this.request_table_view.destroy();
         }

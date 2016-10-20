@@ -62,7 +62,7 @@ var app = app || {};
         onRender: function () {
             this.enterMode();
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.ui.$content.find('.date').datepicker('destroy');
         }
     });

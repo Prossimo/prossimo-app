@@ -101,7 +101,7 @@ var app = app || {};
                 }, this)
             };
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             if ( this.profiles_table_view ) {
                 this.profiles_table_view.destroy();
             }

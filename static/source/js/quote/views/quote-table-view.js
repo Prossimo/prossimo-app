@@ -85,7 +85,7 @@ var app = app || {};
                 this.ui.$optional_extras_table_container.append(this.quote_optional_extras_table_view.render().el);
             }
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             if ( this.quote_extras_table_view ) {
                 this.quote_extras_table_view.destroy();
             }

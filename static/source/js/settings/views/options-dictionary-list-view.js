@@ -56,7 +56,7 @@ var app = app || {};
                 }
             });
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.ui.$container.sortable('destroy');
         }
     });

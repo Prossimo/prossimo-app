@@ -1089,7 +1089,7 @@ var app = app || {};
                 });
             }
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             clearInterval(this.dropdown_scroll_timer);
             this.$el.off('show.bs.popover');
             this.$el.popover('destroy');

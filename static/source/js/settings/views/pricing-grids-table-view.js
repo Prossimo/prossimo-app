@@ -243,7 +243,7 @@ var app = app || {};
                     'Please select a profile from the list at the top</p>');
             }
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             if ( this.hot ) {
                 this.hot.destroy();
             }

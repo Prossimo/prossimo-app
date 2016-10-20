@@ -115,7 +115,7 @@ var app = app || {};
             this.ui.$container = this.$el;
             this.appendPopover();
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.ui.$edit.popover('destroy');
         }
     });

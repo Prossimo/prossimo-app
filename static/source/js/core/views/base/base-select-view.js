@@ -55,7 +55,7 @@ var app = app || {};
                 width: 'fit'
             });
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.ui.$select.selectpicker('destroy');
         }
     });
