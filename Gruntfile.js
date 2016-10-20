@@ -2,27 +2,28 @@ module.exports = function (grunt) {
     'use strict';
 
     var vendor_js_files = [
-        'jquery/dist/jquery.min.js',
-        'handlebars/handlebars.runtime.min.js',
-        'underscore/underscore-min.js',
-        'backbone/backbone-min.js',
-        'backbone.marionette/lib/backbone.marionette.min.js',
-        'handsontable/dist/handsontable.full.min.js',
+        'jquery/dist/jquery.js',
+        'handlebars/handlebars.runtime.js',
+        'underscore/underscore.js',
+        'backbone/backbone.js',
+        'backbone.radio/build/backbone.radio.js',
+        'backbone.marionette/lib/backbone.marionette.js',
+        'handsontable/dist/handsontable.full.js',
         'bootstrap/js/dropdown.js',
         'bootstrap/js/tooltip.js',
         'bootstrap/js/popover.js',
         'bootstrap/js/modal.js',
-        'bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js',
-        'bootstrap-select/dist/js/bootstrap-select.min.js',
-        'bootstrap-toggle/js/bootstrap-toggle.min.js',
-        'konva/konva.min.js',
-        'decimal.js/decimal.min.js',
+        'bootstrap-datepicker/dist/js/bootstrap-datepicker.js',
+        'bootstrap-select/dist/js/bootstrap-select.js',
+        'bootstrap-toggle/js/bootstrap-toggle.js',
+        'konva/konva.js',
+        'decimal.js/decimal.js',
         'Backbone.Undo.js/Backbone.Undo.js',
         'backbone.KonvaView/backbone.KonvaView.js',
-        'spin.js/spin.min.js',
-        'mousetrap/mousetrap.min.js',
+        'spin.js/spin.js',
+        'mousetrap/mousetrap.js',
         'backbone.marionette.keyshortcuts/backbone.marionette.keyshortcuts.js',
-        'Sortable/Sortable.min.js',
+        'Sortable/Sortable.js',
         'Sortable/jquery.binding.js'
     ];
 
@@ -263,7 +264,9 @@ module.exports = function (grunt) {
             vendor_dev: {
                 options: {
                     mangle: false,
-                    compress: false,
+                    compress: true,
+                    sourceMap: true,
+                    sourceMapIncludeSources: true,
                     banner: '/*! Full list of vendor libraries: \n' +
                         vendor_js_files.map(function (component) {
                             return '<%= buildUrl %>/js/vendor/' + component;
