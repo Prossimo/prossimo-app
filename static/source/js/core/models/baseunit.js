@@ -173,6 +173,9 @@ var app = app || {};
 
             return defaults;
         },
+        getId: function () {
+            return this.get('root_section').id;
+        },
         getNameAttribute: function () {
             return 'mark';
         },
@@ -1232,7 +1235,7 @@ var app = app || {};
                 sectionParams.height += correction.height;
 
                 return unit.generateFullRoot(sectionData, sectionParams);
-            }.bind(unit));
+            });
             return rootSection;
         },
         generateFullReversedRoot: function (rootSection) {

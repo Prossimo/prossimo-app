@@ -6,15 +6,13 @@ var app = app || {};
 
     var module;
     var model;
-    var stage;
-    var layer;
 
     function activateSubunitDrawer(subunit) {
         var ActiveSubdrawerClass = self.selectSubDrawer(subunit);
 
         subunit.drawer = new ActiveSubdrawerClass({
-            layer: layer,
-            stage: stage,
+            layer: self.layer,
+            stage: self.stage,
             builder: module,
             metricSize: module.get('metricSize'),
             data: subunit
@@ -28,11 +26,9 @@ var app = app || {};
 
             module = params.builder;
             model = module.get('model');
-            model.set('root_section', model.generateFullRoot());
 
-            stage = module.get('stage');
-            layer = new Konva.Layer();
-            stage.add(layer);
+            this.layer = params.layer;
+            this.stage = params.stage;
         },
         el: function () {
             var group = new Konva.Group();
@@ -41,7 +37,15 @@ var app = app || {};
         },
         render: function () {
             model.populateSubunits();
-            model.activeSubunit = model.subunits.at(0);
+
+            if (!model.activeSubunit) {
+                var zeroPositionSubunitId = _.invert(model.get('multiunit_subunits'))['0,0'];
+
+                model.activeSubunit = (zeroPositionSubunitId) ?
+                    model.subunits.getById(zeroPositionSubunitId) :
+                    model.subunits.at(0);
+            }
+
             activateSubunitDrawer(model.activeSubunit);
             model.activeSubunit.drawer.render();
         },

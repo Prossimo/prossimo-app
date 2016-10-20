@@ -5,7 +5,7 @@ var app = app || {};
     var self;
 
     var MULTIUNIT_PROPERTIES = [
-        { name: 'multiunit_subunits', title: 'Units', type: 'array' }
+        { name: 'multiunit_subunits', title: 'Subunits', type: 'object' }  // E.g. {7986: [0, 0], 19991: [-2000, 0]}
     ];
 
     app.Multiunit = app.Baseunit.extend({
@@ -35,10 +35,10 @@ var app = app || {};
                 });
             }
 
-            var unitIds = this.get('multiunit_subunits');
+            var unitIds = Object.keys(this.get('multiunit_subunits'));
 
             this.subunits.add(unitIds
-                .map(function (id) { return self.collection.getByRootId(id); })
+                .map(function (id) { return self.collection.getById(id); })
                 .filter(function (subunit) { return !_.isUndefined(subunit); }));
         }
     });

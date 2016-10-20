@@ -37,7 +37,7 @@ var app = app || {};
                 return Backbone.Collection.prototype.add.call(this, models, options);
             }
         },
-        getByRootId: function (id) {
+        getById: function (id) {
             return _.find(this.models, function (model) {
                 return model.get('root_section').id === id;
             });
