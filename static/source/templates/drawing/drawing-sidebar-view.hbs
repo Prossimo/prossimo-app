@@ -6,7 +6,7 @@
     <div class="unit-selector-select">
         <select name="unit-selector-dropdown" id="unit-selector-dropdown" class="selectpicker" title='Choose a unit'>
             {{#each unit_list}}
-                <option data-subtext="{{ dimensions }}" {{#if is_selected }}selected{{/if}} value="{{ cid }}">#{{ reference_id }}: <strong>{{ mark }}</strong></option>
+                <option class="{{ unit_relation }}" data-subtext="{{ dimensions }}" {{#if is_selected }}selected{{/if}} value="{{ cid }}">#{{ reference_id }}: <strong>{{ mark }}</strong></option>
             {{/each}}
         </select>
     </div>

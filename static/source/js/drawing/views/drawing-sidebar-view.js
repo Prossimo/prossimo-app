@@ -448,7 +448,8 @@ var app = app || {};
                         reference_id: item.getRefNum(),
                         cid: item.cid,
                         mark: item.get('mark'),
-                        dimensions: app.utils.format.dimensions(item.get('width'), item.get('height'), 'fraction')
+                        dimensions: app.utils.format.dimensions(item.get('width'), item.get('height'), 'fraction'),
+                        unit_relation: item.getRelation()
                     };
                 }, this),
                 active_unit_image: this.getActiveUnitImage(),

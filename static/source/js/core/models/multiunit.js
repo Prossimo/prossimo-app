@@ -5,7 +5,7 @@ var app = app || {};
     var self;
 
     var MULTIUNIT_PROPERTIES = [
-        { name: 'multiunit_subunits', title: 'Subunits', type: 'object' }  // E.g. {7986: [0, 0], 19991: [-2000, 0]}
+        { name: 'multiunit_subunits', title: 'Subunits', type: 'object' }  // I.e. {<id>: [<x>, <y>], ...}, in mm
     ];
 
     app.Multiunit = app.Baseunit.extend({

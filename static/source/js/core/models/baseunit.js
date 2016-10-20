@@ -2236,6 +2236,31 @@ var app = app || {};
         /* trapezoid end */
         isMultiunit: function () {
             return this.constructor === app.Multiunit;
+        },
+        isSubunit: function (options) {
+            var collection = (options && options.collection) ?
+                options.collection :
+                this.collection;
+
+            var allSubunitIds = _.flatten(collection
+                .filter(function (unit) { return unit.isMultiunit(); })
+                .map(function (unit) { return Object.keys(unit.get('multiunit_subunits')); })
+            );
+
+            return allSubunitIds.indexOf(this.getId()) !== -1;
+        },
+        getRelation: function () {
+            var unitRelation;
+
+            if (this.isMultiunit()) {
+                unitRelation = 'multiunit';
+            } else if (this.isSubunit()) {
+                unitRelation = 'subunit';
+            } else {
+                unitRelation = 'loneunit';
+            }
+
+            return unitRelation;
         }
     },
     {

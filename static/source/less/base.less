@@ -85,6 +85,13 @@ mark,
     max-height: 640px;
 }
 
+.dropdown-menu > li > a {
+    &:focus { background-color: transparent; }
+    &:hover, &:hover:focus {
+        background-color: @selection-blue;
+        &, & * { color: @white; }
+    }
+}
 
 //  ------------------------------------------------------------------------
 //  Base UI elements
