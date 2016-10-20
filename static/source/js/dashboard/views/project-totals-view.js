@@ -18,7 +18,19 @@ var app = app || {};
             var total_prices = this.model ? this.model.getTotalPrices() : undefined;
             var total_area = this.model ? this.model.units.getTotalSquareFeet() : undefined;
             var price_per_square_foot = this.model ? this.model.units.getAveragePricePerSquareFoot() : undefined;
+            var total_unit_types = this.model ? this.model.units.getTotalUnitTypes() : undefined;
+            var total_of_units = this.model ? this.model.units.getTotalUnitQuantity() : undefined;
+            var unitsByProfile = this.model ? this.model.units.getUnitsByProfiles() : [];
             var f = app.utils.format;
+
+            var table = _.map(unitsByProfile, function (item) {
+                return {
+                    profile_name: item.profile.get('name'),
+                    total_units: item.length,
+                    total_area: f.square_feet(item.getTotalSquareFeet(), 2, 'sup'),
+                    price_per_square_foot: f.price_usd(item.getAveragePricePerSquareFoot())
+                };
+            });
 
             return {
                 grand_total: total_prices ? f.price_usd(total_prices.grand_total) : '--',
@@ -29,7 +41,10 @@ var app = app || {};
                 is_profit_above_threshold: total_prices && parseFloat(total_prices.profit_percent) > 50,
                 is_price_estimated: project_settings && project_settings.get('pricing_mode') === 'estimates',
                 total_area: total_area ? f.square_feet(total_area, 2, 'sup') : '--',
-                price_per_square_foot: price_per_square_foot ? f.price_usd(price_per_square_foot) : '--'
+                price_per_square_foot: price_per_square_foot ? f.price_usd(price_per_square_foot) : '--',
+                total_unit_types: total_unit_types ? total_unit_types : '--',
+                total_of_units: total_of_units ? total_of_units : '--',
+                data_summary: table
             };
         }
     });

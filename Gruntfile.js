@@ -358,6 +358,10 @@ module.exports = function (grunt) {
                     '<%= buildUrl %>/js/**/*.js',
                     '*.html'
                 ]
+            },
+            qunit: {
+                files: ['test/*.js', 'test/*.html'],
+                tasks: ['qunit:basic']
             }
         },
 
@@ -395,11 +399,11 @@ module.exports = function (grunt) {
                         },
                         {
                             match: 'api_base_path',
-                            replacement: 'http://127.0.0.1:8000/api'
+                            replacement: 'http://192.168.150.150:8000/api'
                         },
                         {
                             match: 'pdf_api_base_path',
-                            replacement: 'http://127.0.0.1:8080/print'
+                            replacement: 'http://192.168.150.150:8080/print'
                         },
                         {
                             match: 'favicon',
