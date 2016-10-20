@@ -139,7 +139,7 @@ var app = app || {};
                 size: 10
             });
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 no_backend: app.session.get('no_backend'),
                 project_list: this.collection.map(function (item) {

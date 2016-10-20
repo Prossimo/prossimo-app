@@ -16,7 +16,7 @@ var app = app || {};
         onItemClick: function () {
             this.options.parent_view.setActiveItem(this.model);
         },
-        serializeData: function () {
+        templateContext: function () {
             var active_item = this.options.parent_view.getActiveItem();
             var placeholder = this.options.placeholder || 'New Dictionary';
             var name = this.model.get('name') || '';

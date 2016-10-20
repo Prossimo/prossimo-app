@@ -44,7 +44,7 @@ var app = app || {};
                 format: 'd MM, yyyy'
             });
         },
-        serializeData: function () {
+        templateContext: function () {
             return _.extend({}, this.model.toJSON(), {editMode: this.editMode});
         },
         saveFormData: function () {

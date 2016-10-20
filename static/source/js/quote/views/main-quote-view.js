@@ -11,7 +11,7 @@ var app = app || {};
             $header_container: '.quote-header-container',
             $table_container: '.quote-table-container'
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 urlToDownloadPdf: app.settings.getPdfDownloadUrl('quote')
             };

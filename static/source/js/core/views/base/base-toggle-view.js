@@ -29,7 +29,7 @@ var app = app || {};
         isChecked: function () {
             return this.options.values_list[0].is_current;
         },
-        serializeData: function () {
+        templateContext: function () {
             var equal_choices = this.options.possible_values_number === 2;
 
             return {

@@ -310,7 +310,7 @@ var app = app || {};
 
             return show_drawings;
         },
-        serializeData: function () {
+        templateContext: function () {
             var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
             var show_customer_image = this.shouldShowCustomerImage();
             var show_drawings = this.shouldShowDrawings();

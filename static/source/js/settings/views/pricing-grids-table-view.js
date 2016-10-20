@@ -37,7 +37,7 @@ var app = app || {};
             this.listenTo(this.collection, 'all', this.updateTable);
             this.listenTo(this.options.parent_view, 'attach', this.updateTable);
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 profile_list: this.collection.map(function (item) {
                     return {

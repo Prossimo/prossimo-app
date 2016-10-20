@@ -18,7 +18,7 @@ var app = app || {};
 
             this.model.persist(this.options.param, new_value);
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 multiple: this.options.multiple,
                 options: _.map(this.options.values, function (item) {

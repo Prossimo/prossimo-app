@@ -338,7 +338,7 @@ var app = app || {};
             this.stopListening(this.module);
         },
 
-        serializeData: function () {
+        templateContext: function () {
             return {
                 filling_types: !app.settings ? [] :
                     app.settings.getAvailableFillingTypes().map(function (item) {

@@ -100,7 +100,7 @@ var app = app || {};
             this.listenTo(this.model, 'change:' + this.options.param, this.render);
         },
         //  TODO: we could pass a formatter function to format a readable value
-        serializeData: function () {
+        templateContext: function () {
             var value = this.model.get(this.options.param);
             var placeholder = this.options.placeholder || '';
 

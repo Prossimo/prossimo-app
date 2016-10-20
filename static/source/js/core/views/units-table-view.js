@@ -217,7 +217,7 @@ var app = app || {};
                 this.addNewAccessory(e);
             }
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 tabs: _.each(this.tabs, function (item, key) {
                     item.is_active = key === this.active_tab;

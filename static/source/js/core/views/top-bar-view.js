@@ -49,7 +49,7 @@ var app = app || {};
         isToggleDisabled: function () {
             return !app.settings.getProjectSettings();
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 is_settings_toggle_disabled: this.isToggleDisabled()
             };

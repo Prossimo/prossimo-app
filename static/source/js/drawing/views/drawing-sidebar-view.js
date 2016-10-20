@@ -445,7 +445,7 @@ var app = app || {};
 
             return sections;
         },
-        serializeData: function () {
+        templateContext: function () {
             var tab_contents = {
                 active_unit_properties: this.getActiveUnitProperties(),
                 active_unit_profile_properties: this.getActiveUnitProfileProperties(),

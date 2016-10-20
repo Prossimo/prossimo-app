@@ -11,7 +11,7 @@ var app = app || {};
             $header_container: '.supplier-request-header-container',
             $table_container: '.supplier-request-table-container'
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 urlToDownloadPdf: app.settings.getPdfDownloadUrl('supplier')
             };

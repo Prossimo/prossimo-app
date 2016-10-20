@@ -72,7 +72,7 @@ var app = app || {};
 
             return params_obj;
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 is_model_set: this.model,
                 params: this.getParamsSourceData()

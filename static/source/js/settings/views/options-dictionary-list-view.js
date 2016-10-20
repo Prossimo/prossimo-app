@@ -41,7 +41,7 @@ var app = app || {};
         onSort: function (event) {
             this.collection.setItemPosition(event.oldIndex, event.newIndex);
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 dictionaries_length: this.collection.length
             };

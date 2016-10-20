@@ -53,7 +53,7 @@ var app = app || {};
                 balance_due_at_delivery: f.price_usd(total_prices.balance_due_at_delivery)
             };
         },
-        serializeData: function () {
+        templateContext: function () {
             var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
 
             return {

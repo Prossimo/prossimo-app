@@ -13,7 +13,7 @@ var app = app || {};
             this.listenTo(this.options.extras, 'change', this.render);
             this.listenTo(this.options.extras, 'remove', this.render);
         },
-        serializeData: function () {
+        templateContext: function () {
             var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
             var total_prices = this.model ? this.model.getTotalPrices() : undefined;
             var total_area = this.model ? this.model.units.getTotalSquareFeet() : undefined;

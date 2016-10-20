@@ -44,7 +44,7 @@ var app = app || {};
         cloneEntry: function () {
             this.model.duplicate();
         },
-        serializeData: function () {
+        templateContext: function () {
             var profiles = this.getProfilesNamesList();
 
             return {

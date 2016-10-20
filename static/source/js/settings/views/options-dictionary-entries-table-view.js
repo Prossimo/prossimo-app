@@ -61,7 +61,7 @@ var app = app || {};
                 this.render();
             }
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 entries_length: this.collection.length
             };

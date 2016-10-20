@@ -229,7 +229,7 @@ var app = app || {};
                 return cell_properties;
             };
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 option_name: this.active_entry.get('name'),
                 dictionary_name: this.active_dictionary.get('name')

@@ -13,7 +13,7 @@ var app = app || {};
         initialize: function () {
             this.listenTo(app.current_project.settings, 'change', this.render);
         },
-        serializeData: function () {
+        templateContext: function () {
             var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
             var total_prices = this.model ? this.model.getTotalPrices() : undefined;
             var total_area = this.model ? this.model.units.getTotalSquareFeet() : undefined;

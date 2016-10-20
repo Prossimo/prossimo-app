@@ -23,7 +23,7 @@ var app = app || {};
             e.preventDefault();
             app.session.logout();
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 no_backend: app.session.get('no_backend'),
                 is_logged_in: app.session.get('is_logged_in'),
