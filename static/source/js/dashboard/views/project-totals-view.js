@@ -6,7 +6,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.ProjectTotalsView = Marionette.ItemView.extend({
+    app.ProjectTotalsView = Marionette.View.extend({
         tagName: 'div',
         className: 'project-total-prices',
         template: app.templates['dashboard/project-totals-view'],

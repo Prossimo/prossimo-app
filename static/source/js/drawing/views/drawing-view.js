@@ -20,7 +20,7 @@ var app = app || {};
     // this.handleSomeAction - callback on some user UI action
     // this.createSomeObject - pure function that create some canvas UI elements
 
-    app.DrawingView = Marionette.ItemView.extend({
+    app.DrawingView = Marionette.View.extend({
         tagName: 'div',
         template: app.templates['drawing/drawing-view'],
         initialize: function (opts) {

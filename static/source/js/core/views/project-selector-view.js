@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.ProjectSelectorView = Marionette.ItemView.extend({
+    app.ProjectSelectorView = Marionette.View.extend({
         tagName: 'div',
         className: 'project-selector',
         template: app.templates['core/project-selector-view'],

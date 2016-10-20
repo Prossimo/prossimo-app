@@ -6,7 +6,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.MainDashboardView = Marionette.ItemView.extend({
+    app.MainDashboardView = Marionette.View.extend({
         tagName: 'div',
         className: 'screen dashboard-screen',
         template: app.templates['dashboard/main-dashboard-view'],

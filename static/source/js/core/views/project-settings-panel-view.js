@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.ProjectSettingsPanelView = Marionette.ItemView.extend({
+    app.ProjectSettingsPanelView = Marionette.View.extend({
         tagName: 'div',
         className: 'project-settings-panel',
         template: app.templates['core/project-settings-panel-view'],

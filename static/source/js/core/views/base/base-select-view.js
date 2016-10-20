@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.BaseSelectView = Marionette.ItemView.extend({
+    app.BaseSelectView = Marionette.View.extend({
         tagName: 'div',
         className: 'select-container',
         template: app.templates['core/base/base-select-view'],

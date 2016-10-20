@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.MainDrawingView = Marionette.ItemView.extend({
+    app.MainDrawingView = Marionette.View.extend({
         tagName: 'div',
         className: 'screen drawing-screen',
         template: app.templates['drawing/main-drawing-view'],

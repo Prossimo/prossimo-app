@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.QuoteHeaderView = Marionette.ItemView.extend({
+    app.QuoteHeaderView = Marionette.View.extend({
         template: app.templates['quote/quote-header-view'],
         initialize: function () {
             this.listenTo(this.model, 'all', this.render);

@@ -5,7 +5,7 @@ var app = app || {};
 
     //  See `core/views/units-table-view.js` for reference, it's similar
     //  and better commented, this file borrows a lot from there
-    app.PricingGridsTableView = Marionette.ItemView.extend({
+    app.PricingGridsTableView = Marionette.View.extend({
         tagName: 'div',
         className: 'pricing-grids-table',
         template: app.templates['settings/pricing-grids-table-view'],

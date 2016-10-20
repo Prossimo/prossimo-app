@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.StatusPanelView = Marionette.ItemView.extend({
+    app.StatusPanelView = Marionette.View.extend({
         tagName: 'div',
         className: 'status-panel',
         template: app.templates['core/status-panel-view'],

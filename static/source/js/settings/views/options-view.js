@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.OptionsView = Marionette.ItemView.extend({
+    app.OptionsView = Marionette.View.extend({
         tagName: 'div',
         className: 'options-main-container',
         template: false,

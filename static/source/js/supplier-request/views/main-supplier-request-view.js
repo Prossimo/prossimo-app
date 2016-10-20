@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.MainSupplierRequestView = Marionette.ItemView.extend({
+    app.MainSupplierRequestView = Marionette.View.extend({
         tagName: 'div',
         className: 'screen supplier-request-screen',
         template: app.templates['supplier-request/main-supplier-request-view'],

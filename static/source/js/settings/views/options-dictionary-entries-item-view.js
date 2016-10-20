@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.OptionsDictionaryEntriesItemView = Marionette.ItemView.extend({
+    app.OptionsDictionaryEntriesItemView = Marionette.View.extend({
         tagName: 'tr',
         className: 'options-dictionary-entries-item',
         template: app.templates['settings/options-dictionary-entries-item-view'],

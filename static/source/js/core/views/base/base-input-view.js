@@ -11,7 +11,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.BaseInputView = Marionette.ItemView.extend({
+    app.BaseInputView = Marionette.View.extend({
         className: 'input-container',
         template: app.templates['core/base/base-input-view'],
         ui: {

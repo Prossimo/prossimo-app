@@ -5,7 +5,7 @@ var app = app || {};
 
     var UNSET_VALUE = '--';
 
-    app.DrawingSidebarView = Marionette.ItemView.extend({
+    app.DrawingSidebarView = Marionette.View.extend({
         tagName: 'div',
         className: 'drawing-sidebar',
         template: app.templates['drawing/drawing-sidebar-view'],

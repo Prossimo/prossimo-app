@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.UnitsTableTotalPricesView = Marionette.ItemView.extend({
+    app.UnitsTableTotalPricesView = Marionette.View.extend({
         tagName: 'div',
         className: 'units-table-total-prices',
         template: app.templates['core/units-table-total-prices-view'],

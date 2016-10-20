@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.MainNavigationView = Marionette.ItemView.extend({
+    app.MainNavigationView = Marionette.View.extend({
         tagName: 'div',
         template: app.templates['core/main-navigation-view'],
         ui: {

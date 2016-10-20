@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.MainUnitsTableView = Marionette.ItemView.extend({
+    app.MainUnitsTableView = Marionette.View.extend({
         tagName: 'div',
         className: 'screen units-table-screen',
         template: app.templates['units-table/main-units-table-view'],

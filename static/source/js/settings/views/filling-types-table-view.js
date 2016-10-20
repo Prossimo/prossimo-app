@@ -5,7 +5,7 @@ var app = app || {};
 
     //  See `core/views/units-table-view.js` for reference, it's similar
     //  and better commented, this file borrows a lot from there
-    app.FillingTypesTableView = Marionette.ItemView.extend({
+    app.FillingTypesTableView = Marionette.View.extend({
         tagName: 'div',
         className: 'filling-types-table',
         template: app.templates['settings/filling-types-table-view'],

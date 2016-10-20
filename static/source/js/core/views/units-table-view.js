@@ -5,7 +5,7 @@ var app = app || {};
 
     var UNSET_VALUE = '--';
 
-    app.UnitsTableView = Marionette.ItemView.extend({
+    app.UnitsTableView = Marionette.View.extend({
         tagName: 'div',
         className: 'units-table-container',
         template: app.templates['core/units-table-view'],

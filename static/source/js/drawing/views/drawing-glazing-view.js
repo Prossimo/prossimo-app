@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.DrawingGlazingPopup = Marionette.ItemView.extend({
+    app.DrawingGlazingPopup = Marionette.View.extend({
         className: 'drawing-glazing-popup',
         template: app.templates['drawing/drawing-glazing-view'],
         ui: {

@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.QuoteItemView = Marionette.ItemView.extend({
+    app.QuoteItemView = Marionette.View.extend({
         tagName: 'div',
         className: 'quote-item',
         template: app.templates['quote/quote-item-view'],

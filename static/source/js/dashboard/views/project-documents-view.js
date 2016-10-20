@@ -6,7 +6,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.ProjectDocumentsView = Marionette.ItemView.extend({
+    app.ProjectDocumentsView = Marionette.View.extend({
         tagName: 'div',
         className: 'document-list',
         template: app.templates['dashboard/project-documents-view'],

@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.MainSettingsView = Marionette.ItemView.extend({
+    app.MainSettingsView = Marionette.View.extend({
         tagName: 'div',
         className: 'screen settings-screen',
         template: app.templates['settings/main-settings-view'],
