@@ -165,8 +165,9 @@
 //  Controls
 
 .small-label-right() {
+    position: absolute;
     display: inline;
-    float: right;
+    right: 15px;
     margin: 0.25em 0;
     font-size: 80%;
     vertical-align: middle;
@@ -182,8 +183,11 @@
     float: left;
     padding-right: 2rem;
 
+    a:focus { outline: none; }
+
     .multiunit, .subunit {
         overflow: hidden;
+        padding-right: 4.5em;
         &:after { .small-label-right(); }
     }
     .multiunit, .multiunit:focus {
