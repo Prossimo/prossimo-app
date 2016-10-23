@@ -51,8 +51,8 @@ var app = app || {};
                     title: 'Specs',
                     collection: this.collection,
                     columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing',
-                        'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'description',
-                        'notes', 'exceptions', 'rough_opening', 'profile_id', 'system', 'opening_direction',
+                        'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'profile_id', 'description',
+                        'notes', 'exceptions', 'system', 'opening_direction',
                         'threshold', 'glazing', 'glazing_bar_width', 'uw', 'u_value']
                 },
                 unit_options: {
