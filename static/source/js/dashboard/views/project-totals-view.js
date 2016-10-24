@@ -25,8 +25,9 @@ var app = app || {};
 
             var table = _.map(unitsByProfile, function (item) {
                 return {
-                    profile_name: item.profile.get('name'),
-                    total_units: item.length,
+                    profile_name: item.profile.get('name') || '--',
+                    total_types: item.length,
+                    total_quantity: item.getTotalUnitQuantity(),
                     total_area: f.square_feet(item.getTotalSquareFeet(), 2, 'sup'),
                     price_per_square_foot: f.price_usd(item.getAveragePricePerSquareFoot())
                 };

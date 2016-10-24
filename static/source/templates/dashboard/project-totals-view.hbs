@@ -41,16 +41,18 @@
                     <thead>
                     <tr>
                         <th>Profile System</th>
-                        <th>Total Units Per System</th>
-                        <th>Total square footage per system</th>
-                        <th>$ per Sq foot per system</th>
+                        <th>Units</th>
+                        <th>#</th>
+                        <th>Total ft<sup>2</sup></th>
+                        <th>$ / ft<sup>2</sup></th>
                     </tr>
                     </thead>
                     <tbody>
                     {{#each data_summary}}
                         <tr>
                             <th>{{{profile_name}}}</th>
-                            <td>{{{total_units}}}</td>
+                            <td>{{{total_types}}}</td>
+                            <td>{{{total_quantity}}}</td>
                             <td>{{{total_area}}}</td>
                             <td>{{{price_per_square_foot}}} / ft<sup>2</sup></td>
                         </tr>
