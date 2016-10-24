@@ -156,7 +156,9 @@ var app = app || {};
                         title: active_unit.getTitles([prop_name]),
                         value: params_source[prop_name] || active_unit.get(prop_name)
                     };
-                }, this);
+                }, this).filter(function (property) {
+                    return !_.isUndefined(property.value);
+                });
             }
 
             return active_unit_properties;

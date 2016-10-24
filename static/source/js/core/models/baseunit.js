@@ -2,7 +2,7 @@ var app = app || {};
 
 (function () {
     'use strict';
-    var self;
+    /* eslint-disable no-unused-vars */ var self; /* eslint-enable no-unused-vars */
 
     var BASEUNIT_PROPERTIES = [
         { name: 'unit_composition', title: 'Type', type: 'string' },
@@ -13,14 +13,9 @@ var app = app || {};
         { name: 'description', title: 'Customer Description', type: 'string' },
         { name: 'notes', title: 'Notes', type: 'string' },
         { name: 'exceptions', title: 'Exceptions', type: 'string' },
-        { name: 'glazing_bar_width', title: 'Glazing Bar Width (mm)', type: 'number' },
 
-        { name: 'profile_name', title: 'Profile', type: 'string' },
-        { name: 'profile_id', title: 'Profile', type: 'string' },
         { name: 'customer_image', title: 'Customer Image', type: 'string' },
 
-        { name: 'opening_direction', title: 'Opening Direction', type: 'string' },
-        { name: 'glazing', title: 'Glass Packet / Panel Type', type: 'string' },
         { name: 'uw', title: 'Uw', type: 'number' },
 
         { name: 'original_cost', title: 'Original Cost', type: 'number' },
@@ -464,12 +459,17 @@ var app = app || {};
         hasDummyProfile: function () {
             return this.profile && this.profile.get('is_dummy');
         },
-        hasOnlyDefaultAttributes: function () {
+        hasOnlyDefaultAttributes: function (options) {
+            var PROPERTIES = BASEUNIT_PROPERTIES;
             var has_only_defaults = true;
+
+            if (options && options.constructor === Object && options.SUBCLASS_PROPERTIES) {
+                PROPERTIES = PROPERTIES.concat(options.SUBCLASS_PROPERTIES);
+            }
 
             _.each(this.toJSON(), function (value, key) {
                 if ( key !== 'position' && has_only_defaults ) {
-                    var property_source = _.findWhere(BASEUNIT_PROPERTIES, { name: key });
+                    var property_source = _.findWhere(PROPERTIES, { name: key });
                     var type = property_source ? property_source.type : undefined;
 
                     if ( key === 'profile_id' ) {
@@ -518,15 +518,25 @@ var app = app || {};
         },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs
-        getNameTitleTypeHash: function (names) {
+        getNameTitleTypeHash: function (names, options) {
+            var PROPERTIES = BASEUNIT_PROPERTIES;
             var name_title_hash = [];
 
-            if ( !names ) {
-                names = _.pluck( BASEUNIT_PROPERTIES, 'name' );
+            if (names && names.constructor === Object && names.SUBCLASS_PROPERTIES) {
+                options = names;
+                names = undefined;
             }
 
-            _.each(BASEUNIT_PROPERTIES, function (item) {
-                if ( _.indexOf(names, item.name) !== -1 ) {
+            if (options && options.constructor === Object && options.SUBCLASS_PROPERTIES) {
+                PROPERTIES = PROPERTIES.concat(options.SUBCLASS_PROPERTIES);
+            }
+
+            if ( !names ) {
+                names = _.pluck(PROPERTIES, 'name');
+            }
+
+            _.each(PROPERTIES, function (item) {
+                if (_.indexOf(names, item.name) !== -1) {
                     name_title_hash.push({ name: item.name, title: item.title, type: item.type });
                 }
             });
@@ -1678,11 +1688,14 @@ var app = app || {};
             var type = 'sashes';
 
             current_root = current_root || this.generateFullRoot();
-            current_sash.id = current_root.id;
+
+            if (!current_root.sashType) { return undefined; }
 
             if (current_root.sashType !== 'fixed_in_frame') {
                 type = 'sections';
             }
+
+            current_sash.id = current_root.id;
 
             _.each(current_root.sections, function (section) {
                 section_result = this.getSashList(section, current_root, reverse_hinges);

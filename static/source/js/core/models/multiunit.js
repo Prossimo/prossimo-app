@@ -19,11 +19,10 @@ var app = app || {};
 
             return defaults;
         },
-        initialize: function (attributes, options) {
+        initialize: function () {
             self = this;
 
             app.Baseunit.prototype.initialize.apply(this, arguments);
-
         },
         populateSubunits: function () {
             if (!this.collection) { return; }
@@ -40,6 +39,22 @@ var app = app || {};
             this.subunits.add(unitIds
                 .map(function (id) { return self.collection.getById(id); })
                 .filter(function (subunit) { return !_.isUndefined(subunit); }));
+        },
+        hasOnlyDefaultAttributes: function () {
+            return app.Baseunit.prototype.hasOnlyDefaultAttributes.apply(this,
+                Array.prototype.concat(
+                    Array.prototype.slice.call(arguments),
+                    [{SUBCLASS_PROPERTIES: MULTIUNIT_PROPERTIES}]
+                )
+            );
+        },
+        getNameTitleTypeHash: function () {
+            return app.Baseunit.prototype.getNameTitleTypeHash.apply(this,
+                Array.prototype.concat(
+                    Array.prototype.slice.call(arguments),
+                    [{SUBCLASS_PROPERTIES: MULTIUNIT_PROPERTIES}]
+                )
+            );
         }
     });
 })();
