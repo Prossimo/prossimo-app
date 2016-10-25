@@ -117,6 +117,7 @@
                     <ul>
                         <li><strong>Type:</strong> <span>{{ type }}</span></li>
                         {{#if opening_size }}<li><strong>Vent Opn. Size:</strong> <span>{{{ opening_size }}} </span></li>{{/if}}
+                        {{#if egress_opening_size }}<li><strong>Egress Clear Opn.:</strong> <span>{{{ egress_opening_size }}} </span></li>{{/if}}
                         {{#if sections }}
                             {{#if daylight_sum}}<li><strong>Total Daylight:</strong> <span>{{{ daylight_sum }}}</span></li>{{/if}}
                         {{else}}

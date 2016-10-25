@@ -126,6 +126,35 @@ test('utils.format.square_meters', function () {
     equal(f.square_meters(4.55), '4.55 m<sup>2</sup>', 'Expected value is 4.55 m<sup>2</sup>');
 });
 
+test('utils.format.dimensions_and_area', function () {
+    var f = app.utils.format;
+
+    equal(
+        f.dimensions_and_area(26, 32.0625, 'fraction', 'inches_only', 5.78, 2, 'sup'),
+        '26″ x 32 1/16″ (5.78 ft<sup>2</sup>)',
+        'Test with all values set the same way as defaults'
+    );
+    equal(
+        f.dimensions_and_area(26, 32.0625, undefined, undefined, 5.78, undefined, undefined),
+        '26″ x 32 1/16″ (5.78 ft<sup>2</sup>)',
+        'Test with no formatting-related values set, and defaults used instead'
+    );
+});
+
+test('utils.format.dimensions_and_area_mm', function () {
+    var f = app.utils.format;
+
+    equal(
+        f.dimensions_and_area_mm(722, 417, 0.301, 2, 'sup'),
+        '417 x 722 (0.3 m<sup>2</sup>)',
+        'Test with all values set the same way as defaults'
+    );
+    equal(
+        f.dimensions_and_area_mm(722, 417, 0.301, undefined, undefined),
+        '417 x 722 (0.3 m<sup>2</sup>)',
+        'Test with no formatting-related values set, and defaults used instead'
+    );
+});
 
 //  ------------------------------------------------------------------------
 //  Test parseFormat functions from utils.js

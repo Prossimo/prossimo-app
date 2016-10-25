@@ -361,6 +361,10 @@ module.exports = function (grunt) {
                     '<%= buildUrl %>/js/**/*.js',
                     '*.html'
                 ]
+            },
+            qunit: {
+                files: ['test/*.js', 'test/*.html'],
+                tasks: ['qunit:basic']
             }
         },
 

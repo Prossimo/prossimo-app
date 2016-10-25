@@ -265,26 +265,49 @@ var app = app || {};
         getOpeningDirections: function () {
             return OPENING_DIRECTIONS;
         },
-        getAvailableOptions: function (dictionary_id, profile_id) {
-            var available_options = [];
+        getAvailableOptions: function (dictionary_id, profile_id, put_default_first) {
             var target_dictionary = this.dictionaries.get(dictionary_id);
+            var available_options = [];
+            var default_option;
+
+            put_default_first = put_default_first || false;
 
             if ( target_dictionary ) {
-                target_dictionary.entries.each(function (entry) {
-                    if ( entry.get('profiles').length && _.contains(entry.get('profiles'), profile_id) ) {
-                        available_options.push(entry);
-                    }
-                }, this);
+                available_options = target_dictionary.entries.getEntriesAvailableForProfile(profile_id);
+                default_option = target_dictionary.entries.getDefaultEntryForProfile(profile_id);
+            }
+
+            //  Union merges arrays and removes duplicates
+            if ( put_default_first && default_option && available_options.length > 1 ) {
+                available_options = _.union([default_option], available_options);
             }
 
             return available_options;
         },
-        //  TODO: shoud use actual per-profile defaults mechanism, right now
-        //  it just gets the first option in the list
         getDefaultOption: function (dictionary_id, profile_id) {
+            var target_dictionary = this.dictionaries.get(dictionary_id);
+            var default_option;
+
+            if ( target_dictionary ) {
+                default_option = target_dictionary.entries.getDefaultEntryForProfile(profile_id);
+            }
+
+            return default_option || undefined;
+        },
+        getFirstAvailableOption: function (dictionary_id, profile_id) {
             var available_options = this.getAvailableOptions(dictionary_id, profile_id);
 
             return available_options.length ? available_options[0] : undefined;
+        },
+        //  This function use a composition of two functions above
+        getDefaultOrFirstAvailableOption: function (dictionary_id, profile_id) {
+            var target_option = this.getDefaultOption(dictionary_id, profile_id);
+
+            if ( !target_option ) {
+                target_option = this.getFirstAvailableOption(dictionary_id, profile_id);
+            }
+
+            return target_option;
         },
         getDictionaryIdByName: function (name) {
             var target_dictionary = this.dictionaries.findWhere({name: name});
@@ -293,6 +316,11 @@ var app = app || {};
         },
         getDictionaryEntryIdByName: function (dictionary_id, name) {
             var target_dictionary = this.dictionaries.get(dictionary_id);
+
+            if (!target_dictionary) {
+                throw new Error('No dictionary with id=' + dictionary_id);
+            }
+
             var target_entry = target_dictionary.entries.findWhere({name: name});
 
             return target_entry ? target_entry.id : undefined;
