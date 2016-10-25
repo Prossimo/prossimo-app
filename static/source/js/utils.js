@@ -171,6 +171,39 @@ var app = app || {};
             },
             weight: function (value) {
                 return this.fixed_minimal(value, 3) + ' kg';
+            },
+            dimensions_and_area: function (
+                height,
+                width,
+                decimal_format,
+                inches_display_mode,
+                area,
+                area_num,
+                area_format
+            ) {
+                decimal_format = decimal_format &&
+                    _.indexOf(['floating', 'fraction'], decimal_format) !== -1 ?
+                    decimal_format : 'fraction';
+
+                inches_display_mode = inches_display_mode &&
+                    _.indexOf(['feet_and_inches', 'inches_only'], inches_display_mode) !== -1 ?
+                    inches_display_mode : 'inches_only';
+
+                area_format = (area_format && _.indexOf(['normal', 'sup'], area_format) !== -1) ?
+                    area_format : 'sup';
+
+                return this.dimensions(height, width, decimal_format, inches_display_mode) +
+                    ' (' + this.square_feet(area, area_num, area_format) + ')';
+            },
+            dimensions_and_area_mm: function (
+                height,
+                width,
+                area,
+                area_num,
+                area_format
+            ) {
+                return this.dimensions_mm(width, height) +
+                    ' (' + this.square_meters(area, area_num, area_format) + ')';
             }
         },
         parseFormat: {

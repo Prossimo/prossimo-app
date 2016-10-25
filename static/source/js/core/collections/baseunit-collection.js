@@ -18,6 +18,10 @@ var app = app || {};
             this.options = options || {};
             this.proxy_unit = new app.Baseunit(null, { proxy: true });
 
+            if (this.options.profile) {
+                this.profile = this.options.profile;
+            }
+
             //  When parent project is fully loaded, we validate unit positions
             this.listenTo(this.options.project, 'fully_loaded', this.validatePositions);
         },
@@ -89,9 +93,17 @@ var app = app || {};
                 return item.get('customer_image') !== '';
             });
         },
+        /**
+         * Return length of the collection
+         * @return {Number} length of the collection or 0
+         */
         getTotalUnitTypes: function () {
             return this.length;
         },
+        /**
+         * Return sum all "quantity" of the collection
+         * @returns {Number} sum all "quantity" of the collection or 0
+         */
         getTotalUnitQuantity: function () {
             var total_quantity = 0;
 
@@ -103,6 +115,23 @@ var app = app || {};
 
             return total_quantity;
         },
+        /**
+         * Return units by profiles
+         * @returns {Array.<Backbone.Collection>} аn array of collections with units or empty array
+         */
+        getUnitsByProfiles: function () {
+            return _.map(this.groupBy('profile_id'), function (units, profile_id) {
+                return new this.constructor(units, {
+                    model: this.model,
+                    comparator: this.comparator,
+                    profile: app.settings.getProfileByIdOrDummy(profile_id)
+                });
+            }.bind(this));
+        },
+        /**
+         * Return sum all squares of the models
+         * @returns {Number} sum all squares of the models or 0
+         */
         getTotalSquareFeet: function () {
             var total_area = 0;
 

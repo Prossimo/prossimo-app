@@ -956,9 +956,16 @@ var app = app || {};
             var vHeight = height + (vCorrection.size * ratio);
 
             var verticalWholeMertic = this.createVerticalMetric(metricSize, vHeight, {
+                name: 'vertical_whole_metric',
                 setter: function (val) {
-                    val -= vCorrection.size;
-                    model.updateDimension('height_max', val, 'mm');
+
+                    if (_.isArray(val)) {
+                        val = val.map(function (value) { return value - vCorrection.size; });
+                        model.updateDimension('height', val, 'mm');
+                    } else {
+                        val -= vCorrection.size;
+                        model.updateDimension('height_max', val, 'mm');
+                    }
                 },
                 getter: function () {
                     return model.getInMetric('height', 'mm') + vCorrection.size;
@@ -981,9 +988,16 @@ var app = app || {};
                 // Second vertical whole metric for trapezoid
                 var secondVerticalHeight = vHeight * ( ( minHeight / ( maxHeight / 100 ) ) / 100 );
                 var secondVerticalWholeMertic = this.createVerticalMetric(metricSize, secondVerticalHeight, {
+                    name: 'vertical_whole_metric',
                     setter: function (val) {
-                        val -= vCorrection.size;
-                        model.updateDimension('height_min', val, 'mm');
+
+                        if (_.isArray(val)) {
+                            val = val.map(function (value) { return value - vCorrection.size; });
+                            model.updateDimension('height', val, 'mm');
+                        } else {
+                            val -= vCorrection.size;
+                            model.updateDimension('height_min', val, 'mm');
+                        }
                     },
                     getter: function () {
                         return minHeight + vCorrection.size;
@@ -1000,9 +1014,16 @@ var app = app || {};
                 // Third vertical whole metric for trapezoid
                 var thirdVerticalHeight = vHeight - secondVerticalHeight;
                 var thirdVerticalWholeMertic = this.createVerticalMetric(metricSize, thirdVerticalHeight, {
+                    name: 'vertical_whole_metric',
                     setter: function (val) {
-                        val -= vCorrection.size;
-                        model.updateDimension('height_min', maxHeight - val, 'mm');
+
+                        if (_.isArray(val)) {
+                            val = val.map(function (value) { return value - vCorrection.size; });
+                            model.updateDimension('height', val, 'mm');
+                        } else {
+                            val -= vCorrection.size;
+                            model.updateDimension('height_min', maxHeight - val, 'mm');
+                        }
                     },
                     getter: function () {
                         return maxHeight - minHeight + vCorrection.size;
@@ -1206,9 +1227,16 @@ var app = app || {};
             var verticalWholeMertic = this.createVerticalMetric(metricSize,
                 (height + (vwCorrection.size * ratio)),
                 {
+                    name: 'vertical_whole_metric',
                     setter: function (val) {
-                        val -= vwCorrection.size;
-                        model.updateDimension('height', val, 'mm');
+
+                        if (_.isArray(val)) {
+                            val = val.map(function (value) { return value - vwCorrection.size; });
+                            model.updateDimension('height', val, 'mm');
+                        } else {
+                            val -= vwCorrection.size;
+                            model.updateDimension('height', val, 'mm');
+                        }
                     },
                     getter: function () {
                         return ( model.getInMetric('height', 'mm') + vwCorrection.size);
@@ -1267,7 +1295,7 @@ var app = app || {};
         createVerticalMetric: function (width, height, params, styles) {
             var arrowOffset = width / 2;
             var arrowSize = 5;
-            var group = new Konva.Group();
+            var group = new Konva.Group({name: params.name});
 
             // Define styles
             styles = styles || {};

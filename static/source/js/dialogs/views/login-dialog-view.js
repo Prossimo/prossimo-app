@@ -35,7 +35,7 @@ var app = app || {};
             if ( username && password ) {
                 this.startRequest(username, password);
             } else {
-                this.toggleError('Email and password shouldn\'t be empty.');
+                this.toggleError('Username and password shouldn\'t be empty.');
             }
         },
         startRequest: function (username, password) {
