@@ -152,7 +152,7 @@ var app = app || {};
             }
 
             if ( this.get('files') ) {
-                this.files.set(this.get('files'));
+                this.files.set(this.get('files'), { parse: true });
                 this.unset('files', { silent: true });
                 changed_flag = true;
             }

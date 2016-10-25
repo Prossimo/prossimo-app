@@ -51,9 +51,9 @@ var app = app || {};
                     title: 'Specs',
                     collection: this.collection,
                     columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing',
-                        'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'description',
-                        'notes', 'exceptions', 'profile_id', 'system', 'opening_direction', 'threshold',
-                        'glazing', 'glazing_bar_width', 'uw', 'u_value']
+                        'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'profile_id', 'description',
+                        'notes', 'exceptions', 'system', 'opening_direction',
+                        'threshold', 'glazing', 'glazing_bar_width', 'uw', 'u_value']
                 },
                 unit_options: {
                     title: 'Unit Options',
@@ -723,7 +723,7 @@ var app = app || {};
                         var message = UNSET_VALUE;
 
                         if ( profile_id && dictionary_id ) {
-                            options = app.settings.getAvailableOptions(dictionary_id, profile_id);
+                            options = app.settings.getAvailableOptions(dictionary_id, profile_id, true);
                         }
 
                         if ( dictionary_id ) {
@@ -979,9 +979,9 @@ var app = app || {};
                     }
                 });
 
-                //  We use setTimeout because we want to wait until flexbox
+                //  We use defer because we want to wait until flexbox
                 //  sizes are calculated properly
-                setTimeout(function () {
+                _.defer(function () {
                     self.hot = new Handsontable(self.ui.$hot_container[0], {
                         data: self.getActiveTab().collection,
                         columns: self.getActiveTabColumnOptions(),
@@ -998,6 +998,7 @@ var app = app || {};
                             return self.getActiveTab().collection.length;
                         },
                         fixedColumnsLeft: fixed_columns_count,
+                        stretchH: 'all',
                         viewportRowRenderingOffset: 300,
                         viewportColumnRenderingOffset: 50,
                         enterMoves: { row: 1, col: 0 },
@@ -1050,7 +1051,7 @@ var app = app || {};
                             }
                         }
                     });
-                }, 5);
+                });
 
                 this.appendPopovers();
 
