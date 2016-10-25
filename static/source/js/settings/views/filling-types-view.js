@@ -3,9 +3,9 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.OptionsView = Marionette.ItemView.extend({
+    app.FillingTypesView = Marionette.ItemView.extend({
         tagName: 'div',
-        className: 'options-main-container',
+        className: 'filling-types-main-container',
         template: false,
         setActiveItem: function (model) {
             if ( model ) {
@@ -20,42 +20,42 @@ var app = app || {};
             return this.active_item;
         },
         onRender: function () {
-            if ( this.dictionary_list_view ) {
-                this.$el.append(this.dictionary_list_view.render().el);
+            if ( this.fillings_list_view ) {
+                this.$el.append(this.fillings_list_view.render().el);
             }
 
-            if ( this.dictionary_view ) {
-                this.dictionary_view.destroy();
+            if ( this.filling_type_view ) {
+                this.filling_type_view.destroy();
             }
 
             if ( this.active_item ) {
-                this.dictionary_view = new app.OptionsDictionaryView({
+                this.filling_type_view = new app.FillingTypeView({
                     model: this.active_item
                 });
 
-                this.$el.append(this.dictionary_view.render().el);
+                this.$el.append(this.filling_type_view.render().el);
             }
         },
         onDestroy: function () {
-            if ( this.dictionary_list_view ) {
-                this.dictionary_list_view.destroy();
+            if ( this.fillings_list_view ) {
+                this.fillings_list_view.destroy();
             }
 
-            if ( this.dictionary_view ) {
-                this.dictionary_view.destroy();
+            if ( this.filling_type_view ) {
+                this.filling_type_view.destroy();
             }
         },
         initialize: function () {
             this.active_item = this.collection.at(0) || undefined;
 
-            this.dictionary_list_view = new app.SidebarListView({
+            this.fillings_list_view = new app.SidebarListView({
                 collection: this.collection,
                 active_item: this.active_item,
                 parent_view: this,
-                placeholder: 'New Dictionary',
-                collection_title: 'Options Dictionaries',
-                single_item_name: 'dictionary',
-                multiple_items_name: 'dictionaries'
+                placeholder: 'New Filling Type',
+                collection_title: 'Filling Types',
+                single_item_name: 'filling type',
+                multiple_items_name: 'filling types'
             });
 
             //  Make next (or last) item in the collection active on remove

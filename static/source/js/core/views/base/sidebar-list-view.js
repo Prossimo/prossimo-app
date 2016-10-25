@@ -3,33 +3,33 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.OptionsDictionaryListView = Marionette.CompositeView.extend({
+    app.SidebarListView = Marionette.CompositeView.extend({
         tagName: 'div',
-        className: 'options-dictionary-list-panel',
-        template: app.templates['settings/options-dictionary-list-view'],
-        childView: app.OptionsDictionaryListItemView,
-        childViewContainer: '.options-list-container',
+        className: 'sidebar-list-panel',
+        template: app.templates['core/base/sidebar-list-view'],
+        childView: app.SidebarListItemView,
+        childViewContainer: '.sidebar-list-container',
         childViewOptions: function () {
             return {
-                parent_view: this
+                parent_view: this,
+                placeholder: this.options.placeholder || undefined
             };
         },
         ui: {
-            $container: '.options-list-container',
-            $add_new_dictionary: '.js-add-new-dictionary'
+            $container: '.sidebar-list-container',
+            $add_new_item: '.js-add-new-item'
         },
         events: {
-            'click @ui.$add_new_dictionary': 'addNewDictionary'
+            'click @ui.$add_new_item': 'addNewItem'
         },
-        addNewDictionary: function (e) {
+        addNewItem: function (e) {
             var new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
-            var new_dictionary = new app.OptionsDictionary({
-                position: new_position
-            });
 
             e.stopPropagation();
-            this.collection.add(new_dictionary);
-            this.ui.$add_new_dictionary.blur();
+            this.collection.add([{
+                position: new_position
+            }]);
+            this.ui.$add_new_item.blur();
             this.render();
         },
         setActiveItem: function (model) {
@@ -43,14 +43,17 @@ var app = app || {};
         },
         serializeData: function () {
             return {
-                dictionaries_length: this.collection.length
+                collection_length: this.collection.length,
+                collection_title: this.options.collection_title || 'Items List',
+                single_item_name: this.options.single_item_name || 'item',
+                multiple_items_name: this.options.multiple_items_name || 'items'
             };
         },
         onRender: function () {
             var self = this;
 
             this.ui.$container.sortable({
-                draggable: '.options-list-item',
+                draggable: '.sidebar-list-item',
                 onSort: function (event) {
                     self.onSort(event);
                 }
