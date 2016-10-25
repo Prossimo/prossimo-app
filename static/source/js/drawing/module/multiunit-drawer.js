@@ -2,6 +2,7 @@ var app = app || {};
 
 (function () {
     'use strict';
+
     var self;
 
     var module;

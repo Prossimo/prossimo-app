@@ -2,7 +2,8 @@ var app = app || {};
 
 (function () {
     'use strict';
-    /* eslint-disable no-unused-vars */ var self; /* eslint-enable no-unused-vars */
+
+    var self;
 
     var BASEUNIT_PROPERTIES = [
         { name: 'unit_composition', title: 'Type', type: 'string' },

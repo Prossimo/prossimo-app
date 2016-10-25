@@ -1,5 +1,4 @@
 /* eslint quotes:0 */
-/* jscs:disable */
 /* global resemble */
 
 var app = app || {};
