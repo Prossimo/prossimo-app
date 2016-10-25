@@ -17,7 +17,7 @@ test('units collection instanceOf tests', function () {
 
     instanceOf(units_collection, Backbone.Collection, 'should belong to Backbone.Collection object');
     instanceOf(unit_model, Backbone.Model, 'collection model should belong to Backbone.Model object');
-    instanceOf(unit_model, app.Unit, 'collection model should belong to app.Unit object');
+    instanceOf(unit_model, app.Baseunit, 'collection model should belong to app.Baseunit object');
     instanceOf(project.units, app.BaseunitCollection, 'app.Project().units should belong to app.BaseunitCollection object');
 });
 
@@ -100,7 +100,7 @@ test('units collection by profiles', function () {
         instanceOf(profileUnit, Backbone.Collection, 'should belong to Backbone.Collection object');
         instanceOf(profileUnit, app.BaseunitCollection, 'app.Project().units should belong to app.BaseunitCollection object');
         instanceOf(profileUnitModel, Backbone.Model, 'collection model should belong to Backbone.Model object');
-        instanceOf(profileUnitModel, app.Unit, 'collection model should belong to app.Unit object');
+        instanceOf(profileUnitModel, app.Baseunit, 'collection model should belong to app.Baseunit object');
 
         instanceOf(profileUnit.profile, app.Profile, 'this.profile should belong to app.Profile object');
 
