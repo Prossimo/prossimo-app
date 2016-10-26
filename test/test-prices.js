@@ -36,6 +36,7 @@ test('project basic tests', function () {
     equal(current_project.units.models.length, 0, 'Units collection shoud have no items');
     ok(_.isArray(current_project.extras.models), 'Extras collection should be an array');
     equal(current_project.extras.models.length, 0, 'Extras collection shoud have no items');
+    equal(current_project.get('quote_mode_type'), 'quote_mode', 'quote_mode_type set to the default');
 });
 
 
