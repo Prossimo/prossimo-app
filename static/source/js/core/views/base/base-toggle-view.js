@@ -1,5 +1,43 @@
 var app = app || {};
 
+/**
+ * Add toggle UI element
+ * It uses Bootstrap Toggle http://www.bootstraptoggle.com/
+ *
+ * @constructor
+ * @class BaseToggleView
+ * @extends {Marionette.ItemView}
+ * @return {BaseToggleView} A BaseToggleView instance
+ * @param {object} options
+ */
+
+/**
+ * @example
+ * var model = new Backbone.Model({inches_display_mode: 'feet_and_inches'});
+ * var toggle = new app.BaseToggleView({
+ *       model: model,
+ *       title: 'Inches Display Mode',
+ *       property_name: 'inches_display_mode',
+ *       current_value: 'feet_and_inches',
+ *       values_list: [
+ *           {
+ *               is_current: true,
+ *               value: 'feet_and_inches',
+ *               title: 'Feet + Inches'
+ *           },
+ *           {
+ *               is_current: false,
+ *               value: 'inches_only',
+ *               title: 'Inches Only'
+ *           }
+ *       ],
+ *       possible_values_number: 2
+ *   });
+ * this.$el.append(toggle.render().el);
+ * // or
+ * this.getRegion('cont').show(toggle);
+ */
+
 (function () {
     'use strict';
 
@@ -18,7 +56,7 @@ var app = app || {};
             var equal_choices = this.options.possible_values_number === 2;
             var new_value;
 
-            if ( is_checked ) {
+            if (is_checked) {
                 new_value = equal_choices ? this.options.values_list[0].value : true;
             } else {
                 new_value = equal_choices ? this.options.values_list[1].value : false;
@@ -42,11 +80,7 @@ var app = app || {};
             };
         },
         onRender: function () {
-            var self = this;
-
-            setTimeout(function () {
-                self.ui.$checkbox.bootstrapToggle();
-            }, 5);
+            this.ui.$checkbox.bootstrapToggle();
         }
     });
 })();
