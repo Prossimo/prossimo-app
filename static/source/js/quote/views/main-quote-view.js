@@ -3,13 +3,14 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.MainQuoteView = Marionette.ItemView.extend({
+    app.MainQuoteView = Marionette.LayoutView.extend({
         tagName: 'div',
         className: 'screen quote-screen',
         template: app.templates['quote/main-quote-view'],
-        ui: {
+        regions: {
             $header_container: '.quote-header-container',
-            $table_container: '.quote-table-container'
+            $table_container: '.quote-table-container',
+            $units_table_region: '.units-table-region'
         },
         serializeData: function () {
             return {
@@ -34,14 +35,9 @@ var app = app || {};
                 show_outside_units_view: true
             });
 
-            this.$el.append(this.units_table_view.render().el);
-            this.ui.$header_container.append(this.quote_header_view.render().el);
-            this.ui.$table_container.append(this.quote_table_view.render().el);
-        },
-        onDestroy: function () {
-            this.units_table_view.destroy();
-            this.quote_header_view.destroy();
-            this.quote_table_view.destroy();
+            this.getRegion('$units_table_region').show(this.units_table_view);
+            this.getRegion('$header_container').show(this.quote_header_view);
+            this.getRegion('$table_container').show(this.quote_table_view);
         }
     });
 })();
