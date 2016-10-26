@@ -1739,8 +1739,23 @@ var app = app || {};
             opts.outerRadius = opts.radius - opts.mainFrameWidth;
 
             return opts;
-        }
+        },
+        /** @returns  {Object}  {top: 11, right: 33, bottom: 22, left: 11} border cordinates in pixels */
+        getDrawingBorders: function () {
+            // FIXME implement
+            return {top: 11, right: 800, bottom: 800, left: 400};
 
+            var leftMetricCount = 1;   // FIXME dummy data
+            var rightMetricCount = 1;  // FIXME dummy data
+            var leftMetric
+            var activeWidth = model.activeSubunit.getInMetric('width', 'mm') * module.get('ratio');
+            var activeHeight = model.activeSubunit.getInMetric('height', 'mm') * module.get('ratio');
+            var activeX = model.activeSubunit.drawer.el.getAttr('x');
+            var activeY = model.activeSubunit.drawer.el.getAttr('y');
+
+            var activeLeftBorder = activeX - module.get('metricSize') * metricCount;
+            var activeRightBorder = activeX + module.get('metricSize') * metricCount;
+        }
     });
 
 })();

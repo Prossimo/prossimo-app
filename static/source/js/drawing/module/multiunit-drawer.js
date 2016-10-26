@@ -7,6 +7,8 @@ var app = app || {};
 
     var module;
     var model;
+    var previewUIGap = 64;
+    var previewOpacity = 0.4;
 
     function activateSubunitDrawer(subunit) {
         var ActiveSubdrawerClass = self.selectSubDrawer(subunit);
@@ -49,6 +51,25 @@ var app = app || {};
 
             activateSubunitDrawer(model.activeSubunit);
             model.activeSubunit.drawer.render();
+
+            var explodedCoords = this.explode(model.subunits, {center: model.activeSubunit});
+
+            model.subunits.each(function (subunit) {
+                if (subunit === model.activeSubunit) { return; }
+
+                var previewImage = app.preview(subunit, {
+                    width: subunit.getInMetric('width', 'mm') * module.get('ratio'),
+                    height: subunit.getInMetric('height', 'mm') * module.get('ratio'),
+                    mode: 'image',
+                    position: (module.getState('insideView')) ? 'inside' : 'outside',
+                    metricSize: module.get('metricSize') / 2,
+                    preview: true
+                });
+                self.addPreview(previewImage, {
+                    x: model.get('multiunit_subunits')[subunit.getId()][0],
+                    y: model.get('multiunit_subunits')[subunit.getId()][1]
+                });
+            });
         },
         events: {
             'click #back': 'onBackClick',
@@ -79,6 +100,26 @@ var app = app || {};
             }
 
             return DrawerClass;
+        },
+        explode: function (units, options) {
+            if (!options.center instanceof app.Baseunit) { throw new Error('Central unit required'); }
+
+            // FIXME implement
+        },
+        addPreview: function (image, options) {
+            var activeBorders = model.activeSubunit.getDrawingBorders();
+
+            // Add gap if preview is not
+            var gapifiedX = activeBorders.left
+
+            var konvaImage = new Konva.Image({
+                image: image,
+                x: centerX + options.x,
+                y: centerY + options.y,
+                opacity: previewOpacity
+            });
+            this.layer.add(konvaImage);
+            this.layer.draw();
         }
     });
 
