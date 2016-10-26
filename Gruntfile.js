@@ -1,6 +1,10 @@
 module.exports = function (grunt) {
     'use strict';
 
+    var API_HOST = grunt.option('api_host') || '127.0.0.1';
+    var API_PORT = grunt.option('api_port') || '8000';
+    var API_URL = API_HOST + (API_PORT ? ':' + API_PORT : '');
+
     var vendor_js_files = [
         'jquery/dist/jquery.min.js',
         'handlebars/handlebars.runtime.min.js',
@@ -358,6 +362,10 @@ module.exports = function (grunt) {
                     '<%= buildUrl %>/js/**/*.js',
                     '*.html'
                 ]
+            },
+            qunit: {
+                files: ['test/*.js', 'test/*.html'],
+                tasks: ['qunit:basic']
             }
         },
 
@@ -386,11 +394,11 @@ module.exports = function (grunt) {
                         },
                         {
                             match: 'api_base_path',
-                            replacement: 'http://127.0.0.1:8000/api'
+                            replacement: 'http://' + API_URL + '/api'
                         },
                         {
                             match: 'pdf_api_base_path',
-                            replacement: 'http://127.0.0.1:8080/print'
+                            replacement: 'http://' + API_URL + '/print'
                         },
                         {
                             match: 'favicon',
