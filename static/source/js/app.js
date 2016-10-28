@@ -18,6 +18,16 @@ $(function () {
 
     app.App = new Marionette.Application();
 
+    app.App.eventToPromise = function (obj, e) {
+        var deferred = $.Deferred();
+
+        obj.once(e, function () {
+            deferred.resolve();
+        });
+
+        return deferred.promise();
+    };
+
     app.App.on('start', function () {
         //  Register a communication channel for all events in the app
         app.vent = {};
@@ -36,6 +46,9 @@ $(function () {
                 main: '#main'
             }
         });
+        // Show default view
+        this.regionManager.get('main').show(new app.NoProjectSelectedView());
+
         app.dialogs = new app.Dialogs();
 
         app.main_navigation = new app.MainNavigationView({
@@ -77,12 +90,23 @@ $(function () {
         this.modules_options = {region: this.regionManager.get('main')};
         this.Settings = new app.SettingsModule(this.modules_options);
 
-        /**
-         * It must be called once
-         */
-        this.listenToOnce(app.vent, 'project_selector:fetch_current:stop', function () {
+        this.eventToPromise(app.vent, 'auth:initial_login auth:no_backend').then(function () {
+            /**
+             * Start the hash change handling
+             */
+            if (!Backbone.History.started) {
+                var isStarted = Backbone.history.start({pushState: true, hashChange: false});
+                // if router not found
+                if (!isStarted) {
+                    app.router.navigate('/', {trigger: true});
+                }
+            }
+
+            return this.eventToPromise(app.vent, 'project_selector:fetch_current:stop');
+        }.bind(this)).then(function () {
             /**
              * Modules initialization
+             * It must be called once
              */
             this.quote = new app.Quote(this.modules_options);
             this.dashboard = new app.Dashboard(this.modules_options);
@@ -91,19 +115,14 @@ $(function () {
             this.Supplier = new app.Supplier(this.modules_options);
 
             /**
-             * Start the hash change handling
-             */
-            if (!Backbone.History.started) {
-                Backbone.history.start({pushState: true, hashChange: false});
-            }
-
-            /**
              * It is necessary to reboot current route handler
              */
             this.listenTo(app.vent, 'project_selector:fetch_current:stop', function () {
                 Backbone.history.loadUrl();
             });
-        });
+
+            Backbone.history.loadUrl();
+        }.bind(this));
     });
 
     app.App.start();
