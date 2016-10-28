@@ -62,9 +62,6 @@ var app = app || {};
 
             return filtered_data;
         },
-        save: function () {
-            return Backbone.Model.prototype.saveAndGetId.apply(this, arguments);
-        },
         sync: function (method, model, options) {
             var properties_to_omit = ['id', 'entries'];
 

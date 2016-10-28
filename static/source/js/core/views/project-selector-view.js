@@ -105,7 +105,7 @@ var app = app || {};
                 app.vent.trigger('current_project_changed');
                 app.current_project.trigger('set_active');
 
-                self.stopListening();
+                self.stopListening(app.current_project);
 
                 if ( app.current_project._wasLoaded ) {
                     app.vent.trigger('project_selector:fetch_current:stop');
