@@ -1,5 +1,4 @@
 /* eslint max-len:0 */
-/* jscs:disable */
 var app = app || {};
 
 (function () {

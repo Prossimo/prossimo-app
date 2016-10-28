@@ -1,7 +1,6 @@
 /* eslint quotes:0  */
 /* eslint max-len:0 */
 /* eslint max-nested-callbacks:0 */
-/* jscs:disable maximumLineLength */
 
 var app = app || {};
 
