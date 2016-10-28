@@ -3,7 +3,6 @@
 /* eslint strict:0 */
 /* eslint max-len:0 */
 /* eslint max-statements:0 */
-/* jscs:disable */
 
 var m = app.utils.math;
 

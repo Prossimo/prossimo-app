@@ -3,19 +3,6 @@ var app = app || {};
 $(function () {
     'use strict';
 
-    // Fix bug with empty json response
-    $.ajaxSetup({
-        dataFilter: function (rawData, type) {
-            if (rawData) {
-                return rawData;
-            }
-
-            if (type === 'json') {
-                return null;
-            }
-        }
-    });
-
     app.App = new Marionette.Application();
 
     app.App.on('start', function () {

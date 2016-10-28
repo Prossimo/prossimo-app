@@ -1,6 +1,10 @@
 module.exports = function (grunt) {
     'use strict';
 
+    var API_HOST = grunt.option('api_host') || '127.0.0.1';
+    var API_PORT = grunt.option('api_port') || '8000';
+    var API_URL = API_HOST + (API_PORT ? ':' + API_PORT : '');
+
     var vendor_js_files = [
         'jquery/dist/jquery.min.js',
         'handlebars/handlebars.runtime.min.js',
@@ -369,6 +373,10 @@ module.exports = function (grunt) {
                     '<%= buildUrl %>/js/**/*.js',
                     '*.html'
                 ]
+            },
+            qunit: {
+                files: ['test/*.js', 'test/*.html'],
+                tasks: ['qunit:basic']
             }
         },
 
@@ -377,15 +385,6 @@ module.exports = function (grunt) {
                 configFile: '.eslintrc'
             },
             target: ['<%= sourceUrl %>/js/**/*.js']
-        },
-
-        jscs: {
-            src: '<%= sourceUrl %>/js/**/*.js',
-            options: {
-                config: '.jscsrc',
-                verbose: true,
-                force: true
-            }
         },
 
         replace: {
@@ -406,11 +405,11 @@ module.exports = function (grunt) {
                         },
                         {
                             match: 'api_base_path',
-                            replacement: 'http://127.0.0.1:8000/api'
+                            replacement: 'http://' + API_URL + '/api'
                         },
                         {
                             match: 'pdf_api_base_path',
-                            replacement: 'http://127.0.0.1:8080/print'
+                            replacement: 'http://' + API_URL + '/print'
                         },
                         {
                             match: 'favicon',
@@ -497,7 +496,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-gitinfo');
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-shell');
-    grunt.loadNpmTasks('grunt-jscs');
 
     grunt.registerTask('build', [
         'gitinfo', 'clean:build', 'handlebars:build', 'copy:vendor', 'uglify:build',
@@ -509,7 +507,7 @@ module.exports = function (grunt) {
         'less:dev', 'uglify:vendor_dev', 'cssmin:vendor_dev', 'replace:dev'
     ]);
 
-    grunt.registerTask('test', ['jscs', 'eslint', 'qunit:basic']);
+    grunt.registerTask('test', ['eslint', 'qunit:basic']);
     grunt.registerTask('test_visual', ['qunit:visual']);
     grunt.registerTask('test_all', ['test', 'test_visual']);
 
