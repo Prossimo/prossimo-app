@@ -33,10 +33,19 @@ var app = app || {};
             this.render();
         },
         setActiveItem: function (model) {
-            this.options.parent_view.setActiveItem(model);
+            if ( model ) {
+                this.active_item = model;
+            } else {
+                this.active_item = undefined;
+            }
+
+            this.trigger('set_active_item', {
+                item: this.active_item
+            });
+            this.render();
         },
         getActiveItem: function () {
-            return this.options.parent_view.getActiveItem();
+            return this.active_item;
         },
         onSort: function (event) {
             this.collection.setItemPosition(event.oldIndex, event.newIndex);
@@ -61,6 +70,23 @@ var app = app || {};
         },
         onDestroy: function () {
             this.ui.$container.sortable('destroy');
+        },
+        initialize: function () {
+            this.active_item = this.collection.at(0) || undefined;
+
+            //  Make next (or last) item in the collection active on remove
+            this.listenTo(this.collection, 'remove', function (removed_items, collection, options) {
+                var new_active_model = options.index && this.collection.at(options.index) || this.collection.last();
+
+                this.setActiveItem(new_active_model);
+            });
+
+            //  If new item was added to an empty collection, make it active
+            this.listenTo(this.collection, 'add', function () {
+                if ( this.collection.length === 1 ) {
+                    this.setActiveItem(this.collection.at(0));
+                }
+            });
         }
     });
 })();

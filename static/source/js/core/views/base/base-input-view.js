@@ -102,7 +102,7 @@ var app = app || {};
         //  TODO: we could pass a formatter function to format a readable value
         serializeData: function () {
             var value = this.model.get(this.options.param);
-            var placeholder = this.options.placeholder || '';
+            var placeholder = this.options.placeholder || '&nbsp;';
 
             return {
                 input_type: this.options.input_type || 'text',

@@ -6,84 +6,56 @@ var app = app || {};
     app.FillingTypeView = Marionette.ItemView.extend({
         tagName: 'div',
         className: 'filling-type',
-        // template: app.templates['settings/options-dictionary-view'],
+        //  TODO: actually use a template
         template: false,
         onRender: function () {
-            this.$el.append('<p>name: ' + this.model.get('name') + '</p>');
+            this.$table = $('<table />');
+
+            _.each(this.child_views, function (child_view) {
+                var $row = $('<tr class="filling-type-attribute-container" />');
+
+                $row.append('<td><h4 class="title">' + child_view.title + '</h4></td>');
+                $('<td />').appendTo($row).append(child_view.view_instance.render().el);
+                this.$table.append($row);
+            }, this);
+
+            this.$el.append(this.$table);
+        },
+        onDestroy: function () {
+            _.each(this.child_views, function (child_view) {
+                child_view.view_instance.destroy();
+            }, this);
+        },
+        initialize: function () {
+            this.attributes_to_render = this.model.getNameTitleTypeHash([
+                'name', 'supplier_name', 'type', 'weight_per_area'
+            ]);
+
+            //  TODO: this should be attribute views or something like that
+            this.child_views = _.map(this.attributes_to_render, function (attribute) {
+                //  We use text inputs for most attributes except for "type"
+                //  attribute where we want a selectbox
+                //  TODO: selectbox should be capable of taking a hash array
+                var view = attribute.name === 'type' ?
+                    new app.BaseSelectView({
+                        model: this.model,
+                        param: 'type',
+                        values: _.pluck(this.model.getBaseTypes(), 'name'),
+                        multiple: false
+                    }) :
+                    //  TODO: use different html5 input types, why not
+                    new app.BaseInputView({
+                        model: this.model,
+                        param: attribute.name,
+                        input_type: 'text',
+                        placeholder: attribute.name === 'name' ? 'New Filling Type' : ''
+                    });
+
+                return {
+                    title: attribute.title,
+                    view_instance: view
+                };
+            }, this);
         }
-        // ui: {
-        //     $name_container: '.dictionary-name',
-        //     $rules_and_restrictions_container: '.dictionary-restrictions',
-        //     $entries_container: '.entry-table-container',
-        //     $remove: '.js-remove-dictionary'
-        // },
-        // events: {
-        //     'click @ui.$remove': 'onRemove'
-        // },
-        // onRemove: function () {
-        //     this.model.destroy();
-        // },
-        // initialize: function () {
-        //     this.should_make_everything_editable = this.shouldMakeEverythingEditable();
-
-        //     this.name_input_view = new app.BaseInputView({
-        //         model: this.model,
-        //         param: 'name',
-        //         input_type: 'text',
-        //         placeholder: 'New Dictionary'
-        //     });
-
-        //     this.rules_and_restrictions_view = new app.BaseSelectView({
-        //         model: this.model,
-        //         param: 'rules_and_restrictions',
-        //         values: this.model.getPossibleRulesAndRestrictions(),
-        //         multiple: true
-        //     });
-
-        //     this.entries_table_view = new app.OptionsDictionaryEntriesTableView({
-        //         collection: this.model.entries
-        //     });
-
-        //     this.listenTo(this.model, 'change:name', this.onChangeName);
-        // },
-        // onChangeName: function () {
-        //     if ( this.should_make_everything_editable !== this.shouldMakeEverythingEditable() ) {
-        //         this.should_make_everything_editable = this.shouldMakeEverythingEditable();
-        //         this.renderElements();
-        //     }
-        // },
-        // shouldMakeEverythingEditable: function () {
-        //     return !this.model.hasOnlyDefaultAttributes();
-        // },
-        // renderElements: function () {
-        //     if ( this.should_make_everything_editable ) {
-        //         this.ui.$entries_container.empty().append(this.entries_table_view.render().el);
-        //         this.rules_and_restrictions_view.enable();
-        //     } else {
-        //         this.ui.$entries_container.empty().append(
-        //             '<p>Please set dictionary name before adding option variants.</p>'
-        //         );
-        //         this.rules_and_restrictions_view.disable();
-        //     }
-        // },
-        // onRender: function () {
-        //     this.ui.$name_container.append(this.name_input_view.render().el);
-        //     this.ui.$rules_and_restrictions_container.append(this.rules_and_restrictions_view.render().el);
-
-        //     this.renderElements();
-        // },
-        // onDestroy: function () {
-        //     if ( this.name_input_view ) {
-        //         this.name_input_view.destroy();
-        //     }
-
-        //     if ( this.rules_and_restrictions_view ) {
-        //         this.rules_and_restrictions_view.destroy();
-        //     }
-
-        //     if ( this.entries_table_view ) {
-        //         this.entries_table_view.destroy();
-        //     }
-        // }
     });
 })();
