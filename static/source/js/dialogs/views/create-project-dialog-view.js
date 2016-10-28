@@ -24,8 +24,6 @@ var app = app || {};
             'submit form': 'addNewProject'
         },
         addNewProject: function (e) {
-            e.preventDefault();
-
             var newProject = new app.Project();
 
             newProject.set({
@@ -40,16 +38,11 @@ var app = app || {};
                 quote_date: this.ui.$data_quote_date.val().trim(),
                 project_notes: this.ui.$data_project_notes.val().trim(),
                 shipping_notes: this.ui.$data_shipping_notes.val().trim()
-
             });
 
+            e.preventDefault();
             this.$el.modal('hide');
-
-            newProject.on('sync', function () {
-                app.top_bar_view.project_selector_view.fetchProjectList();
-            });
-
-            app.projects.create(newProject, {wait: true});
+            app.projects.create(newProject);
         },
         onRender: function () {
             if (!this.$el.find('.modal-header').find('h4').length) {
