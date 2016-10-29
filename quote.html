@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="latest-commit-sha" value="dev">
+    <meta name="api-base-path" value=http://prossimo.local:8000/api>
+    <meta name="pdf-api-base-path" value=http://prossimo.local:8000/print>
+    <title>Prossimo App (current version: dev)</title>
+
+    <link rel="shortcut icon" href="/static/public/img/favicon-dev.png">
+
+    <link rel="stylesheet" href="/static/public/css/vendor.dev.min.css" media="all">
+    <link rel="stylesheet" href="/static/public/css/styles.dev.css" media="all">
+    <link rel="stylesheet" href="/static/public/css/print.dev.css" media="print">
+
+    <script src="/static/public/js/vendor.dev.min.js"></script>
+    <script src="/static/public/js/templates.dev.js"></script>
+
+    <script src="/static/public/js/backbone-extensions.js"></script>
+    <script src="/static/public/js/backbone-safesync.js"></script>
+    <script src="/static/public/js/router.js"></script>
+    <script src="/static/public/js/dialogs.js"></script>
+    <script src="/static/public/js/utils.js"></script>
+    <script src="/static/public/js/schema.js"></script>
+    <script src="/static/public/js/paste-image.js"></script>
+    <script src="/static/public/js/hot-renderers.js"></script>
+    <script src="/static/public/js/undomanager.js"></script>
+    <script src="/static/public/js/core/models/user.js"></script>
+    <script src="/static/public/js/core/models/session.js"></script>
+    <script src="/static/public/js/core/models/unit.js"></script>
+    <script src="/static/public/js/core/models/accessory.js"></script>
+    <script src="/static/public/js/core/models/profile.js"></script>
+    <script src="/static/public/js/core/models/project.js"></script>
+    <script src="/static/public/js/core/models/project-settings.js"></script>
+    <script src="/static/public/js/core/models/project-file.js"></script>
+    <script src="/static/public/js/core/models/filling-type.js"></script>
+    <script src="/static/public/js/core/models/options-dictionary.js"></script>
+    <script src="/static/public/js/core/models/options-dictionary-entry.js"></script>
+    <script src="/static/public/js/core/models/settings.js"></script>
+    <script src="/static/public/js/core/collections/unit-collection.js"></script>
+    <script src="/static/public/js/core/collections/accessory-collection.js"></script>
+    <script src="/static/public/js/core/collections/profile-collection.js"></script>
+    <script src="/static/public/js/core/collections/project-collection.js"></script>
+    <script src="/static/public/js/core/collections/project-file-collection.js"></script>
+    <script src="/static/public/js/core/collections/filling-type-collection.js"></script>
+    <script src="/static/public/js/core/collections/options-dictionary-collection.js"></script>
+    <script src="/static/public/js/core/collections/options-dictionary-entry-collection.js"></script>
+    <script src="/static/public/js/core/views/base/base-toggle-view.js"></script>
+    <script src="/static/public/js/core/views/base/base-input-view.js"></script>
+    <script src="/static/public/js/core/views/base/base-select-view.js"></script>
+    <script src="/static/public/js/core/views/main-navigation-view.js"></script>
+    <script src="/static/public/js/core/views/units-table-view.js"></script>
+    <script src="/static/public/js/core/views/units-table-total-prices-view.js"></script>
+    <script src="/static/public/js/core/views/project-selector-view.js"></script>
+    <script src="/static/public/js/core/views/no-project-selected-view.js"></script>
+    <script src="/static/public/js/core/views/status-panel-view.js"></script>
+    <script src="/static/public/js/core/views/project-settings-panel-view.js"></script>
+    <script src="/static/public/js/core/views/spinner-view.js"></script>
+    <script src="/static/public/js/core/views/top-bar-view.js"></script>
+    <script src="/static/public/js/units-table/views/main-units-table-view.js"></script>
+    <script src="/static/public/js/drawing/module/handle-data.js"></script>
+    <script src="/static/public/js/drawing/module/konva-clip-patch.js"></script>
+    <script src="/static/public/js/drawing/module/drawing-module.js"></script>
+    <script src="/static/public/js/drawing/module/layer-manager.js"></script>
+    <script src="/static/public/js/drawing/module/unit-drawer.js"></script>
+    <script src="/static/public/js/drawing/module/trapezoid-unit-drawer.js"></script>
+    <script src="/static/public/js/drawing/module/metrics-drawer.js"></script>
+    <script src="/static/public/js/drawing/views/main-drawing-view.js"></script>
+    <script src="/static/public/js/drawing/views/drawing-view.js"></script>
+    <script src="/static/public/js/drawing/views/drawing-sidebar-view.js"></script>
+    <script src="/static/public/js/drawing/module/glazing-drawer.js"></script>
+    <script src="/static/public/js/drawing/views/drawing-glazing-view.js"></script>
+    <script src="/static/public/js/quote/views/main-quote-view.js"></script>
+    <script src="/static/public/js/quote/views/quote-item-view.js"></script>
+    <script src="/static/public/js/quote/views/quote-extras-item-view.js"></script>
+    <script src="/static/public/js/quote/views/quote-header-view.js"></script>
+    <script src="/static/public/js/quote/views/quote-table-view.js"></script>
+    <script src="/static/public/js/quote/views/quote-extras-table-view.js"></script>
+    <script src="/static/public/js/settings/views/main-settings-view.js"></script>
+    <script src="/static/public/js/settings/views/profiles-table-view.js"></script>
+    <script src="/static/public/js/settings/views/filling-types-table-view.js"></script>
+    <script src="/static/public/js/settings/views/pricing-grids-table-view.js"></script>
+    <script src="/static/public/js/settings/views/options-view.js"></script>
+    <script src="/static/public/js/settings/views/options-dictionary-list-item-view.js"></script>
+    <script src="/static/public/js/settings/views/options-dictionary-list-view.js"></script>
+    <script src="/static/public/js/settings/views/options-dictionary-entries-item-view.js"></script>
+    <script src="/static/public/js/settings/views/options-dictionary-entries-table-view.js"></script>
+    <script src="/static/public/js/settings/views/options-dictionary-view.js"></script>
+    <script src="/static/public/js/supplier-request/views/main-supplier-request-view.js"></script>
+    <script src="/static/public/js/supplier-request/views/supplier-request-header-view.js"></script>
+    <script src="/static/public/js/dashboard/views/project-totals-view.js"></script>
+    <script src="/static/public/js/dashboard/views/project-info-view.js"></script>
+    <script src="/static/public/js/dashboard/views/project-documents-view.js"></script>
+    <script src="/static/public/js/dashboard/views/main-dashboard-view.js"></script>
+    <script src="/static/public/js/dialogs/views/base-dialog-view.js"></script>
+    <script src="/static/public/js/dialogs/views/login-dialog-view.js"></script>
+    <script src="/static/public/js/dialogs/views/options-profiles-table-dialog-view.js"></script>
+    <script src="/static/public/js/dialogs/views/create-project-dialog-view.js"></script>
+    <script src="/static/public/js/quote-preview.js"></script>
+</head>
+<body>
+    <aside id="sidebar" class="sidebar"></aside>
+    <header id="header" class="header"></header>
+    <main id="main" class="main"></main>
+    <div id="dialogs" class="dialog-container"></div>
+</body>
+</html>

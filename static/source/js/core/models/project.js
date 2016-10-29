@@ -114,15 +114,23 @@ var app = app || {};
             //  could be used to tell if it's good to render any views
             this._wasLoaded = false;
 
+            if(attributes){
+                this.standaloneMode=this._wasFetched=this._wasLoaded=true;
+            }
+
             if ( !this.options.proxy ) {
                 this.units = new app.UnitCollection(null, { project: this });
                 this.extras = new app.AccessoryCollection(null, { project: this });
                 this.files = new app.ProjectFileCollection(null, { project: this });
                 this.settings = new app.ProjectSettings(null, { project: this });
-
-                this.on('sync', this.setDependencies, this);
-                this.on('set_active', this.setDependencies, this);
-                this.listenTo(this.settings, 'change', this.updateSettings);
+                
+                if(!this.standaloneMode){
+                    this.on('sync', this.setDependencies, this);
+                    this.on('set_active', this.setDependencies, this);
+                    this.listenTo(this.settings, 'change', this.updateSettings);
+                }else{
+                    this.initPreloaded();
+                }
             }
         },
         setDependencies: function (model, response, options) {
@@ -298,6 +306,37 @@ var app = app || {};
                 deposit_on_contract: deposit_on_contract,
                 balance_due_at_delivery: balance_due_at_delivery
             };
-        }
+        },
+        
+        initPreloaded: function () {
+            var changed_flag = false;
+
+            if ( this.get('units') ) {
+                this.units.set(this.get('units'), { parse: true });
+                this.unset('units', { silent: true });
+                changed_flag = true;
+            }
+
+            if ( this.get('accessories') ) {
+                this.extras.set(this.get('accessories'), { parse: true });
+                this.extras.trigger('loaded');
+                this.unset('accessories', { silent: true });
+                changed_flag = true;
+            }
+
+            if ( this.get('files') ) {
+                this.files.set(this.get('files'), { parse: true });
+                this.unset('files', { silent: true });
+                changed_flag = true;
+            }
+
+            if ( this.get('settings') ) {
+                this.settings.set(this.parseSettings(this.get('settings')), { silent: true });
+                this.unset('settings', { silent: true });
+                changed_flag = true;
+            }
+
+        },
+
     });
 })();

@@ -78,30 +78,41 @@ var app = app || {};
 
             return base_url + url;
         },
-        initialize: function () {
-            this.profiles = new app.ProfileCollection(null, {
+        initialize: function (attributes) {
+            var profiles=null,fillings=null,dictionaries=null;
+            if(attributes){
+                profiles= attributes.hasOwnProperty('profiles') ? attributes.profiles : null;
+                fillings= attributes.hasOwnProperty('fillings') ? attributes.fillings : null;
+                dictionaries= attributes.hasOwnProperty('dictionaries') ? attributes.dictionaries : null;
+                
+                this.standaloneMode=true;
+            }
+            
+            this.profiles = new app.ProfileCollection(profiles, {
                 api_base_path: this.get('api_base_path')
             });
 
-            this.filling_types = new app.FillingTypeCollection(null, {
+            this.filling_types = new app.FillingTypeCollection(fillings, {
                 api_base_path: this.get('api_base_path')
             });
 
-            this.dictionaries = new app.OptionsDictionaryCollection(null, {
+            this.dictionaries = new app.OptionsDictionaryCollection(dictionaries, {
                 api_base_path: this.get('api_base_path')
             });
 
             this.project_settings = null;
             this._dependencies_changed = {};
 
-            this.listenTo(app.vent, 'auth:initial_login', this.onInitialLogin);
-            this.listenTo(app.vent, 'project_selector:fetch_current:stop', this.setProjectSettings);
+            if(!this.standaloneMode){
+                this.listenTo(app.vent, 'auth:initial_login', this.onInitialLogin);
+                this.listenTo(app.vent, 'project_selector:fetch_current:stop', this.setProjectSettings);
 
-            //  When any dictionary or dictionary entry is changed, we remember
-            //  this fact to trigger an event later, when we switch screens
-            this.listenTo(this.dictionaries, 'change entries_change', function () {
-                this._dependencies_changed = _.extend({}, this._dependencies_changed, { dictionaries: true });
-            });
+                //  When any dictionary or dictionary entry is changed, we remember
+                //  this fact to trigger an event later, when we switch screens
+                this.listenTo(this.dictionaries, 'change entries_change', function () {
+                    this._dependencies_changed = _.extend({}, this._dependencies_changed, { dictionaries: true });
+                });
+            }
         },
         //  We trigger an event when dictionaries / profiles / filling types
         //  have changed, so we get a chance to update units if needed
