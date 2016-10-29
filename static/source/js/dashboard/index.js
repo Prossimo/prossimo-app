@@ -27,6 +27,13 @@ var app = app || {};
                 region: this.options.region
             });
             app.router.processAppRoutes(this.controller, routers);
+            // add tab in main navigation
+            app.App.request('get:nav:tabs_collection').add({
+                title: 'Dashboard',
+                path: 'dashboard',
+                icon_name: 'dashboard',
+                index: 1
+            });
         }
     });
 })();

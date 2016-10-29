@@ -27,6 +27,13 @@ var app = app || {};
                 region: this.options.region
             });
             app.router.processAppRoutes(this.controller, routers);
+            // add tab in main navigation
+            app.App.request('get:nav:tabs_collection').add({
+                title: 'Settings',
+                path: 'settings',
+                icon_name: 'wrench',
+                index: 999
+            });
         }
     });
 })();

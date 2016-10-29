@@ -43,46 +43,16 @@ $(function () {
 
         this.regionManager = new Marionette.RegionManager({
             regions: {
-                main: '#main'
+                main: '#main',
+                sidebar: '#sidebar'
             }
         });
+        // Show main nav
+        this.regionManager.get('sidebar').show(new app.MainNavigationView());
         // Show default view
         this.regionManager.get('main').show(new app.NoProjectSelectedView());
 
         app.dialogs = new app.Dialogs();
-
-        app.main_navigation = new app.MainNavigationView({
-            dashboard: {
-                title: 'Dashboard',
-                path: 'dashboard',
-                icon_name: 'dashboard'
-            },
-            units_table: {
-                title: 'Units',
-                path: 'units',
-                icon_name: 'th'
-            },
-            drawing: {
-                title: 'Drawing',
-                path: 'drawing',
-                icon_name: 'pencil'
-            },
-            quote: {
-                title: 'Quote',
-                path: 'quote',
-                icon_name: 'shopping-cart'
-            },
-            supplier_request: {
-                title: 'Supplier',
-                path: 'supplier',
-                icon_name: 'send'
-            },
-            settings: {
-                title: 'Settings',
-                path: 'settings',
-                icon_name: 'wrench'
-            }
-        });
 
         app.paste_image_helper = new app.PasteImageHelper();
         app.session.checkAuth();
@@ -95,11 +65,7 @@ $(function () {
              * Start the hash change handling
              */
             if (!Backbone.History.started) {
-                var isStarted = Backbone.history.start({pushState: true, hashChange: false});
-                // if router not found
-                if (!isStarted) {
-                    app.router.navigate('/', {trigger: true});
-                }
+                Backbone.history.start({pushState: true, hashChange: false});
             }
 
             return this.eventToPromise(app.vent, 'project_selector:fetch_current:stop');
