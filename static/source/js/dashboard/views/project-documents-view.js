@@ -1,6 +1,3 @@
-/**
- * Created by devico on 01.08.16.
- */
 var app = app || {};
 
 (function () {
@@ -15,9 +12,8 @@ var app = app || {};
                 has_documents: app.current_project.files.length,
                 document_list: app.current_project.files.map(function (item) {
                     return {
-                        name: item.get('name'),
-                        type: item.get('type'),
-                        url: item.get('url')
+                        name: item.get('original_name'),
+                        url: item.getDownloadUrl()
                     };
                 }, this)
             };

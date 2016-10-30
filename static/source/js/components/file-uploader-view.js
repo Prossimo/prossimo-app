@@ -1,6 +1,6 @@
 var app = app || {};
 var WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">' +
-    'Warning !, your browser does not support Flash and HTML5: [</div>';
+    'Warning: you are not able to attach any files because your browser does not support file upload.</div>';
 
 (function () {
     'use strict';
@@ -92,34 +92,34 @@ var WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">' +
         onDestroy: function () {
             this.fUplad.fileupload('xd');
         },
-        getAllUuidFiles: function () {
+        getUuidForAllFiles: function () {
             return this.collection.pluck('uuid') || [];
         },
         send: function (e, data) {
             _.each(data.files, function (file) {
                 if (this.options.previewOpts.prevClassUpload) {
-                    file.previeContainer.addClass(this.options.previewOpts.prevClassUpload);
+                    file.previewContainer.addClass(this.options.previewOpts.prevClassUpload);
                 }
 
-                if (file.previeContainer.previeProgress) {
-                    file.previeContainer
+                if (file.previewContainer.previewProgress) {
+                    file.previewContainer
                         .addClass(this.options.previewOpts.progressClass);
                 }
             }.bind(this));
         },
         processAlways: function (e, data) {
             _.each(data.files, function (file) {
-                file.previeContainer = this.createEmptyPreview();
+                file.previewContainer = this.createEmptyPreview();
 
                 if (file.preview && !file.error && this.options.showPreview) {
-                    file.previeContainer.prepend(file.preview);
+                    file.previewContainer.prepend(file.preview);
                 }
 
                 if (file.error) {
-                    this.fileUploadedError(file.previeContainer, file.error);
+                    this.fileUploadedError(file.previewContainer, file.error);
                 }
 
-                file.previeContainer
+                file.previewContainer
                     .prepend($('<span/>', {
                         class: this.options.previewOpts.prevTitleClass,
                         html: file.name
@@ -131,25 +131,27 @@ var WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">' +
             var progress = parseInt(data.loaded / data.total * 100, 10);
 
             _.each(data.files, function (file) {
-                var $previeProgress = file.previeContainer.previeProgress;
+                var $previewProgress = file.previewContainer.previewProgress;
 
-                if ($previeProgress) {
-                    $previeProgress.animate({width: progress + 'px'});
+                if ($previewProgress) {
+                    $previewProgress.animate({width: progress + 'px'});
                 }
             });
         },
         done: function (e, data) {
-            var responseFiles = data.jqXHR.responseJSON.files || [];
+            //  The endpoint we use only accepts and returns a single file
+            var responseFiles = [data.jqXHR.responseJSON.file] || [];
 
+            //  So when we iterate over files here we actually assume there is
+            //  only one file for each request
             _.each(data.files, function (file, index) {
-
                 var fileModel = this.collection.add(responseFiles[index]);
 
                 if (!(fileModel || fileModel.cid)) {
                     return;
                 }
 
-                file.previeContainer.data('cid', fileModel.cid);
+                file.previewContainer.data('cid', fileModel.cid);
 
                 var delBtnOptions = function () {
                     if (this.options.showPreview) {
@@ -168,33 +170,32 @@ var WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">' +
 
                 delBtn
                     .on('click', function () {
-                        this.deletePreview(file.previeContainer);
+                        this.deletePreview(file.previewContainer);
                         fileModel.destroy();
                     }.bind(this))
-                    .appendTo(file.previeContainer);
+                    .appendTo(file.previewContainer);
             }.bind(this));
-
         },
         fail: function (e, data) {
             _.each(data.files, function (file) {
-                if (file.previeContainer) {
-                    this.fileUploadedError(file.previeContainer, file.error);
+                if (file.previewContainer) {
+                    this.fileUploadedError(file.previewContainer, file.error);
                 }
             }.bind(this));
         },
         always: function (e, data) {
             _.each(data.files, function (file) {
-                var $previeProgress = file.previeContainer.previeProgress;
+                var $previewProgress = file.previewContainer.previewProgress;
 
                 if (this.options.previewOpts.prevClassUpload) {
-                    file.previeContainer.removeClass(this.options.previewOpts.prevClassUpload);
+                    file.previewContainer.removeClass(this.options.previewOpts.prevClassUpload);
                 }
 
-                if ($previeProgress) {
-                    file.previeContainer
+                if ($previewProgress) {
+                    file.previewContainer
                         .removeClass(this.options.previewOpts.progressClass);
 
-                    $previeProgress
+                    $previewProgress
                         .closest('.' + this.options.previewOpts.progressWrapper)
                         .remove();
                 }
@@ -226,7 +227,7 @@ var WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">' +
                         .text(options.progressLabelText);
                 }
 
-                el.previeProgress = progressEL;
+                el.previewProgress = progressEL;
             }
 
             return el;
@@ -234,12 +235,12 @@ var WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">' +
         abortUpload: function (e, data) {
             _.each(data.files, function (file) {
                 if (this.options.maxLength) {
-                    var indexInQueue = _.indexOf(data.originalFiles, file) + 1/**offset**/;
+                    var indexInQueue = _.indexOf(data.originalFiles, file) + 1;
 
                     if (indexInQueue) {
-                        var expectantCollectionlength = this.collection.length + indexInQueue;
+                        var expectedCollectionLength = this.collection.length + indexInQueue;
 
-                        if (expectantCollectionlength > this.options.maxLength) {
+                        if (expectedCollectionLength > this.options.maxLength) {
                             data.abort();
                         }
                     }

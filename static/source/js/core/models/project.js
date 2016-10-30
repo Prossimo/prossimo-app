@@ -55,7 +55,8 @@ var app = app || {};
 
             if ( method === 'update' || method === 'create' ) {
                 options.attrs = { project: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
-                    settings: JSON.stringify(model.settings.toJSON())
+                    settings: JSON.stringify(model.settings.toJSON()),
+                    files: model.getUuidsForFiles()
                 }) };
             }
 
@@ -103,6 +104,9 @@ var app = app || {};
             }
 
             return filtered_data;
+        },
+        getUuidsForFiles: function () {
+            return this.get('files') || (this.files && this.files.getUuids());
         },
         initialize: function (attributes, options) {
             this.options = options || {};
