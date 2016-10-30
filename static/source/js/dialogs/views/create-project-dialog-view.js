@@ -8,6 +8,7 @@ var app = app || {};
         template: app.templates['dialogs/create-project-dialog-view'],
         ui: {
             $form: '.modal-body form',
+            $filesRegion: '.form-control-files',
             $data_project_name: '.modal-body form input[name="project_name"]',
             $data_client_name: '.modal-body form input[name="client_name"]',
             $data_company: '.modal-body form input[name="company"]',
@@ -24,9 +25,7 @@ var app = app || {};
             'submit form': 'addNewProject'
         },
         addNewProject: function (e) {
-            var newProject = new app.Project();
-
-            newProject.set({
+            var newProject = new app.Project({
                 project_name: this.ui.$data_project_name.val().trim(),
                 client_name: this.ui.$data_client_name.val().trim(),
                 client_company_name: this.ui.$data_company.val().trim(),
@@ -37,7 +36,8 @@ var app = app || {};
                 quote_revision: this.ui.$data_quote_revision.val().trim(),
                 quote_date: this.ui.$data_quote_date.val().trim(),
                 project_notes: this.ui.$data_project_notes.val().trim(),
-                shipping_notes: this.ui.$data_shipping_notes.val().trim()
+                shipping_notes: this.ui.$data_shipping_notes.val().trim(),
+                files: this.file_uploader.getUuidForAllFiles()
             });
 
             e.preventDefault();
@@ -49,11 +49,27 @@ var app = app || {};
                 this.$el.find('.modal-header').append('<h4></h4>');
             }
 
+            if ( this.file_uploader ) {
+                this.file_uploader.destroy();
+            }
+
+            this.file_uploader = new app.FileUploaderView({
+                maxLength: 10
+            });
+
+            this.file_uploader.render()
+                .$el.appendTo( this.ui.$filesRegion );
+
             this.$el.find('.modal-header').find('h4').text('Create project');
 
             this.ui.$form.find('.date').datepicker({
                 format: 'd MM, yyyy'
             });
+        },
+        onDestroy: function () {
+            if ( this.file_uploader ) {
+                this.file_uploader.destroy();
+            }
         }
     });
 })();
