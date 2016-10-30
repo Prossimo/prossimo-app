@@ -19,6 +19,7 @@
     "mousetrap": "ccampbell/mousetrap#^1.5.3",
     "Sortable": "^1.4.2",
     "bootstrap-datepicker": "^1.6.4",
+    "blueimp-file-upload": "^9.12.5",
     "underscore": "^1.8.3"
   },
   "resolutions": {

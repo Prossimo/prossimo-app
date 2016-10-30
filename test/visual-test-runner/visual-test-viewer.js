@@ -1,6 +1,5 @@
 /* eslint quotes:0 */
 /* eslint max-nested-callbacks:0 */
-/* jscs:disable */
 
 var app = app || {};
 var case_data_array = case_data_array || [];

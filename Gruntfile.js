@@ -1,6 +1,10 @@
 module.exports = function (grunt) {
     'use strict';
 
+    var API_HOST = grunt.option('api_host') || '127.0.0.1';
+    var API_PORT = grunt.option('api_port') || '8000';
+    var API_URL = API_HOST + (API_PORT ? ':' + API_PORT : '');
+
     var vendor_js_files = [
         'jquery/dist/jquery.js',
         'handlebars/handlebars.runtime.js',
@@ -24,7 +28,17 @@ module.exports = function (grunt) {
         'mousetrap/mousetrap.js',
         'backbone.marionette.keyshortcuts/backbone.marionette.keyshortcuts.js',
         'Sortable/Sortable.js',
-        'Sortable/jquery.binding.js'
+        'Sortable/jquery.binding.js',
+        'blueimp-load-image/js/load-image.all.min.js',
+        'blueimp-canvas-to-blob/js/canvas-to-blob.min.js',
+        'blueimp-file-upload/js/vendor/jquery.ui.widget.js',
+        'blueimp-file-upload/js/jquery.iframe-transport.js',
+        'blueimp-file-upload/js/jquery.fileupload.js',
+        'blueimp-file-upload/js/jquery.fileupload-process.js',
+        'blueimp-file-upload/js/jquery.fileupload-image.js',
+        'blueimp-file-upload/js/jquery.fileupload-audio.js',
+        'blueimp-file-upload/js/jquery.fileupload-video.js',
+        'blueimp-file-upload/js/jquery.fileupload-validate.js'
     ];
 
     var vendor_css_files = [
@@ -114,6 +128,7 @@ module.exports = function (grunt) {
         'dialogs/views/base-dialog-view.js',
         'dialogs/views/login-dialog-view.js',
         'dialogs/views/options-profiles-table-dialog-view.js',
+        'components/file-uploader-view.js',
         'dialogs/views/create-project-dialog-view.js',
         'app.js'
     ];
@@ -264,9 +279,7 @@ module.exports = function (grunt) {
             vendor_dev: {
                 options: {
                     mangle: false,
-                    compress: true,
-                    sourceMap: true,
-                    sourceMapIncludeSources: true,
+                    compress: false,
                     banner: '/*! Full list of vendor libraries: \n' +
                         vendor_js_files.map(function (component) {
                             return '<%= buildUrl %>/js/vendor/' + component;
