@@ -281,9 +281,9 @@ module.exports = function (grunt) {
                     mangle: false,
                     compress: false,
                     banner: '/*! Full list of vendor libraries: \n' +
-                        vendor_js_files.map(function (component) {
-                            return '<%= buildUrl %>/js/vendor/' + component;
-                        }).join('\n') + '*/\n'
+                    vendor_js_files.map(function (component) {
+                        return '<%= buildUrl %>/js/vendor/' + component;
+                    }).join('\n') + '*/\n'
                 },
                 files: {
                     '<%= buildUrl %>/js/vendor.dev.min.js':
@@ -297,9 +297,9 @@ module.exports = function (grunt) {
                     mangle: false,
                     compress: false,
                     banner: '/*! Full list of vendor libraries: \n' +
-                        vendor_js_files.map(function (component) {
-                            return '<%= buildUrl %>/js/vendor/' + component;
-                        }).join('\n') + '*/\n'
+                    vendor_js_files.map(function (component) {
+                        return '<%= buildUrl %>/js/vendor/' + component;
+                    }).join('\n') + '*/\n'
                 },
                 files: {
                     '<%= buildUrl %>/js/vendor.<%= hash %>.min.js':
@@ -331,8 +331,8 @@ module.exports = function (grunt) {
                             res.setHeader('Access-Control-Allow-Origin', '*');
 
                             if ( req.url === '/dashboard/' || req.url === '/drawing/' ||
-                                 req.url === '/quote/' || req.url === '/settings/' ||
-                                 req.url === '/supplier/' || req.url === '/units/'
+                                req.url === '/quote/' || req.url === '/settings/' ||
+                                req.url === '/supplier/' || req.url === '/units/'
                             ) {
                                 require('fs').createReadStream('index.html').pipe(res);
                             } else {
@@ -374,6 +374,10 @@ module.exports = function (grunt) {
                     '<%= buildUrl %>/js/**/*.js',
                     '*.html'
                 ]
+            },
+            qunit: {
+                files: ['test/*.js', 'test/*.html'],
+                tasks: ['qunit:basic']
             }
         },
 
@@ -382,15 +386,6 @@ module.exports = function (grunt) {
                 configFile: '.eslintrc'
             },
             target: ['<%= sourceUrl %>/js/**/*.js']
-        },
-
-        jscs: {
-            src: '<%= sourceUrl %>/js/**/*.js',
-            options: {
-                config: '.jscsrc',
-                verbose: true,
-                force: true
-            }
         },
 
         replace: {
@@ -411,11 +406,11 @@ module.exports = function (grunt) {
                         },
                         {
                             match: 'api_base_path',
-                            replacement: 'http://127.0.0.1:8000/api'
+                            replacement: 'http://' + API_URL + '/api'
                         },
                         {
                             match: 'pdf_api_base_path',
-                            replacement: 'http://127.0.0.1:8080/print'
+                            replacement: 'http://' + API_URL + '/print'
                         },
                         {
                             match: 'favicon',
@@ -502,7 +497,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-gitinfo');
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-shell');
-    grunt.loadNpmTasks('grunt-jscs');
 
     grunt.registerTask('build', [
         'gitinfo', 'clean:build', 'handlebars:build', 'copy:vendor', 'uglify:build',
@@ -514,7 +508,7 @@ module.exports = function (grunt) {
         'less:dev', 'uglify:vendor_dev', 'cssmin:vendor_dev', 'replace:dev'
     ]);
 
-    grunt.registerTask('test', ['jscs', 'eslint', 'qunit:basic']);
+    grunt.registerTask('test', ['eslint', 'qunit:basic']);
     grunt.registerTask('test_visual', ['qunit:visual']);
     grunt.registerTask('test_all', ['test', 'test_visual']);
 
