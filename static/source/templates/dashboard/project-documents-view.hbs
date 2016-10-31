@@ -6,7 +6,7 @@
         {{#if has_documents }}
             <ul>
                 {{#each document_list}}
-                    <li><a class="type-{{ type }}" href="{{ url }}" target="_blank">{{ name }} <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span></a></li>
+                    <li><a href="{{ url }}" target="_blank">{{ name }} <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span></a></li>
                 {{/each}}
             </ul>
         {{else}}
