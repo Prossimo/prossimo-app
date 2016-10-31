@@ -23,6 +23,11 @@ var app = app || {};
         save: function () {
             return false;
         },
+        parse: function (data) {
+            var file_data = data && data.file ? data.file : data;
+
+            return app.schema.parseAccordingToSchema(file_data, this.schema);
+        },
         getDownloadUrl: function () {
             return this.url() + '/download';
         },
