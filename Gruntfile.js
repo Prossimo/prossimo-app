@@ -23,7 +23,8 @@ module.exports = function (grunt) {
         'mousetrap/mousetrap.min.js',
         'backbone.marionette.keyshortcuts/backbone.marionette.keyshortcuts.js',
         'Sortable/Sortable.min.js',
-        'Sortable/jquery.binding.js'
+        'Sortable/jquery.binding.js',
+        'fabric/dist/fabric.min.js'
     ];
 
     var vendor_css_files = [
@@ -36,6 +37,7 @@ module.exports = function (grunt) {
     var js_files = [
         'backbone-extensions.js',
         'backbone-safesync.js',
+        'fabric.canvasex.js',
         'router.js',
         'dialogs.js',
         'utils.js',
