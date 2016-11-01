@@ -1,5 +1,5 @@
 <select class="selectpicker"{{#if multiple }} multiple{{/if}}>
     {{#each options }}
-    <option value="{{ value }}"{{#if is_selected}} selected{{/if}}>{{ value }}</option>
+    <option value="{{ value }}"{{#if is_selected}} selected{{/if}}>{{ title }}</option>
     {{/each}}
 </select>

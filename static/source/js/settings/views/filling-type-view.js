@@ -6,44 +6,73 @@ var app = app || {};
     app.FillingTypeView = Marionette.ItemView.extend({
         tagName: 'div',
         className: 'filling-type',
-        //  TODO: actually use a template
-        template: false,
+        template: app.templates['settings/filling-type-view'],
+        ui: {
+            $table: 'table',
+            $p: 'p'
+        },
         onRender: function () {
-            this.$table = $('<table />');
-
-            _.each(this.child_views, function (child_view) {
+            _.each(this.attribute_views, function (child_view) {
                 var $row = $('<tr class="filling-type-attribute-container" />');
 
                 $row.append('<td><h4 class="title">' + child_view.title + '</h4></td>');
                 $('<td />').appendTo($row).append(child_view.view_instance.render().el);
-                this.$table.append($row);
-            }, this);
+                this.ui.$table.append($row);
 
-            this.$el.append(this.$table);
+                //  TODO: pass this attribute on init instead of a function call
+                if ( this.is_disabled ) {
+                    child_view.view_instance.disable();
+                }
+            }, this);
         },
         onDestroy: function () {
-            _.each(this.child_views, function (child_view) {
+            _.each(this.attribute_views, function (child_view) {
                 child_view.view_instance.destroy();
             }, this);
+        },
+        getProfilesNamesList: function () {
+            var profiles_ids = _.pluck(this.model.get('profiles'), 'id');
+            var profiles_names_list = [];
+
+            if ( profiles_ids && profiles_ids.length ) {
+                if ( app.settings ) {
+                    profiles_names_list = app.settings.getProfileNamesByIds(profiles_ids.sort());
+                } else {
+                    profiles_names_list = profiles_ids.sort();
+                }
+            }
+
+            return profiles_names_list;
+        },
+        serializeData: function () {
+            var profiles = this.getProfilesNamesList();
+
+            return {
+                profiles_string: profiles.length ? profiles.join(', ') : '--'
+            };
         },
         initialize: function () {
             this.attributes_to_render = this.model.getNameTitleTypeHash([
                 'name', 'supplier_name', 'type', 'weight_per_area'
             ]);
+            //  For base types we want to disable editing at all
+            this.is_disabled = this.model.get('is_base_type') === true;
 
-            //  TODO: this should be attribute views or something like that
-            this.child_views = _.map(this.attributes_to_render, function (attribute) {
+            this.attribute_views = _.map(this.attributes_to_render, function (attribute) {
                 //  We use text inputs for most attributes except for "type"
                 //  attribute where we want a selectbox
-                //  TODO: selectbox should be capable of taking a hash array
                 var view = attribute.name === 'type' ?
                     new app.BaseSelectView({
                         model: this.model,
                         param: 'type',
-                        values: _.pluck(this.model.getBaseTypes(), 'name'),
+                        values: _.map(this.model.getBaseTypes(), function (item) {
+                            return {
+                                value: item.name,
+                                title: item.title
+                            };
+                        }),
                         multiple: false
                     }) :
-                    //  TODO: use different html5 input types, why not
                     new app.BaseInputView({
                         model: this.model,
                         param: attribute.name,
