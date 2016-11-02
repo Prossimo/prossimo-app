@@ -9,29 +9,32 @@
         <div class="quote-header-container"></div>
         <div class="quote-table-container"></div>
 
-        <div class="quote-terms-info">
-            <h2>All SALES SUBJECT TO PROSSIMO LLC TERMS AND CONDITIONS</h2>
-            <ul class="warranty">
-                <li>Limited warranty: 15 years</li>
-                <li>Lead time: 10-12 weeks</li>
-            </ul>
+        {{#if isQuoteMode}}
+            <div class="quote-terms-info">
+                <h2>All SALES SUBJECT TO PROSSIMO LLC TERMS AND CONDITIONS</h2>
+                <ul class="warranty">
+                    <li>Limited warranty: 15 years</li>
+                    <li>Lead time: 10-12 weeks</li>
+                </ul>
 
-            <ul>
-                <li>U-value calculations are based on EN ISO 1077</li>
-                <li>Payments accepted: Check, money order, bank transfer</li>
-                <li><strong>Quote valid for 30 days</strong></li>
-            </ul>
+                <ul>
+                    <li>U-value calculations are based on EN ISO 1077</li>
+                    <li>Payments accepted: Check, money order, bank transfer</li>
+                    <li><strong>Quote valid for 30 days</strong></li>
+                </ul>
 
-            <table>
-                <tr>
-                    <td colspan="2">I have reviewed and agree to the above quotation for windows and doors.</td>
-                </tr>
-                <tr>
-                    <td><strong>Name:</strong> <span>_______________________________________________</span></td>
-                    <td><strong>Signature:</strong> <span>_______________________________________________</span></td>
-                </tr>
-            </table>
-        </div>
+                <table>
+                    <tr>
+                        <td colspan="2">I have reviewed and agree to the above quotation for windows and doors.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Name:</strong> <span>_______________________________________________</span></td>
+                        <td><strong>Signature:</strong> <span>_______________________________________________</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        {{/if}}
     </div>
 </div>
 <div class="units-table-region"></div>

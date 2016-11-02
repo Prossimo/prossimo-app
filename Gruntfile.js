@@ -108,6 +108,7 @@ module.exports = function (grunt) {
         'quote/views/quote-header-view.js',
         'quote/views/quote-table-view.js',
         'quote/views/quote-extras-table-view.js',
+        'quote/views/supplier-request-header-view.js',
         'settings/views/main-settings-view.js',
         'settings/views/profiles-table-view.js',
         'settings/views/filling-types-table-view.js',
@@ -118,8 +119,6 @@ module.exports = function (grunt) {
         'settings/views/options-dictionary-entries-item-view.js',
         'settings/views/options-dictionary-entries-table-view.js',
         'settings/views/options-dictionary-view.js',
-        'supplier-request/views/main-supplier-request-view.js',
-        'supplier-request/views/supplier-request-header-view.js',
         'dashboard/views/project-totals-view.js',
         'dashboard/views/project-info-view.js',
         'dashboard/views/project-documents-view.js',
@@ -329,9 +328,9 @@ module.exports = function (grunt) {
                         middlewares.unshift(function (req, res, next) {
                             res.setHeader('Access-Control-Allow-Origin', '*');
 
-                            if ( req.url === '/dashboard/' || req.url === '/drawing/' ||
-                                 req.url === '/quote/' || req.url === '/settings/' ||
-                                 req.url === '/supplier/' || req.url === '/units/'
+                            if ( /^\/dashboard(\/+)?$/.test(req.url) || /^\/drawing(\/+)?$/.test(req.url) ||
+                                /^\/quote(\/+)?$/.test(req.url) || /^\/settings(\/+)?$/.test(req.url) ||
+                                /^\/supplier(\/+)?$/.test(req.url) || /^\/units(\/+)?$/.test(req.url)
                             ) {
                                 require('fs').createReadStream('index.html').pipe(res);
                             } else {
