@@ -321,6 +321,28 @@ var app = app || {};
             square_meters: function (width_mm, height_mm) {
                 return parseFloat(width_mm) / 1000 * parseFloat(height_mm) / 1000;
             },
+            /**
+             * Calculate area of a trapezoid
+             * @param {Array} bases - the array bases length of
+             * @param {Array} sides - the array sides length of
+             * @returns {number}
+             */
+            area_trapezoid: function (bases, sides) {
+                if (!_.isArray(bases) || !_.isArray(sides)) {
+                    throw new Error('Values bases and sides should be array');
+                } else if (bases.length !== 2 || sides.length !== 2) {
+                    throw new Error('Values bases and sides should be array with two elements');
+                }
+
+                var base_a = parseFloat(bases[0]);
+                var base_b = parseFloat(bases[1]);
+                var side_c = parseFloat(sides[0]);
+                var side_d = parseFloat(sides[1]);
+
+                return (base_a + base_b) / 2 * Math.sqrt(Math.pow(side_c, 2) - Math.pow((Math.pow((base_b -
+                            base_a), 2) + Math.pow(side_c, 2) - Math.pow(side_d, 2)) / (2 * (base_b - base_a)),
+                            2));
+            },
             linear_interpolation: function (x, x0, x1, y0, y1) {
                 return y0 + (y1 - y0) * ((x - x0) / (x1 - x0));
             }

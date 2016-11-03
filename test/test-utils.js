@@ -308,6 +308,43 @@ test('utils.math.square_meters', function () {
     equal(m.square_meters(0, 0), 0, 'Expected value is 0');
 });
 
+test('utils.math.area_trapezoid', function () {
+    var m = app.utils.math;
+    var Errors = [{
+        attr: [null, [5, 4]],
+        mess: /Values bases and sides should be array/
+    }, {
+        attr: [[5, 4], null],
+        mess: /Values bases and sides should be array/
+    }, {
+        attr: [[3, 7], [3]],
+        mess: /Values bases and sides should be array with two elements/
+    }];
+
+    _.map(Errors, function (i) {
+        throws(function () {
+            return m.area_trapezoid.apply(null, i.attr);
+        }, i.mess);
+    });
+
+    var Data = [{
+        attr: [[3, 7], [5, 4]],
+        val: 19.515618744994995
+    }, {
+        attr: [[7, 3], [5, 4]],
+        val: 19.515618744994995
+    }, {
+        attr: [[3, 7], [4, 5]],
+        val: 19.515618744994995
+    }, {
+        attr: [[7, 3], [4, 5]],
+        val: 19.515618744994995
+    }];
+
+    _.map(Data, function (i) {
+        equal(m.area_trapezoid.apply(null, i.attr), i.val, 'Expected value is ' + i.val);
+    });
+});
 
 test('utils.math.linear_interpolation', function () {
     var m = app.utils.math;
