@@ -346,6 +346,15 @@ test('utils.math.area_trapezoid', function () {
     });
 });
 
+test('utils.math.right_triangle_hypotenuse', function () {
+    var m = app.utils.math;
+    equal(m.right_triangle_hypotenuse(3, 4), 5, 'Expected value is 5');
+    equal(m.right_triangle_hypotenuse('3', '4'), 5, 'Expected value is 5');
+    throws(function () {
+        return m.right_triangle_hypotenuse.call(null, 'test', '4');
+    }, /Values should be number/);
+});
+
 test('utils.math.linear_interpolation', function () {
     var m = app.utils.math;
 

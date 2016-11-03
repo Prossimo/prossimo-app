@@ -343,6 +343,16 @@ var app = app || {};
                             base_a), 2) + Math.pow(side_c, 2) - Math.pow(side_d, 2)) / (2 * (base_b - base_a)),
                             2));
             },
+            right_triangle_hypotenuse: function (a, b) {
+                a = parseFloat(a);
+                b = parseFloat(b);
+
+                if (_.isNaN(a) || _.isNaN(b)) {
+                    throw new Error('Values should be number');
+                }
+
+                return Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+            },
             linear_interpolation: function (x, x0, x1, y0, y1) {
                 return y0 + (y1 - y0) * ((x - x0) / (x1 - x0));
             }
