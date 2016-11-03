@@ -40,7 +40,7 @@ $(document).ready(function () {
     var test_project_units_data = [
         {
             unit_composition: 'multiunit',
-            multiunit_subunits: {106: [0, 0], 10565: [200, 0]},
+            multiunit_subunits: [{ id: 106, x: 0, y: 0 }, { id: 10565, x: 0, y: 0 }],
             mark: 'A',
             width: 62,
             height: 96,

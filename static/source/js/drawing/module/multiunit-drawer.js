@@ -7,8 +7,8 @@ var app = app || {};
 
     var module;
     var model;
-    var previewUIGap = 64;
-    var previewOpacity = 0.4;
+    var origin;
+    var previewOpacity = 1;
 
     function activateSubunitDrawer(subunit) {
         var ActiveSubdrawerClass = self.selectSubDrawer(subunit);
@@ -49,44 +49,25 @@ var app = app || {};
                     model.subunits.at(0);
             }
 
-            activateSubunitDrawer(model.activeSubunit);
-            model.activeSubunit.drawer.render();
-
-            var explodedCoords = this.explode(model.subunits, {center: model.activeSubunit});
-
             model.subunits.each(function (subunit) {
-                if (subunit === model.activeSubunit) { return; }
-
                 var previewImage = app.preview(subunit, {
                     width: subunit.getInMetric('width', 'mm') * module.get('ratio'),
                     height: subunit.getInMetric('height', 'mm') * module.get('ratio'),
                     mode: 'image',
                     position: (module.getState('insideView')) ? 'inside' : 'outside',
-                    metricSize: module.get('metricSize') / 2,
+                    metricSize: 0,
                     preview: true
                 });
                 self.addPreview(previewImage, {
-                    x: model.get('multiunit_subunits')[subunit.getId()][0],
-                    y: model.get('multiunit_subunits')[subunit.getId()][1]
+                    x: model.getSubunitAttributesById(subunit.getId()).x,
+                    y: model.getSubunitAttributesById(subunit.getId()).y,
+                    opacity: previewOpacity
                 });
             });
         },
         events: {
             'click #back': 'onBackClick',
             'tap #back': 'onBackClick'
-        },
-        // Handlers
-        onBackClick: function () {},
-        // Create elements
-        // Create transparent background to detect click on empty space
-        createBack: function () {
-            var back = new Konva.Rect({
-                id: 'back',
-                width: this.stage.width(),
-                height: this.stage.height()
-            });
-
-            return back;
         },
         selectSubDrawer: function (subunit) {
             var DrawerClass;
@@ -101,26 +82,15 @@ var app = app || {};
 
             return DrawerClass;
         },
-        explode: function (units, options) {
-            if (!options.center instanceof app.Baseunit) { throw new Error('Central unit required'); }
+        addPreview: function (image, options) {
+            var adjustedX;
+            var adjustedY;
+            var stageCenterX = this.stage.width() / 2;
+            var stageCenterY = this.stage.height() / 2;
+            var width = image.width;
+            var height = image.height;
 
             // FIXME implement
-        },
-        addPreview: function (image, options) {
-            var activeBorders = model.activeSubunit.getDrawingBorders();
-
-            // Add gap if preview is not
-            var gapifiedX = activeBorders.left
-
-            var konvaImage = new Konva.Image({
-                image: image,
-                x: centerX + options.x,
-                y: centerY + options.y,
-                opacity: previewOpacity
-            });
-            this.layer.add(konvaImage);
-            this.layer.draw();
         }
     });
-
 })();

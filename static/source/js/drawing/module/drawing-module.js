@@ -228,9 +228,16 @@ var app = app || {};
                     strokeWidth: 1
                 },
                 frame: {
-                    fill: 'white',
-                    stroke: 'black',
-                    strokeWidth: 1
+                    default: {
+                        fill: 'white',
+                        stroke: 'black',
+                        strokeWidth: 1
+                    },
+                    selected: {
+                        fill: 'lightgrey',
+                        stroke: 'black',
+                        strokeWidth: 1
+                    }
                 },
                 door_bottom: {
                     fill: 'grey',
@@ -425,6 +432,7 @@ var app = app || {};
         deselectAll: function (preventUpdate) {
             this.setState('selected:mullion', null, preventUpdate);
             this.setState('selected:sash', null, preventUpdate);
+            this.setState('selected:frame', null, preventUpdate);
         },
         // Get layer to work directly with drawer, for example
         getLayer: function (name) {

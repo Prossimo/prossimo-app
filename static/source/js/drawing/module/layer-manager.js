@@ -21,6 +21,7 @@ var app = app || {};
         // Create layers on init
         createLayers: function (layerOpts) {
             var DrawerClass;
+            var defaultLayers;
             var defaultLayer = {
                 zIndex: 0,
                 visible: true,
@@ -35,22 +36,37 @@ var app = app || {};
                 DrawerClass = app.Drawers.UnitDrawer;
             }
 
-            var defaultLayers = {
-                unit: {
-                    DrawerClass: DrawerClass,
-                    zIndex: 0,
-                    visible: true,
-                    active: true
-                },
-                metrics: {
-                    DrawerClass: app.Drawers.MetricsDrawer,
-                    zIndex: 1,
-                    visible: true,
-                    active: true
-                }
-            };
+            if (DrawerClass === app.Drawers.MultiunitDrawer) {
+                defaultLayers = {
+                    unit: {
+                        DrawerClass: DrawerClass,
+                        zIndex: 0,
+                        visible: true,
+                        active: true
+                    }
+                };
+            } else {
+                defaultLayers = {
+                    unit: {
+                        DrawerClass: DrawerClass,
+                        zIndex: 0,
+                        visible: true,
+                        active: true
+                    },
+                    metrics: {
+                        DrawerClass: app.Drawers.MetricsDrawer,
+                        zIndex: 1,
+                        visible: true,
+                        active: true
+                    }
+                };
+            }
 
             var layers = _.defaults(layerOpts, defaultLayers);
+
+            if (layers.metrics) {
+                layers.metrics.active = layers.metrics.active && !!this.getOption('builder').get('metricSize');
+            }
 
             _.each(layerOpts, function (layer, key) {
                 if (key in layers && layer.active === false) {

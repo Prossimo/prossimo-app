@@ -330,6 +330,12 @@ var app = app || {};
                     selectedSashId: data.newValue
                 });
             });
+            this.listenTo(this.module, 'state:selected:frame', function (data) {
+                this.deselectAll();
+                this.setState({
+                    isFrameSelected: data.newValue
+                });
+            });
             this.listenTo(this.module, 'labelClicked', function (data) {
                 this.createInput( data.params, data.pos, data.size );
             });
@@ -437,7 +443,7 @@ var app = app || {};
         },
 
         updateUI: function () {
-            // here we have to hide and should some elements in toolbar
+            // here we have to hide and show some elements in toolbar
             var buttonText = this.isInsideView() ? 'Show outside view' : 'Show inside view';
             var titleText = this.isInsideView() ? 'Inside view' : 'Outside view';
 
@@ -446,6 +452,7 @@ var app = app || {};
 
             var selectedSashId = this.state.selectedSashId;
             var selectedSash = this.model.getSection(selectedSashId);
+            var isFrameSelected = this.state.isFrameSelected;
             var isArched = selectedSash && selectedSash.arched;
             var isCircular = selectedSash && selectedSash.circular;
 
@@ -455,7 +462,7 @@ var app = app || {};
                 selectedSash.fillingType === 'glass'
             );
 
-            this.ui.$section_control.toggle(!!selectedSash);
+            this.ui.$section_control.toggle(!!selectedSash || isFrameSelected);
 
             this.$('.sash-types').toggle(
                 !isArched &&
@@ -465,6 +472,10 @@ var app = app || {};
 
             this.$('.split').toggle(
                 !isArched
+            );
+
+            this.$('.add-connector').toggle(
+                isFrameSelected && !isCircular
             );
 
             var selectedFillingType = selectedSash && selectedSash.fillingName &&

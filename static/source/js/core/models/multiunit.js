@@ -6,7 +6,7 @@ var app = app || {};
     var self;
 
     var MULTIUNIT_PROPERTIES = [
-        { name: 'multiunit_subunits', title: 'Subunits', type: 'object' }  // I.e. {<id>: [<x>, <y>], ...}, in mm
+        { name: 'multiunit_subunits', title: 'Subunits', type: 'array' }
     ];
 
     app.Multiunit = app.Baseunit.extend({
@@ -56,6 +56,76 @@ var app = app || {};
                     [{SUBCLASS_PROPERTIES: MULTIUNIT_PROPERTIES}]
                 )
             );
+        },
+        getSubunitAttributesById: function (id) {
+            return this.get('multiunit_subunits').find(function (attributes) { return attributes.id === id; });
+        },
+        /**
+         * Connector format:
+         * {   id: <id>                             // Multiunit-scope unique numeric ID for the connector
+         *     side: '<top|right|bottom|left>',     // Which frame side the connector is on
+         *     offset: <number>,                    // Offset from top/left of the frame side, mm
+         *     width: <number>,                     // Actual gap between connected units, mm
+         *     length: <number>,                    // Connector length, mm
+         *     facewidth: <number> }                // How wide the connector appears in the drawing, mm
+         * Example:
+         * { id: 123, side: 'right', offset: 0, width: 20, length: 200, facewidth: 40 }
+         */
+        getConnectors: function () {
+            return this.get('root_section').connectors;
+        },
+        getConnectorById: function (id) {
+            if (_.isUndefined(id)) { return; }
+
+            return this.getConnectors().find(function (connector) { return connector.id === id; });
+        },
+        addConnector: function (options) {
+            if (!options || options.constructor !== Object) { options = {}; }
+
+            var highestId = this.getConnectors()
+                .map(function (connector) { return connector.id; })
+                .reduce(function (lastHighestId, currentId) { return Math.max(currentId, lastHighestId); }, 0);
+
+            var connector = {
+                id: highestId + 1,
+                side: options.side,
+                offset: options.offset,
+                width: options.width,
+                length: options.length,
+                facewidth: options.facewidth
+            };
+
+            this.getConnectors().push(connector);
+            return connector;
+        },
+        removeConnector: function (id) {
+            if (_.isUndefined(id)) { return; }
+            var connector;
+
+            var connectorIndex = this.getConnectors().indexOf(this.getConnectorById(id));
+
+            if (connectorIndex !== -1) {
+                connector = this.getConnectors().splice(connectorIndex, 1)[0];
+            }
+
+            return connector;
+        },
+        moveConnector: function () {
+            // FIXME implement
+        },
+        setConnectorProperties: function (id, options) {
+            if (_.isUndefined(id)) { return; }
+            if (!options || options.constructor !== Object) { return; }
+
+            var connector = this.getConnectorById(id);
+
+            if (connector) {
+                Object.keys(options).forEach(function (key) {
+                    connector[key] = options[key];
+                });
+            }
+
+            return connector;
         }
     });
 })();

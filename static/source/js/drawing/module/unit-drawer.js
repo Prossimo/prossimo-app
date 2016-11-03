@@ -86,13 +86,19 @@ var app = app || {};
         },
 
         // Selections
-        setSelection: function (event, type) {
+        setSelection: function (event, type, subtype) {
             var origin = this.getSectionId(event.target);
             var untype = (type === 'sash') ? 'mullion' : 'sash';
 
             if (origin) {
                 module.setState('selected:' + untype, null, false);
                 module.setState('selected:' + type, origin.attrs.sectionId, false);
+            }
+
+            if (subtype === 'frame') {
+                module.setState('selected:frame', 'whole', false);
+            } else {
+                module.setState('selected:frame', null, false);
             }
         },
         deselectAll: function (preventUpdate) {
@@ -442,7 +448,8 @@ var app = app || {};
             var frameWidth = params.frameWidth;  // in mm
             var width = params.width;
             var height = params.height;
-            var style = module.getStyle('frame');
+            var isSelected = module.getState('selected:frame') === 'whole';
+            var style = (isSelected) ? module.getStyle('frame').selected : module.getStyle('frame').default;
 
             var group = new Konva.Group({
                 name: 'frame',
@@ -522,11 +529,11 @@ var app = app || {};
             var thresholdWidth = model.profile.get('threshold_width');
             var width = params.width;
             var height = params.height;
+            var isSelected = module.getState('selected:frame') === 'whole';
+            var style = {};
 
-            var style = {
-                frame: module.getStyle('frame'),
-                bottom: module.getStyle('door_bottom')
-            };
+            style.frame = (isSelected) ? module.getStyle('frame').selected : module.getStyle('frame').default;
+            style.bottom = module.getStyle('door_bottom');
 
             var group = new Konva.Group({
                 name: 'frame'
@@ -590,8 +597,8 @@ var app = app || {};
             var width = params.width;
             var height = params.height;
             var archHeight = params.archHeight;
-
-            var style = module.getStyle('frame');
+            var isSelected = module.getState('selected:frame') === 'whole';
+            var style = (isSelected) ? module.getStyle('frame').selected : module.getStyle('frame').default;
 
             var group = new Konva.Group({
                 name: 'frame'
@@ -1739,22 +1746,6 @@ var app = app || {};
             opts.outerRadius = opts.radius - opts.mainFrameWidth;
 
             return opts;
-        },
-        /** @returns  {Object}  {top: 11, right: 33, bottom: 22, left: 11} border cordinates in pixels */
-        getDrawingBorders: function () {
-            // FIXME implement
-            return {top: 11, right: 800, bottom: 800, left: 400};
-
-            var leftMetricCount = 1;   // FIXME dummy data
-            var rightMetricCount = 1;  // FIXME dummy data
-            var leftMetric
-            var activeWidth = model.activeSubunit.getInMetric('width', 'mm') * module.get('ratio');
-            var activeHeight = model.activeSubunit.getInMetric('height', 'mm') * module.get('ratio');
-            var activeX = model.activeSubunit.drawer.el.getAttr('x');
-            var activeY = model.activeSubunit.drawer.el.getAttr('y');
-
-            var activeLeftBorder = activeX - module.get('metricSize') * metricCount;
-            var activeRightBorder = activeX + module.get('metricSize') * metricCount;
         }
     });
 
