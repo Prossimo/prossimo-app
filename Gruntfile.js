@@ -4,6 +4,9 @@ module.exports = function (grunt) {
     var API_HOST = grunt.option('api_host') || '127.0.0.1';
     var API_PORT = grunt.option('api_port') || '8000';
     var API_URL = API_HOST + (API_PORT ? ':' + API_PORT : '');
+    var PRINTER_HOST = grunt.option('printer_host') || '127.0.0.1';
+    var PRINTER_PORT = grunt.option('printer_port') || '8080';
+    var PRINTER_URL = PRINTER_HOST + (PRINTER_PORT ? ':' + PRINTER_PORT : '');
 
     var vendor_js_files = [
         'jquery/dist/jquery.min.js',
@@ -409,7 +412,7 @@ module.exports = function (grunt) {
                         },
                         {
                             match: 'pdf_api_base_path',
-                            replacement: 'http://' + API_URL + '/print'
+                            replacement: 'http://' + PRINTER_URL + '/print'
                         },
                         {
                             match: 'favicon',
