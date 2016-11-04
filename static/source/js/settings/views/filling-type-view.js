@@ -8,8 +8,30 @@ var app = app || {};
         className: 'filling-type',
         template: app.templates['settings/filling-type-view'],
         ui: {
-            $table: 'table',
-            $p: 'p'
+            $table: '.filling-type-attributes',
+            $edit_profiles: '.js-edit-fillingtype-profiles'
+        },
+        events: {
+            'click @ui.$edit_profiles': 'editProfiles'
+        },
+        getProfilesNamesList: function () {
+            var profiles_ids = _.pluck(this.model.get('profiles'), 'id');
+            var profiles_names_list = [];
+
+            if ( profiles_ids && profiles_ids.length ) {
+                if ( app.settings ) {
+                    profiles_names_list = app.settings.getProfileNamesByIds(profiles_ids.sort());
+                } else {
+                    profiles_names_list = profiles_ids.sort();
+                }
+            }
+
+            return profiles_names_list;
+        },
+        editProfiles: function () {
+            app.dialogs.showDialog('fillingtypes-profiles-table', {
+                active_item: this.model
+            });
         },
         onRender: function () {
             _.each(this.attribute_views, function (child_view) {
@@ -29,20 +51,6 @@ var app = app || {};
             _.each(this.attribute_views, function (child_view) {
                 child_view.view_instance.destroy();
             }, this);
-        },
-        getProfilesNamesList: function () {
-            var profiles_ids = _.pluck(this.model.get('profiles'), 'id');
-            var profiles_names_list = [];
-
-            if ( profiles_ids && profiles_ids.length ) {
-                if ( app.settings ) {
-                    profiles_names_list = app.settings.getProfileNamesByIds(profiles_ids.sort());
-                } else {
-                    profiles_names_list = profiles_ids.sort();
-                }
-            }
-
-            return profiles_names_list;
         },
         serializeData: function () {
             var profiles = this.getProfilesNamesList();

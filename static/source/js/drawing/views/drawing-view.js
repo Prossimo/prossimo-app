@@ -167,7 +167,7 @@ var app = app || {};
             var filling_type;
 
             if ( app.settings ) {
-                filling_type = app.settings.getFillingTypeById(this.ui.$filling_select.val());
+                filling_type = app.settings.filling_types.getFillingTypeById(this.ui.$filling_select.val());
                 this.model.setFillingType(this.state.selectedSashId,
                     filling_type.get('type'), filling_type.get('name'));
             }
@@ -341,7 +341,7 @@ var app = app || {};
         serializeData: function () {
             return {
                 filling_types: !app.settings ? [] :
-                    app.settings.getAvailableFillingTypes().map(function (item) {
+                    app.settings.filling_types.getAvailableFillingTypes().map(function (item) {
                         return {
                             cid: item.cid,
                             name: item.get('name'),
@@ -468,7 +468,7 @@ var app = app || {};
             );
 
             var selectedFillingType = selectedSash && selectedSash.fillingName &&
-                app.settings && app.settings.getFillingTypeByName(selectedSash.fillingName);
+                app.settings && app.settings.filling_types.getFillingTypeByName(selectedSash.fillingName);
 
             if ( selectedFillingType ) {
                 this.ui.$filling_select.val(selectedFillingType.cid);

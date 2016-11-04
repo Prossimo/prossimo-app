@@ -73,7 +73,7 @@ var app = app || {};
 
                 //  Show supplier name for filling if it exists
                 if ( options.show_supplier_filling_name && app.settings && source.filling && source.filling.name ) {
-                    var filling_type = app.settings.getFillingTypeByName(source.filling.name);
+                    var filling_type = app.settings.filling_types.getFillingTypeByName(source.filling.name);
 
                     if ( filling_type && filling_type.get('supplier_name') ) {
                         result.filling_name = filling_type.get('supplier_name');

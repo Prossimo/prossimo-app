@@ -28,6 +28,13 @@ var app = app || {};
             });
 
             this.registerDialog({
+                name: 'fillingtypes-profiles-table',
+                getView: function (view_options) {
+                    return new app.FillingTypesProfilesTableDialogView(view_options);
+                }
+            });
+
+            this.registerDialog({
                 name: 'createProject',
                 getView: function (view_options) {
                     return new app.CreateProjectDialogView(view_options);

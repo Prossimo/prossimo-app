@@ -161,6 +161,7 @@ var app = app || {};
                 success: function (collection) {
                     d2.resolve('Loaded filling types');
                     collection.validatePositions();
+                    collection.validatePerProfileDefaults();
                 }
             });
 
@@ -192,6 +193,7 @@ var app = app || {};
 
             return name_title_type_hash;
         },
+        //  TODO: move all profile-related function to Profile Collection
         getAvailableProfileNames: function () {
             return this.profiles.map(function (item) {
                 return item.get('name');
@@ -233,20 +235,6 @@ var app = app || {};
 
             return default_profile_id;
         },
-        getFillingTypeById: function (cid) {
-            return this.filling_types.get(cid);
-        },
-        getFillingTypeByName: function (name) {
-            return this.filling_types.findWhere({ name: name });
-        },
-        getAvailableFillingTypes: function () {
-            return this.filling_types.models;
-        },
-        getAvailableFillingTypeNames: function () {
-            return this.getAvailableFillingTypes().map(function (item) {
-                return item.get('name');
-            });
-        },
         getGlazingBarWidths: function () {
             return GLAZING_BAR_WIDTHS;
         },
@@ -265,6 +253,7 @@ var app = app || {};
         getOpeningDirections: function () {
             return OPENING_DIRECTIONS;
         },
+        //  TODO: move all Options-related functions to Dictionary Collection
         getAvailableOptions: function (dictionary_id, profile_id, put_default_first) {
             var target_dictionary = this.dictionaries.get(dictionary_id);
             var available_options = [];
