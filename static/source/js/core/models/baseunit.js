@@ -180,7 +180,7 @@ var app = app || {};
                 return 'mark';
             },
             getDefaultValue: function (name, type) {
-                var default_value = '';
+                var default_value = (type === 'array') ? [] : '';
 
                 var type_value_hash = {
                     number: 0
@@ -2334,6 +2334,13 @@ var app = app || {};
                 }
 
                 return unitRelation;
+            },
+            toMultiunit: function () {
+                if (this.isMultiunit()) { return this; }
+
+                var multiunit = this.collection.add(new app.Multiunit());
+                multiunit.addSubunit(this);
+                return multiunit;
             }
         },
         {

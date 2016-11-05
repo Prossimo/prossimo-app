@@ -39,7 +39,7 @@ var app = app || {};
             return group;
         },
         render: function () {
-            model.populateSubunits();
+            model.updateSubunitsCollection();
 
             if (!model.activeSubunit) {
                 var zeroPositionSubunitId = _.invert(model.get('multiunit_subunits'))['0,0'];

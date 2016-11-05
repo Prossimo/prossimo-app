@@ -61,7 +61,9 @@ var app = app || {};
             $redo: '#redo',
             $sash_types: '.change-sash-type',
             $metrics_glass: '#additional-metrics-glass',
-            $metrics_opening: '#additional-metrics-opening'
+            $metrics_opening: '#additional-metrics-opening',
+            $multiunit_controls: '.drawing-controls .multiunit',
+            $add_connector_buttons: '.drawing-controls .add-connector .button'
         },
         events: {
             // Click
@@ -74,6 +76,7 @@ var app = app || {};
             'click #glazing-bars-popup': 'handleGlazingBarsPopupClick',
             'click @ui.$undo': 'handleUndoClick',
             'click @ui.$redo': 'handleRedoClick',
+            'click @ui.$add_connector_buttons': 'handleAddConnectorClick',
             // Tap
             'tap .split-section': 'handleSplitSectionClick',
             'tap @ui.$sash_types': 'handleChangeSashTypeClick',
@@ -84,6 +87,7 @@ var app = app || {};
             'tap #glazing-bars-popup': 'handleGlazingBarsPopupClick',
             'tap @ui.$undo': 'handleUndoClick',
             'tap @ui.$redo': 'handleRedoClick',
+            'tap @ui.$add_connector_buttons': 'handleAddConnectorClick',
             // Others
             'keydown #drawing': 'handleCanvasKeyDown',
             'change #vertical-bars-number': 'handleBarNumberChange',
@@ -239,6 +243,15 @@ var app = app || {};
             this.setState({
                 selectedSashId: id
             });
+        },
+        handleAddConnectorClick: function (event) {
+            var connectorSide = $(event.target).data().side;
+
+            this.model.addConnector({ side: connectorSide });
+            var multiunit = this.model.toMultiunit();
+            this.options.parent_view.sidebar_view.render();
+            this.selectUnit(multiunit);
+            // FIXME implement
         },
 
         // Marrionente lifecycle method
@@ -452,33 +465,37 @@ var app = app || {};
 
             var selectedSashId = this.state.selectedSashId;
             var selectedSash = this.model.getSection(selectedSashId);
-            var isFrameSelected = this.state.isFrameSelected;
+            var isSashSelected = !!selectedSash;
+            var isFrameSelected = !!this.state.isFrameSelected;
             var isArched = selectedSash && selectedSash.arched;
             var isCircular = selectedSash && selectedSash.circular;
 
             this.ui.$bars_control.toggle(
                 !isArched &&
-                selectedSash &&
+                !isFrameSelected &&
+                isSashSelected &&
                 selectedSash.fillingType === 'glass'
             );
 
-            this.ui.$section_control.toggle(!!selectedSash || isFrameSelected);
+            this.ui.$section_control.toggle(isSashSelected || isFrameSelected);
 
             this.$('.sash-types').toggle(
                 !isArched &&
-                selectedSash &&
+                !isFrameSelected &&
+                isSashSelected &&
                 this.model.canAddSashToSection(selectedSashId)
             );
 
             this.$('.split').toggle(
+                !isFrameSelected &&
                 !isArched
             );
 
-            this.$('.add-connector').toggle(
-                isFrameSelected && !isCircular
+            this.ui.$multiunit_controls.toggle(
+                isFrameSelected
             );
 
-            var selectedFillingType = selectedSash && selectedSash.fillingName &&
+            var selectedFillingType = isSashSelected && selectedSash.fillingName &&
                 app.settings && app.settings.getFillingTypeByName(selectedSash.fillingName);
 
             if ( selectedFillingType ) {
@@ -489,21 +506,28 @@ var app = app || {};
 
             this.ui.$filling_select.selectpicker('render');
 
+            this.$('.filling-type').toggle(
+                isSashSelected &&
+                !isFrameSelected
+            );
+
             // Toggle arched controls
             this.$('.toggle-arched').toggle(
-                selectedSash &&
+                isSashSelected &&
+                !isFrameSelected &&
                 this.model.isArchedPossible(selectedSashId)
             );
-            this.$('.remove-arched').toggle(!!isArched && !isCircular);
-            this.$('.add-arched').toggle(!isArched && !isCircular);
+            this.$('.remove-arched').toggle(!!isArched && !isCircular && !isFrameSelected);
+            this.$('.add-arched').toggle(!isArched && !isCircular && !isFrameSelected);
 
             // Toggle circular controls
             this.$('.toggle-circular').toggle(
-                selectedSash &&
+                isSashSelected &&
+                !isFrameSelected &&
                 this.model.isCircularPossible(selectedSashId)
             );
-            this.$('.remove-circular').toggle(!!isCircular && !isArched);
-            this.$('.add-circular').toggle(!isCircular && !isArched);
+            this.$('.remove-circular').toggle(!!isCircular && !isArched && !isFrameSelected);
+            this.$('.add-circular').toggle(!isCircular && !isArched && !isFrameSelected);
 
             // Undo/Redo: Register buttons once!
             if ( !this.undo_manager.registered ) {
@@ -513,7 +537,11 @@ var app = app || {};
             }
 
             // Additional overlay metrics
-            if ( selectedSash ) {
+            this.$('.additional-metrics').toggle(
+                !isFrameSelected
+            );
+
+            if (isSashSelected) {
                 this.ui.$metrics_glass.prop('checked', selectedSash.measurements.glass );
                 this.ui.$metrics_opening.prop('checked', selectedSash.measurements.opening );
 
@@ -565,6 +593,9 @@ var app = app || {};
                 selectedMullionId: null,
                 selectedSashId: null
             });
+        },
+        selectUnit: function (model) {
+            this.options.parent_view.sidebar_view.selectUnit(model);
         }
     });
 })();

@@ -63,6 +63,8 @@ var app = app || {};
             this.render();
         },
         selectUnit: function (model) {
+            this.ui.$select.selectpicker('val', model.cid);
+
             this.$el.trigger({
                 type: 'unit-selected',
                 model: model

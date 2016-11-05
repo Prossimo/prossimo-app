@@ -65,7 +65,7 @@ var app = app || {};
         },
         // Handlers
         onFrameClick: function (event) {
-            this.setSelection(event, 'sash', 'frame');
+            this.setSelection(event, 'frame', 'whole');
         },
         onFillingClick: function (event) {
             this.setSelection(event, 'sash', 'filling');
@@ -86,19 +86,16 @@ var app = app || {};
         },
 
         // Selections
-        setSelection: function (event, type, subtype) {
+        setSelection: function (event, type) {
             var origin = this.getSectionId(event.target);
-            var untype = (type === 'sash') ? 'mullion' : 'sash';
+            this.deselectAll();
 
-            if (origin) {
-                module.setState('selected:' + untype, null, false);
-                module.setState('selected:' + type, origin.attrs.sectionId, false);
-            }
-
-            if (subtype === 'frame') {
+            if (type === 'frame') {
                 module.setState('selected:frame', 'whole', false);
-            } else {
-                module.setState('selected:frame', null, false);
+            } else if (type === 'sash' && origin) {
+                module.setState('selected:sash', origin.attrs.sectionId, false);
+            } else if (type === 'mullion' && origin) {
+                module.setState('selected:mullion', origin.attrs.sectionId, false);
             }
         },
         deselectAll: function (preventUpdate) {

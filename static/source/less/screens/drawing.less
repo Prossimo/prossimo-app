@@ -95,16 +95,17 @@
 }
 
 
-.add-connector {
-    display: inline-block !important;
+.drawing-controls .menu {
+    display: inline-block;
     position: relative;
 
-    .menu {
+    .menu-popup {
         @menu-padding: 8px;
         @icon-size: 35px;
         @icon-margin: 1px;
 
         .bs-dropdown-style();
+
         display: none;
         position: absolute;
         left: -(@icon-size + @menu-padding + @icon-margin);
@@ -112,21 +113,20 @@
         width: @icon-size * 3 + @menu-padding * 2 + @icon-margin * 2;
         height: @icon-size * 3 + @menu-padding * 2 + @icon-margin * 2;
         padding: @menu-padding;
+        z-index: 1;
 
         .button {
             position: absolute;
 
-            &[data-type="top"] { left: @icon-size + @menu-padding + @icon-margin - 1px; top: @menu-padding - 1px; }
-            &[data-type="right"] { top: @icon-size + @menu-padding + @icon-margin - 1px; right: @menu-padding - 1px; }
-            &[data-type="bottom"] { left: @icon-size + @menu-padding + @icon-margin - 1px; bottom: @menu-padding - 1px; }
-            &[data-type="left"] { top: @icon-size + @menu-padding + @icon-margin - 1px; left: @menu-padding - 1px; }
+            &.top { left: @icon-size + @menu-padding + @icon-margin - 1px; top: @menu-padding - 1px; }
+            &.right { top: @icon-size + @menu-padding + @icon-margin - 1px; right: @menu-padding - 1px; }
+            &.bottom { left: @icon-size + @menu-padding + @icon-margin - 1px; bottom: @menu-padding - 1px; }
+            &.left { top: @icon-size + @menu-padding + @icon-margin - 1px; left: @menu-padding - 1px; }
         }
     }
-    .menu:hover,
-    .menu-button:hover + .menu { display: block; }
+    .menu-popup:hover,
+    .menu-button:hover + .menu-popup { display: block; }
 }
-
-
 
 //  ------------------------------------------------------------------------
 //  Popup

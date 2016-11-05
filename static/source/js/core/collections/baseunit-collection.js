@@ -41,11 +41,13 @@ var app = app || {};
                 return Backbone.Collection.prototype.add.call(this, models, options);
             }
         },
+        /* eslint-disable eqeqeq */
         getById: function (id) {
             return _.find(this.models, function (model) {
-                return model.get('root_section').id === id;
+                return model.get('root_section').id == id;
             });
         },
+        /* eslint-enable eqeqeq */
         getNameTitleTypeHash: function (names) {
             return this.proxy_unit.getNameTitleTypeHash(names);
         },

@@ -9,6 +9,13 @@ var app = app || {};
         { name: 'multiunit_subunits', title: 'Subunits', type: 'array' }
     ];
 
+    function getSectionDefaults() {
+        return {
+            id: _.uniqueId(),
+            connectors: []
+        };
+    }
+
     app.Multiunit = app.Baseunit.extend({
         schema: _.defaults(app.schema.createSchema(MULTIUNIT_PROPERTIES), app.Baseunit.schema),
         defaults: function () {
@@ -20,12 +27,27 @@ var app = app || {};
 
             return defaults;
         },
+        getDefaultValue: function (name) {
+            var value;
+            var defaults = {
+                unit_composition: 'multiunit',
+                root_section: getSectionDefaults()
+            };
+
+            if (Object.keys(defaults).indexOf(name) !== -1) {
+                value = defaults[name];
+            } else {
+                value = app.Baseunit.prototype.getDefaultValue.apply(this, arguments);
+            }
+
+            return value;
+        },
         initialize: function () {
             self = this;
 
-            app.Baseunit.prototype.initialize.apply(this, arguments);
+            return app.Baseunit.prototype.initialize.apply(this, arguments);
         },
-        populateSubunits: function () {
+        updateSubunitsCollection: function () {
             if (!this.collection) { return; }
 
             if (!this.subunits) {
@@ -35,11 +57,15 @@ var app = app || {};
                 });
             }
 
-            var unitIds = Object.keys(this.get('multiunit_subunits'));
+            var subunitIds = this.get('multiunit_subunits')
+                .map(function (subunit) { return subunit.id; });
 
-            this.subunits.add(unitIds
-                .map(function (id) { return self.collection.getById(id); })
-                .filter(function (subunit) { return !_.isUndefined(subunit); }));
+            this.subunits.add(
+                subunitIds
+                    .map(function (id) { return self.collection.getById(id); })
+                    .filter(function (subunit) { return !_.isUndefined(subunit); })
+                    .filter(function (subunit) { return self.subunits.indexOf(subunit) === -1; })
+            );
         },
         hasOnlyDefaultAttributes: function () {
             return app.Baseunit.prototype.hasOnlyDefaultAttributes.apply(this,
@@ -126,6 +152,28 @@ var app = app || {};
             }
 
             return connector;
+        },
+        addSubunit: function (subunit) {
+            if (!(subunit instanceof app.Baseunit)) { return; }
+
+            var subunitsAttr = this.get('multiunit_subunits');
+            var subunitId = subunit.getId();
+
+            if (_.pluck(subunitsAttr, 'id').indexOf(subunitId) === -1) {
+                this.addSubunitAttr(subunitId);
+                this.updateSubunitsCollection();
+            }
+        },
+        addSubunitAttr: function (id, x, y) {
+            id = parseInt(id, 10);
+            x = x || 0;
+            y = y || 0;
+
+            if (_.isNaN(parseInt(id, 10))) { return; }
+
+            var subunitAttr = {id: id, x: x, y: y};
+            this.get('multiunit_subunits').push(subunitAttr);
+            return subunitAttr;
         }
     });
 })();
