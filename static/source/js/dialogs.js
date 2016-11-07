@@ -8,7 +8,8 @@ var app = app || {};
         initialize: function () {
             this.registered_dialogs = {};
 
-            //  TODO: register dialogs somewhere else?
+            //  TODO: register dialogs somewhere else? Probably at the highest
+            //  possible view level (i.e. Screens)
             this.registerDialog({
                 name: 'login',
                 getView: function (view_options) {
@@ -21,16 +22,9 @@ var app = app || {};
             });
 
             this.registerDialog({
-                name: 'options-profiles-table',
+                name: 'items-profiles-table',
                 getView: function (view_options) {
-                    return new app.OptionsProfilesTableDialogView(view_options);
-                }
-            });
-
-            this.registerDialog({
-                name: 'fillingtypes-profiles-table',
-                getView: function (view_options) {
-                    return new app.FillingTypesProfilesTableDialogView(view_options);
+                    return new app.ItemsProfilesTableDialogView(view_options);
                 }
             });
 

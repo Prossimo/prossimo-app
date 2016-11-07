@@ -6,13 +6,13 @@ var app = app || {};
     var DEFAULT_COLUMN_TITLE = 'Default Variant';
     var UNSET_VALUE = '--';
 
-    app.FillingTypesProfilesTableDialogView = app.BaseDialogView.extend({
-        className: 'options-profiles-table-modal modal fade',
-        template: app.templates['dialogs/fillingtypes-profiles-table-dialog-view'],
+    app.ItemsProfilesTableDialogView = app.BaseDialogView.extend({
+        className: 'items-profiles-table-modal modal fade',
+        template: app.templates['dialogs/items-profiles-table-dialog-view'],
         ui: {
             $hot_container: '.handsontable-container'
         },
-        //  We have two stragies here.
+        //  We have two strategies here.
         //  1. If we set or unset some option as a default for some profile,
         //  we only want to do the corresponding REST API call, and don't want
         //  to do any additional updates to our table.
@@ -24,15 +24,13 @@ var app = app || {};
         //  so there's no default option for this profile
         //  - make the corresponding REST API call to update option to profile
         //  availability
-        //  TODO: optimize so per-entry values are persisted all at once
-        //  (not inside `each` iterator)
         onDataChange: function (changes_array) {
             _.each(changes_array, function (change) {
                 var profile_index = change[0];
                 var column_index = change[1];
                 var old_value = change[2];
                 var new_value = change[3];
-                var profile = this.profiles.at(profile_index);
+                var profile = this.options.profiles.at(profile_index);
 
                 if ( old_value === new_value ) {
                     return;
@@ -40,44 +38,28 @@ var app = app || {};
 
                 //  This means we changed a default value for some profile
                 if ( column_index === 0 ) {
-                    // this.setOptionAsDefault(profile.id, new_value, old_value);
-                    this.setItemAsDefault(profile.id, new_value, old_value);
+                    //  Set item `new_item` to be default for this profile,
+                    //  and make sure item `old_item` is not default anymore
+                    var new_item = this.options.collection.findWhere({ name: new_value });
+                    var old_item = this.options.collection.findWhere({ name: old_value });
+
+                    this.options.collection.setItemAsDefaultForProfile(profile.id, new_item, old_item);
+                //  This means we changed availability for some profile/item
                 } else {
-                    //  TODO: some logic below should be moved to collection
                     var item_index = column_index - 1;
-                    var item = this.items_filtered[item_index];
-                    var old_profiles_list = item.get('profiles');
-                    var new_profiles_list;
-                    var profile_to_remove;
-                    var profile_to_add;
+                    var item = this.options.items_filtered[item_index];
 
-                    //  Now make this list of profiles unique
-                    old_profiles_list = _.uniq(old_profiles_list, function (profile_item) { return profile_item.id; });
-
-                    if ( new_value === false || new_value === 'false' ) {
-                        profile_to_remove = _.findWhere(old_profiles_list, { id: profile.id });
-                        new_profiles_list = _.without(old_profiles_list, profile_to_remove);
-                        new_profiles_list.sort(function (a, b) { return a.id - b.id; });
-                    } else if ( new_value === true || new_value === 'true' ) {
-                        profile_to_add = {
-                            id: profile.id,
-                            is_default: false
-                        };
-                        new_profiles_list = _.union(old_profiles_list, [profile_to_add]);
-                        new_profiles_list.sort(function (a, b) { return a.id - b.id; });
-                    }
-
-                    if ( old_profiles_list !== new_profiles_list ) {
-                        item.persist('profiles', new_profiles_list);
-                        this.updateDefaultVariantsForProfile(profile_index);
-                    }
+                    this.options.collection.setItemAvailabilityForProfile(profile.id, item, new_value);
+                    this.updateDefaultVariantsForProfile(profile_index);
                 }
             }, this);
         },
+        //  This function only updates the list of default variants here, it
+        //  doesn't do any changes to models
         updateDefaultVariantsForProfile: function (profile_index) {
             var old_possible_defaults = this.hot.getCellMeta(profile_index, 0).source || [];
             var new_possible_defaults = this.getAvailableItemNames(
-                this.profiles.at(profile_index).id
+                this.options.profiles.at(profile_index).id
             );
             var old_value = this.hot.getDataAtCell(profile_index, 0);
 
@@ -107,65 +89,22 @@ var app = app || {};
                 this.hot.render();
             }
         },
-        setItemAsDefault: function (profile_id, new_item_name, old_item_name) {
-            var new_item = _.find(this.items_filtered, function (item) {
-                return item.get('name') === new_item_name;
-            });
-            var old_item = _.find(this.items_filtered, function (item) {
-                return item.get('name') === old_item_name;
-            });
-            var old_item_profiles;
-            var profile_to_unset;
-            var new_item_profiles;
-            var profile_to_set;
-
-            //  TODO: the following logic could be moved to the collection
-            //  If we unset
-            if ( new_item_name === UNSET_VALUE && old_item ) {
-                old_item_profiles = old_item.get('profiles');
-                profile_to_unset = _.findWhere(old_item_profiles, { id: profile_id });
-
-                if ( profile_to_unset && profile_to_unset.is_default === true ) {
-                    profile_to_unset.is_default = false;
-                    old_item.persist('profiles', old_item_profiles);
-                }
-            } else if ( new_item_name !== UNSET_VALUE && new_item ) {
-                new_item_profiles = new_item.get('profiles');
-                profile_to_set = _.findWhere(new_item_profiles, { id: profile_id });
-
-                if ( profile_to_set && profile_to_set.is_default === false ) {
-                    profile_to_set.is_default = true;
-                    new_item.persist('profiles', new_item_profiles);
-                }
-
-                //  If we're also about to unset profile from some item
-                if ( old_item ) {
-                    old_item_profiles = old_item.get('profiles');
-                    profile_to_unset = _.findWhere(old_item_profiles, { id: profile_id });
-
-                    if ( profile_to_unset && profile_to_unset.is_default === true ) {
-                        profile_to_unset.is_default = false;
-                        old_item.persist('profiles', old_item_profiles);
-                    }
-                }
-            }
-        },
         getDefaultItemName: function (profile_id) {
-            var default_item = app.settings.filling_types.getDefaultForProfile(profile_id);
+            var default_item = this.options.collection.getDefaultForProfile(profile_id);
 
             return default_item ? default_item.get('name') : UNSET_VALUE;
         },
         getAvailableItemNames: function (profile_id) {
-            var possible_items = app.settings.filling_types.getAvailableForProfile(profile_id);
+            var possible_items = this.options.collection.getAvailableForProfile(profile_id);
 
             return [UNSET_VALUE].concat(_.map(possible_items, function (available_item) {
                 return available_item.get('name');
             }));
         },
         getData: function () {
-            return this.profiles.map(function (profile) {
+            return this.options.profiles.map(function (profile) {
                 return [this.getDefaultItemName(profile.id)].concat(
-                    _.map(this.items_filtered, function (item) {
+                    _.map(this.options.items_filtered, function (item) {
                         return _.contains(_.pluck(item.get('profiles'), 'id') || [], profile.id);
                     })
                 );
@@ -173,11 +112,11 @@ var app = app || {};
         },
         getHeaders: function () {
             return {
-                rowHeaders: this.profiles.map(function (profile) {
+                rowHeaders: this.options.profiles.map(function (profile) {
                     return profile.get('name');
                 }),
                 colHeaders: [DEFAULT_COLUMN_TITLE].concat(
-                    _.map(this.items_filtered, function (item) {
+                    _.map(this.options.items_filtered, function (item) {
                         return item.get('name');
                     })
                 )
@@ -208,7 +147,7 @@ var app = app || {};
                 //  If it's the left ('Default Value') column
                 if ( col === 0 ) {
                     var available_names = self.getAvailableItemNames(
-                        self.profiles.at(row).id
+                        self.options.profiles.at(row).id
                     );
 
                     //  If there are some available options (we compare to 1
@@ -228,7 +167,8 @@ var app = app || {};
         },
         serializeData: function () {
             return {
-                item_name: this.active_item.get('name')
+                item_name: this.options.active_item.get('name'),
+                collection_title: this.options.collection_title
             };
         },
         onRender: function () {
@@ -256,12 +196,29 @@ var app = app || {};
                 this.hot.destroy();
             }
         },
-        initialize: function () {
-            this.active_item = this.options.active_item;
-            this.profiles = app.settings.profiles;
-            this.items_filtered = this.options.active_item.collection.filter(function (item) {
-                return item.get('name') && !item.hasOnlyDefaultAttributes() && item.get('is_base_type') !== true;
-            });
+        initialize: function (options) {
+            var default_options = {
+                active_item: undefined,
+                collection: undefined,
+                profiles: undefined,
+                items_filtered: [],
+                filter_condition: false,
+                collection_title: ''
+            };
+
+            this.options = _.extend(default_options, options);
+
+            if ( !this.options.active_item || !this.options.collection || !this.options.profiles ) {
+                throw new Error('Items to profiles dialog was not initialized correctly, check input options');
+            }
+
+            if ( !this.options.items_filtered.length && this.options.filter_condition !== false ) {
+                if ( !_.isFunction(this.options.filter_condition) ) {
+                    throw new Error('filter_condition should be a function');
+                }
+
+                this.options.items_filtered = this.options.collection.filter(this.options.filter_condition);
+            }
         }
     });
 })();

@@ -262,8 +262,8 @@ var app = app || {};
             put_default_first = put_default_first || false;
 
             if ( target_dictionary ) {
-                available_options = target_dictionary.entries.getEntriesAvailableForProfile(profile_id);
-                default_option = target_dictionary.entries.getDefaultEntryForProfile(profile_id);
+                available_options = target_dictionary.entries.getAvailableForProfile(profile_id);
+                default_option = target_dictionary.entries.getDefaultForProfile(profile_id);
             }
 
             //  Union merges arrays and removes duplicates
@@ -278,7 +278,7 @@ var app = app || {};
             var default_option;
 
             if ( target_dictionary ) {
-                default_option = target_dictionary.entries.getDefaultEntryForProfile(profile_id);
+                default_option = target_dictionary.entries.getDefaultForProfile(profile_id);
             }
 
             return default_option || undefined;

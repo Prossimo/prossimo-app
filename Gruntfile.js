@@ -127,8 +127,7 @@ module.exports = function (grunt) {
         'dashboard/views/main-dashboard-view.js',
         'dialogs/views/base-dialog-view.js',
         'dialogs/views/login-dialog-view.js',
-        'dialogs/views/options-profiles-table-dialog-view.js',
-        'dialogs/views/fillingtypes-profiles-table-dialog-view.js',
+        'dialogs/views/items-profiles-table-dialog-view.js',
         'components/file-uploader-view.js',
         'dialogs/views/create-project-dialog-view.js',
         'app.js'

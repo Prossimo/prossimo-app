@@ -29,8 +29,14 @@ var app = app || {};
             return profiles_names_list;
         },
         editProfiles: function () {
-            app.dialogs.showDialog('fillingtypes-profiles-table', {
-                active_item: this.model
+            app.dialogs.showDialog('items-profiles-table', {
+                collection_title: 'Filling Types',
+                active_item: this.model,
+                collection: this.model.collection,
+                profiles: app.settings.profiles,
+                filter_condition: function (item) {
+                    return item.get('name') && !item.hasOnlyDefaultAttributes() && item.get('is_base_type') !== true;
+                }
             });
         },
         onRender: function () {

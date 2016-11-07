@@ -67,6 +67,7 @@ var app = app || {};
         getFillingTypeByName: function (name) {
             return this.findWhere({ name: name });
         },
+        //  TODO: rename? remove completely?
         getAvailableFillingTypes: function () {
             return this.models;
         },
@@ -118,6 +119,67 @@ var app = app || {};
                     }, this);
                 }
             }, this);
+        },
+        setItemAvailabilityForProfile: function (profile_id, target_item, new_value) {
+            if ( !this.get(target_item) ) {
+                throw new Error('Cannot set item availability: target item does not belong to this collection ');
+            }
+
+            var old_profiles_list = target_item.get('profiles');
+            var new_profiles_list;
+
+            if ( new_value === true || new_value === 'true' ) {
+                var profile_to_add = {
+                    id: profile_id,
+                    is_default: false
+                };
+                new_profiles_list = _.union(old_profiles_list, [profile_to_add]);
+                new_profiles_list.sort(function (a, b) { return a.id - b.id; });
+            } else if ( new_value === false || new_value === 'false' ) {
+                var profile_to_remove = _.findWhere(old_profiles_list, { id: profile_id });
+                new_profiles_list = _.without(old_profiles_list, profile_to_remove);
+                new_profiles_list.sort(function (a, b) { return a.id - b.id; });
+            }
+
+            if ( old_profiles_list !== new_profiles_list ) {
+                target_item.persist('profiles', new_profiles_list);
+            }
+        },
+        setItemAsDefaultForProfile: function (profile_id, new_item, old_item) {
+            //  We want to make profile default for a new item
+            if ( new_item ) {
+                if ( !this.get(new_item) ) {
+                    throw new Error(
+                        'Cannot set item as default for profile: target item does not belong to this collection'
+                    );
+                }
+
+                var new_item_profiles = new_item.get('profiles');
+                var profile_to_set = _.findWhere(new_item_profiles, { id: profile_id });
+
+                if ( profile_to_set && profile_to_set.is_default === false ) {
+                    profile_to_set.is_default = true;
+                    new_item.persist('profiles', new_item_profiles);
+                }
+            }
+
+            //  And we also want to make sure this profile is not default
+            //  anymore for an old item
+            if ( old_item ) {
+                if ( !this.get(old_item) ) {
+                    throw new Error(
+                        'Cannot unset item as default for profile: target item does not belong to this collection'
+                    );
+                }
+
+                var old_item_profiles = old_item.get('profiles');
+                var profile_to_unset = _.findWhere(old_item_profiles, { id: profile_id });
+
+                if ( profile_to_unset && profile_to_unset.is_default === true ) {
+                    profile_to_unset.is_default = false;
+                    old_item.persist('profiles', old_item_profiles);
+                }
+            }
         },
         initialize: function (models, options) {
             this.options = options || {};
