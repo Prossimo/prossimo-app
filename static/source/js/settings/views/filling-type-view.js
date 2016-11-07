@@ -9,10 +9,14 @@ var app = app || {};
         template: app.templates['settings/filling-type-view'],
         ui: {
             $table: '.filling-type-attributes',
-            $edit_profiles: '.js-edit-fillingtype-profiles'
+            $edit_profiles: '.js-edit-fillingtype-profiles',
+            $clone: '.js-clone-filling-type',
+            $remove: '.js-remove-filling-type'
         },
         events: {
-            'click @ui.$edit_profiles': 'editProfiles'
+            'click @ui.$edit_profiles': 'editProfiles',
+            'click @ui.$clone': 'cloneItem',
+            'click @ui.$remove': 'removeItem'
         },
         getProfilesNamesList: function () {
             var profiles_ids = _.pluck(this.model.get('profiles'), 'id');
@@ -38,6 +42,12 @@ var app = app || {};
                     return item.get('name') && !item.hasOnlyDefaultAttributes() && item.get('is_base_type') !== true;
                 }
             });
+        },
+        removeItem: function () {
+            this.model.destroy();
+        },
+        cloneItem: function () {
+            this.model.duplicate();
         },
         onRender: function () {
             _.each(this.attribute_views, function (child_view) {

@@ -15,6 +15,9 @@ var app = app || {};
                 placeholder: this.options.placeholder || undefined
             };
         },
+        filter: function () {
+            return this.filter_condition ? this.filter_condition.apply(this, arguments) : true;
+        },
         ui: {
             $container: '.sidebar-list-container',
             $add_new_item: '.js-add-new-item'
@@ -73,6 +76,7 @@ var app = app || {};
         },
         initialize: function () {
             this.active_item = this.collection.at(0) || undefined;
+            this.filter_condition = this.options.filter_condition || false;
 
             //  Make next (or last) item in the collection active on remove
             this.listenTo(this.collection, 'remove', function (removed_items, collection, options) {

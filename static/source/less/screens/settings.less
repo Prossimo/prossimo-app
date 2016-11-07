@@ -213,6 +213,22 @@
     padding: 1em 2em 1em 330px;
 }
 
+.filling-type-actions {
+    position: absolute;
+    top: 3.5rem;
+    right: 3rem;
+
+    button {
+        display: block;
+        border-color: lighten(@black, 60%);
+    }
+
+    button + button {
+        margin-top: 1rem;
+    }
+}
+
+
 .filling-type table {
     margin-top: 3rem;
 }
@@ -245,6 +261,17 @@
 .filling-type .filling-type-attribute-container .title {
     margin-bottom: 0.5rem;
     margin-right: 5rem;
+}
+
+.filling-type .profile-availability {
+    position: relative;
+    margin-top: 3.5rem;
+
+    button {
+        position: absolute;
+        top: 0;
+        left: 20em;
+    }
 }
 
 

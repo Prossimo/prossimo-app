@@ -41,7 +41,10 @@ var app = app || {};
                 placeholder: 'New Filling Type',
                 collection_title: 'Filling Types',
                 single_item_name: 'filling type',
-                multiple_items_name: 'filling types'
+                multiple_items_name: 'filling types',
+                filter_condition: function (child) {
+                    return child.get('is_base_type') !== true;
+                }
             });
 
             this.listenTo(this.fillings_list_view, 'set_active_item', function (options) {
