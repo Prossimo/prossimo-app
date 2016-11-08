@@ -9,7 +9,7 @@ var app = app || {};
         { name: 'uuid', title: 'UUID', type: 'string' },
         { name: 'content_type', title: 'Content Type', type: 'string' },
         { name: 'size', title: 'File Size', type: 'number' },
-        { name: 'thumbnail', title: 'Thumbnail', type: 'string' },
+        { name: 'has_thumbnail', title: 'Has Thumbnail', type: 'boolean' },
         { name: 'thumbnail_height', title: 'Thumbnail Height', type: 'number' },
         { name: 'thumbnail_width', title: 'Thumbnail Width', type: 'number' },
         { name: 'created_at', title: 'Created', type: 'string' },
@@ -31,8 +31,8 @@ var app = app || {};
         getDownloadUrl: function () {
             return this.url() + '/download';
         },
-        getThumbnailDownloadUrl: function () {
-            return this.get('thumbnail') && this.url().replace(this.id, this.get('thumbnail')) + '/download';
+        getThumbnailUrl: function () {
+            return this.get('has_thumbnail') ? this.url() + '/thumbnail' : undefined;
         },
         initialize: function (attributes, options) {
             this.options = options || {};
