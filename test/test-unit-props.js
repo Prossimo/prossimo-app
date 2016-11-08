@@ -320,21 +320,21 @@ test('Size calculations for Unit #001 from 377 E 10th project', function () {
     unit_size_stats = unit.getLinearAndAreaStats();
 
     equal(unit_size_stats.frame.linear, 7518, 'Unit frame linear');
-    equal(unit_size_stats.frame.linear_without_intersections, 7238, 'Unit frame linear without intersections');
-    equal(unit_size_stats.frame.area, 1.01332 / 2, 'Unit frame area');
-    equal(unit_size_stats.frame.area_both_sides, 1.01332, 'Unit frame area for both sides');
+    equal(unit_size_stats.frame.linear_without_intersections, 6958, 'Unit frame linear without intersections');
+    equal(unit_size_stats.frame.area, 0.97412 / 2, 'Unit frame area');
+    equal(unit_size_stats.frame.area_both_sides, 0.97412, 'Unit frame area for both sides');
     equal(unit_size_stats.sashes.linear, 7134, 'Unit sashes linear');
-    equal(unit_size_stats.sashes.linear_without_intersections, 6478, 'Unit sashes linear without intersections');
-    equal(unit_size_stats.sashes.area, 1.062392 / 2, 'Unit sashes area');
-    equal(unit_size_stats.sashes.area_both_sides, 1.062392, 'Unit sashes area for both sides');
+    equal(unit_size_stats.sashes.linear_without_intersections, 5822, 'Unit sashes linear without intersections');
+    equal(unit_size_stats.sashes.area, 0.954808 / 2, 'Unit sashes area');
+    equal(unit_size_stats.sashes.area_both_sides, 0.954808, 'Unit sashes area for both sides');
     equal(unit_size_stats.mullions.linear, 3387, 'Unit mullions linear');
     equal(unit_size_stats.mullions.area, 0.623208 / 2, 'Unit mullions area');
     equal(unit_size_stats.mullions.area_both_sides, 0.623208, 'Unit mullions area for both sides');
     equal(unit_size_stats.profile_total.linear, 18039, 'Unit profile total linear');
-    equal(unit_size_stats.profile_total.linear_without_intersections, 17103,
+    equal(unit_size_stats.profile_total.linear_without_intersections, 16167,
         'Unit profile total linear without intersections');
-    equal(unit_size_stats.profile_total.area, 2.69892 / 2, 'Unit profile total area');
-    equal(unit_size_stats.profile_total.area_both_sides, 2.69892, 'Unit profile total area for both sides');
+    equal(unit_size_stats.profile_total.area, 2.552136 / 2, 'Unit profile total area');
+    equal(unit_size_stats.profile_total.area_both_sides, 2.552136, 'Unit profile total area for both sides');
     equal(unit_size_stats.openings.area, 1.336422, 'Unit openings area');
     equal(unit_size_stats.glasses.area, 2.374956, 'Unit glasses area');
     equal(unit_size_stats.glasses.area_both_sides, 2.374956 * 2, 'Unit glasses area for both sides');

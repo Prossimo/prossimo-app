@@ -1568,7 +1568,7 @@ var app = app || {};
             }
 
             function getProfilePerimeterWithoutIntersections(width, height, frame_width) {
-                return (width + height) * 2 - frame_width * 4;
+                return (width + height) * 2 - frame_width * 8;
             }
 
             function getBarLengthWithoutIntersections(length, bar_width, intersections_number) {
