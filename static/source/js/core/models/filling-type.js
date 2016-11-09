@@ -190,12 +190,13 @@ var app = app || {};
             return _.findWhere(this.getBaseTypes(), { name: name }).title || '';
         },
         isAvailableForProfile: function (profile_id) {
-            return this.get('profiles') && _.contains(_.pluck(this.get('profiles'), 'id'), profile_id);
+            return this.get('is_base_type') === true ||
+                this.get('profiles') && _.contains(_.pluck(this.get('profiles'), 'id'), profile_id);
         },
         isDefaultForProfile: function (profile_id) {
             var is_default = false;
 
-            if ( this.isAvailableForProfile(profile_id) ) {
+            if ( !this.get('is_base_type') && this.isAvailableForProfile(profile_id) ) {
                 var connection = _.findWhere(this.get('profiles'), { id: profile_id });
 
                 is_default = connection.is_default || false;

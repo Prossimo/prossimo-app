@@ -339,15 +339,21 @@ var app = app || {};
         },
 
         serializeData: function () {
+            var available_filling_types = [];
+            var profile_id = this.model.profile && this.model.profile.id;
+
+            if ( app.settings && profile_id ) {
+                available_filling_types = app.settings.filling_types.getAvailableForProfile(profile_id);
+            }
+
             return {
-                filling_types: !app.settings ? [] :
-                    app.settings.filling_types.getAvailableFillingTypes().map(function (item) {
-                        return {
-                            cid: item.cid,
-                            name: item.get('name'),
-                            type: item.getBaseTypeTitle(item.get('type'))
-                        };
-                    })
+                filling_types: _.map(available_filling_types, function (item) {
+                    return {
+                        cid: item.cid,
+                        name: item.get('name'),
+                        type: item.getBaseTypeTitle(item.get('type'))
+                    };
+                })
             };
         },
         createGlazingPopup: function () {

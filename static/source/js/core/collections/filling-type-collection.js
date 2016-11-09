@@ -59,7 +59,7 @@ var app = app || {};
         getTypeTitle: function (name) {
             return this.findWhere({ name: name }).get('title') || this.proxy_type.getBaseTypeTitle(name);
         },
-        //  TODO: why this works by cid?
+        //  TODO: why this works by cid? probably because we have base types
         getFillingTypeById: function (cid) {
             return this.get(cid);
         },
@@ -77,6 +77,7 @@ var app = app || {};
                 return item.get('name');
             });
         },
+        //  TODO: should we allow to put default item at the top?
         getAvailableForProfile: function (profile_id) {
             return this.models.filter(function (item) {
                 return item.isAvailableForProfile(profile_id);
