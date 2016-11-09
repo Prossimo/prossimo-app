@@ -247,8 +247,9 @@ var app = app || {};
         handleAddConnectorClick: function (event) {
             var connectorSide = $(event.target).data().side;
 
-            this.model.addConnector({ side: connectorSide });
             var multiunit = this.model.toMultiunit();
+            multiunit.addConnector({ connects: [this.model.getId()], side: connectorSide });
+
             this.options.parent_view.sidebar_view.render();
             this.selectUnit(multiunit);
             // FIXME implement

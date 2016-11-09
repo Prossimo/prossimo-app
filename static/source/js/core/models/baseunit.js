@@ -2317,10 +2317,10 @@ var app = app || {};
 
                 var allSubunitIds = _.flatten(collection
                     .filter(function (unit) { return unit.isMultiunit(); })
-                    .map(function (unit) { return Object.keys(unit.get('multiunit_subunits')); })
+                    .map(function (unit) { return unit.get('multiunit_subunits'); })
                 );
 
-                return allSubunitIds.indexOf(this.getId()) !== -1;
+                return allSubunitIds.indexOf(parseInt(this.getId())) !== -1;
             },
             getRelation: function () {
                 var unitRelation;

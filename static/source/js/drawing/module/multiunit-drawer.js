@@ -7,20 +7,7 @@ var app = app || {};
 
     var module;
     var model;
-    var origin;
     var previewOpacity = 1;
-
-    function activateSubunitDrawer(subunit) {
-        var ActiveSubdrawerClass = self.selectSubDrawer(subunit);
-
-        subunit.drawer = new ActiveSubdrawerClass({
-            layer: self.layer,
-            stage: self.stage,
-            builder: module,
-            metricSize: module.get('metricSize'),
-            data: subunit
-        });
-    }
 
     app.Drawers = app.Drawers || {};
     app.Drawers.MultiunitDrawer = Backbone.KonvaView.extend({
@@ -39,17 +26,11 @@ var app = app || {};
             return group;
         },
         render: function () {
-            model.updateSubunitsCollection();
+            var subunitIds = model.get('multiunit_subunits');
 
-            if (!model.activeSubunit) {
-                var zeroPositionSubunitId = _.invert(model.get('multiunit_subunits'))['0,0'];
+            subunitIds.forEach(function (id, index) {
+                var subunit = model.subunits.getById(id);
 
-                model.activeSubunit = (zeroPositionSubunitId) ?
-                    model.subunits.getById(zeroPositionSubunitId) :
-                    model.subunits.at(0);
-            }
-
-            model.subunits.each(function (subunit) {
                 var previewImage = app.preview(subunit, {
                     width: subunit.getInMetric('width', 'mm') * module.get('ratio'),
                     height: subunit.getInMetric('height', 'mm') * module.get('ratio'),
@@ -58,29 +39,20 @@ var app = app || {};
                     metricSize: 0,
                     preview: true
                 });
+                model.getSubunitParentConnector(id);
                 self.addPreview(previewImage, {
-                    x: model.getSubunitAttributesById(subunit.getId()).x,
-                    y: model.getSubunitAttributesById(subunit.getId()).y,
+                    isOrigin: (index === 0),
+                    // parent: ,
                     opacity: previewOpacity
                 });
             });
+
+
+            // FIXME implement
         },
         events: {
             'click #back': 'onBackClick',
             'tap #back': 'onBackClick'
-        },
-        selectSubDrawer: function (subunit) {
-            var DrawerClass;
-
-            if (subunit.trapezoid) {
-                DrawerClass = app.Drawers.TrapezoidUnitDrawer;
-            } else if (subunit.multiunit) {
-                DrawerClass = app.Drawers.MultiunitDrawer;
-            } else {
-                DrawerClass = app.Drawers.UnitDrawer;
-            }
-
-            return DrawerClass;
         },
         addPreview: function (image, options) {
             var adjustedX;
@@ -89,6 +61,18 @@ var app = app || {};
             var stageCenterY = this.stage.height() / 2;
             var width = image.width;
             var height = image.height;
+
+            adjustedX = stageCenterX - width / 2;
+            adjustedY = stageCenterY - height / 2;
+
+            var konvaImage = new Konva.Image({
+                image: image,
+                x: adjustedX,
+                y: adjustedY,
+                opacity: options.opacity
+            });
+            this.layer.add(konvaImage);
+            this.layer.draw();
 
             // FIXME implement
         }

@@ -9,6 +9,13 @@ var app = app || {};
         { name: 'multiunit_subunits', title: 'Subunits', type: 'array' }
     ];
 
+    var CONNECTOR_DEFAULTS = {
+        offsets: [0, 0],
+        width: 20,
+        length: 200,
+        facewidth: 40
+    };
+
     function getSectionDefaults() {
         return {
             id: _.uniqueId(),
@@ -45,7 +52,13 @@ var app = app || {};
         initialize: function () {
             self = this;
 
-            return app.Baseunit.prototype.initialize.apply(this, arguments);
+            app.Baseunit.prototype.initialize.apply(this, arguments);
+
+            this.on('add', function () {
+                self.listenTo(self.collection, 'update', function () {
+                    self.updateSubunitsCollection();
+                });
+            });
         },
         updateSubunitsCollection: function () {
             if (!this.collection) { return; }
@@ -57,8 +70,7 @@ var app = app || {};
                 });
             }
 
-            var subunitIds = this.get('multiunit_subunits')
-                .map(function (subunit) { return subunit.id; });
+            var subunitIds = this.get('multiunit_subunits');
 
             this.subunits.add(
                 subunitIds
@@ -83,19 +95,17 @@ var app = app || {};
                 )
             );
         },
-        getSubunitAttributesById: function (id) {
-            return this.get('multiunit_subunits').find(function (attributes) { return attributes.id === id; });
-        },
         /**
          * Connector format:
-         * {   id: <id>                             // Multiunit-scope unique numeric ID for the connector
-         *     side: '<top|right|bottom|left>',     // Which frame side the connector is on
-         *     offset: <number>,                    // Offset from top/left of the frame side, mm
-         *     width: <number>,                     // Actual gap between connected units, mm
-         *     length: <number>,                    // Connector length, mm
-         *     facewidth: <number> }                // How wide the connector appears in the drawing, mm
+         * {   id: <number>,                     // Multiunit-scope unique numeric ID for the connector
+         *     side: '<top|right|bottom|left>',  // Which frame side the connector is on
+         *     connects: [<number>, <number>],   // IDs of subunits connected. First subunit closer to multiunit root
+         *     offsets: [<number>, <number>],    // Connector offset at parent unit; subunit offset at connector, mm
+         *     width: <number>,                  // Actual gap between connected units, mm
+         *     length: <number>,                 // Connector length, mm
+         *     facewidth: <number> }             // How wide the connector appears in the drawing, mm
          * Example:
-         * { id: 123, side: 'right', offset: 0, width: 20, length: 200, facewidth: 40 }
+         * { id: 123, side: 'right', connects: [123, 124], offsets: [0, 100], width: 20, length: 200, facewidth: 40 }
          */
         getConnectors: function () {
             return this.get('root_section').connectors;
@@ -105,20 +115,47 @@ var app = app || {};
 
             return this.getConnectors().find(function (connector) { return connector.id === id; });
         },
+        getSubunitParentConnector: function (id) {
+            if (_.isUndefined(id)) { return; }
+
+            var parentConnector = this.getConnectors()
+                .filter(function (connector) {
+                    return (connector.connects[0] === id);
+                })[0];
+
+            return parentConnector;
+        },
+        getSubunitChildConnectors: function (id) {
+            if (_.isUndefined(id)) { return; }
+
+            var childConnectors = this.getConnectors()
+                .filter(function (connector) {
+                    return (connector.connects[1] === id);
+                });
+
+            return childConnectors;
+        },
         addConnector: function (options) {
-            if (!options || options.constructor !== Object) { options = {}; }
+            if (!(options && options.connects && options.side)) { return; }
 
             var highestId = this.getConnectors()
                 .map(function (connector) { return connector.id; })
                 .reduce(function (lastHighestId, currentId) { return Math.max(currentId, lastHighestId); }, 0);
 
+            if (!options.connects[1]) {
+                var newSubunit = new app.Unit();
+                options.connects[1] = this.collection.add(newSubunit);
+                this.addSubunit(newSubunit);
+            }
+
             var connector = {
                 id: highestId + 1,
+                connects: options.connects,
                 side: options.side,
-                offset: options.offset,
-                width: options.width,
-                length: options.length,
-                facewidth: options.facewidth
+                offsets: options.offsets || CONNECTOR_DEFAULTS.offsets,
+                width: options.width || CONNECTOR_DEFAULTS.width,
+                length: options.length || CONNECTOR_DEFAULTS.length,
+                facewidth: options.facewidth || CONNECTOR_DEFAULTS.facewidth
             };
 
             this.getConnectors().push(connector);
@@ -156,24 +193,13 @@ var app = app || {};
         addSubunit: function (subunit) {
             if (!(subunit instanceof app.Baseunit)) { return; }
 
-            var subunitsAttr = this.get('multiunit_subunits');
+            var subunitIds = this.get('multiunit_subunits');
             var subunitId = subunit.getId();
 
-            if (_.pluck(subunitsAttr, 'id').indexOf(subunitId) === -1) {
-                this.addSubunitAttr(subunitId);
+            if (subunitIds.indexOf(subunitId) === -1) {
+                subunitIds.push(subunitId);
                 this.updateSubunitsCollection();
             }
-        },
-        addSubunitAttr: function (id, x, y) {
-            id = parseInt(id, 10);
-            x = x || 0;
-            y = y || 0;
-
-            if (_.isNaN(parseInt(id, 10))) { return; }
-
-            var subunitAttr = {id: id, x: x, y: y};
-            this.get('multiunit_subunits').push(subunitAttr);
-            return subunitAttr;
         }
     });
 })();
