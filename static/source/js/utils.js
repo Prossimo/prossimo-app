@@ -343,6 +343,16 @@ var app = app || {};
                             base_a), 2) + Math.pow(side_c, 2) - Math.pow(side_d, 2)) / (2 * (base_b - base_a)),
                             2));
             },
+            /**
+             * Calculate area of a trapezoid
+             * Returns the value in meters
+             * @param  {Array} bases_mm - the array bases length of
+             * @param  {Array} sides_mm - the array sides length of
+             * @returns {number}
+             */
+            area_trapezoid_meters: function (bases_mm, sides_mm) {
+                return app.utils.math.area_trapezoid(bases_mm, sides_mm) * 0.000001;
+            },
             right_triangle_hypotenuse: function (a, b) {
                 a = parseFloat(a);
                 b = parseFloat(b);

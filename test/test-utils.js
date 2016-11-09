@@ -346,6 +346,44 @@ test('utils.math.area_trapezoid', function () {
     });
 });
 
+test('utils.math.area_trapezoid_meters', function () {
+    var m = app.utils.math;
+    var Errors = [{
+        attr: [null, [5000, 4000]],
+        mess: /Values bases and sides should be array/
+    }, {
+        attr: [[5000, 4000], null],
+        mess: /Values bases and sides should be array/
+    }, {
+        attr: [[3000, 7000], [3000]],
+        mess: /Values bases and sides should be array with two elements/
+    }];
+
+    _.map(Errors, function (i) {
+        throws(function () {
+            return m.area_trapezoid_meters.apply(null, i.attr);
+        }, i.mess);
+    });
+
+    var Data = [{
+        attr: [[3000, 7000], [5000, 4000]],
+        val: 19.515618744994992
+    }, {
+        attr: [[7000, 3000], [5000, 4000]],
+        val: 19.515618744994992
+    }, {
+        attr: [[3000, 7000], [4000, 5000]],
+        val: 19.515618744994992
+    }, {
+        attr: [[7000, 3000], [4000, 5000]],
+        val: 19.515618744994992
+    }];
+
+    _.map(Data, function (i) {
+        equal(m.area_trapezoid_meters.apply(null, i.attr), i.val, 'Expected value is ' + i.val);
+    });
+});
+
 test('utils.math.right_triangle_hypotenuse', function () {
     var m = app.utils.math;
     equal(m.right_triangle_hypotenuse(3, 4), 5, 'Expected value is 5');
