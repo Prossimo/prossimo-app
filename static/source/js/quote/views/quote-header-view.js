@@ -5,8 +5,8 @@ var app = app || {};
 
     app.QuoteHeaderView = Marionette.ItemView.extend({
         template: app.templates['quote/quote-header-view'],
-        initialize: function () {
-            this.listenTo(this.model, 'all', this.render);
+        modelEvents: {
+            change: 'render' // todo: I think it is unnecessary
         },
         serializeData: function () {
             return _.extend(this.serializeModel(this.model), {

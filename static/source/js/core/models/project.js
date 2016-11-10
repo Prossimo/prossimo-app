@@ -13,6 +13,7 @@ var app = app || {};
         { name: 'project_address', title: 'Project Address', type: 'string' },
         { name: 'quote_date', title: 'Quote Date', type: 'string' },
         { name: 'quote_revision', title: 'Quote Revision', type: 'number' },
+        { name: 'quote_mode_type', title: 'Quote Type Mode', type: 'string' },
         { name: 'shipping_notes', title: 'Shipping Notes', type: 'string'},
         { name: 'project_notes', title: 'Project Notes', type: 'string'},
         { name: 'settings', title: 'Settings', type: 'object' }
@@ -37,7 +38,8 @@ var app = app || {};
             };
 
             var name_value_hash = {
-                quote_revision: 1
+                quote_revision: 1,
+                quote_mode_type: 'quote_mode'
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
