@@ -7,6 +7,8 @@ var app = app || {};
 
     var module;
     var model;
+    var ratio;
+
     var previewOpacity = 1;
 
     app.Drawers = app.Drawers || {};
@@ -26,13 +28,50 @@ var app = app || {};
             return group;
         },
         render: function () {
+            ratio = module.get('ratio');
+
+            // Clear all previous objects
+            this.layer.destroyChildren();
+            // Creating unit and adding it to layer
+            this.layer.add(this.createMultiunit());
+            // Draw layer
+            this.layer.draw();
+
+            // Detaching and attaching events
+            this.undelegateEvents();
+            this.delegateEvents();
+        },
+        events: {
+            'click #back': 'onBackClick',
+            'tap #back': 'onBackClick'
+        },
+        createMultiunit: function () {
+            var group = this.el;
+
+            var subunitGroup = this.createSubunits();
+            // var connectorGroup = this.createConnectors();
+
+            group.add(subunitGroup);
+            // group.add(connectorGroup);
+
+            var center = module.get('center');
+            // place unit on stage center
+            group.position(center);
+
+            // connectorGroup.moveToTop();
+
+            return group;
+        },
+        createSubunits: function () {
+            var group = new Konva.Group({ name: 'subunits' });
             var subunitIds = model.get('multiunit_subunits');
-            var previewImages = {};
 
             subunitIds.forEach(function (id, index) {
                 var subunit = model.subunits.getById(id);
                 var isOrigin = (index === 0);
+                var previewImage;
                 var parentId;
+                var parentKonva;
                 var side;
                 var gap;
                 var offset;
@@ -43,9 +82,12 @@ var app = app || {};
                     side = parentConnector.side;
                     gap = parentConnector.width;
                     offset = parentConnector.offsets[1] + parentConnector.offsets[0];
+                    parentKonva = group.getChildren(function (konvaImage) {
+                        return (konvaImage.getAttr('subunitId') === parentId);
+                    })[0];
                 }
 
-                previewImages[id] = app.preview(subunit, {
+                previewImage = app.preview(subunit, {
                     width: subunit.getInMetric('width', 'mm') * module.get('ratio'),
                     height: subunit.getInMetric('height', 'mm') * module.get('ratio'),
                     mode: 'image',
@@ -55,24 +97,30 @@ var app = app || {};
                     isMaximized: true
                 });
 
-                self.addPreview(previewImages[id], {
+                var positionedPreview = self.positionPreview(previewImage, {
+                    subunitId: id,
                     isOrigin: isOrigin,
-                    parentImage: previewImages[parentId],
+                    parentKonva: parentKonva,
                     side: side,
                     gap: gap,
                     offset: offset,
                     opacity: previewOpacity
                 });
+
+                group.add(positionedPreview);
+                // if (parentConnector) {
+                //     var connector = this.createConnector(parentConnector);
+                // }
             });
 
+            return group;
+        },
+        createConnectors: function () {
+            var group = new Konva.Group({ name: 'connectors' });
 
             // FIXME implement
         },
-        events: {
-            'click #back': 'onBackClick',
-            'tap #back': 'onBackClick'
-        },
-        addPreview: function (image, options) {
+        positionPreview: function (image, options) {
             var adjustedX;
             var adjustedY;
             var stageCenterX = this.stage.width() / 2;
@@ -83,15 +131,14 @@ var app = app || {};
             if (options.isOrigin) {
                 adjustedX = stageCenterX - width / 2;
                 adjustedY = stageCenterY - height / 2;
-            } else if (options.parentImage) {
-                // FIXME implement
-                var parentKonva = this.getKonvaImage(options.parentImage);
-                var parentX = parentKonva.getAttr('x');
-                var parentY = parentKonva.getAttr('y');
-                var parentWidth = options.parentImage.width;
-                var parentHeight = options.parentImage.height;
-                var gap = options.gap || 0;
-                var offset = options.offset || 0;
+            } else if (options.parentKonva) {
+                var parentKonva = options.parentKonva;
+                var parentX = parentKonva.x();
+                var parentY = parentKonva.y();
+                var parentWidth = parentKonva.width();
+                var parentHeight = parentKonva.height();
+                var gap = options.gap * ratio || 0;
+                var offset = options.offset * ratio || 0;
 
                 if (options.side && options.side === 'top') {
                     adjustedX = parentX + offset;
@@ -109,20 +156,54 @@ var app = app || {};
             }
 
             var konvaImage = new Konva.Image({
+                name: 'subunitPreview',
+                subunitId: options.subunitId,
                 image: image,
                 x: adjustedX,
                 y: adjustedY,
                 opacity: options.opacity
             });
-            this.layer.add(konvaImage);
-            this.layer.draw();
 
-            // FIXME implement
+            return konvaImage;
         },
-        getKonvaImage: function (image) {
-            return this.layer.getChildren().filter(function (konvaImage) {
-                return (konvaImage.getAttr('image') === image);
-            })[0];
+        createConnector: function (connector) {
+            if (!connector) { return; }
+
+            var style = module.getStyle('frame').default;
+            var width;  // in mm
+            var height;
+
+            if (connector.side === 'top' || connector.side === 'bottom') {
+                width = connector.length;
+                height = (connector.facewidth) ? connector.facewidth : connector.width;
+            } else if (connector.side === 'right' || connector.side === 'left') {
+                width = (connector.facewidth) ? connector.facewidth : connector.width;
+                height = connector.length;
+            } else { return; }
+
+            var group = new Konva.Group({
+                name: 'connector',
+                connectorId: connector.id
+            });
+
+            var connectorFace = new Konva.Line({
+                points: [
+                    0, 0,
+                    width, 0,
+                    width, height,
+                    0, height
+                ]
+            });
+
+            group.add(connectorFace);
+
+            group.children
+                .closed(true)
+                .stroke(style.stroke)
+                .strokeWidth(style.strokeWidth)
+                .fill(style.fill);
+
+            return group;
         }
     });
 })();
