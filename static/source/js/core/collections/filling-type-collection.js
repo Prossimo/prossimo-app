@@ -113,7 +113,7 @@ var app = app || {};
                         var item_profiles = item.get('profiles');
                         var connection = _.findWhere(item_profiles, { id: profile_id });
 
-                        if ( connection.is_default === true ) {
+                        if ( connection && connection.is_default === true ) {
                             connection.is_default = false;
                             item.persist('profiles', item_profiles);
                         }
