@@ -3,10 +3,12 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.AppRouter = Backbone.Router.extend({
-        routes: {},
-        addRoute: function (route, callback) {
-            this.route(route, route, callback);
+    app.AppRouter = Marionette.AppRouter.extend({
+        routes: {
+            '(/)': 'showHome'
+        },
+        showHome: function () {
+            this.navigate('/dashboard/', {trigger: true});
         }
     });
 })();
