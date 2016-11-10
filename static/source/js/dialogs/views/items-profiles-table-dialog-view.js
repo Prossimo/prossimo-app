@@ -188,22 +188,23 @@ var app = app || {};
             var self = this;
             var headers = this.getHeaders();
 
-            //  TODO: load only after the modal is created?
             if ( !self.hot ) {
-                self.hot = new Handsontable(self.ui.$hot_container[0], {
-                    data: self.getData(),
-                    colHeaders: headers.colHeaders,
-                    rowHeaders: headers.rowHeaders,
-                    rowHeaderWidth: 200,
-                    rowHeights: 25,
-                    maxRows: function () {
-                        return self.options.profiles.length;
-                    },
-                    afterChange: function (change) {
-                        self.onDataChange(change);
-                    },
-                    columns: this.getColumnOptions(),
-                    cells: this.getCellOptions()
+                _.defer(function () {
+                    self.hot = new Handsontable(self.ui.$hot_container[0], {
+                        data: self.getData(),
+                        colHeaders: headers.colHeaders,
+                        rowHeaders: headers.rowHeaders,
+                        rowHeaderWidth: 200,
+                        rowHeights: 25,
+                        maxRows: function () {
+                            return self.options.profiles.length;
+                        },
+                        afterChange: function (change) {
+                            self.onDataChange(change);
+                        },
+                        columns: self.getColumnOptions(),
+                        cells: self.getCellOptions()
+                    });
                 });
             }
         },
