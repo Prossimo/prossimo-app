@@ -3,6 +3,8 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var UNSET_VALUE = '--';
+
     var BASE_TYPES = [
         { name: 'glass', title: 'Glass' },
         { name: 'recessed', title: 'Recessed' },
@@ -17,9 +19,14 @@ var app = app || {};
         { name: 'supplier_name', title: 'Supplier Name', type: 'string' },
         { name: 'type', title: 'Type', type: 'string' },
         { name: 'is_base_type', title: 'Is Base Type', type: 'boolean' },
+        { name: 'weight_per_area', title: 'Weight per Area (kg/m2)', type: 'number' },
         { name: 'position', title: 'Position', type: 'number' },
-        { name: 'weight_per_area', title: 'Weight per Area (kg/m2)', type: 'number' }
+        { name: 'profiles', title: 'Profiles', type: 'array' }
     ];
+
+    function getDefaultProfilesList() {
+        return [];
+    }
 
     app.FillingType = Backbone.Model.extend({
         schema: app.schema.createSchema(FILLING_TYPE_PROPERTIES),
@@ -35,6 +42,12 @@ var app = app || {};
         getNameAttribute: function () {
             return 'name';
         },
+        getAttributeType: function (attribute_name) {
+            var name_title_hash = this.getNameTitleTypeHash();
+            var target_attribute = _.findWhere(name_title_hash, {name: attribute_name});
+
+            return target_attribute ? target_attribute.type : undefined;
+        },
         getDefaultValue: function (name, type) {
             var default_value = '';
 
@@ -44,7 +57,8 @@ var app = app || {};
             };
 
             var name_value_hash = {
-                type: this.getBaseTypes()[0].name
+                type: this.getBaseTypes()[0].name,
+                profiles: getDefaultProfilesList()
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -80,13 +94,21 @@ var app = app || {};
                 return item.get('name');
             });
 
-            //  We want to have unique profile names across the collection
+            //  We want to have unique filling type names across the collection
             if ( options.validate && collection_names &&
                 _.contains(collection_names, attributes.name)
             ) {
                 return {
                     attribute_name: 'name',
                     error_message: 'Filling type name "' + attributes.name + '" is already used in this collection'
+                };
+            }
+
+            //  Don't allow filling type names that is similar to UNSET_VALUE
+            if ( options.validate && attributes.name && UNSET_VALUE === attributes.name ) {
+                return {
+                    attribute_name: 'name',
+                    error_message: 'Filling type name can\'t be set to ' + UNSET_VALUE
                 };
             }
 
@@ -127,7 +149,11 @@ var app = app || {};
                     var property_source = _.findWhere(FILLING_TYPE_PROPERTIES, { name: key });
                     var type = property_source ? property_source.type : undefined;
 
-                    if ( this.getDefaultValue(key, type) !== value ) {
+                    if ( key === 'profiles' ) {
+                        if ( JSON.stringify(value) !== JSON.stringify(this.getDefaultValue('profiles')) ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( this.getDefaultValue(key, type) !== value ) {
                         has_only_defaults = false;
                     }
                 }
@@ -162,6 +188,21 @@ var app = app || {};
         },
         getBaseTypeTitle: function (name) {
             return _.findWhere(this.getBaseTypes(), { name: name }).title || '';
+        },
+        isAvailableForProfile: function (profile_id) {
+            return this.get('is_base_type') === true ||
+                this.get('profiles') && _.contains(_.pluck(this.get('profiles'), 'id'), profile_id);
+        },
+        isDefaultForProfile: function (profile_id) {
+            var is_default = false;
+
+            if ( !this.get('is_base_type') && this.isAvailableForProfile(profile_id) ) {
+                var connection = _.findWhere(this.get('profiles'), { id: profile_id });
+
+                is_default = connection.is_default || false;
+            }
+
+            return is_default;
         }
     });
 })();

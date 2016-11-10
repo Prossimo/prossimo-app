@@ -128,34 +128,34 @@ test('dictionary entry profile availability functions for collection', function 
 
     //  Entry availability functions
     deepEqual(
-        getNames(entries.getEntriesAvailableForProfile(1)),
+        getNames(entries.getAvailableForProfile(1)),
         ['White Plastic Handle', 'Brown Plastic Handle'],
         'Entries available for a certain profile'
     );
     deepEqual(
-        getNames(entries.getEntriesAvailableForProfile(112)),
+        getNames(entries.getAvailableForProfile(112)),
         [],
         'Entries available for a not existing profile'
     );
     deepEqual(
-        getNames(entries.getEntriesAvailableForProfile(112)),
+        getNames(entries.getAvailableForProfile(112)),
         [],
         'Entries available for a not existing profile'
     );
 
     //  Default entry functions
     equal(
-        entries.getDefaultEntryForProfile(5).get('name'),
+        entries.getDefaultForProfile(5).get('name'),
         'Red Plastic Handle',
         'Get default entry for a certain profile'
     );
     equal(
-        entries.getDefaultEntryForProfile(1),
+        entries.getDefaultForProfile(1),
         undefined,
         'Get default entry for a profile with no default entries'
     );
     equal(
-        entries.getDefaultEntryForProfile(112),
+        entries.getDefaultForProfile(112),
         undefined,
         'Get default entry for a not existing profile'
     );
