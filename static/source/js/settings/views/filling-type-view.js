@@ -109,6 +109,14 @@ var app = app || {};
                     view_instance: view
                 };
             }, this);
+
+            this.listenTo(this.model, 'change:profiles change:name', function () {
+                this.render();
+
+                _.each(this.attribute_views, function (child_view) {
+                    child_view.view_instance.delegateEvents();
+                });
+            });
         }
     });
 })();
