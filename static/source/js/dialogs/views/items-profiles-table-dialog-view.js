@@ -94,8 +94,21 @@ var app = app || {};
 
             return default_item ? default_item.get('name') : UNSET_VALUE;
         },
+        //  Since we apply filter_condition here, it is possible that we filter
+        //  out some item that is set as default for this profile. We want to
+        //  offer this item in selection nevertheless. Also, we put default
+        //  item to the top spot in the dropdown
         getAvailableItemNames: function (profile_id) {
             var possible_items = this.options.collection.getAvailableForProfile(profile_id);
+            var default_item = this.options.collection.getDefaultForProfile(profile_id);
+
+            if (this.options.filter_condition !== false) {
+                possible_items = _.filter(possible_items, this.options.filter_condition);
+            }
+
+            if (default_item) {
+                possible_items = _.union([default_item], possible_items);
+            }
 
             return [UNSET_VALUE].concat(_.map(possible_items, function (available_item) {
                 return available_item.get('name');
@@ -175,19 +188,23 @@ var app = app || {};
             var self = this;
             var headers = this.getHeaders();
 
-            //  TODO: load only after the modal is created?
             if ( !self.hot ) {
-                self.hot = new Handsontable(self.ui.$hot_container[0], {
-                    data: self.getData(),
-                    colHeaders: headers.colHeaders,
-                    rowHeaders: headers.rowHeaders,
-                    rowHeaderWidth: 200,
-                    rowHeights: 25,
-                    afterChange: function (change) {
-                        self.onDataChange(change);
-                    },
-                    columns: this.getColumnOptions(),
-                    cells: this.getCellOptions()
+                _.defer(function () {
+                    self.hot = new Handsontable(self.ui.$hot_container[0], {
+                        data: self.getData(),
+                        colHeaders: headers.colHeaders,
+                        rowHeaders: headers.rowHeaders,
+                        rowHeaderWidth: 200,
+                        rowHeights: 25,
+                        maxRows: function () {
+                            return self.options.profiles.length;
+                        },
+                        afterChange: function (change) {
+                            self.onDataChange(change);
+                        },
+                        columns: self.getColumnOptions(),
+                        cells: self.getCellOptions()
+                    });
                 });
             }
         },
