@@ -100,7 +100,7 @@ var app = app || {};
          * {   id: <number>,                     // Multiunit-scope unique numeric ID for the connector
          *     side: '<top|right|bottom|left>',  // Which frame side the connector is on
          *     connects: [<number>, <number>],   // IDs of subunits connected. First subunit closer to multiunit root
-         *     offsets: [<number>, <number>],    // Connector offset at parent unit; subunit offset at connector, mm
+         *     offsets: [<number>, <number>],    // Connector offset to parent subunit; subunit offset to connector, mm
          *     width: <number>,                  // Actual gap between connected units, mm
          *     length: <number>,                 // Connector length, mm
          *     facewidth: <number> }             // How wide the connector appears in the drawing, mm
@@ -115,25 +115,35 @@ var app = app || {};
 
             return this.getConnectors().find(function (connector) { return connector.id === id; });
         },
-        getSubunitParentConnector: function (id) {
-            if (_.isUndefined(id)) { return; }
+        getParentConnector: function (subunitId) {
+            if (_.isUndefined(subunitId)) { return; }
 
             var parentConnector = this.getConnectors()
                 .filter(function (connector) {
-                    return (connector.connects[0] === id);
+                    return (connector.connects[1] === subunitId);
                 })[0];
 
             return parentConnector;
         },
-        getSubunitChildConnectors: function (id) {
-            if (_.isUndefined(id)) { return; }
+        getChildConnectors: function (subunitId) {
+            if (_.isUndefined(subunitId)) { return; }
 
             var childConnectors = this.getConnectors()
                 .filter(function (connector) {
-                    return (connector.connects[1] === id);
+                    return (connector.connects[0] === subunitId);
                 });
 
             return childConnectors;
+        },
+        getParentSubunit: function (connectorId) {
+            if (_.isUndefined(connectorId)) { return; }
+
+            return this.getConnectorById(connectorId).connects[0];
+        },
+        getChildSubunit: function (connectorId) {
+            if (_.isUndefined(connectorId)) { return; }
+
+            return this.getConnectorById(connectorId).connects[1];
         },
         addConnector: function (options) {
             if (!(options && options.connects && options.side)) { return; }

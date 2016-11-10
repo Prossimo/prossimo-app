@@ -47,7 +47,7 @@ var app = app || {};
             }
 
             // Bind events
-            this.on('state:any', function () { this.update(); });
+            this.on('state:any', function () { this.update(opts); });
 
             // Assign stage
             this.assignStage( opts );
@@ -165,25 +165,32 @@ var app = app || {};
         assignSizes: function (opts) {
             var stage = this.get('stage');
             var model = this.get('model');
+            var shrinkFrame = (opts && opts.isMaximized) ? 1 : 0.95;
+            var renderingOffsetX = (opts && opts.isMaximized) ? 0 : 0.5;
+            var topOffset = (opts && opts.isMaximized) ? 0 : 10 + 0.5; // add 0.5 pixel offset for better strokes
+            var metricSize;
 
             if (opts && opts.width && opts.height) {
                 this.updateSize(opts.width, opts.height);
             }
 
-            var metricSize = ( opts && 'metricSize' in opts) ? opts.metricSize :
-                             ( this.get('metricSize') ) ? this.get('metricSize') :
-                             50;
+            if (opts && !_.isUndefined(opts.metricSize)) {
+                metricSize = opts.metricSize;
+            } else if (!_.isUndefined(this.get('metricSize'))) {
+                metricSize = this.get('metricSize');
+            } else {
+                metricSize = 50;
+            }
 
             var frameWidth = model.getInMetric('width', 'mm');
             var frameHeight = model.getInMetric('height', 'mm');
 
             var isTrapezoid = model.isTrapezoid();
             var isInsideView = this.state.insideView;
-            var topOffset = 10 + 0.5; // we will add 0.5 pixel offset for better strokes
             var wr = (stage.width() - metricSize * 2) / frameWidth;
             var hr = (stage.height() - metricSize * ((isTrapezoid) ? 3 : 2) - topOffset) / frameHeight;
 
-            var ratio = (Math.min(wr, hr) * 0.95);
+            var ratio = (Math.min(wr, hr) * shrinkFrame);
 
             var frameOnScreenWidth = frameWidth * ratio;
             var frameOnScreenHeight = frameHeight * ratio;
@@ -207,7 +214,8 @@ var app = app || {};
                         stage.width() / 2 - frameOnScreenWidth / 2
                         + ((isTrapezoid) ? metricSize / 2 : metricSize)
                         + metricShiftX
-                    ) + 0.5,
+                    )
+                    + renderingOffsetX,
                     y: topOffset
                 }
             };
@@ -476,7 +484,8 @@ var app = app || {};
             mode: 'base64',
             position: 'inside',
             metricSize: 50,
-            preview: true
+            preview: true,
+            isMaximized: false
         };
 
         options = _.defaults({}, options, defaults, {model: unitModel});
