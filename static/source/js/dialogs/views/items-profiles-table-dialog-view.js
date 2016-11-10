@@ -183,6 +183,9 @@ var app = app || {};
                     rowHeaders: headers.rowHeaders,
                     rowHeaderWidth: 200,
                     rowHeights: 25,
+                    maxRows: function () {
+                        return self.options.profiles.length;
+                    },
                     afterChange: function (change) {
                         self.onDataChange(change);
                     },
