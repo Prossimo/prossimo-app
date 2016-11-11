@@ -1,6 +1,13 @@
 module.exports = function (grunt) {
     'use strict';
 
+    var API_HOST = grunt.option('api_host') || '127.0.0.1';
+    var API_PORT = grunt.option('api_port') || '8000';
+    var API_URL = API_HOST + (API_PORT ? ':' + API_PORT : '');
+    var PRINTER_HOST = grunt.option('printer_host') || '127.0.0.1';
+    var PRINTER_PORT = grunt.option('printer_port') || '8080';
+    var PRINTER_URL = PRINTER_HOST + (PRINTER_PORT ? ':' + PRINTER_PORT : '');
+
     var vendor_js_files = [
         'jquery/dist/jquery.min.js',
         'handlebars/handlebars.runtime.min.js',
@@ -23,7 +30,17 @@ module.exports = function (grunt) {
         'mousetrap/mousetrap.min.js',
         'backbone.marionette.keyshortcuts/backbone.marionette.keyshortcuts.js',
         'Sortable/Sortable.min.js',
-        'Sortable/jquery.binding.js'
+        'Sortable/jquery.binding.js',
+        'blueimp-load-image/js/load-image.all.min.js',
+        'blueimp-canvas-to-blob/js/canvas-to-blob.min.js',
+        'blueimp-file-upload/js/vendor/jquery.ui.widget.js',
+        'blueimp-file-upload/js/jquery.iframe-transport.js',
+        'blueimp-file-upload/js/jquery.fileupload.js',
+        'blueimp-file-upload/js/jquery.fileupload-process.js',
+        'blueimp-file-upload/js/jquery.fileupload-image.js',
+        'blueimp-file-upload/js/jquery.fileupload-audio.js',
+        'blueimp-file-upload/js/jquery.fileupload-video.js',
+        'blueimp-file-upload/js/jquery.fileupload-validate.js'
     ];
 
     var vendor_css_files = [
@@ -66,6 +83,8 @@ module.exports = function (grunt) {
         'core/views/base/base-toggle-view.js',
         'core/views/base/base-input-view.js',
         'core/views/base/base-select-view.js',
+        'core/views/base/sidebar-list-item-view.js',
+        'core/views/base/sidebar-list-view.js',
         'core/views/main-navigation-view.js',
         'core/views/units-table-view.js',
         'core/views/units-table-total-prices-view.js',
@@ -96,11 +115,10 @@ module.exports = function (grunt) {
         'quote/views/quote-extras-table-view.js',
         'settings/views/main-settings-view.js',
         'settings/views/profiles-table-view.js',
-        'settings/views/filling-types-table-view.js',
         'settings/views/pricing-grids-table-view.js',
+        'settings/views/filling-types-view.js',
+        'settings/views/filling-type-view.js',
         'settings/views/options-view.js',
-        'settings/views/options-dictionary-list-item-view.js',
-        'settings/views/options-dictionary-list-view.js',
         'settings/views/options-dictionary-entries-item-view.js',
         'settings/views/options-dictionary-entries-table-view.js',
         'settings/views/options-dictionary-view.js',
@@ -112,7 +130,8 @@ module.exports = function (grunt) {
         'dashboard/views/main-dashboard-view.js',
         'dialogs/views/base-dialog-view.js',
         'dialogs/views/login-dialog-view.js',
-        'dialogs/views/options-profiles-table-dialog-view.js',
+        'dialogs/views/items-profiles-table-dialog-view.js',
+        'components/file-uploader-view.js',
         'dialogs/views/create-project-dialog-view.js',
         'app.js'
     ];
@@ -372,15 +391,6 @@ module.exports = function (grunt) {
             target: ['<%= sourceUrl %>/js/**/*.js']
         },
 
-        jscs: {
-            src: '<%= sourceUrl %>/js/**/*.js',
-            options: {
-                config: '.jscsrc',
-                verbose: true,
-                force: true
-            }
-        },
-
         replace: {
             dev: {
                 options: {
@@ -399,11 +409,11 @@ module.exports = function (grunt) {
                         },
                         {
                             match: 'api_base_path',
-                            replacement: 'http://127.0.0.1:8000/api'
+                            replacement: 'http://' + API_URL + '/api'
                         },
                         {
                             match: 'pdf_api_base_path',
-                            replacement: 'http://127.0.0.1:8080/print'
+                            replacement: 'http://' + PRINTER_URL + '/print'
                         },
                         {
                             match: 'favicon',
@@ -490,7 +500,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-gitinfo');
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-shell');
-    grunt.loadNpmTasks('grunt-jscs');
 
     grunt.registerTask('build', [
         'gitinfo', 'clean:build', 'handlebars:build', 'copy:vendor', 'uglify:build',
@@ -502,7 +511,7 @@ module.exports = function (grunt) {
         'less:dev', 'uglify:vendor_dev', 'cssmin:vendor_dev', 'replace:dev'
     ]);
 
-    grunt.registerTask('test', ['jscs', 'eslint', 'qunit:basic']);
+    grunt.registerTask('test', ['eslint', 'qunit:basic']);
     grunt.registerTask('test_visual', ['qunit:visual']);
     grunt.registerTask('test_all', ['test', 'test_visual']);
 

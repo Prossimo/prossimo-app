@@ -1,5 +1,4 @@
 /* eslint quotes:0 */
-/* jscs:disable */
 
 var case_data_array = case_data_array || [];
 

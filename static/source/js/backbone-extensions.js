@@ -3,10 +3,25 @@ var app = app || {};
 (function () {
     'use strict';
 
+    //  This is a workaround for $.ajax triggering "parseerror" with successful
+    //  CREATE calls to our API, since such calls return empty body which is
+    //  not expected by a JSON parser
+    $.ajaxSetup({
+        dataFilter: function (rawData, type) {
+            if ( !rawData && type === 'json' ) {
+                return null;
+            }
+
+            return rawData;
+        }
+    });
+
+    var oldModelSave = Backbone.Model.prototype.save;
+
     _.extend(Backbone.Model.prototype, {
         //  On successful first save (via POST) we want to get ID of a newly
-        //  created DB entity and assign it to our model
-        saveAndGetId: function (key, val, options) {
+        //  created DB entity and assign this ID to our model
+        save: function (key, val, options) {
             //  Mostly to play nice with undo manager
             if ( key === null || typeof key === 'object' && val ) {
                 options = val;
@@ -14,7 +29,7 @@ var app = app || {};
 
             options = options || {};
 
-            function processResponse(status, model, response) {
+            function processResponse(model, response) {
                 var location_string = response.getResponseHeader('Location');
                 var pattern = /(\d+)$/;
                 var match;
@@ -28,26 +43,27 @@ var app = app || {};
                 }
 
                 if ( new_id ) {
-                    model.set({ id: new_id });
+                    model.set({ id: parseInt(new_id, 10) });
                 }
             }
 
             if ( this.isNew() ) {
-                options.success = function (model, response, backboneResponse) {
-                    if ( response === null && backboneResponse ) {
-                        // Fix bug with empty json response
-                        processResponse('success', model, backboneResponse.xhr);
-                    } else {
-                        processResponse('success', model, response);
-                    }
-                };
+                var successCallback = options.success;
 
-                options.error = function (model, response) {
-                    processResponse('error', model, response);
+                options.success = function (model, response, backboneOptions) {
+                    if ( response === null ) {
+                        response = backboneOptions && backboneOptions.xhr;
+                    }
+
+                    processResponse(model, response);
+
+                    if ( successCallback ) {
+                        successCallback.call(backboneOptions.context, model, response, backboneOptions);
+                    }
                 };
             }
 
-            return Backbone.Model.prototype.save.call(this, key, val, options);
+            return oldModelSave.call(this, key, val, options);
         },
         //  Don't save anything if we have special flag on `app` or an attribute
         persist: function () {
@@ -74,7 +90,7 @@ var app = app || {};
                 _.each(possible_names, function (item) {
                     if ( pattern.test(item) ) {
                         var match = pattern.exec(item);
-                        var current_index = parseInt(match[3]);
+                        var current_index = parseInt(match[3], 10);
 
                         old_name = match[1];
                         max_index = current_index > max_index ? current_index : max_index;

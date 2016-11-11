@@ -121,7 +121,9 @@ var app = app || {};
         },
         update: function () {
             var self = this;
-            var isTrapezoidDrawer = (this.getLayer('unit').drawer.constructor === app.Drawers.TrapezoidUnitDrawer);
+            var isTrapezoidDrawer =
+                this.getLayer('unit') &&
+                this.getLayer('unit').drawer.constructor === app.Drawers.TrapezoidUnitDrawer;
             var isTrapezoid = this.getOption('builder').get('model').isTrapezoid();
 
             this.trapezoid = isTrapezoid;
