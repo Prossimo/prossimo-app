@@ -33,7 +33,7 @@ var app = app || {};
         },
         revertEditable: function () {
             this.ui.$container.removeClass('is-edited').removeClass('has-error');
-            this.ui.$input.val(this.serializeData().value);
+            this.ui.$input.val(this.templateContext().value);
             this.hideErrorMessage();
         },
         showErrorMessage: function (message) {
@@ -54,7 +54,7 @@ var app = app || {};
                 return;
             }
 
-            if ( new_value !== '' && new_value !== this.serializeData().value ) {
+            if ( new_value !== '' && new_value !== this.templateContext().value ) {
                 new_value_parsed = _.isFunction(this.model.getAttributeType) &&
                     this.model.getAttributeType(this.options.param) === 'number' && !isNaN(new_value) ?
                     parseFloat(new_value) : new_value;

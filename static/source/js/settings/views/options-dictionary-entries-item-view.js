@@ -54,7 +54,7 @@ var app = app || {};
             };
         },
         onRender: function () {
-            var profiles = this.serializeData().profiles;
+            var profiles = this.templateContext().profiles;
 
             this.ui.$name_container.empty().append(this.name_input_view.render().el);
 

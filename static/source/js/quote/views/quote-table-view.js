@@ -68,7 +68,7 @@ var app = app || {};
             };
         },
         onRender: function () {
-            if ( this.serializeData().has_extras ) {
+            if ( this.templateContext().has_extras ) {
                 this.quote_extras_table_view = new app.QuoteExtrasTableView({
                     collection: this.options.extras,
                     show_price: this.options.show_price,

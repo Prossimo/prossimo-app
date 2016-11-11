@@ -51,7 +51,7 @@ var app = app || {};
 
                 this.ui.$drawing_container.empty().append(this.drawing_view.render().el);
 
-                if ( this._isShown && update_rendered_flag ) {
+                if ( this.isAttached() && update_rendered_flag ) {
                     this.drawing_view.trigger('update_rendered');
                 }
             }

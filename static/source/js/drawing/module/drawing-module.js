@@ -527,5 +527,4 @@ var app = app || {};
 
         return result;
     };
-
 })();

@@ -32,7 +32,7 @@ var app = app || {};
             this.render();
         },
         setToggles: function () {
-            var data = this.serializeData();
+            var data = this.templateContext();
 
             if ( data.is_model_set ) {
                 this.toggles = {};
@@ -79,7 +79,7 @@ var app = app || {};
             };
         },
         onRender: function () {
-            var data = this.serializeData();
+            var data = this.templateContext();
 
             if ( data.is_model_set ) {
                 _.each(data.params, function (param_options, key) {
