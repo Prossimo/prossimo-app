@@ -20,8 +20,14 @@ var app = app || {};
             'click @ui.$remove': 'removeEntry'
         },
         editProfiles: function () {
-            app.dialogs.showDialog('options-profiles-table', {
-                active_entry: this.model
+            app.dialogs.showDialog('items-profiles-table', {
+                collection_title: this.model.collection.options.dictionary.get('name'),
+                active_item: this.model,
+                collection: this.model.collection,
+                profiles: app.settings.profiles,
+                filter_condition: function (item) {
+                    return item.get('name') && !item.hasOnlyDefaultAttributes();
+                }
             });
         },
         getProfilesNamesList: function () {

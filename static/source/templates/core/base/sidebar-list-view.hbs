@@ -1,0 +1,10 @@
+<h2>{{ collection_title }}</h2>
+
+<button class="btn add-new-item js-add-new-item">Add new {{ single_item_name }}</button>
+
+<ul class="sidebar-list-container{{#unless collection_length }} hidden{{/unless}}"></ul>
+{{#if collection_length }}
+    <p>Drag items in list to reorder.</p>
+{{else}}
+    <p>No {{ multiple_items_name }} to show. Please create one.</p>
+{{/if}}

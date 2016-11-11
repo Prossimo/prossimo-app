@@ -1,0 +1,85 @@
+//  ------------------------------------------------------------------------
+//  Reusable sidebar list view for Options, Filling Types and Profiles
+//  ------------------------------------------------------------------------
+
+.sidebar-list-panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 300px;
+    bottom: 0;
+    padding: 1.5rem 3rem;
+    background-color: darken(@white, 15%);
+    border-right: 1px solid darken(@white, 30%);
+    overflow: auto;
+}
+
+.sidebar-list-panel h2 {
+    margin-bottom: 3rem;
+}
+
+.sidebar-list-panel .add-new-item {
+    background-color: darken(@white, 5%);
+    border-color: darken(@white, 30%);
+
+    &:hover {
+        background-color: @white;
+    }
+}
+
+.sidebar-list-container {
+    margin-left: -3rem;
+    margin-right: -3rem;
+    margin-top: 4rem;
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.sidebar-list-item {
+    border-bottom: 1px solid darken(@white, 25%);
+
+    &:first-child {
+        border-top: 1px solid darken(@white, 25%);
+    }
+}
+
+.sidebar-list-item.sortable-ghost {
+    opacity: 0.3;
+}
+
+.sidebar-list-item a {
+    display: block;
+    padding: 0.8rem 3rem;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+    cursor: move;
+    cursor: -webkit-grabbing;
+
+    &:hover {
+        background-color: darken(@white, 20%);
+    }
+}
+
+.sidebar-list-container + p {
+    margin-top: 4rem;
+    color: lighten(@black, 40%)
+}
+
+.sidebar-list-item a.is-active {
+    background-color: darken(@white, 25%);
+    color: @black;
+
+    span {
+        position: relative;
+        top: 0.4em;
+        float: right;
+        color: lighten(@black, 35%);
+        font-size: 0.8em;
+    }
+}
+
+.sidebar-list-item a.is-placeholder {
+    color: lighten(@black, 45%);
+}
