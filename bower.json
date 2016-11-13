@@ -2,7 +2,7 @@
   "name": "prossimo-app",
   "private": true,
   "dependencies": {
-    "jquery": "^3.1.1",
+    "jquery": "^2.2.2",
     "backbone": "^1.3.3",
     "handlebars": "^4.0.5",
     "backbone.marionette": "^3.1.0",
@@ -23,6 +23,7 @@
     "underscore": "^1.8.3"
   },
   "resolutions": {
-    "backbone": "^1.3.3"
+    "backbone": "^1.3.3",
+    "jquery": "^2.2.2"
   }
 }

@@ -52,6 +52,9 @@ var app = app || {};
             // Assign stage
             this.assignStage( opts );
 
+            //  TODO: rewrite this deferred part, it prevents us from upgrading
+            //  to jQuery v3. See "Example: async vs sync" here:
+            //  https://blog.jquery.com/2016/06/09/jquery-3-0-final-released/
             chain
             // Assign project settings
             .then(this.assignDefaultStates.bind(this, opts))
