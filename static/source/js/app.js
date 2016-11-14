@@ -34,6 +34,9 @@ $(function () {
         app.main_region = new Marionette.Region({ el: '#main' });
         app.dialogs = new app.Dialogs();
 
+        //get comments from server side
+        app.comments = new app.Comments(); 
+
         app.main_navigation = new app.MainNavigationView({
             dashboard: {
                 title: 'Dashboard',
@@ -91,7 +94,7 @@ $(function () {
         app.vent.on('auth:initial_login auth:no_backend', function () {
             Backbone.history.start({ pushState: true });
 
-            if ( Backbone.history.fragment === '' ) {
+            if ( Backbone.history.fragment === '' ) {                
                 app.router.navigate('/dashboard/', { trigger: true });
             }
         });

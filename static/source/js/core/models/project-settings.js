@@ -7,7 +7,7 @@ var app = app || {};
         { name: 'inches_display_mode', title: 'Inches Display Mode', type: 'string' },
         { name: 'hinge_indicator_mode', title: 'Hinge Indicator Mode', type: 'string' },
         { name: 'pricing_mode', title: 'Pricing Mode', type: 'string' },
-        { name: 'show_drawings_in_quote', title: 'Show Drawings in Quote', type: 'string' }
+        { name: 'show_drawings_in_quote', title: 'Show Drawings in Quote', type: 'string' }      
     ];
 
     var INCHES_DISPLAY_MODES = [
@@ -28,7 +28,7 @@ var app = app || {};
     var SHOW_DRAWINGS_IN_QUOTE_OPTIONS = [
         { value: true, title: 'Yes' },
         { value: false, title: 'No' }
-    ];
+    ];   
 
     app.ProjectSettings = Backbone.Model.extend({
         defaults: function () {
@@ -51,7 +51,7 @@ var app = app || {};
                 inches_display_mode: INCHES_DISPLAY_MODES[0].value,
                 hinge_indicator_mode: HINGE_INDICATOR_MODES[0].value,
                 pricing_mode: PRICING_MODES[0].value,
-                show_drawings_in_quote: SHOW_DRAWINGS_IN_QUOTE_OPTIONS[0].value
+                show_drawings_in_quote: SHOW_DRAWINGS_IN_QUOTE_OPTIONS[0].value                
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -89,7 +89,7 @@ var app = app || {};
                 inches_display_mode: INCHES_DISPLAY_MODES,
                 hinge_indicator_mode: HINGE_INDICATOR_MODES,
                 pricing_mode: PRICING_MODES,
-                show_drawings_in_quote: SHOW_DRAWINGS_IN_QUOTE_OPTIONS
+                show_drawings_in_quote: SHOW_DRAWINGS_IN_QUOTE_OPTIONS                
             };
         },
         getTitles: function (names) {

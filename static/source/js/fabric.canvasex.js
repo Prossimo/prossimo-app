@@ -1,8 +1,5 @@
 ﻿/**
- * fabric.canvasex.js
- * @author Jim Ma (https://github.com/mazong1123)
- * Contact: mazong1123@gmail.com
- * License: MIT
+ * fabric.canvasex.js 
  */
 (function () {
     'use strict';

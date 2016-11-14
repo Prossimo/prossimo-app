@@ -24,6 +24,7 @@ var app = app || {};
             this.render();
         },
         onChangeValueClick: function (e) {
+            
             var $button = $(e.target);
             var target_param = $button.closest('li').data('param');
             var target_value = $button.data('value');

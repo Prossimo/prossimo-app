@@ -33,6 +33,16 @@ var app = app || {};
                     return new app.CreateProjectDialogView(view_options);
                 }
             });
+
+            //comment
+            this.registerDialog({
+                name: 'commentDetail',
+                getView: function (view_options) {
+                    return new app.CommentDetailDialogView(view_options);
+                }
+            });
+
+
         },
         registerDialog: function (options) {
             this.registered_dialogs[options.name] = options;

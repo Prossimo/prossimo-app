@@ -13,11 +13,15 @@ var app = app || {};
             $create_project_button: '.create-project-button',
             $status_panel_container: '.status-panel-container',
             $settings_toggle: '.project-settings-toggle',
-            $spinner_container: '.spinner-container'
+            $spinner_container: '.spinner-container',
+            $enable_comments: '.enable-comments-button',
+            $add_comment: '.add-comment-button'
         },
         events: {
             'click @ui.$settings_toggle': 'onSettingsToggle',
-            'click @ui.$create_project_button': 'onOpenProjectForm'
+            'click @ui.$create_project_button': 'onOpenProjectForm',
+            'click @ui.$enable_comments': 'onEnableCommentsBtn',
+            'click @ui.$add_comment': 'onAddCommentBtn'
         },
         initialize: function () {
             this.project_selector_view = new app.ProjectSelectorView({ collection: this.collection });
@@ -39,7 +43,14 @@ var app = app || {};
         onOpenProjectForm: function () {
             app.dialogs.showDialog('createProject');
         },
+        onEnableCommentsBtn: function() {
+            app.vent.trigger('main_quoteview:show_canvas:render');                   
+        },
+        onAddCommentBtn: function() {
+            app.vent.trigger('main_quoteview:add_comment:render');       
+        },
         onCurrentProjectLoaded: function () {
+            
             if ( !this.isToggleDisabled() ) {
                 this.ui.$settings_toggle.removeClass('disabled');
             }

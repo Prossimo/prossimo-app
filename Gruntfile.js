@@ -45,6 +45,7 @@ module.exports = function (grunt) {
         'paste-image.js',
         'hot-renderers.js',
         'undomanager.js',
+        'core/models/comment.js',
         'core/models/user.js',
         'core/models/session.js',
         'core/models/unit.js',
@@ -116,6 +117,7 @@ module.exports = function (grunt) {
         'dialogs/views/login-dialog-view.js',
         'dialogs/views/options-profiles-table-dialog-view.js',
         'dialogs/views/create-project-dialog-view.js',
+        'dialogs/views/comment-detail-dialog-view.js',
         'app.js'
     ];
 

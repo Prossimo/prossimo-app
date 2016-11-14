@@ -1,0 +1,48 @@
+{{> 'dialogs/partials/base-dialog-start-wrapper' }}
+<div class="commemt-details-box">
+       
+    <div class="row">
+        <label>Index : </label> {{index}}
+        <br>
+        <label>Status : </label>
+        <select class="status">
+            {{#select status}}
+            <option value='0'>Unresolved</option>
+            <option value='1'>Resolved</option>            
+            {{/select}}
+        </select>
+        <div class="comment-address">
+            <label>Author : </label>
+            <span class="username">{{comment.author}}</span>
+            <span class="comment-date">{{comment.date}}</span>
+        </div>
+        <div class="comment-content">
+            {{comment.text}}
+        </div>
+    </div>    
+    <div class="content">
+        {{#each replies }}
+        <div class="row">
+            <div class="comment-address">
+                <span class="username">{{author}}</span>
+                <span class="comment-date">{{date}}</span>
+            </div>
+            <div class="comment-content">
+                {{text}}
+            </div>
+            <div class="comment-buttons">                
+                <a href="#" class='reply-delete-btn' data-param="{{ @index }}">Delete</a>                                    
+            </div>
+        </div>
+        {{/each}}              
+    </div>      
+
+    <textarea class="feedback" class="reply" placeholder="Add your feedback or note here ..."></textarea>
+    
+    <div style="text-align:right;">
+        <button class="btn btn-save">Add</button>
+        <button class="btn btn-cancel" data-dismiss="modal">Close</button>
+    </div>
+    
+</div>
+{{> 'dialogs/partials/base-dialog-end-wrapper' }}
