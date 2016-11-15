@@ -49,16 +49,16 @@ var app = app || {};
             var group = this.el;
 
             var subunitGroup = this.createSubunits();
-            // var connectorGroup = this.createConnectors();
+            var connectorGroup = this.createConnectors(subunitGroup);
 
             group.add(subunitGroup);
-            // group.add(connectorGroup);
+            group.add(connectorGroup);
 
             var center = module.get('center');
             // place unit on stage center
             group.position(center);
 
-            // connectorGroup.moveToTop();
+            connectorGroup.moveToTop();
 
             return group;
         },
@@ -88,8 +88,8 @@ var app = app || {};
                 }
 
                 previewImage = app.preview(subunit, {
-                    width: subunit.getInMetric('width', 'mm') * module.get('ratio'),
-                    height: subunit.getInMetric('height', 'mm') * module.get('ratio'),
+                    width: subunit.getInMetric('width', 'mm') * ratio,
+                    height: subunit.getInMetric('height', 'mm') * ratio,
                     mode: 'image',
                     position: (module.getState('insideView')) ? 'inside' : 'outside',
                     metricSize: 0,
@@ -108,29 +108,38 @@ var app = app || {};
                 });
 
                 group.add(positionedPreview);
-                // if (parentConnector) {
-                //     var connector = this.createConnector(parentConnector);
-                // }
             });
 
             return group;
         },
-        createConnectors: function () {
+        createConnectors: function (subunitGroup) {
+            if (!subunitGroup) { return; }
+
             var group = new Konva.Group({ name: 'connectors' });
 
-            // FIXME implement
+            var nonOriginSubunits = _.tail(subunitGroup.getChildren());
+            var connectorsKonvas = nonOriginSubunits.map(function (subunit) {
+                var parentConnector = model.getParentConnector(subunit.getAttr('subunitId'));
+                var connectorKonva = self.createConnector(parentConnector, { subunitKonvas: subunitGroup.getChildren() });
+                return connectorKonva;
+            });
+            group.add.apply(group, connectorsKonvas);
+
+            return group;
         },
         positionPreview: function (image, options) {
-            var adjustedX;
-            var adjustedY;
-            var stageCenterX = this.stage.width() / 2;
-            var stageCenterY = this.stage.height() / 2;
+            var previewX;
+            var previewY;
+            // var stageCenterX = this.stage.width() / 2;
+            // var stageCenterY = this.stage.height() / 2;
             var width = image.width;
             var height = image.height;
 
             if (options.isOrigin) {
-                adjustedX = stageCenterX - width / 2;
-                adjustedY = stageCenterY - height / 2;
+                // previewX = stageCenterX - width / 2;
+                // previewY = stageCenterY - height / 2;
+                previewX = 0;
+                previewY = 0;
             } else if (options.parentKonva) {
                 var parentKonva = options.parentKonva;
                 var parentX = parentKonva.x();
@@ -141,17 +150,17 @@ var app = app || {};
                 var offset = options.offset * ratio || 0;
 
                 if (options.side && options.side === 'top') {
-                    adjustedX = parentX + offset;
-                    adjustedY = parentY - gap - height;
+                    previewX = parentX + offset;
+                    previewY = parentY - gap - height;
                 } else if (options.side && options.side === 'right') {
-                    adjustedX = parentX + parentWidth + gap;
-                    adjustedY = parentY + offset;
+                    previewX = parentX + parentWidth + gap;
+                    previewY = parentY + offset;
                 } else if (options.side && options.side === 'bottom') {
-                    adjustedX = parentX + offset;
-                    adjustedY = parentY + parentHeight + gap;
+                    previewX = parentX + offset;
+                    previewY = parentY + parentHeight + gap;
                 } else if (options.side && options.side === 'left') {
-                    adjustedX = parentX - gap - width;
-                    adjustedY = parentY + offset;
+                    previewX = parentX - gap - width;
+                    previewY = parentY + offset;
                 } else { return; }
             }
 
@@ -159,49 +168,82 @@ var app = app || {};
                 name: 'subunitPreview',
                 subunitId: options.subunitId,
                 image: image,
-                x: adjustedX,
-                y: adjustedY,
+                x: previewX,
+                y: previewY,
                 opacity: options.opacity
             });
 
             return konvaImage;
         },
-        createConnector: function (connector) {
+        createConnector: function (connector, options) {
             if (!connector) { return; }
-
-            var style = module.getStyle('frame').default;
-            var width;  // in mm
-            var height;
-
-            if (connector.side === 'top' || connector.side === 'bottom') {
-                width = connector.length;
-                height = (connector.facewidth) ? connector.facewidth : connector.width;
-            } else if (connector.side === 'right' || connector.side === 'left') {
-                width = (connector.facewidth) ? connector.facewidth : connector.width;
-                height = connector.length;
-            } else { return; }
+            if (!(options && options.subunitKonvas)) { return; }
 
             var group = new Konva.Group({
                 name: 'connector',
                 connectorId: connector.id
             });
 
-            var connectorFace = new Konva.Line({
+            // to millimetres
+            var style = module.getStyle('frame').default;
+            var parentSubunitId = model.getParentSubunit(connector.id);
+            var parentKonva = options.subunitKonvas.filter(function (konva) {
+                return (konva.getAttr('subunitId') === parentSubunitId);
+            })[0];
+            var parentWidth = parentKonva.width() / ratio;
+            var parentHeight = parentKonva.height() / ratio;
+            var parentX = parentKonva.x() / ratio;
+            var parentY = parentKonva.y() / ratio;
+            var side = connector.side;
+            var offset = connector.offsets[0];
+            var width = connector.width;
+            var facewidth = (connector.facewidth) ? connector.facewidth : connector.width;
+            var faceOverlap = (facewidth - width) / 2;
+            var length = connector.length;
+            var drawingWidth;
+            var drawingHeight;
+            var drawingX;
+            var drawingY;
+
+            if (side === 'top') {
+                drawingWidth = length;
+                drawingHeight = facewidth;
+                drawingX = parentX + offset;
+                drawingY = parentY - width - faceOverlap;
+            } else if (side === 'right') {
+                drawingWidth = facewidth;
+                drawingHeight = length;
+                drawingX = parentX + parentWidth - faceOverlap;
+                drawingY = parentY + offset;
+            } else if (side === 'bottom') {
+                drawingWidth = length;
+                drawingHeight = facewidth;
+                drawingX = parentX + offset;
+                drawingY = parentY + parentHeight - faceOverlap;
+            } else if (side === 'left') {
+                drawingWidth = facewidth;
+                drawingHeight = length;
+                drawingX = parentX - width - faceOverlap;
+                drawingY = parentY + offset;
+            } else { return; }
+
+            var drawingFace = new Konva.Line({
                 points: [
                     0, 0,
-                    width, 0,
-                    width, height,
-                    0, height
+                    drawingWidth, 0,
+                    drawingWidth, drawingHeight,
+                    0, drawingHeight
                 ]
             });
 
-            group.add(connectorFace);
-
+            group.add(drawingFace);
             group.children
                 .closed(true)
                 .stroke(style.stroke)
                 .strokeWidth(style.strokeWidth)
-                .fill(style.fill);
+                .fill(style.fill)
+                .scale({ x: ratio, y: ratio })  // to pixels
+                .position({ x: drawingX * ratio, y: drawingY * ratio });
 
             return group;
         }

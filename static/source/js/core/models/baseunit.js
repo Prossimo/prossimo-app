@@ -2310,17 +2310,24 @@ var app = app || {};
             isMultiunit: function () {
                 return this.constructor === app.Multiunit;
             },
-            isSubunit: function (options) {
-                var collection = (options && options.collection) ?
-                    options.collection :
-                    this.collection;
-
-                var allSubunitIds = _.flatten(collection
+            isSubunit: function () {
+                var allSubunitIds = this.collection.chain()
                     .filter(function (unit) { return unit.isMultiunit(); })
-                    .map(function (unit) { return unit.get('multiunit_subunits'); })
-                );
+                    .map(function (multiunit) { return multiunit.get('multiunit_subunits'); })
+                    .flatten()
+                    .value();
 
-                return allSubunitIds.indexOf(parseInt(this.getId())) !== -1;
+                return _.contains(allSubunitIds, parseInt(this.getId()));
+            },
+            getParentMultiunit: function () {
+                var subunitId = parseInt(this.getId());
+                
+                var parentMultiunit = this.collection.chain()
+                    .filter(function (unit) { return unit.isMultiunit(); })
+                    .find(function (multiunit) { return _.contains(multiunit.get('multiunit_subunits'), subunitId); })
+                    .value();
+
+                return parentMultiunit;
             },
             getRelation: function () {
                 var unitRelation;

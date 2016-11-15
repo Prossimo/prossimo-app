@@ -12,8 +12,8 @@ var app = app || {};
     var CONNECTOR_DEFAULTS = {
         offsets: [0, 0],
         width: 20,
-        length: 200,
-        facewidth: 40
+        facewidth: 40,
+        length: '100%'
     };
 
     function getSectionDefaults() {
@@ -21,6 +21,14 @@ var app = app || {};
             id: _.uniqueId(),
             connectors: []
         };
+    }
+
+    function isPercentage(value) {
+        if (_.isArray(value)) {
+            return value.some(function (subvalue) { return isPercentage(subvalue); });
+        } else {
+            return (_.isString(value) && value.indexOf('%') !== -1);
+        }
     }
 
     app.Multiunit = app.Baseunit.extend({
@@ -74,7 +82,7 @@ var app = app || {};
 
             this.subunits.add(
                 subunitIds
-                    .map(function (id) { return self.collection.getById(id); })
+                    .map(function (id) { return self.getSubunitById(id); })
                     .filter(function (subunit) { return !_.isUndefined(subunit); })
                     .filter(function (subunit) { return self.subunits.indexOf(subunit) === -1; })
             );
@@ -95,17 +103,59 @@ var app = app || {};
                 )
             );
         },
+        getSubunitById: function (id) {
+            return this.collection.getById(id);
+        },
+        addSubunit: function (subunit) {
+            if (!(subunit instanceof app.Baseunit)) { return; }
+
+            var subunitIds = this.get('multiunit_subunits');
+            var subunitId = subunit.getId();
+
+            if (subunitIds.indexOf(subunitId) === -1) {
+                subunitIds.push(subunitId);
+                this.updateSubunitsCollection();
+            }
+        },
         /**
-         * Connector format:
-         * {   id: <number>,                     // Multiunit-scope unique numeric ID for the connector
-         *     side: '<top|right|bottom|left>',  // Which frame side the connector is on
-         *     connects: [<number>, <number>],   // IDs of subunits connected. First subunit closer to multiunit root
-         *     offsets: [<number>, <number>],    // Connector offset to parent subunit; subunit offset to connector, mm
+         * = Conceptual connector model:
+         *
+         * The multiunit is a tree of subunits. Each connection is
+         * parent subunit <- connector <- child subunit.
+         *
+         * Connector connects to parent on a side with offset along the side ("sliding" on the side).
+         * Connector adds a gap between parent and child, but may itself appear thicker than that gap.
+         * Child connects to connector with another offset in the same direction.
+         *
+         * = Essential connector format:
+         * {
+         *     id: <number>,                     // Multiunit-scope unique numeric ID for the connector
+         *     side: '<top|right|bottom|left>',  // Attach connector to parent side
+         *     connects: [                       // IDs of subunits connected
+         *         <number>,                         // Parent subunit ID
+         *         <number>                          // Child subunit ID
+         *     ],
+         *     offsets: [                        // Offsets along chosen parent side
+         *         <number>,                         // Connector offset relative to parent, mm
+         *         <number>                          // Child offset relative to connector, mm
+         *     ],
          *     width: <number>,                  // Actual gap between connected units, mm
+         *     facewidth: <number>               // How wide the connector drawing appears, mm
          *     length: <number>,                 // Connector length, mm
-         *     facewidth: <number> }             // How wide the connector appears in the drawing, mm
-         * Example:
-         * { id: 123, side: 'right', connects: [123, 124], offsets: [0, 100], width: 20, length: 200, facewidth: 40 }
+         * }
+         *
+         * = Optional ad-hoc extensions:
+         * Use for particular tasks. Convert to essential format after use.
+         * {
+         *     offsets: [
+         *         '<number>%',                      // Connector offset relative to parent, % of parent side length
+         *         '<number>%'                       // Child offset relative to connector, % of connector length
+         *     ],
+         *     length: '<number>%',              // Connector length, % of parent side length
+         * }
+         *
+         * = Example:
+         * { id: 123, side: 'right', connects: [123, 124], offsets: [0, 100], width: 20, facewidth: 40, length: 200 }
          */
         getConnectors: function () {
             return this.get('root_section').connectors;
@@ -154,7 +204,7 @@ var app = app || {};
 
             if (!options.connects[1]) {
                 var newSubunit = new app.Unit();
-                options.connects[1] = this.collection.add(newSubunit);
+                options.connects[1] = this.collection.add(newSubunit).getId();
                 this.addSubunit(newSubunit);
             }
 
@@ -169,6 +219,7 @@ var app = app || {};
             };
 
             this.getConnectors().push(connector);
+            this.connectorToEssentialFormat(connector);
             return connector;
         },
         removeConnector: function (id) {
@@ -200,16 +251,28 @@ var app = app || {};
 
             return connector;
         },
-        addSubunit: function (subunit) {
-            if (!(subunit instanceof app.Baseunit)) { return; }
+        connectorToEssentialFormat: function (connector) {
+            if (_.isUndefined(connector)) { return; }
 
-            var subunitIds = this.get('multiunit_subunits');
-            var subunitId = subunit.getId();
+            var parentId = this.getParentSubunit(connector.id);
+            var parent = this.getSubunitById(parentId);
+            var parentSide = (connector.side === 'top' || connector.side === 'bottom') ?
+                parent.get('width') :
+                parent.get('height');
 
-            if (subunitIds.indexOf(subunitId) === -1) {
-                subunitIds.push(subunitId);
-                this.updateSubunitsCollection();
+            if (isPercentage(connector.length)) {
+                connector.length = parseFloat(connector.length) * 0.01 * parentSide;
             }
+
+            if (isPercentage(connector.offsets[0])) {
+                connector.offsets[0] = parseFloat(connector.offsets[0]) * 0.01 * parentSide;
+            }
+
+            if (isPercentage(connector.offsets[1])) {
+                connector.offsets[1] = parseFloat(connector.offsets[1]) * 0.01 * connector.length;
+            }
+
+            return connector;
         }
     });
 })();
