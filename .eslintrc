@@ -3,6 +3,13 @@
     "env": {
         "browser": true
     },
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": false
+        }
+    },
     "rules": {
         //  FIXME: should be error, not warning
         "indent": [
