@@ -155,6 +155,16 @@ test('utils.format.dimensions_and_area_mm', function () {
     );
 });
 
+test('utils.format.fileSize', function () {
+    var f = app.utils.format;
+
+    equal(f.fileSize(0), '0 B', 'Expected 0 B');
+    equal(f.fileSize(678), '678 B', 'Expected 678 B');
+    equal(f.fileSize(96085), '94 KB', 'Expected 94 KB');
+    equal(f.fileSize(437575), '427 KB', 'Expected 427 KB');
+    equal(f.fileSize(5867777), '5.6 MB', 'Expected 5.6 MB');
+});
+
 //  ------------------------------------------------------------------------
 //  Test parseFormat functions from utils.js
 //  ------------------------------------------------------------------------
