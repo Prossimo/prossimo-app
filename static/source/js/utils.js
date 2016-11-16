@@ -204,6 +204,19 @@ var app = app || {};
             ) {
                 return this.dimensions_mm(width, height) +
                     ' (' + this.square_meters(area, area_num, area_format) + ')';
+            },
+            fileSize: function (size_in_bytes) {
+                var suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+                var counter = 0;
+
+                while ( parseFloat(size_in_bytes) >= 1024 ) {
+                    size_in_bytes = parseFloat(size_in_bytes) / 1024;
+                    counter++;
+                }
+
+                return suffixes[counter] ?
+                    this.fixed_minimal(size_in_bytes, counter < 2 ? 0 : 1) + ' ' + suffixes[counter] :
+                    'Ovflw.';
             }
         },
         parseFormat: {

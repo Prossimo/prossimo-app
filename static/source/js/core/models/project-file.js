@@ -34,6 +34,14 @@ var app = app || {};
         getThumbnailUrl: function () {
             return this.get('has_thumbnail') ? this.url() + '/thumbnail' : undefined;
         },
+        getGoogleDocsViewUrl: function () {
+            var prefix = 'https://docs.google.com/viewer?url=';
+
+            return prefix + this.getDownloadUrl();
+        },
+        getFileSize: function () {
+            return app.utils.format.fileSize(this.get('size'));
+        },
         initialize: function (attributes, options) {
             this.options = options || {};
         }

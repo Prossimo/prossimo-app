@@ -13,7 +13,9 @@ var app = app || {};
                 document_list: app.current_project.files.map(function (item) {
                     return {
                         name: item.get('original_name'),
-                        url: item.getDownloadUrl()
+                        url: item.getDownloadUrl(),
+                        gdocs_url: item.getGoogleDocsViewUrl(),
+                        size: item.getFileSize()
                     };
                 }, this)
             };
