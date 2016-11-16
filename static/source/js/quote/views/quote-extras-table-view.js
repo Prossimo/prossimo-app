@@ -52,7 +52,7 @@ var app = app || {};
 
             return has_one;
         },
-        serializeData: function () {
+        templateContext: function () {
             var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
 
             return {

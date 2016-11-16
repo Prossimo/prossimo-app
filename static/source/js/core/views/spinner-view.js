@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.SpinnerView = Marionette.ItemView.extend({
+    app.SpinnerView = Marionette.View.extend({
         tagName: 'div',
         className: 'project-loading-spinner',
         template: app.templates['core/spinner-view'],

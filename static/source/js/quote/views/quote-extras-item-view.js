@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.QuoteExtrasItemView = Marionette.ItemView.extend({
+    app.QuoteExtrasItemView = Marionette.View.extend({
         tagName: 'tr',
         className: 'quote-extras-item',
         template: app.templates['quote/quote-extras-item-view'],
@@ -46,7 +46,7 @@ var app = app || {};
 
             return quantity;
         },
-        serializeData: function () {
+        templateContext: function () {
             var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
 
             return {

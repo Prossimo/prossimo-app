@@ -5,7 +5,7 @@ var app = app || {};
 
     var UNSET_VALUE = '--';
 
-    app.UnitsTableView = Marionette.ItemView.extend({
+    app.UnitsTableView = Marionette.View.extend({
         tagName: 'div',
         className: 'units-table-container',
         template: app.templates['core/units-table-view'],
@@ -217,7 +217,7 @@ var app = app || {};
                 this.addNewAccessory(e);
             }
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 tabs: _.each(this.tabs, function (item, key) {
                     item.is_active = key === this.active_tab;
@@ -883,7 +883,7 @@ var app = app || {};
             if ( this.hot ) {
                 clearTimeout(this.table_update_timeout);
                 this.table_update_timeout = setTimeout(function () {
-                    if ( !self.isDestroyed ) {
+                    if ( !self.isDestroyed() ) {
                         self.hot.loadData(self.getActiveTab().collection);
                     }
                 }, 20);
@@ -1113,7 +1113,7 @@ var app = app || {};
                 });
             }
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             clearInterval(this.dropdown_scroll_timer);
             this.$el.off('show.bs.popover');
             this.$el.popover('destroy');

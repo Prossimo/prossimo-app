@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.UnitsTableTotalPricesView = Marionette.ItemView.extend({
+    app.UnitsTableTotalPricesView = Marionette.View.extend({
         tagName: 'div',
         className: 'units-table-total-prices',
         template: app.templates['core/units-table-total-prices-view'],
@@ -13,7 +13,7 @@ var app = app || {};
             this.listenTo(this.options.extras, 'change', this.render);
             this.listenTo(this.options.extras, 'remove', this.render);
         },
-        serializeData: function () {
+        templateContext: function () {
             var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
             var total_prices = this.model ? this.model.getTotalPrices() : undefined;
             var total_area = this.model ? this.model.units.getTotalSquareFeet() : undefined;

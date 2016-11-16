@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.MainDrawingView = Marionette.ItemView.extend({
+    app.MainDrawingView = Marionette.View.extend({
         tagName: 'div',
         className: 'screen drawing-screen',
         template: app.templates['drawing/main-drawing-view'],
@@ -51,7 +51,7 @@ var app = app || {};
 
                 this.ui.$drawing_container.empty().append(this.drawing_view.render().el);
 
-                if ( this._isShown && update_rendered_flag ) {
+                if ( this.isAttached() && update_rendered_flag ) {
                     this.drawing_view.trigger('update_rendered');
                 }
             }
@@ -77,7 +77,7 @@ var app = app || {};
                 this.drawing_view.trigger('update_rendered');
             }
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.sidebar_view.destroy();
 
             if ( this.drawing_view ) {

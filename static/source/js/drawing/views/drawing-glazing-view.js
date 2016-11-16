@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.DrawingGlazingPopup = Marionette.ItemView.extend({
+    app.DrawingGlazingPopup = Marionette.View.extend({
         className: 'drawing-glazing-popup',
         template: app.templates['drawing/drawing-glazing-view'],
         ui: {
@@ -53,7 +53,7 @@ var app = app || {};
 
             this.updateSize( 570, (window.innerHeight - 200) );
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.ui.$modal.remove();
             this.stage.destroy();
 

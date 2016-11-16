@@ -6,7 +6,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.MainDashboardView = Marionette.ItemView.extend({
+    app.MainDashboardView = Marionette.View.extend({
         tagName: 'div',
         className: 'screen dashboard-screen',
         template: app.templates['dashboard/main-dashboard-view'],
@@ -33,7 +33,7 @@ var app = app || {};
             this.ui.$totals.append(this.totals_view.render().el);
             this.ui.$documents.append(this.documents_view.render().el);
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.project_info_view.destroy();
             this.totals_view.destroy();
             this.documents_view.destroy();

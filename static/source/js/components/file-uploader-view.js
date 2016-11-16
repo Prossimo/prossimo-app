@@ -5,7 +5,7 @@ var WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">' +
 (function () {
     'use strict';
 
-    app.FileUploaderView = Marionette.ItemView.extend({
+    app.FileUploaderView = Marionette.View.extend({
         className: 'uploader-container',
         template: app.templates['dialogs/files-uploader-view'],
 
@@ -77,7 +77,7 @@ var WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">' +
 
             this.fUplad.on('fileuploadadd', this.abortUpload.bind(this));
         },
-        templateHelpers: function () {
+        templateContext: function () {
             var isMultiple = true;
 
             if (this.options.maxLength === 1) {
@@ -89,7 +89,7 @@ var WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">' +
                 isShowPreview: this.options.showPreview
             };
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.fUplad.fileupload('xd');
         },
         getUuidForAllFiles: function () {

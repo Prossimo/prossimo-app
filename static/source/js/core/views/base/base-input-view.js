@@ -11,7 +11,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.BaseInputView = Marionette.ItemView.extend({
+    app.BaseInputView = Marionette.View.extend({
         className: 'input-container',
         template: app.templates['core/base/base-input-view'],
         ui: {
@@ -35,7 +35,7 @@ var app = app || {};
         },
         revertEditable: function () {
             this.ui.$container.removeClass('is-edited').removeClass('has-error');
-            this.ui.$input.val(this.serializeData().value);
+            this.ui.$input.val(this.templateContext().value);
             this.hideErrorMessage();
         },
         showErrorMessage: function (message) {
@@ -56,7 +56,7 @@ var app = app || {};
                 return;
             }
 
-            if ( new_value !== '' && new_value !== this.serializeData().value ) {
+            if ( new_value !== '' && new_value !== this.templateContext().value ) {
                 new_value_parsed = _.isFunction(this.model.getAttributeType) &&
                     this.model.getAttributeType(this.options.param) === 'number' && !isNaN(new_value) ?
                     parseFloat(new_value) : new_value;
@@ -123,7 +123,7 @@ var app = app || {};
 
             this.listenTo(this.model, 'change:' + this.options.param, this.render);
         },
-        serializeData: function () {
+        templateContext: function () {
             var value = this.model.get(this.options.param);
             var placeholder = this.options.placeholder || '&nbsp;';
 
@@ -139,7 +139,7 @@ var app = app || {};
             this.ui.$container = this.$el;
             this.appendPopover();
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.ui.$edit.popover('destroy');
         }
     });

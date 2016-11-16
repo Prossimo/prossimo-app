@@ -20,7 +20,7 @@ var app = app || {};
     // this.handleSomeAction - callback on some user UI action
     // this.createSomeObject - pure function that create some canvas UI elements
 
-    app.DrawingView = Marionette.ItemView.extend({
+    app.DrawingView = Marionette.View.extend({
         tagName: 'div',
         template: app.templates['drawing/drawing-view'],
         initialize: function (opts) {
@@ -277,7 +277,7 @@ var app = app || {};
             this.bindModuleEvents();
         },
         // Marrionente lifecycle method
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.stage.destroy();
             this.unbindModuleEvents();
 
@@ -338,7 +338,7 @@ var app = app || {};
             this.stopListening(this.module);
         },
 
-        serializeData: function () {
+        templateContext: function () {
             var available_filling_types = [];
             var profile_id = this.model.profile && this.model.profile.id;
 

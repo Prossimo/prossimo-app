@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.MainSettingsView = Marionette.ItemView.extend({
+    app.MainSettingsView = Marionette.View.extend({
         tagName: 'div',
         className: 'screen settings-screen',
         template: app.templates['settings/main-settings-view'],
@@ -93,7 +93,7 @@ var app = app || {};
                 this.options_view.destroy();
             }
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 tabs: _.each(this.tabs, function (item, key) {
                     item.is_active = key === this.active_tab;
@@ -101,7 +101,7 @@ var app = app || {};
                 }, this)
             };
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             if ( this.profiles_table_view ) {
                 this.profiles_table_view.destroy();
             }

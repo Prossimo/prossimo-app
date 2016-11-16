@@ -53,7 +53,7 @@ var app = app || {};
         onSort: function (event) {
             this.collection.setItemPosition(event.oldIndex, event.newIndex);
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 collection_length: this.collection.length,
                 collection_title: this.options.collection_title || 'Items List',
@@ -71,7 +71,7 @@ var app = app || {};
                 }
             });
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.ui.$container.sortable('destroy');
         },
         initialize: function () {

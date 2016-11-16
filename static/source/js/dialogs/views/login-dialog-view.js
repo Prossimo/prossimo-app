@@ -87,7 +87,7 @@ var app = app || {};
                 this.ui.$error_container.html('<p>' + message + '</p>');
             }
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 token_expired: app.session.get('token_expired')
             };

@@ -178,7 +178,7 @@ var app = app || {};
                 return cell_properties;
             };
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 item_name: this.options.active_item.get('name'),
                 collection_title: this.options.collection_title
@@ -208,7 +208,7 @@ var app = app || {};
                 });
             }
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             if ( this.hot ) {
                 this.hot.destroy();
             }

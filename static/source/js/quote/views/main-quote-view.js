@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.MainQuoteView = Marionette.ItemView.extend({
+    app.MainQuoteView = Marionette.View.extend({
         tagName: 'div',
         className: 'screen quote-screen',
         template: app.templates['quote/main-quote-view'],
@@ -11,7 +11,7 @@ var app = app || {};
             $header_container: '.quote-header-container',
             $table_container: '.quote-table-container'
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 urlToDownloadPdf: app.settings.getPdfDownloadUrl('quote')
             };
@@ -38,7 +38,7 @@ var app = app || {};
             this.ui.$header_container.append(this.quote_header_view.render().el);
             this.ui.$table_container.append(this.quote_table_view.render().el);
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.units_table_view.destroy();
             this.quote_header_view.destroy();
             this.quote_table_view.destroy();

@@ -53,7 +53,7 @@ var app = app || {};
                 balance_due_at_delivery: f.price_usd(total_prices.balance_due_at_delivery)
             };
         },
-        serializeData: function () {
+        templateContext: function () {
             var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
 
             return {
@@ -68,7 +68,7 @@ var app = app || {};
             };
         },
         onRender: function () {
-            if ( this.serializeData().has_extras ) {
+            if ( this.templateContext().has_extras ) {
                 this.quote_extras_table_view = new app.QuoteExtrasTableView({
                     collection: this.options.extras,
                     show_price: this.options.show_price,
@@ -85,7 +85,7 @@ var app = app || {};
                 this.ui.$optional_extras_table_container.append(this.quote_optional_extras_table_view.render().el);
             }
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             if ( this.quote_extras_table_view ) {
                 this.quote_extras_table_view.destroy();
             }

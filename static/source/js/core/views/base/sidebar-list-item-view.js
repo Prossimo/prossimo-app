@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.SidebarListItemView = Marionette.ItemView.extend({
+    app.SidebarListItemView = Marionette.View.extend({
         tagName: 'li',
         className: 'sidebar-list-item',
         template: app.templates['core/base/sidebar-list-item-view'],
@@ -16,7 +16,7 @@ var app = app || {};
         onItemClick: function () {
             this.options.parent_view.setActiveItem(this.model);
         },
-        serializeData: function () {
+        templateContext: function () {
             var active_item = this.options.parent_view.getActiveItem();
             var placeholder = this.options.placeholder || 'New Item';
             var name = this.model.get('name') || '';

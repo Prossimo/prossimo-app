@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.FillingTypesView = Marionette.ItemView.extend({
+    app.FillingTypesView = Marionette.View.extend({
         tagName: 'div',
         className: 'filling-types-main-container',
         template: false,
@@ -26,7 +26,7 @@ var app = app || {};
                 this.$el.append(this.filling_type_view.render().el);
             }
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             if ( this.fillings_list_view ) {
                 this.fillings_list_view.destroy();
             }

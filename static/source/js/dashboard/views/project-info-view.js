@@ -6,7 +6,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.ProjectInfoView = Marionette.ItemView.extend({
+    app.ProjectInfoView = Marionette.View.extend({
         tagName: 'div',
         className: 'project-total-prices',
         template: app.templates['dashboard/project-info/main'],
@@ -44,7 +44,7 @@ var app = app || {};
                 format: 'd MM, yyyy'
             });
         },
-        serializeData: function () {
+        templateContext: function () {
             return _.extend({}, this.model.toJSON(), {editMode: this.editMode});
         },
         saveFormData: function () {
@@ -62,7 +62,7 @@ var app = app || {};
         onRender: function () {
             this.enterMode();
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.ui.$content.find('.date').datepicker('destroy');
         }
     });
