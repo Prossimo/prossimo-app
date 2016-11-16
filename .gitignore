@@ -3,6 +3,7 @@ bower_components
 build
 dist
 static/public
+dashboard/index.html
 docs/index.html
 drawing/index.html
 quote/index.html
