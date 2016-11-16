@@ -17,7 +17,8 @@ var app = app || {};
 
             this.listenTo(app.vent, 'main_quoteview:show_canvas:render', this.onInitCanvas);
             this.listenTo(app.vent, 'main_quoteview:add_comment:render', this.onAddComment);
-
+            this.listenTo(app.vent, 'main_quoteview:comment_status:changed', this.onRedrawComments);
+            this.listenTo(app.vent, 'main_quoteview:selected_comment:render', this.onRenderCommentFromList);
         },
         serializeData: function () {
             return {
@@ -49,6 +50,15 @@ var app = app || {};
             this.drawAllCommentsOnCanvas();
             this.initCanvas = true;            
         },        
+        onRedrawComments: function() {
+            this.removeAllCommentsOnCanvas();
+            this.drawAllCommentsOnCanvas();
+        },
+        onRenderCommentFromList:function(index) {
+  
+            var top = app.comments.at(index).get('position').top - 50;                  
+            $('.quote-outer-container').scrollTop(top);
+        },
         onAddComment: function() {
             if (this.initCanvas === false ) {
                 return false;
@@ -65,7 +75,7 @@ var app = app || {};
                         replies: []
                     }
             
-            info.index = app.comments.length;
+            info.index = app.comments.length + 1;
             info.position.top = Math.abs(this.ui.$quote_container.position().top) + 100;
 
             var cmt = new app.Comment (info); 

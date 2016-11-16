@@ -19,8 +19,11 @@ var app = app || {};
         onSelectStatus: function(e) {            
 
             this.model.set({
-                'status': $('.status').val()
+                'status': parseInt($('.status').val())
             });
+
+            app.vent.trigger('main_quoteview:comment_status:changed');           
+
         },
         onDeleteReply: function(e) {
            

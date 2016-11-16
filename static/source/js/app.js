@@ -23,6 +23,9 @@ $(function () {
         app.vent = {};
         _.extend(app.vent, Backbone.Events);
 
+        //get comments from server side
+        app.comments = new app.Comments(); 
+
         //  Object to hold project-independent properties
         app.settings = new app.Settings();
         app.session = new app.Session();
@@ -33,9 +36,6 @@ $(function () {
 
         app.main_region = new Marionette.Region({ el: '#main' });
         app.dialogs = new app.Dialogs();
-
-        //get comments from server side
-        app.comments = new app.Comments(); 
 
         app.main_navigation = new app.MainNavigationView({
             dashboard: {

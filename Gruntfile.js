@@ -76,6 +76,7 @@ module.exports = function (grunt) {
         'core/views/no-project-selected-view.js',
         'core/views/status-panel-view.js',
         'core/views/project-settings-panel-view.js',
+        'core/views/comments-panel-view.js',
         'core/views/spinner-view.js',
         'core/views/top-bar-view.js',
         'units-table/views/main-units-table-view.js',

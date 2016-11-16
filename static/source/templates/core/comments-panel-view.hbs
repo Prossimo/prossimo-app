@@ -1,0 +1,25 @@
+<div class="comments-container">   
+    <a class="add-comment-button">Add Comment</a>    
+    <div class="content">
+        {{#each items }}               
+            <div class="row {{#if status}} green {{else}} red {{/if}}" data-param="{{index}}">    
+                <div class="comment-content" data-param="{{index}}">
+                    <h4 data-param="{{index}}">{{index}} -
+                    {{#if status}}
+                        <span data-param="{{index}}">Resolved</span>
+                    {{else}}
+                        <span data-param="{{index}}">UnResolved</span>
+                    {{/if}}       
+                    </h4>
+                </div>
+                <div class="comment-address" data-param="{{index}}">            
+                    <span class="username" data-param="{{index}}">{{comment.author}}</span>
+                    <span class="comment-date" data-param="{{index}}">{{comment.date}}</span>
+                </div>
+                <div class="comment-content" data-param="{{index}}">
+                    {{comment.text}}
+                </div>            
+            </div>
+        {{/each}}
+    </div>
+</div>
