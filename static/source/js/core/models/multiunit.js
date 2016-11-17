@@ -118,6 +118,11 @@ var app = app || {};
                 this.updateSubunitsCollection();
             }
         },
+        updateSizes: function () {
+            this.set('width', 280);
+            this.set('height', 150);
+            // FIXME implement
+        },
         /**
          * = Conceptual connector model:
          *
