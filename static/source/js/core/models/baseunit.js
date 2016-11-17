@@ -1060,7 +1060,7 @@ var app = app || {};
             //         openingParams: {}
             //     }]
             // }
-            generateFullRoot: function (rootSection, openingParams) {
+                generateFullRoot: function (rootSection, openingParams) {
                 var unit = (this.activeSubunit) ? this.activeSubunit : this;
 
                 rootSection = rootSection || JSON.parse(JSON.stringify(unit.get('root_section')));
@@ -1473,7 +1473,7 @@ var app = app || {};
                     });
                 }
 
-                if ( current_root.bars.horizontal.length ) {
+                if ( current_root.bars && current_root.bars.horizontal.length ) {
                     _.each(current_root.bars.horizontal, function () {
                         result.glazing_bars.push({
                             type: 'horizontal',
@@ -1484,7 +1484,7 @@ var app = app || {};
                     }, this);
                 }
 
-                if ( current_root.bars.vertical.length ) {
+                if ( current_root.bars && current_root.bars.vertical.length ) {
                     _.each(current_root.bars.vertical, function () {
                         result.glazing_bars.push({
                             type: 'vertical',
@@ -2317,10 +2317,10 @@ var app = app || {};
                     .flatten()
                     .value();
 
-                return _.contains(allSubunitIds, parseInt(this.getId()));
+                return _.contains(allSubunitIds, this.getId());
             },
             getParentMultiunit: function () {
-                var subunitId = parseInt(this.getId());
+                var subunitId = this.getId();
                 
                 var parentMultiunit = this.collection.chain()
                     .filter(function (unit) { return unit.isMultiunit(); })

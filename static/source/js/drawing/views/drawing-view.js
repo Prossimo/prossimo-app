@@ -254,7 +254,7 @@ var app = app || {};
             var multiunit;
 
             if (relation === 'subunit') {
-                multiunit = model.getParentMultiunit();console.log('multiunit', JSON.stringify(multiunit))
+                multiunit = model.getParentMultiunit();
             } else if(relation === 'loneunit') {
                 multiunit = model.toMultiunit();
             } else { return; }

@@ -112,8 +112,9 @@ var app = app || {};
             var subunitIds = this.get('multiunit_subunits');
             var subunitId = subunit.getId();
 
-            if (subunitIds.indexOf(subunitId) === -1) {
+            if (!_.contains(subunitIds, subunitId)) {
                 subunitIds.push(subunitId);
+                this.updateSizes();
                 this.updateSubunitsCollection();
             }
         },
@@ -129,11 +130,11 @@ var app = app || {};
          *
          * = Essential connector format:
          * {
-         *     id: <number>,                     // Multiunit-scope unique numeric ID for the connector
+         *     id: '<id>',                       // Multiunit-scope unique numeric ID for the connector
          *     side: '<top|right|bottom|left>',  // Attach connector to parent side
          *     connects: [                       // IDs of subunits connected
-         *         <number>,                         // Parent subunit ID
-         *         <number>                          // Child subunit ID
+         *         '<id>',                           // Parent subunit ID
+         *         '<id>'                            // Child subunit ID
          *     ],
          *     offsets: [                        // Offsets along chosen parent side
          *         <number>,                         // Connector offset relative to parent, mm
@@ -155,7 +156,7 @@ var app = app || {};
          * }
          *
          * = Example:
-         * { id: 123, side: 'right', connects: [123, 124], offsets: [0, 100], width: 20, facewidth: 40, length: 200 }
+         * { id: '17', side: 'right', connects: ['123', '124'], offsets: [0, 100], width: 20, facewidth: 40, length: 200 }
          */
         getConnectors: function () {
             return this.get('root_section').connectors;
@@ -198,14 +199,19 @@ var app = app || {};
         addConnector: function (options) {
             if (!(options && options.connects && options.side)) { return; }
 
+            var parentSubunit = this.getSubunitById(options.connects[0]);
+
             var highestId = this.getConnectors()
                 .map(function (connector) { return connector.id; })
                 .reduce(function (lastHighestId, currentId) { return Math.max(currentId, lastHighestId); }, 0);
 
             if (!options.connects[1]) {
-                var newSubunit = new app.Unit();
-                options.connects[1] = this.collection.add(newSubunit).getId();
-                this.addSubunit(newSubunit);
+                var childSubunit = new app.Unit({
+                    width: parentSubunit.get('width'),
+                    height: parentSubunit.get('height')
+                });
+                options.connects[1] = this.collection.add(childSubunit).getId();
+                this.addSubunit(childSubunit);
             }
 
             var connector = {

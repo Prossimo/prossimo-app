@@ -3,6 +3,8 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var self;
+
     var UNIT_PROPERTIES = [
         { name: 'glazing_bar_width', title: 'Glazing Bar Width (mm)', type: 'number' },
 
@@ -23,6 +25,11 @@ var app = app || {};
             }, this);
 
             return defaults;
+        },
+        initialize: function () {
+            self = this;
+
+            app.Baseunit.prototype.initialize.apply(this, arguments);
         },
         hasOnlyDefaultAttributes: function () {
             return app.Baseunit.prototype.hasOnlyDefaultAttributes.apply(this,

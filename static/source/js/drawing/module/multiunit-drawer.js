@@ -130,14 +130,10 @@ var app = app || {};
         positionPreview: function (image, options) {
             var previewX;
             var previewY;
-            // var stageCenterX = this.stage.width() / 2;
-            // var stageCenterY = this.stage.height() / 2;
             var width = image.width;
             var height = image.height;
 
             if (options.isOrigin) {
-                // previewX = stageCenterX - width / 2;
-                // previewY = stageCenterY - height / 2;
                 previewX = 0;
                 previewY = 0;
             } else if (options.parentKonva) {
@@ -187,6 +183,7 @@ var app = app || {};
             // to millimetres
             var style = module.getStyle('frame').default;
             var parentSubunitId = model.getParentSubunit(connector.id);
+
             var parentKonva = options.subunitKonvas.filter(function (konva) {
                 return (konva.getAttr('subunitId') === parentSubunitId);
             })[0];
