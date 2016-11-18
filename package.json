@@ -1,16 +1,43 @@
 {
   "name": "prossimo-app",
+  "version": "1.16.0",
   "private": true,
   "scripts": {
-    "start": "grunt",
-    "deploy": "grunt deploy"
+    "start": "node server/server.js",
+    "deploy": "grunt deploy",
+    "deploy:stagingy": "grunt deploy_staging",
+    "deploy:production": "grunt deploy_production",
+    "lint": "./node_modules/eslint-cli/bin/eslint.js src tools server",
+    "bundle": "./node_modules/babel-cli/bin/babel-node.js tools/run bundle",
+    "build": "./node_modules/babel-cli/bin/babel-node.js tools/run build",
+    "clean": "./node_modules/babel-cli/bin/babel-node.js tools/run clean"
+  },
+  "engines": {
+    "node": ">=6.9.1"
   },
   "devDependencies": {
-    "eslint": "^3.8.1",
-    "eslint-config-airbnb-base": "^9.0.0",
-    "eslint-plugin-import": "^2.0.1",
+    "babel-cli": "^6.18.0",
+    "babel-core": "^6.18.2",
+    "babel-eslint": "^7.1.1",
+    "babel-loader": "^6.2.7",
+    "babel-plugin-transform-async-to-generator": "^6.16.0",
+    "babel-plugin-transform-runtime": "^6.15.0",
+    "babel-polyfill": "^6.16.0",
+    "babel-preset-es2015": "^6.18.0",
+    "bootstrap-datepicker": "^1.6.4",
+    "bootstrap-toggle": "^2.2.2",
     "chai": "^3.5.0",
     "chai-qunit": "^0.1.0",
+    "copy-webpack-plugin": "^4.0.1",
+    "css-loader": "^0.26.0",
+    "eslint": "^3.10.2",
+    "eslint-cli": "^1.1.0",
+    "eslint-config-airbnb-base": "^9.0.0",
+    "eslint-plugin-import": "^2.0.1",
+    "eslint-plugin-promise": "^3.4.0",
+    "eslint-to-editorconfig": "^1.2.0",
+    "extract-text-webpack-plugin": "^1.0.1",
+    "file-loader": "^0.9.0",
     "grunt": "^1.0.0",
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-connect": "^1.0.1",
@@ -25,7 +52,54 @@
     "grunt-gitinfo": "^0.1.8",
     "grunt-replace": "~0.11.0",
     "grunt-shell": "~1.1.2",
+    "handlebars-template-loader": "^0.7.0",
+    "handsontable": "^0.29.0",
+    "html-webpack-plugin": "^2.24.1",
+    "isomorphic-style-loader": "^1.1.0",
+    "less": "^2.7.1",
+    "less-loader": "^2.2.3",
     "qunitjs": "^1.21.0",
-    "resemblejs": "^2.2.0"
+    "resemblejs": "^2.2.0",
+    "style-loader": "^0.13.1",
+    "url-loader": "^0.5.7",
+    "webpack": "^1.13.3",
+    "webpack-dev-middleware": "^1.8.4",
+    "webpack-hot-middleware": "^2.13.2"
+  },
+  "dependencies": {
+    "backbone": "^1.3.3",
+    "backbone.marionette": "^3.1.0",
+    "body-parser": "^1.15.2",
+    "bootstrap": "^3.3.7",
+    "bootstrap-select": "^1.11.2",
+    "compression": "^1.6.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.14.0",
+    "fs": "0.0.1-security",
+    "glob": "^7.1.1",
+    "http-proxy": "^1.15.2",
+    "jquery": "^3.1.1",
+    "mkdirp": "^0.5.1",
+    "nconf": "^0.8.4",
+    "path": "^0.12.7",
+    "rimraf": "^2.5.4",
+    "spin": "0.0.1",
+    "underscore": "^1.8.3"
+  },
+  "babel": {
+    "presets": [
+      "es2015"
+    ],
+    "plugins": [
+      "transform-async-to-generator",
+      "transform-runtime"
+    ],
+    "env": {
+      "test": {
+        "plugins": [
+          "rewire"
+        ]
+      }
+    }
   }
 }
