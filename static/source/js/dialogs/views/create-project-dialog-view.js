@@ -19,7 +19,8 @@ var app = app || {};
             $data_quote_revision: '.modal-body form input[name="quote_revision"]',
             $data_quote_date: '.modal-body form input[name="quote_date"]',
             $data_project_notes: '.modal-body form textarea[name="project_notes"]',
-            $data_shipping_notes: '.modal-body form textarea[name="shipping_notes"]'
+            $data_shipping_notes: '.modal-body form textarea[name="shipping_notes"]',
+            $data_lead_time: '.modal-body form input[name="lead_time"]'
         },
         events: {
             'submit form': 'addNewProject'
@@ -37,6 +38,7 @@ var app = app || {};
                 quote_date: this.ui.$data_quote_date.val().trim(),
                 project_notes: this.ui.$data_project_notes.val().trim(),
                 shipping_notes: this.ui.$data_shipping_notes.val().trim(),
+                lead_time: this.ui.$data_lead_time.val().trim(),
                 files: this.file_uploader.getUuidForAllFiles()
             });
 

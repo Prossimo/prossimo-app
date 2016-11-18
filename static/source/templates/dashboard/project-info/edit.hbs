@@ -77,7 +77,7 @@
                 Project Notes:
             </label>
             <div class="col-sm-8">
-                <textarea   name="project_notes">{{project_notes}}</textarea>
+                <textarea name="project_notes">{{project_notes}}</textarea>
             </div>
         </div>
            <div class="form-group">
@@ -85,7 +85,15 @@
                 Shipping Notes:
             </label>
             <div class="col-sm-8">
-                <textarea   name="shipping_notes">{{shipping_notes}}</textarea>
+                <textarea name="shipping_notes">{{shipping_notes}}</textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4">
+                Lead Time (weeks):
+            </label>
+            <div class="col-sm-8">
+                <input type="number" value="{{lead_time}}" name="lead_time" />
             </div>
         </div>
     </div>
