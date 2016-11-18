@@ -8,6 +8,7 @@ module.exports = {
     app: {
         srcPath: path.resolve(__dirname, '../src'),
         publicPath: path.resolve(__dirname, '../static/public'),
+        sourcePath: path.resolve(__dirname, '../static/source'),
         devtool: 'source-map',
         apiPrefix: '/api',
         printerPrefix: '/print'
