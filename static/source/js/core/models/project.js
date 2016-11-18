@@ -15,6 +15,7 @@ var app = app || {};
         { name: 'quote_revision', title: 'Quote Revision', type: 'number' },
         { name: 'shipping_notes', title: 'Shipping Notes', type: 'string'},
         { name: 'project_notes', title: 'Project Notes', type: 'string'},
+        { name: 'lead_time', title: 'Lead Time', type: 'number' },
         { name: 'settings', title: 'Settings', type: 'object' }
     ];
 
