@@ -78,7 +78,7 @@ var app = app || {};
 
                 if (!isOrigin) {
                     var parentConnector = model.getParentConnector(id);
-                    parentId = model.getParentSubunit(parentConnector.id);
+                    parentId = model.getConnectorsParentSubunitId(parentConnector.id);
                     side = parentConnector.side;
                     gap = parentConnector.width;
                     offset = parentConnector.offsets[1] + parentConnector.offsets[0];
@@ -130,13 +130,13 @@ var app = app || {};
         positionPreview: function (image, options) {
             var previewX;
             var previewY;
-            var width = image.width;
-            var height = image.height;
 
             if (options.isOrigin) {
                 previewX = 0;
                 previewY = 0;
             } else if (options.parentKonva) {
+                var width = image.width;
+                var height = image.height;
                 var parentKonva = options.parentKonva;
                 var parentX = parentKonva.x();
                 var parentY = parentKonva.y();
@@ -182,7 +182,7 @@ var app = app || {};
 
             // to millimetres
             var style = module.getStyle('frame').default;
-            var parentSubunitId = model.getParentSubunit(connector.id);
+            var parentSubunitId = model.getConnectorsParentSubunitId(connector.id);
 
             var parentKonva = options.subunitKonvas.filter(function (konva) {
                 return (konva.getAttr('subunitId') === parentSubunitId);

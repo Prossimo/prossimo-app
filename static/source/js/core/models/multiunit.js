@@ -114,14 +114,139 @@ var app = app || {};
 
             if (!_.contains(subunitIds, subunitId)) {
                 subunitIds.push(subunitId);
-                this.updateSizes();
                 this.updateSubunitsCollection();
+                this.recalculateSizes();
             }
         },
-        updateSizes: function () {
-            this.set('width', 280);
-            this.set('height', 150);
-            // FIXME implement
+        recalculateSizes: function () {
+            // Build positions map/tree
+            var subunitTree = this.getSubunitTree();
+            this.subunitTreeForEach(subunitTree, function (node) {
+                var isOrigin = self.isOriginId(node.unit.getId());
+
+                if (isOrigin) {
+                    node.width = node.unit.getInMetric('width', 'mm');
+                    node.height = node.unit.getInMetric('height', 'mm');
+                    node.x = 0;
+                    node.y = 0;
+                } else {
+                    var width = node.unit.getInMetric('width', 'mm');
+                    var height = node.unit.getInMetric('height', 'mm');
+                    var parentX = node.parent.x;
+                    var parentY = node.parent.y;
+                    var parentWidth = node.parent.unit.getInMetric('width', 'mm');
+                    var parentHeight = node.parent.unit.getInMetric('height', 'mm');
+                    var parentConnector = self.getParentConnector(node.unit.getId());
+                    var gap = parentConnector.width;
+                    var offset = parentConnector.offsets[1] + parentConnector.offsets[0];
+                    var side = parentConnector.side;
+
+                    node.width = width;
+                    node.height = height;
+
+                    if (side && side === 'top') {
+                        node.x = parentX + offset;
+                        node.y = parentY - gap - height;
+                    } else if (side && side === 'right') {
+                        node.x = parentX + parentWidth + gap;
+                        node.y = parentY + offset;
+                    } else if (side && side === 'bottom') {
+                        node.x = parentX + offset;
+                        node.y = parentY + parentHeight + gap;
+                    } else if (side && side === 'left') {
+                        node.x = parentX - gap - width;
+                        node.y = parentY + offset;
+                    }
+                }
+            });
+
+            // Calc dimensions
+            var minX = 0;
+            var maxX = 0;
+            var minY = 0;
+            var maxY = 0;
+            this.subunitTreeForEach(subunitTree, function (node) {
+                minX = Math.min(minX, node.x);
+                maxX = Math.max(maxX, node.x + node.width);
+                minY = Math.min(minY, node.y);
+                maxY = Math.max(maxY, node.y + node.height);
+            });
+            var multiunitWidth = app.utils.convert.mm_to_inches(maxX - minX).toFixed(5);
+            var multiunitHeight = app.utils.convert.mm_to_inches(maxY - minY).toFixed(5);
+            this.set('width', multiunitWidth);
+            this.set('height', multiunitHeight);
+
+            return { width: multiunitWidth, height: multiunitHeight };
+        },
+        /**
+         * Subunit tree consists of nodes corresponding to subunits.
+         * Each node has 3 fields:
+         * unit - points to the unit model associated with this node
+         * parent - points to the parent node
+         * children - points to array of child nodes
+         */
+        getSubunitTree: function () {
+
+            // Prepare flat array of node templates
+            var subunitIds = this.get('multiunit_subunits');
+            var nodeTemplates = subunitIds.map(function (subunitId) {
+                var unitId = subunitId;
+                var parentId = self.getParentSubunitId(subunitId);
+                var childrenIds = self.getChildSubunitsIds(subunitId);
+                var node = {
+                    unit: unitId,
+                    parent: parentId,
+                    children: childrenIds
+                };
+                return node;
+            });
+
+            // Bootstrap tree
+            var originId = this.getOriginSubunitId();
+            var originNode = nodeTemplates.filter(function (node) {
+                return (node.unit === originId);
+            })[0];
+            originNode.unit = self.getSubunitById(originNode.unit);
+            var subunitTree = originNode;
+            var processableLeafNodes = [];
+            processableLeafNodes[0] = subunitTree;
+
+            // Build tree by appending nodes from array
+            while (processableLeafNodes.length > 0) {
+                var currentNode = processableLeafNodes.pop();
+                currentNode.children.forEach(function (subunitId, childIndex) {
+                    var childNode = nodeTemplates.filter(function (node) {  // append a node
+                        return (node.unit === subunitId);
+                    })[0];
+                    currentNode.children[childIndex] = childNode;
+
+                    childNode.unit = self.getSubunitById(subunitId);  // render node to its final form
+                    childNode.parent = currentNode;
+
+                    if (childNode.children.length > 0) {  // earmark for later processing
+                        processableLeafNodes.push(childNode);
+                    }
+                });
+            }
+
+            return subunitTree;
+        },
+        subunitTreeForEach: function (subunitNode, func) {
+            if (!subunitNode || !_.isFunction(func)) { return; }
+
+            var children = subunitNode.children;  // start at node and apply down
+            func.call(this, subunitNode);
+            if (children && children.length > 0) {
+                children.forEach(function (node) {  // recursive walk
+                    self.subunitTreeForEach(node, func);
+                });
+            }
+        },
+        getOriginSubunitId: function () {
+            return this.get('multiunit_subunits')[0];
+        },
+        isOriginId: function (subunitId) {
+            return (subunitId === this.getOriginSubunitId())
         },
         /**
          * = Conceptual connector model:
@@ -191,32 +316,55 @@ var app = app || {};
 
             return childConnectors;
         },
-        getParentSubunit: function (connectorId) {
+        getConnectorsParentSubunitId: function (connectorId) {
             if (_.isUndefined(connectorId)) { return; }
 
-            return this.getConnectorById(connectorId).connects[0];
+            var parentSubunitId = this.getConnectorById(connectorId).connects[0];
+            
+            return parentSubunitId;
         },
-        getChildSubunit: function (connectorId) {
+        getConnectorsChildSubunitId: function (connectorId) {
             if (_.isUndefined(connectorId)) { return; }
 
-            return this.getConnectorById(connectorId).connects[1];
+            var childSubunitId = this.getConnectorById(connectorId).connects[1];
+            
+            return childSubunitId;
+        },
+        getParentSubunitId: function (subunitId) {
+            if (_.isUndefined(subunitId)) { return; }
+            if (this.isOriginId(subunitId)) { return; }
+
+            var parentConnectorId = this.getParentConnector(subunitId).id;
+            var parentSubunitId = this.getConnectorsParentSubunitId(parentConnectorId);
+
+            return parentSubunitId;
+        },
+        getChildSubunitsIds: function (subunitId) {
+            if (_.isUndefined(subunitId)) { return; }
+
+            var childConnectors = this.getChildConnectors(subunitId);
+            var childSubunitsIds = childConnectors.map(function (connector) {
+                return self.getConnectorsChildSubunitId(connector.id);
+            });
+
+            return childSubunitsIds;
         },
         addConnector: function (options) {
             if (!(options && options.connects && options.side)) { return; }
 
             var parentSubunit = this.getSubunitById(options.connects[0]);
+            var newChildSubunit;
 
             var highestId = this.getConnectors()
                 .map(function (connector) { return connector.id; })
                 .reduce(function (lastHighestId, currentId) { return Math.max(currentId, lastHighestId); }, 0);
 
             if (!options.connects[1]) {
-                var childSubunit = new app.Unit({
+                newChildSubunit = new app.Unit({
                     width: parentSubunit.get('width'),
                     height: parentSubunit.get('height')
                 });
-                options.connects[1] = this.collection.add(childSubunit).getId();
-                this.addSubunit(childSubunit);
+                options.connects[1] = this.collection.add(newChildSubunit).getId();
             }
 
             var connector = {
@@ -231,6 +379,7 @@ var app = app || {};
 
             this.getConnectors().push(connector);
             this.connectorToEssentialFormat(connector);
+            if (newChildSubunit) { this.addSubunit(newChildSubunit); }
             return connector;
         },
         removeConnector: function (id) {
@@ -265,7 +414,7 @@ var app = app || {};
         connectorToEssentialFormat: function (connector) {
             if (_.isUndefined(connector)) { return; }
 
-            var parentId = this.getParentSubunit(connector.id);
+            var parentId = this.getConnectorsParentSubunitId(connector.id);
             var parent = this.getSubunitById(parentId);
             var parentSide = (connector.side === 'top' || connector.side === 'bottom') ?
                 parent.get('width') :
