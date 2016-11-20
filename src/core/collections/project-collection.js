@@ -1,5 +1,5 @@
-import Backbone from 'backbone';
-import App from '../../main';
+import Backbone from '../../backbone-extended';
+
 import Project from '../models/project';
 
 export default Backbone.Collection.extend({

@@ -1,9 +1,8 @@
-import Backbone from 'backbone';
+import Backbone from '../../backbone-extended';
 import _ from 'underscore';
-import App from '../../main';
+
 import Schema from '../../schema';
 import OptionsDictionaryEntryCollection from '../collections/options-dictionary-entry-collection';
-
 
 var DICTIONARY_PROPERTIES = [
     {name: 'name', title: 'Name', type: 'string'},

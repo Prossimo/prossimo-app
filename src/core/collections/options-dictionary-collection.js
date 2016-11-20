@@ -1,4 +1,5 @@
-import Backbone from 'backbone';
+import Backbone from '../../backbone-extended';
+
 import OptionsDictionary from '../models/options-dictionary';
 
 export default Backbone.Collection.extend({

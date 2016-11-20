@@ -1,6 +1,6 @@
 import Marionette from 'backbone.marionette';
 import $ from 'jquery';
-import App from '../../main';
+
 import Spinner from 'spin';
 import template from '../../templates/core/spinner-view.hbs';
 

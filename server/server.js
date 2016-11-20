@@ -31,7 +31,7 @@ if (isDebug) {
     }));
     // app.use(require('webpack-hot-middleware')(compiler));
 } else {
-    app.use(express.static(config.get('dist:patch')));
+    app.use(express.static(config.get('dist:path')));
 }
 
 // api

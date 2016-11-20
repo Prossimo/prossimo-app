@@ -1,5 +1,6 @@
-import Backbone from 'backbone';
 import _ from 'underscore';
+import Backbone from '../../backbone-extended';
+
 import Schema from '../../schema';
 
 var UNSET_VALUE = '--';

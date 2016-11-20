@@ -1,8 +1,8 @@
-import Backbone from 'backbone';
 import _ from 'underscore';
-import User from './user';
 import $ from 'jquery';
-import App from '../../main';
+import Backbone from '../../backbone-extended';
+
+import User from './user';
 
 //  Monkey-patch Backbone.Sync to include auth token with every request
 //  TODO: is this a good place to store this function? What if we move it

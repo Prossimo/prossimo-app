@@ -1,6 +1,6 @@
 import _ from 'underscore';
-import App from '../../main';
-import Backbone from 'backbone';
+import Backbone from '../../backbone-extended';
+
 import Schema from '../../schema';
 import UnitCollection from '../collections/unit-collection';
 import AccessoryCollection from '../collections/accessory-collection';

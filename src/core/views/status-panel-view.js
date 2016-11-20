@@ -1,5 +1,5 @@
 import Marionette from 'backbone.marionette';
-import App from '../../main';
+
 import template from '../../templates/core/status-panel-view.hbs';
 
 export default Marionette.View.extend({
