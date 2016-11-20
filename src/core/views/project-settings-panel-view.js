@@ -1,6 +1,6 @@
 import Marionette from 'backbone.marionette';
 import $ from 'jquery';
-import App from '../../main';
+
 import template from '../../templates/core/project-settings-panel-view.hbs';
 import BaseToggleView from './base/base-toggle-view';
 

@@ -1,12 +1,12 @@
 import Marionette from 'backbone.marionette';
 import $ from 'jquery';
-import App from '../../main';
+import 'bootstrap-select';
+
 import ProjectSelectorView from './project-selector-view';
 import StatusPanelView from './status-panel-view';
 import ProjectSettingsPanelView from './project-settings-panel-view';
 import SpinnerView from './spinner-view';
 import template from '../../templates/core/top-bar-view.hbs';
-import 'bootstrap-select';
 
 export default Marionette.View.extend({
     tagName: 'div',

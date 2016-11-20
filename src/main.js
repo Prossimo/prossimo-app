@@ -1,6 +1,6 @@
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
-import Backbone from 'backbone';
+import Backbone from './backbone-extended';
 
 import Settings from './core/models/settings';
 import Session from './core/models/session';
@@ -90,10 +90,8 @@ class Application extends Marionette.Application {
     }
 }
 
-const App = new Application();
+window.App = new Application();
 
 document.addEventListener('DOMContentLoaded', () => {
-    App.start();
+    window.App.start();
 });
-
-export default App;

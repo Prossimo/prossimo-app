@@ -1,7 +1,6 @@
-import Backbone from 'backbone';
 import _ from 'underscore';
 import $ from 'jquery';
-import App from '../../main';
+import Backbone from '../../backbone-extended';
 
 import Profile from './profile';
 import ProfileCollection from '../collections/profile-collection';

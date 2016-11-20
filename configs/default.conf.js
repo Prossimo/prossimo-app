@@ -14,7 +14,7 @@ module.exports = {
         printerPrefix: '/print'
     },
     dist: {
-        patch: path.resolve(__dirname, '../dist'),
+        path: path.resolve(__dirname, '../dist'),
         devtool: ''
     },
     server: {

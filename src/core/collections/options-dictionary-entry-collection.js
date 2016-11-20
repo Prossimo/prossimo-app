@@ -1,6 +1,6 @@
-import Backbone from 'backbone';
+import Backbone from '../../backbone-extended';
 import _ from 'underscore';
-import App from '../../main';
+
 import OptionsDictionaryEntry from '../models/options-dictionary-entry';
 
 export default Backbone.Collection.extend({

@@ -1,6 +1,6 @@
 import _ from 'underscore';
-import Backbone from 'backbone';
-import App from '../../main';
+import Backbone from '../../backbone-extended';
+
 import FillingType from '../models/filling-type';
 
 export default Backbone.Collection.extend({
