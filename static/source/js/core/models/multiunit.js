@@ -73,7 +73,7 @@ var app = app || {};
 
             if (!this.subunits) {
                 this.subunits = new app.BaseunitCollection();
-                this.listenTo(this.subunits, 'change', function () {  // Trigger self change if any subunit changes
+                this.listenTo(this.subunits, 'change', function () {  // trigger self change if any subunit changes
                     self.trigger.apply(this, ['change'].concat(Array.prototype.slice.call(arguments)));
                 });
             }
@@ -118,8 +118,77 @@ var app = app || {};
                 this.recalculateSizes();
             }
         },
-        recalculateSizes: function () {
-            // Build positions map/tree
+        recalculateSizes: function () {  // updates multiunit width/height from subunit changes
+            var subunitPositionsTree = this.getSubunitPositionsTree();
+
+            var minX = 0;
+            var maxX = 0;
+            var minY = 0;
+            var maxY = 0;
+            this.subunitTreeForEach(subunitPositionsTree, function (node) {
+                minX = Math.min(minX, node.x);
+                maxX = Math.max(maxX, node.x + node.width);
+                minY = Math.min(minY, node.y);
+                maxY = Math.max(maxY, node.y + node.height);
+            });
+            var multiunitWidth = app.utils.convert.mm_to_inches(maxX - minX).toFixed(5);
+            var multiunitHeight = app.utils.convert.mm_to_inches(maxY - minY).toFixed(5);
+            this.set('width', multiunitWidth);
+            this.set('height', multiunitHeight);
+
+            return { width: multiunitWidth, height: multiunitHeight };
+        },
+        /**
+         * Subunit tree consists of nodes corresponding to subunits.
+         * Each node has 3 fields:
+         * unit - points to the unit model associated with this node
+         * parent - points to the parent node
+         * children - points to array of child nodes
+         */
+        getSubunitTree: function () {
+
+            var subunitIds = this.get('multiunit_subunits');  // prepare flat array of node templates
+            var nodeTemplates = subunitIds.map(function (subunitId) {
+                var unitId = subunitId;
+                var parentId = self.getParentSubunitId(subunitId);
+                var childrenIds = self.getChildSubunitsIds(subunitId);
+                var node = {
+                    unit: unitId,
+                    parent: parentId,
+                    children: childrenIds
+                };
+                return node;
+            });
+
+            var originId = this.getOriginSubunitId();  // bootstrap tree
+            var originNode = nodeTemplates.filter(function (node) {
+                return (node.unit === originId);
+            })[0];
+            originNode.unit = self.getSubunitById(originNode.unit);
+            var subunitTree = originNode;
+            var processableLeafNodes = [];
+            processableLeafNodes[0] = subunitTree;
+
+            while (processableLeafNodes.length > 0) {  // build tree by appending nodes from array
+                var currentNode = processableLeafNodes.pop();
+                currentNode.children.forEach(function (subunitId, childIndex) {
+                    var childNode = nodeTemplates.filter(function (node) {  // append a node
+                        return (node.unit === subunitId);
+                    })[0];
+                    currentNode.children[childIndex] = childNode;
+
+                    childNode.unit = self.getSubunitById(subunitId);  // render node to its final form
+                    childNode.parent = currentNode;
+
+                    if (childNode.children.length > 0) {  // earmark for later processing
+                        processableLeafNodes.push(childNode);
+                    }
+                });
+            }
+
+            return subunitTree;
+        },
+        getSubunitPositionsTree: function () {  // returns subunit tree with position information at each node, in mm
             var subunitTree = this.getSubunitTree();
             this.subunitTreeForEach(subunitTree, function (node) {
                 var isOrigin = self.isOriginId(node.unit.getId());
@@ -159,75 +228,6 @@ var app = app || {};
                     }
                 }
             });
-
-            // Calc dimensions
-            var minX = 0;
-            var maxX = 0;
-            var minY = 0;
-            var maxY = 0;
-            this.subunitTreeForEach(subunitTree, function (node) {
-                minX = Math.min(minX, node.x);
-                maxX = Math.max(maxX, node.x + node.width);
-                minY = Math.min(minY, node.y);
-                maxY = Math.max(maxY, node.y + node.height);
-            });
-            var multiunitWidth = app.utils.convert.mm_to_inches(maxX - minX).toFixed(5);
-            var multiunitHeight = app.utils.convert.mm_to_inches(maxY - minY).toFixed(5);
-            this.set('width', multiunitWidth);
-            this.set('height', multiunitHeight);
-
-            return { width: multiunitWidth, height: multiunitHeight };
-        },
-        /**
-         * Subunit tree consists of nodes corresponding to subunits.
-         * Each node has 3 fields:
-         * unit - points to the unit model associated with this node
-         * parent - points to the parent node
-         * children - points to array of child nodes
-         */
-        getSubunitTree: function () {
-
-            // Prepare flat array of node templates
-            var subunitIds = this.get('multiunit_subunits');
-            var nodeTemplates = subunitIds.map(function (subunitId) {
-                var unitId = subunitId;
-                var parentId = self.getParentSubunitId(subunitId);
-                var childrenIds = self.getChildSubunitsIds(subunitId);
-                var node = {
-                    unit: unitId,
-                    parent: parentId,
-                    children: childrenIds
-                };
-                return node;
-            });
-
-            // Bootstrap tree
-            var originId = this.getOriginSubunitId();
-            var originNode = nodeTemplates.filter(function (node) {
-                return (node.unit === originId);
-            })[0];
-            originNode.unit = self.getSubunitById(originNode.unit);
-            var subunitTree = originNode;
-            var processableLeafNodes = [];
-            processableLeafNodes[0] = subunitTree;
-
-            // Build tree by appending nodes from array
-            while (processableLeafNodes.length > 0) {
-                var currentNode = processableLeafNodes.pop();
-                currentNode.children.forEach(function (subunitId, childIndex) {
-                    var childNode = nodeTemplates.filter(function (node) {  // append a node
-                        return (node.unit === subunitId);
-                    })[0];
-                    currentNode.children[childIndex] = childNode;
-
-                    childNode.unit = self.getSubunitById(subunitId);  // render node to its final form
-                    childNode.parent = currentNode;
-
-                    if (childNode.children.length > 0) {  // earmark for later processing
-                        processableLeafNodes.push(childNode);
-                    }
-                });
-            }
 
             return subunitTree;
         },

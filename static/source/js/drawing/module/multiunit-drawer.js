@@ -64,32 +64,13 @@ var app = app || {};
         },
         createSubunits: function () {
             var group = new Konva.Group({ name: 'subunits' });
-            var subunitIds = model.get('multiunit_subunits');
+            var tree = model.getSubunitPositionsTree();
 
-            subunitIds.forEach(function (id, index) {
-                var subunit = model.subunits.getById(id);
-                var isOrigin = (index === 0);
-                var previewImage;
-                var parentId;
-                var parentKonva;
-                var side;
-                var gap;
-                var offset;
+            model.subunitTreeForEach(tree, function (node) {
 
-                if (!isOrigin) {
-                    var parentConnector = model.getParentConnector(id);
-                    parentId = model.getConnectorsParentSubunitId(parentConnector.id);
-                    side = parentConnector.side;
-                    gap = parentConnector.width;
-                    offset = parentConnector.offsets[1] + parentConnector.offsets[0];
-                    parentKonva = group.getChildren(function (konvaImage) {
-                        return (konvaImage.getAttr('subunitId') === parentId);
-                    })[0];
-                }
-
-                previewImage = app.preview(subunit, {
-                    width: subunit.getInMetric('width', 'mm') * ratio,
-                    height: subunit.getInMetric('height', 'mm') * ratio,
+                var previewImage = app.preview(node.unit, {
+                    width: node.width * ratio,
+                    height: node.height * ratio,
                     mode: 'image',
                     position: (module.getState('insideView')) ? 'inside' : 'outside',
                     metricSize: 0,
@@ -97,17 +78,16 @@ var app = app || {};
                     isMaximized: true
                 });
 
-                var positionedPreview = self.positionPreview(previewImage, {
-                    subunitId: id,
-                    isOrigin: isOrigin,
-                    parentKonva: parentKonva,
-                    side: side,
-                    gap: gap,
-                    offset: offset,
+                var konvaImage = new Konva.Image({
+                    name: 'subunitPreview',
+                    subunitId: node.unit.getId(),
+                    image: previewImage,
+                    x: node.x * ratio,
+                    y: node.y * ratio,
                     opacity: previewOpacity
                 });
 
-                group.add(positionedPreview);
+                group.add(konvaImage);
             });
 
             return group;
@@ -126,50 +106,6 @@ var app = app || {};
             group.add.apply(group, connectorsKonvas);
 
             return group;
-        },
-        positionPreview: function (image, options) {
-            var previewX;
-            var previewY;
-
-            if (options.isOrigin) {
-                previewX = 0;
-                previewY = 0;
-            } else if (options.parentKonva) {
-                var width = image.width;
-                var height = image.height;
-                var parentKonva = options.parentKonva;
-                var parentX = parentKonva.x();
-                var parentY = parentKonva.y();
-                var parentWidth = parentKonva.width();
-                var parentHeight = parentKonva.height();
-                var gap = options.gap * ratio || 0;
-                var offset = options.offset * ratio || 0;
-
-                if (options.side && options.side === 'top') {
-                    previewX = parentX + offset;
-                    previewY = parentY - gap - height;
-                } else if (options.side && options.side === 'right') {
-                    previewX = parentX + parentWidth + gap;
-                    previewY = parentY + offset;
-                } else if (options.side && options.side === 'bottom') {
-                    previewX = parentX + offset;
-                    previewY = parentY + parentHeight + gap;
-                } else if (options.side && options.side === 'left') {
-                    previewX = parentX - gap - width;
-                    previewY = parentY + offset;
-                } else { return; }
-            }
-
-            var konvaImage = new Konva.Image({
-                name: 'subunitPreview',
-                subunitId: options.subunitId,
-                image: image,
-                x: previewX,
-                y: previewY,
-                opacity: options.opacity
-            });
-
-            return konvaImage;
         },
         createConnector: function (connector, options) {
             if (!connector) { return; }
