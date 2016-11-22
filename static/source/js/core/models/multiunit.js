@@ -289,7 +289,13 @@ var app = app || {};
          * { id: '17', side: 'right', connects: ['123', '124'], offsets: [0, 100], width: 20, facewidth: 40, length: 200 }
          */
         getConnectors: function () {
-            return this.get('root_section').connectors;
+            var connectors = this.get('root_section').connectors;
+
+            connectors.forEach(function (connector) {
+                self.connectorToEssentialFormat(connector);
+            });
+
+            return connectors;
         },
         getConnectorById: function (id) {
             if (_.isUndefined(id)) { return; }
@@ -414,11 +420,11 @@ var app = app || {};
         connectorToEssentialFormat: function (connector) {
             if (_.isUndefined(connector)) { return; }
 
-            var parentId = this.getConnectorsParentSubunitId(connector.id);
+            var parentId = connector.connects[0];
             var parent = this.getSubunitById(parentId);
             var parentSide = (connector.side === 'top' || connector.side === 'bottom') ?
-                parent.get('width') :
-                parent.get('height');
+                parent.getInMetric('width', 'mm') :
+                parent.getInMetric('height', 'mm');
 
             if (isPercentage(connector.length)) {
                 connector.length = parseFloat(connector.length) * 0.01 * parentSide;
