@@ -9,8 +9,6 @@ var app = app || {};
     var model;
     var ratio;
 
-    var previewOpacity = 1;
-
     app.Drawers = app.Drawers || {};
     app.Drawers.MultiunitDrawer = Backbone.KonvaView.extend({
         initialize: function (params) {
@@ -83,8 +81,7 @@ var app = app || {};
                     subunitId: node.unit.getId(),
                     image: previewImage,
                     x: node.x * ratio,
-                    y: node.y * ratio,
-                    opacity: previewOpacity
+                    y: node.y * ratio
                 });
 
                 group.add(konvaImage);

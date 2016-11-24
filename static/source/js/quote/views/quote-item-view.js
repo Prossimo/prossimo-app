@@ -8,6 +8,8 @@ var app = app || {};
         className: 'quote-item',
         template: app.templates['quote/quote-item-view'],
         initialize: function () {
+            var relationClass = this.model.getRelation();
+            this.el.classList.add(relationClass);
             this.listenTo(this.model, 'change', this.render);
         },
         getPrices: function () {
@@ -285,7 +287,8 @@ var app = app || {};
             var position = this.options.show_outside_units_view ?
                 ( !is_alternative ? 'outside' : 'inside' ) :
                 ( !is_alternative ? 'inside' : 'outside' );
-            var preview_size = 600;
+            var isSubunit = this.model.isSubunit();
+            var preview_size = (isSubunit) ? 400 : 600;
             var title = position === 'inside' ? 'View from Interior' : 'View from Exterior';
 
             return {
@@ -295,7 +298,8 @@ var app = app || {};
                     mode: 'base64',
                     position: position,
                     hingeIndicatorMode: this.options.force_european_hinge_indicators ? 'european' :
-                        project_settings && project_settings.get('hinge_indicator_mode')
+                        project_settings && project_settings.get('hinge_indicator_mode'),
+                    drawNeighbors: isSubunit
                 }),
                 title: title
             };
@@ -328,6 +332,8 @@ var app = app || {};
                 show_price: show_price,
                 price: show_price ? this.getPrices() : null,
                 is_price_estimated: project_settings && project_settings.get('pricing_mode') === 'estimates',
+                is_multiunit: this.model.isMultiunit(),
+                is_subunit: this.model.isSubunit(),
                 has_dummy_profile: this.model.hasDummyProfile(),
                 profile_name: this.model.get('profile_name') || this.model.get('profile_id') || ''
             };

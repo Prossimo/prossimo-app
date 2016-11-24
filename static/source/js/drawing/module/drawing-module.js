@@ -30,6 +30,8 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var previewBackgroundOpacity = 0.2;
+
     app.DrawingModule = Marionette.Object.extend({
         initialize: function (opts) {
             var builder = this;
@@ -430,6 +432,26 @@ var app = app || {};
 
             return stage;
         },
+        setBackground: function (background, options) {
+            if (_.isUndefined(background) || !(background instanceof Image)) { return; }
+
+            var opacity = (options && options.opacity) ? options.opacity : 1;
+            var stage = this.get('stage');
+            var layer = new Konva.Layer({ name: 'background' });
+            var image = new Konva.Image({
+                name: 'background',
+                image: background,
+                opacity: opacity
+            });
+            var filters = (options && options.filters) ? options.filters : [];
+
+            image.cache();
+            image.filters(filters);
+            layer.add(image);
+            stage.add(layer);
+            layer.moveToBottom();
+// FIXME implement
+        },
 
         // Events
         update: function (opts) {
@@ -479,13 +501,16 @@ var app = app || {};
     app.preview = function (unitModel, options) {
         var result;
         var defaults = {
-            width: 300,
+            width: 300,  // px
             height: 300,
+            x: 0,  // px
+            y: 0,
             mode: 'base64',
             position: 'inside',
             metricSize: 50,
             preview: true,
-            isMaximized: false
+            isMaximized: false,
+            drawNeighbors: false
         };
 
         options = _.defaults({}, options, defaults, {model: unitModel});
@@ -527,6 +552,35 @@ var app = app || {};
 
         if (options.width && options.height) {
             module.updateSize( options.width, options.height );
+        }
+
+        module.get('stage').offset({ x:options.x, y:options.y });
+
+        if (options.drawNeighbors) {
+            var parentMultiunit = unitModel.getParentMultiunit();
+            var previewRatio = module.get('ratio');
+            var unitCoords = parentMultiunit.getSubunitCoords(unitModel.getId());
+            var backgroundX = (unitCoords) ? unitCoords.x * previewRatio : 0;
+            var backgroundY = (unitCoords) ? unitCoords.y * previewRatio : 0;
+            var backgroundWidth = parentMultiunit.getInMetric('width', 'mm') * previewRatio;
+            var backgroundHeight = parentMultiunit.getInMetric('height', 'mm') * previewRatio;
+            var backgroundOptions = _.defaults({
+                width: backgroundWidth,
+                height: backgroundHeight,
+                x: backgroundX,
+                y: backgroundY,
+                mode: 'image',
+                metricSize: 0,
+                drawNeighbors: false,
+                model: parentMultiunit
+            }, options);
+            var background = app.preview(parentMultiunit, backgroundOptions);
+
+            module.setBackground(background, {
+                opacity: previewBackgroundOpacity,
+                filters: [Konva.Filters.Grayscale]
+            });
+            // FIXME implement
         }
 
         if (options.mode === 'canvas') {

@@ -65,6 +65,7 @@ var app = app || {};
             this.on('add', function () {
                 self.listenTo(self.collection, 'update', function () {
                     self.updateSubunitsCollection();
+                    self.updateCollectionPositions();
                 });
             });
         },
@@ -86,6 +87,17 @@ var app = app || {};
                     .filter(function (subunit) { return !_.isUndefined(subunit); })
                     .filter(function (subunit) { return self.subunits.indexOf(subunit) === -1; })
             );
+        },
+        updateCollectionPositions: function () {
+            this.subunits.forEach(function (subunit, subunitIndex) {
+                var subunitOffset = subunitIndex + 1;
+                var multiunitPosition = self.collection.indexOf(self);
+                var subunitPosition = self.collection.indexOf(subunit);
+                var newPosition = (multiunitPosition + subunitOffset < self.collection.length) ?
+                    multiunitPosition + subunitOffset :
+                    multiunitPosition + subunitOffset - 1;
+                self.collection.setItemPosition(subunitPosition, newPosition);
+            });
         },
         hasOnlyDefaultAttributes: function () {
             return app.Baseunit.prototype.hasOnlyDefaultAttributes.apply(this,
@@ -115,6 +127,7 @@ var app = app || {};
             if (!_.contains(subunitIds, subunitId)) {
                 subunitIds.push(subunitId);
                 this.updateSubunitsCollection();
+                this.updateCollectionPositions();
                 this.recalculateSizes();
             }
         },
@@ -137,6 +150,29 @@ var app = app || {};
             this.set('height', multiunitHeight);
 
             return { width: multiunitWidth, height: multiunitHeight };
+        },
+        getSubunitNode: function (subunitId) {
+            var subunitPositionsTree = this.getSubunitPositionsTree();
+            var subunitNode;
+            this.subunitTreeForEach(subunitPositionsTree, function (node) {
+                if (node.unit.getId() === subunitId) {
+                    subunitNode = node;
+                }
+            });
+            
+            return subunitNode;
+        },
+        getSubunitCoords: function (subunitId) {
+            var subunitNode = this.getSubunitNode(subunitId);
+            var coords;
+            if (subunitNode) {
+                coords = {
+                    x: subunitNode.x,
+                    y: subunitNode.y
+                };
+            }
+            
+            return coords;  // mm
         },
         /**
          * Subunit tree consists of nodes corresponding to subunits.
@@ -397,7 +433,7 @@ var app = app || {};
             if (connectorIndex !== -1) {
                 connector = this.getConnectors().splice(connectorIndex, 1)[0];
             }
-
+            // FIXME implement
             return connector;
         },
         moveConnector: function () {
