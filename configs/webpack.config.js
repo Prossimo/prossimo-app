@@ -6,7 +6,7 @@ const config = require('./config');
 
 const version = config.get('version');
 const srcPath = config.get('app:srcPath');
-const distPath = config.get('dist:patch');
+const distPath = config.get('dist:path');
 const isDebug = !config.get('release');
 const isVerbose = config.get('verbose');
 const sourcePath = config.get('app:sourcePath');

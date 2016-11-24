@@ -1,12 +1,12 @@
 import Marionette from 'backbone.marionette';
 import $ from 'jquery';
 import App from '../../main';
-import tempate from '../../templates/core/project-selector-view.hbs';
+import template from '../../templates/core/project-selector-view.hbs';
 
 export default Marionette.View.extend({
     tagName: 'div',
     className: 'project-selector',
-    template: tempate,
+    template: template,
     ui: {
         $select: '.selectpicker'
     },

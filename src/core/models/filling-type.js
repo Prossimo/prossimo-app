@@ -1,5 +1,5 @@
 import Backbone from 'backbone';
-import Shema from '../../schema';
+import Schema from '../../schema';
 import _ from 'underscore';
 
 var UNSET_VALUE = '--';
@@ -28,7 +28,7 @@ function getDefaultProfilesList() {
 }
 
 export default Backbone.Model.extend({
-    schema: Shema.createSchema(FILLING_TYPE_PROPERTIES),
+    schema: Schema.createSchema(FILLING_TYPE_PROPERTIES),
     defaults: function () {
         var defaults = {};
 
@@ -82,7 +82,7 @@ export default Backbone.Model.extend({
     parse: function (data) {
         var filling_type_data = data && data.filling_type ? data.filling_type : data;
 
-        return Shema.parseAccordingToSchema(filling_type_data, this.schema);
+        return Schema.parseAccordingToSchema(filling_type_data, this.schema);
     },
     initialize: function (attributes, options) {
         this.options = options || {};

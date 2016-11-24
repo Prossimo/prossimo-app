@@ -87,6 +87,7 @@
         "_": false,
         "Handsontable": false,
         "Decimal": false,
-        "Spinner": false
+        "Spinner": false,
+        "App": false
     }
 }

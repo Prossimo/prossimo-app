@@ -6,7 +6,7 @@ import config from '../configs/config';
  */
 export default function clean() {
     return Promise.all([
-        cleanDir(config.get('dist:patch'), {
+        cleanDir(config.get('dist:path'), {
             nosort: true,
             dot: true,
             ignore: []
