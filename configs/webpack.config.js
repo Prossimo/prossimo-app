@@ -42,6 +42,7 @@ module.exports = {
                 include: [srcPath],
                 loader: 'babel'
             },
+            {test: /backbone\.js$/, loader: 'backbone-extended-loader'},
             {test: /\.hbs$/, loader: 'handlebars-template-loader'},
             {
                 test: /\.less$/,
