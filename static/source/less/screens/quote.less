@@ -1,4 +1,4 @@
-@preview_size: 600px;
+@preview_size: 700px;
 @customer_image_size: 150px;
 
 @border_dark: 1px solid darken(@white, 20%);
@@ -137,6 +137,8 @@
 .quote-item.multiunit,
 .quote-item.subunit {
     margin-bottom: -1px;
+
+    & + .loneunit { margin-top: 20px; }
 }
 
 .quote-unit-heading {
@@ -334,6 +336,15 @@ th.product-image em {
     max-width: @preview_size;
 }
 
+.multiunit .product-image .product-image-inner img {
+    margin-left: -20px;
+}
+
+.subunit .product-image .product-image-inner img {
+    margin-left: 90px;
+}
+
+
 td.product-description,
 th.product-description {
     width: 44%;
@@ -379,23 +390,27 @@ td.product-image.has-customer-image {
     max-height: @preview_size;
 }
 
-.sash-list h5 {
-    margin-left: -1.2rem;
-    margin-right: -1.2rem;
-    padding: 0.7rem 1.2rem;
-    border-top: @border_light;
-    border-bottom: @border_light;
-    background-color: @bg_light;
-    font-weight: 700;
-}
+.sash-list,
+.unit-list {
 
-.sash-list h6 {
-    font-size: 14px;
-    font-weight: 700;
-}
+    h5 {
+        margin-left: -1.2rem;
+        margin-right: -1.2rem;
+        padding: 0.7rem 1.2rem;
+        border-top: @border_light;
+        border-bottom: @border_light;
+        background-color: @bg_light;
+        font-weight: 700;
+    }
 
-.sash-list .sections li:first-child h6 {
-    margin-top: 0;
+    h6 {
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .sections li:first-child h6 {
+        margin-top: 0;
+    }
 }
 
 .subtotal td.price,

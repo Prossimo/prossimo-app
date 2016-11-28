@@ -2329,6 +2329,11 @@ var app = app || {};
 
                 return parentMultiunit;
             },
+            isSubunitOf: function (multiunit) {
+                var multiunitSubunitsIds = multiunit.get('multiunit_subunits');
+
+                return _.contains(multiunitSubunitsIds, this.getId());
+            },
             getRelation: function () {
                 var unitRelation;
 

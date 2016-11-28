@@ -63,9 +63,14 @@ var app = app || {};
             app.Baseunit.prototype.initialize.apply(this, arguments);
 
             this.on('add', function () {
-                self.listenTo(self.collection, 'update', function () {
+                self.listenTo(self.collection, 'update', function (event) {
                     self.updateSubunitsCollection();
                     self.updateCollectionPositions();
+                });
+                self.listenTo(self.collection, 'remove', function (unit) {
+                    if (unit.isSubunitOf(self)) {
+                        self.removeSubunit(unit);
+                    }
                 });
             });
         },
@@ -126,6 +131,21 @@ var app = app || {};
 
             if (!_.contains(subunitIds, subunitId)) {
                 subunitIds.push(subunitId);
+                this.updateSubunitsCollection();
+                this.updateCollectionPositions();
+                this.recalculateSizes();
+            }
+        },
+        removeSubunit: function (subunit) {
+            if (!(subunit.isSubunitOf && subunit.isSubunitOf(this))) { return; }
+
+            var subunitIds = this.get('multiunit_subunits');
+            var subunitId = subunit.getId();
+            var subunitIndex = subunitIds.indexOf(subunitId);
+
+            if (subunitIndex !== -1) {
+                subunitIds.splice(subunitIndex, 1);
+                this.removeConnector(this.getParentConnector(subunitId).id);
                 this.updateSubunitsCollection();
                 this.updateCollectionPositions();
                 this.recalculateSizes();

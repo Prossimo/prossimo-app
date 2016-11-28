@@ -30,7 +30,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var previewBackgroundOpacity = 0.2;
+    var previewBackgroundOpacity = 0.3;
 
     app.DrawingModule = Marionette.Object.extend({
         initialize: function (opts) {
@@ -169,8 +169,16 @@ var app = app || {};
             var model = this.get('model');
             var shrinkFrame = (opts && opts.isMaximized) ? 1 : 0.95;
             var renderingOffsetX = (opts && opts.isMaximized) ? 0 : 0.5;
-            var topOffset = (opts && opts.isMaximized) ? 0 : 10 + 0.5; // add 0.5 pixel offset for better strokes
             var metricSize;
+            var topOffset;
+
+            if (opts && opts.isMaximized) {
+                topOffset = 0;
+            } else if (opts && opts.topOffset) {
+                topOffset = opts.topOffset;
+            } else {
+                topOffset = 10 + 0.5; // add 0.5 pixel offset for better strokes
+            }
 
             if (opts && opts.width && opts.height) {
                 this.updateSize(opts.width, opts.height);
@@ -448,9 +456,10 @@ var app = app || {};
             image.cache();
             image.filters(filters);
             layer.add(image);
+            if (options.x) { layer.offsetX(-options.x); }
+            if (options.y) { layer.offsetY(-options.y); }
             stage.add(layer);
             layer.moveToBottom();
-// FIXME implement
         },
 
         // Events
@@ -503,8 +512,6 @@ var app = app || {};
         var defaults = {
             width: 300,  // px
             height: 300,
-            x: 0,  // px
-            y: 0,
             mode: 'base64',
             position: 'inside',
             metricSize: 50,
@@ -554,23 +561,25 @@ var app = app || {};
             module.updateSize( options.width, options.height );
         }
 
-        module.get('stage').offset({ x:options.x, y:options.y });
-
         if (options.drawNeighbors) {
+            var originCoords = module.layerManager.layers.unit.drawer.layer.getClientRect();
+            var originX = originCoords.x;
+            var originY = originCoords.y;
             var parentMultiunit = unitModel.getParentMultiunit();
             var previewRatio = module.get('ratio');
             var unitCoords = parentMultiunit.getSubunitCoords(unitModel.getId());
-            var backgroundX = (unitCoords) ? unitCoords.x * previewRatio : 0;
-            var backgroundY = (unitCoords) ? unitCoords.y * previewRatio : 0;
+            var backgroundDeltaX = (unitCoords) ? unitCoords.x * previewRatio : 0;
+            var backgroundDeltaY = (unitCoords) ? unitCoords.y * previewRatio : 0;
+            var backgroundX = originX - backgroundDeltaX;
+            var backgroundY = originY - backgroundDeltaY;
             var backgroundWidth = parentMultiunit.getInMetric('width', 'mm') * previewRatio;
             var backgroundHeight = parentMultiunit.getInMetric('height', 'mm') * previewRatio;
             var backgroundOptions = _.defaults({
                 width: backgroundWidth,
                 height: backgroundHeight,
-                x: backgroundX,
-                y: backgroundY,
                 mode: 'image',
                 metricSize: 0,
+                isMaximized: true,
                 drawNeighbors: false,
                 model: parentMultiunit
             }, options);
@@ -578,10 +587,22 @@ var app = app || {};
 
             module.setBackground(background, {
                 opacity: previewBackgroundOpacity,
-                filters: [Konva.Filters.Grayscale]
+                filters: [Konva.Filters.Grayscale],
+                x: backgroundX,
+                y: backgroundY
             });
-            // FIXME implement
         }
+
+        // debugger
+
+        // FIXME implement
+
+        // var z=module.layerManager.layers.unit.drawer.layer.children[0]
+        // var rect = new Konva.Rect({ fill: 'red' });
+        // module.layerManager.layers.unit.drawer.layer.add(rect);
+        // rect.setAttrs(z.getClientRect())
+        // rect.moveToBottom();
+        // rect.draw()
 
         if (options.mode === 'canvas') {
             result = module.getCanvas();

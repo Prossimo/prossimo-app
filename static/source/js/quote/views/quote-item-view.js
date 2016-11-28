@@ -287,8 +287,16 @@ var app = app || {};
             var position = this.options.show_outside_units_view ?
                 ( !is_alternative ? 'outside' : 'inside' ) :
                 ( !is_alternative ? 'inside' : 'outside' );
+            var relation = this.model.getRelation();
             var isSubunit = this.model.isSubunit();
-            var preview_size = (isSubunit) ? 400 : 600;
+            var preview_size;
+            if (relation === 'multiunit') {
+                preview_size = 700;
+            } else if (relation === 'subunit') {
+                preview_size = 400;
+            } else {
+                preview_size = 600;
+            }
             var title = position === 'inside' ? 'View from Interior' : 'View from Exterior';
 
             return {
@@ -299,7 +307,8 @@ var app = app || {};
                     position: position,
                     hingeIndicatorMode: this.options.force_european_hinge_indicators ? 'european' :
                         project_settings && project_settings.get('hinge_indicator_mode'),
-                    drawNeighbors: isSubunit
+                    drawNeighbors: isSubunit,
+                    topOffset: (isSubunit) ? 50 : 0
                 }),
                 title: title
             };

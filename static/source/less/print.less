@@ -1,4 +1,4 @@
-@preview_size: 600px;
+@preview_size: 700px;
 @customer_image_size: 150px;
 
 
@@ -32,11 +32,9 @@
         display: table-row-group;
     }
 
-
     //  --------------------------------------------------------------------
     //  Quotation-specific styles
     //  --------------------------------------------------------------------
-
     .quote-screen,
     .supplier-request-screen {
         display: block;
@@ -54,6 +52,7 @@
         border: none;
         min-width: 0;
     }
+
     .quote-outer-container .controls-container, .supplier-request-outer-container .controls-container {
         display: none;
     }
@@ -91,6 +90,14 @@
         max-width: @preview_size;
     }
 
+    .multiunit .product-image .product-image-inner img {
+        margin-left: -20px;
+    }
+
+    .subunit .product-image .product-image-inner img {
+        margin-left: 10px;
+    }
+
     .customer-image-inner h5 {
         font-size: 1em;
     }
@@ -105,12 +112,11 @@
         max-width: @customer_image_size - 50px;
     }
 
-    .sash-list h5 {
-        font-size: 1.1em;
-    }
+    .sash-list,
+    .unit-list {
 
-    .sash-list h6 {
-        font-size: 1.1em;
+        h5 { font-size: 1.1em; }
+        h6 { font-size: 1.1em; }
     }
 
     .quote-item {
