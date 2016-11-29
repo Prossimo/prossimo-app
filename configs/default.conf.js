@@ -19,9 +19,11 @@ module.exports = {
     },
     server: {
         port: '9987',
+        apiProtocol: 'http',
         apiHost: '127.0.0.1',
         apiPort: '8000',
         apiPrefix: '/api',
+        printerProtocol: 'http',
         printerHost: '127.0.0.1',
         printerPort: '8080',
         printerPrefix: '/print'

@@ -2,12 +2,12 @@
 /* eslint-disable global-require*/
 
 require('babel-polyfill');
-// const http = require('http');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const compress = require('compression');
 
+const routers = require('./routers');
 const config = require('../configs/config');
 const port = config.get('server:port');
 const isDebug = !config.get('release');
@@ -27,6 +27,7 @@ if (isDebug) {
 
     console.log('Enable webpack dev and HMR middleware');
     app.use(require('webpack-dev-middleware')(compiler, {
+        publicPath: webpackConfig.output.publicPath,
         stats: webpackConfig.stats
     }));
     // app.use(require('webpack-hot-middleware')(compiler));
@@ -34,46 +35,7 @@ if (isDebug) {
     app.use(express.static(config.get('dist:path')));
 }
 
-// api
-// app.all('/api/*', (req, res) => {
-    // var options = {
-    //     host: config.get('server:apiHost'),
-    //     port: config.get('server:apiPort'),
-    //     path: config.get('server:apiPrefix'),
-    //     headers: req.headers
-    // };
-    //
-    // var creq = http.request(options, function (cres) {
-    //
-    //     // set encoding
-    //     cres.setEncoding('utf8');
-    //
-    //     // wait for data
-    //     cres.on('data', function (chunk) {
-    //         res.write(chunk);
-    //     });
-    //
-    //     cres.on('close', function () {
-    //         // closed, let's end client request as well
-    //         res.writeHead(cres.statusCode);
-    //         res.end();
-    //     });
-    //
-    //     cres.on('end', function () {
-    //         // finished, let's finish client request as well
-    //         res.writeHead(cres.statusCode);
-    //         res.end();
-    //     });
-    //
-    // }).on('error', function (e) {
-    //     // we got an error, return 500 error to client and log error
-    //     console.log(e.message);
-    //     res.writeHead(500);
-    //     res.end();
-    // });
-    //
-    // creq.end();
-// });
+app.use('/', routers(config));
 
 // And run the server
 app.listen(config.get('server:port'), () => {

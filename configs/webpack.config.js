@@ -26,7 +26,10 @@ const lessLoader = `less-loader?${JSON.stringify({
 module.exports = {
     context: srcPath,
     resolve: {
-        root: srcPath
+        root: srcPath,
+        alias: {
+            'jquery-ui/widget': 'jquery-ui/ui/widget'
+        }
     },
     output: {
         filename: `app-${version}.js`,
@@ -35,6 +38,7 @@ module.exports = {
     },
 
     module: {
+        noParse: [/handsontable.full.js/],
         loaders: [
             {
                 test: /\.js$/,
@@ -97,6 +101,11 @@ module.exports = {
             favicon: path.resolve(config.get('app:publicPath'), './img/favicon' + (isDebug ? '-dev' : '') + '.png'),
             filename: 'index.html',
             inject: 'body'
+        }),
+        new webpack.ProvidePlugin({
+            $: 'jquery',
+            jQuery: 'jquery',
+            'window.jQuery': 'jquery'
         }),
         new webpack.NoErrorsPlugin(),
 
