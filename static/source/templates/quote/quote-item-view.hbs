@@ -113,21 +113,15 @@
             {{#if notes }}<p class="notes"><strong>{{ notes }}</strong></p>{{/if}}
             {{#if exceptions }}<p class="exceptions"><strong>{{ exceptions }}</strong></p>{{/if}}
             {{#if is_multiunit}}
-                <div class="unit-list">
+                <div class="subunit-list">
                     <h5>Unit List</h5>
-                    {{#each description.sashes }}
-                        <div class="opening">
-                            <h6>{{ name }}</h6>
+                    {{#each description.subunits }}
+                        <div class="subunit">
+                            <h6>{{ mark }}</h6>
                             <ul>
-                                <li><strong>Type:</strong> <span>{{ type }}</span></li>
-                                {{#if opening_size }}<li><strong>Vent Opn. Size:</strong> <span>{{{ opening_size }}} </span></li>{{/if}}
-                                {{#if egress_opening_size }}<li><strong>Egress Clear Opn.:</strong> <span>{{{ egress_opening_size }}} </span></li>{{/if}}
-                                {{#if sections }}
-                                    {{#if daylight_sum}}<li><strong>Total Daylight:</strong> <span>{{{ daylight_sum }}}</span></li>{{/if}}
-                                {{else}}
-                                    {{#if filling_name}}<li><strong>{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}:</strong> <span>{{ filling_name }}</span></li>{{/if}}
-                                    {{#if filling_is_glass }}<li><strong>Total Daylight:</strong> <span>{{{ filling_size }}}</span></li>{{/if}}
-                                {{/if}}
+                                <li><strong>Size <small class="size-label">WxH</small></strong> <span>{{ size }}</span></li>
+                                {{#if description }}<li><strong>Customer Description:</strong> <span>{{ description }}</span></li>{{/if}}
+                                {{#if notes }}<li><strong>Notes:</strong> <span>{{ notes }}</span></li>{{/if}}
                             </ul>
                             {{#if sections }}
                                 <ul class="sections">

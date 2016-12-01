@@ -62,9 +62,9 @@ var app = app || {};
         },
         createSubunits: function () {
             var group = new Konva.Group({ name: 'subunits' });
-            var tree = model.getSubunitPositionsTree();
+            var tree = model.getSubunitsPositionsTree();
 
-            model.subunitTreeForEach(tree, function (node) {
+            model.subunitsTreeForEach(tree, function (node) {
 
                 var previewImage = app.preview(node.unit, {
                     width: node.width * ratio,
@@ -115,7 +115,7 @@ var app = app || {};
 
             // to millimetres
             var style = module.getStyle('frame').default;
-            var parentSubunitId = model.getConnectorsParentSubunitId(connector.id);
+            var parentSubunitId = model.getConnectorParentSubunitId(connector.id);
 
             var parentKonva = options.subunitKonvas.filter(function (konva) {
                 return (konva.getAttr('subunitId') === parentSubunitId);

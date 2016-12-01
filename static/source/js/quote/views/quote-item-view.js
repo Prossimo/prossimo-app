@@ -28,8 +28,10 @@ var app = app || {};
                 subtotal_discounted: discount ? f.price_usd(subtotal_price_discounted) : null
             };
         },
+        // TODO break into smaller pieces
         getDescription: function () {
             var view = this;
+            var model = this.model;
             var project_settings = app.settings.getProjectSettings();
             var f = app.utils.format;
             var c = app.utils.convert;
@@ -84,6 +86,26 @@ var app = app || {};
 
                 return result;
             }
+
+            // Prepare subunits info
+            var subunits = [];
+            if (model.subunits) {
+                subunits = model.subunits.map(function (subunit) {
+                    var size = view.options.show_sizes_in_mm ?
+                        f.dimensions_mm(c.inches_to_mm(subunit.get('width')), c.inches_to_mm(subunit.get('height'))) :
+                        f.dimensions(subunit.get('width'), subunit.get('height'), 'fraction',
+                            project_settings && project_settings.get('inches_display_mode'));
+
+                    return {
+                        mark: subunit.get('mark'),
+                        size: size,
+                        description: subunit.get('description'),
+                        notes: subunit.get('notes')
+                    }
+                });
+            }
+            // End Prepare subunits info
+
 
             var sash_list_source = this.model.getSashList(null, null, this.options.show_outside_units_view &&
                 project_settings && project_settings.get('hinge_indicator_mode') === 'american');
@@ -275,6 +297,7 @@ var app = app || {};
             }, this);
 
             return {
+                subunits: subunits,
                 sashes: sashes,
                 params: params
             };
@@ -291,9 +314,9 @@ var app = app || {};
             var isSubunit = this.model.isSubunit();
             var preview_size;
             if (relation === 'multiunit') {
-                preview_size = 700;
+                preview_size = 600;
             } else if (relation === 'subunit') {
-                preview_size = 400;
+                preview_size = 600;
             } else {
                 preview_size = 600;
             }

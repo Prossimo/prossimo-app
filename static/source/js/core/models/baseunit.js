@@ -2313,7 +2313,7 @@ var app = app || {};
             isSubunit: function () {
                 var allSubunitIds = this.collection.chain()
                     .filter(function (unit) { return unit.isMultiunit(); })
-                    .map(function (multiunit) { return multiunit.get('multiunit_subunits'); })
+                    .map(function (multiunit) { return multiunit.getSubunitsIds(); })
                     .flatten()
                     .value();
 
@@ -2324,13 +2324,13 @@ var app = app || {};
                 
                 var parentMultiunit = this.collection.chain()
                     .filter(function (unit) { return unit.isMultiunit(); })
-                    .find(function (multiunit) { return _.contains(multiunit.get('multiunit_subunits'), subunitId); })
+                    .find(function (multiunit) { return _.contains(multiunit.getSubunitsIds(), subunitId); })
                     .value();
 
                 return parentMultiunit;
             },
             isSubunitOf: function (multiunit) {
-                var multiunitSubunitsIds = multiunit.get('multiunit_subunits');
+                var multiunitSubunitsIds = multiunit.getSubunitsIds();
 
                 return _.contains(multiunitSubunitsIds, this.getId());
             },

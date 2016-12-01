@@ -64,6 +64,7 @@ var app = app || {};
 
             this.on('add', function () {
                 self.listenTo(self.collection, 'update', function (event) {
+                    self.connectorsToEssentialFormat();
                     self.updateSubunitsCollection();
                     self.updateCollectionPositions();
                 });
@@ -74,6 +75,10 @@ var app = app || {};
                 });
             });
         },
+        /**
+         * this.subunits is a backbone collection that holds respective subunit models, the very same models that exist
+         * in multiunit's primary parent collection.
+         */
         updateSubunitsCollection: function () {
             if (!this.collection) { return; }
 
@@ -84,15 +89,16 @@ var app = app || {};
                 });
             }
 
-            var subunitIds = this.get('multiunit_subunits');
+            var subunitsIds = this.getSubunitsIds();
 
             this.subunits.add(
-                subunitIds
+                subunitsIds
                     .map(function (id) { return self.getSubunitById(id); })
                     .filter(function (subunit) { return !_.isUndefined(subunit); })
                     .filter(function (subunit) { return self.subunits.indexOf(subunit) === -1; })
             );
         },
+        /** Reorders subunit models in multiunit's parent collection (not in this.subunits) */
         updateCollectionPositions: function () {
             this.subunits.forEach(function (subunit, subunitIndex) {
                 var subunitOffset = subunitIndex + 1;
@@ -126,11 +132,11 @@ var app = app || {};
         addSubunit: function (subunit) {
             if (!(subunit instanceof app.Baseunit)) { return; }
 
-            var subunitIds = this.get('multiunit_subunits');
+            var subunitsIds = this.get('multiunit_subunits');
             var subunitId = subunit.getId();
 
-            if (!_.contains(subunitIds, subunitId)) {
-                subunitIds.push(subunitId);
+            if (!_.contains(subunitsIds, subunitId)) {
+                subunitsIds.push(subunitId);
                 this.updateSubunitsCollection();
                 this.updateCollectionPositions();
                 this.recalculateSizes();
@@ -139,12 +145,12 @@ var app = app || {};
         removeSubunit: function (subunit) {
             if (!(subunit.isSubunitOf && subunit.isSubunitOf(this))) { return; }
 
-            var subunitIds = this.get('multiunit_subunits');
+            var subunitsIds = this.get('multiunit_subunits');
             var subunitId = subunit.getId();
-            var subunitIndex = subunitIds.indexOf(subunitId);
+            var subunitIndex = subunitsIds.indexOf(subunitId);
 
             if (subunitIndex !== -1) {
-                subunitIds.splice(subunitIndex, 1);
+                subunitsIds.splice(subunitIndex, 1);
                 this.removeConnector(this.getParentConnector(subunitId).id);
                 this.updateSubunitsCollection();
                 this.updateCollectionPositions();
@@ -152,13 +158,13 @@ var app = app || {};
             }
         },
         recalculateSizes: function () {  // updates multiunit width/height from subunit changes
-            var subunitPositionsTree = this.getSubunitPositionsTree();
+            var subunitPositionsTree = this.getSubunitsPositionsTree();
 
             var minX = 0;
             var maxX = 0;
             var minY = 0;
             var maxY = 0;
-            this.subunitTreeForEach(subunitPositionsTree, function (node) {
+            this.subunitsTreeForEach(subunitPositionsTree, function (node) {
                 minX = Math.min(minX, node.x);
                 maxX = Math.max(maxX, node.x + node.width);
                 minY = Math.min(minY, node.y);
@@ -172,9 +178,9 @@ var app = app || {};
             return { width: multiunitWidth, height: multiunitHeight };
         },
         getSubunitNode: function (subunitId) {
-            var subunitPositionsTree = this.getSubunitPositionsTree();
+            var subunitPositionsTree = this.getSubunitsPositionsTree();
             var subunitNode;
-            this.subunitTreeForEach(subunitPositionsTree, function (node) {
+            this.subunitsTreeForEach(subunitPositionsTree, function (node) {
                 if (node.unit.getId() === subunitId) {
                     subunitNode = node;
                 }
@@ -201,10 +207,10 @@ var app = app || {};
          * parent - points to the parent node
          * children - points to array of child nodes
          */
-        getSubunitTree: function () {
+        getSubunitsTree: function () {
 
-            var subunitIds = this.get('multiunit_subunits');  // prepare flat array of node templates
-            var nodeTemplates = subunitIds.map(function (subunitId) {
+            var subunitsIds = this.getSubunitsIds();  // prepare flat array of node templates
+            var nodeTemplates = subunitsIds.map(function (subunitId) {
                 var unitId = subunitId;
                 var parentId = self.getParentSubunitId(subunitId);
                 var childrenIds = self.getChildSubunitsIds(subunitId);
@@ -221,9 +227,9 @@ var app = app || {};
                 return (node.unit === originId);
             })[0];
             originNode.unit = self.getSubunitById(originNode.unit);
-            var subunitTree = originNode;
+            var subunitsTree = originNode;
             var processableLeafNodes = [];
-            processableLeafNodes[0] = subunitTree;
+            processableLeafNodes[0] = subunitsTree;
 
             while (processableLeafNodes.length > 0) {  // build tree by appending nodes from array
                 var currentNode = processableLeafNodes.pop();
@@ -242,11 +248,11 @@ var app = app || {};
                 });
             }
 
-            return subunitTree;
+            return subunitsTree;
         },
-        getSubunitPositionsTree: function () {  // returns subunit tree with position information at each node, in mm
-            var subunitTree = this.getSubunitTree();
-            this.subunitTreeForEach(subunitTree, function (node) {
+        getSubunitsPositionsTree: function () {  // returns subunit tree with position information at each node, in mm
+            var subunitsTree = this.getSubunitsTree();
+            this.subunitsTreeForEach(subunitsTree, function (node) {
                 var isOrigin = self.isOriginId(node.unit.getId());
 
                 if (isOrigin) {
@@ -285,24 +291,46 @@ var app = app || {};
                 }
             });
 
-            return subunitTree;
+            return subunitsTree;
         },
-        subunitTreeForEach: function (subunitNode, func) {
+        subunitsTreeForEach: function (subunitNode, func) {
             if (!subunitNode || !_.isFunction(func)) { return; }
 
             var children = subunitNode.children;  // start at node and apply down
             func.call(this, subunitNode);
             if (children && children.length > 0) {
                 children.forEach(function (node) {  // recursive walk
-                    self.subunitTreeForEach(node, func);
+                    self.subunitsTreeForEach(node, func);
                 });
             }
+        },
+        getSubunitsIds: function () {
+            return this.get('multiunit_subunits').slice();
         },
         getOriginSubunitId: function () {
             return this.get('multiunit_subunits')[0];
         },
         isOriginId: function (subunitId) {
             return (subunitId === this.getOriginSubunitId())
+        },
+        getParentSubunitId: function (subunitId) {
+            if (_.isUndefined(subunitId)) { return; }
+            if (this.isOriginId(subunitId)) { return; }
+
+            var parentConnectorId = this.getParentConnector(subunitId).id;
+            var parentSubunitId = this.getConnectorParentSubunitId(parentConnectorId);
+
+            return parentSubunitId;
+        },
+        getChildSubunitsIds: function (subunitId) {
+            if (_.isUndefined(subunitId)) { return; }
+
+            var childConnectors = this.getChildConnectors(subunitId);
+            var childSubunitsIds = childConnectors.map(function (connector) {
+                return self.getConnectorChildSubunitId(connector.id);
+            });
+
+            return childSubunitsIds;
         },
         /**
          * = Conceptual connector model:
@@ -345,11 +373,7 @@ var app = app || {};
          * { id: '17', side: 'right', connects: ['123', '124'], offsets: [0, 100], width: 20, facewidth: 40, length: 200 }
          */
         getConnectors: function () {
-            var connectors = this.get('root_section').connectors;
-
-            connectors.forEach(function (connector) {
-                self.connectorToEssentialFormat(connector);
-            });
+            var connectors = this.get('root_section').connectors.slice();
 
             return connectors;
         },
@@ -378,46 +402,28 @@ var app = app || {};
 
             return childConnectors;
         },
-        getConnectorsParentSubunitId: function (connectorId) {
+        getConnectorParentSubunitId: function (connectorId) {
             if (_.isUndefined(connectorId)) { return; }
 
             var parentSubunitId = this.getConnectorById(connectorId).connects[0];
             
             return parentSubunitId;
         },
-        getConnectorsChildSubunitId: function (connectorId) {
+        getConnectorChildSubunitId: function (connectorId) {
             if (_.isUndefined(connectorId)) { return; }
 
             var childSubunitId = this.getConnectorById(connectorId).connects[1];
             
             return childSubunitId;
         },
-        getParentSubunitId: function (subunitId) {
-            if (_.isUndefined(subunitId)) { return; }
-            if (this.isOriginId(subunitId)) { return; }
-
-            var parentConnectorId = this.getParentConnector(subunitId).id;
-            var parentSubunitId = this.getConnectorsParentSubunitId(parentConnectorId);
-
-            return parentSubunitId;
-        },
-        getChildSubunitsIds: function (subunitId) {
-            if (_.isUndefined(subunitId)) { return; }
-
-            var childConnectors = this.getChildConnectors(subunitId);
-            var childSubunitsIds = childConnectors.map(function (connector) {
-                return self.getConnectorsChildSubunitId(connector.id);
-            });
-
-            return childSubunitsIds;
-        },
         addConnector: function (options) {
             if (!(options && options.connects && options.side)) { return; }
 
             var parentSubunit = this.getSubunitById(options.connects[0]);
+            var connectors = this.get('root_section').connectors;
             var newChildSubunit;
 
-            var highestId = this.getConnectors()
+            var highestId = connectors
                 .map(function (connector) { return connector.id; })
                 .reduce(function (lastHighestId, currentId) { return Math.max(currentId, lastHighestId); }, 0);
 
@@ -439,19 +445,22 @@ var app = app || {};
                 facewidth: options.facewidth || CONNECTOR_DEFAULTS.facewidth
             };
 
-            this.getConnectors().push(connector);
+
+            connectors.push(connector);
             this.connectorToEssentialFormat(connector);
             if (newChildSubunit) { this.addSubunit(newChildSubunit); }
             return connector;
         },
         removeConnector: function (id) {
             if (_.isUndefined(id)) { return; }
+
+            var connectors = this.get('root_section').connectors;
             var connector;
 
-            var connectorIndex = this.getConnectors().indexOf(this.getConnectorById(id));
+            var connectorIndex = connectors.indexOf(this.getConnectorById(id));
 
             if (connectorIndex !== -1) {
-                connector = this.getConnectors().splice(connectorIndex, 1)[0];
+                connector = connectors.splice(connectorIndex, 1)[0];
             }
             // FIXME implement
             return connector;
@@ -470,7 +479,7 @@ var app = app || {};
                     connector[key] = options[key];
                 });
             }
-
+            // FIXME implement
             return connector;
         },
         connectorToEssentialFormat: function (connector) {
@@ -478,6 +487,9 @@ var app = app || {};
 
             var parentId = connector.connects[0];
             var parent = this.getSubunitById(parentId);
+
+            if (_.isUndefined(parent)) { return; }
+
             var parentSide = (connector.side === 'top' || connector.side === 'bottom') ?
                 parent.getInMetric('width', 'mm') :
                 parent.getInMetric('height', 'mm');
@@ -495,6 +507,13 @@ var app = app || {};
             }
 
             return connector;
+        },
+        connectorsToEssentialFormat: function () {
+            var connectors = this.get('root_section').connectors;
+
+            connectors.forEach(function (connector) {
+                self.connectorToEssentialFormat(connector);
+            });
         }
     });
 })();
