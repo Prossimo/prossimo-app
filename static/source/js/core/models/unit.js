@@ -198,7 +198,7 @@ var app = app || {};
             if ( app.settings ) {
                 name_value_hash.glazing_bar_width = app.settings.getGlazingBarWidths()[0];
                 name_value_hash.opening_direction = app.settings.getOpeningDirections()[0];
-                name_value_hash.glazing = app.settings.filling_types.getAvailableFillingTypeNames()[0];
+                name_value_hash.glazing = app.settings.filling_types.getNames()[0];
             }
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -499,7 +499,7 @@ var app = app || {};
             var glazing = this.get('glazing');
 
             if ( glazing && app.settings ) {
-                filling_type = app.settings.filling_types.getFillingTypeByName(glazing);
+                filling_type = app.settings.filling_types.getByName(glazing);
 
                 if ( filling_type ) {
                     this.setFillingType(
@@ -1715,9 +1715,9 @@ var app = app || {};
                     current_sash.filling.name = parent_root.fillingName;
                 } else if (
                     this.get('glazing') && app.settings &&
-                    app.settings.filling_types.getFillingTypeByName(this.get('glazing'))
+                    app.settings.filling_types.getByName(this.get('glazing'))
                 ) {
-                    filling_type = app.settings.filling_types.getFillingTypeByName(this.get('glazing'));
+                    filling_type = app.settings.filling_types.getByName(this.get('glazing'));
                     current_sash.filling.type = filling_type.get('type');
                     current_sash.filling.name = filling_type.get('name');
                 } else {

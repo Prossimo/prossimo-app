@@ -31,7 +31,8 @@ var app = app || {};
                     title: 'Options'
                 }
             };
-            this.active_tab = 'profiles';
+            // this.active_tab = 'profiles';
+            this.active_tab = 'filling_types';
         },
         getActiveTab: function () {
             return this.tabs[this.active_tab];

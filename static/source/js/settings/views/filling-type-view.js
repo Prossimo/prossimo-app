@@ -11,7 +11,8 @@ var app = app || {};
             $table: '.filling-type-attributes',
             $edit_profiles: '.js-edit-fillingtype-profiles',
             $clone: '.js-clone-filling-type',
-            $remove: '.js-remove-filling-type'
+            $remove: '.js-remove-filling-type',
+            $profiles_container: '.profile-availability'
         },
         events: {
             'click @ui.$edit_profiles': 'editProfiles',
@@ -62,6 +63,8 @@ var app = app || {};
                     child_view.view_instance.disable();
                 }
             }, this);
+
+            this.ui.$profiles_container.append(this.profile_connections_table_view.render().el);
         },
         onBeforeDestroy: function () {
             _.each(this.attribute_views, function (child_view) {
@@ -109,6 +112,10 @@ var app = app || {};
                     view_instance: view
                 };
             }, this);
+
+            this.profile_connections_table_view = new app.ProfileConnectionsTableView({
+                collection: this.model.profiles
+            });
 
             this.listenTo(this.model, 'change:profiles change:name', function () {
                 this.render();

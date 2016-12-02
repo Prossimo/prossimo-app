@@ -84,7 +84,8 @@ var app = app || {};
             });
 
             this.filling_types = new app.FillingTypeCollection(null, {
-                api_base_path: this.get('api_base_path')
+                api_base_path: this.get('api_base_path'),
+                append_base_types: true
             });
 
             this.dictionaries = new app.OptionsDictionaryCollection(null, {
