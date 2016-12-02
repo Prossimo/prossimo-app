@@ -13,7 +13,8 @@ var app = app || {};
         },
         templateContext: function () {
             return {
-                urlToDownloadPdf: app.settings.getPdfDownloadUrl('quote')
+                urlToDownloadPdf: app.settings.getPdfDownloadUrl('quote'),
+                lead_time: app.current_project.get('lead_time')
             };
         },
         onRender: function () {
