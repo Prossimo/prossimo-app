@@ -1,17 +1,14 @@
-{{#if is_subunit}}
-    <!-- No heading -->
-{{else}}
+<!-- Multiunit overview -->
+{{#if is_multiunit}}
     <table class="quote-unit-heading">
-        {{#if is_multiunit}}
-            <thead>
-                <tr>
-                    <th colspan="3">
-                        <strong>Multi-frame unit:</strong>
-                        <em>Frames assembled on site</em>
-                    </th>
-                </tr>
-            </thead>
-        {{/if}}
+        <thead>
+        <tr>
+            <th colspan="3">
+                <strong>Multi-frame unit:</strong>
+                <em>Frames assembled on site</em>
+            </th>
+        </tr>
+        </thead>
         <tbody><tr>
             <td class="primary-info{{#if show_price }} has-price{{#if price.discount }} has-discounted-price{{/if}}{{/if}}">
                 <table>
@@ -29,101 +26,98 @@
                             <span>{{ quantity }}</span>
                         </td>
                         {{#if has_dummy_profile }}
-                        <td class="no-profile-warning">
-                            <p>
-                                <i class="glyphicon glyphicon-warning-sign"></i>
-                                Profile{{#if profile_name }} "{{ profile_name }}"{{/if}} selected for this unit doesn't exist.
-                            </p>
-                        </td>
+                            <td class="no-profile-warning">
+                                <p>
+                                    <i class="glyphicon glyphicon-warning-sign"></i>
+                                    Profile{{#if profile_name }} "{{ profile_name }}"{{/if}} selected for this unit doesn't exist.
+                                </p>
+                            </td>
                         {{/if}}
                     </tr></tbody>
                 </table>
             </td>
             {{#if show_price }}
-            <td class="price">
-                <ul class="unit-price">
-                    <li class="unit">
-                        <strong>Unit Price{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
-                        <span class="value">{{ price.unit }}</span>
-                    </li>
-                    <li class="subtotal">
-                        <strong>Subtotal{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
-                        <span class="value">{{ price.subtotal }}</span>
-                    </li>
-                </ul>
-            </td>
-            {{#if price.discount }}
-            <td class="price-discounted">
-                <ul class="unit-price">
-                    {{#if price.discount }}<li class="discount">
-                        <strong>Discount:</strong>
-                        <span class="value">{{ price.discount }}</span>
-                    </li>
-                    {{/if}}
-                    {{#if price.unit_discounted }}<li class="unit">
-                        <strong>Unit Price w/Disc.{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
-                        <span class="value">{{ price.unit_discounted }}</span>
-                    </li>
-                    {{/if}}
-                    {{#if price.subtotal_discounted }}<li class="subtotal">
-                        <strong>Subtotal w/Disc.{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
-                        <span class="value">{{ price.subtotal_discounted }}</span>
-                    </li>
-                    {{/if}}
-                </ul>
-            </td>
-            {{/if}}
+                <td class="price">
+                    <ul class="unit-price">
+                        <li class="unit">
+                            <strong>Unit Price{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
+                            <span class="value">{{ price.unit }}</span>
+                        </li>
+                        <li class="subtotal">
+                            <strong>Subtotal{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
+                            <span class="value">{{ price.subtotal }}</span>
+                        </li>
+                    </ul>
+                </td>
+                {{#if price.discount }}
+                    <td class="price-discounted">
+                        <ul class="unit-price">
+                            {{#if price.discount }}<li class="discount">
+                                <strong>Discount:</strong>
+                                <span class="value">{{ price.discount }}</span>
+                            </li>
+                            {{/if}}
+                            {{#if price.unit_discounted }}<li class="unit">
+                                <strong>Unit Price w/Disc.{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
+                                <span class="value">{{ price.unit_discounted }}</span>
+                            </li>
+                            {{/if}}
+                            {{#if price.subtotal_discounted }}<li class="subtotal">
+                                <strong>Subtotal w/Disc.{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
+                                <span class="value">{{ price.subtotal_discounted }}</span>
+                            </li>
+                            {{/if}}
+                        </ul>
+                    </td>
+                {{/if}}
             {{/if}}
         </tr></tbody>
     </table>
-{{/if}}
-
-<table class="quote-unit {{relation}}">
-    <thead>
+    <table class="quote-unit multiunit">
+        <thead>
         <tr>
             {{#if product_image }}
-            <th class="product-image">Shop Drawing: <em>{{ product_image.title }}</em></th>
+                <th class="product-image">Shop Drawing: <em>{{ product_image.title }}</em></th>
             {{else}}
                 {{#if customer_image }}
-                <th class="customer-image">Customer Image</th>
+                    <th class="customer-image">Customer Image</th>
                 {{/if}}
             {{/if}}
             <th class="product-description">Product Description</th>
         </tr>
-    </thead>
-    <tbody><tr>
-        {{#if product_image }}
-        <td class="product-image{{#if customer_image }} has-customer-image{{/if}}">
-            <div class="product-image-inner">
-                {{#if product_image.img }}
-                    <div class="image-wrapper"><img src="{{ product_image.img }}" alt=""></div>
+        </thead>
+        <tbody><tr>
+            {{#if product_image }}
+                <td class="product-image{{#if customer_image }} has-customer-image{{/if}}">
+                    <div class="product-image-inner">
+                        {{#if product_image.img }}
+                            <div class="image-wrapper"><img src="{{ product_image.img }}" alt=""></div>
+                        {{/if}}
+                    </div>
+                    {{#if customer_image }}
+                        <div class="customer-image-inner">
+                            <h5>Customer Image</h5>
+                            <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
+                        </div>
+                    {{/if}}
+                </td>
+            {{else}}
+                {{#if customer_image }}
+                    <td class="customer-image">
+                        <div class="customer-image-inner">
+                            <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
+                        </div>
+                    </td>
                 {{/if}}
-            </div>
-            {{#if customer_image }}
-            <div class="customer-image-inner">
-                <h5>Customer Image</h5>
-                <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
-            </div>
             {{/if}}
-        </td>
-        {{else}}
-            {{#if customer_image }}
-            <td class="customer-image">
-                <div class="customer-image-inner">
-                    <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
-                </div>
-            </td>
-            {{/if}}
-        {{/if}}
-        <td class="product-description">
-            <ul>
-                {{#each description.params }}
-                {{#if value }}<li><strong>{{{ title }}}:</strong> <span>{{{ value }}}</span></li>{{/if}}
-                {{/each}}
-            </ul>
-            {{#if notes }}<p class="notes"><strong>{{ notes }}</strong></p>{{/if}}
-            {{#if exceptions }}<p class="exceptions"><strong>{{ exceptions }}</strong></p>{{/if}}
-            {{#if is_multiunit}}
+            <td class="product-description">
+                <ul>
+                    {{#each description.params }}
+                        {{#if value }}<li><strong>{{{ title }}}:</strong> <span>{{{ value }}}</span></li>{{/if}}
+                    {{/each}}
+                </ul>
+                {{#if notes }}<p class="notes"><strong>{{ notes }}</strong></p>{{/if}}
+                {{#if exceptions }}<p class="exceptions"><strong>{{ exceptions }}</strong></p>{{/if}}
                 <div class="subunit-list">
                     <h5>Unit List</h5>
                     {{#each description.subunits }}
@@ -150,40 +144,229 @@
                         </div>
                     {{/each}}
                 </div>
+            </td>
+        </tr></tbody>
+    </table>
+
+
+<!-- Subunit row -->
+{{else if is_subunit}}
+    <table class="quote-unit subunit">
+        <tbody><tr>
+            {{#if product_image }}
+                <td class="product-image{{#if customer_image }} has-customer-image{{/if}}">
+                    <div class="product-image-inner">
+                        {{#if product_image.img }}
+                            <div class="image-wrapper"><img src="{{ product_image.img }}" alt=""></div>
+                        {{/if}}
+                    </div>
+                    {{#if customer_image }}
+                        <div class="customer-image-inner">
+                            <h5>Customer Image</h5>
+                            <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
+                        </div>
+                    {{/if}}
+                </td>
             {{else}}
+                {{#if customer_image }}
+                    <td class="customer-image">
+                        <div class="customer-image-inner">
+                            <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
+                        </div>
+                    </td>
+                {{/if}}
+            {{/if}}
+            <td class="product-description">
+                <ul>
+                    {{#each description.params }}
+                        {{#if value }}<li><strong>{{{ title }}}:</strong> <span>{{{ value }}}</span></li>{{/if}}
+                    {{/each}}
+                </ul>
+                {{#if notes }}<p class="notes"><strong>{{ notes }}</strong></p>{{/if}}
+                {{#if exceptions }}<p class="exceptions"><strong>{{ exceptions }}</strong></p>{{/if}}
                 <div class="sash-list">
                     <h5>Sash List</h5>
                     {{#each description.sashes }}
-                    <div class="opening">
-                        <h6>{{ name }}</h6>
-                        <ul>
-                            <li><strong>Type:</strong> <span>{{ type }}</span></li>
-                            {{#if opening_size }}<li><strong>Vent Opn. Size:</strong> <span>{{{ opening_size }}} </span></li>{{/if}}
-                            {{#if egress_opening_size }}<li><strong>Egress Clear Opn.:</strong> <span>{{{ egress_opening_size }}} </span></li>{{/if}}
-                            {{#if sections }}
-                                {{#if daylight_sum}}<li><strong>Total Daylight:</strong> <span>{{{ daylight_sum }}}</span></li>{{/if}}
-                            {{else}}
-                                {{#if filling_name}}<li><strong>{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}:</strong> <span>{{ filling_name }}</span></li>{{/if}}
-                                {{#if filling_is_glass }}<li><strong>Total Daylight:</strong> <span>{{{ filling_size }}}</span></li>{{/if}}
-                            {{/if}}
-                        </ul>
-                        {{#if sections }}
-                            <ul class="sections">
-                                {{#each sections}}
-                                <li>
-                                    <h6>{{ name }}</h6>
-                                    <ul>
-                                        <li><strong>{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}:</strong> <span>{{ filling_name }}</span></li>
-                                        {{#if filling_is_glass }}<li><strong>Daylight:</strong> <span>{{{ filling_size }}}</span></li>{{/if}}
-                                    </ul>
-                                </li>
-                                {{/each}}
+                        <div class="opening">
+                            <h6>{{ name }}</h6>
+                            <ul>
+                                <li><strong>Type:</strong> <span>{{ type }}</span></li>
+                                {{#if opening_size }}<li><strong>Vent Opn. Size:</strong> <span>{{{ opening_size }}} </span></li>{{/if}}
+                                {{#if egress_opening_size }}<li><strong>Egress Clear Opn.:</strong> <span>{{{ egress_opening_size }}} </span></li>{{/if}}
+                                {{#if sections }}
+                                    {{#if daylight_sum}}<li><strong>Total Daylight:</strong> <span>{{{ daylight_sum }}}</span></li>{{/if}}
+                                {{else}}
+                                    {{#if filling_name}}<li><strong>{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}:</strong> <span>{{ filling_name }}</span></li>{{/if}}
+                                    {{#if filling_is_glass }}<li><strong>Total Daylight:</strong> <span>{{{ filling_size }}}</span></li>{{/if}}
+                                {{/if}}
                             </ul>
-                        {{/if}}
-                    </div>
+                            {{#if sections }}
+                                <ul class="sections">
+                                    {{#each sections}}
+                                        <li>
+                                            <h6>{{ name }}</h6>
+                                            <ul>
+                                                <li><strong>{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}:</strong> <span>{{ filling_name }}</span></li>
+                                                {{#if filling_is_glass }}<li><strong>Daylight:</strong> <span>{{{ filling_size }}}</span></li>{{/if}}
+                                            </ul>
+                                        </li>
+                                    {{/each}}
+                                </ul>
+                            {{/if}}
+                        </div>
                     {{/each}}
                 </div>
+            </td>
+        </tr></tbody>
+    </table>
+
+
+<!-- Regular standalone unit -->
+{{else }}
+    <table class="quote-unit-heading">
+        <tbody><tr>
+            <td class="primary-info{{#if show_price }} has-price{{#if price.discount }} has-discounted-price{{/if}}{{/if}}">
+                <table>
+                    <tbody><tr>
+                        <td class="position">
+                            <strong>Unit #</strong>
+                            <span>{{ position }}</span>
+                        </td>
+                        <td class="mark">
+                            <strong>Mark</strong>
+                            <span>{{ mark }}</span>
+                        </td>
+                        <td class="quantity">
+                            <strong>Quantity</strong>
+                            <span>{{ quantity }}</span>
+                        </td>
+                        {{#if has_dummy_profile }}
+                            <td class="no-profile-warning">
+                                <p>
+                                    <i class="glyphicon glyphicon-warning-sign"></i>
+                                    Profile{{#if profile_name }} "{{ profile_name }}"{{/if}} selected for this unit doesn't exist.
+                                </p>
+                            </td>
+                        {{/if}}
+                    </tr></tbody>
+                </table>
+            </td>
+            {{#if show_price }}
+                <td class="price">
+                    <ul class="unit-price">
+                        <li class="unit">
+                            <strong>Unit Price{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
+                            <span class="value">{{ price.unit }}</span>
+                        </li>
+                        <li class="subtotal">
+                            <strong>Subtotal{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
+                            <span class="value">{{ price.subtotal }}</span>
+                        </li>
+                    </ul>
+                </td>
+                {{#if price.discount }}
+                    <td class="price-discounted">
+                        <ul class="unit-price">
+                            {{#if price.discount }}<li class="discount">
+                                <strong>Discount:</strong>
+                                <span class="value">{{ price.discount }}</span>
+                            </li>
+                            {{/if}}
+                            {{#if price.unit_discounted }}<li class="unit">
+                                <strong>Unit Price w/Disc.{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
+                                <span class="value">{{ price.unit_discounted }}</span>
+                            </li>
+                            {{/if}}
+                            {{#if price.subtotal_discounted }}<li class="subtotal">
+                                <strong>Subtotal w/Disc.{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
+                                <span class="value">{{ price.subtotal_discounted }}</span>
+                            </li>
+                            {{/if}}
+                        </ul>
+                    </td>
+                {{/if}}
             {{/if}}
-        </td>
-    </tr></tbody>
-</table>
+        </tr></tbody>
+    </table>
+    <table class="quote-unit loneunit">
+        <thead>
+        <tr>
+            {{#if product_image }}
+                <th class="product-image">Shop Drawing: <em>{{ product_image.title }}</em></th>
+            {{else}}
+                {{#if customer_image }}
+                    <th class="customer-image">Customer Image</th>
+                {{/if}}
+            {{/if}}
+            <th class="product-description">Product Description</th>
+        </tr>
+        </thead>
+        <tbody><tr>
+            {{#if product_image }}
+                <td class="product-image{{#if customer_image }} has-customer-image{{/if}}">
+                    <div class="product-image-inner">
+                        {{#if product_image.img }}
+                            <div class="image-wrapper"><img src="{{ product_image.img }}" alt=""></div>
+                        {{/if}}
+                    </div>
+                    {{#if customer_image }}
+                        <div class="customer-image-inner">
+                            <h5>Customer Image</h5>
+                            <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
+                        </div>
+                    {{/if}}
+                </td>
+            {{else}}
+                {{#if customer_image }}
+                    <td class="customer-image">
+                        <div class="customer-image-inner">
+                            <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
+                        </div>
+                    </td>
+                {{/if}}
+            {{/if}}
+            <td class="product-description">
+                <ul>
+                    {{#each description.params }}
+                        {{#if value }}<li><strong>{{{ title }}}:</strong> <span>{{{ value }}}</span></li>{{/if}}
+                    {{/each}}
+                </ul>
+                {{#if notes }}<p class="notes"><strong>{{ notes }}</strong></p>{{/if}}
+                {{#if exceptions }}<p class="exceptions"><strong>{{ exceptions }}</strong></p>{{/if}}
+                <div class="sash-list">
+                    <h5>Sash List</h5>
+                    {{#each description.sashes }}
+                        <div class="opening">
+                            <h6>{{ name }}</h6>
+                            <ul>
+                                <li><strong>Type:</strong> <span>{{ type }}</span></li>
+                                {{#if opening_size }}<li><strong>Vent Opn. Size:</strong> <span>{{{ opening_size }}} </span></li>{{/if}}
+                                {{#if egress_opening_size }}<li><strong>Egress Clear Opn.:</strong> <span>{{{ egress_opening_size }}} </span></li>{{/if}}
+                                {{#if sections }}
+                                    {{#if daylight_sum}}<li><strong>Total Daylight:</strong> <span>{{{ daylight_sum }}}</span></li>{{/if}}
+                                {{else}}
+                                    {{#if filling_name}}<li><strong>{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}:</strong> <span>{{ filling_name }}</span></li>{{/if}}
+                                    {{#if filling_is_glass }}<li><strong>Total Daylight:</strong> <span>{{{ filling_size }}}</span></li>{{/if}}
+                                {{/if}}
+                            </ul>
+                            {{#if sections }}
+                                <ul class="sections">
+                                    {{#each sections}}
+                                        <li>
+                                            <h6>{{ name }}</h6>
+                                            <ul>
+                                                <li><strong>{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}:</strong> <span>{{ filling_name }}</span></li>
+                                                {{#if filling_is_glass }}<li><strong>Daylight:</strong> <span>{{{ filling_size }}}</span></li>{{/if}}
+                                            </ul>
+                                        </li>
+                                    {{/each}}
+                                </ul>
+                            {{/if}}
+                        </div>
+                    {{/each}}
+                </div>
+            </td>
+        </tr></tbody>
+    </table>
+
+{{/if}}
