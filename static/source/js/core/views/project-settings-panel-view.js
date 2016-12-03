@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.ProjectSettingsPanelView = Marionette.ItemView.extend({
+    app.ProjectSettingsPanelView = Marionette.View.extend({
         tagName: 'div',
         className: 'project-settings-panel',
         template: app.templates['core/project-settings-panel-view'],
@@ -32,7 +32,7 @@ var app = app || {};
             this.render();
         },
         setToggles: function () {
-            var data = this.serializeData();
+            var data = this.templateContext();
 
             if ( data.is_model_set ) {
                 this.toggles = {};
@@ -72,14 +72,14 @@ var app = app || {};
 
             return params_obj;
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 is_model_set: this.model,
                 params: this.getParamsSourceData()
             };
         },
         onRender: function () {
-            var data = this.serializeData();
+            var data = this.templateContext();
 
             if ( data.is_model_set ) {
                 _.each(data.params, function (param_options, key) {

@@ -53,7 +53,7 @@ var app = app || {};
         onSort: function (event) {
             this.collection.setItemPosition(event.oldIndex, event.newIndex);
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 collection_length: this.collection.length,
                 collection_title: this.options.collection_title || 'Items List',
@@ -71,24 +71,45 @@ var app = app || {};
                 }
             });
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.ui.$container.sortable('destroy');
         },
         initialize: function () {
-            this.active_item = this.collection.at(0) || undefined;
             this.filter_condition = this.options.filter_condition || false;
+            this.active_item = this.filter_condition ?
+                this.collection.filter(this.filter_condition)[0] :
+                this.collection.at(0);
 
             //  Make next (or last) item in the collection active on remove
             this.listenTo(this.collection, 'remove', function (removed_items, collection, options) {
-                var new_active_model = options.index && this.collection.at(options.index) || this.collection.last();
+                var filtered_collection = this.filter_condition ?
+                    this.collection.filter(this.filter_condition) :
+                    this.collection.models;
+                var new_active_model;
+
+                //  Try to select the next item in collection after the removed item
+                if ( options.index || options.index === 0 ) {
+                    new_active_model = collection.rest(options.index).find(function (item) {
+                        return _.contains(filtered_collection, item);
+                    });
+                }
+
+                //  Try to select the last item in the collection
+                if ( !new_active_model ) {
+                    new_active_model = _.last(filtered_collection);
+                }
 
                 this.setActiveItem(new_active_model);
             });
 
             //  If new item was added to an empty collection, make it active
             this.listenTo(this.collection, 'add', function () {
-                if ( this.collection.length === 1 ) {
-                    this.setActiveItem(this.collection.at(0));
+                var filtered_collection = this.filter_condition ?
+                    this.collection.filter(this.filter_condition) :
+                    this.collection.models;
+
+                if ( filtered_collection.length === 1 ) {
+                    this.setActiveItem(_.first(filtered_collection));
                 }
             });
         }

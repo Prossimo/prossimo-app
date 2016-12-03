@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.OptionsDictionaryEntriesItemView = Marionette.ItemView.extend({
+    app.OptionsDictionaryEntriesItemView = Marionette.View.extend({
         tagName: 'tr',
         className: 'options-dictionary-entries-item',
         template: app.templates['settings/options-dictionary-entries-item-view'],
@@ -50,7 +50,7 @@ var app = app || {};
         cloneEntry: function () {
             this.model.duplicate();
         },
-        serializeData: function () {
+        templateContext: function () {
             var profiles = this.getProfilesNamesList();
 
             return {
@@ -60,7 +60,7 @@ var app = app || {};
             };
         },
         onRender: function () {
-            var profiles = this.serializeData().profiles;
+            var profiles = this.templateContext().profiles;
 
             this.ui.$name_container.empty().append(this.name_input_view.render().el);
 
@@ -88,7 +88,7 @@ var app = app || {};
                 this.$el.removeClass('is-new');
             }
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             if ( this.name_input_view ) {
                 this.name_input_view.destroy();
             }

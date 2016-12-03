@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.TopBarView = Marionette.ItemView.extend({
+    app.TopBarView = Marionette.View.extend({
         tagName: 'div',
         className: 'top-bar',
         template: app.templates['core/top-bar-view'],
@@ -49,7 +49,7 @@ var app = app || {};
         isToggleDisabled: function () {
             return !app.settings.getProjectSettings();
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 is_settings_toggle_disabled: this.isToggleDisabled()
             };

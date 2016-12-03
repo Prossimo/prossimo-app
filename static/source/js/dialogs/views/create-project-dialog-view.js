@@ -68,7 +68,7 @@ var app = app || {};
                 format: 'd MM, yyyy'
             });
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             if ( this.file_uploader ) {
                 this.file_uploader.destroy();
             }

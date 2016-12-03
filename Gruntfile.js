@@ -9,27 +9,28 @@ module.exports = function (grunt) {
     var PRINTER_URL = PRINTER_HOST + (PRINTER_PORT ? ':' + PRINTER_PORT : '');
 
     var vendor_js_files = [
-        'jquery/dist/jquery.min.js',
-        'handlebars/handlebars.runtime.min.js',
-        'underscore/underscore-min.js',
-        'backbone/backbone-min.js',
-        'backbone.marionette/lib/backbone.marionette.min.js',
-        'handsontable/dist/handsontable.full.min.js',
+        'jquery/dist/jquery.js',
+        'handlebars/handlebars.runtime.js',
+        'underscore/underscore.js',
+        'backbone/backbone.js',
+        'backbone.radio/build/backbone.radio.js',
+        'backbone.marionette/lib/backbone.marionette.js',
+        'handsontable/dist/handsontable.full.js',
         'bootstrap/js/dropdown.js',
         'bootstrap/js/tooltip.js',
         'bootstrap/js/popover.js',
         'bootstrap/js/modal.js',
-        'bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js',
-        'bootstrap-select/dist/js/bootstrap-select.min.js',
-        'bootstrap-toggle/js/bootstrap-toggle.min.js',
-        'konva/konva.min.js',
-        'decimal.js/decimal.min.js',
+        'bootstrap-datepicker/dist/js/bootstrap-datepicker.js',
+        'bootstrap-select/dist/js/bootstrap-select.js',
+        'bootstrap-toggle/js/bootstrap-toggle.js',
+        'konva/konva.js',
+        'decimal.js/decimal.js',
         'Backbone.Undo.js/Backbone.Undo.js',
         'backbone.KonvaView/backbone.KonvaView.js',
-        'spin.js/spin.min.js',
-        'mousetrap/mousetrap.min.js',
+        'spin.js/spin.js',
+        'mousetrap/mousetrap.js',
         'backbone.marionette.keyshortcuts/backbone.marionette.keyshortcuts.js',
-        'Sortable/Sortable.min.js',
+        'Sortable/Sortable.js',
         'Sortable/jquery.binding.js',
         'blueimp-load-image/js/load-image.all.min.js',
         'blueimp-canvas-to-blob/js/canvas-to-blob.min.js',
@@ -284,9 +285,9 @@ module.exports = function (grunt) {
                     mangle: false,
                     compress: false,
                     banner: '/*! Full list of vendor libraries: \n' +
-                        vendor_js_files.map(function (component) {
-                            return '<%= buildUrl %>/js/vendor/' + component;
-                        }).join('\n') + '*/\n'
+                    vendor_js_files.map(function (component) {
+                        return '<%= buildUrl %>/js/vendor/' + component;
+                    }).join('\n') + '*/\n'
                 },
                 files: {
                     '<%= buildUrl %>/js/vendor.dev.min.js':
@@ -300,9 +301,9 @@ module.exports = function (grunt) {
                     mangle: false,
                     compress: false,
                     banner: '/*! Full list of vendor libraries: \n' +
-                        vendor_js_files.map(function (component) {
-                            return '<%= buildUrl %>/js/vendor/' + component;
-                        }).join('\n') + '*/\n'
+                    vendor_js_files.map(function (component) {
+                        return '<%= buildUrl %>/js/vendor/' + component;
+                    }).join('\n') + '*/\n'
                 },
                 files: {
                     '<%= buildUrl %>/js/vendor.<%= hash %>.min.js':
@@ -334,8 +335,8 @@ module.exports = function (grunt) {
                             res.setHeader('Access-Control-Allow-Origin', '*');
 
                             if ( req.url === '/dashboard/' || req.url === '/drawing/' ||
-                                 req.url === '/quote/' || req.url === '/settings/' ||
-                                 req.url === '/supplier/' || req.url === '/units/'
+                                req.url === '/quote/' || req.url === '/settings/' ||
+                                req.url === '/supplier/' || req.url === '/units/'
                             ) {
                                 require('fs').createReadStream('index.html').pipe(res);
                             } else {

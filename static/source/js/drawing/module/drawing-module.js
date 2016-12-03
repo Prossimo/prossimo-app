@@ -52,6 +52,9 @@ var app = app || {};
             // Assign stage
             this.assignStage( opts );
 
+            //  TODO: rewrite this deferred part, it prevents us from upgrading
+            //  to jQuery v3. See "Example: async vs sync" here:
+            //  https://blog.jquery.com/2016/06/09/jquery-3-0-final-released/
             chain
             // Assign project settings
             .then(this.assignDefaultStates.bind(this, opts))
@@ -448,7 +451,7 @@ var app = app || {};
 
             return img;
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             var stage = this.get('stage');
             var is_predefined = this.get('is_stage_predefined');
 
@@ -527,5 +530,4 @@ var app = app || {};
 
         return result;
     };
-
 })();

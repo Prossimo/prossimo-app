@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.BaseSelectView = Marionette.ItemView.extend({
+    app.BaseSelectView = Marionette.View.extend({
         tagName: 'div',
         className: 'select-container',
         template: app.templates['core/base/base-select-view'],
@@ -18,7 +18,7 @@ var app = app || {};
 
             this.model.persist(this.options.param, new_value);
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 multiple: this.options.multiple,
                 options: _.map(this.options.values, function (item) {
@@ -64,7 +64,7 @@ var app = app || {};
                 width: 'fit'
             });
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.ui.$select.selectpicker('destroy');
         }
     });

@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.MainSupplierRequestView = Marionette.ItemView.extend({
+    app.MainSupplierRequestView = Marionette.View.extend({
         tagName: 'div',
         className: 'screen supplier-request-screen',
         template: app.templates['supplier-request/main-supplier-request-view'],
@@ -11,7 +11,7 @@ var app = app || {};
             $header_container: '.supplier-request-header-container',
             $table_container: '.supplier-request-table-container'
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 urlToDownloadPdf: app.settings.getPdfDownloadUrl('supplier')
             };
@@ -36,7 +36,7 @@ var app = app || {};
             this.ui.$header_container.append(this.request_header_view.render().el);
             this.ui.$table_container.append(this.request_table_view.render().el);
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.request_header_view.destroy();
             this.request_table_view.destroy();
         }

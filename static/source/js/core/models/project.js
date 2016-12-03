@@ -267,6 +267,12 @@ var app = app || {};
 
             return grand_total;
         },
+        getSubtotalCost: function () {
+            var subtotal_units_cost = this.units.getSubtotalCostDiscounted();
+            var extras_cost = this.extras.getRegularItemsCost();
+
+            return subtotal_units_cost + extras_cost;
+        },
         getTotalCost: function () {
             var subtotal_units_cost = this.units.getSubtotalCostDiscounted();
             var extras_cost = this.extras.getRegularItemsCost();
@@ -277,7 +283,10 @@ var app = app || {};
             return subtotal_units_cost + extras_cost + shipping + hidden + tax;
         },
         getProfit: function () {
-            return this.getGrandTotal() - this.getTotalCost();
+            return {
+                gross_profit: this.getSubtotalPrice() - this.getSubtotalCost(),
+                net_profit: this.getGrandTotal() - this.getTotalCost()
+            };
         },
         getTotalPrices: function () {
             var subtotal_units_price = this.getSubtotalUnitsPrice();
@@ -293,7 +302,7 @@ var app = app || {};
 
             var total_cost = this.getTotalCost();
             var profit = this.getProfit();
-            var profit_percent = grand_total ? profit / grand_total * 100 : 0;
+            var net_profit_percent = grand_total ? profit.net_profit / grand_total * 100 : 0;
 
             //  TODO: this value should be customizable, not just 50% always,
             //  when it'll be customizable, it should also be tested. Maybe it
@@ -312,8 +321,9 @@ var app = app || {};
                 shipping: shipping_price,
                 grand_total: grand_total,
                 total_cost: total_cost,
-                profit: profit,
-                profit_percent: profit_percent,
+                gross_profit: profit.gross_profit,
+                net_profit: profit.net_profit,
+                net_profit_percent: net_profit_percent,
                 deposit_percent: deposit_percent,
                 deposit_on_contract: deposit_on_contract,
                 balance_due_at_delivery: balance_due_at_delivery

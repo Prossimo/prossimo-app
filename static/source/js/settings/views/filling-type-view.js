@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.FillingTypeView = Marionette.ItemView.extend({
+    app.FillingTypeView = Marionette.View.extend({
         tagName: 'div',
         className: 'filling-type',
         template: app.templates['settings/filling-type-view'],
@@ -63,12 +63,12 @@ var app = app || {};
                 }
             }, this);
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             _.each(this.attribute_views, function (child_view) {
                 child_view.view_instance.destroy();
             }, this);
         },
-        serializeData: function () {
+        templateContext: function () {
             var profiles = this.getProfilesNamesList();
 
             return {

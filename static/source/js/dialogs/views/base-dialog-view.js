@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.BaseDialogView = Marionette.ItemView.extend({
+    app.BaseDialogView = Marionette.View.extend({
         className: 'modal fade',
         template: app.templates['dialogs/base-dialog-view'],
         events: {

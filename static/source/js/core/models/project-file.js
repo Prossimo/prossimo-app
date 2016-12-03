@@ -28,11 +28,26 @@ var app = app || {};
 
             return app.schema.parseAccordingToSchema(file_data, this.schema);
         },
-        getDownloadUrl: function () {
-            return this.url() + '/download';
+        getDownloadUrl: function (make_absolute) {
+            var prefix = '';
+            var pattern = /^http/i;
+
+            if ( make_absolute === true && !pattern.test(this.url()) ) {
+                prefix = 'http://' + window.location.host;
+            }
+
+            return prefix + this.url() + '/download';
         },
         getThumbnailUrl: function () {
             return this.get('has_thumbnail') ? this.url() + '/thumbnail' : undefined;
+        },
+        getGoogleDocsViewUrl: function () {
+            var prefix = 'https://docs.google.com/viewer?url=';
+
+            return prefix + this.getDownloadUrl(true);
+        },
+        getFileSize: function () {
+            return app.utils.format.fileSize(this.get('size'));
         },
         initialize: function (attributes, options) {
             this.options = options || {};
