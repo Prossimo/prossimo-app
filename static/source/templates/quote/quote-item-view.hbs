@@ -1,6 +1,17 @@
 {{#if is_subunit}}
+    <!-- No heading -->
 {{else}}
     <table class="quote-unit-heading">
+        {{#if is_multiunit}}
+            <thead>
+                <tr>
+                    <th colspan="3">
+                        <strong>Multi-frame unit:</strong>
+                        <em>Frames assembled on site</em>
+                    </th>
+                </tr>
+            </thead>
+        {{/if}}
         <tbody><tr>
             <td class="primary-info{{#if show_price }} has-price{{#if price.discount }} has-discounted-price{{/if}}{{/if}}">
                 <table>

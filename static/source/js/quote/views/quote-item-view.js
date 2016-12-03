@@ -351,6 +351,12 @@ var app = app || {};
             var show_customer_image = this.shouldShowCustomerImage();
             var show_drawings = this.shouldShowDrawings();
             var show_price = this.options.show_price !== false;
+            var isLastSubunit;
+
+            if (this.model.isSubunit() && this.model.collection) {
+                var index = this.model.collection.indexOf(this.model);
+                isLastSubunit = !this.model.collection.at(index + 1).isSubunit();
+            }
 
             return {
                 position: parseFloat(this.model.get('position')) + 1,
@@ -366,6 +372,7 @@ var app = app || {};
                 is_price_estimated: project_settings && project_settings.get('pricing_mode') === 'estimates',
                 is_multiunit: this.model.isMultiunit(),
                 is_subunit: this.model.isSubunit(),
+                is_last_subunit: isLastSubunit,
                 has_dummy_profile: this.model.hasDummyProfile(),
                 profile_name: this.model.get('profile_name') || this.model.get('profile_id') || ''
             };

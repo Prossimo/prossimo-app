@@ -593,17 +593,6 @@ var app = app || {};
             });
         }
 
-        // debugger
-
-        // FIXME implement
-
-        // var z=module.layerManager.layers.unit.drawer.layer.children[0]
-        // var rect = new Konva.Rect({ fill: 'red' });
-        // module.layerManager.layers.unit.drawer.layer.add(rect);
-        // rect.setAttrs(z.getClientRect())
-        // rect.moveToBottom();
-        // rect.draw()
-
         if (options.mode === 'canvas') {
             result = module.getCanvas();
         } else if (options.mode === 'base64') {

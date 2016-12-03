@@ -137,8 +137,12 @@
 .quote-item.multiunit,
 .quote-item.subunit {
     margin-bottom: -1px;
+}
 
-    & + .loneunit { margin-top: 20px; }
+.quote-unit-group.multiunit {
+    margin-bottom: 20px;
+    border-top: @border_dark;
+    border-bottom: @border_dark;
 }
 
 .quote-unit-heading {
@@ -327,6 +331,10 @@ th.product-image {
 }
 
 th.product-image em {
+    font-weight: 400;
+}
+
+.quote-item.multiunit thead th em {
     font-weight: 400;
 }
 
