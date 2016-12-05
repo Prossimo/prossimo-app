@@ -62,7 +62,7 @@ var app = app || {};
         },
         createSubunits: function () {
             var group = new Konva.Group({ name: 'subunits' });
-            var tree = model.getSubunitsPositionsTree();
+            var tree = model.getSubunitsCoordinatesTree();
 
             model.subunitsTreeForEach(tree, function (node) {
 

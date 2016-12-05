@@ -352,6 +352,17 @@ var app = app || {};
             var show_drawings = this.shouldShowDrawings();
             var show_price = this.options.show_price !== false;
             var isLastSubunit;
+            var position;
+
+            if (this.model.isSubunit()) {
+                var multiunit = this.model.getParentMultiunit();
+                var multiunitPosition = parseFloat(multiunit.get('position')) + 1;
+                var subunitPosition = multiunit.getSubunitRelativePosition(this.model) + 1;
+                var subscript = app.utils.format.letters(subunitPosition);
+                position = '' + multiunitPosition + subscript;
+            } else {
+                position = parseFloat(this.model.get('position')) + 1;
+            }
 
             if (this.model.isSubunit() && this.model.collection) {
                 var index = this.model.collection.indexOf(this.model);
@@ -359,7 +370,7 @@ var app = app || {};
             }
 
             return {
-                position: parseFloat(this.model.get('position')) + 1,
+                position: position,
                 mark: this.model.get('mark'),
                 description: this.getDescription(),
                 notes: this.model.get('notes'),

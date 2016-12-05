@@ -158,7 +158,7 @@ var app = app || {};
             }
         },
         recalculateSizes: function () {  // updates multiunit width/height from subunit changes
-            var subunitPositionsTree = this.getSubunitsPositionsTree();
+            var subunitPositionsTree = this.getSubunitsCoordinatesTree();
 
             var minX = 0;
             var maxX = 0;
@@ -178,7 +178,7 @@ var app = app || {};
             return { width: multiunitWidth, height: multiunitHeight };
         },
         getSubunitNode: function (subunitId) {
-            var subunitPositionsTree = this.getSubunitsPositionsTree();
+            var subunitPositionsTree = this.getSubunitsCoordinatesTree();
             var subunitNode;
             this.subunitsTreeForEach(subunitPositionsTree, function (node) {
                 if (node.unit.getId() === subunitId) {
@@ -250,7 +250,8 @@ var app = app || {};
 
             return subunitsTree;
         },
-        getSubunitsPositionsTree: function () {  // returns subunit tree with position information at each node, in mm
+        // Returns subunit tree with coordinate information at each node, in mm
+        getSubunitsCoordinatesTree: function () {
             var subunitsTree = this.getSubunitsTree();
             this.subunitsTreeForEach(subunitsTree, function (node) {
                 var isOrigin = self.isOriginId(node.unit.getId());
@@ -303,6 +304,9 @@ var app = app || {};
                     self.subunitsTreeForEach(node, func);
                 });
             }
+        },
+        getSubunitRelativePosition: function (subunit) {
+            return this.subunits.indexOf(subunit);
         },
         getSubunitsIds: function () {
             return this.get('multiunit_subunits').slice();

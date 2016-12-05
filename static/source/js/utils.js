@@ -204,6 +204,30 @@ var app = app || {};
             ) {
                 return this.dimensions_mm(width, height) +
                     ' (' + this.square_meters(area, area_num, area_format) + ')';
+            },
+            // Converts 1..26 to a..z and 27..702 to  aa..zz
+            letters: function (number) {
+                if (!_.isNumber(number) || number <= 0 || number > 702) { return ''; }
+
+                var table;
+                var base;
+                var convertableNumber;
+
+                if (number <= 26) {
+                    table = _.object('0123456789abcdefghijklmnop', 'abcdefghijklmnopqrstuvwxyz');
+                    base = 26;
+                    convertableNumber = number - 1;
+                } else {
+                    table = _.object('0123456789abcdefghijklmnopq', ' abcdefghijklmnopqrstuvwxyz');
+                    base = 27;
+                    convertableNumber = number + Math.floor((number - 1) / 26);
+                }
+
+                var letters = convertableNumber.toString(base).split('').map(function (digit) {
+                    return table[digit];
+                }).join('');
+
+                return letters;
             }
         },
         parseFormat: {
