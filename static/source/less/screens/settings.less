@@ -228,13 +228,12 @@
     }
 }
 
-
-.filling-type table {
+.filling-type-attributes {
     margin-top: 3rem;
 }
 
-.filling-type table td,
-.filling-type table th {
+.filling-type-attributes td,
+.filling-type-attributes th {
     padding-bottom: 2rem;
     vertical-align: bottom;
 }
@@ -267,12 +266,80 @@
     position: relative;
     margin-top: 3.5rem;
 
-    button {
+    .edit-fillingtype-profiles {
         position: absolute;
         top: 0;
         left: 20em;
         border: 1px solid darken(@white, 40%);
     }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Profile Connections table inside Filling Type editor
+//  ------------------------------------------------------------------------
+
+.profile-connections-table {
+    margin: 3rem 0;
+}
+
+// .profile-connections-table th,
+
+.profile-connections-table .table-item {
+    border: 1px solid darken(@white, 20%);
+
+    &:not(:last-child) {
+        margin-bottom: 0.5rem;
+    }
+}
+
+.profile-connections-table .item-representation {
+    width: 100%;
+    table-layout: fixed;
+    border-bottom: 1px solid darken(@white, 20%);
+    background-color: darken(@white, 1%);
+}
+
+.profile-connections-table .item-representation th {
+    padding: 0.5rem 1rem 0;
+    font-size: 0.8em;
+    font-weight: 400;
+    text-transform: uppercase;
+}
+
+.profile-connections-table .item-representation td {
+    padding: 0.5rem 1rem;
+    font-weight: 800;
+}
+
+.profile-connections-table .toggle-grid {
+    float: right;
+    border: 1px solid darken(@white, 40%);
+}
+
+.profile-connections-table .grid-container {
+    // min-height: 80px;
+    // min-height: 80px;
+    overflow: hidden;
+    height: 0;
+
+    &.is-open {
+        min-height: 80px;
+        height: auto;
+    }
+
+    > div {
+        padding-top: 0.8rem;
+    }
+}
+
+.profile-connections-table .grid-container .pricing-grids-table-scroll-wrapper {
+    display: block;
+    flex: none;
+    height: 110px;
+    // height: auto;
+    // overflow: visible;
+    background-color: transparent;
 }
 
 

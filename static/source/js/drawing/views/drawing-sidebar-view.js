@@ -40,8 +40,8 @@ var app = app || {};
                 active_unit_stats: {
                     title: 'Unit Stats'
                 },
-                active_unit_estimated_section_prices: {
-                    title: 'Est. Prices'
+                active_unit_estimated_cost: {
+                    title: 'Est. Cost'
                 }
             };
             this.active_tab = 'active_unit_properties';
@@ -414,17 +414,29 @@ var app = app || {};
 
             return stats_data;
         },
-        getActiveUnitEstimatedSectionPrices: function () {
-            var project_settings = app.settings.getProjectSettings();
+        getActiveUnitEstimatedCost: function () {
             var f = app.utils.format;
             var m = app.utils.math;
-            var section_list_source;
-            var sections = [];
+            var active_unit_profile;
+            var result = {
+                sections: []
+            };
 
-            if ( this.options.parent_view.active_unit && project_settings.get('pricing_mode') === 'estimates' ) {
-                section_list_source = this.options.parent_view.active_unit.getSectionsListWithEstimatedPrices();
+            if ( this.options.parent_view.active_unit ) {
+                active_unit_profile = this.options.parent_view.active_unit.profile;
+                var unit_cost = this.options.parent_view.active_unit.getEstimatedUnitCost();
 
-                _.each(section_list_source, function (source_item, index) {
+                result.profile_name = active_unit_profile ? active_unit_profile.get('name') : UNSET_VALUE;
+                result.base_cost = f.fixed(unit_cost.base);
+                result.fillings_cost = f.fixed(unit_cost.fillings);
+                result.total_cost = f.fixed(unit_cost.total);
+                result.original_currency = this.options.parent_view.active_unit.get('original_currency');
+                result.conversion_rate = f.fixed(this.options.parent_view.active_unit.get('conversion_rate'), 3);
+
+                //  This is not super nice because we duplicate code from unit.js
+                result.converted_cost = f.price_usd(unit_cost.total / parseFloat(result.conversion_rate));
+
+                _.each(unit_cost.details, function (source_item, index) {
                     var section_item = {};
 
                     section_item.name = 'Section #' + (index + 1);
@@ -436,21 +448,27 @@ var app = app || {};
                         m.square_meters(source_item.width, source_item.height),
                         2, 'sup');
 
-                    section_item.price_per_square_meter = f.price_usd(source_item.price_per_square_meter);
-                    section_item.price = f.price_usd(source_item.estimated_price);
+                    section_item.price_per_square_meter = f.fixed(source_item.price_per_square_meter);
+                    section_item.base_cost = f.fixed(source_item.base_cost);
 
-                    sections.push(section_item);
+                    section_item.filling_name = source_item.filling_name;
+                    section_item.filling_price_increase = f.percent(source_item.filling_price_increase);
+                    section_item.filling_cost = f.fixed(source_item.filling_cost);
+
+                    section_item.total_cost = f.fixed(source_item.total_cost);
+
+                    result.sections.push(section_item);
                 }, this);
             }
 
-            return sections;
+            return result;
         },
         templateContext: function () {
             var tab_contents = {
                 active_unit_properties: this.getActiveUnitProperties(),
                 active_unit_profile_properties: this.getActiveUnitProfileProperties(),
                 active_unit_stats: this.getActiveUnitStats(),
-                active_unit_estimated_section_prices: this.getActiveUnitEstimatedSectionPrices()
+                active_unit_estimated_cost: this.getActiveUnitEstimatedCost()
             };
 
             return {
@@ -470,10 +488,9 @@ var app = app || {};
                 active_unit_options: this.getActiveUnitOptions(),
                 active_unit_profile_properties: tab_contents.active_unit_profile_properties,
                 active_unit_stats: tab_contents.active_unit_stats,
-                active_unit_estimated_section_prices: tab_contents.active_unit_estimated_section_prices,
+                active_unit_estimated_cost: tab_contents.active_unit_estimated_cost,
                 tabs: _.each(this.tabs, function (item, key) {
                     item.is_active = key === this.active_tab;
-                    item.is_visible = tab_contents[key] && tab_contents[key].length;
                     return item;
                 }, this)
             };

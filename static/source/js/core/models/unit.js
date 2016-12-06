@@ -568,7 +568,7 @@ var app = app || {};
             var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
 
             if ( project_settings && project_settings.get('pricing_mode') === 'estimates' ) {
-                original_cost = this.getEstimatedUnitCost();
+                original_cost = this.getEstimatedUnitCost().total;
             }
 
             return parseFloat(original_cost);
@@ -1735,6 +1735,14 @@ var app = app || {};
 
             return result.sashes;
         },
+        //  This function is used to "slice" unit into a set of fixed and
+        //  operable sections, meaning we just draw some imaginary lines so
+        //  that each part of the unit should belong to some section. And for
+        //  every sash, we not only use size of the sash itself, but add size
+        //  of the surrounding frame (and sometimes mullion) to this "section",
+        //  so each part of the unit belongs to some section, and we could use
+        //  it this list of sections as a source for cost estimation
+        //
         //  Returns sizes in mms
         getFixedAndOperableSectionsList: function (current_root) {
             var profile = this.profile;
@@ -1763,6 +1771,7 @@ var app = app || {};
             if ( current_root.sections.length === 0 ) {
                 current_area.width = current_root.openingParams.width;
                 current_area.height = current_root.openingParams.height;
+                current_area.filling_name = current_root.fillingName;
 
                 _.each(['top', 'right', 'bottom', 'left'], function (position) {
                     var measurement = position === 'top' || position === 'bottom' ?
@@ -1773,7 +1782,6 @@ var app = app || {};
                     } else {
                         current_area[measurement] += profile.get('frame_width');
                     }
-
                 }, this);
 
                 if ( current_root.thresholdEdge ) {
@@ -1786,13 +1794,15 @@ var app = app || {};
 
             return result;
         },
-        getSectionsListWithEstimatedPrices: function () {
+        getSectionsListWithEstimatedCost: function () {
             var pricing_grids = this.profile.getPricingGrids();
             var sections_list = this.getFixedAndOperableSectionsList();
 
             function getArea(item) {
                 return item.height * item.width;
             }
+
+            console.log( 'sections list source', JSON.stringify(sections_list) );
 
             //  How this algorithm works:
             //  1. grids are already sorted by area size
@@ -1801,6 +1811,8 @@ var app = app || {};
             //  4. if our size === some size, price = some size price
             //  5. if our size > some size and < some other size, price is
             //  linear interpolation between prices for these sizes
+            //  TODO: calculation for `price_per_square_meter` should be
+            //  encapsulated to profile model
             _.each(sections_list, function (section) {
                 var section_area = getArea(section);
                 var pricing_grid;
@@ -1840,21 +1852,51 @@ var app = app || {};
                     }
                 }
 
-                section.estimated_price = app.utils.math.square_meters(section.width, section.height) *
+                section.filling_price_increase = 0;
+
+                if ( app.settings && app.settings.filling_types ) {
+                    var profile_id = this.profile.id;
+                    var filling_type = app.settings.filling_types.getByName(section.filling_name);
+
+                    // console.log( 'profile_id', profile_id );
+                    // console.log( 'filling_type', filling_type );
+
+                    if ( profile_id && filling_type ) {
+                        section.filling_price_increase = filling_type.getPricingGridValue(profile_id, {
+                            type: section.type,
+                            height: section.height,
+                            width: section.width
+                        });
+
+                        // section.filling_price_increase = 10;
+                    }
+                }
+
+                section.base_cost = app.utils.math.square_meters(section.width, section.height) *
                     section.price_per_square_meter;
+                section.filling_cost = section.base_cost * section.filling_price_increase / 100;
+
+                section.total_cost = section.base_cost + section.filling_cost;
             }, this);
 
             return sections_list;
         },
         getEstimatedUnitCost: function () {
-            var sections_list = this.getSectionsListWithEstimatedPrices();
-            var price = _.reduce(_.map(sections_list, function (item) {
-                return item.estimated_price;
-            }), function (memo, number) {
-                return memo + number;
-            }, 0);
+            var sections_list = this.getSectionsListWithEstimatedCost();
+            var unit_cost = {
+                total: 0,
+                base: 0,
+                fillings: 0,
+                details: sections_list
+            };
 
-            return price;
+            _.each(sections_list, function (section) {
+                unit_cost.total += section.total_cost;
+                unit_cost.base += section.base_cost;
+                unit_cost.fillings += section.filling_cost;
+            }, this);
+
+            return unit_cost;
         },
         //  Check if unit has at least one operable section. This could be used
         //  to determine whether we should allow editing handles and such stuff

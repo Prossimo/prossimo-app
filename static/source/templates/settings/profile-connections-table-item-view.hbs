@@ -1,3 +1,16 @@
-<td class="profile-name">{{ id }}</td>
-<td class="profile-is-default">{{ is_default }}</td>
-<td class="pricing-grid">{{ pricing_grid_string }}</td>
+<table class="item-representation">
+    <thead><tr>
+        <th class="profile-name">Profile Name</th>
+        <th class="profile-is-default">Is Default?</th>
+        <th class="profile-is-default">Pricing Grid</th>
+    </tr></thead>
+    <tbody><tr>
+        <td class="profile-name">{{ profile_name }}</td>
+        <td class="profile-is-default">{{ is_default }}</td>
+        <td class="pricing-grid">
+            <span>{{ pricing_grid_string }}</span>
+            <button class="btn btn-xs toggle-grid js-toggle-grid">Expand grid</button>
+        </td>
+    </tr></tbody>
+</table>
+<div class="grid-container{{#if show_grid }} is-open{{/if}}"></div>

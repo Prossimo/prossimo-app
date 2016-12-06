@@ -114,6 +114,7 @@ module.exports = function (grunt) {
         'quote/views/quote-header-view.js',
         'quote/views/quote-table-view.js',
         'quote/views/quote-extras-table-view.js',
+        'settings/views/per-profile-pricing-grids-editor-view.js',
         'settings/views/main-settings-view.js',
         'settings/views/profiles-table-view.js',
         'settings/views/pricing-grids-table-view.js',

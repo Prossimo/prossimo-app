@@ -1,0 +1,12 @@
+<div class="pricing-grids-table-title">
+    <div class="tab-container">
+        <ul class="nav nav-tabs">
+        {{#each tabs }}
+            <li class="{{ @key }}{{#if is_active }} active{{/if}}"><a href="#{{ @key }}">{{ title }}</a></li>
+        {{/each}}
+        </ul>
+    </div>
+</div>
+<div class="pricing-grids-table-scroll-wrapper">
+    <div class="pricing-grids-handsontable-container"></div>
+</div>

@@ -258,10 +258,10 @@ test('subtotal project prices', function () {
 
 
 //  ------------------------------------------------------------------------
-//  Test that estimated prices for a unit are calculated properly
+//  Test that estimated cost for a unit is calculated properly
 //  ------------------------------------------------------------------------
 
-test('estimated unit prices', function () {
+test('estimated unit cost', function () {
     var unit;
     var root_id;
     var full_root;
@@ -359,7 +359,7 @@ test('estimated unit prices', function () {
     equal(sections_list[1].type, 'fixed', 'Second section type is expected to be fixed');
 
     pricing_grids = unit.profile.getPricingGrids();
-    estimated_list = unit.getSectionsListWithEstimatedPrices();
+    estimated_list = unit.getSectionsListWithEstimatedCost();
 
     //  Areas of pricing grid tiers should be calculated properly
     equal(m.square_meters(pricing_grids.fixed[0].width, pricing_grids.fixed[0].height).toFixed(2), '0.25', 'Fixed small tier area is expected to be 0.25');
@@ -374,7 +374,7 @@ test('estimated unit prices', function () {
     equal(estimated_list[0].price_per_square_meter.toFixed(2), '163.83', 'First section: price / square meter');
     equal(estimated_list[1].price_per_square_meter.toFixed(2), '163.83', 'Second section: price / square meter');
 
-    //  Estimated prices should be calculated properly
-    equal(estimated_list[0].estimated_price.toFixed(2), '314.55', 'First section: estimated price');
-    equal(estimated_list[1].estimated_price.toFixed(2), '314.55', 'Second section: estimated price');
+    //  Estimated base cost should be calculated properly
+    equal(estimated_list[0].base_cost.toFixed(2), '314.55', 'First section: estimated base cost');
+    equal(estimated_list[1].base_cost.toFixed(2), '314.55', 'Second section: estimated base cost');
 });
