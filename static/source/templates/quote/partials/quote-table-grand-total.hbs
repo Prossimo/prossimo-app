@@ -21,7 +21,8 @@
                     <td><strong>Grand Total{{#if is_price_estimated}} <small>(est.)</small>{{/if}}</strong></td>
                     <td class="value"><strong>{{ total_prices.grand_total }}</strong></li></td>
                 </tr>
-                {{#if total_prices.deposit_percent }}
+                {{!-- TODO: this is disabled due to https://github.com/Prossimo/prossimo-app/issues/463 --}}
+                {{!-- {{#if total_prices.deposit_percent }}
                 <tr>
                     <td><strong>{{ total_prices.deposit_percent }} Deposit on Contract{{#if is_price_estimated}} <small>(est.)</small>{{/if}}</strong></td>
                     <td class="value"><span>{{ total_prices.deposit_on_contract }}</span></li></td>
@@ -30,7 +31,7 @@
                     <td><strong>Balance Due at Delivery{{#if is_price_estimated}} <small>(est.)</small>{{/if}}</strong></td>
                     <td class="value"><span>{{ total_prices.balance_due_at_delivery }}</span></li></td>
                 </tr>
-                {{/if}}
+                {{/if}} --}}
             </tbody>
         </table>
     </td>
