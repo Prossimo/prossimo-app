@@ -48,9 +48,11 @@ var app = app || {};
 
             var subunitGroup = this.createSubunits();
             var connectorGroup = this.createConnectors(subunitGroup);
+            var subunitsIndexesGroup = this.createSubunitsIndexes(subunitGroup);
 
             group.add(subunitGroup);
             group.add(connectorGroup);
+            group.add(subunitsIndexesGroup);
 
             var center = module.get('center');
             // place unit on stage center
@@ -73,7 +75,8 @@ var app = app || {};
                     position: (module.getState('insideView')) ? 'inside' : 'outside',
                     metricSize: 0,
                     preview: true,
-                    isMaximized: true
+                    isMaximized: true,
+                    drawIndexes: false
                 });
 
                 var konvaImage = new Konva.Image({
@@ -85,6 +88,45 @@ var app = app || {};
                 });
 
                 group.add(konvaImage);
+            });
+
+            return group;
+        },
+        createSubunitsIndexes: function () {
+            var group = new Konva.Group({ name: 'subunit_indexes' });
+            var tree = model.getSubunitsCoordinatesTree();
+            var style = module.getStyle('subunit_indexes');
+
+            model.subunitsTreeForEach(tree, function (node) {
+
+                var subunitWidth = node.width * ratio;
+                var subunitHeight = node.height * ratio;
+                var subunitX = node.x * ratio;
+                var subunitY = node.y * ratio;
+                var label = new Konva.Label({ name: 'subunit_label' });
+
+                label.add(new Konva.Tag({
+                    fill: style.label.fill,
+                    stroke: style.label.stroke,
+                    strokeWidth: style.label.strokeWidth,
+                    listening: false
+                }));
+                var text = new Konva.Text({
+                    text: '1a',  // FIXME implement
+                    padding: style.label.padding,
+                    fill: style.label.color,
+                    fontFamily: style.label.fontFamily,
+                    fontSize: style.label.fontSize,
+                    listening: false
+                });
+                label.add(text);
+
+                label.position({
+                    x: label.x() + subunitX + subunitWidth / 2 - label.width() / 2,
+                    y: label.y() + subunitY + subunitHeight / 2 - label.height() / 2
+                });
+
+                group.add(label);
             });
 
             return group;

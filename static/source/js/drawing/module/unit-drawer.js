@@ -1177,7 +1177,7 @@ var app = app || {};
                 return s.id === sectionData.id;
             });
 
-            if (index >= 0) {
+            if (module.getState('drawIndexes') && index >= 0) {
                 var indexes = this.createSectionIndexes(sectionData, {main: index, add: null});
 
                 group.add( this.createIndexes(indexes) );

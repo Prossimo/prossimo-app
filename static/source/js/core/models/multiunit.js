@@ -75,6 +75,13 @@ var app = app || {};
                 });
             });
         },
+        getUnitPrice: function () {
+            var price = this.subunits.reduce(function (priceSum, subunit) {
+                return priceSum + subunit.getUnitPrice();
+            }, 0);
+
+            return price;
+        },
         /**
          * this.subunits is a backbone collection that holds respective subunit models, the very same models that exist
          * in multiunit's primary parent collection.

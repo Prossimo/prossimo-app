@@ -99,6 +99,7 @@ $(document).ready(function () {
             quantity: 1,
             description: 'TILT AND TURN INSWING/FIXED PVC',
             profile_id: 9991,
+            original_cost: 123,
             glazing: 'Triple - U=.09 SGHC=.5 VT=.71',
             root_section: test_root_sections_data[2]
         },
@@ -108,6 +109,7 @@ $(document).ready(function () {
             height: 90,
             quantity: 1,
             profile_id: 9993,
+            original_cost: 321,
             glazing: 'Triple Low Gain - Tempered',
             root_section: test_root_sections_data[3]
         },
@@ -117,6 +119,7 @@ $(document).ready(function () {
             height: 72.75,
             quantity: 1,
             profile_id: 9991,
+            original_cost: 111,
             glazing: 'Triple Standard - Ug=.09 SGHC=.50 LT=71%',
             root_section: test_root_sections_data[4]
         }

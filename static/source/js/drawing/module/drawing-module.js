@@ -152,7 +152,8 @@ var app = app || {};
                 type: ('type' in opts && opts.type) ? opts.type : 'unit',
                 hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode'),
                 inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
-                isPreview: ('preview' in opts && opts.preview) ? opts.preview : false
+                isPreview: ('preview' in opts && opts.preview) ? opts.preview : false,
+                drawIndexes: ('drawIndexes' in opts && !_.isUndefined(opts.drawIndexes)) ? opts.drawIndexes : true
             }, false);
 
             return opts;
@@ -359,6 +360,16 @@ var app = app || {};
                     fontFamily: 'pt-sans',
                     fontSize: 15
                 },
+                subunit_indexes: {
+                    label: {
+                        fill: 'white',
+                        stroke: 'grey',
+                        color: '#444',
+                        strokeWidth: 0.5,
+                        padding: 3,
+                        fontSize: 13
+                    }
+                },
                 glazing_controls: {
                     bound: {
                         fill: 'green',
@@ -517,7 +528,8 @@ var app = app || {};
             metricSize: 50,
             preview: true,
             isMaximized: false,
-            drawNeighbors: false
+            drawNeighbors: false,
+            drawIndexes: true
         };
 
         options = _.defaults({}, options, defaults, {model: unitModel});
@@ -553,7 +565,8 @@ var app = app || {};
                 openingView: options.position === 'inside' && !unitModel.isOpeningDirectionOutward() ||
                     options.position === 'outside' && unitModel.isOpeningDirectionOutward(),
                 inchesDisplayMode: options.inchesDisplayMode,
-                hingeIndicatorMode: options.hingeIndicatorMode
+                hingeIndicatorMode: options.hingeIndicatorMode,
+                drawIndexes: options.drawIndexes
             }, false);
         }
 
