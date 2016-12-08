@@ -2311,8 +2311,7 @@ var app = app || {};
                 return this.constructor === app.Multiunit;
             },
             isSubunit: function () {
-                var allSubunitIds = this.collection.chain()
-                    .filter(function (unit) { return unit.isMultiunit(); })
+                var allSubunitIds = this.collection.multiunits.chain()
                     .map(function (multiunit) { return multiunit.getSubunitsIds(); })
                     .flatten()
                     .value();
@@ -2322,8 +2321,7 @@ var app = app || {};
             getParentMultiunit: function () {
                 var subunitId = this.getId();
                 
-                var parentMultiunit = this.collection.chain()
-                    .filter(function (unit) { return unit.isMultiunit(); })
+                var parentMultiunit = this.collection.multiunits.chain()
                     .find(function (multiunit) { return _.contains(multiunit.getSubunitsIds(), subunitId); })
                     .value();
 
@@ -2350,7 +2348,7 @@ var app = app || {};
             toMultiunit: function () {
                 if (this.isMultiunit()) { return this; }
 
-                var multiunit = this.collection.add(new app.Multiunit());
+                var multiunit = this.collection.multiunits.add(new app.Multiunit());
                 multiunit.addSubunit(this);
                 return multiunit;
             }

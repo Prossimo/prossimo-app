@@ -354,20 +354,21 @@ var app = app || {};
             var isLastSubunit;
             var position;
 
-            if (this.model.isSubunit()) {
-                var multiunit = this.model.getParentMultiunit();
-                var multiunitPosition = parseFloat(multiunit.get('position')) + 1;
-                var subunitPosition = multiunit.getSubunitRelativePosition(this.model) + 1;
-                var subscript = app.utils.format.letters(subunitPosition);
-                position = '' + multiunitPosition + subscript;
+            if (this.model.isSubunit()) {  // FIXME implement
+                // var multiunit = this.model.getParentMultiunit();
+                // var multiunitPosition = parseFloat(multiunit.get('position')) + 1;
+                // var subunitPosition = multiunit.getSubunitRelativePosition(this.model) + 1;
+                // var subscript = app.utils.format.letters(subunitPosition);
+                // position = '' + multiunitPosition + subscript;
             } else {
                 position = parseFloat(this.model.get('position')) + 1;
             }
+            position = parseFloat(this.model.get('position')) + 1;
 
-            if (this.model.isSubunit() && this.model.collection) {
-                var index = this.model.collection.indexOf(this.model);
-                isLastSubunit = !this.model.collection.at(index + 1).isSubunit();
-            }
+            // if (this.model.isSubunit() && this.model.collection) {
+            //     var index = this.model.collection.indexOf(this.model);
+            //     isLastSubunit = !this.model.collection.at(index + 1).isSubunit();
+            // }
 
             return {
                 position: position,

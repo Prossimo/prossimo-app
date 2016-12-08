@@ -41,6 +41,15 @@ var app = app || {};
                 return Backbone.Collection.prototype.add.call(this, models, options);
             }
         },
+        get: function (cid) {
+            var model = Backbone.Collection.prototype.get.apply(this, arguments);
+
+            if (!model && this.multiunits) {
+                model = this.multiunits.get(cid)
+            }
+
+            return model;
+        },
         /* eslint-disable eqeqeq */
         getById: function (id) {
             return _.find(this.models, function (model) {

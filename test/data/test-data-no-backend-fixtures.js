@@ -39,23 +39,6 @@ $(document).ready(function () {
 
     var test_project_units_data = [
         {
-            unit_composition: 'multiunit',
-            multiunit_subunits: ["106", "10565", "19991"],
-            mark: 'A',
-            width: 207.78740,
-            height: 169.53740,
-            quantity: 1,
-            description: 'Site-mulled multi frame unit',
-            notes: 'Assembled on site',
-            original_cost: 399,
-            original_currency: 'EUR',
-            conversion_rate: 0.90326078,
-            price_markup: 2.3,
-            uw: 0.8,
-            discount: 10,
-            root_section: test_root_sections_data[0]
-        },
-        {
             mark: 'A',
             width: 62,
             height: 96,
@@ -122,6 +105,26 @@ $(document).ready(function () {
             original_cost: 111,
             glazing: 'Triple Standard - Ug=.09 SGHC=.50 LT=71%',
             root_section: test_root_sections_data[4]
+        }
+    ];
+
+    var test_project_multiunits_data = [
+        {
+            unit_composition: 'multiunit',
+            multiunit_subunits: ["106", "10565", "19991"],
+            mark: 'A',
+            width: 207.78740,
+            height: 169.53740,
+            quantity: 1,
+            description: 'Site-mulled multi frame unit',
+            notes: 'Assembled on site',
+            original_cost: 399,
+            original_currency: 'EUR',
+            conversion_rate: 0.90326078,
+            price_markup: 2.3,
+            uw: 0.8,
+            discount: 10,
+            root_section: test_root_sections_data[0]
         }
     ];
 
@@ -243,6 +246,7 @@ $(document).ready(function () {
 
         test_project.files.add(test_project_files_data);
         test_project.units.add(test_project_units_data);
+        test_project.multiunits.add(test_project_multiunits_data);
         test_project.extras.add(test_project_extras_data);
 
         app.projects.add(test_project);

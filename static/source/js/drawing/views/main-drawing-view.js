@@ -60,13 +60,20 @@ var app = app || {};
             this.trigger('drawing_view:' + e);
         },
         onRender: function () {
-            this.active_unit = app.current_project.units.length ?
-                app.current_project.units.first() : null;
+
+            if (app.current_project.multiunits.length) {
+                this.active_unit = app.current_project.multiunits.first();
+            } else if (app.current_project.units.length) {
+                this.active_unit = app.current_project.units.first();
+            } else {
+                this.active_unit = null;
+            }
 
             this.updateDrawingView();
 
             this.sidebar_view = new app.DrawingSidebarView({
                 collection: app.current_project.units,
+                multiunits: (app.current_project.multiunits) ? app.current_project.multiunits : undefined,
                 parent_view: this
             });
 

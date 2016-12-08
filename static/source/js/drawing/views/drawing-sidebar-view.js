@@ -456,9 +456,12 @@ var app = app || {};
                 active_unit_stats: this.getActiveUnitStats(),
                 active_unit_estimated_section_prices: this.getActiveUnitEstimatedSectionPrices()
             };
+            var modelList = (this.options.multiunits) ?
+                this.options.multiunits.models.concat(this.collection.models) :
+                this.collection.models;
 
             return {
-                unit_list: this.collection.map(function (item) {
+                unit_list: modelList.map(function (item) {
                     return {
                         is_selected: this.options.parent_view.active_unit &&
                             item.cid === this.options.parent_view.active_unit.cid,

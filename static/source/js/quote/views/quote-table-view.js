@@ -18,6 +18,7 @@ var app = app || {};
             //  fine-tune what parts of quote are updated when, don't redraw
             //  the whole thing
             this.listenTo(app.current_project.units, 'change', this.render);
+            this.listenTo(app.current_project.multiunits, 'change', this.render);
             this.listenTo(app.current_project.extras, 'change', this.render);
         },
         childViewOptions: function () {
@@ -85,20 +86,20 @@ var app = app || {};
                 this.ui.$optional_extras_table_container.append(this.quote_optional_extras_table_view.render().el);
             }
 
-            var multiunitGroup;
-            this.children.forEach(function (itemView) {  // wrap multiunit + subunits in a div
-                var itemData = itemView.serializeData();
-
-                if (itemData.is_multiunit) {
-                    multiunitGroup = $();
-                }
-                if (itemData.is_multiunit || itemData.is_subunit) {
-                    multiunitGroup = multiunitGroup.add(itemView.$el);
-                }
-                if (itemData.is_last_subunit) {
-                    multiunitGroup.wrapAll('<div class="quote-unit-group multiunit"></div>');
-                }
-            });
+            // var multiunitGroup;  // FIXME implement
+            // this.children.forEach(function (itemView) {  // wrap multiunit + subunits in a div
+            //     var itemData = itemView.serializeData();
+            //
+            //     if (itemData.is_multiunit) {
+            //         multiunitGroup = $();
+            //     }
+            //     if (itemData.is_multiunit || itemData.is_subunit) {
+            //         multiunitGroup = multiunitGroup.add(itemView.$el);
+            //     }
+            //     if (itemData.is_last_subunit) {
+            //         multiunitGroup.wrapAll('<div class="quote-unit-group multiunit"></div>');
+            //     }
+            // });
         },
         onDestroy: function () {
             if ( this.quote_extras_table_view ) {

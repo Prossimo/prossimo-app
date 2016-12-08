@@ -58,6 +58,7 @@ module.exports = function (grunt) {
         'core/models/options-dictionary-entry.js',
         'core/models/settings.js',
         'core/collections/baseunit-collection.js',
+        'core/collections/multiunit-collection.js',
         'core/collections/accessory-collection.js',
         'core/collections/profile-collection.js',
         'core/collections/project-collection.js',

@@ -105,6 +105,10 @@ var app = app || {};
                 filtered_data.units = project_data.units;
             }
 
+            if ( project_data && project_data.multiunits ) {
+                filtered_data.multiunits = project_data.multiunits;
+            }
+
             return filtered_data;
         },
         initialize: function (attributes, options) {
@@ -119,6 +123,7 @@ var app = app || {};
 
             if ( !this.options.proxy ) {
                 this.units = new app.BaseunitCollection(null, { project: this });
+                this.multiunits = new app.MultiunitCollection(null, { project: this, subunits: this.units });
                 this.extras = new app.AccessoryCollection(null, { project: this });
                 this.files = new app.ProjectFileCollection(null, { project: this });
                 this.settings = new app.ProjectSettings(null, { project: this });
@@ -141,6 +146,12 @@ var app = app || {};
             if ( this.get('units') ) {
                 this.units.set(this.get('units'), { parse: true });
                 this.unset('units', { silent: true });
+                changed_flag = true;
+            }
+
+            if ( this.get('multiunits') ) {
+                this.multiunits.set(this.get('multiunits'), { parse: true });
+                this.unset('multiunits', { silent: true });
                 changed_flag = true;
             }
 
