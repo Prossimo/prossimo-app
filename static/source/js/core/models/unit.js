@@ -1802,7 +1802,7 @@ var app = app || {};
                 return item.height * item.width;
             }
 
-            console.log( 'sections list source', JSON.stringify(sections_list) );
+            // console.log( 'sections list source', JSON.stringify(sections_list) );
 
             //  How this algorithm works:
             //  1. grids are already sorted by area size

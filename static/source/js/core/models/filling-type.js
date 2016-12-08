@@ -4,248 +4,6 @@ var app = app || {};
     'use strict';
 
     //  --------------------------------------------------------------------
-    //  Pricing Grid Model
-    //  --------------------------------------------------------------------
-
-    var GRID_ITEM_PROPERTIES = [
-        { name: 'height', title: 'Height', type: 'number' },
-        { name: 'width', title: 'Width', type: 'number' },
-        { name: 'value', title: 'Value', type: 'number' }
-    ];
-
-    var GridItem = Backbone.Model.extend({
-        schema: app.schema.createSchema(GRID_ITEM_PROPERTIES),
-        defaults: function () {
-            return {
-                height: 0,
-                width: 0,
-                value: 0
-            };
-        },
-        persist: function () {
-            return this.set.apply(this, arguments);
-        },
-        parse: function (data) {
-            //  This is for compatibility reasons with the old format
-            if ( data && data.price_per_square_meter ) {
-                data.value = data.price_per_square_meter;
-            }
-
-            return app.schema.parseAccordingToSchema(data, this.schema);
-        },
-        getArea: function () {
-            return this.get('width') * this.get('height');
-        }
-    });
-
-    var Grid = Backbone.Collection.extend({
-        model: GridItem,
-        comparator: function (item) {
-            return item.getArea();
-        },
-        //  How this algorithm works:
-        //  1. Grid items are already sorted by area size
-        //  2. If our size < lowest size, price = lowest size price
-        //  3. If our size > largest size, price = largest size price
-        //  4. If our size === some size, price = some size price
-        //  5. If our size > some size and < some other size, price is
-        //  a linear interpolation between prices for these sizes
-        getValue: function (options) {
-            var target_area = options.width * options.height;
-            var value = 0;
-
-            if ( this.length ) {
-                if ( target_area < this.first().getArea() ) {
-                    value = this.first().get('value');
-                } else if ( target_area > this.last().getArea() ) {
-                    value = this.last().get('value');
-                } else {
-                    this.models.some(function (grid_item, index) {
-                        if ( target_area === grid_item.getArea() ) {
-                            value = grid_item.get('value');
-                            return true;
-                        } else if ( this.at(index + 1) &&
-                            target_area < this.at(index + 1).getArea() &&
-                            target_area > grid_item.getArea()
-                        ) {
-                            value = app.utils.math.linear_interpolation(
-                                target_area,
-                                grid_item.getArea(),
-                                this.at(index + 1).getArea(),
-                                grid_item.get('value'),
-                                this.at(index + 1).get('value')
-                            );
-                            return true;
-                        }
-
-                        return false;
-                    }, this);
-                }
-            }
-
-            return value;
-        }
-    });
-
-    //  TODO: not sure if we want it like this exactly
-    function getDefaultGridData() {
-        return [
-            { height: 500, width: 500, value: 0 },
-            { height: 914, width: 1514, value: 0 },
-            { height: 2400, width: 3000, value: 0 }
-        ];
-    }
-
-    function getDefaultGridCollection() {
-        // return [
-        //     {
-        //         name: 'fixed',
-        //         data: [
-        //             { height: 500, width: 500, value: 0 },
-        //             { height: 914, width: 1514, value: 0 },
-        //             { height: 2400, width: 3000, value: 0 }
-        //         ]
-        //     },
-        //     {
-        //         name: 'operable',
-        //         data: [
-        //             { height: 500, width: 500, value: 0 },
-        //             { height: 914, width: 1514, value: 0 },
-        //             { height: 1200, width: 2400, value: 0 }
-        //         ]
-        //     }
-        // ];
-
-        return [
-            {
-                name: 'fixed',
-                data: [
-                    { height: 500, width: 500, value: 15 },
-                    { height: 914, width: 1514, value: 12 },
-                    { height: 2400, width: 3000, value: 10 }
-                ]
-            },
-            {
-                name: 'operable',
-                data: [
-                    { height: 500, width: 500, value: 8 },
-                    { height: 914, width: 1514, value: 6 },
-                    { height: 1200, width: 2400, value: 5 }
-                ]
-            }
-        ];
-    }
-
-    var PricingGrid = Backbone.Model.extend({
-        defaults: function () {
-            return {
-                name: ''
-            };
-        },
-        getValue: function () {
-            return this.grid.getValue.apply(this.grid, arguments);
-        },
-        //  TODO: do we need this function really?
-        // parseAsGrid: function (data) {
-        //     var grid_data = [];
-
-        //     if ( typeof data === 'string' ) {
-        //         try {
-        //             grid_data = JSON.parse(data);
-        //         } catch (e) {
-        //             // Do nothing
-        //         }
-        //     //  For regular objects and arrays
-        //     } else if ( typeof data === 'object' ) {
-        //         grid_data = data;
-        //     }
-
-        //     if ( !grid_data.length ) {
-        //         grid_data = getDefaultGridData();
-        //     }
-
-        //     return grid_data;
-        // },
-        initialize: function (attributes, options) {
-            console.log( 'create new pricing grid' );
-            console.log( 'attributes', attributes );
-            console.log( 'options', options );
-
-            // this.grid = new Grid(this.parseAsGrid(attributes), { parse: true });
-            this.grid = new Grid(attributes.data, { parse: true });
-
-            //  TODO: like this?
-            // this.listenTo(this.grid, 'change', this.trigger('change'));
-            this.listenTo(this.grid, 'change', function () {
-                console.log( 'some grid item probably changed' );
-                this.trigger('change');
-            });
-
-            // console.log( 'grid', this.grid );
-        }
-    });
-
-    var PricingGridCollection = Backbone.Collection.extend({
-        model: PricingGrid,
-        // parse: function (data) {
-
-        // },
-        parse: function (data) {
-            console.log( 'parsing collection data', data );
-
-            var collection_data = [];
-
-            if ( typeof data === 'string' ) {
-                try {
-                    collection_data = JSON.parse(data);
-                } catch (e) {
-                    // Do nothing
-                }
-            //  For regular objects and arrays
-            } else if ( typeof data === 'object' ) {
-                collection_data = data;
-            }
-
-            if ( !collection_data.length ) {
-                collection_data = getDefaultGridCollection();
-            }
-
-            return collection_data;
-        },
-        getByName: function (grid_name) {
-            return this.findWhere({ name: grid_name });
-        },
-        initialize: function (attributes) {
-            console.log( 'init grid collection with attributes', attributes );
-        }
-    });
-
-
-    // app.pricing_grid = new PricingGrid({
-    //     fixed: [
-    //         {title: 'Small', height: 500, width: 500, price_per_square_meter: 55},
-    //         {title: 'Medium', height: 914, width: 1514, price_per_square_meter: 50},
-    //         {title: 'Large', height: 2400, width: 3000, price_per_square_meter: 45}
-    //     ],
-    //     operable: [
-    //         {title: 'Small', height: 500, width: 500, price_per_square_meter: 0},
-    //         {title: 'Medium', height: 914, width: 1514, price_per_square_meter: 0},
-    //         {title: 'Large', height: 1200, width: 2400, price_per_square_meter: 0}
-    //     ]
-    // });
-
-    // app.pricing_grid = new PricingGrid([
-    //     {title: 'Small', height: 500, width: 500, price_per_square_meter: 55},
-    //     {title: 'Medium', height: 914, width: 1514, price_per_square_meter: 50},
-    //     {title: 'Large', height: 2400, width: 3000, price_per_square_meter: 45}
-    // ]);
-
-    // app.pricing_grid.getValue({ width: 1000, height: 700 });
-    // app.pricing_grid.getValue({ width: 500, height: 500 });
-    // app.pricing_grid.getValue({ width: 5000, height: 5000 });
-
-
-    //  --------------------------------------------------------------------
     //  Filling Type to Profile Connection Model
     //  --------------------------------------------------------------------
 
@@ -254,6 +12,23 @@ var app = app || {};
     //     { name: 'is_default', title: 'Is Default', type: 'boolean' },
     //     { name: 'pricing_grids', title: 'Pricing Grids', type: 'array' }
     // ];
+
+    //  TODO: defaults for fixed and operable should be different
+    //  TODO: collection should implement something like addEmptyGrid function
+    function getDefaultGridCollection() {
+        return [
+            {
+                name: 'fixed',
+                // data: []
+                sizes: ['500x500', '1514x914', '3000x2400']
+            },
+            {
+                name: 'operable',
+                // data: []
+                sizes: ['500x500', '1514x914', '2400x1200']
+            }
+        ];
+    }
 
     // var FillingTypeProfile = Backbone.Model.extend({
     var FillingTypeToProfileConnection = Backbone.Model.extend({
@@ -270,18 +45,39 @@ var app = app || {};
 
         // },
         initialize: function (attributes) {
-            console.log( 'initialize filling type to profile connection', attributes );
+            // console.log( 'initialize filling type to profile connection', attributes );
 
             // this.grid = new PricingGrid(attributes.pricing_grid);
             // this.grids = new PricingGridCollection(attributes.pricing_grids || null, { parse: true });
             // this.grids = new PricingGridCollection(null, { parse: true });
-            this.grids = new PricingGridCollection(getDefaultGridCollection(), { parse: true });
 
-            this.listenTo(this.grids, 'change', function () {
-                console.log( 'wow, our grids did change' );
+            // this.grids = new app.PricingGridCollection(getDefaultGridCollection(), { parse: true });
+            // this.grids = new app.PricingGridCollection(null, { parse: true });
 
-                console.log( 'we are going to save grids as', this.grids.toJSON() );
-            });
+            //  TODO: get rid of this demo functionality
+            this.grids = new app.PricingGridCollection([
+                {
+                    name: 'fixed',
+                    data: [
+                        { height: 500, width: 500, value: 15 },
+                        { height: 914, width: 1514, value: 12 },
+                        { height: 2400, width: 3000, value: 10 }
+                    ]
+                },
+                {
+                    name: 'operable',
+                    data: [
+                        { height: 500, width: 500, value: 11 },
+                        { height: 914, width: 1514, value: 10 },
+                        { height: 1200, width: 2400, value: 8 }
+                    ]
+                }
+            ], { parse: true });
+
+            // this.listenTo(this.grids, 'change', function () {
+            //     console.log( 'wow, our grids did change' );
+            //     console.log( 'we are going to save grids as', this.grids.toJSON() );
+            // });
         }
     });
 
@@ -294,25 +90,9 @@ var app = app || {};
             return corresponding_profile ? corresponding_profile.get('position') : false;
         },
         initialize: function (models, options) {
-            console.log( 'initialize FillingTypeProfiles collection with data', models );
+            // console.log( 'initialize FillingTypeProfiles collection with data', models );
         }
     });
-
-    // app.demo_connections = new FillingTypeProfiles([
-    //     {
-    //         id: 1,
-    //         is_default: true,
-    //         // pricing_grid: '[{"title":"Small","height":500,"width":500,"price_per_square_meter":55},' +
-    //         //     '{"title":"Medium","height":914,"width":1514,"price_per_square_meter":50},' +
-    //         //     '{"title":"Large","height":2400,"width":3000,"price_per_square_meter":45}]'
-    //         pricing_grid: [
-    //             { title: 'Small', height: 500, width: 500, price_per_square_meter: 55 },
-    //             { title: 'Medium', height: 914, width: 1514, price_per_square_meter: 50 },
-    //             { title: 'Large', height: 2400, width: 3000, price_per_square_meter: 45 }
-    //         ]
-    //         // pricing_grid: 'string with garbage'
-    //     }
-    // ]);
 
 
     //  --------------------------------------------------------------------
@@ -579,19 +359,19 @@ var app = app || {};
         },
         //  TODO: we need to have a way better nesting
         getPricingGridValue: function (profile_id, options) {
-            console.log( 'getPricingGridValue' );
-            console.log( 'profile_id', profile_id );
-            console.log( 'options', options );
+            // console.log( 'getPricingGridValue' );
+            // console.log( 'profile_id', profile_id );
+            // console.log( 'options', options );
 
             var profile_connection = this.profiles.get(profile_id);
             var value = 0;
 
-            console.log( 'profile_connection', profile_connection );
+            // console.log( 'profile_connection', profile_connection );
 
             if ( profile_connection ) {
                 var target_grid = profile_connection.grids.getByName(options.type);
 
-                console.log( 'target_grid', target_grid );
+                // console.log( 'target_grid', target_grid );
 
                 if ( target_grid ) {
                     value = target_grid.getValue({
@@ -606,23 +386,10 @@ var app = app || {};
         initialize: function (attributes, options) {
             this.options = options || {};
 
-            // console.log( 'profiles', this.get('profiles') );
-
-            // this.profiles = app.demo_connections;
+            //  TODO: do we want to have it like this? it'd fine if they are
+            //  a separate model with the separate endpoint, but if they're
+            //  not, we better have profiles as a model attribute
             this.profiles = new FillingTypeProfiles(this.get('profiles'));
-
-            // this.pricing_grid = new PricingGrid({
-            //     fixed: [
-            //         {title: 'Small', height: 500, width: 500, price_per_square_meter: 55},
-            //         {title: 'Medium', height: 914, width: 1514, price_per_square_meter: 50},
-            //         {title: 'Large', height: 2400, width: 3000, price_per_square_meter: 45}
-            //     ],
-            //     operable: [
-            //         {title: 'Small', height: 500, width: 500, price_per_square_meter: 0},
-            //         {title: 'Medium', height: 914, width: 1514, price_per_square_meter: 0},
-            //         {title: 'Large', height: 1200, width: 2400, price_per_square_meter: 0}
-            //     ]
-            // });
         }
     });
 })();

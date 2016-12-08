@@ -4,7 +4,6 @@ var app = app || {};
     'use strict';
 
     app.ProfileConnectionsTableItemView = Marionette.View.extend({
-        // tagName: 'tr',
         tagName: 'div',
         className: 'table-item',
         template: app.templates['settings/profile-connections-table-item-view'],
@@ -38,13 +37,12 @@ var app = app || {};
             var grid_string = '--';
 
             // console.log( 'this.model', this.model );
-
-            console.log( 'grids', grids );
+            // console.log( 'grids', grids );
 
             if ( grids && grids.length ) {
                 var values_num = grids
                     .map(function (item) {
-                        return item.grid.length;
+                        return item.get('data').length;
                     }).reduce(function (memo, item) {
                         return memo + item;
                     }, 0);
@@ -72,7 +70,7 @@ var app = app || {};
         initialize: function () {
             this.show_grid = false;
 
-            console.log( 'this.model', this.model );
+            // console.log( 'this.model', this.model );
 
             this.pricing_grid_view = new app.PerProfilePricingGridsEditorView({
                 grids: this.model.grids,

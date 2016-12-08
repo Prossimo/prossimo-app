@@ -43,8 +43,6 @@ var app = app || {};
             }
         },
         onTabClick: function (e) {
-            console.log( 'main settings nav is triggered' );
-
             var target = $(e.target).attr('href').replace('#', '');
 
             e.preventDefault();

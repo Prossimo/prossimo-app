@@ -9,64 +9,30 @@ var app = app || {};
         tagName: 'div',
         className: 'per-profile-pricing-grids-table',
         template: app.templates['settings/per-profile-pricing-grids-editor-view'],
-        // template: _.template(
-        //     '<div class="pricing-grids-table-scroll-wrapper">' +
-        //         '<div class="pricing-grids-handsontable-container"></div>' +
-        //     '</div>'
-        // ),
-        // template: false,
         ui: {
             $hot_container: '.pricing-grids-handsontable-container',
-            // $select: '.selectpicker'
             $tab_button: '.nav-tabs a'
-            // $tab_button: '.js-pricing-grids-nav a'
         },
         events: {
-            // 'change @ui.$select': 'onSelectProfile',
-            // 'click .nav-tabs a': 'onTabClick'
             'click @ui.$tab_button': 'onTabClick'
-            // 'click .pricing-grids-table-title': 'onWhatever'
         },
         templateContext: function () {
             return {
-                // profile_list: this.collection.map(function (item) {
-                //     return {
-                //         is_selected: this.current_profile && item.id === this.current_profile.id,
-                //         id: item.id,
-                //         name: item.get('name')
-                //     };
-                // }, this),
                 tabs: _.each(this.tabs, function (item, key) {
                     item.is_active = key === this.active_tab;
                     return item;
                 }, this)
             };
         },
-        // onSelectProfile: function () {
-        //     var new_id = this.ui.$select.val();
-
-        //     if ( new_id ) {
-        //         this.setCurrentProfile(new_id);
-        //     }
-        // },
-        // setCurrentProfile: function (new_id) {
-        //     this.current_profile = this.collection.get(new_id);
-        //     this.render();
-        // },
-        // onWhatever: function (e) {
-        //     console.log( 'onWhatever', e );
-        // },
         setActiveTab: function (tab_name) {
             if ( _.contains(_.keys(this.tabs), tab_name) ) {
                 this.active_tab = tab_name;
             }
         },
         onTabClick: function (e) {
-            // console.log( 'onTabClick', e );
             var target = $(e.target).attr('href').replace('#', '');
 
             e.preventDefault();
-            // e.stopPropagation();
             this.setActiveTab(target);
             this.render();
         },
@@ -76,7 +42,6 @@ var app = app || {};
 
             var getters_hash = {
                 area: function (model) {
-                    // return m.square_meters(tier.width, tier.height);
                     return m.square_meters(model.get('width'), model.get('height'));
                 }
             };
@@ -85,7 +50,6 @@ var app = app || {};
                 getter = getters_hash[column_name];
             } else {
                 getter = function (model, attr_name) {
-                    // return tier[attr_name];
                     return model.get(attr_name);
                 };
             }
@@ -97,12 +61,7 @@ var app = app || {};
             var setter;
 
             setter = function (model, attr_name, val) {
-                // self.current_profile._updatePricingGrids(self.active_tab, tier, function (item) {
-                //     item[attr_name] = val;
-                // });
-                //
-
-                // return model;
+                //  TODO: parse data on set
                 // return model.persist(attr_name, self.getSetterParser(column_name, val));
                 return model.persist(attr_name, val);
             };
@@ -182,11 +141,10 @@ var app = app || {};
         },
         getCustomColumnHeader: function (column_name) {
             var custom_column_headers_hash = {
-                // title: 'Tier',
                 area: 'Area (m<sup>2</sup>)',
                 width: 'Width (mm)',
                 height: 'Height (mm)',
-                // value: 'Price / m<sup>2</sup> (orig.curr.)'
+                //  TODO: should be configurable via options
                 value: 'Price Increase (percents)'
             };
 
@@ -205,8 +163,6 @@ var app = app || {};
                 clearTimeout(this.table_update_timeout);
                 this.table_update_timeout = setTimeout(function () {
                     self.hot.loadData(self.getDataObject());
-
-                    // console.log( 'getRowHeight', self.hot && self.hot.getRowHeight() );
                 }, 20);
             } else {
                 this.render();
@@ -215,10 +171,12 @@ var app = app || {};
         getDataObject: function () {
             var data_object;
 
+            // console.log( 'this', this );
+
             // if ( this.current_profile ) {
                 // data_object = this.current_profile.getPricingGrids()[this.active_tab];
             // data_object = this.options.grids.getByName(this.active_tab);
-            data_object = this.options.grids.getByName(this.active_tab).grid;
+            data_object = this.options.grids.getByName(this.active_tab).get('data');
             // }
 
             // console.log( 'data_object', data_object );
@@ -228,17 +186,10 @@ var app = app || {};
         onRender: function () {
             var self = this;
 
-            // this.ui.$select.selectpicker({
-            //     style: 'btn-xs',
-            //     size: 10
-            // });
-
-            // if ( this.current_profile ) {
             //  We use setTimeout because we want to wait until flexbox
             //  sizes are calculated properly
             setTimeout(function () {
                 self.hot = new Handsontable(self.ui.$hot_container[0], {
-                // self.hot = new Handsontable(self.el, {
                     columns: self.getColumnOptions(),
                     colHeaders: self.getColumnHeaders(),
                     data: self.getDataObject(),
@@ -246,28 +197,26 @@ var app = app || {};
                     enterMoves: { row: 1, col: 0 },
                     stretchH: 'all'
                 });
-
-                // console.log( 'getRowHeight', self.hot && self.hot.getRowHeight() );
             }, 5);
-            // } else {
-            //     this.ui.$hot_container.empty().append('<p class="no-current-profile-message">' +
-            //         'Please select a profile from the list at the top</p>');
-            // }
         },
         onBeforeDestroy: function () {
             if ( this.hot ) {
                 this.hot.destroy();
             }
         },
-        initialize: function () {
-            // console.log( 'this.options', this.options );
+        initialize: function (options) {
+            // console.log( 'options', options );
+            var default_options = {
+                grids: undefined,
+                parent_view: undefined
+            };
+
+            this.options = _.extend(default_options, options);
 
             this.table_update_timeout = null;
             this.columns = [
-                // 'title', 'area', 'width', 'height', 'price_per_square_meter'
                 'area', 'width', 'height', 'value'
             ];
-            // this.current_profile = undefined;
 
             this.tabs = {
                 fixed: {
