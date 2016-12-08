@@ -122,7 +122,7 @@ var app = app || {};
             this._wasLoaded = false;
 
             if ( !this.options.proxy ) {
-                this.units = new app.BaseunitCollection(null, { project: this });
+                this.units = new app.UnitCollection(null, { project: this });
                 this.multiunits = new app.MultiunitCollection(null, { project: this, subunits: this.units });
                 this.extras = new app.AccessoryCollection(null, { project: this });
                 this.files = new app.ProjectFileCollection(null, { project: this });

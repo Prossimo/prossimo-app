@@ -93,9 +93,9 @@ var app = app || {};
 
 
     app.Multiunit = Backbone.Model.extend({
-        schema: _.defaults(app.schema.createSchema(MULTIUNIT_PROPERTIES), app.Baseunit.schema),
+        schema: _.defaults(app.schema.createSchema(MULTIUNIT_PROPERTIES), app.Unit.schema),
         defaults: function () {
-            var defaults = app.Baseunit.prototype.defaults.apply(this, arguments);
+            var defaults = app.Unit.prototype.defaults.apply(this, arguments);
 
             _.each(MULTIUNIT_PROPERTIES, function (item) {
                 defaults[item.name] = this.getDefaultValue(item.name, item.type);
@@ -1084,7 +1084,7 @@ var app = app || {};
             return this.collection ? this.collection.indexOf(this) + 1 : -1;
         },
         getSection: function (sectionId) {
-            return app.Baseunit.findSection(this.generateFullRoot(), sectionId);
+            return app.Unit.findSection(this.generateFullRoot(), sectionId);
         },
         getTotalSquareFeet: function () {
             return this.getAreaInSquareFeet() * parseFloat(this.get('quantity'));
@@ -1127,7 +1127,7 @@ var app = app || {};
             if (Object.keys(defaults).indexOf(name) !== -1) {
                 value = defaults[name];
             } else {
-                value = app.Baseunit.prototype.getDefaultValue.apply(this, arguments);
+                value = app.Unit.prototype.getDefaultValue.apply(this, arguments);
             }
 
             return value;
@@ -1135,7 +1135,7 @@ var app = app || {};
         initialize: function () {
             self = this;
 
-            app.Baseunit.prototype.initialize.apply(this, arguments);
+            app.Unit.prototype.initialize.apply(this, arguments);
 
             this.on('add', function () {
                 self.listenTo(self.collection.subunits, 'update', function (event) {
@@ -1162,7 +1162,7 @@ var app = app || {};
          */
         updateSubunitsCollection: function () {
             if (!this.subunits) {
-                this.subunits = new app.BaseunitCollection();
+                this.subunits = new app.UnitCollection();
                 this.listenTo(this.subunits, 'change', function () {  // trigger self change if any subunit changes
                     self.trigger.apply(this, ['change'].concat(Array.prototype.slice.call(arguments)));
                 });
@@ -1178,7 +1178,7 @@ var app = app || {};
             );
         },
         hasOnlyDefaultAttributes: function () {
-            return app.Baseunit.prototype.hasOnlyDefaultAttributes.apply(this,
+            return app.Unit.prototype.hasOnlyDefaultAttributes.apply(this,
                 Array.prototype.concat(
                     Array.prototype.slice.call(arguments),
                     [{SUBCLASS_PROPERTIES: MULTIUNIT_PROPERTIES}]
@@ -1186,7 +1186,7 @@ var app = app || {};
             );
         },
         getNameTitleTypeHash: function () {
-            return app.Baseunit.prototype.getNameTitleTypeHash.apply(this,
+            return app.Unit.prototype.getNameTitleTypeHash.apply(this,
                 Array.prototype.concat(
                     Array.prototype.slice.call(arguments),
                     [{SUBCLASS_PROPERTIES: MULTIUNIT_PROPERTIES}]
@@ -1197,7 +1197,7 @@ var app = app || {};
             return this.collection.subunits.getById(id);
         },
         addSubunit: function (subunit) {
-            if (!(subunit instanceof app.Baseunit)) { return; }
+            if (!(subunit instanceof app.Unit)) { return; }
 
             var subunitsIds = this.get('multiunit_subunits');
             var subunitId = subunit.getId();

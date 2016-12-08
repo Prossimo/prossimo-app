@@ -3,8 +3,8 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.BaseunitCollection = Backbone.Collection.extend({
-        model: app.Baseunit,
+    app.UnitCollection = Backbone.Collection.extend({
+        model: app.Unit,
         reorder_property_name: 'units',
         url: function () {
             return app.settings.get('api_base_path') +
@@ -16,7 +16,7 @@ var app = app || {};
         },
         initialize: function (models, options) {
             this.options = options || {};
-            this.proxy_unit = new app.Baseunit(null, { proxy: true });
+            this.proxy_unit = new app.Unit(null, { proxy: true });
 
             if (this.options.profile) {
                 this.profile = this.options.profile;

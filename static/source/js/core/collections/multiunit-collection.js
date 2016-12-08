@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.MultiunitCollection = app.BaseunitCollection.extend({
+    app.MultiunitCollection = app.UnitCollection.extend({
         model: app.Multiunit,
         reorder_property_name: 'multiunits',
         url: function () {

@@ -11,14 +11,14 @@ app.session.set('no_backend', true);
 app.settings = new app.Settings();
 
 test('units collection instanceOf tests', function () {
-    var units_collection = new app.BaseunitCollection();
+    var units_collection = new app.UnitCollection();
     var unit_model = new units_collection.model();
     var project = new app.Project();
 
     instanceOf(units_collection, Backbone.Collection, 'should belong to Backbone.Collection object');
     instanceOf(unit_model, Backbone.Model, 'collection model should belong to Backbone.Model object');
-    instanceOf(unit_model, app.Baseunit, 'collection model should belong to app.Baseunit object');
-    instanceOf(project.units, app.BaseunitCollection, 'app.Project().units should belong to app.BaseunitCollection object');
+    instanceOf(unit_model, app.Unit, 'collection model should belong to app.Unit object');
+    instanceOf(project.units, app.UnitCollection, 'app.Project().units should belong to app.UnitCollection object');
 });
 
 test('units collection basic tests', function () {
@@ -51,7 +51,7 @@ test('units collection basic tests', function () {
         glazing: '3Std U=.09 SGHC=.5',
         discount: 20
     }];
-    var units_collection = new app.BaseunitCollection(data);
+    var units_collection = new app.UnitCollection(data);
 
     equal(units_collection.getTotalUnitTypes(), 2, '#getTotalUnitTypes() should return correct number of models');
     equal(units_collection.getTotalUnitQuantity(), 3, '#getTotalUnitQuantity() should return sum all "quantity"');
@@ -88,7 +88,7 @@ test('units collection by profiles', function () {
         glazing: '3Std U=.09 SGHC=.5',
         discount: 20
     }];
-    var units_collection = new app.BaseunitCollection(data);
+    var units_collection = new app.UnitCollection(data);
     var profileUnits_collection = units_collection.getUnitsByProfiles();
 
     ok(_.isArray(profileUnits_collection), '#getUnitsByProfiles() should return array');
@@ -98,9 +98,9 @@ test('units collection by profiles', function () {
         var profileUnitModel = new profileUnit.model();
 
         instanceOf(profileUnit, Backbone.Collection, 'should belong to Backbone.Collection object');
-        instanceOf(profileUnit, app.BaseunitCollection, 'app.Project().units should belong to app.BaseunitCollection object');
+        instanceOf(profileUnit, app.UnitCollection, 'app.Project().units should belong to app.UnitCollection object');
         instanceOf(profileUnitModel, Backbone.Model, 'collection model should belong to Backbone.Model object');
-        instanceOf(profileUnitModel, app.Baseunit, 'collection model should belong to app.Baseunit object');
+        instanceOf(profileUnitModel, app.Unit, 'collection model should belong to app.Unit object');
 
         instanceOf(profileUnit.profile, app.Profile, 'this.profile should belong to app.Profile object');
 
