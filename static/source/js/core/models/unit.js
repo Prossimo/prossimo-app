@@ -6,7 +6,6 @@ var app = app || {};
     var self;
 
     var UNIT_PROPERTIES = [
-        { name: 'unit_composition', title: 'Type', type: 'string' },
         { name: 'mark', title: 'Mark', type: 'string' },
         { name: 'width', title: 'Width (inches)', type: 'number' },
         { name: 'height', title: 'Height (inches)', type: 'string' },
@@ -14,9 +13,14 @@ var app = app || {};
         { name: 'description', title: 'Customer Description', type: 'string' },
         { name: 'notes', title: 'Notes', type: 'string' },
         { name: 'exceptions', title: 'Exceptions', type: 'string' },
+        { name: 'glazing_bar_width', title: 'Glazing Bar Width (mm)', type: 'number' },
 
+        { name: 'profile_name', title: 'Profile', type: 'string' },
+        { name: 'profile_id', title: 'Profile', type: 'string' },
         { name: 'customer_image', title: 'Customer Image', type: 'string' },
 
+        { name: 'opening_direction', title: 'Opening Direction', type: 'string' },
+        { name: 'glazing', title: 'Glass Packet / Panel Type', type: 'string' },
         { name: 'uw', title: 'Uw', type: 'number' },
 
         { name: 'original_cost', title: 'Original Cost', type: 'number' },
@@ -28,14 +32,7 @@ var app = app || {};
 
         { name: 'position', title: 'Position', type: 'number' },
         { name: 'unit_options', title: 'Unit Options', type: 'array' },
-        { name: 'root_section', title: 'Root Section', type: 'object' },
-        { name: 'glazing_bar_width', title: 'Glazing Bar Width (mm)', type: 'number' },
-
-        { name: 'profile_name', title: 'Profile', type: 'string' },
-        { name: 'profile_id', title: 'Profile', type: 'string' },
-
-        { name: 'opening_direction', title: 'Opening Direction', type: 'string' },
-        { name: 'glazing', title: 'Glass Packet / Panel Type', type: 'string' }
+        { name: 'root_section', title: 'Root Section', type: 'object' }
     ];
 
     //  We only allow editing these attributes for units where
@@ -171,6 +168,7 @@ var app = app || {};
     }
 
     app.Unit = Backbone.Model.extend({
+        schema: app.schema.createSchema(UNIT_PROPERTIES),
         defaults: function () {
             var defaults = {};
 
@@ -194,7 +192,6 @@ var app = app || {};
             };
 
             var name_value_hash = {
-                unit_composition: 'singleunit',
                 height: '0',
                 original_currency: 'EUR',
                 conversion_rate: 0.9,
@@ -325,7 +322,7 @@ var app = app || {};
 
             //  TODO: this duplicates code from splitSection, so ideally
             //  it should be moved to a new helper function
-            if ( current_section.measurements && !current_section.measurements.mullion && current_section.divider ){
+            if ( current_section.measurements && !current_section.measurements.mullion && current_section.divider ) {
                 var measurementType = getInvertedDivider(current_section.divider).replace(/_invisible/, '');
 
                 current_section.measurements.mullion = {};
@@ -468,17 +465,12 @@ var app = app || {};
         hasDummyProfile: function () {
             return this.profile && this.profile.get('is_dummy');
         },
-        hasOnlyDefaultAttributes: function (options) {
-            var PROPERTIES = UNIT_PROPERTIES;
+        hasOnlyDefaultAttributes: function () {
             var has_only_defaults = true;
-
-            if (options && options.constructor === Object && options.SUBCLASS_PROPERTIES) {
-                PROPERTIES = PROPERTIES.concat(options.SUBCLASS_PROPERTIES);
-            }
 
             _.each(this.toJSON(), function (value, key) {
                 if ( key !== 'position' && has_only_defaults ) {
-                    var property_source = _.findWhere(PROPERTIES, { name: key });
+                    var property_source = _.findWhere(UNIT_PROPERTIES, { name: key });
                     var type = property_source ? property_source.type : undefined;
 
                     if ( key === 'profile_id' ) {
@@ -527,25 +519,15 @@ var app = app || {};
         },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs
-        getNameTitleTypeHash: function (names, options) {
-            var PROPERTIES = UNIT_PROPERTIES;
+        getNameTitleTypeHash: function (names) {
             var name_title_hash = [];
 
-            if (names && names.constructor === Object && names.SUBCLASS_PROPERTIES) {
-                options = names;
-                names = undefined;
-            }
-
-            if (options && options.constructor === Object && options.SUBCLASS_PROPERTIES) {
-                PROPERTIES = PROPERTIES.concat(options.SUBCLASS_PROPERTIES);
-            }
-
             if ( !names ) {
-                names = _.pluck(PROPERTIES, 'name');
+                names = _.pluck( UNIT_PROPERTIES, 'name' );
             }
 
-            _.each(PROPERTIES, function (item) {
-                if (_.indexOf(names, item.name) !== -1) {
+            _.each(UNIT_PROPERTIES, function (item) {
+                if ( _.indexOf(names, item.name) !== -1 ) {
                     name_title_hash.push({ name: item.name, title: item.title, type: item.type });
                 }
             });
@@ -759,13 +741,12 @@ var app = app || {};
         _updateSection: function (sectionId, func) {
             // HAH, dirty deep clone, rewrite when you have good mood for it
             // we have to make deep clone and backbone will trigger change event
-            var unit = (this.activeSubunit) ? this.activeSubunit : this;
-            var rootSectionClone = JSON.parse(JSON.stringify(unit.get('root_section')));
-            var sectionToUpdate = app.Unit.findSection(rootSectionClone, sectionId);
+            var rootSection = JSON.parse(JSON.stringify(this.get('root_section')));
+            var sectionToUpdate = app.Unit.findSection(rootSection, sectionId);
 
             func(sectionToUpdate);
 
-            unit.persist('root_section', rootSectionClone);
+            this.persist('root_section', rootSection);
         },
         setCircular: function (sectionId, opts) {
             //  Deep clone, same as above
@@ -822,8 +803,8 @@ var app = app || {};
             // If we have no mullions around the sash — it's a circle!
             // But if we have mullions at few edges — it's an arc!
             if ( result.edges.top === result.edges.right &&
-                result.edges.top === result.edges.bottom &&
-                result.edges.top === result.edges.left
+                 result.edges.top === result.edges.bottom &&
+                 result.edges.top === result.edges.left
             ) {
                 result.type = (result.edges.top === true) ? 'rect' : 'circle';
             } else {
@@ -923,9 +904,9 @@ var app = app || {};
         },
         getInvertedMeasurementVal: function (val) {
             return (val === 'min') ? 'max' :
-                (val === 'max') ? 'min' :
-                    (val === 'center') ? 'center' :
-                        val;
+                   (val === 'max') ? 'min' :
+                   (val === 'center') ? 'center' :
+                   val;
         },
         getBar: function (sectionId, id) {
             var found = null;
@@ -1064,35 +1045,33 @@ var app = app || {};
         //         openingParams: {}
         //     }]
         // }
-            generateFullRoot: function (rootSection, openingParams) {
-            var unit = (this.activeSubunit) ? this.activeSubunit : this;
-
-            rootSection = rootSection || JSON.parse(JSON.stringify(unit.get('root_section')));
+        generateFullRoot: function (rootSection, openingParams) {
+            rootSection = rootSection || JSON.parse(JSON.stringify(this.get('root_section')));
             var defaultParams = {
                 x: 0,
                 y: 0,
-                width: unit.getInMetric('width', 'mm'),
-                height: unit.getInMetric('height', 'mm')
+                width: this.getInMetric('width', 'mm'),
+                height: this.getInMetric('height', 'mm')
             };
 
-            if (rootSection.id === unit.get('root_section').id) {
+            if (rootSection.id === this.get('root_section').id) {
                 defaultParams = {
-                    x: unit.profile.get('frame_width'),
-                    y: unit.profile.get('frame_width'),
-                    width: unit.getInMetric('width', 'mm') - unit.profile.get('frame_width') * 2,
-                    height: unit.getInMetric('height', 'mm') - unit.profile.get('frame_width') * 2
+                    x: this.profile.get('frame_width'),
+                    y: this.profile.get('frame_width'),
+                    width: this.getInMetric('width', 'mm') - this.profile.get('frame_width') * 2,
+                    height: this.getInMetric('height', 'mm') - this.profile.get('frame_width') * 2
                 };
             }
 
-            if (rootSection.id === unit.get('root_section').id &&
-                unit.profile.isThresholdPossible() &&
-                unit.profile.get('low_threshold')) {
+            if (rootSection.id === this.get('root_section').id &&
+                    this.profile.isThresholdPossible() &&
+                    this.profile.get('low_threshold')) {
                 defaultParams = {
-                    x: unit.profile.get('frame_width'),
-                    y: unit.profile.get('frame_width'),
-                    width: unit.getInMetric('width', 'mm') - unit.profile.get('frame_width') * 2,
-                    height: unit.getInMetric('height', 'mm') -
-                    unit.profile.get('frame_width') - unit.profile.get('threshold_width')
+                    x: this.profile.get('frame_width'),
+                    y: this.profile.get('frame_width'),
+                    width: this.getInMetric('width', 'mm') - this.profile.get('frame_width') * 2,
+                    height: this.getInMetric('height', 'mm') -
+                        this.profile.get('frame_width') - this.profile.get('threshold_width')
                 };
                 rootSection.thresholdEdge = true;
             }
@@ -1108,8 +1087,8 @@ var app = app || {};
             var bottomOverlap = 0;
             var leftOverlap = 0;
             var rightOverlap = 0;
-            var frameOverlap = unit.profile.get('sash_frame_overlap');
-            var mullionOverlap = unit.profile.get('sash_mullion_overlap');
+            var frameOverlap = this.profile.get('sash_frame_overlap');
+            var mullionOverlap = this.profile.get('sash_mullion_overlap');
             var thresholdOverlap = mullionOverlap;
 
             if (hasFrame) {
@@ -1119,7 +1098,7 @@ var app = app || {};
                 if (rootSection.mullionEdges.left === 'vertical') {
                     leftOverlap = mullionOverlap;
                 } else if (rootSection.mullionEdges.left === 'vertical_invisible') {
-                    leftOverlap = unit.profile.get('mullion_width') / 2;
+                    leftOverlap = this.profile.get('mullion_width') / 2;
                 } else {
                     leftOverlap = frameOverlap;
                 }
@@ -1127,7 +1106,7 @@ var app = app || {};
                 if (rootSection.mullionEdges.right === 'vertical') {
                     rightOverlap = mullionOverlap;
                 } else if (rootSection.mullionEdges.right === 'vertical_invisible') {
-                    rightOverlap = unit.profile.get('mullion_width') / 2;
+                    rightOverlap = this.profile.get('mullion_width') / 2;
                 } else {
                     rightOverlap = frameOverlap;
                 }
@@ -1142,7 +1121,7 @@ var app = app || {};
             rootSection.sashParams.x = rootSection.openingParams.x - leftOverlap;
             rootSection.sashParams.y = rootSection.openingParams.y - topOverlap;
 
-            var frameWidth = hasFrame ? unit.profile.get('sash_frame_width') : 0;
+            var frameWidth = hasFrame ? this.profile.get('sash_frame_width') : 0;
 
             rootSection.glassParams.x = rootSection.sashParams.x + frameWidth;
             rootSection.glassParams.y = rootSection.sashParams.y + frameWidth;
@@ -1157,16 +1136,16 @@ var app = app || {};
                 };
 
                 if (rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible') {
-                    mullionAttrs.x = position - unit.profile.get('mullion_width') / 2;
+                    mullionAttrs.x = position - this.profile.get('mullion_width') / 2;
                     mullionAttrs.y = rootSection.glassParams.y;
-                    mullionAttrs.width = unit.profile.get('mullion_width');
+                    mullionAttrs.width = this.profile.get('mullion_width');
                     mullionAttrs.height = rootSection.glassParams.height;
 
                 } else {
                     mullionAttrs.x = rootSection.glassParams.x;
-                    mullionAttrs.y = position - unit.profile.get('mullion_width') / 2;
+                    mullionAttrs.y = position - this.profile.get('mullion_width') / 2;
                     mullionAttrs.width = rootSection.glassParams.width;
-                    mullionAttrs.height = unit.profile.get('mullion_width');
+                    mullionAttrs.height = this.profile.get('mullion_width');
                 }
 
                 rootSection.mullionParams = mullionAttrs;
@@ -1182,7 +1161,7 @@ var app = app || {};
                 sectionData.parentId = rootSection.id;
 
                 // Correction params. Needed for sections in operable sash
-                var corr = -1 * (unit.profile.get('sash_frame_width') - unit.profile.get('sash_frame_overlap'));
+                var corr = -1 * (this.profile.get('sash_frame_width') - this.profile.get('sash_frame_overlap'));
                 var correction = {
                     x: 0,
                     y: 0,
@@ -1219,12 +1198,12 @@ var app = app || {};
 
                     if (i === 0) {
                         sectionParams.width = position - rootSection.openingParams.x -
-                            unit.profile.get('mullion_width') / 2;
+                            this.profile.get('mullion_width') / 2;
                         sectionData.mullionEdges.right = rootSection.divider;
                     } else {
-                        sectionParams.x = position + unit.profile.get('mullion_width') / 2;
+                        sectionParams.x = position + this.profile.get('mullion_width') / 2;
                         sectionParams.width = openingParams.width + openingParams.x -
-                            position - unit.profile.get('mullion_width') / 2;
+                            position - this.profile.get('mullion_width') / 2;
                         sectionData.mullionEdges.left = rootSection.divider;
                     }
 
@@ -1237,12 +1216,12 @@ var app = app || {};
                     if (i === 0) {
                         sectionData.mullionEdges.bottom = rootSection.divider;
                         sectionParams.height = position - rootSection.openingParams.y -
-                            unit.profile.get('mullion_width') / 2;
+                            this.profile.get('mullion_width') / 2;
                         sectionData.thresholdEdge = false;
                     } else {
-                        sectionParams.y = position + unit.profile.get('mullion_width') / 2;
+                        sectionParams.y = position + this.profile.get('mullion_width') / 2;
                         sectionParams.height = openingParams.height + openingParams.y - position -
-                            unit.profile.get('mullion_width') / 2;
+                            this.profile.get('mullion_width') / 2;
                         sectionData.mullionEdges.top = rootSection.divider;
                     }
                 }
@@ -1253,8 +1232,8 @@ var app = app || {};
                 sectionParams.width += correction.width;
                 sectionParams.height += correction.height;
 
-                return unit.generateFullRoot(sectionData, sectionParams);
-            });
+                return this.generateFullRoot(sectionData, sectionParams);
+            }.bind(this));
             return rootSection;
         },
         generateFullReversedRoot: function (rootSection) {
@@ -1670,7 +1649,7 @@ var app = app || {};
 
             result.profile_total.linear = result.frame.linear + result.sashes.linear + result.mullions.linear;
             result.profile_total.linear_without_intersections = result.frame.linear_without_intersections +
-                result.sashes.linear_without_intersections + result.mullions.linear;
+            result.sashes.linear_without_intersections + result.mullions.linear;
             result.profile_total.area = result.frame.area + result.sashes.area + result.mullions.area;
             result.profile_total.area_both_sides = result.profile_total.area * 2;
             result.profile_total.weight = (result.profile_total.linear / 1000) * profileWeight;
@@ -2111,11 +2090,11 @@ var app = app || {};
             if (this.isTrapezoid()) {
                 return 1;
 
-                // Arched units always have two metrics on the left
+            // Arched units always have two metrics on the left
             } else if (this.isArchedWindow()) {
                 return 2;
 
-                // For regular units, at least one horizontal mullion adds the second metric
+            // For regular units, at least one horizontal mullion adds the second metric
             } else {
                 return (this.hasHorizontalMullion()) ? 2 : 1;
             }
@@ -2138,11 +2117,11 @@ var app = app || {};
             if (this.isTrapezoid() && this.isArchedWindow()) {
                 return 2;
 
-                // For regular trapezoid units, at least one horizontal mullion adds the second metric
+            // For regular trapezoid units, at least one horizontal mullion adds the second metric
             } else if (this.isTrapezoid()) {
                 return (this.hasHorizontalMullion()) ? 2 : 1;
 
-                // Non-trapezoid units don't have metrics on the right
+            // Non-trapezoid units don't have metrics on the right
             } else {
                 return 0;
             }
@@ -2173,9 +2152,9 @@ var app = app || {};
 
             if (typeof heights === 'object') {
                 var cornerLeft = Math.abs(
-                        ( Math.atan( ( ( maxHeight - heights.right ) - ( maxHeight - heights.left ) ) / ( width - 0 ) ) -
-                        Math.atan( ( maxHeight - ( maxHeight - heights.left ) ) / ( 0 - 0 ) ) ) / Math.PI * 180
-                    ) / 2;
+                    ( Math.atan( ( ( maxHeight - heights.right ) - ( maxHeight - heights.left ) ) / ( width - 0 ) ) -
+                    Math.atan( ( maxHeight - ( maxHeight - heights.left ) ) / ( 0 - 0 ) ) ) / Math.PI * 180
+                ) / 2;
                 var cornerRight = Math.abs( 90 - cornerLeft );
 
                 corners = {
@@ -2215,7 +2194,7 @@ var app = app || {};
             var Ub = ( ( ( x2 - x1 ) * ( y1 - y3 ) ) - ( ( y2 - y1 ) * ( x1 - x3 ) ) ) / diff;
 
             return ( Ua >= 0 && Ua <= 1 && Ub >= 0 && Ub <= 1 ) ?
-            { x: x1 + ( Ua * (x2 - x1) ), y: y1 + ( Ua * (y2 - y1) ) } :
+                { x: x1 + ( Ua * (x2 - x1) ), y: y1 + ( Ua * (y2 - y1) ) } :
                 false;
         },
         getLineCrossingX: function (x, start, finish) {
@@ -2312,7 +2291,7 @@ var app = app || {};
         },
         /* trapezoid end */
         isMultiunit: function () {
-            return this.constructor === app.Multiunit;
+            return false;
         },
         isSubunit: function () {
             var allSubunitIds = this.collection.multiunits.chain()
@@ -2356,9 +2335,7 @@ var app = app || {};
             multiunit.addSubunit(this);
             return multiunit;
         }
-    },
-    {
-        schema: app.schema.createSchema(UNIT_PROPERTIES)
+        /* trapezoid end */
     });
 
     // static function

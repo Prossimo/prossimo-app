@@ -106,7 +106,6 @@ var app = app || {};
             }
             // End Prepare subunits info
 
-
             var sash_list_source = this.model.getSashList(null, null, this.options.show_outside_units_view &&
                 project_settings && project_settings.get('hinge_indicator_mode') === 'american');
             var sashes = [];
@@ -328,10 +327,10 @@ var app = app || {};
                     height: preview_size,
                     mode: 'base64',
                     position: position,
-                    hingeIndicatorMode: this.options.force_european_hinge_indicators ? 'european' :
-                        project_settings && project_settings.get('hinge_indicator_mode'),
                     drawNeighbors: isSubunit,
-                    topOffset: (isSubunit) ? 50 : 0
+                    topOffset: (isSubunit) ? 50 : 0,
+                    hingeIndicatorMode: (this.options.force_european_hinge_indicators) ? 'european' :
+                        project_settings && project_settings.get('hinge_indicator_mode')
                 }),
                 title: title
             };

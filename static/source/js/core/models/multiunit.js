@@ -439,34 +439,32 @@ var app = app || {};
         //     }]
         // }
         generateFullRoot: function (rootSection, openingParams) {
-            var unit = (this.activeSubunit) ? this.activeSubunit : this;
-
-            rootSection = rootSection || JSON.parse(JSON.stringify(unit.get('root_section')));
+            rootSection = rootSection || JSON.parse(JSON.stringify(this.get('root_section')));
             var defaultParams = {
                 x: 0,
                 y: 0,
-                width: unit.getInMetric('width', 'mm'),
-                height: unit.getInMetric('height', 'mm')
+                width: this.getInMetric('width', 'mm'),
+                height: this.getInMetric('height', 'mm')
             };
 
-            if (rootSection.id === unit.get('root_section').id) {
+            if (rootSection.id === this.get('root_section').id) {
                 defaultParams = {
-                    x: unit.profile.get('frame_width'),
-                    y: unit.profile.get('frame_width'),
-                    width: unit.getInMetric('width', 'mm') - unit.profile.get('frame_width') * 2,
-                    height: unit.getInMetric('height', 'mm') - unit.profile.get('frame_width') * 2
+                    x: this.profile.get('frame_width'),
+                    y: this.profile.get('frame_width'),
+                    width: this.getInMetric('width', 'mm') - this.profile.get('frame_width') * 2,
+                    height: this.getInMetric('height', 'mm') - this.profile.get('frame_width') * 2
                 };
             }
 
-            if (rootSection.id === unit.get('root_section').id &&
-                unit.profile.isThresholdPossible() &&
-                unit.profile.get('low_threshold')) {
+            if (rootSection.id === this.get('root_section').id &&
+                this.profile.isThresholdPossible() &&
+                this.profile.get('low_threshold')) {
                 defaultParams = {
-                    x: unit.profile.get('frame_width'),
-                    y: unit.profile.get('frame_width'),
-                    width: unit.getInMetric('width', 'mm') - unit.profile.get('frame_width') * 2,
-                    height: unit.getInMetric('height', 'mm') -
-                    unit.profile.get('frame_width') - unit.profile.get('threshold_width')
+                    x: this.profile.get('frame_width'),
+                    y: this.profile.get('frame_width'),
+                    width: this.getInMetric('width', 'mm') - this.profile.get('frame_width') * 2,
+                    height: this.getInMetric('height', 'mm') -
+                    this.profile.get('frame_width') - this.profile.get('threshold_width')
                 };
                 rootSection.thresholdEdge = true;
             }
@@ -482,8 +480,8 @@ var app = app || {};
             var bottomOverlap = 0;
             var leftOverlap = 0;
             var rightOverlap = 0;
-            var frameOverlap = unit.profile.get('sash_frame_overlap');
-            var mullionOverlap = unit.profile.get('sash_mullion_overlap');
+            var frameOverlap = this.profile.get('sash_frame_overlap');
+            var mullionOverlap = this.profile.get('sash_mullion_overlap');
             var thresholdOverlap = mullionOverlap;
 
             if (hasFrame) {
@@ -493,7 +491,7 @@ var app = app || {};
                 if (rootSection.mullionEdges.left === 'vertical') {
                     leftOverlap = mullionOverlap;
                 } else if (rootSection.mullionEdges.left === 'vertical_invisible') {
-                    leftOverlap = unit.profile.get('mullion_width') / 2;
+                    leftOverlap = this.profile.get('mullion_width') / 2;
                 } else {
                     leftOverlap = frameOverlap;
                 }
@@ -501,7 +499,7 @@ var app = app || {};
                 if (rootSection.mullionEdges.right === 'vertical') {
                     rightOverlap = mullionOverlap;
                 } else if (rootSection.mullionEdges.right === 'vertical_invisible') {
-                    rightOverlap = unit.profile.get('mullion_width') / 2;
+                    rightOverlap = this.profile.get('mullion_width') / 2;
                 } else {
                     rightOverlap = frameOverlap;
                 }
@@ -516,7 +514,7 @@ var app = app || {};
             rootSection.sashParams.x = rootSection.openingParams.x - leftOverlap;
             rootSection.sashParams.y = rootSection.openingParams.y - topOverlap;
 
-            var frameWidth = hasFrame ? unit.profile.get('sash_frame_width') : 0;
+            var frameWidth = hasFrame ? this.profile.get('sash_frame_width') : 0;
 
             rootSection.glassParams.x = rootSection.sashParams.x + frameWidth;
             rootSection.glassParams.y = rootSection.sashParams.y + frameWidth;
@@ -531,16 +529,16 @@ var app = app || {};
                 };
 
                 if (rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible') {
-                    mullionAttrs.x = position - unit.profile.get('mullion_width') / 2;
+                    mullionAttrs.x = position - this.profile.get('mullion_width') / 2;
                     mullionAttrs.y = rootSection.glassParams.y;
-                    mullionAttrs.width = unit.profile.get('mullion_width');
+                    mullionAttrs.width = this.profile.get('mullion_width');
                     mullionAttrs.height = rootSection.glassParams.height;
 
                 } else {
                     mullionAttrs.x = rootSection.glassParams.x;
-                    mullionAttrs.y = position - unit.profile.get('mullion_width') / 2;
+                    mullionAttrs.y = position - this.profile.get('mullion_width') / 2;
                     mullionAttrs.width = rootSection.glassParams.width;
-                    mullionAttrs.height = unit.profile.get('mullion_width');
+                    mullionAttrs.height = this.profile.get('mullion_width');
                 }
 
                 rootSection.mullionParams = mullionAttrs;
@@ -556,7 +554,7 @@ var app = app || {};
                 sectionData.parentId = rootSection.id;
 
                 // Correction params. Needed for sections in operable sash
-                var corr = -1 * (unit.profile.get('sash_frame_width') - unit.profile.get('sash_frame_overlap'));
+                var corr = -1 * (this.profile.get('sash_frame_width') - this.profile.get('sash_frame_overlap'));
                 var correction = {
                     x: 0,
                     y: 0,
@@ -593,12 +591,12 @@ var app = app || {};
 
                     if (i === 0) {
                         sectionParams.width = position - rootSection.openingParams.x -
-                            unit.profile.get('mullion_width') / 2;
+                            this.profile.get('mullion_width') / 2;
                         sectionData.mullionEdges.right = rootSection.divider;
                     } else {
-                        sectionParams.x = position + unit.profile.get('mullion_width') / 2;
+                        sectionParams.x = position + this.profile.get('mullion_width') / 2;
                         sectionParams.width = openingParams.width + openingParams.x -
-                            position - unit.profile.get('mullion_width') / 2;
+                            position - this.profile.get('mullion_width') / 2;
                         sectionData.mullionEdges.left = rootSection.divider;
                     }
 
@@ -611,12 +609,12 @@ var app = app || {};
                     if (i === 0) {
                         sectionData.mullionEdges.bottom = rootSection.divider;
                         sectionParams.height = position - rootSection.openingParams.y -
-                            unit.profile.get('mullion_width') / 2;
+                            this.profile.get('mullion_width') / 2;
                         sectionData.thresholdEdge = false;
                     } else {
-                        sectionParams.y = position + unit.profile.get('mullion_width') / 2;
+                        sectionParams.y = position + this.profile.get('mullion_width') / 2;
                         sectionParams.height = openingParams.height + openingParams.y - position -
-                            unit.profile.get('mullion_width') / 2;
+                            this.profile.get('mullion_width') / 2;
                         sectionData.mullionEdges.top = rootSection.divider;
                     }
                 }
@@ -627,8 +625,8 @@ var app = app || {};
                 sectionParams.width += correction.width;
                 sectionParams.height += correction.height;
 
-                return unit.generateFullRoot(sectionData, sectionParams);
-            });
+                return this.generateFullRoot(sectionData, sectionParams);
+            }.bind(this));
             return rootSection;
         },
         getInMetric: function (attr, metric) {
@@ -1120,7 +1118,6 @@ var app = app || {};
         getDefaultValue: function (name) {
             var value;
             var defaults = {
-                unit_composition: 'multiunit',
                 root_section: getSectionDefaults()
             };
 
@@ -1178,20 +1175,57 @@ var app = app || {};
             );
         },
         hasOnlyDefaultAttributes: function () {
-            return app.Unit.prototype.hasOnlyDefaultAttributes.apply(this,
-                Array.prototype.concat(
-                    Array.prototype.slice.call(arguments),
-                    [{SUBCLASS_PROPERTIES: MULTIUNIT_PROPERTIES}]
-                )
-            );
+            var has_only_defaults = true;
+
+            _.each(this.toJSON(), function (value, key) {
+                if ( key !== 'position' && has_only_defaults ) {
+                    var property_source = _.findWhere(MULTIUNIT_PROPERTIES, { name: key });
+                    var type = property_source ? property_source.type : undefined;
+
+                    if ( key === 'profile_id' ) {
+                        if ( app.settings && app.settings.getDefaultProfileId() !== value ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( key === 'profile_name' ) {
+                        var profile = app.settings && app.settings.getProfileByIdOrDummy(this.get('profile_id'));
+
+                        if ( profile && profile.get('name') !== value ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( key === 'root_section' ) {
+                        if ( JSON.stringify(_.omit(value, 'id')) !==
+                            JSON.stringify(_.omit(this.getDefaultValue('root_section'), 'id'))
+                        ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( key === 'unit_options' ) {
+                        if ( JSON.stringify(this.getDefaultUnitOptions()) !== JSON.stringify(value) ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( this.getDefaultValue(key, type) !== value ) {
+                        has_only_defaults = false;
+                    }
+                }
+            }, this);
+
+            return has_only_defaults;
         },
-        getNameTitleTypeHash: function () {
-            return app.Unit.prototype.getNameTitleTypeHash.apply(this,
-                Array.prototype.concat(
-                    Array.prototype.slice.call(arguments),
-                    [{SUBCLASS_PROPERTIES: MULTIUNIT_PROPERTIES}]
-                )
-            );
+        //  Return { name: 'name', title: 'Title' } pairs for each item in
+        //  `names` array. If the array is empty, return all possible pairs
+        getNameTitleTypeHash: function (names) {
+            var name_title_hash = [];
+
+            if ( !names ) {
+                names = _.pluck( MULTIUNIT_PROPERTIES, 'name' );
+            }
+
+            _.each(MULTIUNIT_PROPERTIES, function (item) {
+                if ( _.indexOf(names, item.name) !== -1 ) {
+                    name_title_hash.push({ name: item.name, title: item.title, type: item.type });
+                }
+            });
+
+            return name_title_hash;
         },
         getSubunitById: function (id) {
             return this.collection.subunits.getById(id);
@@ -1205,7 +1239,6 @@ var app = app || {};
             if (!_.contains(subunitsIds, subunitId)) {
                 subunitsIds.push(subunitId);
                 this.updateSubunitsCollection();
-                this.updateCollectionPositions();
                 this.recalculateSizes();
             }
         },

@@ -110,7 +110,6 @@ $(document).ready(function () {
 
     var test_project_multiunits_data = [
         {
-            unit_composition: 'multiunit',
             multiunit_subunits: ["106", "10565", "19991"],
             mark: 'A',
             width: 207.78740,

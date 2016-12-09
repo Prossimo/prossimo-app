@@ -15,9 +15,7 @@ var app = app || {};
             this.layer = params.layer;
             this.stage = params.stage;
 
-            model = (module.get('model').activeSubunit) ?
-                module.get('model').activeSubunit :
-                module.get('model');
+            model = module.get('model');
         },
         el: function () {
             var group = new Konva.Group();

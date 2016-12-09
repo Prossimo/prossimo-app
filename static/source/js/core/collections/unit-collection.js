@@ -16,7 +16,7 @@ var app = app || {};
         },
         initialize: function (models, options) {
             this.options = options || {};
-            this.proxy_unit = new app.Unit(null, { proxy: true });
+            this.proxy_unit = new app.Unit(null, {proxy: true});
 
             if (this.options.profile) {
                 this.profile = this.options.profile;
@@ -24,31 +24,6 @@ var app = app || {};
 
             //  When parent project is fully loaded, we validate unit positions
             this.listenTo(this.options.project, 'fully_loaded', this.validatePositions);
-        },
-        add: function (models, options) {
-
-            var self = this;
-
-            if (_.isArray(models)) {  // Array of models / attribute objects
-                models.forEach(function (model) { self.add(model, options); });
-            } else if (!this._isModel(models) && (models.unit_composition || models.width || models.mark)) { // Attr obj
-                var attributes = models;
-                var UnitClass = (attributes.unit_composition === 'multiunit') ? app.Multiunit : app.Unit;
-                var model = new UnitClass(attributes);
-
-                return Backbone.Collection.prototype.add.call(this, model, options);
-            } else {  // Model or random junk
-                return Backbone.Collection.prototype.add.call(this, models, options);
-            }
-        },
-        get: function (cid) {
-            var model = Backbone.Collection.prototype.get.apply(this, arguments);
-
-            if (!model && this.multiunits) {
-                model = this.multiunits.get(cid)
-            }
-
-            return model;
         },
         /* eslint-disable eqeqeq */
         getById: function (id) {

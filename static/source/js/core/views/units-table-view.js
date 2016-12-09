@@ -52,7 +52,7 @@ var app = app || {};
                     collection: this.collection,
                     columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing',
                         'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'profile_id', 'description',
-                        'notes', 'exceptions', 'unit_composition', 'system', 'opening_direction',
+                        'notes', 'exceptions', 'system', 'opening_direction',
                         'threshold', 'glazing', 'glazing_bar_width', 'uw', 'u_value']
                 },
                 unit_options: {
@@ -320,17 +320,6 @@ var app = app || {};
                 },
                 subtotal_profit: function (model) {
                     return model.getSubtotalProfit();
-                },
-                unit_composition: function (model) {
-                    var unitType;
-
-                    if (model.get('unit_composition') === 'multiunit') {
-                        unitType = 'Multi-frame';
-                    } else {
-                        unitType = 'Single-frame';
-                    }
-
-                    return unitType;
                 },
                 system: function (model) {
                     return model.profile.get('system');
@@ -855,7 +844,6 @@ var app = app || {};
                 dimensions: 'Dimensions',
                 rough_opening: 'Rough Opening',
                 customer_image: 'Customer Img.',
-                unit_composition: 'Composition',
                 system: 'System',
                 opening_direction: 'Opening Dir.',
                 threshold: 'Threshold',
@@ -914,7 +902,6 @@ var app = app || {};
                 notes: 240,
                 exceptions: 240,
                 profile_id: 200,
-                unit_composition: 200,
                 system: 200,
                 opening_direction: 110,
                 glazing: 300,
