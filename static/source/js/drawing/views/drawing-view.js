@@ -482,7 +482,7 @@ var app = app || {};
             this.ui.$title.text(titleText);
 
             var selectedSashId = this.state.selectedSashId;
-            var selectedSash = this.model.getSection(selectedSashId);
+            var selectedSash = (this.model.getSection) ? this.model.getSection(selectedSashId) : undefined;
             var isSashSelected = !!selectedSash;
             var isFrameSelected = !!this.state.isFrameSelected;
             var isArched = selectedSash && selectedSash.arched;
