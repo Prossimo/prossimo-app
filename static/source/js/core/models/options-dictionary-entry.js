@@ -3,6 +3,114 @@ var app = app || {};
 (function () {
     'use strict';
 
+    //  --------------------------------------------------------------------
+    //  Entry to Profile Connection Model
+    //  --------------------------------------------------------------------
+
+    // var PROFILE_CONNECTION_PROPERTIES = [
+    //     { name: 'profile_id', title: 'Profile ID', type: 'number' },
+    //     { name: 'is_default', title: 'Is Default', type: 'boolean' },
+    //     { name: 'pricing_grids', title: 'Pricing Grids', type: 'array' }
+    // ];
+
+    //  TODO: defaults for fixed and operable should be different
+    //  TODO: collection should implement something like addEmptyGrid function
+    function getDefaultGridCollection() {
+        return [
+            {
+                name: 'fixed',
+                // data: []
+                sizes: ['500x500', '1514x914', '3000x2400']
+            },
+            {
+                name: 'operable',
+                // data: []
+                sizes: ['500x500', '1514x914', '2400x1200']
+            }
+        ];
+    }
+
+    var EntryToProfileConnection = Backbone.Model.extend({
+        defaults: function () {
+            return {
+                id: 0,
+                is_default: false
+            };
+        },
+        parse: function (data) {
+            return data;
+        },
+        // toJSON: function () {
+
+        // },
+        initialize: function (attributes) {
+            // console.log( 'initialize filling type to profile connection', attributes );
+
+            // this.grid = new PricingGrid(attributes.pricing_grid);
+            // this.grids = new PricingGridCollection(attributes.pricing_grids || null, { parse: true });
+            // this.grids = new PricingGridCollection(null, { parse: true });
+
+            // this.grids = new app.PricingGridCollection(getDefaultGridCollection(), { parse: true });
+            // this.grids = new app.PricingGridCollection(null, { parse: true });
+
+            //  TODO: not very elegant, should be improved
+            var parent_entry = this.collection && this.collection.options && this.collection.options.entry;
+            var parent_dictionary = parent_entry && parent_entry.collection &&
+                parent_entry.collection.options && parent_entry.collection.options.dictionary;
+
+            // console.log( 'this.collection', this.collection );
+
+            // console.log( 'parent_entry', parent_entry );
+            // console.log( 'parent_dictionary', parent_dictionary );
+
+            //  TODO: get rid of this demo functionality
+            if ( parent_dictionary && parent_dictionary.get('pricing_scheme') === 'PRICING_GRIDS' ) {
+                this.grids = new app.PricingGridCollection([
+                    {
+                        name: 'fixed',
+                        data: [
+                            { height: 500, width: 500, value: 15 },
+                            { height: 914, width: 1514, value: 14 },
+                            { height: 2400, width: 3000, value: 11 }
+                        ]
+                    },
+                    {
+                        name: 'operable',
+                        data: [
+                            { height: 500, width: 500, value: 13 },
+                            { height: 914, width: 1514, value: 12 },
+                            { height: 1200, width: 2400, value: 10 }
+                        ]
+                    }
+                ], { parse: true });
+            }
+
+            // this.listenTo(this.grids, 'change', function () {
+            //     console.log( 'wow, our grids did change' );
+            //     console.log( 'we are going to save grids as', this.grids.toJSON() );
+            // });
+        }
+    });
+
+    var EntryProfiles = Backbone.Collection.extend({
+        model: EntryToProfileConnection,
+        comparator: function (item) {
+            // return item.id;
+            var corresponding_profile = app.settings && app.settings.profiles.get(item.id);
+
+            return corresponding_profile ? corresponding_profile.get('position') : false;
+        },
+        initialize: function (models, options) {
+            this.options = options || {};
+            // console.log( 'initialize FillingTypeProfiles collection with data', models );
+        }
+    });
+
+
+    //  --------------------------------------------------------------------
+    //  Entry Model
+    //  --------------------------------------------------------------------
+
     var UNSET_VALUE = '--';
 
     //  TODO: we better have original_cost and original_currency here, similar
@@ -61,7 +169,8 @@ var app = app || {};
             return default_value;
         },
         sync: function (method, model, options) {
-            var properties_to_omit = ['id'];
+            // var properties_to_omit = ['id'];
+            var properties_to_omit = ['id', 'price'];
 
             if ( method === 'create' || method === 'update' ) {
                 options.attrs = { entry: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
@@ -207,8 +316,16 @@ var app = app || {};
 
             return is_default;
         },
+        // getPricingScheme: function () {
+        //     return
+        // },
         initialize: function (attributes, options) {
             this.options = options || {};
+
+            this.profiles = new EntryProfiles(this.get('profiles'), {
+                entry: this,
+                parse: true
+            });
         }
     });
 })();

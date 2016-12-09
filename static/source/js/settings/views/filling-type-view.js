@@ -70,6 +70,10 @@ var app = app || {};
             _.each(this.attribute_views, function (child_view) {
                 child_view.view_instance.destroy();
             }, this);
+
+            if ( this.profile_connections_table_view ) {
+                this.profile_connections_table_view.destroy();
+            }
         },
         templateContext: function () {
             var profiles = this.getProfilesNamesList();

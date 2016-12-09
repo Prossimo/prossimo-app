@@ -399,6 +399,10 @@
     }
 }
 
+.dictionary-pricing-scheme {
+    &:extend(.dictionary-restrictions all);
+}
+
 .dictionary-actions {
     position: absolute;
     top: 3.5rem;
@@ -459,9 +463,9 @@
     vertical-align: middle;
 }
 
-.options-dictionary-entries-table table button {
-    float: right;
-}
+// .options-dictionary-entries-table table button {
+//     float: right;
+// }
 
 .options-dictionary-entries-table thead tr {
     border-top: 1px solid darken(@white, 30%);
@@ -482,13 +486,13 @@
     vertical-align: middle;
 }
 
-.options-dictionary-entries-table th.entry-name {
-    width: 50%;
+.options-dictionary-entries-table th.entry-name,
+.options-dictionary-entries-table td.entry-name {
+    width: 35%;
 }
 
 .options-dictionary-entries-table td.entry-name {
     padding: 0;
-    width: 50%;
 }
 
 .options-dictionary-entries-table th.entry-profiles,
@@ -505,21 +509,31 @@
     float: right;
 }
 
+.options-dictionary-entries-table button.expand-entry {
+    float: right;
+    opacity: 1;
+}
+
 .options-dictionary-entries-table .entry-profiles p {
     .text-overflow();
     max-width: 75%;
 }
 
-.options-dictionary-entries-table th.entry-clone,
-.options-dictionary-entries-table td.entry-clone {
-    width: 5%;
+.options-dictionary-entries-table th.entry-actions,
+.options-dictionary-entries-table td.entry-actions {
+    width: 25%;
     opacity: 0;
 }
 
-.options-dictionary-entries-table th.entry-remove,
-.options-dictionary-entries-table td.entry-remove {
+// .options-dictionary-entries-table th.entry-remove,
+// .options-dictionary-entries-table td.entry-remove {
+//     width: 5%;
+//     opacity: 0;
+// }
+
+.options-dictionary-entries-table th.entry-drag,
+.options-dictionary-entries-table td.entry-drag {
     width: 5%;
-    opacity: 0;
 }
 
 .options-dictionary-entries-table td.entry-drag {
@@ -532,7 +546,6 @@
     cursor: move;
     cursor: -webkit-grabbing;
     font-size: 1.1em;
-    width: 5%;
 }
 
 .options-dictionary-entries-table tr:hover {
@@ -541,19 +554,21 @@
         opacity: 1;
     }
 
-    td.entry-clone,
-    td.entry-remove,
+    td.entry-actions,
     td.entry-profiles button {
         opacity: 1;
     }
 }
 
 //  Don't show some buttons for new entries
-.options-dictionary-entries-table tr.is-new {
+//  TODO: this doesn't work very well
+.options-dictionary-entries-table .is-new {
     &:hover {
-        td.entry-clone,
+        // td.entry-clone,
+        td.entry-actions button.clone-entry,
         td.entry-profiles button {
-            opacity: 0;
+            // opacity: 0;
+            display: none;
         }
     }
 }
@@ -562,12 +577,22 @@
     opacity: 0.3;
 }
 
+.options-dictionary-entries-item .profile-availability {
+    display: none;
+    padding-left: 4rem;
+    border-left: 1px solid #ccc;
+
+    &.is-shown {
+        display: block;
+    }
+}
+
 .options-dictionary-entries-table .input-container .value,
 .options-dictionary-entries-table .input-container input {
     border-color: transparent;
 }
 
-.options-dictionary-entries-table table + p {
+.options-dictionary-entries-table .entries-container + p {
     margin-top: 3rem;
     margin-left: 6%;
     color: lighten(@black, 45%);

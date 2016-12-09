@@ -10,6 +10,7 @@ var app = app || {};
         ui: {
             $name_container: '.dictionary-name',
             $rules_and_restrictions_container: '.dictionary-restrictions',
+            $pricing_scheme_container: '.dictionary-pricing-scheme',
             $entries_container: '.entry-table-container',
             $remove: '.js-remove-dictionary'
         },
@@ -18,29 +19,6 @@ var app = app || {};
         },
         onRemove: function () {
             this.model.destroy();
-        },
-        initialize: function () {
-            this.should_make_everything_editable = this.shouldMakeEverythingEditable();
-
-            this.name_input_view = new app.BaseInputView({
-                model: this.model,
-                param: 'name',
-                input_type: 'text',
-                placeholder: 'New Dictionary'
-            });
-
-            this.rules_and_restrictions_view = new app.BaseSelectView({
-                model: this.model,
-                param: 'rules_and_restrictions',
-                values: this.model.getPossibleRulesAndRestrictions(),
-                multiple: true
-            });
-
-            this.entries_table_view = new app.OptionsDictionaryEntriesTableView({
-                collection: this.model.entries
-            });
-
-            this.listenTo(this.model, 'change:name', this.onChangeName);
         },
         onChangeName: function () {
             if ( this.should_make_everything_editable !== this.shouldMakeEverythingEditable() ) {
@@ -65,6 +43,7 @@ var app = app || {};
         onRender: function () {
             this.ui.$name_container.append(this.name_input_view.render().el);
             this.ui.$rules_and_restrictions_container.append(this.rules_and_restrictions_view.render().el);
+            this.ui.$pricing_scheme_container.append(this.pricing_scheme_view.render().el);
 
             this.renderElements();
         },
@@ -77,9 +56,43 @@ var app = app || {};
                 this.rules_and_restrictions_view.destroy();
             }
 
+            if ( this.pricing_scheme_view ) {
+                this.pricing_scheme_view.destroy();
+            }
+
             if ( this.entries_table_view ) {
                 this.entries_table_view.destroy();
             }
+        },
+        initialize: function () {
+            this.should_make_everything_editable = this.shouldMakeEverythingEditable();
+
+            this.name_input_view = new app.BaseInputView({
+                model: this.model,
+                param: 'name',
+                input_type: 'text',
+                placeholder: 'New Dictionary'
+            });
+
+            this.rules_and_restrictions_view = new app.BaseSelectView({
+                model: this.model,
+                param: 'rules_and_restrictions',
+                values: this.model.getPossibleRulesAndRestrictions(),
+                multiple: true
+            });
+
+            this.pricing_scheme_view = new app.BaseSelectView({
+                model: this.model,
+                param: 'pricing_scheme',
+                values: this.model.getPossiblePricingSchemes(),
+                multiple: false
+            });
+
+            this.entries_table_view = new app.OptionsDictionaryEntriesTableView({
+                collection: this.model.entries
+            });
+
+            this.listenTo(this.model, 'change:name', this.onChangeName);
         }
     });
 })();

@@ -4,7 +4,8 @@ var app = app || {};
     'use strict';
 
     app.OptionsDictionaryEntriesItemView = Marionette.View.extend({
-        tagName: 'tr',
+        // tagName: 'tr',
+        tagName: 'div',
         className: 'options-dictionary-entries-item',
         template: app.templates['settings/options-dictionary-entries-item-view'],
         ui: {
@@ -12,12 +13,15 @@ var app = app || {};
             $profiles_list_container: '.entry-profiles p',
             $edit_profiles: '.js-edit-entry-profiles',
             $clone: '.js-clone-entry',
-            $remove: '.js-remove-entry'
+            $remove: '.js-remove-entry',
+            $expand: '.js-expand-entry',
+            $expand_container: '.profile-availability'
         },
         events: {
             'click @ui.$edit_profiles': 'editProfiles',
             'click @ui.$clone': 'cloneEntry',
-            'click @ui.$remove': 'removeEntry'
+            'click @ui.$remove': 'removeEntry',
+            'click @ui.$expand': 'expandEntry'
         },
         editProfiles: function () {
             app.dialogs.showDialog('items-profiles-table', {
@@ -50,10 +54,16 @@ var app = app || {};
         cloneEntry: function () {
             this.model.duplicate();
         },
+        expandEntry: function () {
+            this.is_expanded = !this.is_expanded;
+
+            this.ui.$expand_container.toggleClass('is-shown', this.is_expanded);
+        },
         templateContext: function () {
             var profiles = this.getProfilesNamesList();
 
             return {
+                is_expanded: this.is_expanded,
                 name: this.model.get('name'),
                 profiles: profiles,
                 profiles_string: profiles.length ? profiles.join(', ') : '--'
@@ -87,21 +97,32 @@ var app = app || {};
             } else {
                 this.$el.removeClass('is-new');
             }
+
+            this.ui.$expand_container.append(this.profile_connections_table_view.render().el);
         },
         onBeforeDestroy: function () {
             if ( this.name_input_view ) {
                 this.name_input_view.destroy();
             }
 
+            if ( this.profile_connections_table_view ) {
+                this.profile_connections_table_view.destroy();
+            }
+
             this.ui.$profiles_list_container.off();
             this.ui.$profiles_list_container.tooltip('destroy');
         },
         initialize: function () {
+            this.is_expanded = false;
             this.name_input_view = new app.BaseInputView({
                 model: this.model,
                 param: 'name',
                 input_type: 'text',
                 placeholder: 'New Entry'
+            });
+
+            this.profile_connections_table_view = new app.ProfileConnectionsTableView({
+                collection: this.model.profiles
             });
 
             this.listenTo(this.model, 'change:profiles change:name', function () {

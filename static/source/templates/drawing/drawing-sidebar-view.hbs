@@ -187,6 +187,10 @@
                     <td class="title">Added Cost for Fillings</td>
                     <td class="value">{{ active_unit_estimated_cost.fillings_cost }}</td>
                 </tr>
+                <tr>
+                    <td class="title">Added Cost for Options</td>
+                    <td class="value">{{ active_unit_estimated_cost.options_cost }}</td>
+                </tr>
                 <tr class="total">
                     <td class="title">Total for Unit</td>
                     <td class="value">{{ active_unit_estimated_cost.total_cost }}</td>
@@ -253,6 +257,32 @@
                     <td class="title">Added Cost</td>
                     <td class="value">{{{ filling_cost }}}</td>
                 </tr>
+                {{#if options }}
+                <tr>
+                    <th colspan="2">Added Cost for Options</th>
+                </tr>
+                {{#each options }}
+                    <tr>
+                        <th colspan="2"><em>{{ index }}</em></th>
+                    </tr>
+                    <tr>
+                        <td class="title">Dictionary Name</td>
+                        <td class="value">{{{ dictionary_name }}}</td>
+                    </tr>
+                    <tr>
+                        <td class="title">Option Name</td>
+                        <td class="value">{{{ option_name }}}</td>
+                    </tr>
+                    <tr>
+                        <td class="title">Price Increase</td>
+                        <td class="value">{{{ price_increase }}}</td>
+                    </tr>
+                    <tr>
+                        <td class="title">Added Cost</td>
+                        <td class="value">{{{ cost }}}</td>
+                    </tr>
+                {{/each}}
+                {{/if}}
                 <tr class="total">
                     <td class="title">Total Cost for Section</td>
                     <td class="value">{{{ total_cost }}}</td>

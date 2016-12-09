@@ -429,6 +429,7 @@ var app = app || {};
                 result.profile_name = active_unit_profile ? active_unit_profile.get('name') : UNSET_VALUE;
                 result.base_cost = f.fixed(unit_cost.base);
                 result.fillings_cost = f.fixed(unit_cost.fillings);
+                result.options_cost = f.fixed(unit_cost.options);
                 result.total_cost = f.fixed(unit_cost.total);
                 result.original_currency = this.options.parent_view.active_unit.get('original_currency');
                 result.conversion_rate = f.fixed(this.options.parent_view.active_unit.get('conversion_rate'), 3);
@@ -451,9 +452,21 @@ var app = app || {};
                     section_item.price_per_square_meter = f.fixed(source_item.price_per_square_meter);
                     section_item.base_cost = f.fixed(source_item.base_cost);
 
+                    //  Add cost for Filling
                     section_item.filling_name = source_item.filling_name;
                     section_item.filling_price_increase = f.percent(source_item.filling_price_increase);
                     section_item.filling_cost = f.fixed(source_item.filling_cost);
+
+                    //  Add cost for Options
+                    section_item.options = _.map(source_item.options, function (item, item_index) {
+                        return {
+                            index: 'Option #' + (item_index + 1),
+                            dictionary_name: item.dictionary_name,
+                            option_name: item.option_name,
+                            price_increase: f.percent(item.price_increase),
+                            cost: f.fixed(item.cost)
+                        };
+                    }, this);
 
                     section_item.total_cost = f.fixed(source_item.total_cost);
 

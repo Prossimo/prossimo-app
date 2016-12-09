@@ -60,7 +60,9 @@ var app = app || {};
             };
         },
         onRender: function () {
-            this.ui.$grid_container.append(this.pricing_grid_view.render().el);
+            if ( this.pricing_grid_view ) {
+                this.ui.$grid_container.append(this.pricing_grid_view.render().el);
+            }
         },
         onBeforeDestroy: function () {
             if ( this.pricing_grid_view ) {
@@ -72,10 +74,12 @@ var app = app || {};
 
             // console.log( 'this.model', this.model );
 
-            this.pricing_grid_view = new app.PerProfilePricingGridsEditorView({
-                grids: this.model.grids,
-                parent_view: this
-            });
+            if ( this.model.grids ) {
+                this.pricing_grid_view = new app.PerProfilePricingGridsEditorView({
+                    grids: this.model.grids,
+                    parent_view: this
+                });
+            }
         }
     });
 })();
