@@ -115,6 +115,8 @@ var app = app || {};
 
     //  TODO: we better have original_cost and original_currency here, similar
     //  to units / accessories, instead of price
+    //  TODO: maybe we don't want to have price here and instead want it in
+    //  the entry-to-profile connection model
     var ENTRY_PROPERTIES = [
         { name: 'name', title: 'Name', type: 'string' },
         //  TODO: price should be a number on the backend as well
@@ -169,8 +171,7 @@ var app = app || {};
             return default_value;
         },
         sync: function (method, model, options) {
-            // var properties_to_omit = ['id'];
-            var properties_to_omit = ['id', 'price'];
+            var properties_to_omit = ['id'];
 
             if ( method === 'create' || method === 'update' ) {
                 options.attrs = { entry: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
