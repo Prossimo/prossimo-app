@@ -5,7 +5,7 @@ var app = app || {};
 
     var UNSET_VALUE = '--';
 
-    app.DrawingSidebarView = Marionette.ItemView.extend({
+    app.DrawingSidebarView = Marionette.View.extend({
         tagName: 'div',
         className: 'drawing-sidebar',
         template: app.templates['drawing/drawing-sidebar-view'],
@@ -76,7 +76,7 @@ var app = app || {};
             this.selectUnit(this.collection.get(this.ui.$select.val()));
         },
         onNextBtn: function () {
-            var collection_size = this.serializeData().unit_list.length;
+            var collection_size = this.templateContext().unit_list.length;
             var next_index;
 
             if ( collection_size > 1 && this.options.parent_view.active_unit ) {
@@ -90,7 +90,7 @@ var app = app || {};
             }
         },
         onPrevBtn: function () {
-            var collection_size = this.serializeData().unit_list.length;
+            var collection_size = this.templateContext().unit_list.length;
             var prev_index;
 
             if ( collection_size > 1 && this.options.parent_view.active_unit ) {
@@ -449,7 +449,7 @@ var app = app || {};
 
             return sections;
         },
-        serializeData: function () {
+        templateContext: function () {
             var tab_contents = {
                 active_unit_properties: this.getActiveUnitProperties(),
                 active_unit_profile_properties: this.getActiveUnitProfileProperties(),

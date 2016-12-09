@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.OptionsDictionaryEntriesItemView = Marionette.ItemView.extend({
+    app.OptionsDictionaryEntriesItemView = Marionette.View.extend({
         tagName: 'tr',
         className: 'options-dictionary-entries-item',
         template: app.templates['settings/options-dictionary-entries-item-view'],
@@ -20,8 +20,14 @@ var app = app || {};
             'click @ui.$remove': 'removeEntry'
         },
         editProfiles: function () {
-            app.dialogs.showDialog('options-profiles-table', {
-                active_entry: this.model
+            app.dialogs.showDialog('items-profiles-table', {
+                collection_title: this.model.collection.options.dictionary.get('name'),
+                active_item: this.model,
+                collection: this.model.collection,
+                profiles: app.settings.profiles,
+                filter_condition: function (item) {
+                    return item.get('name') && !item.hasOnlyDefaultAttributes();
+                }
             });
         },
         getProfilesNamesList: function () {
@@ -44,7 +50,7 @@ var app = app || {};
         cloneEntry: function () {
             this.model.duplicate();
         },
-        serializeData: function () {
+        templateContext: function () {
             var profiles = this.getProfilesNamesList();
 
             return {
@@ -54,7 +60,7 @@ var app = app || {};
             };
         },
         onRender: function () {
-            var profiles = this.serializeData().profiles;
+            var profiles = this.templateContext().profiles;
 
             this.ui.$name_container.empty().append(this.name_input_view.render().el);
 
@@ -82,7 +88,7 @@ var app = app || {};
                 this.$el.removeClass('is-new');
             }
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             if ( this.name_input_view ) {
                 this.name_input_view.destroy();
             }

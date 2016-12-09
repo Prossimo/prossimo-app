@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.MainNavigationView = Marionette.ItemView.extend({
+    app.MainNavigationView = Marionette.View.extend({
         tagName: 'div',
         template: app.templates['core/main-navigation-view'],
         ui: {
@@ -39,12 +39,12 @@ var app = app || {};
 
             if ( this.options ) {
                 _.forEach(this.options, function (item, key) {
-                    if ( _.isFunction(item.onShow) ) {
+                    if ( _.isFunction(item.onAttach) ) {
                         var self = this;
 
                         this.router_callbacks[item.path] = function () {
                             if ( app.current_project || item.path === 'settings' ) {
-                                item.onShow.call();
+                                item.onAttach.call();
                             } else {
                                 app.main_region.show(new app.NoProjectSelectedView());
                             }

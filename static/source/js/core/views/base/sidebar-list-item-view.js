@@ -3,10 +3,10 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.OptionsDictionaryListItemView = Marionette.ItemView.extend({
+    app.SidebarListItemView = Marionette.View.extend({
         tagName: 'li',
-        className: 'options-list-item',
-        template: app.templates['settings/options-dictionary-list-item-view'],
+        className: 'sidebar-list-item',
+        template: app.templates['core/base/sidebar-list-item-view'],
         events: {
             'click a': 'onItemClick'
         },
@@ -16,9 +16,9 @@ var app = app || {};
         onItemClick: function () {
             this.options.parent_view.setActiveItem(this.model);
         },
-        serializeData: function () {
+        templateContext: function () {
             var active_item = this.options.parent_view.getActiveItem();
-            var placeholder = this.options.placeholder || 'New Dictionary';
+            var placeholder = this.options.placeholder || 'New Item';
             var name = this.model.get('name') || '';
 
             return {

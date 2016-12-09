@@ -13,30 +13,67 @@
 
 
 //  ------------------------------------------------------------------------
+//  Project Total Prices
+//  ------------------------------------------------------------------------
+
+.project-total-prices .percent {
+    padding-left: 0.5em;
+    color: lighten(@black, 40%);
+}
+
+
+//  ------------------------------------------------------------------------
 //  List of Project Documents
 //  ------------------------------------------------------------------------
 
-.document-list ul {
+.document-list table {
     padding: 1.5rem 0.5rem;
-    list-style-type: none;
+    width: 100%;
+}
+
+.document-list thead th {
+    padding-bottom: 1rem;
+}
+
+.document-list tbody .meta td {
+    padding-top: 1rem;
+    padding-bottom: 0.8rem;
+    border-top: 1px solid #eee;
+    vertical-align: top;
+}
+
+.document-list tbody .links td {
+    padding-bottom: 0.8rem;
+}
+
+.document-list th.size,
+.document-list td.size {
+    text-align: right;
+}
+
+.document-list td.size {
+    color: #666;
+    white-space: nowrap;
+}
+
+.document-list a {
+    display: inline-block;
+    font-size: 0.85em;
+    text-decoration: none;
+}
+
+.document-list a:not(:last-child) {
+    margin-right: 1em;
+}
+
+.document-list a .glyphicon {
+    position: relative;
+    top: -0.03em;
+    padding-left: 0.15rem;
+    font-size: 0.6em;
+    line-height: 0.1;
 }
 
 .document-list p {
     padding: 1.5rem 0.5rem;
-}
-
-.document-list li {
-    margin-bottom: 0.5rem;
-}
-
-.document-list a {
-    text-decoration: none;
-}
-
-.document-list .glyphicon {
-    position: relative;
-    top: -0.03em;
-    padding-left: 0.3rem;
-    font-size: 0.7em;
-    line-height: 0.1;
 }

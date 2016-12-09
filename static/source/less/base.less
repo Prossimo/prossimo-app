@@ -117,9 +117,14 @@ input.disabled {
     color: lighten(@black, 15%);
     cursor: pointer;
 
-    &:hover {
+    &:not(.disabled):hover {
         border: 1px solid darken(@white, 20%);
         background-color: darken(@white, 2%);
+    }
+
+    &.disabled {
+        cursor: default;
+        cursor: not-allowed;
     }
 }
 

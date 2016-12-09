@@ -1,29 +1,47 @@
 module.exports = function (grunt) {
     'use strict';
 
+    var API_HOST = grunt.option('api_host') || '127.0.0.1';
+    var API_PORT = grunt.option('api_port') || '8000';
+    var API_URL = API_HOST + (API_PORT ? ':' + API_PORT : '');
+    var PRINTER_HOST = grunt.option('printer_host') || '127.0.0.1';
+    var PRINTER_PORT = grunt.option('printer_port') || '8080';
+    var PRINTER_URL = PRINTER_HOST + (PRINTER_PORT ? ':' + PRINTER_PORT : '');
+
     var vendor_js_files = [
-        'jquery/dist/jquery.min.js',
-        'handlebars/handlebars.runtime.min.js',
-        'underscore/underscore-min.js',
-        'backbone/backbone-min.js',
-        'backbone.marionette/lib/backbone.marionette.min.js',
-        'handsontable/dist/handsontable.full.min.js',
+        'jquery/dist/jquery.js',
+        'handlebars/handlebars.runtime.js',
+        'underscore/underscore.js',
+        'backbone/backbone.js',
+        'backbone.radio/build/backbone.radio.js',
+        'backbone.marionette/lib/backbone.marionette.js',
+        'handsontable/dist/handsontable.full.js',
         'bootstrap/js/dropdown.js',
         'bootstrap/js/tooltip.js',
         'bootstrap/js/popover.js',
         'bootstrap/js/modal.js',
-        'bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js',
-        'bootstrap-select/dist/js/bootstrap-select.min.js',
-        'bootstrap-toggle/js/bootstrap-toggle.min.js',
-        'konva/konva.min.js',
-        'decimal.js/decimal.min.js',
+        'bootstrap-datepicker/dist/js/bootstrap-datepicker.js',
+        'bootstrap-select/dist/js/bootstrap-select.js',
+        'bootstrap-toggle/js/bootstrap-toggle.js',
+        'konva/konva.js',
+        'decimal.js/decimal.js',
         'Backbone.Undo.js/Backbone.Undo.js',
         'backbone.KonvaView/backbone.KonvaView.js',
-        'spin.js/spin.min.js',
-        'mousetrap/mousetrap.min.js',
+        'spin.js/spin.js',
+        'mousetrap/mousetrap.js',
         'backbone.marionette.keyshortcuts/backbone.marionette.keyshortcuts.js',
-        'Sortable/Sortable.min.js',
-        'Sortable/jquery.binding.js'
+        'Sortable/Sortable.js',
+        'Sortable/jquery.binding.js',
+        'blueimp-load-image/js/load-image.all.min.js',
+        'blueimp-canvas-to-blob/js/canvas-to-blob.min.js',
+        'blueimp-file-upload/js/vendor/jquery.ui.widget.js',
+        'blueimp-file-upload/js/jquery.iframe-transport.js',
+        'blueimp-file-upload/js/jquery.fileupload.js',
+        'blueimp-file-upload/js/jquery.fileupload-process.js',
+        'blueimp-file-upload/js/jquery.fileupload-image.js',
+        'blueimp-file-upload/js/jquery.fileupload-audio.js',
+        'blueimp-file-upload/js/jquery.fileupload-video.js',
+        'blueimp-file-upload/js/jquery.fileupload-validate.js'
     ];
 
     var vendor_css_files = [
@@ -68,6 +86,8 @@ module.exports = function (grunt) {
         'core/views/base/base-toggle-view.js',
         'core/views/base/base-input-view.js',
         'core/views/base/base-select-view.js',
+        'core/views/base/sidebar-list-item-view.js',
+        'core/views/base/sidebar-list-view.js',
         'core/views/main-navigation-view.js',
         'core/views/units-table-view.js',
         'core/views/units-table-total-prices-view.js',
@@ -99,11 +119,10 @@ module.exports = function (grunt) {
         'quote/views/quote-extras-table-view.js',
         'settings/views/main-settings-view.js',
         'settings/views/profiles-table-view.js',
-        'settings/views/filling-types-table-view.js',
         'settings/views/pricing-grids-table-view.js',
+        'settings/views/filling-types-view.js',
+        'settings/views/filling-type-view.js',
         'settings/views/options-view.js',
-        'settings/views/options-dictionary-list-item-view.js',
-        'settings/views/options-dictionary-list-view.js',
         'settings/views/options-dictionary-entries-item-view.js',
         'settings/views/options-dictionary-entries-table-view.js',
         'settings/views/options-dictionary-view.js',
@@ -115,7 +134,8 @@ module.exports = function (grunt) {
         'dashboard/views/main-dashboard-view.js',
         'dialogs/views/base-dialog-view.js',
         'dialogs/views/login-dialog-view.js',
-        'dialogs/views/options-profiles-table-dialog-view.js',
+        'dialogs/views/items-profiles-table-dialog-view.js',
+        'components/file-uploader-view.js',
         'dialogs/views/create-project-dialog-view.js',
         'app.js'
     ];
@@ -268,9 +288,9 @@ module.exports = function (grunt) {
                     mangle: false,
                     compress: false,
                     banner: '/*! Full list of vendor libraries: \n' +
-                        vendor_js_files.map(function (component) {
-                            return '<%= buildUrl %>/js/vendor/' + component;
-                        }).join('\n') + '*/\n'
+                    vendor_js_files.map(function (component) {
+                        return '<%= buildUrl %>/js/vendor/' + component;
+                    }).join('\n') + '*/\n'
                 },
                 files: {
                     '<%= buildUrl %>/js/vendor.dev.min.js':
@@ -284,9 +304,9 @@ module.exports = function (grunt) {
                     mangle: false,
                     compress: false,
                     banner: '/*! Full list of vendor libraries: \n' +
-                        vendor_js_files.map(function (component) {
-                            return '<%= buildUrl %>/js/vendor/' + component;
-                        }).join('\n') + '*/\n'
+                    vendor_js_files.map(function (component) {
+                        return '<%= buildUrl %>/js/vendor/' + component;
+                    }).join('\n') + '*/\n'
                 },
                 files: {
                     '<%= buildUrl %>/js/vendor.<%= hash %>.min.js':
@@ -318,8 +338,8 @@ module.exports = function (grunt) {
                             res.setHeader('Access-Control-Allow-Origin', '*');
 
                             if ( req.url === '/dashboard/' || req.url === '/drawing/' ||
-                                 req.url === '/quote/' || req.url === '/settings/' ||
-                                 req.url === '/supplier/' || req.url === '/units/'
+                                req.url === '/quote/' || req.url === '/settings/' ||
+                                req.url === '/supplier/' || req.url === '/units/'
                             ) {
                                 require('fs').createReadStream('index.html').pipe(res);
                             } else {
@@ -393,11 +413,11 @@ module.exports = function (grunt) {
                         },
                         {
                             match: 'api_base_path',
-                            replacement: 'http://127.0.0.1:8000/api'
+                            replacement: 'http://' + API_URL + '/api'
                         },
                         {
                             match: 'pdf_api_base_path',
-                            replacement: 'http://127.0.0.1:8080/print'
+                            replacement: 'http://' + PRINTER_URL + '/print'
                         },
                         {
                             match: 'favicon',

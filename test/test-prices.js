@@ -231,8 +231,14 @@ test('subtotal project prices', function () {
     equal(total_prices.tax.toFixed(2), '1073.62', 'Tax is expected to be 1073.62');
     equal(total_prices.grand_total.toFixed(2), '6152.35', 'Grand total is expected to be 6152.35');
     equal(total_prices.total_cost.toFixed(2), '5694.29', 'Total cost is expected to be 5694.29');
-    equal(total_prices.profit.toFixed(2), '458.06', 'Profit is expected to be 458.06');
-    equal(total_prices.profit_percent.toFixed(2), '7.45', 'Profit is expected to be 7.45% of Grand Total');
+    equal(total_prices.net_profit.toFixed(2), '458.06', 'Net Profit is expected to be 458.06');
+    equal(total_prices.gross_profit.toFixed(2), '1458.06', 'Gross Profit is expected to be 1458.06');
+    equal(total_prices.net_profit_percent.toFixed(2), '7.45', 'Net Profit is expected to be 7.45% of Grand Total');
+    equal(
+        total_prices.net_profit.toFixed(2),
+        (total_prices.gross_profit - current_project.extras.getHiddenPrice()).toFixed(2),
+        'Net Profit should be equal to Gross Profit - Hidden Costs'
+    );
 
     //  Individual price calculation functions should match with `total_prices`
     equal(total_prices.subtotal_units, current_project.getSubtotalUnitsPrice(), 'getSubtotalUnitsPrice result should match total_prices.subtotal_units');
@@ -253,7 +259,7 @@ test('subtotal project prices', function () {
     var hidden_cost = current_project.extras.getHiddenPrice();
     var combined_profit = subtotal_profit_units + subtotal_profit_extras - hidden_cost;
 
-    equal(total_prices.profit.toFixed(2), combined_profit.toFixed(2), 'total_prices.profit should match combined profit for units & extras');
+    equal(total_prices.net_profit.toFixed(2), combined_profit.toFixed(2), 'total_prices.net_profit should match combined profit for units & extras');
 });
 
 

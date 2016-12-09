@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.ProjectSelectorView = Marionette.ItemView.extend({
+    app.ProjectSelectorView = Marionette.View.extend({
         tagName: 'div',
         className: 'project-selector',
         template: app.templates['core/project-selector-view'],
@@ -105,7 +105,7 @@ var app = app || {};
                 app.vent.trigger('current_project_changed');
                 app.current_project.trigger('set_active');
 
-                self.stopListening();
+                self.stopListening(app.current_project);
 
                 if ( app.current_project._wasLoaded ) {
                     app.vent.trigger('project_selector:fetch_current:stop');
@@ -139,7 +139,7 @@ var app = app || {};
                 size: 10
             });
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 no_backend: app.session.get('no_backend'),
                 project_list: this.collection.map(function (item) {

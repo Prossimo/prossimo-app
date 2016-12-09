@@ -15,6 +15,7 @@ var app = app || {};
         { name: 'quote_revision', title: 'Quote Revision', type: 'number' },
         { name: 'shipping_notes', title: 'Shipping Notes', type: 'string'},
         { name: 'project_notes', title: 'Project Notes', type: 'string'},
+        { name: 'lead_time', title: 'Lead Time', type: 'number' },
         { name: 'settings', title: 'Settings', type: 'object' }
     ];
 
@@ -50,16 +51,36 @@ var app = app || {};
 
             return default_value;
         },
-        save: function () {
-            return Backbone.Model.prototype.saveAndGetId.apply(this, arguments);
-        },
         sync: function (method, model, options) {
             var properties_to_omit = ['id'];
 
             if ( method === 'update' || method === 'create' ) {
-                options.attrs = { project: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
+                var extended_props = {
                     settings: JSON.stringify(model.settings.toJSON())
-                }) };
+                };
+
+                //  The logic here:
+                //  - When we want to link specific files to the project, we
+                //    include `files` array containing UUIDs for files we want
+                //    to link. This is especially useful on project creation
+                //  - When we want to unlink some file from project, we remove
+                //    UUID for this file from `files` array and send it
+                //  - So, if we want to unlink all files from project, we
+                //    include empty `files` array in our request
+                //  - However, in most cases when we intend to just update some
+                //    properties of our project, we don't have to include
+                //    `files` array in our request at all, and this guarantees
+                //    that there won't be any changes with linked files
+                if ( method === 'create' ) {
+                    extended_props.files = model.getUuidsForFiles();
+                }
+
+                options.attrs = {
+                    project: _.extendOwn(
+                        _.omit(model.toJSON(), properties_to_omit),
+                        extended_props
+                    )
+                };
             }
 
             //  If we're fetching a specific project from the server, we want
@@ -86,15 +107,8 @@ var app = app || {};
             var project_data = data && data.project ? data.project : data;
             var filtered_data = app.schema.parseAccordingToSchema(project_data, this.schema);
 
-            //  This is different from other dependencies because we don't use
-            //  schema for project-file currently. This is also the reason we
-            //  don't use { parse: true } for files in setDependencies() here
             if ( project_data && project_data.files ) {
-                filtered_data.files = _.map(project_data.files, function (file) {
-                    return _.pick(file, function (value) {
-                        return !_.isNull(value);
-                    });
-                });
+                filtered_data.files = project_data.files;
             }
 
             if ( project_data && project_data.accessories ) {
@@ -110,6 +124,9 @@ var app = app || {};
             }
 
             return filtered_data;
+        },
+        getUuidsForFiles: function () {
+            return this.get('files') || (this.files && this.files.getUuids());
         },
         initialize: function (attributes, options) {
             this.options = options || {};
@@ -261,6 +278,12 @@ var app = app || {};
 
             return grand_total;
         },
+        getSubtotalCost: function () {
+            var subtotal_units_cost = this.units.getSubtotalCostDiscounted();
+            var extras_cost = this.extras.getRegularItemsCost();
+
+            return subtotal_units_cost + extras_cost;
+        },
         getTotalCost: function () {
             var subtotal_units_cost = this.units.getSubtotalCostDiscounted();
             var extras_cost = this.extras.getRegularItemsCost();
@@ -271,7 +294,10 @@ var app = app || {};
             return subtotal_units_cost + extras_cost + shipping + hidden + tax;
         },
         getProfit: function () {
-            return this.getGrandTotal() - this.getTotalCost();
+            return {
+                gross_profit: this.getSubtotalPrice() - this.getSubtotalCost(),
+                net_profit: this.getGrandTotal() - this.getTotalCost()
+            };
         },
         getTotalPrices: function () {
             var subtotal_units_price = this.getSubtotalUnitsPrice();
@@ -287,7 +313,7 @@ var app = app || {};
 
             var total_cost = this.getTotalCost();
             var profit = this.getProfit();
-            var profit_percent = grand_total ? profit / grand_total * 100 : 0;
+            var net_profit_percent = grand_total ? profit.net_profit / grand_total * 100 : 0;
 
             //  TODO: this value should be customizable, not just 50% always,
             //  when it'll be customizable, it should also be tested. Maybe it
@@ -306,8 +332,9 @@ var app = app || {};
                 shipping: shipping_price,
                 grand_total: grand_total,
                 total_cost: total_cost,
-                profit: profit,
-                profit_percent: profit_percent,
+                gross_profit: profit.gross_profit,
+                net_profit: profit.net_profit,
+                net_profit_percent: net_profit_percent,
                 deposit_percent: deposit_percent,
                 deposit_on_contract: deposit_on_contract,
                 balance_due_at_delivery: balance_due_at_delivery

@@ -3,19 +3,6 @@ var app = app || {};
 $(function () {
     'use strict';
 
-    // Fix bug with empty json response
-    $.ajaxSetup({
-        dataFilter: function (rawData, type) {
-            if (rawData) {
-                return rawData;
-            }
-
-            if (type === 'json') {
-                return null;
-            }
-        }
-    });
-
     app.App = new Marionette.Application();
 
     app.App.on('start', function () {
@@ -39,7 +26,7 @@ $(function () {
                 title: 'Dashboard',
                 path: 'dashboard',
                 icon_name: 'dashboard',
-                onShow: function () {
+                onAttach: function () {
                     app.main_region.show(new app.MainDashboardView());
                 }
             },
@@ -47,7 +34,7 @@ $(function () {
                 title: 'Units',
                 path: 'units',
                 icon_name: 'th',
-                onShow: function () {
+                onAttach: function () {
                     app.main_region.show(new app.MainUnitsTableView());
                 }
             },
@@ -55,7 +42,7 @@ $(function () {
                 title: 'Drawing',
                 path: 'drawing',
                 icon_name: 'pencil',
-                onShow: function () {
+                onAttach: function () {
                     app.main_region.show(new app.MainDrawingView());
                 }
             },
@@ -63,7 +50,7 @@ $(function () {
                 title: 'Quote',
                 path: 'quote',
                 icon_name: 'shopping-cart',
-                onShow: function () {
+                onAttach: function () {
                     app.main_region.show(new app.MainQuoteView());
                 }
             },
@@ -71,7 +58,7 @@ $(function () {
                 title: 'Supplier',
                 path: 'supplier',
                 icon_name: 'send',
-                onShow: function () {
+                onAttach: function () {
                     app.main_region.show(new app.MainSupplierRequestView());
                 }
             },
@@ -79,7 +66,7 @@ $(function () {
                 title: 'Settings',
                 path: 'settings',
                 icon_name: 'wrench',
-                onShow: function () {
+                onAttach: function () {
                     app.main_region.show(new app.MainSettingsView());
                 }
             }

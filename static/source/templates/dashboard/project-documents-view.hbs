@@ -4,11 +4,34 @@
     </div>
     <div class="panel-body">
         {{#if has_documents }}
-            <ul>
+            <table>
+            <thead>
+                <tr>
+                    <th>Filename</th>
+                    <th class="size">Size</th>
+                </tr>
+            </thead>
+            <tbody>
                 {{#each document_list}}
-                    <li><a class="type-{{ type }}" href="{{ url }}" target="_blank">{{ name }} <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span></a></li>
+                    <tr class="meta">
+                        <td>{{ name }}</td>
+                        <td class="size">{{ size }}</td>
+                    </tr>
+                    <tr class="links">
+                        <td colspan="2">
+                            <a href="{{ url }}" target="_blank">
+                                <span>Open in browser</span>
+                                <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
+                            </a>
+                            <a href="{{ gdocs_url }}" target="_blank">
+                                <span>Open in GDocs</span>
+                                <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
+                            </a>
+                        </td>
+                    </tr>
                 {{/each}}
-            </ul>
+            </tbody>
+            </table>
         {{else}}
             <h3>No Files</h3>
             <p>This project doesn't appear to have any attached files.</p>

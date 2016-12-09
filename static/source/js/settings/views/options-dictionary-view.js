@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.OptionsDictionaryView = Marionette.ItemView.extend({
+    app.OptionsDictionaryView = Marionette.View.extend({
         tagName: 'div',
         className: 'options-dictionary',
         template: app.templates['settings/options-dictionary-view'],
@@ -68,7 +68,7 @@ var app = app || {};
 
             this.renderElements();
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             if ( this.name_input_view ) {
                 this.name_input_view.destroy();
             }

@@ -5,7 +5,7 @@ var app = app || {};
 
     var UNSET_VALUE = '--';
 
-    app.UnitsTableView = Marionette.ItemView.extend({
+    app.UnitsTableView = Marionette.View.extend({
         tagName: 'div',
         className: 'units-table-container',
         template: app.templates['core/units-table-view'],
@@ -217,7 +217,7 @@ var app = app || {};
                 this.addNewAccessory(e);
             }
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 tabs: _.each(this.tabs, function (item, key) {
                     item.is_active = key === this.active_tab;
@@ -643,10 +643,6 @@ var app = app || {};
                     readOnly: true,
                     renderer: app.hot_renderers.moveItemRenderer
                 },
-                glazing: {
-                    type: 'dropdown',
-                    source: app.settings.getAvailableFillingTypeNames()
-                },
                 glazing_bar_width: {
                     type: 'dropdown',
                     source: app.settings.getGlazingBarWidths().map(function (item) {
@@ -713,6 +709,9 @@ var app = app || {};
                 var cell_properties = {};
                 var item = this.instance.getSourceData().at(row);
                 var property = self.getActiveTab().columns[col];
+                var profile_id;
+                var options;
+                var message;
 
                 if ( item && item instanceof app.Unit ) {
                     if ( item.isOperableOnlyAttribute(property) && !item.hasOperableSections() ) {
@@ -721,17 +720,42 @@ var app = app || {};
                     } else if ( item.isGlazingBarProperty(property) && !item.hasGlazingBars() ) {
                         cell_properties.readOnly = true;
                         cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer('(Has no Bars)');
+                    } else if ( property === 'glazing' ) {
+                        profile_id = item.profile && item.profile.id;
+                        options = [];
+                        message = UNSET_VALUE;
+
+                        if ( profile_id ) {
+                            options = app.settings.filling_types.getAvailableForProfile(profile_id);
+                        }
+
+                        if ( options.length ) {
+                            cell_properties.type = 'dropdown';
+                            cell_properties.filter = false;
+                            cell_properties.strict = true;
+
+                            cell_properties.source = _.map(options, function (option) {
+                                return option.get('name');
+                            });
+                        //  When we have no options, disable editing
+                        } else {
+                            message = profile_id ? '(No Variants)' : '(No Profile)';
+
+                            cell_properties.readOnly = true;
+                            cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer(message);
+                        }
                     } else if (
                         self.active_tab === 'unit_options' &&
                         _.contains(self.getActiveTab().unit_options_columns, property)
                     ) {
-                        var profile_id = item.profile && item.profile.id;
                         var dictionary_id = app.settings.getDictionaryIdByName(property);
-                        var options = [];
                         var rules_and_restrictions = [];
                         var is_restricted = false;
                         var is_optional = false;
-                        var message = UNSET_VALUE;
+
+                        profile_id = item.profile && item.profile.id;
+                        options = [];
+                        message = UNSET_VALUE;
 
                         if ( profile_id && dictionary_id ) {
                             options = app.settings.getAvailableOptions(dictionary_id, profile_id, true);
@@ -871,7 +895,7 @@ var app = app || {};
             if ( this.hot ) {
                 clearTimeout(this.table_update_timeout);
                 this.table_update_timeout = setTimeout(function () {
-                    if ( !self.isDestroyed ) {
+                    if ( !self.isDestroyed() ) {
                         self.hot.loadData(self.getActiveTab().collection);
                     }
                 }, 20);
@@ -1102,7 +1126,7 @@ var app = app || {};
                 });
             }
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             clearInterval(this.dropdown_scroll_timer);
             this.$el.off('show.bs.popover');
             this.$el.popover('destroy');

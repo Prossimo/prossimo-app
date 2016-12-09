@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.QuoteItemView = Marionette.ItemView.extend({
+    app.QuoteItemView = Marionette.View.extend({
         tagName: 'div',
         className: 'quote-item',
         template: app.templates['quote/quote-item-view'],
@@ -77,7 +77,7 @@ var app = app || {};
 
                 //  Show supplier name for filling if it exists
                 if ( options.show_supplier_filling_name && app.settings && source.filling && source.filling.name ) {
-                    var filling_type = app.settings.getFillingTypeByName(source.filling.name);
+                    var filling_type = app.settings.filling_types.getFillingTypeByName(source.filling.name);
 
                     if ( filling_type && filling_type.get('supplier_name') ) {
                         result.filling_name = filling_type.get('supplier_name');
@@ -346,7 +346,7 @@ var app = app || {};
 
             return show_drawings;
         },
-        serializeData: function () {
+        templateContext: function () {
             var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
             var show_customer_image = this.shouldShowCustomerImage();
             var show_drawings = this.shouldShowDrawings();

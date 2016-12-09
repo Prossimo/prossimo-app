@@ -5,7 +5,7 @@ var app = app || {};
 
     //  See `core/views/units-table-view.js` for reference, it's similar
     //  and better commented, this file borrows a lot from there
-    app.PricingGridsTableView = Marionette.ItemView.extend({
+    app.PricingGridsTableView = Marionette.View.extend({
         tagName: 'div',
         className: 'pricing-grids-table',
         template: app.templates['settings/pricing-grids-table-view'],
@@ -37,7 +37,7 @@ var app = app || {};
             this.listenTo(this.collection, 'all', this.updateTable);
             this.listenTo(this.options.parent_view, 'attach', this.updateTable);
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 profile_list: this.collection.map(function (item) {
                     return {
@@ -243,7 +243,7 @@ var app = app || {};
                     'Please select a profile from the list at the top</p>');
             }
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             if ( this.hot ) {
                 this.hot.destroy();
             }

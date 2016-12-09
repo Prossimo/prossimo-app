@@ -8,6 +8,7 @@ var app = app || {};
         template: app.templates['dialogs/create-project-dialog-view'],
         ui: {
             $form: '.modal-body form',
+            $filesRegion: '.form-control-files',
             $data_project_name: '.modal-body form input[name="project_name"]',
             $data_client_name: '.modal-body form input[name="client_name"]',
             $data_company: '.modal-body form input[name="company"]',
@@ -18,17 +19,14 @@ var app = app || {};
             $data_quote_revision: '.modal-body form input[name="quote_revision"]',
             $data_quote_date: '.modal-body form input[name="quote_date"]',
             $data_project_notes: '.modal-body form textarea[name="project_notes"]',
-            $data_shipping_notes: '.modal-body form textarea[name="shipping_notes"]'
+            $data_shipping_notes: '.modal-body form textarea[name="shipping_notes"]',
+            $data_lead_time: '.modal-body form input[name="lead_time"]'
         },
         events: {
             'submit form': 'addNewProject'
         },
         addNewProject: function (e) {
-            e.preventDefault();
-
-            var newProject = new app.Project();
-
-            newProject.set({
+            var newProject = new app.Project({
                 project_name: this.ui.$data_project_name.val().trim(),
                 client_name: this.ui.$data_client_name.val().trim(),
                 client_company_name: this.ui.$data_company.val().trim(),
@@ -39,28 +37,41 @@ var app = app || {};
                 quote_revision: this.ui.$data_quote_revision.val().trim(),
                 quote_date: this.ui.$data_quote_date.val().trim(),
                 project_notes: this.ui.$data_project_notes.val().trim(),
-                shipping_notes: this.ui.$data_shipping_notes.val().trim()
-
+                shipping_notes: this.ui.$data_shipping_notes.val().trim(),
+                lead_time: this.ui.$data_lead_time.val().trim(),
+                files: this.file_uploader.getUuidForAllFiles()
             });
 
+            e.preventDefault();
             this.$el.modal('hide');
-
-            newProject.on('sync', function () {
-                app.top_bar_view.project_selector_view.fetchProjectList();
-            });
-
-            app.projects.create(newProject, {wait: true});
+            app.projects.create(newProject);
         },
         onRender: function () {
             if (!this.$el.find('.modal-header').find('h4').length) {
                 this.$el.find('.modal-header').append('<h4></h4>');
             }
 
+            if ( this.file_uploader ) {
+                this.file_uploader.destroy();
+            }
+
+            this.file_uploader = new app.FileUploaderView({
+                maxLength: 10
+            });
+
+            this.file_uploader.render()
+                .$el.appendTo( this.ui.$filesRegion );
+
             this.$el.find('.modal-header').find('h4').text('Create project');
 
             this.ui.$form.find('.date').datepicker({
                 format: 'd MM, yyyy'
             });
+        },
+        onBeforeDestroy: function () {
+            if ( this.file_uploader ) {
+                this.file_uploader.destroy();
+            }
         }
     });
 })();

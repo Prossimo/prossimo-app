@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.MainSettingsView = Marionette.ItemView.extend({
+    app.MainSettingsView = Marionette.View.extend({
         tagName: 'div',
         className: 'screen settings-screen',
         template: app.templates['settings/main-settings-view'],
@@ -21,11 +21,11 @@ var app = app || {};
                 profiles: {
                     title: 'Profiles'
                 },
-                filling_types: {
-                    title: 'Filling Types'
-                },
                 pricing_grids: {
                     title: 'Pricing Grids'
+                },
+                filling_types: {
+                    title: 'Filling Types'
                 },
                 options: {
                     title: 'Options'
@@ -61,14 +61,14 @@ var app = app || {};
             }
 
             if ( this.active_tab === 'filling_types' ) {
-                this.filling_types_table_view = new app.FillingTypesTableView({
+                this.filling_types_view = new app.FillingTypesView({
                     collection: app.settings.filling_types,
                     parent_view: this
                 });
 
-                this.ui.$filling_types_container.append(this.filling_types_table_view.render().el);
+                this.ui.$filling_types_container.append(this.filling_types_view.render().el);
             } else if ( this.filling_types_table_view ) {
-                this.filling_types_table_view.destroy();
+                this.filling_types_view.destroy();
             }
 
             if ( this.active_tab === 'pricing_grids' ) {
@@ -93,7 +93,7 @@ var app = app || {};
                 this.options_view.destroy();
             }
         },
-        serializeData: function () {
+        templateContext: function () {
             return {
                 tabs: _.each(this.tabs, function (item, key) {
                     item.is_active = key === this.active_tab;
@@ -101,13 +101,13 @@ var app = app || {};
                 }, this)
             };
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             if ( this.profiles_table_view ) {
                 this.profiles_table_view.destroy();
             }
 
-            if ( this.filling_types_table_view ) {
-                this.filling_types_table_view.destroy();
+            if ( this.filling_types_view ) {
+                this.filling_types_view.destroy();
             }
 
             if ( this.pricing_grids_table_view ) {

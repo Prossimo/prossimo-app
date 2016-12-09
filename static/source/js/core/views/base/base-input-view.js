@@ -11,7 +11,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.BaseInputView = Marionette.ItemView.extend({
+    app.BaseInputView = Marionette.View.extend({
         className: 'input-container',
         template: app.templates['core/base/base-input-view'],
         ui: {
@@ -28,12 +28,14 @@ var app = app || {};
             'click @ui.$revert': 'revertEditable'
         },
         makeEditable: function () {
-            this.ui.$container.addClass('is-edited');
-            this.ui.$input.trigger('focus').trigger('select');
+            if (!this.options.is_disabled) {
+                this.ui.$container.addClass('is-edited');
+                this.ui.$input.trigger('focus').trigger('select');
+            }
         },
         revertEditable: function () {
             this.ui.$container.removeClass('is-edited').removeClass('has-error');
-            this.ui.$input.val(this.serializeData().value);
+            this.ui.$input.val(this.templateContext().value);
             this.hideErrorMessage();
         },
         showErrorMessage: function (message) {
@@ -54,7 +56,7 @@ var app = app || {};
                 return;
             }
 
-            if ( new_value !== '' && new_value !== this.serializeData().value ) {
+            if ( new_value !== '' && new_value !== this.templateContext().value ) {
                 new_value_parsed = _.isFunction(this.model.getAttributeType) &&
                     this.model.getAttributeType(this.options.param) === 'number' && !isNaN(new_value) ?
                     parseFloat(new_value) : new_value;
@@ -93,29 +95,51 @@ var app = app || {};
                 trigger: 'manual'
             });
         },
-        //  TODO: only allow input types that are derived from text (like email
-        //  or number), but no checkbox or radio, we should have special base
-        //  views for them
-        initialize: function () {
+        enable: function () {
+            this.options.is_disabled = false;
+            this.render();
+        },
+        disable: function () {
+            this.options.is_disabled = true;
+            this.render();
+        },
+        //  TODO: we could pass a formatter function to format readable value,
+        //  see getFormattedRenderer from hot-renderers for example
+        initialize: function (options) {
+            var default_options = {
+                input_type: 'text',
+                is_disabled: false,
+                placeholder: '',
+                formatter: false
+            };
+
+            this.options = _.extend({}, default_options, options);
+
+            //  TODO: we might want to also allow number and email input types,
+            //  but we'll need to update our UI for that (fix reset button)
+            if ( this.options.input_type && !_.contains(['text'], this.options.input_type) ) {
+                throw new Error('Input type ' + this.options.input_type + ' is not allowed');
+            }
+
             this.listenTo(this.model, 'change:' + this.options.param, this.render);
         },
-        //  TODO: we could pass a formatter function to format a readable value
-        serializeData: function () {
+        templateContext: function () {
             var value = this.model.get(this.options.param);
-            var placeholder = this.options.placeholder || '';
+            var placeholder = this.options.placeholder || '&nbsp;';
 
             return {
                 input_type: this.options.input_type || 'text',
                 value: value,
-                readable_value: value || placeholder,
-                show_placeholder: !value && placeholder
+                readable_value: value !== '' ? value : placeholder,
+                show_placeholder: !value && placeholder,
+                is_disabled: this.options.is_disabled
             };
         },
         onRender: function () {
             this.ui.$container = this.$el;
             this.appendPopover();
         },
-        onDestroy: function () {
+        onBeforeDestroy: function () {
             this.ui.$edit.popover('destroy');
         }
     });
