@@ -10,10 +10,8 @@ var app = app || {};
     ];
 
     var CONNECTOR_DEFAULTS = {
-        offsets: [0, 0],
         width: 20,
-        facewidth: 40,
-        length: '100%'
+        facewidth: 40
     };
 
     function getSectionDefaults() {
@@ -21,14 +19,6 @@ var app = app || {};
             id: _.uniqueId(),
             connectors: []
         };
-    }
-
-    function isPercentage(value) {
-        if (_.isArray(value)) {
-            return value.some(function (subvalue) { return isPercentage(subvalue); });
-        } else {
-            return (_.isString(value) && value.indexOf('%') !== -1);
-        }
     }
 
     app.Multiunit = Backbone.Model.extend({
@@ -326,9 +316,13 @@ var app = app || {};
             app.Unit.prototype.initialize.apply(this, arguments);
 
             this.on('add', function () {
-                self.listenTo(self.collection.subunits, 'update', function (event) {
-                    self.connectorsToEssentialFormat();
+                self.listenTo(self.collection, 'update', function (event) {
                     self.updateSubunitsCollection();
+                    self.updateConnectorsLength();
+                });
+                self.listenTo(self.collection.subunits, 'update', function (event) {
+                    self.updateSubunitsCollection();
+                    self.updateConnectorsLength();
                 });
                 self.listenTo(self.collection.subunits, 'remove', function (unit) {
                     if (unit.isSubunitOf(self)) {
@@ -559,24 +553,23 @@ var app = app || {};
                     var parentHeight = node.parent.unit.getInMetric('height', 'mm');
                     var parentConnector = self.getParentConnector(node.unit.getId());
                     var gap = parentConnector.width;
-                    var offset = parentConnector.offsets[1] + parentConnector.offsets[0];
                     var side = parentConnector.side;
 
                     node.width = width;
                     node.height = height;
 
                     if (side && side === 'top') {
-                        node.x = parentX + offset;
+                        node.x = parentX;
                         node.y = parentY - gap - height;
                     } else if (side && side === 'right') {
                         node.x = parentX + parentWidth + gap;
-                        node.y = parentY + offset;
+                        node.y = parentY;
                     } else if (side && side === 'bottom') {
-                        node.x = parentX + offset;
+                        node.x = parentX;
                         node.y = parentY + parentHeight + gap;
                     } else if (side && side === 'left') {
                         node.x = parentX - gap - width;
-                        node.y = parentY + offset;
+                        node.y = parentY;
                     }
                 }
             });
@@ -631,11 +624,10 @@ var app = app || {};
          * The multiunit is a tree of subunits. Each connection is
          * parent subunit <- connector <- child subunit.
          *
-         * Connector connects to parent on a side with offset along the side ("sliding" on the side).
+         * Connector connects to parent on a side.
          * Connector adds a gap between parent and child, but may itself appear thicker than that gap.
-         * Child connects to connector with another offset in the same direction.
          *
-         * = Essential connector format:
+         * = Connector format:
          * {
          *     id: '<id>',                       // Multiunit-scope unique numeric ID for the connector
          *     side: '<top|right|bottom|left>',  // Attach connector to parent side
@@ -643,27 +635,13 @@ var app = app || {};
          *         '<id>',                           // Parent subunit ID
          *         '<id>'                            // Child subunit ID
          *     ],
-         *     offsets: [                        // Offsets along chosen parent side
-         *         <number>,                         // Connector offset relative to parent, mm
-         *         <number>                          // Child offset relative to connector, mm
-         *     ],
          *     width: <number>,                  // Actual gap between connected units, mm
          *     facewidth: <number>               // How wide the connector drawing appears, mm
          *     length: <number>,                 // Connector length, mm
          * }
          *
-         * = Optional ad-hoc extensions:
-         * Use for particular tasks. Convert to essential format after use.
-         * {
-         *     offsets: [
-         *         '<number>%',                      // Connector offset relative to parent, % of parent side length
-         *         '<number>%'                       // Child offset relative to connector, % of connector length
-         *     ],
-         *     length: '<number>%',              // Connector length, % of parent side length
-         * }
-         *
          * = Example:
-         * { id: '17', side: 'right', connects: ['123', '124'], offsets: [0, 100], width: 20, facewidth: 40, length: 200 }
+         * { id: '17', side: 'right', connects: ['123', '124'], width: 20, facewidth: 40 }
          */
         getConnectors: function () {
             var connectors = this.get('root_section').connectors.slice();
@@ -732,15 +710,12 @@ var app = app || {};
                 id: highestId + 1,
                 connects: options.connects,
                 side: options.side,
-                offsets: options.offsets || CONNECTOR_DEFAULTS.offsets,
                 width: options.width || CONNECTOR_DEFAULTS.width,
-                length: options.length || CONNECTOR_DEFAULTS.length,
                 facewidth: options.facewidth || CONNECTOR_DEFAULTS.facewidth
             };
 
-
             connectors.push(connector);
-            this.connectorToEssentialFormat(connector);
+            this.updateConnectorLength(connector);
             if (newChildSubunit) { this.addSubunit(newChildSubunit); }
             return connector;
         },
@@ -758,9 +733,6 @@ var app = app || {};
             // FIXME implement
             return connector;
         },
-        moveConnector: function () {
-            // FIXME implement
-        },
         setConnectorProperties: function (id, options) {
             if (_.isUndefined(id)) { return; }
             if (!options || options.constructor !== Object) { return; }
@@ -775,37 +747,33 @@ var app = app || {};
             // FIXME implement
             return connector;
         },
-        connectorToEssentialFormat: function (connector) {
+        updateConnectorLength: function (connector) {
             if (_.isUndefined(connector)) { return; }
 
-            var parentId = connector.connects[0];
-            var parent = this.getSubunitById(parentId);
+            var parent = this.getSubunitById(connector.connects[0]);
+            var child = this.getSubunitById(connector.connects[1]);
+            var parentSide;
+            var childSide;
 
-            if (_.isUndefined(parent)) { return; }
+            if (!(parent || child)) { return; }
 
-            var parentSide = (connector.side === 'top' || connector.side === 'bottom') ?
-                parent.getInMetric('width', 'mm') :
-                parent.getInMetric('height', 'mm');
-
-            if (isPercentage(connector.length)) {
-                connector.length = parseFloat(connector.length) * 0.01 * parentSide;
+            if (connector.side === 'top' || connector.side === 'bottom') {
+                parentSide = parent.getInMetric('width', 'mm');
+                childSide = child.getInMetric('width', 'mm');
+            } else {
+                parentSide = parent.getInMetric('height', 'mm');
+                childSide = child.getInMetric('height', 'mm');
             }
 
-            if (isPercentage(connector.offsets[0])) {
-                connector.offsets[0] = parseFloat(connector.offsets[0]) * 0.01 * parentSide;
-            }
-
-            if (isPercentage(connector.offsets[1])) {
-                connector.offsets[1] = parseFloat(connector.offsets[1]) * 0.01 * connector.length;
-            }
+            connector.length = Math.min(parentSide, childSide);
 
             return connector;
         },
-        connectorsToEssentialFormat: function () {
+        updateConnectorsLength: function () {
             var connectors = this.get('root_section').connectors;
 
             connectors.forEach(function (connector) {
-                self.connectorToEssentialFormat(connector);
+                self.updateConnectorLength(connector);
             });
         }
     });

@@ -167,7 +167,6 @@ var app = app || {};
             var parentX = parentKonva.x() / ratio;
             var parentY = parentKonva.y() / ratio;
             var side = connector.side;
-            var offset = connector.offsets[0];
             var width = connector.width;
             var facewidth = (connector.facewidth) ? connector.facewidth : connector.width;
             var faceOverlap = (facewidth - width) / 2;
@@ -180,23 +179,23 @@ var app = app || {};
             if (side === 'top') {
                 drawingWidth = length;
                 drawingHeight = facewidth;
-                drawingX = parentX + offset;
+                drawingX = parentX;
                 drawingY = parentY - width - faceOverlap;
             } else if (side === 'right') {
                 drawingWidth = facewidth;
                 drawingHeight = length;
                 drawingX = parentX + parentWidth - faceOverlap;
-                drawingY = parentY + offset;
+                drawingY = parentY;
             } else if (side === 'bottom') {
                 drawingWidth = length;
                 drawingHeight = facewidth;
-                drawingX = parentX + offset;
+                drawingX = parentX;
                 drawingY = parentY + parentHeight - faceOverlap;
             } else if (side === 'left') {
                 drawingWidth = facewidth;
                 drawingHeight = length;
                 drawingX = parentX - width - faceOverlap;
-                drawingY = parentY + offset;
+                drawingY = parentY;
             } else { return; }
 
             var drawingFace = new Konva.Line({
