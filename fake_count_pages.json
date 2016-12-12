@@ -3,7 +3,7 @@
             {
                 "pagenum": 1,
                 "title": "Window - 1",
-                "url": "data/1.jpg",
+                "url": "http://localhost:9987/countingdata/1.jpg",
                 "labels": [
                             {                       
                                 "index": 1,                                    
@@ -27,7 +27,7 @@
             {
                 "pagenum": 2,
                 "title": "Window - 2",
-                "url": "data/2.jpg",
+                "url": "http://localhost:9987/countingdata/2.jpg",
                 "labels": [
                             {                       
                                 "index": 1,                                    
@@ -49,7 +49,7 @@
             {
                 "pagenum": 3,
                 "title": "Window - 3",
-                "url": "data/3.jpg",
+                "url": "http://localhost:9987/countingdata/3.jpg",
                 "labels": [
                             {                       
                                 "index": 1,                                    
@@ -73,7 +73,7 @@
             {
                 "pagenum": 4,
                 "title": "Window - 4",
-                "url": "data/4.jpg",
+                "url": "http://localhost:9987/countingdata/4.jpg",
                 "labels": [
                             {                       
                                 "index": 1,                                    
@@ -98,31 +98,31 @@
             {
                 "pagenum": 5,
                 "title": "Window - 5",
-                "url": "data/5.jpg",
+                "url": "http://localhost:9987/countingdata/5.jpg",
                 "labels": []
             },
             {
                 "pagenum": 6,
                 "title": "Window - 6",
-                "url": "data/6.jpg",
+                "url": "http://localhost:9987/countingdata/6.jpg",
                 "labels": []
             },
             {
                 "pagenum": 7,
                 "title": "Window - 7",
-                "url": "data/7.jpg",
+                "url": "http://localhost:9987/countingdata/7.jpg",
                 "labels": []
             },
             {
                 "pagenum": 8,
                 "title": "Window - 8",
-                "url": "data/8.jpg",
+                "url": "http://localhost:9987/countingdata/8.jpg",
                 "labels": []
             },
             {
                 "pagenum": 9,
                 "title": "Window - 9",
-                "url": "data/9.jpg",
+                "url": "http://localhost:9987/countingdata/9.jpg",
                 "labels": []
             }
         ],

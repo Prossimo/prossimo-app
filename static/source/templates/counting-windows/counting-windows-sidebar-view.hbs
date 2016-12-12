@@ -60,7 +60,7 @@
                 <tr class="counting-record">
                     <td class="title">{{stamp}}</td>
                     <td class="value">{{position.left}} , {{position.top}}</td>
-                    <td> <a href="#">Delete</a></td>
+                    <td> <a href="#" class="delete-stamp" data-param ="{{@index}}" >Delete</a></td>
                 </tr>
                 {{/each}}
             </tbody>
@@ -92,7 +92,7 @@
                 <tr class="counting-record">
                     <td class="title">{{stamp}}</td>
                     <td class="value">{{quantity}}</td>
-                    <td> <a href="#">Delete</a></td>
+                    <td> <a href="#" class='delete-label {{#ifCond quantity 0}} {{else}}  disabled-delete {{/ifCond}}' data-param ="{{stamp}}">Delete</a></td>
                 </tr>
                 {{/each}}
             </tbody>

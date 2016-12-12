@@ -35,7 +35,6 @@ var app = app || {};
             if ( this.active_unit ) {
                 this.drawing_view = new app.CountingWindosDrawingView({
                     parent_view: this,
-                    model: this.active_unit
                 });
 
                 this.listenTo(this.drawing_view, 'all', this.onDrawingViewEvents);

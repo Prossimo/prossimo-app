@@ -14,11 +14,11 @@ var app = app || {};
         },
         initialize: function () {        
             this.initCanvas = false;
-
+/*
             this.listenTo(app.vent, 'main_quoteview:show_canvas:render', this.onInitCanvas);
             this.listenTo(app.vent, 'main_quoteview:add_comment:render', this.onAddComment);
             this.listenTo(app.vent, 'main_quoteview:comment_status:changed', this.onRedrawComments);
-            this.listenTo(app.vent, 'main_quoteview:selected_comment:render', this.onRenderCommentFromList);
+            this.listenTo(app.vent, 'main_quoteview:selected_comment:render', this.onRenderCommentFromList);*/
         },
         serializeData: function () {
             return {

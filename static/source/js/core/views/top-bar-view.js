@@ -14,12 +14,12 @@ var app = app || {};
             $status_panel_container: '.status-panel-container',
             $settings_toggle: '.project-settings-toggle',
             $spinner_container: '.spinner-container',
-            $enable_comments: '.enable-comments-button'            
+            //$enable_comments: '.enable-comments-button'            
         },
         events: {
             'click @ui.$settings_toggle': 'onSettingsToggle',
             'click @ui.$create_project_button': 'onOpenProjectForm',
-            'click @ui.$enable_comments': 'onEnableCommentsBtn'          
+            //'click @ui.$enable_comments': 'onEnableCommentsBtn'          
         },
         initialize: function () {
             this.project_selector_view = new app.ProjectSelectorView({ collection: this.collection });
@@ -42,7 +42,7 @@ var app = app || {};
         onOpenProjectForm: function () {
             app.dialogs.showDialog('createProject');
         },
-        onEnableCommentsBtn: function() {
+        /*onEnableCommentsBtn: function() {
             app.vent.trigger('main_quoteview:show_canvas:render');                   
 
             if (!this.comments_panel_view) {
@@ -53,7 +53,7 @@ var app = app || {};
             }
             
             this.$el.toggleClass('is-comments-panel-open');
-        },       
+        },*/       
         onCurrentProjectLoaded: function () {
             
             if ( !this.isToggleDisabled() ) {

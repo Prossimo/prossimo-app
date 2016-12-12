@@ -23,7 +23,9 @@ var app = app || {};
             'click @ui.$label_plus': 'onLabelAdd',
             'click .nav-tabs a': 'onTabClick',
             'click @ui.$sidebar_toggle': 'onSidebarToggle',
-            'click .counting-page':'onClickPageTable'
+            'click .counting-page':'onClickPageTable',
+            'click .delete-stamp' : 'onDeleteStamp',
+            'click .delete-label' : 'onDeleteLabel'
         },       
         initialize: function () {
             this.tabs = {
@@ -42,7 +44,7 @@ var app = app || {};
             this.countpages = app.countpages.toJSON();
             this.stamps     = app.stamps.toJSON();
 
-            this.selpage    = 0;
+            this.selpage    = -1;
 
 
             //app.vent.trigger('main_quoteview:selected_comment:render', index);       
@@ -70,6 +72,27 @@ var app = app || {};
             this.setActiveTab(target);
             this.render();
         },
+        onDeleteStamp: function(e) {
+            var i = parseInt($(e.target).data('param'));
+
+            this.updateLabels(this.countpages[this.selpage].labels[i].stamp, '-');
+            this.countpages[this.selpage].labels.splice(i, 1);            
+            this.render();
+            
+            app.countpages.updateItemByIndex(this.selpage, new app.CountPage(this.countpages[this.selpage]));
+                        
+            app.vent.trigger('counting_windows_view:page:load', this.selpage);  
+        },
+        onDeleteLabel: function(e) {
+            var lb = $(e.target).data('param');
+            
+            var model = app.stamps.find(function(model) { return model.get('stamp') === lb; });            
+            app.stamps.remove(model);
+            
+            this.stamps = app.stamps.toJSON();
+            
+            this.render();
+        },
         onStampAdd: function() {
 
             var st = this.ui.$select.val();
@@ -88,9 +111,24 @@ var app = app || {};
             app.countpages.updateItemByIndex(this.selpage, new app.CountPage(page));
             this.countpages = app.countpages.toJSON();          
 
+            this.updateLabels(st, '+');
+
             this.render();
 
             app.vent.trigger('counting_windows_view:add_stamp:render', lb);
+        },
+        updateLabels: function(lb, action) {
+            
+            var model = app.stamps.find(function(model) { return model.get('stamp') === lb; });
+
+            if (action === "+") {
+                model.set('quantity',  model.get('quantity') + 1);
+            } else {
+                model.set('quantity',  model.get('quantity') - 1);    
+            }
+            
+            this.stamps = app.stamps.toJSON();
+            
         },
         onLabelAdd: function() {
             var st = this.ui.$newLabel.val();

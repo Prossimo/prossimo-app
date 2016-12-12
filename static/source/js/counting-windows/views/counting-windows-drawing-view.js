@@ -20,9 +20,7 @@ var app = app || {};
             this.addedStamp = false;
 
             this.listenTo(app.vent, 'counting_windows_view:page:load', this.onPageLoad);
-            this.listenTo(app.vent, 'counting_windows_view:add_stamp:render', this.onAddStamp);
-            /*this.listenTo(app.vent, 'counting_main_quoteview:comment_status:changed', this.onRedrawComments);
-            this.listenTo(app.vent, 'main_quoteview:selected_comment:render', this.onRenderCommentFromList);*/
+            this.listenTo(app.vent, 'counting_windows_view:add_stamp:render', this.onAddStamp);            
         },       
         onInitCanvas: function() {
 
@@ -47,9 +45,12 @@ var app = app || {};
                         var obj = self.Canvas.getActiveObject();
                         var pointer = self.Canvas.getPointer(event.e);
 
-                        obj.set({left:pointer.x, top: pointer.y});                        
+                        obj.left = pointer.x;
+                        obj.top = pointer.y;
                         obj.model.position.left = pointer.x;
-                        obj.model.position.top  = pointer.y;
+                        obj.model.position.top = pointer.y;
+                        
+                        obj.setCoords();
                         self.Canvas.renderAll();
                   }
             });
@@ -57,10 +58,8 @@ var app = app || {};
             this.Canvas.on('mouse:down', function(event) {                
 
                   if (self.addedStamp) {                        
-                      self.addedStamp = false;   
+                      self.addedStamp = false;                      
 
-                      var obj = self.Canvas.getActiveObject();
-                      self.Canvas.add(obj);
                   }
             });
 
@@ -73,12 +72,12 @@ var app = app || {};
             var _self= this;
             this.removeAllStampsOnCanvas();
             
-            fabric.Image.fromURL('http://localhost/counting-windows/'+ app.countpages.at(pagenum).get('url'), function (img) {
+            fabric.Image.fromURL(app.countpages.at(pagenum).get('url'), function (img) {
                 _self.Canvas.setWidth(img.width);
                 _self.Canvas.setHeight(img.height);                  
             });
 
-            this.Canvas.setBackgroundImage('http://localhost/counting-windows/'+ app.countpages.at(pagenum).get('url'), this.Canvas.renderAll.bind(this.Canvas), {
+            this.Canvas.setBackgroundImage(app.countpages.at(pagenum).get('url'), this.Canvas.renderAll.bind(this.Canvas), {
                 backgroundImageOpacity: 0.5,
                 backgroundImageStretch: true
             });            
