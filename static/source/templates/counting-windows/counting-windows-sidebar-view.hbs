@@ -1,0 +1,101 @@
+<button class="js-sidebar-toggle sidebar-toggle glyphicon glyphicon-forward"></button>
+
+<h3>Counting Windows</h3>
+
+<div class="tab-container">
+    <ul class="nav nav-tabs">
+    {{#each tabs }}
+        <li class="{{ @key }}{{#if is_active }} active{{/if}}"><a href="#{{ @key }}">{{ title }}</a></li>
+    {{/each}}
+    </ul>
+</div>
+
+{{#if tabs.active_pages.is_active }}
+    <div class="counting-table">           
+        <table>
+            <thead>
+                <tr>
+                    <th>Page No</th>
+                    <th>Page Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each countpages}}                    
+                    <tr class="counting-record counting-page {{#ifCond pagenum ../selectedpage.pagenum}} selected {{/ifCond}}" data-param="{{pagenum}}">                    
+                        <td class="title">{{pagenum}}</td>
+                        <td class="value">{{title}}</td>
+                    </tr>
+                {{/each}}
+            </tbody>
+        </table>        
+    </div>
+{{/if}}
+
+{{#if tabs.active_stamps_by_page.is_active }}
+    <div class="stamps-selector-controls">
+        <div class="stamp-selector-select">
+            <select class="selectpicker" title='Choose a Stamp'>
+                {{#each stamps}}
+                    <option value="{{ stamp }}"><strong>{{ stamp }}</strong></option>
+                {{/each}}
+            </select>
+        </div>
+
+        <div class="stamps-selector-buttons">
+            <button class="js-plus-stamp glyphicon glyphicon-plus-sign"></button>            
+        </div>
+    </div>
+
+    <div class="counting-table">       
+        <table>
+            <thead>
+                <tr>
+                    <th>Stamp</th>
+                    <th>Position (x , y)</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each selectedpage.labels}}
+                <tr class="counting-record">
+                    <td class="title">{{stamp}}</td>
+                    <td class="value">{{position.left}} , {{position.top}}</td>
+                    <td> <a href="#">Delete</a></td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>        
+    </div>
+{{/if}}
+
+{{#if tabs.active_manage_labels.is_active }}
+    <div class="stamps-selector-controls">
+        <div class="stamp-selector-select">
+            <input type="text" class="newLabel" placeholder="New Label Name ..." />            
+        </div>
+        <div class="stamps-selector-buttons">
+            <button class="js-plus-label glyphicon glyphicon-plus-sign"></button>            
+        </div>
+    </div>
+
+    <div class="counting-table">       
+        <table>
+            <thead>
+                <tr>
+                    <th>Label Name</th>
+                    <th>Quantity</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each stamps}}
+                <tr class="counting-record">
+                    <td class="title">{{stamp}}</td>
+                    <td class="value">{{quantity}}</td>
+                    <td> <a href="#">Delete</a></td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>        
+    </div>
+{{/if}}

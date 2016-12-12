@@ -46,6 +46,7 @@ module.exports = function (grunt) {
         'hot-renderers.js',
         'undomanager.js',
         'core/models/comment.js',
+        'core/models/counting-window.js',
         'core/models/user.js',
         'core/models/session.js',
         'core/models/unit.js',
@@ -79,6 +80,9 @@ module.exports = function (grunt) {
         'core/views/comments-panel-view.js',
         'core/views/spinner-view.js',
         'core/views/top-bar-view.js',
+        'counting-windows/views/counting-windows-drawing-view.js',
+        'counting-windows/views/main-counting-windows-view.js',
+        'counting-windows/views/counting-windows-sidebar-view.js',
         'units-table/views/main-units-table-view.js',
         'drawing/module/handle-data.js',
         'drawing/module/konva-clip-patch.js',
@@ -321,7 +325,8 @@ module.exports = function (grunt) {
 
                             if ( req.url === '/dashboard/' || req.url === '/drawing/' ||
                                  req.url === '/quote/' || req.url === '/settings/' ||
-                                 req.url === '/supplier/' || req.url === '/units/'
+                                 req.url === '/supplier/' || req.url === '/units/' || 
+                                 req.url === '/counting-windows/'
                             ) {
                                 require('fs').createReadStream('index.html').pipe(res);
                             } else {

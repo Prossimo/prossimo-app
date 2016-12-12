@@ -23,8 +23,10 @@ $(function () {
         app.vent = {};
         _.extend(app.vent, Backbone.Events);
 
-        //get comments from server side
-        app.comments = new app.Comments(); 
+        //get comments, pages for counting,  stamps from server side
+        app.comments    = new app.Comments(); 
+        app.countpages  = new app.CountPages();
+        app.stamps      = new app.Stamps();
 
         //  Object to hold project-independent properties
         app.settings = new app.Settings();
@@ -77,7 +79,7 @@ $(function () {
                 onShow: function () {
                     app.main_region.show(new app.MainSupplierRequestView());
                 }
-            },
+            },            
             settings: {
                 title: 'Settings',
                 path: 'settings',
@@ -85,7 +87,15 @@ $(function () {
                 onShow: function () {
                     app.main_region.show(new app.MainSettingsView());
                 }
-            }
+            },
+            counting_windows: {
+                title: 'Counting Windows',
+                path: 'counting-windows',
+                icon_name: 'eye-open',
+                onShow: function () {
+                    app.main_region.show(new app.MainCountingWindowsView());
+                }                
+            }            
         });
 
         app.paste_image_helper = new app.PasteImageHelper();

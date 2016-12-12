@@ -1,0 +1,159 @@
+{
+    "pages": [    
+            {
+                "pagenum": 1,
+                "title": "Window - 1",
+                "url": "data/1.jpg",
+                "labels": [
+                            {                       
+                                "index": 1,                                    
+                                "position": {"left": 120 ,  "top":300 },
+                                "stamp": "A1"                          
+                            },
+                            {                       
+                                "index": 2,                                  
+                                "position": {"left": 20 ,  "top":500 },
+                                "stamp": "A3"                                 
+                           
+                            },
+                            {                       
+                                "index": 3,                             
+                                "position": {"left": 520 ,  "top":300 },
+                                "stamp": "A2"                                 
+                           
+                            }                                
+                        ]
+            },
+            {
+                "pagenum": 2,
+                "title": "Window - 2",
+                "url": "data/2.jpg",
+                "labels": [
+                            {                       
+                                "index": 1,                                    
+                                "position": {"left": 120 ,  "top":200 },
+                                "stamp": "A1"                                                            
+                            },
+                            {                       
+                                "index": 2,                                  
+                                "position": {"left": 520 ,  "top":500 },
+                                "stamp": "A1"                                      
+                            },
+                            {                       
+                                "index": 3,                             
+                                "position": {"left": 1200 ,  "top":700 },
+                                "stamp": "A2"                                                            
+                            }
+                ]
+            },
+            {
+                "pagenum": 3,
+                "title": "Window - 3",
+                "url": "data/3.jpg",
+                "labels": [
+                            {                       
+                                "index": 1,                                    
+                                "position": {"left": 120 ,  "top":200 },
+                                "stamp": "A1A1"             
+                           
+                            },
+                            {                       
+                                "index": 2,                                  
+                                "position": {"left": 520 ,  "top":500 },
+                                "stamp": "A3A3"                                 
+                           
+                            },
+                            {                       
+                                "index": 3,                             
+                                "position": {"left": 1200 ,  "top":700 },
+                                "stamp": "A2"                                                            
+                            }
+                ]
+            },
+            {
+                "pagenum": 4,
+                "title": "Window - 4",
+                "url": "data/4.jpg",
+                "labels": [
+                            {                       
+                                "index": 1,                                    
+                                "position": {"left": 120 ,  "top":200 },
+                                "stamp": "B1"                                 
+                           
+                            },
+                            {                       
+                                "index": 2,                                  
+                                "position": {"left": 520 ,  "top":500 },
+                                "stamp": "B3"                                 
+                           
+                            },
+                            {                       
+                                "index": 3,                             
+                                "position": {"left": 1200 ,  "top":700 },
+                                "stamp": "A2"                                 
+                           
+                            }
+                        ]
+            },
+            {
+                "pagenum": 5,
+                "title": "Window - 5",
+                "url": "data/5.jpg",
+                "labels": []
+            },
+            {
+                "pagenum": 6,
+                "title": "Window - 6",
+                "url": "data/6.jpg",
+                "labels": []
+            },
+            {
+                "pagenum": 7,
+                "title": "Window - 7",
+                "url": "data/7.jpg",
+                "labels": []
+            },
+            {
+                "pagenum": 8,
+                "title": "Window - 8",
+                "url": "data/8.jpg",
+                "labels": []
+            },
+            {
+                "pagenum": 9,
+                "title": "Window - 9",
+                "url": "data/9.jpg",
+                "labels": []
+            }
+        ],
+    "stamps": [
+        {
+            "stamp": "A1",
+            "quantity":2
+        },
+        {
+            "stamp": "A2",
+            "quantity": 4
+        },
+        {
+            "stamp": "A3",
+            "quantity": 2
+        },
+        {
+            "stamp": "A1A1",
+            "quantity": 1
+        },
+        {
+            "stamp": "A3A3",
+            "quantity": 1
+        },
+        {
+            "stamp": "B1",
+            "quantity": 1
+        },
+        {
+            "stamp": "B3",
+            "quantity": 1
+        }
+    ]
+}
