@@ -3,6 +3,8 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var self;
+
     var UNSET_VALUE = '--';
 
     app.UnitsTableView = Marionette.View.extend({
@@ -41,6 +43,8 @@ var app = app || {};
             'command+y': 'onRedo'
         },
         initialize: function () {
+            self = this;
+
             this.table_update_timeout = null;
             this.dropdown_scroll_timer = null;
             this.table_visibility = this.options.is_always_visible ? 'visible' :
@@ -77,6 +81,12 @@ var app = app || {};
                     columns: ['move_item', 'description', 'quantity', 'extras_type', 'original_cost',
                         'original_currency', 'conversion_rate', 'unit_cost', 'price_markup',
                         'unit_price', 'subtotal_cost', 'subtotal_price', 'subtotal_profit']
+                },
+                multiunits: {
+                    title: 'Multiunits',
+                    collection: this.collection.multiunits,
+                    columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing',
+                        'width_mm', 'height_mm', 'description', 'notes']
                 }
             };
             this.active_tab = 'specs';
@@ -270,13 +280,13 @@ var app = app || {};
 
             var getters_hash = {
                 height: function (model) {
-                    return model.getTrapezoidHeight();
+                    return (model.isMultiunit()) ? model.getInMetric('height', 'inches') : model.getTrapezoidHeight();
                 },
                 width_mm: function (model) {
-                    return model.getWidthMM();
+                    return (model.isMultiunit()) ? model.getInMetric('width', 'mm') : model.getWidthMM();
                 },
                 height_mm: function (model) {
-                    return model.getTrapezoidHeightMM();
+                    return (model.isMultiunit()) ? model.getInMetric('height', 'mm') : model.getTrapezoidHeightMM();
                 },
                 dimensions: function (model) {
                     return f.dimensions(model.get('width'), model.get('height'), null,
@@ -516,6 +526,7 @@ var app = app || {};
         getColumnExtraProperties: function (column_name) {
             var project_settings = app.settings.getProjectSettings();
             var properties_obj = {};
+            var isMultiunitCollection = self.getActiveTab().collection instanceof app.MultiunitCollection;
 
             var names_title_type_hash = this.getActiveTab()
                 .collection.getNameTitleTypeHash([column_name]);
@@ -538,10 +549,12 @@ var app = app || {};
 
             var properties_hash = {
                 width: {
+                    readOnly: isMultiunitCollection,
                     renderer: app.hot_renderers.getFormattedRenderer('dimension', null,
                         project_settings.get('inches_display_mode') || null)
                 },
                 height: {
+                    readOnly: isMultiunitCollection,
                     renderer: app.hot_renderers.getFormattedRenderer('dimension_heights', null,
                         project_settings.get('inches_display_mode') || null)
                 },
