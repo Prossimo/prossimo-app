@@ -256,11 +256,14 @@ var app = app || {};
                 this.validateRootSection();
                 this.setProfile();
 
-                this.on('change:profile_id', this.setProfile, this);
+                this.on('change:profile_id', function () {
+                    this.setProfile({ validate_filling_types: true });
+                }, this);
                 this.on('change:glazing', this.onGlazingUpdate, this);
 
                 //  If we know that something was changed in dictionaries,
                 //  we have to re-validate our unit options
+                //  TODO: we want to do the same thing for filling types
                 this.listenTo(app.vent, 'validate_units:dictionaries', function () {
                     if ( this.isParentProjectActive() ) {
                         this.validateUnitOptions();
@@ -437,6 +440,70 @@ var app = app || {};
                 this.set('unit_options', getValidatedUnitOptions(this, current_options, default_options));
             }
         },
+        getCurrentFillingsList: function (current_root) {
+            var section_result;
+            var result = [];
+
+            current_root = current_root || this.generateFullRoot();
+
+            _.each(current_root.sections, function (section) {
+                section_result = this.getCurrentFillingsList(section);
+
+                if (current_root.divider === 'vertical' || current_root.divider === 'vertical_invisible') {
+                    result = section_result.concat(result);
+                } else {
+                    result = result.concat(section_result);
+                }
+            }, this);
+
+            if ( current_root.sections.length === 0 ) {
+                result.unshift({
+                    name: current_root.fillingName,
+                    type: current_root.fillingType
+                });
+            }
+
+            return result;
+        },
+        //  The idea here is to check if all the filling types we got are valid
+        //  for the currently selected profile. If this is not the case, we
+        //  want to automatically change all of them to the default type for
+        //  this profile
+        //  TODO: change only those not available, not all types
+        //  TODO: it's not a proper name, but it's the same as
+        //  validateUnitOptions we have above
+        //  TODO: this needs tests
+        validateFillingTypes: function () {
+            //  Do nothing in case of dummy profile or no profile
+            if ( this.isNew() || !this.profile || this.hasDummyProfile() || !app.settings ) {
+                return;
+            }
+
+            var glazing = this.get('glazing');
+            var current_fillings_list = _.pluck(this.getCurrentFillingsList(), 'name');
+            var complete_fillings_list = _.union(current_fillings_list, [glazing]);
+
+            var available_for_profile_list = _.difference(
+                _.map(app.settings.filling_types.getAvailableForProfile(this.profile.id), function (item) {
+                    return item.get('name');
+                }),
+                _.pluck(app.settings.filling_types.getBaseTypes(), 'title')
+            );
+            var invalid_flag = false;
+
+            _.find(complete_fillings_list, function (filling_name) {
+                if ( _.contains(available_for_profile_list, filling_name) === false ) {
+                    invalid_flag = true;
+                    return true;
+                }
+            }, this);
+
+            //  TODO: maybe we could do only one call here?
+            if ( invalid_flag ) {
+                this.persist('glazing', getDefaultFillingType(undefined, this.profile.id).fillingName);
+                this.onGlazingUpdate();
+            }
+        },
         validate: function (attributes, options) {
             var error_obj = null;
 
@@ -469,7 +536,13 @@ var app = app || {};
                 return error_obj;
             }
         },
-        setProfile: function () {
+        setProfile: function (options) {
+            var default_options = {
+                validate_filling_types: false
+            };
+
+            options = _.defaults({}, options, default_options);
+
             this.profile = null;
 
             //  Assign the default profile id to a newly created unit
@@ -488,6 +561,10 @@ var app = app || {};
             }
 
             this.validateUnitOptions();
+
+            if ( options.validate_filling_types ) {
+                this.validateFillingTypes();
+            }
         },
         hasDummyProfile: function () {
             return this.profile && this.profile.get('is_dummy');
