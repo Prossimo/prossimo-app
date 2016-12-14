@@ -276,7 +276,10 @@ var app = app || {};
 
                 //  If we just created a unit, we want to set root_section
                 //  considering the id of this unit's profile
-                if ( this.isNew() ) {
+                //  TODO: this might be not optimal place to do this since
+                //  it doesn't work for fixtures and might not work in some
+                //  other conditions
+                if ( this.isNew() && app.session && app.session.get('no_backend') !== true ) {
                     var profile_id = this.profile && this.profile.id;
                     var glazing_name = this.get('glazing');
 
