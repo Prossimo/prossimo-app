@@ -13,7 +13,7 @@ var app = app || {};
         { name: 'price', title: 'Price', type: 'number' },
         { name: 'data', title: 'Additional Data', type: 'string' },
         { name: 'position', title: 'Position', type: 'number' },
-        { name: 'profiles', title: 'Profiles', type: 'array' }
+        { name: 'dictionary_entry_profiles', title: 'Profiles', type: 'array' }
     ];
 
     function getDefaultEntryData() {
@@ -47,7 +47,7 @@ var app = app || {};
 
             var name_value_hash = {
                 data: getDefaultEntryData(),
-                profiles: getDefaultProfilesList()
+                dictionary_entry_profiles: getDefaultProfilesList()
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -75,6 +75,15 @@ var app = app || {};
         },
         parse: function (data) {
             var entry_data = data && data.entry ? data.entry : data;
+
+            //  Remove excessive data from `dictionary_entry_profiles`
+            //  TODO: we need to find a more elegant way to do that, like
+            //  parse them according to additional schema
+            if ( entry_data && entry_data.dictionary_entry_profiles ) {
+                _.each(entry_data.dictionary_entry_profiles, function (entry) {
+                    delete entry.id;
+                }, this);
+            }
 
             return app.schema.parseAccordingToSchema(entry_data, this.schema);
         },
@@ -153,8 +162,8 @@ var app = app || {};
                         if ( JSON.stringify(value) !== JSON.stringify(this.getDefaultValue('data')) ) {
                             has_only_defaults = false;
                         }
-                    } else if ( key === 'profiles' ) {
-                        if ( JSON.stringify(value) !== JSON.stringify(this.getDefaultValue('profiles')) ) {
+                    } else if ( key === 'dictionary_entry_profiles' ) {
+                        if ( JSON.stringify(value) !== JSON.stringify(this.getDefaultValue('dictionary_entry_profiles')) ) {
                             has_only_defaults = false;
                         }
                     } else if ( this.getDefaultValue(key, type) !== value ) {
@@ -194,13 +203,14 @@ var app = app || {};
             return _.pluck(name_title_hash, 'title');
         },
         isAvailableForProfile: function (profile_id) {
-            return this.get('profiles') && _.contains(_.pluck(this.get('profiles'), 'id'), profile_id);
+            return this.get('dictionary_entry_profiles') &&
+                _.contains(_.pluck(this.get('dictionary_entry_profiles'), 'profile_id'), profile_id);
         },
         isDefaultForProfile: function (profile_id) {
             var is_default = false;
 
             if ( this.isAvailableForProfile(profile_id) ) {
-                var connection = _.findWhere(this.get('profiles'), { id: profile_id });
+                var connection = _.findWhere(this.get('dictionary_entry_profiles'), { profile_id: profile_id });
 
                 is_default = connection.is_default || false;
             }
@@ -209,11 +219,11 @@ var app = app || {};
         },
         //  We assume that profiles list is sorted and deduplicated
         getIdsOfProfilesWhereIsAvailable: function () {
-            return _.pluck(this.get('profiles'), 'id');
+            return _.pluck(this.get('dictionary_entry_profiles'), 'profile_id');
         },
         //  We assume that profiles list is sorted and deduplicated
         getIdsOfProfilesWhereIsDefault: function () {
-            return _.pluck(_.where(this.get('profiles'), { is_default: true }), 'id');
+            return _.pluck(_.where(this.get('dictionary_entry_profiles'), { is_default: true }), 'profile_id');
         },
         initialize: function (attributes, options) {
             this.options = options || {};
