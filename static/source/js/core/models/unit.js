@@ -390,6 +390,14 @@ var app = app || {};
 
             return default_options;
         },
+        resetUnitOptionsToDefaults: function () {
+            var current_options = this.get('unit_options');
+            var default_options = this.getDefaultUnitOptions();
+
+            if ( !_.isEqual(current_options, default_options) ) {
+                this.persist('unit_options', default_options);
+            }
+        },
         validateUnitOptions: function () {
             var default_options = this.getDefaultUnitOptions();
             var current_options = this.get('unit_options');
