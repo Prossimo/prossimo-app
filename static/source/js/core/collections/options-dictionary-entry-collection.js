@@ -59,12 +59,12 @@ var app = app || {};
                 //  set as non fefault. If all's fine, no requests are fired
                 if ( all_entries && default_entry && non_default_entries ) {
                     _.each(non_default_entries, function (entry) {
-                        var entry_profiles = entry.get('profiles');
-                        var connection = _.findWhere(entry_profiles, { id: profile_id });
+                        var entry_profiles = entry.get('dictionary_entry_profiles');
+                        var connection = _.findWhere(entry_profiles, { profile_id: profile_id });
 
                         if ( connection.is_default === true ) {
                             connection.is_default = false;
-                            entry.persist('profiles', entry_profiles);
+                            entry.persist('dictionary_entry_profiles', entry_profiles);
                         }
                     }, this);
                 }
@@ -75,24 +75,24 @@ var app = app || {};
                 throw new Error('Cannot set item availability: target item does not belong to this collection ');
             }
 
-            var old_profiles_list = target_item.get('profiles');
+            var old_profiles_list = target_item.get('dictionary_entry_profiles');
             var new_profiles_list;
 
             if ( new_value === true || new_value === 'true' ) {
                 var profile_to_add = {
-                    id: profile_id,
+                    profile_id: profile_id,
                     is_default: false
                 };
                 new_profiles_list = _.union(old_profiles_list, [profile_to_add]);
-                new_profiles_list.sort(function (a, b) { return a.id - b.id; });
+                new_profiles_list.sort(function (a, b) { return a.profile_id - b.profile_id; });
             } else if ( new_value === false || new_value === 'false' ) {
-                var profile_to_remove = _.findWhere(old_profiles_list, { id: profile_id });
+                var profile_to_remove = _.findWhere(old_profiles_list, { profile_id: profile_id });
                 new_profiles_list = _.without(old_profiles_list, profile_to_remove);
-                new_profiles_list.sort(function (a, b) { return a.id - b.id; });
+                new_profiles_list.sort(function (a, b) { return a.profile_id - b.profile_id; });
             }
 
             if ( old_profiles_list !== new_profiles_list ) {
-                target_item.persist('profiles', new_profiles_list);
+                target_item.persist('dictionary_entry_profiles', new_profiles_list);
             }
         },
         setItemAsDefaultForProfile: function (profile_id, new_item, old_item) {
@@ -104,12 +104,12 @@ var app = app || {};
                     );
                 }
 
-                var new_item_profiles = new_item.get('profiles');
-                var profile_to_set = _.findWhere(new_item_profiles, { id: profile_id });
+                var new_item_profiles = new_item.get('dictionary_entry_profiles');
+                var profile_to_set = _.findWhere(new_item_profiles, { profile_id: profile_id });
 
                 if ( profile_to_set && profile_to_set.is_default === false ) {
                     profile_to_set.is_default = true;
-                    new_item.persist('profiles', new_item_profiles);
+                    new_item.persist('dictionary_entry_profiles', new_item_profiles);
                 }
             }
 
@@ -122,12 +122,12 @@ var app = app || {};
                     );
                 }
 
-                var old_item_profiles = old_item.get('profiles');
-                var profile_to_unset = _.findWhere(old_item_profiles, { id: profile_id });
+                var old_item_profiles = old_item.get('dictionary_entry_profiles');
+                var profile_to_unset = _.findWhere(old_item_profiles, { profile_id: profile_id });
 
                 if ( profile_to_unset && profile_to_unset.is_default === true ) {
                     profile_to_unset.is_default = false;
-                    old_item.persist('profiles', old_item_profiles);
+                    old_item.persist('dictionary_entry_profiles', old_item_profiles);
                 }
             }
         },

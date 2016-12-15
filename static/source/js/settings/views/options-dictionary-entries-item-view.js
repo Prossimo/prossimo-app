@@ -31,7 +31,7 @@ var app = app || {};
             });
         },
         getProfilesNamesList: function () {
-            var profiles_ids = _.pluck(this.model.get('profiles'), 'id');
+            var profiles_ids = _.pluck(this.model.get('dictionary_entry_profiles'), 'profile_id');
             var profiles_names_list = [];
 
             if ( profiles_ids && profiles_ids.length ) {
@@ -104,7 +104,7 @@ var app = app || {};
                 placeholder: 'New Entry'
             });
 
-            this.listenTo(this.model, 'change:profiles change:name', function () {
+            this.listenTo(this.model, 'change:dictionary_entry_profiles change:name', function () {
                 this.render();
                 this.name_input_view.delegateEvents();
             });
