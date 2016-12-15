@@ -207,6 +207,14 @@ var app = app || {};
 
             return is_default;
         },
+        //  We assume that profiles list is sorted and deduplicated
+        getIdsOfProfilesWhereIsAvailable: function () {
+            return _.pluck(this.get('profiles'), 'id');
+        },
+        //  We assume that profiles list is sorted and deduplicated
+        getIdsOfProfilesWhereIsDefault: function () {
+            return _.pluck(_.where(this.get('profiles'), { is_default: true }), 'id');
+        },
         initialize: function (attributes, options) {
             this.options = options || {};
         }
