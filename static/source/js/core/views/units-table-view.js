@@ -16,6 +16,7 @@ var app = app || {};
             $add_new_accessory: '.js-add-new-accessory',
             $undo: '.js-undo',
             $redo: '.js-redo',
+            $reset_unit_options: '.js-reset-unit-options',
             $remove: '.js-remove-selected-items',
             $clone: '.js-clone-selected-items'
         },
@@ -28,6 +29,7 @@ var app = app || {};
             'click .js-move-item-down': 'onMoveItemDown',
             'click @ui.$undo': 'onUndo',
             'click @ui.$redo': 'onRedo',
+            'click @ui.$reset_unit_options': 'onResetUnitOptionsForSelected',
             'click @ui.$remove': 'onRemoveSelected',
             'click @ui.$clone': 'onCloneSelected'
         },
@@ -164,12 +166,25 @@ var app = app || {};
             this.undo_manager.handler.redo();
             this.ui.$redo.blur();
         },
+        onResetUnitOptionsForSelected: function () {
+            if ( this.selected.length && this.hot ) {
+                for (var i = this.selected.length - 1; i >= 0; i--) {
+                    this.hot.getSourceData().at(this.selected[i]).resetUnitOptionsToDefaults();
+                }
+
+                //  TODO: do we really need two calls just to unselect?
+                this.selected = [];
+                this.hot.selectCell(0, 0, 0, 0, false);
+                this.hot.deselectCell();
+            }
+        },
         onRemoveSelected: function () {
             if ( this.selected.length && this.hot ) {
                 for (var i = this.selected.length - 1; i >= 0; i--) {
                     this.hot.getSourceData().at(this.selected[i]).destroy();
                 }
 
+                //  TODO: do we really need two calls just to unselect?
                 this.selected = [];
                 this.hot.selectCell(0, 0, 0, 0, false);
                 this.hot.deselectCell();
@@ -219,6 +234,7 @@ var app = app || {};
         },
         templateContext: function () {
             return {
+                active_tab: this.active_tab,
                 tabs: _.each(this.tabs, function (item, key) {
                     item.is_active = key === this.active_tab;
                     return item;
@@ -1034,6 +1050,7 @@ var app = app || {};
 
                             if ( startColumn === 0 && endColumn === this.countCols() - 1 ) {
                                 self.ui.$remove.removeClass('disabled');
+                                self.ui.$reset_unit_options.removeClass('disabled');
 
                                 if ( startRow === endRow ) {
                                     self.selected = [startRow];
@@ -1060,6 +1077,7 @@ var app = app || {};
                                     self.ui.$clone.addClass('disabled');
                                 }
                             } else {
+                                self.ui.$reset_unit_options.addClass('disabled');
                                 self.ui.$remove.addClass('disabled');
                                 self.ui.$clone.addClass('disabled');
                             }
