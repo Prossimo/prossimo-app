@@ -19,7 +19,7 @@ var app = app || {};
             'click @ui.$remove': 'removeItem'
         },
         getProfilesNamesList: function () {
-            var profiles_ids = _.pluck(this.model.get('profiles'), 'id');
+            var profiles_ids = _.pluck(this.model.get('filling_type_profiles'), 'profile_id');
             var profiles_names_list = [];
 
             if ( profiles_ids && profiles_ids.length ) {
@@ -110,7 +110,7 @@ var app = app || {};
                 };
             }, this);
 
-            this.listenTo(this.model, 'change:profiles change:name', function () {
+            this.listenTo(this.model, 'change:filling_type_profiles change:name', function () {
                 this.render();
 
                 _.each(this.attribute_views, function (child_view) {
