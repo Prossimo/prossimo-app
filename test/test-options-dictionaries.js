@@ -46,17 +46,17 @@ test('dictionary entry profile availability functions', function () {
     var entry = new app.OptionsDictionaryEntry({
         name: 'White Plastic Handle',
         price: 15,
-        profiles: [
+        dictionary_entry_profiles: [
             {
-                id: 1,
+                profile_id: 1,
                 is_default: false
             },
             {
-                id: 4,
+                profile_id: 4,
                 is_default: false
             },
             {
-                id: 77,
+                profile_id: 77,
                 is_default: true
             }
         ]
@@ -77,43 +77,43 @@ test('dictionary entry profile availability functions for collection', function 
     var entries = new app.OptionsDictionaryEntryCollection([
         {
             name: 'White Plastic Handle',
-            profiles: [
+            dictionary_entry_profiles: [
                 {
-                    id: 1,
+                    profile_id: 1,
                     is_default: false
                 },
                 {
-                    id: 4,
+                    profile_id: 4,
                     is_default: false
                 },
                 {
-                    id: 77,
+                    profile_id: 77,
                     is_default: true
                 }
             ]
         },
         {
             name: 'Brown Plastic Handle',
-            profiles: [
+            dictionary_entry_profiles: [
                 {
-                    id: 1,
+                    profile_id: 1,
                     is_default: false
                 },
                 {
-                    id: 4,
+                    profile_id: 4,
                     is_default: true
                 }
             ]
         },
         {
             name: 'Red Plastic Handle',
-            profiles: [
+            dictionary_entry_profiles: [
                 {
-                    id: 5,
+                    profile_id: 5,
                     is_default: true
                 },
                 {
-                    id: 6,
+                    profile_id: 6,
                     is_default: false
                 }
             ]
@@ -177,17 +177,17 @@ test('dictionary entry profile availability functions from settings.js', functio
         {
             name: 'White Plastic Handle',
             id: 1,
-            profiles: [
+            dictionary_entry_profiles: [
                 {
-                    id: 1,
+                    profile_id: 1,
                     is_default: false
                 },
                 {
-                    id: 4,
+                    profile_id: 4,
                     is_default: false
                 },
                 {
-                    id: 77,
+                    profile_id: 77,
                     is_default: true
                 }
             ]
@@ -195,13 +195,13 @@ test('dictionary entry profile availability functions from settings.js', functio
         {
             name: 'Brown Plastic Handle',
             id: 2,
-            profiles: [
+            dictionary_entry_profiles: [
                 {
-                    id: 1,
+                    profile_id: 1,
                     is_default: false
                 },
                 {
-                    id: 4,
+                    profile_id: 4,
                     is_default: true
                 }
             ]
@@ -209,13 +209,13 @@ test('dictionary entry profile availability functions from settings.js', functio
         {
             name: 'Red Plastic Handle',
             id: 3,
-            profiles: [
+            dictionary_entry_profiles: [
                 {
-                    id: 5,
+                    profile_id: 5,
                     is_default: true
                 },
                 {
-                    id: 6,
+                    profile_id: 6,
                     is_default: false
                 }
             ]
@@ -298,13 +298,13 @@ test('dictionary entry profile availability functions from settings.js', functio
     );
 
     //  Now remove default option for a profile with id=4 and try again
-    app.settings.dictionaries.get(1).entries.get(2).set('profiles', [
+    app.settings.dictionaries.get(1).entries.get(2).set('dictionary_entry_profiles', [
         {
-            id: 1,
+            profile_id: 1,
             is_default: false
         },
         {
-            id: 4,
+            profile_id: 4,
             is_default: false
         }
     ]);
@@ -327,17 +327,17 @@ test('misc dictionary functions from settings.js', function () {
         {
             name: 'White Plastic Handle',
             id: 1,
-            profiles: [
+            dictionary_entry_profiles: [
                 {
-                    id: 1,
+                    profile_id: 1,
                     is_default: false
                 },
                 {
-                    id: 4,
+                    profile_id: 4,
                     is_default: false
                 },
                 {
-                    id: 77,
+                    profile_id: 77,
                     is_default: true
                 }
             ]
@@ -345,13 +345,13 @@ test('misc dictionary functions from settings.js', function () {
         {
             name: 'Brown Plastic Handle',
             id: 2,
-            profiles: [
+            dictionary_entry_profiles: [
                 {
-                    id: 1,
+                    profile_id: 1,
                     is_default: false
                 },
                 {
-                    id: 4,
+                    profile_id: 4,
                     is_default: true
                 }
             ]
@@ -359,13 +359,13 @@ test('misc dictionary functions from settings.js', function () {
         {
             name: 'Red Plastic Handle',
             id: 3,
-            profiles: [
+            dictionary_entry_profiles: [
                 {
-                    id: 5,
+                    profile_id: 5,
                     is_default: true
                 },
                 {
-                    id: 6,
+                    profile_id: 6,
                     is_default: false
                 }
             ]
