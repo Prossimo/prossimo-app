@@ -26,7 +26,7 @@ var app = app || {};
             this.ui.$grid_container.toggleClass('is-open', this.show_grid);
         },
         getProfileName: function () {
-            var profile_id = this.model.get('id');
+            var profile_id = this.model.get('profile_id');
             var profile = app.settings.profiles.get(profile_id);
 
             return profile ? profile.get('name') : 'Err: no profile with ID=' + profile_id;

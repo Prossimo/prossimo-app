@@ -12,32 +12,32 @@ test('filling type model basic tests', function () {
     var filling = new app.FillingType();
 
     equal(filling.get('type'), 'glass', 'Filling gets "glass" type by default');
-    deepEqual(filling.get('profiles'), [], 'Profiles is just an empty array upon filling creation');
+    deepEqual(filling.get('filling_type_profiles'), [], 'Profiles is just an empty array upon filling creation');
 
     //  Another entry, to test profiles sorting on load
     var filling_two = new app.FillingType({
         name: 'Insulated PVC Panel',
         type: 'recessed',
-        profiles: [
+        filling_type_profiles: [
             {
-                id: 3,
+                profile_id: 3,
                 is_default: true
             },
             {
-                id: 1,
+                profile_id: 1,
                 is_default: true
             },
             {
-                id: 2,
+                profile_id: 2,
                 is_default: true
             }
         ]
     }, { parse: true });
 
     deepEqual(
-        _.pluck(filling_two.get('profiles'), 'id'),
+        _.pluck(filling_two.get('filling_type_profiles'), 'profile_id'),
         [1, 2, 3],
-        'Filling types profiles should be sorted on parse'
+        'filling_type_profiles should be sorted on parse'
     );
 });
 
@@ -69,9 +69,9 @@ test('filling type isAvailableForProfile function', function () {
     var filling_one = new app.FillingType({
         name: 'Test Type',
         type: 'glass',
-        profiles: [
+        filling_type_profiles: [
             {
-                id: 1,
+                profile_id: 1,
                 is_default: true
             }
         ]
@@ -79,13 +79,13 @@ test('filling type isAvailableForProfile function', function () {
     var filling_two = new app.FillingType({
         name: 'Another Test Type',
         type: 'recessed',
-        profiles: [
+        filling_type_profiles: [
             {
-                id: 1,
+                profile_id: 1,
                 is_default: false
             },
             {
-                id: 2,
+                profile_id: 2,
                 is_default: true
             }
         ]
@@ -108,9 +108,9 @@ test('filling type isDefaultForProfile function', function () {
     var filling_one = new app.FillingType({
         name: 'Test Type',
         type: 'glass',
-        profiles: [
+        filling_type_profiles: [
             {
-                id: 1,
+                profile_id: 1,
                 is_default: true
             }
         ]
@@ -118,13 +118,13 @@ test('filling type isDefaultForProfile function', function () {
     var filling_two = new app.FillingType({
         name: 'Another Test Type',
         type: 'recessed',
-        profiles: [
+        filling_type_profiles: [
             {
-                id: 1,
+                profile_id: 1,
                 is_default: false
             },
             {
-                id: 2,
+                profile_id: 2,
                 is_default: true
             }
         ]
@@ -147,17 +147,17 @@ test('filling type setProfileAvailability function', function () {
     var filling = new app.FillingType({
         name: 'Test Type',
         type: 'glass',
-        profiles: [
+        filling_type_profiles: [
             {
-                id: 1,
+                profile_id: 1,
                 is_default: true
             },
             {
-                id: 2,
+                profile_id: 2,
                 is_default: true
             },
             {
-                id: 54,
+                profile_id: 54,
                 is_default: false
             }
         ]
@@ -202,7 +202,7 @@ test('filling type setProfileAvailability function', function () {
     equal(filling.isDefaultForProfile(54), false, 'Should not be set as default for profile_id=54');
 
     //  Now check that make making it available for profile_id=54 again won't
-    //  create a duplicated entry in profiles list
+    //  create a duplicated entry in filling_type_profiles list
     filling.setProfileAvailability(54, true, false);
 
     equal(filling.isAvailableForProfile(54), true, 'Should be still available for profile_id=54');
@@ -210,7 +210,7 @@ test('filling type setProfileAvailability function', function () {
     deepEqual(
         filling.getIdsOfProfilesWhereIsAvailable(),
         _.uniq(filling.getIdsOfProfilesWhereIsAvailable()),
-        'profiles array should not contain any duplicated entries'
+        'filling_type_profiles array should not contain any duplicated entries'
     );
 
     //  Now make item not available for all profiles
@@ -227,17 +227,17 @@ test('filling type getIdsOfProfilesWhereIsAvailable function', function () {
     var normal_filling = new app.FillingType({
         name: 'Test Type',
         type: 'glass',
-        profiles: [
+        filling_type_profiles: [
             {
-                id: 1,
+                profile_id: 1,
                 is_default: true
             },
             {
-                id: 2,
+                profile_id: 2,
                 is_default: true
             },
             {
-                id: 54,
+                profile_id: 54,
                 is_default: false
             }
         ]
@@ -263,17 +263,17 @@ test('filling type getIdsOfProfilesWhereIsDefault function', function () {
     var normal_filling = new app.FillingType({
         name: 'Test Type',
         type: 'glass',
-        profiles: [
+        filling_type_profiles: [
             {
-                id: 1,
+                profile_id: 1,
                 is_default: true
             },
             {
-                id: 2,
+                profile_id: 2,
                 is_default: true
             },
             {
-                id: 54,
+                profile_id: 54,
                 is_default: false
             }
         ]

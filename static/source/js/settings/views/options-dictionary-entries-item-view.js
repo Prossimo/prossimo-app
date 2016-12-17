@@ -4,12 +4,12 @@ var app = app || {};
     'use strict';
 
     app.OptionsDictionaryEntriesItemView = Marionette.View.extend({
-        // tagName: 'tr',
         tagName: 'div',
         className: 'options-dictionary-entries-item',
         template: app.templates['settings/options-dictionary-entries-item-view'],
         ui: {
             $name_container: '.entry-name',
+            $supplier_name_container: '.entry-supplier-name',
             $profiles_list_container: '.entry-profiles p',
             $edit_profiles: '.js-edit-entry-profiles',
             $clone: '.js-clone-entry',
@@ -35,7 +35,7 @@ var app = app || {};
             });
         },
         getProfilesNamesList: function () {
-            var profiles_ids = _.pluck(this.model.get('profiles'), 'id');
+            var profiles_ids = _.pluck(this.model.get('dictionary_entry_profiles'), 'profile_id');
             var profiles_names_list = [];
 
             if ( profiles_ids && profiles_ids.length ) {
@@ -65,6 +65,7 @@ var app = app || {};
             return {
                 is_expanded: this.is_expanded,
                 name: this.model.get('name'),
+                supplier_name: this.model.get('supplier_name'),
                 profiles: profiles,
                 profiles_string: profiles.length ? profiles.join(', ') : '--'
             };
@@ -73,6 +74,7 @@ var app = app || {};
             var profiles = this.templateContext().profiles;
 
             this.ui.$name_container.empty().append(this.name_input_view.render().el);
+            this.ui.$supplier_name_container.empty().append(this.supplier_name_input_view.render().el);
 
             this.ui.$profiles_list_container.on('mouseenter', function () {
                 var $this = $(this);
@@ -109,11 +111,16 @@ var app = app || {};
                 this.profile_connections_table_view.destroy();
             }
 
+            if ( this.supplier_name_input_view ) {
+                this.supplier_name_input_view.destroy();
+            }
+
             this.ui.$profiles_list_container.off();
             this.ui.$profiles_list_container.tooltip('destroy');
         },
         initialize: function () {
             this.is_expanded = false;
+
             this.name_input_view = new app.BaseInputView({
                 model: this.model,
                 param: 'name',
@@ -121,13 +128,21 @@ var app = app || {};
                 placeholder: 'New Entry'
             });
 
+            this.supplier_name_input_view = new app.BaseInputView({
+                model: this.model,
+                param: 'supplier_name',
+                input_type: 'text',
+                placeholder: ''
+            });
+
             this.profile_connections_table_view = new app.ProfileConnectionsTableView({
                 collection: this.model.profiles
             });
 
-            this.listenTo(this.model, 'change:profiles change:name', function () {
+            this.listenTo(this.model, 'change:dictionary_entry_profiles change:name change:supplier_name', function () {
                 this.render();
                 this.name_input_view.delegateEvents();
+                this.supplier_name_input_view.delegateEvents();
             });
         }
     });

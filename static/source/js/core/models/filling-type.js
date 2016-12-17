@@ -119,7 +119,7 @@ var app = app || {};
         { name: 'is_base_type', title: 'Is Base Type', type: 'boolean' },
         { name: 'weight_per_area', title: 'Weight per Area (kg/m2)', type: 'number' },
         { name: 'position', title: 'Position', type: 'number' },
-        { name: 'profiles', title: 'Profiles', type: 'array' }
+        { name: 'filling_type_profiles', title: 'Profiles', type: 'array' }
     ];
 
     function getDefaultProfilesList() {
@@ -156,7 +156,7 @@ var app = app || {};
 
             var name_value_hash = {
                 type: this.getBaseTypes()[0].name,
-                profiles: getDefaultProfilesList()
+                filling_type_profiles: getDefaultProfilesList()
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -181,9 +181,17 @@ var app = app || {};
         parse: function (data) {
             var filling_type_data = data && data.filling_type ? data.filling_type : data;
 
-            //  Sort profiles by id on load
-            if ( filling_type_data && _.isArray(filling_type_data.profiles) ) {
-                filling_type_data.profiles.sort(function (a, b) { return a.id - b.id; });
+            if ( filling_type_data && _.isArray(filling_type_data.filling_type_profiles) ) {
+                //  Sort profiles by id on load
+                filling_type_data.filling_type_profiles.sort(function (a, b) { return a.profile_id - b.profile_id; });
+
+                //  Remove excessive data from `filling_type_profiles`
+                //  TODO: we need to find a more elegant way to do that, like
+                //  parse them according to additional schema
+                _.each(filling_type_data.filling_type_profiles, function (entry) {
+                    delete entry.profile;
+                    delete entry.id;
+                }, this);
             }
 
             return app.schema.parseAccordingToSchema(filling_type_data, this.schema);
@@ -249,8 +257,8 @@ var app = app || {};
                     var property_source = _.findWhere(FILLING_TYPE_PROPERTIES, { name: key });
                     var type = property_source ? property_source.type : undefined;
 
-                    if ( key === 'profiles' ) {
-                        if ( JSON.stringify(value) !== JSON.stringify(this.getDefaultValue('profiles')) ) {
+                    if ( key === 'filling_type_profiles' ) {
+                        if ( JSON.stringify(value) !== JSON.stringify(this.getDefaultValue('filling_type_profiles')) ) {
                             has_only_defaults = false;
                         }
                     } else if ( this.getDefaultValue(key, type) !== value ) {
@@ -291,13 +299,14 @@ var app = app || {};
         },
         isAvailableForProfile: function (profile_id) {
             return this.get('is_base_type') === true ||
-                this.get('profiles') && _.contains(_.pluck(this.get('profiles'), 'id'), profile_id);
+                this.get('filling_type_profiles') &&
+                _.contains(_.pluck(this.get('filling_type_profiles'), 'profile_id'), profile_id);
         },
         isDefaultForProfile: function (profile_id) {
             var is_default = false;
 
             if ( !this.get('is_base_type') && this.isAvailableForProfile(profile_id) ) {
-                var connection = _.findWhere(this.get('profiles'), { id: profile_id });
+                var connection = _.findWhere(this.get('filling_type_profiles'), { profile_id: profile_id });
 
                 is_default = connection.is_default || false;
             }
@@ -317,8 +326,8 @@ var app = app || {};
          */
         setProfileAvailability: function (profile_id, make_available, make_default) {
             // Deep cloning gives us a `change` event here
-            var current_profiles_list = JSON.parse(JSON.stringify(this.get('profiles')));
-            var connection = _.findWhere(current_profiles_list, { id: profile_id });
+            var current_profiles_list = JSON.parse(JSON.stringify(this.get('filling_type_profiles')));
+            var connection = _.findWhere(current_profiles_list, { profile_id: profile_id });
             var should_persist = false;
             var new_profiles_list;
 
@@ -330,12 +339,12 @@ var app = app || {};
                 //  If connection doesn't exist and we want to add it
                 if ( !connection ) {
                     connection = {
-                        id: profile_id,
+                        profile_id: profile_id,
                         is_default: make_default === true
                     };
 
                     new_profiles_list = _.union(current_profiles_list, [connection]);
-                    new_profiles_list.sort(function (a, b) { return a.id - b.id; });
+                    new_profiles_list.sort(function (a, b) { return a.profile_id - b.profile_id; });
                     should_persist = true;
                 //  If connection exists and we want to just modify is_default
                 } else if ( make_default === true || make_default === false ) {
@@ -346,16 +355,16 @@ var app = app || {};
 
             //  Only save when there are any changes
             if ( should_persist ) {
-                this.persist('profiles', new_profiles_list || current_profiles_list);
+                this.persist('filling_type_profiles', new_profiles_list || current_profiles_list);
             }
         },
         //  We assume that profiles list is sorted and deduplicated
         getIdsOfProfilesWhereIsAvailable: function () {
-            return _.pluck(this.get('profiles'), 'id');
+            return _.pluck(this.get('filling_type_profiles'), 'profile_id');
         },
         //  We assume that profiles list is sorted and deduplicated
         getIdsOfProfilesWhereIsDefault: function () {
-            return _.pluck(_.where(this.get('profiles'), { is_default: true }), 'id');
+            return _.pluck(_.where(this.get('filling_type_profiles'), { is_default: true }), 'profile_id');
         },
         //  TODO: we need to have a way better nesting
         getPricingGridValue: function (profile_id, options) {
@@ -389,7 +398,7 @@ var app = app || {};
             //  TODO: do we want to have it like this? it'd fine if they are
             //  a separate model with the separate endpoint, but if they're
             //  not, we better have profiles as a model attribute
-            this.profiles = new FillingTypeProfiles(this.get('profiles'));
+            this.profiles = new FillingTypeProfiles(this.get('filling_type_profiles'));
         }
     });
 })();

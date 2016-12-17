@@ -125,7 +125,7 @@ var app = app || {};
             return this.options.profiles.map(function (profile) {
                 return [this.getDefaultItemName(profile.id)].concat(
                     _.map(this.options.items_filtered, function (item) {
-                        return _.contains(_.pluck(item.get('profiles'), 'id') || [], profile.id);
+                        return _.contains(item.getIdsOfProfilesWhereIsAvailable() || [], profile.id);
                     })
                 );
             }, this);

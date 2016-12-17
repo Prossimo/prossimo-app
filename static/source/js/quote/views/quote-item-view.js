@@ -72,7 +72,7 @@ var app = app || {};
                 result.filling_size = getFillingSize( source.filling.width, source.filling.height );
 
                 //  Show supplier name for filling if it exists
-                if ( options.show_supplier_filling_name && app.settings && source.filling && source.filling.name ) {
+                if ( options.show_supplier_names && app.settings && source.filling && source.filling.name ) {
                     var filling_type = app.settings.filling_types.getByName(source.filling.name);
 
                     if ( filling_type && filling_type.get('supplier_name') ) {
@@ -263,7 +263,16 @@ var app = app || {};
                     var current_options = dictionary_id ?
                         this.model.getCurrentUnitOptionsByDictionaryId(dictionary_id) : [];
 
-                    return current_options.length ? current_options[0].get('name') : false;
+                    //  We assume that we have only one option per dictionary,
+                    //  although in theory it's possible to have multiple
+                    var option_name = current_options.length ?
+                        (
+                            this.options.show_supplier_names && current_options[0].get('supplier_name') ||
+                            current_options[0].get('name')
+                        ) :
+                        false;
+
+                    return option_name;
                 }, this)
             ));
 

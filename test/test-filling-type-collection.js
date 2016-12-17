@@ -111,9 +111,9 @@ test('filling type collection getAvailableForProfile, getDefaultForProfile', fun
         {
             name: 'Test Type',
             type: 'glass',
-            profiles: [
+            filling_type_profiles: [
                 {
-                    id: 1,
+                    profile_id: 1,
                     is_default: true
                 }
             ]
@@ -121,9 +121,9 @@ test('filling type collection getAvailableForProfile, getDefaultForProfile', fun
         {
             name: 'Another Test Type',
             type: 'recessed',
-            profiles: [
+            filling_type_profiles: [
                 {
-                    id: 2,
+                    profile_id: 2,
                     is_default: false
                 }
             ]
@@ -151,9 +151,9 @@ test('filling type collection getIdsOfAllConnectedProfiles', function () {
         {
             name: 'Test Type',
             type: 'glass',
-            profiles: [
+            filling_type_profiles: [
                 {
-                    id: 1,
+                    profile_id: 1,
                     is_default: true
                 }
             ]
@@ -161,13 +161,13 @@ test('filling type collection getIdsOfAllConnectedProfiles', function () {
         {
             name: 'Another Test Type',
             type: 'recessed',
-            profiles: [
+            filling_type_profiles: [
                 {
-                    id: 1,
+                    profile_id: 1,
                     is_default: false
                 },
                 {
-                    id: 2,
+                    profile_id: 2,
                     is_default: true
                 }
             ]
@@ -183,9 +183,9 @@ test('filling type collection getIdsOfAllConnectedProfiles', function () {
     collection.add({
         name: 'Unnecessary Type',
         type: 'glass',
-        profiles: [
+        filling_type_profiles: [
             {
-                id: 17,
+                profile_id: 17,
                 is_default: true
             }
         ]
@@ -205,9 +205,9 @@ test('filling type collection validatePerProfileDefaults', function () {
         {
             name: 'Test Type',
             type: 'glass',
-            profiles: [
+            filling_type_profiles: [
                 {
-                    id: 1,
+                    profile_id: 1,
                     is_default: true
                 }
             ]
@@ -215,13 +215,13 @@ test('filling type collection validatePerProfileDefaults', function () {
         {
             name: 'Another Test Type',
             type: 'recessed',
-            profiles: [
+            filling_type_profiles: [
                 {
-                    id: 1,
+                    profile_id: 1,
                     is_default: true
                 },
                 {
-                    id: 2,
+                    profile_id: 2,
                     is_default: true
                 }
             ]
@@ -257,9 +257,9 @@ test('filling type collection setItemAvailabilityForProfile', function () {
         {
             name: 'Test Type',
             type: 'glass',
-            profiles: [
+            filling_type_profiles: [
                 {
-                    id: 1,
+                    profile_id: 1,
                     is_default: true
                 }
             ]
@@ -267,13 +267,13 @@ test('filling type collection setItemAvailabilityForProfile', function () {
         {
             name: 'Another Test Type',
             type: 'recessed',
-            profiles: [
+            filling_type_profiles: [
                 {
-                    id: 1,
+                    profile_id: 1,
                     is_default: false
                 },
                 {
-                    id: 2,
+                    profile_id: 2,
                     is_default: true
                 }
             ]
@@ -298,13 +298,13 @@ test('filling type collection setItemAvailabilityForProfile', function () {
     equal(item_one.isAvailableForProfile(1), false, 'First collection item is not available for profile_id=1');
     equal(item_two.isAvailableForProfile(1), false, 'Second collection item is not available for profile_id=1');
 
-    //  Now try to create a duplicated entry in profiles array
+    //  Now try to create a duplicated entry in filling_type_profiles array
     collection.setItemAvailabilityForProfile(3, item_two, true);
 
     deepEqual(
         item_two.getIdsOfProfilesWhereIsAvailable(),
         _.uniq(item_two.getIdsOfProfilesWhereIsAvailable()),
-        'profiles array should not contain any duplicated entries'
+        'filling_type_profiles array should not contain any duplicated entries'
     );
 });
 
@@ -314,9 +314,9 @@ test('filling type collection setItemAsDefaultForProfile', function () {
         {
             name: 'Test Type',
             type: 'glass',
-            profiles: [
+            filling_type_profiles: [
                 {
-                    id: 1,
+                    profile_id: 1,
                     is_default: true
                 }
             ]
@@ -324,13 +324,13 @@ test('filling type collection setItemAsDefaultForProfile', function () {
         {
             name: 'Another Test Type',
             type: 'recessed',
-            profiles: [
+            filling_type_profiles: [
                 {
-                    id: 1,
+                    profile_id: 1,
                     is_default: false
                 },
                 {
-                    id: 2,
+                    profile_id: 2,
                     is_default: true
                 }
             ]

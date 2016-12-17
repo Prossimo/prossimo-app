@@ -17,34 +17,39 @@ var app = app || {};
         ui: {
             $edit: '.edit',
             $input: '.edit input',
-            $value: '.value',
-            $revert: '.js-revert-editable'
+            $value: '.value'
         },
         events: {
             'click @ui.$value': 'makeEditable',
             'blur @ui.$input': 'stopEditing',
             'keypress @ui.$input': 'confirmOnEnter',
             'keydown @ui.$input': 'cancelOnEscape',
-            'click @ui.$revert': 'revertEditable'
+            'click .js-revert-editable': 'revertEditable'
         },
         makeEditable: function () {
             if (!this.options.is_disabled) {
-                this.ui.$container.addClass('is-edited');
+                this.$el.addClass('is-edited');
                 this.ui.$input.trigger('focus').trigger('select');
             }
         },
         revertEditable: function () {
-            this.ui.$container.removeClass('is-edited').removeClass('has-error');
+            this.$el.removeClass('is-edited').removeClass('has-error');
             this.ui.$input.val(this.templateContext().value);
             this.hideErrorMessage();
         },
         showErrorMessage: function (message) {
-            this.ui.$container.addClass('has-error');
-            this.ui.$edit.attr('data-content', message);
+            var html = '<p>' + message + '</p>' +
+                '<button class="btn btn-xs btn-primary js-revert-editable">' +
+                    '<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>' +
+                    '<span>Undo</span>' +
+                '</button>';
+
+            this.$el.addClass('has-error');
+            this.ui.$edit.attr('data-content', html);
             this.ui.$edit.popover('show');
         },
         hideErrorMessage: function () {
-            this.ui.$container.removeClass('has-error');
+            this.$el.removeClass('has-error');
             this.ui.$edit.attr('data-content', '');
             this.ui.$edit.popover('hide');
         },
@@ -52,11 +57,14 @@ var app = app || {};
             var new_value = this.ui.$input.val().trim();
             var new_value_parsed;
 
-            if ( !this.ui.$container.hasClass('is-edited') ) {
+            if (
+                !this.$el.hasClass('is-edited') ||
+                 this.$el.hasClass('has-error')
+            ) {
                 return;
             }
 
-            if ( new_value !== '' && new_value !== this.templateContext().value ) {
+            if ( new_value !== this.templateContext().value ) {
                 new_value_parsed = _.isFunction(this.model.getAttributeType) &&
                     this.model.getAttributeType(this.options.param) === 'number' && !isNaN(new_value) ?
                     parseFloat(new_value) : new_value;
@@ -92,7 +100,9 @@ var app = app || {};
             this.ui.$edit.popover('destroy');
 
             this.ui.$edit.popover({
-                trigger: 'manual'
+                trigger: 'manual',
+                title: 'Validation Error',
+                html: true
             });
         },
         enable: function () {
@@ -102,26 +112,6 @@ var app = app || {};
         disable: function () {
             this.options.is_disabled = true;
             this.render();
-        },
-        //  TODO: we could pass a formatter function to format readable value,
-        //  see getFormattedRenderer from hot-renderers for example
-        initialize: function (options) {
-            var default_options = {
-                input_type: 'text',
-                is_disabled: false,
-                placeholder: '',
-                formatter: false
-            };
-
-            this.options = _.extend({}, default_options, options);
-
-            //  TODO: we might want to also allow number and email input types,
-            //  but we'll need to update our UI for that (fix reset button)
-            if ( this.options.input_type && !_.contains(['text'], this.options.input_type) ) {
-                throw new Error('Input type ' + this.options.input_type + ' is not allowed');
-            }
-
-            this.listenTo(this.model, 'change:' + this.options.param, this.render);
         },
         templateContext: function () {
             var value = this.model.get(this.options.param);
@@ -136,11 +126,31 @@ var app = app || {};
             };
         },
         onRender: function () {
-            this.ui.$container = this.$el;
             this.appendPopover();
         },
         onBeforeDestroy: function () {
             this.ui.$edit.popover('destroy');
+
+        },
+        //  TODO: we could pass a formatter function to format readable value,
+        //  see getFormattedRenderer from hot-renderers for example
+        initialize: function (options) {
+            var default_options = {
+                input_type: 'text',
+                is_disabled: false,
+                placeholder: '',
+                formatter: false
+            };
+
+            this.options = _.extend({}, default_options, options);
+
+            //  TODO: we could use inpuut type number here, but the problem is
+            //  it has some serious issues in firefox
+            if ( this.options.input_type && !_.contains(['text'], this.options.input_type) ) {
+                throw new Error('Input type ' + this.options.input_type + ' is not allowed');
+            }
+
+            this.listenTo(this.model, 'change:' + this.options.param, this.render);
         }
     });
 })();

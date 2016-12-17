@@ -89,11 +89,27 @@ var app = app || {};
         'vertical_invisible', 'horizontal_invisible'
     ];
 
-    function getDefaultFillingType() {
-        return {
+    //  TODO: this could return dummy type object or something like that, so we
+    //  could know when we don't get the right thing, and try to fix that
+    function getDefaultFillingType(default_glazing_name, profile_id) {
+        var dummy_type = {
             fillingType: 'glass',
             fillingName: 'Glass'
         };
+        var default_type;
+
+        if ( app.settings && default_glazing_name ) {
+            default_type = app.settings.filling_types.getByName(default_glazing_name);
+        }
+
+        if ( !default_type && app.settings && profile_id ) {
+            default_type = app.settings.filling_types.getDefaultOrFirstAvailableForProfile(profile_id);
+        }
+
+        return default_type ? {
+            fillingType: default_type.get('type'),
+            fillingName: default_type.get('name')
+        } : dummy_type;
     }
 
     function getDefaultBars() {
@@ -130,14 +146,15 @@ var app = app || {};
         return result;
     }
 
-    function getSectionDefaults(type) {
-        var isRootSection = ( type === 'root_section' );
+    function getSectionDefaults(section_type, default_glazing_name, profile_id) {
+        var isRootSection = ( section_type === 'root_section' );
+        var defaultFilling = getDefaultFillingType(default_glazing_name, profile_id);
 
         return {
             id: _.uniqueId(),
             sashType: 'fixed_in_frame',
-            fillingType: getDefaultFillingType().fillingType,
-            fillingName: getDefaultFillingType().fillingName,
+            fillingType: defaultFilling.fillingType,
+            fillingName: defaultFilling.fillingName,
             bars: getDefaultBars(),
             measurements: getDefaultMeasurements(isRootSection)
         };
@@ -179,6 +196,9 @@ var app = app || {};
         getNameAttribute: function () {
             return 'mark';
         },
+        //  TODO: stuff inside name_value_hash gets evaluated for each
+        //  attribute, but we actually want it to be evaluated only for the
+        //  corresponding attribute (see example for root_section)
         getDefaultValue: function (name, type) {
             var default_value = '';
 
@@ -192,7 +212,7 @@ var app = app || {};
                 conversion_rate: 0.9,
                 price_markup: 2.3,
                 quantity: 1,
-                root_section: getSectionDefaults(name)
+                root_section: name === 'root_section' ? getSectionDefaults(name) : ''
             };
 
             if ( app.settings ) {
@@ -232,14 +252,18 @@ var app = app || {};
             this.profile = null;
 
             if ( !this.options.proxy ) {
-                this.setProfile();
                 this.validateOpeningDirection();
                 this.validateRootSection();
-                this.on('change:profile_id', this.setProfile, this);
-                this.on('change:glazing', this.setDefaultFillingType, this);
+                this.setProfile();
+
+                this.on('change:profile_id', function () {
+                    this.setProfile({ validate_filling_types: true });
+                }, this);
+                this.on('change:glazing', this.onGlazingUpdate, this);
 
                 //  If we know that something was changed in dictionaries,
                 //  we have to re-validate our unit options
+                //  TODO: we want to do the same thing for filling types
                 this.listenTo(app.vent, 'validate_units:dictionaries', function () {
                     if ( this.isParentProjectActive() ) {
                         this.validateUnitOptions();
@@ -252,6 +276,18 @@ var app = app || {};
                         this.validateUnitOptions();
                     }
                 });
+
+                //  If we just created a unit, we want to set root_section
+                //  considering the id of this unit's profile
+                //  TODO: this might be not optimal place to do this since
+                //  it doesn't work for fixtures and might not work in some
+                //  other conditions
+                if ( this.isNew() && app.session && app.session.get('no_backend') !== true ) {
+                    var profile_id = this.profile && this.profile.id;
+                    var glazing_name = this.get('glazing');
+
+                    this.set('root_section', getSectionDefaults('root_section', glazing_name, profile_id));
+                }
             }
         },
         validateOpeningDirection: function () {
@@ -267,6 +303,7 @@ var app = app || {};
         //  The idea is to call this function on model init (maybe not only)
         //  and check whether root section could be used by our drawing code or
         //  should it be reset to defaults.
+        //  TODO: this should be done at parse step
         validateRootSection: function () {
             var root_section = this.get('root_section');
             var root_section_parsed;
@@ -353,6 +390,14 @@ var app = app || {};
 
             return default_options;
         },
+        resetUnitOptionsToDefaults: function () {
+            var current_options = this.get('unit_options');
+            var default_options = this.getDefaultUnitOptions();
+
+            if ( !_.isEqual(current_options, default_options) ) {
+                this.persist('unit_options', default_options);
+            }
+        },
         validateUnitOptions: function () {
             var default_options = this.getDefaultUnitOptions();
             var current_options = this.get('unit_options');
@@ -403,6 +448,70 @@ var app = app || {};
                 this.set('unit_options', getValidatedUnitOptions(this, current_options, default_options));
             }
         },
+        getCurrentFillingsList: function (current_root) {
+            var section_result;
+            var result = [];
+
+            current_root = current_root || this.generateFullRoot();
+
+            _.each(current_root.sections, function (section) {
+                section_result = this.getCurrentFillingsList(section);
+
+                if (current_root.divider === 'vertical' || current_root.divider === 'vertical_invisible') {
+                    result = section_result.concat(result);
+                } else {
+                    result = result.concat(section_result);
+                }
+            }, this);
+
+            if ( current_root.sections.length === 0 ) {
+                result.unshift({
+                    name: current_root.fillingName,
+                    type: current_root.fillingType
+                });
+            }
+
+            return result;
+        },
+        //  The idea here is to check if all the filling types we got are valid
+        //  for the currently selected profile. If this is not the case, we
+        //  want to automatically change all of them to the default type for
+        //  this profile
+        //  TODO: change only those not available, not all types
+        //  TODO: it's not a proper name, but it's the same as
+        //  validateUnitOptions we have above
+        //  TODO: this needs tests
+        validateFillingTypes: function () {
+            //  Do nothing in case of dummy profile or no profile
+            if ( this.isNew() || !this.profile || this.hasDummyProfile() || !app.settings ) {
+                return;
+            }
+
+            var glazing = this.get('glazing');
+            var current_fillings_list = _.pluck(this.getCurrentFillingsList(), 'name');
+            var complete_fillings_list = _.union(current_fillings_list, [glazing]);
+
+            var available_for_profile_list = _.difference(
+                _.map(app.settings.filling_types.getAvailableForProfile(this.profile.id), function (item) {
+                    return item.get('name');
+                }),
+                _.pluck(app.settings.filling_types.getBaseTypes(), 'title')
+            );
+            var invalid_flag = false;
+
+            _.find(complete_fillings_list, function (filling_name) {
+                if ( _.contains(available_for_profile_list, filling_name) === false ) {
+                    invalid_flag = true;
+                    return true;
+                }
+            }, this);
+
+            //  TODO: maybe we could do only one call here?
+            if ( invalid_flag ) {
+                this.persist('glazing', getDefaultFillingType(undefined, this.profile.id).fillingName);
+                this.onGlazingUpdate();
+            }
+        },
         validate: function (attributes, options) {
             var error_obj = null;
 
@@ -435,7 +544,13 @@ var app = app || {};
                 return error_obj;
             }
         },
-        setProfile: function () {
+        setProfile: function (options) {
+            var default_options = {
+                validate_filling_types: false
+            };
+
+            options = _.defaults({}, options, default_options);
+
             this.profile = null;
 
             //  Assign the default profile id to a newly created unit
@@ -454,6 +569,10 @@ var app = app || {};
             }
 
             this.validateUnitOptions();
+
+            if ( options.validate_filling_types ) {
+                this.validateFillingTypes();
+            }
         },
         hasDummyProfile: function () {
             return this.profile && this.profile.get('is_dummy');
@@ -494,7 +613,7 @@ var app = app || {};
 
             return has_only_defaults;
         },
-        setDefaultFillingType: function () {
+        onGlazingUpdate: function () {
             var filling_type;
             var glazing = this.get('glazing');
 
@@ -954,9 +1073,12 @@ var app = app || {};
             });
         },
         removeSash: function (sectionId) {
+            var glazing_name = this.get('glazing');
+            var profile_id = this.profile && this.profile.id;
+
             this._updateSection(sectionId, function (section) {
                 section.sashType = 'fixed_in_frame';
-                _.assign(section, getDefaultFillingType());
+                _.assign(section, getDefaultFillingType(glazing_name, profile_id));
                 section.divider = null;
                 section.sections = [];
                 section.position = null;
@@ -1390,6 +1512,8 @@ var app = app || {};
         },
         clearFrame: function () {
             var rootId = this.get('root_section').id;
+            var profile_id = this.profile && this.profile.id;
+            var glazing_name = this.get('glazing');
 
             //  Similar to removeMullion but affects more properties
             this._updateSection(rootId, function (section) {
@@ -1397,7 +1521,7 @@ var app = app || {};
                 section.sections = [];
                 section.position = null;
                 section.sashType = 'fixed_in_frame';
-                _.assign(section, getDefaultFillingType());
+                _.assign(section, getDefaultFillingType(glazing_name, profile_id));
             });
         },
         //  Here we get a list with basic sizes for each piece of the unit:
@@ -1713,15 +1837,13 @@ var app = app || {};
                 } else if ( parent_root && parent_root.fillingType && parent_root.fillingName ) {
                     current_sash.filling.type = parent_root.fillingType;
                     current_sash.filling.name = parent_root.fillingName;
-                } else if (
-                    this.get('glazing') && app.settings &&
-                    app.settings.filling_types.getByName(this.get('glazing'))
-                ) {
-                    filling_type = app.settings.filling_types.getByName(this.get('glazing'));
-                    current_sash.filling.type = filling_type.get('type');
-                    current_sash.filling.name = filling_type.get('name');
+                //  If there is no filling data provided for this section,
+                //  we just show default filling info
                 } else {
-                    filling_type = getDefaultFillingType();
+                    var profile_id = this.profile && this.profile.id;
+                    var glazing_name = this.get('glazing');
+
+                    filling_type = getDefaultFillingType(glazing_name, profile_id);
                     current_sash.filling.type = filling_type.fillingType;
                     current_sash.filling.name = filling_type.fillingName;
                 }
@@ -2113,6 +2235,8 @@ var app = app || {};
         },
         //  Get list of all possible variants from a certain dictionary that
         //  could be selected for this unit
+        //  TODO: why do we need this function in unit.js if we could call it
+        //  on dictionary collection?
         getAvailableOptionsByDictionaryId: function (dictionary_id) {
             var result = [];
             var profile_id = this.profile && this.profile.id;
