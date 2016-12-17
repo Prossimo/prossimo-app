@@ -9,6 +9,7 @@ var app = app || {};
         template: app.templates['settings/options-dictionary-entries-item-view'],
         ui: {
             $name_container: '.entry-name',
+            $supplier_name_container: '.entry-supplier-name',
             $profiles_list_container: '.entry-profiles p',
             $edit_profiles: '.js-edit-entry-profiles',
             $clone: '.js-clone-entry',
@@ -55,6 +56,7 @@ var app = app || {};
 
             return {
                 name: this.model.get('name'),
+                supplier_name: this.model.get('supplier_name'),
                 profiles: profiles,
                 profiles_string: profiles.length ? profiles.join(', ') : '--'
             };
@@ -63,6 +65,7 @@ var app = app || {};
             var profiles = this.templateContext().profiles;
 
             this.ui.$name_container.empty().append(this.name_input_view.render().el);
+            this.ui.$supplier_name_container.empty().append(this.supplier_name_input_view.render().el);
 
             this.ui.$profiles_list_container.on('mouseenter', function () {
                 var $this = $(this);
@@ -93,6 +96,10 @@ var app = app || {};
                 this.name_input_view.destroy();
             }
 
+            if ( this.supplier_name_input_view ) {
+                this.supplier_name_input_view.destroy();
+            }
+
             this.ui.$profiles_list_container.off();
             this.ui.$profiles_list_container.tooltip('destroy');
         },
@@ -104,9 +111,17 @@ var app = app || {};
                 placeholder: 'New Entry'
             });
 
-            this.listenTo(this.model, 'change:dictionary_entry_profiles change:name', function () {
+            this.supplier_name_input_view = new app.BaseInputView({
+                model: this.model,
+                param: 'supplier_name',
+                input_type: 'text',
+                placeholder: ''
+            });
+
+            this.listenTo(this.model, 'change:dictionary_entry_profiles change:name change:supplier_name', function () {
                 this.render();
                 this.name_input_view.delegateEvents();
+                this.supplier_name_input_view.delegateEvents();
             });
         }
     });

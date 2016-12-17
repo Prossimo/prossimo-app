@@ -9,7 +9,7 @@ var app = app || {};
     //  to units / accessories, instead of price
     var ENTRY_PROPERTIES = [
         { name: 'name', title: 'Name', type: 'string' },
-        //  TODO: price should be a number on the backend as well
+        { name: 'supplier_name', title: 'Supplier Name', type: 'string' },
         { name: 'price', title: 'Price', type: 'number' },
         { name: 'data', title: 'Additional Data', type: 'string' },
         { name: 'position', title: 'Position', type: 'number' },
