@@ -48,6 +48,14 @@ $(function () {
                     app.main_region.show(new app.MainDashboardView());
                 }
             },
+            counting_windows: {
+                title: 'Counting Windows',
+                path: 'counting-windows',
+                icon_name: 'eye-open',
+                onShow: function () {
+                    app.main_region.show(new app.MainCountingWindowsView());
+                }                
+            },
             units_table: {
                 title: 'Units',
                 path: 'units',
@@ -87,15 +95,7 @@ $(function () {
                 onShow: function () {
                     app.main_region.show(new app.MainSettingsView());
                 }
-            },
-            counting_windows: {
-                title: 'Counting Windows',
-                path: 'counting-windows',
-                icon_name: 'eye-open',
-                onShow: function () {
-                    app.main_region.show(new app.MainCountingWindowsView());
-                }                
-            }            
+            }                        
         });
 
         app.paste_image_helper = new app.PasteImageHelper();

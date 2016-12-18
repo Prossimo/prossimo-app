@@ -33,8 +33,8 @@ var app = app || {};
             this.Canvas.on('object:moving', function (options) {
 
                 var model = options.target.model;
-                model.position.left = options.target.left
-                model.position.top  = options.target.top;
+                model.position.left = options.target.left.toFixed(0);
+                model.position.top  = options.target.top.toFixed(0);
  
             });          
             
@@ -45,10 +45,10 @@ var app = app || {};
                         var obj = self.Canvas.getActiveObject();
                         var pointer = self.Canvas.getPointer(event.e);
 
-                        obj.left = pointer.x;
-                        obj.top = pointer.y;
-                        obj.model.position.left = pointer.x;
-                        obj.model.position.top = pointer.y;
+                        obj.left = pointer.x.toFixed(0);
+                        obj.top = pointer.y.toFixed(0);
+                        obj.model.position.left = pointer.x.toFixed(0);
+                        obj.model.position.top = pointer.y.toFixed(0);
                         
                         obj.setCoords();
                         self.Canvas.renderAll();
@@ -89,23 +89,20 @@ var app = app || {};
             if(e.ctrlKey == true)
             {
                 e.preventDefault();
-                if(e.originalEvent.wheelDelta > 0) {                     
-                     this.Canvas.setZoom(this.Canvas.getZoom() / 1.1 ) ;
-                 }else {                     
-                     this.Canvas.setZoom(this.Canvas.getZoom() * 1.1 ) ;
+                var curZoom = this.Canvas.getZoom();
+                var newZoom;
+
+                 if(e.originalEvent.wheelDelta > 0) {                                
+                     newZoom = curZoom / 1.1;
+                 }else {                                          
+                     newZoom = curZoom * 1.1;
                  }
+                 
+                 var x = e.offsetX, y = e.offsetY;
+                 this.Canvas.zoomToPoint({x:x, y:y}, newZoom);
             }
   
-        },
-        onRedrawComments: function() {
-            this.removeAllCommentsOnCanvas();
-            this.drawAllCommentsOnCanvas();
-        },
-        onRenderCommentFromList:function(index) {
-  
-            var top = app.comments.at(index).get('position').top - 50;                  
-            $('.quote-outer-container').scrollTop(top);
-        },
+        },        
         onAddStamp: function(stamp) {
             if (this.initCanvas === false ) {
                 return false;
@@ -130,8 +127,7 @@ var app = app || {};
               left: info.position.left,
               top: info.position.top      
             });
-        
-    
+            
             number.on('object:dblclick', function (options) {  
 
                 //propagate comment's click event to main controller

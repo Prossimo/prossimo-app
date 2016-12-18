@@ -5,12 +5,12 @@
 <div class="tab-container">
     <ul class="nav nav-tabs">
     {{#each tabs }}
-        <li class="{{ @key }}{{#if is_active }} active{{/if}}"><a href="#{{ @key }}">{{ title }}</a></li>
+        <li class="{{ @index }} {{#if is_active }} active{{/if}}"><a href="#{{ @index }}">{{ title }}</a></li>
     {{/each}}
     </ul>
 </div>
 
-{{#if tabs.active_pages.is_active }}
+{{#if tabs.0.is_active }}
     <div class="counting-table">           
         <table>
             <thead>
@@ -31,12 +31,12 @@
     </div>
 {{/if}}
 
-{{#if tabs.active_stamps_by_page.is_active }}
+{{#if tabs.1.is_active }}
     <div class="stamps-selector-controls">
         <div class="stamp-selector-select">
             <select class="selectpicker" title='Choose a Stamp'>
                 {{#each stamps}}
-                    <option value="{{ stamp }}"><strong>{{ stamp }}</strong></option>
+                    <option value="{{ @index }}" {{#ifCond stamp ../lastSelectedStamp}} selected {{/ifCond}}><strong>{{ stamp }}</strong></option>
                 {{/each}}
             </select>
         </div>
@@ -68,7 +68,7 @@
     </div>
 {{/if}}
 
-{{#if tabs.active_manage_labels.is_active }}
+{{#if tabs.2.is_active }}
     <div class="stamps-selector-controls">
         <div class="stamp-selector-select">
             <input type="text" class="newLabel" placeholder="New Label Name ..." />            

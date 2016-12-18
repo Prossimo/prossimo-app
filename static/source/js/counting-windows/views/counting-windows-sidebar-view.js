@@ -26,36 +26,44 @@ var app = app || {};
             'click .counting-page':'onClickPageTable',
             'click .delete-stamp' : 'onDeleteStamp',
             'click .delete-label' : 'onDeleteLabel'
-        },       
+        },
+        keyShortcuts: {
+            up: 'onUpBtn',
+            down: 'onDownBtn',
+            left: 'onLeftBtn',
+            right: 'onRightBtn'
+        },
         initialize: function () {
-            this.tabs = {
-                active_pages: {
-                    title: 'Pages'
+            this.tabs = [
+                {
+                    title: 'Pages',
+                    is_active: true
                 },
-                active_stamps_by_page: {
-                    title: 'Stamps By Page'
+                {
+                    title: 'Stamps By Page',
+                    is_active: false
                 },
-                active_manage_labels: {
-                    title: 'Manage Labels'
+                {
+                    title: 'Manage Labels',
+                    is_active: false
                 }                
-            };
-            this.active_tab = 'active_pages';
+            ];
+            this.active_tab_Idx = 0;
 
             this.countpages = app.countpages.toJSON();
             this.stamps     = app.stamps.toJSON();
 
-            this.selpage    = -1;
+            this.selpage    = 0;
+            this.lastSelectedStampIdx = 0;
 
-
-            //app.vent.trigger('main_quoteview:selected_comment:render', index);       
-            /*this.listenTo(this.options.parent_view.active_unit, 'all', this.render);
-            this.listenTo(this.options.parent_view, 'drawing_view:onSetState', this.render);
-            this.listenTo(app.current_project.settings, 'change', this.render);*/
+            app.vent.trigger('counting_windows_view:page:load', 0);            
         },
-        setActiveTab: function (tab_name) {
-            if ( _.contains(_.keys(this.tabs), tab_name) ) {
-                this.active_tab = tab_name;
-            }
+        setActiveTab: function (tabIdx) {
+
+            this.tabs[this.active_tab_Idx].is_active = false;
+            this.tabs[tabIdx].is_active = true;
+           
+            this.active_tab_Idx = tabIdx;            
         },
         onClickPageTable: function(e) {
             
@@ -66,10 +74,10 @@ var app = app || {};
             app.vent.trigger('counting_windows_view:page:load', this.selpage);      
         },
         onTabClick: function (e) {
-            var target = $(e.target).attr('href').replace('#', '');
+            var idx = $(e.target).attr('href').replace('#', '');
 
             e.preventDefault();
-            this.setActiveTab(target);
+            this.setActiveTab(idx);
             this.render();
         },
         onDeleteStamp: function(e) {
@@ -93,25 +101,69 @@ var app = app || {};
             
             this.render();
         },
+        onUpBtn: function() {
+
+            this.lastSelectedStampIdx--;           
+
+            if (this.lastSelectedStampIdx < 0) {
+                this.lastSelectedStampIdx = app.stamps.length - 1;                
+            }
+
+            this.render();
+        },
+        onDownBtn: function(){            
+
+            this.lastSelectedStampIdx++;           
+
+            if (this.lastSelectedStampIdx >= app.stamps.length) {
+                this.lastSelectedStampIdx = 0;                
+            }
+
+            this.render();
+        },
+        onLeftBtn: function() {
+
+            this.tabs[this.active_tab_Idx].is_active = false;
+            this.active_tab_Idx--;
+            if(this.active_tab_Idx <0) {
+                this.active_tab_Idx = this.tabs.length - 1;
+            }
+            this.tabs[this.active_tab_Idx].is_active = true;
+ 
+            this.render();
+        },
+        onRightBtn: function() {
+
+            this.tabs[this.active_tab_Idx].is_active = false;
+            this.active_tab_Idx++;
+            if(this.active_tab_Idx >= this.tabs.length) {
+                this.active_tab_Idx = 0;
+            }
+
+            this.tabs[this.active_tab_Idx].is_active = true;
+ 
+            this.render();
+        },
         onStampAdd: function() {
 
-            var st = this.ui.$select.val();
-            if (st === '') 
-                return;
+            var index = this.ui.$select.val();
+            var st = app.stamps.at(index);
 
             var page = this.countpages[this.selpage];                        
             var lb = {          
                         index: page.labels[page.labels.length - 1].index + 1 ,                                    
                         position: { left: 0 ,  top:0 },
-                        stamp: st           
+                        stamp: st.get("stamp")
                     }; 
             
             page.labels.push(lb);
 
             app.countpages.updateItemByIndex(this.selpage, new app.CountPage(page));
             this.countpages = app.countpages.toJSON();          
+            
+            this.lastSelectedStampIdx = index;
 
-            this.updateLabels(st, '+');
+            this.updateLabels(st.get("stamp"), '+');
 
             this.render();
 
@@ -168,11 +220,8 @@ var app = app || {};
                 selectedpage: this.countpages[this.selpage],                
                 countpages: this.countpages,
                 stamps:this.stamps,
-                tabs: _.each(this.tabs, function (item, key) {
-                    item.is_active = key === this.active_tab;
-
-                    return item;
-                }, this)
+                lastSelectedStamp: app.stamps.at(this.lastSelectedStampIdx).get("stamp"),
+                tabs: this.tabs
             };
         },
         onRender: function () {
