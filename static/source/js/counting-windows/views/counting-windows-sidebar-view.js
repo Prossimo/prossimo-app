@@ -17,8 +17,7 @@ var app = app || {};
             $sidebar_toggle: '.js-sidebar-toggle',
             $tab_container: '.tab-container'           
         },
-        events: {
-            'change @ui.$select': 'onChange',
+        events: {            
             'click @ui.$stamp_plus': 'onStampAdd',
             'click @ui.$label_plus': 'onLabelAdd',
             'click .nav-tabs a': 'onTabClick',
@@ -196,20 +195,7 @@ var app = app || {};
             this.stamps = app.stamps.toJSON();
 
             this.render();
-        },        
-
-        selectUnit: function (model) {
-            this.$el.trigger({
-                type: 'unit-selected',
-                model: model
-            });
-
-            this.render();
-        },
-        onChange: function () {
-            //this.selectUnit(this.collection.get(this.ui.$select.val()));
-        },        
-
+        },                
         onSidebarToggle: function () {
             this.$el.trigger({ type: 'sidebar-toggle' });
         },

@@ -73,6 +73,24 @@ var app = app || {};
                 this.stopListening(this.drawing_view);
                 this.drawing_view.destroy();
             }
+
+
+            //reflecting stamps into units
+            app.stamps.each(function(stamp){
+              
+                var model = app.current_project.units.find(function(model) { return model.get('mark') === stamp.get('stamp'); });
+
+                if( model ) {
+                    model.set('quantity', stamp.get('quantity'));
+                } else {
+                    var m = new app.Unit({
+                                        mark: stamp.get('stamp'),
+                                        quantity: stamp.get('quantity')
+                                    });
+                    app.current_project.units.add(m);
+                }
+            });
+
         }
     });
 })();
