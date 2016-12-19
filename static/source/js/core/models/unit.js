@@ -376,7 +376,11 @@ var app = app || {};
                     var is_optional = _.contains(rules, 'IS_OPTIONAL');
 
                     if ( !is_optional && dictionary_id && profile_id ) {
-                        var option = app.settings.getDefaultOrFirstAvailableOption(dictionary_id, profile_id);
+                        //  TODO: we need to call this directly on `dictionary` iterable
+                        var option = app.settings.dictionaries.getDefaultOrFirstAvailableOption(
+                            dictionary_id,
+                            profile_id
+                        );
 
                         if ( option && option.id && dictionary.id ) {
                             default_options.push({
@@ -2242,7 +2246,7 @@ var app = app || {};
             var profile_id = this.profile && this.profile.id;
 
             if ( app.settings && profile_id ) {
-                result = app.settings.getAvailableOptions(dictionary_id, profile_id, true);
+                result = app.settings.dictionaries.getAvailableOptions(dictionary_id, profile_id, true);
             }
 
             return result;

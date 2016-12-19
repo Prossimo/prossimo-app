@@ -163,14 +163,14 @@ var app = app || {};
         },
         getActiveUnitOptions: function () {
             var active_unit_options = [];
-            var options_list = app.settings.getAvailableDictionaryNames();
+            var options_list = app.settings.dictionaries.getAvailableDictionaryNames();
             var active_unit;
 
             if ( this.options.parent_view.active_unit ) {
                 active_unit = this.options.parent_view.active_unit;
 
                 active_unit_options = _.map(options_list, function (dictionary_name) {
-                    var dictionary_id = app.settings.getDictionaryIdByName(dictionary_name);
+                    var dictionary_id = app.settings.dictionaries.getDictionaryIdByName(dictionary_name);
                     var rules_and_restrictions;
                     var value = '(None)';
                     var is_restricted = false;

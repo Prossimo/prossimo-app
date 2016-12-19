@@ -3,7 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
-    //  TODO: should `rules_and_restrctions` here be an array?
+    //  TODO: should `rules_and_restrctions` here be an array? or inline model?
     var DICTIONARY_PROPERTIES = [
         { name: 'name', title: 'Name', type: 'string' },
         { name: 'rules_and_restrictions', title: 'Rules and Restrictions', type: 'string' },

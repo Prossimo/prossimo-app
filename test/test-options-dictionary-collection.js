@@ -19,20 +19,30 @@ function getNames(models) {
 //  Collection of dictionaries
 //  ------------------------------------------------------------------------
 
-
-//  ------------------------------------------------------------------------
-//  Some related functions from `settings.js`
-//  ------------------------------------------------------------------------
-
-test('dictionary entry profile availability functions from settings.js', function () {
-    app.settings.dictionaries = new app.OptionsDictionaryCollection([
+test('dictionary collection base functions', function () {
+    var dictionaries = new app.OptionsDictionaryCollection([
         {
             name: 'Interior Handle',
             id: 1
         }
     ]);
+    var handles = dictionaries.get(1);
 
-    app.settings.dictionaries.get(1).entries.set([
+    ok(handles instanceof app.OptionsDictionary, 'Collection item is a model of proper type');
+    equal(dictionaries.length, 1, 'Collection length equals 1');
+});
+
+
+test('dictionary collection getAvailableOptions, getDefaultOption, getFirstAvailableOption, getDefaultOrFirstAvailableOption', function () {
+    var dictionaries = new app.OptionsDictionaryCollection([
+        {
+            name: 'Interior Handle',
+            id: 1
+        }
+    ]);
+    var handles = dictionaries.get(1);
+
+    handles.entries.set([
         {
             name: 'White Plastic Handle',
             id: 1,
@@ -83,81 +93,81 @@ test('dictionary entry profile availability functions from settings.js', functio
 
     //  Test function getAvailableOptions
     deepEqual(
-        getNames(app.settings.getAvailableOptions(1, 1)),
+        getNames(dictionaries.getAvailableOptions(1, 1)),
         ['White Plastic Handle', 'Brown Plastic Handle'],
         'Get entries available for a certain profile'
     );
     deepEqual(
-        getNames(app.settings.getAvailableOptions(1, 112)),
+        getNames(dictionaries.getAvailableOptions(1, 112)),
         [],
         'Get entries available for a not existing profile'
     );
     deepEqual(
-        getNames(app.settings.getAvailableOptions(123, 1)),
+        getNames(dictionaries.getAvailableOptions(123, 1)),
         [],
         'Get entries available for a not existing dictionary'
     );
 
     //  Test same function, but in "put default option first" mode
     deepEqual(
-        getNames(app.settings.getAvailableOptions(1, 4, true)),
+        getNames(dictionaries.getAvailableOptions(1, 4, true)),
         ['Brown Plastic Handle', 'White Plastic Handle'],
         'Get entries available for a certain profile, put default option first'
     );
     deepEqual(
-        getNames(app.settings.getAvailableOptions(1, 4, false)),
+        getNames(dictionaries.getAvailableOptions(1, 4, false)),
         ['White Plastic Handle', 'Brown Plastic Handle'],
         'Get entries available for a certain profile, do not put default option first'
     );
 
     //  Test function getDefaultOption
     equal(
-        app.settings.getDefaultOption(1, 5).get('name'),
+        dictionaries.getDefaultOption(1, 5).get('name'),
         'Red Plastic Handle',
         'Get default option for a certain profile'
     );
     equal(
-        app.settings.getDefaultOption(1, 1),
+        dictionaries.getDefaultOption(1, 1),
         undefined,
         'Get default option for a profile with no default entries'
     );
     equal(
-        app.settings.getDefaultOption(1, 112),
+        dictionaries.getDefaultOption(1, 112),
         undefined,
         'Get default option for a not existing profile'
     );
 
     //  Test function getFirstAvailableOption
     equal(
-        app.settings.getFirstAvailableOption(1, 1).get('name'),
+        dictionaries.getFirstAvailableOption(1, 1).get('name'),
         'White Plastic Handle',
         'Get first available option for a certain profile'
     );
     equal(
-        app.settings.getFirstAvailableOption(1, 112),
+        dictionaries.getFirstAvailableOption(1, 112),
         undefined,
         'Get first available option for a not existing profile'
     );
 
     //  Test function getDefaultOrFirstAvailableOption
     equal(
-        app.settings.getDefaultOrFirstAvailableOption(1, 1).get('name'),
+        dictionaries.getDefaultOrFirstAvailableOption(1, 1).get('name'),
         'White Plastic Handle',
         'Get first available option for a certain profile'
     );
     equal(
-        app.settings.getDefaultOrFirstAvailableOption(1, 4).get('name'),
+        dictionaries.getDefaultOrFirstAvailableOption(1, 4).get('name'),
         'Brown Plastic Handle',
         'Get first available option for a certain profile'
     );
     equal(
-        app.settings.getDefaultOrFirstAvailableOption(1, 112),
+        dictionaries.getDefaultOrFirstAvailableOption(1, 112),
         undefined,
         'Get first available option for a not existing profile'
     );
 
     //  Now remove default option for a profile with id=4 and try again
-    app.settings.dictionaries.get(1).entries.get(2).set('dictionary_entry_profiles', [
+    handles.entries.get(2).set('dictionary_entry_profiles', [
         {
             profile_id: 1,
             is_default: false
@@ -168,21 +178,22 @@ test('dictionary entry profile availability functions from settings.js', functio
         }
     ]);
     equal(
-        app.settings.getDefaultOrFirstAvailableOption(1, 4).get('name'),
+        dictionaries.getDefaultOrFirstAvailableOption(1, 4).get('name'),
         'White Plastic Handle',
         'Get first available option for a certain profile'
     );
 });
 
-test('misc dictionary functions from settings.js', function () {
-    app.settings.dictionaries = new app.OptionsDictionaryCollection([
+
+test('dictionary collection getDictionaryIdByName, getDictionaryEntryIdByName, getAvailableDictionaryNames', function () {
+    var dictionaries = new app.OptionsDictionaryCollection([
         {
             name: 'Interior Handle',
             id: 1
         }
     ]);
 
-    app.settings.dictionaries.get(1).entries.set([
+    dictionaries.get(1).entries.set([
         {
             name: 'White Plastic Handle',
             id: 1,
@@ -233,52 +244,42 @@ test('misc dictionary functions from settings.js', function () {
 
     //  Test getDictionaryIdByName
     equal(
-        app.settings.getDictionaryIdByName('Interior Handle'),
+        dictionaries.getDictionaryIdByName('Interior Handle'),
         1,
         'Get existing dictionary id by name'
     );
     equal(
-        app.settings.getDictionaryIdByName('Exterior Handle'),
+        dictionaries.getDictionaryIdByName('Exterior Handle'),
         undefined,
         'Get non-existing dictionary id by name'
     );
 
     //  Test getDictionaryEntryIdByName
     equal(
-        app.settings.getDictionaryEntryIdByName(1, 'White Plastic Handle'),
+        dictionaries.getDictionaryEntryIdByName(1, 'White Plastic Handle'),
         1,
         'Get existing entry id by name'
     );
     equal(
-        app.settings.getDictionaryEntryIdByName(1, 'Purple Metal Handle'),
+        dictionaries.getDictionaryEntryIdByName(1, 'Purple Metal Handle'),
         undefined,
         'Get non-existing entry id by name'
     );
 
-    //  Test getAvailableDictionaries and getAvailableDictionaryNames
+    //  Test getAvailableDictionaryNames
     deepEqual(
-        getNames(app.settings.getAvailableDictionaries().models),
-        ['Interior Handle'],
-        'Get list of available dictionaries'
-    );
-    deepEqual(
-        app.settings.getAvailableDictionaryNames(),
+        dictionaries.getAvailableDictionaryNames(),
         ['Interior Handle'],
         'Get list of available dictionary names'
     );
 
     //  Add one more dictionary and try again
-    app.settings.dictionaries.add({
+    dictionaries.add({
         name: 'Exterior Handle'
     });
 
     deepEqual(
-        getNames(app.settings.getAvailableDictionaries().models),
-        ['Interior Handle', 'Exterior Handle'],
-        'Get list of available dictionaries'
-    );
-    deepEqual(
-        app.settings.getAvailableDictionaryNames(),
+        dictionaries.getAvailableDictionaryNames(),
         ['Interior Handle', 'Exterior Handle'],
         'Get list of available dictionary names'
     );

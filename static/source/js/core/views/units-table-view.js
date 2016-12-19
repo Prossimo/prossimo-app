@@ -61,7 +61,7 @@ var app = app || {};
                     title: 'Unit Options',
                     collection: this.collection,
                     columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing'],
-                    unit_options_columns: app.settings.getAvailableDictionaryNames()
+                    unit_options_columns: app.settings.dictionaries.getAvailableDictionaryNames()
                 },
                 prices: {
                     title: 'Prices',
@@ -369,7 +369,7 @@ var app = app || {};
             ) {
                 //  TODO: deal with multiple values per dictionary somehow
                 getter = function (model, attr_name) {
-                    var target_dictionary_id = app.settings.getDictionaryIdByName(attr_name);
+                    var target_dictionary_id = app.settings.dictionaries.getDictionaryIdByName(attr_name);
                     var current_options = target_dictionary_id ?
                         model.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
 
@@ -451,10 +451,13 @@ var app = app || {};
                 _.contains(this.getActiveTab().unit_options_columns, column_name)
             ) {
                 setter = function (model, attr_name, val) {
-                    var target_dictionary_id = app.settings.getDictionaryIdByName(attr_name);
+                    var target_dictionary_id = app.settings.dictionaries.getDictionaryIdByName(attr_name);
 
                     if ( target_dictionary_id ) {
-                        var target_entry_id = app.settings.getDictionaryEntryIdByName(target_dictionary_id, val);
+                        var target_entry_id = app.settings.dictionaries.getDictionaryEntryIdByName(
+                            target_dictionary_id,
+                            val
+                        );
 
                         if ( target_entry_id ) {
                             return model.persistOption(target_dictionary_id, target_entry_id);
@@ -753,7 +756,7 @@ var app = app || {};
                         self.active_tab === 'unit_options' &&
                         _.contains(self.getActiveTab().unit_options_columns, property)
                     ) {
-                        var dictionary_id = app.settings.getDictionaryIdByName(property);
+                        var dictionary_id = app.settings.dictionaries.getDictionaryIdByName(property);
                         var rules_and_restrictions = [];
                         var is_restricted = false;
                         var is_optional = false;
@@ -763,7 +766,7 @@ var app = app || {};
                         message = UNSET_VALUE;
 
                         if ( profile_id && dictionary_id ) {
-                            options = app.settings.getAvailableOptions(dictionary_id, profile_id, true);
+                            options = app.settings.dictionaries.getAvailableOptions(dictionary_id, profile_id, true);
                         }
 
                         if ( dictionary_id ) {
@@ -954,8 +957,8 @@ var app = app || {};
 
             //  Calculate optimal width for Unit Options columns
             unit_options_col_widths = _.object(
-                app.settings.getAvailableDictionaryNames(),
-                _.map(app.settings.getAvailableDictionaryNames(), function (dictionary_name) {
+                app.settings.dictionaries.getAvailableDictionaryNames(),
+                _.map(app.settings.dictionaries.getAvailableDictionaryNames(), function (dictionary_name) {
                     var calculated_length = 30 + dictionary_name.length * 7;
 
                     return unit_options_col_widths[dictionary_name] ?
