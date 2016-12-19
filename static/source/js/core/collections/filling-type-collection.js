@@ -87,6 +87,15 @@ var app = app || {};
 
             return default_item || undefined;
         },
+        getDefaultOrFirstAvailableForProfile: function (profile_id) {
+            var available_items = this.getAvailableForProfile(profile_id);
+
+            var default_item = _.find(available_items, function (item) {
+                return item.isDefaultForProfile(profile_id);
+            });
+
+            return default_item || ( available_items.length ? available_items[0] : undefined );
+        },
         //  We collect an array of ids for all profiles that are connected to
         //  at least one item in our collection
         getIdsOfAllConnectedProfiles: function () {
@@ -96,18 +105,9 @@ var app = app || {};
 
             return _.uniq(_.flatten(arrays, true).sort(function (a, b) { return a - b; }), true);
         },
-        getDefaultOrFirstAvailableForProfile: function (profile_id) {
-            var available_items = this.getAvailableForProfile(profile_id);
-
-            var default_item = _.find(available_items, function (item) {
-                return item.isDefaultForProfile(profile_id);
-            });
-
-            return default_item || available_items.length ? available_items[0] : undefined;
-        },
         //  We go over all profiles and make sure we only have one default
         //  filling type per profile. If not, the first one wins.
-        //  This is executed on collection load
+        //  This is executed on collection load.
         //  TODO: this might have a different name (to distinguish from
         //  validation which is a slightly different concept)
         validatePerProfileDefaults: function () {

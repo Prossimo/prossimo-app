@@ -81,6 +81,7 @@ var app = app || {};
                 filtered_data.entries = dictionary_data.entries;
             }
 
+            //  FIXME: this is causing errors on dictionary rename
             //  TODO: remove this
             if ( dictionary_data.name === 'Interior Finish' || dictionary_data.name === 'Exterior Finish' ) {
                 filtered_data.pricing_scheme = POSSIBLE_PRICING_SCHEMES[1];

@@ -8,114 +8,62 @@ app.session.set('no_backend', true);
 
 app.settings = new app.Settings();
 
-test('filling type collection basic tests', function () {
-    var collection = new app.FillingTypeCollection();
-    var collection_with_base_types = new app.FillingTypeCollection(null, { append_base_types: true });
+function getNames(models) {
+    return _.map(models, function (model) {
+        return model.get('name');
+    });
+}
 
-    equal(collection.length, 0, 'Collection 1 length is 0 upon creation (no base types)');
-    equal(collection_with_base_types.length, 6, 'Collection 2 length is 6 upon creation (it includes base types)');
+
+//  ------------------------------------------------------------------------
+//  Collection of dictionary entries
+//  ------------------------------------------------------------------------
+
+test('dictionary entry collection basic tests', function () {
+    var collection = new app.OptionsDictionaryEntryCollection();
+
+    equal(collection.length, 0, 'Collection length is 0 upon creation');
 
     collection.add([
         {
-            name: 'Test Type',
-            type: 'glass'
+            name: 'White Plastic Handle'
         },
         {
-            name: 'Another Test Type',
-            type: 'recessed'
-        }
-    ]);
-    collection_with_base_types.add([
-        {
-            name: 'Test Type',
-            type: 'glass'
-        },
-        {
-            name: 'Another Test Type',
-            type: 'recessed'
+            name: 'Brass Metal Handle'
         }
     ]);
 
     equal(collection.length, 2, 'Collection 1 length increased by 2 after adding 2 new entries');
-    equal(collection_with_base_types.length, 8, 'Collection 2 length increased by 2 after adding 2 new entries');
 
-    deepEqual(_.map(collection_with_base_types.models, function (item) {
-        return item.get('name');
-    }), [
-        'Glass',
-        'Recessed',
-        'Interior Flush Panel',
-        'Exterior Flush Panel',
-        'Full Flush Panel',
-        'Louver',
-        'Test Type',
-        'Another Test Type'
+    deepEqual(getNames(collection.models), [
+        'White Plastic Handle',
+        'Brass Metal Handle'
     ], 'Collection 2 has the expected set of models');
+
+    //  Test getByName function
+    var white_plastic = collection.getByName('White Plastic Handle');
+
+    ok(white_plastic instanceof app.OptionsDictionaryEntry, 'getByName returns object of a proper type');
+    equal(white_plastic.get('name'), 'White Plastic Handle', 'Name of the object returned by getByName is correct');
 });
 
 
-test('filling type collection getById, getByName, getNames', function () {
-    var collection = new app.FillingTypeCollection(null, { append_base_types: true });
-    var first_item_cid = collection.at(0).cid;
+test('dictionary entry collection getAvailableForProfile, getDefaultForProfile getDefaultOrFirstAvailableForProfile', function () {
+    var collection = new app.OptionsDictionaryEntryCollection();
 
-    equal(collection.getById(first_item_cid).get('name'), 'Glass', 'getById returns the expected result upon creation');
-    equal(collection.getByName('Glass').get('type'), 'glass', 'getByName returns the expected result upon creation');
-
-    deepEqual(collection.getNames(), [
-        'Glass',
-        'Recessed',
-        'Interior Flush Panel',
-        'Exterior Flush Panel',
-        'Full Flush Panel',
-        'Louver'
-    ], 'getNames returns the expected result upon creation');
-
-    //  Now add 2 new items to the collection
-    collection.add([
-        {
-            name: 'Test Type',
-            type: 'glass'
-        },
-        {
-            name: 'Another Test Type',
-            type: 'recessed'
-        }
-    ]);
-
-    equal(collection.getByName('Another Test Type').get('type'), 'recessed',
-        'getByName returns the expected result for a newly added type'
-    );
-
-    deepEqual(collection.getNames(), [
-        'Glass',
-        'Recessed',
-        'Interior Flush Panel',
-        'Exterior Flush Panel',
-        'Full Flush Panel',
-        'Louver',
-        'Test Type',
-        'Another Test Type'
-    ], 'getNames returns the expected result after adding 2 new types');
-});
-
-
-test('filling type collection getAvailableForProfile, getDefaultForProfile getDefaultOrFirstAvailableForProfile', function () {
-    var collection = new app.FillingTypeCollection(null, { append_base_types: true });
-
-    equal(collection.getAvailableForProfile(1).length, 6, 'getAvailableForProfile returns base types upon creation');
+    equal(collection.getAvailableForProfile(1).length, 0, 'getAvailableForProfile empty array upon creation');
     equal(collection.getDefaultForProfile(1), undefined, 'getDefaultForProfile returns empty result upon creation');
     equal(
-        collection.getDefaultOrFirstAvailableForProfile(1).get('name'),
-        'Glass',
-        'getDefaultOrFirstAvailableForProfile returns first base type upon creation'
+        collection.getDefaultOrFirstAvailableForProfile(1),
+        undefined,
+        'getDefaultOrFirstAvailableForProfile returns empty result upon creation'
     );
 
     //  Now add 2 new items to the collection
     collection.add([
         {
-            name: 'Test Type',
-            type: 'glass',
-            filling_type_profiles: [
+            name: 'White Plastic Handle',
+            dictionary_entry_profiles: [
                 {
                     profile_id: 1,
                     is_default: true
@@ -123,9 +71,8 @@ test('filling type collection getAvailableForProfile, getDefaultForProfile getDe
             ]
         },
         {
-            name: 'Another Test Type',
-            type: 'recessed',
-            filling_type_profiles: [
+            name: 'Brass Metal Handle',
+            dictionary_entry_profiles: [
                 {
                     profile_id: 2,
                     is_default: false
@@ -134,27 +81,128 @@ test('filling type collection getAvailableForProfile, getDefaultForProfile getDe
         }
     ]);
 
-    equal(collection.getAvailableForProfile(1).length, 7, 'getAvailableForProfile returns expected result for profile_id=1');
-    equal(collection.getAvailableForProfile(2).length, 7, 'getAvailableForProfile returns expected result for profile_id=2');
+    equal(
+        collection.getAvailableForProfile(1).length,
+        1,
+        'getAvailableForProfile returns expected result for profile_id=1'
+    );
+    equal(
+        collection.getAvailableForProfile(2).length,
+        1,
+        'getAvailableForProfile returns expected result for profile_id=2'
+    );
 
-    equal(collection.getDefaultForProfile(1).get('name'), 'Test Type', 'getDefaultForProfile returns expected result for profile_id=1');
+    equal(
+        collection.getDefaultForProfile(1).get('name'),
+        'White Plastic Handle',
+        'getDefaultForProfile returns expected result for profile_id=1'
+    );
     equal(collection.getDefaultForProfile(2), undefined, 'getDefaultForProfile returns empty result for profile_id=2');
 
     equal(
         collection.getDefaultOrFirstAvailableForProfile(1).get('name'),
-        'Test Type',
+        'White Plastic Handle',
         'getDefaultOrFirstAvailableForProfile returns expected result for profile_id=1'
     );
     equal(
         collection.getDefaultOrFirstAvailableForProfile(2).get('name'),
-        'Glass',
+        'Brass Metal Handle',
         'getDefaultOrFirstAvailableForProfile returns expected result for profile_id=2'
     );
 });
 
 
-test('filling type collection getIdsOfAllConnectedProfiles', function () {
-    var collection = new app.FillingTypeCollection();
+test('dictionary entry collection profile availability functions', function () {
+    var entries = new app.OptionsDictionaryEntryCollection([
+        {
+            name: 'White Plastic Handle',
+            dictionary_entry_profiles: [
+                {
+                    profile_id: 1,
+                    is_default: false
+                },
+                {
+                    profile_id: 4,
+                    is_default: false
+                },
+                {
+                    profile_id: 77,
+                    is_default: true
+                }
+            ]
+        },
+        {
+            name: 'Brown Plastic Handle',
+            dictionary_entry_profiles: [
+                {
+                    profile_id: 1,
+                    is_default: false
+                },
+                {
+                    profile_id: 4,
+                    is_default: true
+                }
+            ]
+        },
+        {
+            name: 'Red Plastic Handle',
+            dictionary_entry_profiles: [
+                {
+                    profile_id: 5,
+                    is_default: true
+                },
+                {
+                    profile_id: 6,
+                    is_default: false
+                }
+            ]
+        }
+    ]);
+
+    deepEqual(
+        getNames(entries.models),
+        ['White Plastic Handle', 'Brown Plastic Handle', 'Red Plastic Handle'],
+        'Names of all entries'
+    );
+
+    //  Entry availability functions
+    deepEqual(
+        getNames(entries.getAvailableForProfile(1)),
+        ['White Plastic Handle', 'Brown Plastic Handle'],
+        'Entries available for a certain profile'
+    );
+    deepEqual(
+        getNames(entries.getAvailableForProfile(112)),
+        [],
+        'Entries available for a not existing profile'
+    );
+    deepEqual(
+        getNames(entries.getAvailableForProfile(112)),
+        [],
+        'Entries available for a not existing profile'
+    );
+
+    //  Default entry functions
+    equal(
+        entries.getDefaultForProfile(5).get('name'),
+        'Red Plastic Handle',
+        'Get default entry for a certain profile'
+    );
+    equal(
+        entries.getDefaultForProfile(1),
+        undefined,
+        'Get default entry for a profile with no default entries'
+    );
+    equal(
+        entries.getDefaultForProfile(112),
+        undefined,
+        'Get default entry for a not existing profile'
+    );
+});
+
+
+test('dictionary entry collection getIdsOfAllConnectedProfiles', function () {
+    var collection = new app.OptionsDictionaryEntryCollection();
 
     deepEqual(
         collection.getIdsOfAllConnectedProfiles(),
@@ -164,9 +212,8 @@ test('filling type collection getIdsOfAllConnectedProfiles', function () {
 
     collection.add([
         {
-            name: 'Test Type',
-            type: 'glass',
-            filling_type_profiles: [
+            name: 'White Plastic Handle',
+            dictionary_entry_profiles: [
                 {
                     profile_id: 1,
                     is_default: true
@@ -174,9 +221,8 @@ test('filling type collection getIdsOfAllConnectedProfiles', function () {
             ]
         },
         {
-            name: 'Another Test Type',
-            type: 'recessed',
-            filling_type_profiles: [
+            name: 'Red Plastic Handle',
+            dictionary_entry_profiles: [
                 {
                     profile_id: 1,
                     is_default: false
@@ -196,9 +242,8 @@ test('filling type collection getIdsOfAllConnectedProfiles', function () {
     );
 
     collection.add({
-        name: 'Unnecessary Type',
-        type: 'glass',
-        filling_type_profiles: [
+        name: 'Unnecessary Handle',
+        dictionary_entry_profiles: [
             {
                 profile_id: 17,
                 is_default: true
@@ -215,12 +260,11 @@ test('filling type collection getIdsOfAllConnectedProfiles', function () {
 });
 
 
-test('filling type collection validatePerProfileDefaults', function () {
-    var collection = new app.FillingTypeCollection([
+test('dictionary entry collection validatePerProfileDefaults', function () {
+    var collection = new app.OptionsDictionaryEntryCollection([
         {
-            name: 'Test Type',
-            type: 'glass',
-            filling_type_profiles: [
+            name: 'White Plastic Handle',
+            dictionary_entry_profiles: [
                 {
                     profile_id: 1,
                     is_default: true
@@ -228,9 +272,8 @@ test('filling type collection validatePerProfileDefaults', function () {
             ]
         },
         {
-            name: 'Another Test Type',
-            type: 'recessed',
-            filling_type_profiles: [
+            name: 'Brass Metal Handle',
+            dictionary_entry_profiles: [
                 {
                     profile_id: 1,
                     is_default: true
@@ -267,12 +310,11 @@ test('filling type collection validatePerProfileDefaults', function () {
 });
 
 
-test('filling type collection setItemAvailabilityForProfile', function () {
-    var collection = new app.FillingTypeCollection([
+test('dictionary entry collection setItemAvailabilityForProfile', function () {
+    var collection = new app.OptionsDictionaryEntryCollection([
         {
-            name: 'Test Type',
-            type: 'glass',
-            filling_type_profiles: [
+            name: 'White Plastic Handle',
+            dictionary_entry_profiles: [
                 {
                     profile_id: 1,
                     is_default: true
@@ -280,9 +322,8 @@ test('filling type collection setItemAvailabilityForProfile', function () {
             ]
         },
         {
-            name: 'Another Test Type',
-            type: 'recessed',
-            filling_type_profiles: [
+            name: 'Brass Metal Handle',
+            dictionary_entry_profiles: [
                 {
                     profile_id: 1,
                     is_default: false
@@ -313,23 +354,22 @@ test('filling type collection setItemAvailabilityForProfile', function () {
     equal(item_one.isAvailableForProfile(1), false, 'First collection item is not available for profile_id=1');
     equal(item_two.isAvailableForProfile(1), false, 'Second collection item is not available for profile_id=1');
 
-    //  Now try to create a duplicated entry in filling_type_profiles array
+    //  Now try to create a duplicated entry in dictionary_entry_profiles array
     collection.setItemAvailabilityForProfile(3, item_two, true);
 
     deepEqual(
         item_two.getIdsOfProfilesWhereIsAvailable(),
         _.uniq(item_two.getIdsOfProfilesWhereIsAvailable()),
-        'filling_type_profiles array should not contain any duplicated entries'
+        'dictionary_entry_profiles array should not contain any duplicated entries'
     );
 });
 
 
-test('filling type collection setItemAsDefaultForProfile', function () {
-    var collection = new app.FillingTypeCollection([
+test('dictionary entry collection setItemAsDefaultForProfile', function () {
+    var collection = new app.OptionsDictionaryEntryCollection([
         {
-            name: 'Test Type',
-            type: 'glass',
-            filling_type_profiles: [
+            name: 'White Plastic Handle',
+            dictionary_entry_profiles: [
                 {
                     profile_id: 1,
                     is_default: true
@@ -337,9 +377,8 @@ test('filling type collection setItemAsDefaultForProfile', function () {
             ]
         },
         {
-            name: 'Another Test Type',
-            type: 'recessed',
-            filling_type_profiles: [
+            name: 'Brass Metal Handle',
+            dictionary_entry_profiles: [
                 {
                     profile_id: 1,
                     is_default: false

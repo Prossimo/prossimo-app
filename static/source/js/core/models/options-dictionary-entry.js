@@ -186,10 +186,13 @@ var app = app || {};
         parse: function (data) {
             var entry_data = data && data.entry ? data.entry : data;
 
-            //  Remove excessive data from `dictionary_entry_profiles`
-            //  TODO: we need to find a more elegant way to do that, like
-            //  parse them according to additional schema
-            if ( entry_data && entry_data.dictionary_entry_profiles ) {
+            if ( entry_data && _.isArray(entry_data.dictionary_entry_profiles) ) {
+                //  Sort profiles by id on load
+                entry_data.dictionary_entry_profiles.sort(function (a, b) { return a.profile_id - b.profile_id; });
+
+                //  Remove excessive data from `dictionary_entry_profiles`
+                //  TODO: we need to find a more elegant way to do that, like
+                //  parse them according to additional schema
                 _.each(entry_data.dictionary_entry_profiles, function (entry) {
                     delete entry.id;
                 }, this);
@@ -327,6 +330,51 @@ var app = app || {};
 
             return is_default;
         },
+        //  TODO: Do we need to validate it against the list of globally
+        //  available profiles in the app? There are reasons to do so
+        /**
+         * Toggle item availability and default status for a certain profile
+         *
+         * @param {number} profile_id - id of the target profile
+         * @param {boolean} make_available - true to make item available,
+         * false to make it unavailable for this profile
+         * @param {boolean} make_default - true to set as default, false
+         * to unset. You can't make item default when it's not available
+         */
+        setProfileAvailability: function (profile_id, make_available, make_default) {
+            // Deep cloning gives us a `change` event here
+            var current_profiles_list = JSON.parse(JSON.stringify(this.get('dictionary_entry_profiles')));
+            var connection = _.findWhere(current_profiles_list, { profile_id: profile_id });
+            var should_persist = false;
+            var new_profiles_list;
+
+            //  If there is an existing connection that we want to unset
+            if ( make_available === false && connection ) {
+                new_profiles_list = _.without(current_profiles_list, connection);
+                should_persist = true;
+            } else if ( make_available === true ) {
+                //  If connection doesn't exist and we want to add it
+                if ( !connection ) {
+                    connection = {
+                        profile_id: profile_id,
+                        is_default: make_default === true
+                    };
+
+                    new_profiles_list = _.union(current_profiles_list, [connection]);
+                    new_profiles_list.sort(function (a, b) { return a.profile_id - b.profile_id; });
+                    should_persist = true;
+                //  If connection exists and we want to just modify is_default
+                } else if ( make_default === true || make_default === false ) {
+                    should_persist = connection.is_default !== make_default;
+                    connection.is_default = make_default;
+                }
+            }
+
+            //  Only save when there are any changes
+            if ( should_persist ) {
+                this.persist('dictionary_entry_profiles', new_profiles_list || current_profiles_list);
+            }
+        },
         //  We assume that profiles list is sorted and deduplicated
         getIdsOfProfilesWhereIsAvailable: function () {
             return _.pluck(this.get('dictionary_entry_profiles'), 'profile_id');
@@ -335,12 +383,16 @@ var app = app || {};
         getIdsOfProfilesWhereIsDefault: function () {
             return _.pluck(_.where(this.get('dictionary_entry_profiles'), { is_default: true }), 'profile_id');
         },
+        //  TODO: do something about this, this is supposed to obtain the
+        //  proper scheme from the parent dictionary and use it for validation
+        //  and such stuff in the future
         // getPricingScheme: function () {
         //     return
         // },
         initialize: function (attributes, options) {
             this.options = options || {};
 
+            //  TODO: do something about this
             this.profiles = new EntryProfiles(this.get('dictionary_entry_profiles'), {
                 entry: this,
                 parse: true

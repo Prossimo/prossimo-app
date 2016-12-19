@@ -285,7 +285,7 @@ test('filling type getIdsOfProfilesWhereIsDefault function', function () {
     deepEqual(
         normal_filling.getIdsOfProfilesWhereIsDefault(),
         [1, 2],
-        'Normal filling should be available for 3 profiles'
+        'Normal filling should be default for 2 profiles'
     );
     deepEqual(
         base_filling.getIdsOfProfilesWhereIsDefault(),

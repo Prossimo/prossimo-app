@@ -28,6 +28,9 @@ var app = app || {};
         getAttributeType: function () {
             return this.proxy_entry.getAttributeType();
         },
+        getByName: function (name) {
+            return this.findWhere({ name: name });
+        },
         getAvailableForProfile: function (profile_id) {
             return this.models.filter(function (entry) {
                 return entry.isAvailableForProfile(profile_id);
@@ -42,61 +45,56 @@ var app = app || {};
 
             return default_entry || undefined;
         },
+        getDefaultOrFirstAvailableForProfile: function (profile_id) {
+            var available_items = this.getAvailableForProfile(profile_id);
+
+            var default_item = _.find(available_items, function (item) {
+                return item.isDefaultForProfile(profile_id);
+            });
+
+            return default_item || ( available_items.length ? available_items[0] : undefined );
+        },
+        //  We collect an array of ids for all profiles that are connected to
+        //  at least one item in our collection
+        getIdsOfAllConnectedProfiles: function () {
+            var arrays = this.map(function (item) {
+                return item.getIdsOfProfilesWhereIsAvailable();
+            });
+
+            return _.uniq(_.flatten(arrays, true).sort(function (a, b) { return a - b; }), true);
+        },
         //  We go over all profiles and make sure we only have one default
-        //  entry per profile per each dictionary. If not, the first one wins
-        validateDefaultEntries: function () {
-            var profiles = app.settings && app.settings.profiles;
+        //  entry per profile per each dictionary. If not, the first one wins.
+        //  This is executed on collection load.
+        //  TODO: this might have a different name (to distinguish from
+        //  validation which is a slightly different concept)
+        validatePerProfileDefaults: function () {
+            var profiles = this.getIdsOfAllConnectedProfiles();
 
-            profiles.each(function (profile) {
-                var profile_id = profile.id;
-                var all_entries = this.getAvailableForProfile(profile_id);
-                var default_entry = this.getDefaultForProfile(profile_id);
-                var non_default_entries = _.filter(all_entries, function (entry) {
-                    return entry !== default_entry;
-                }, this);
+            _.each(profiles, function (profile_id) {
+                var all_items = this.getAvailableForProfile(profile_id);
+                var default_item = this.getDefaultForProfile(profile_id);
+                var non_default_items = _.without(all_items, default_item);
 
-                //  Iterate over non default entries and make sure they're
-                //  set as non fefault. If all's fine, no requests are fired
-                if ( all_entries && default_entry && non_default_entries ) {
-                    _.each(non_default_entries, function (entry) {
-                        var entry_profiles = entry.get('dictionary_entry_profiles');
-                        var connection = _.findWhere(entry_profiles, { profile_id: profile_id });
-
-                        if ( connection.is_default === true ) {
-                            connection.is_default = false;
-                            entry.persist('dictionary_entry_profiles', entry_profiles);
-                        }
+                //  Iterate over non default items and make sure they're
+                //  set as non default. If all's fine, no requests are fired
+                if ( default_item && non_default_items ) {
+                    _.each(non_default_items, function (item) {
+                        item.setProfileAvailability(profile_id, true, false);
                     }, this);
                 }
             }, this);
         },
         setItemAvailabilityForProfile: function (profile_id, target_item, new_value) {
             if ( !this.get(target_item) ) {
-                throw new Error('Cannot set item availability: target item does not belong to this collection ');
+                throw new Error('Cannot set item availability: target item does not belong to this collection');
             }
 
-            var old_profiles_list = target_item.get('dictionary_entry_profiles');
-            var new_profiles_list;
-
-            if ( new_value === true || new_value === 'true' ) {
-                var profile_to_add = {
-                    profile_id: profile_id,
-                    is_default: false
-                };
-                new_profiles_list = _.union(old_profiles_list, [profile_to_add]);
-                new_profiles_list.sort(function (a, b) { return a.profile_id - b.profile_id; });
-            } else if ( new_value === false || new_value === 'false' ) {
-                var profile_to_remove = _.findWhere(old_profiles_list, { profile_id: profile_id });
-                new_profiles_list = _.without(old_profiles_list, profile_to_remove);
-                new_profiles_list.sort(function (a, b) { return a.profile_id - b.profile_id; });
-            }
-
-            if ( old_profiles_list !== new_profiles_list ) {
-                target_item.persist('dictionary_entry_profiles', new_profiles_list);
-            }
+            target_item.setProfileAvailability(profile_id, new_value);
         },
-        setItemAsDefaultForProfile: function (profile_id, new_item, old_item) {
-            //  We want to make profile default for a new item
+        setItemAsDefaultForProfile: function (profile_id, new_item) {
+            var old_item = this.getDefaultForProfile(profile_id);
+
             if ( new_item ) {
                 if ( !this.get(new_item) ) {
                     throw new Error(
@@ -104,31 +102,13 @@ var app = app || {};
                     );
                 }
 
-                var new_item_profiles = new_item.get('dictionary_entry_profiles');
-                var profile_to_set = _.findWhere(new_item_profiles, { profile_id: profile_id });
-
-                if ( profile_to_set && profile_to_set.is_default === false ) {
-                    profile_to_set.is_default = true;
-                    new_item.persist('dictionary_entry_profiles', new_item_profiles);
-                }
+                //  Set new_item as available and default for profile_id
+                new_item.setProfileAvailability(profile_id, true, true);
             }
 
-            //  And we also want to make sure this profile is not default
-            //  anymore for an old item
             if ( old_item ) {
-                if ( !this.get(old_item) ) {
-                    throw new Error(
-                        'Cannot unset item as default for profile: target item does not belong to this collection'
-                    );
-                }
-
-                var old_item_profiles = old_item.get('dictionary_entry_profiles');
-                var profile_to_unset = _.findWhere(old_item_profiles, { profile_id: profile_id });
-
-                if ( profile_to_unset && profile_to_unset.is_default === true ) {
-                    profile_to_unset.is_default = false;
-                    old_item.persist('dictionary_entry_profiles', old_item_profiles);
-                }
+                //  Set old_item as available but not default for profile_id
+                old_item.setProfileAvailability(profile_id, true, false);
             }
         },
         initialize: function (models, options) {
@@ -137,7 +117,7 @@ var app = app || {};
 
             //  When parent dictionary is fully loaded, we validate positions
             this.listenTo(this.options.dictionary, 'fully_loaded', this.validatePositions);
-            this.listenTo(this.options.dictionary, 'fully_loaded', this.validateDefaultEntries);
+            this.listenTo(this.options.dictionary, 'fully_loaded', this.validatePerProfileDefaults);
         }
     });
 })();
