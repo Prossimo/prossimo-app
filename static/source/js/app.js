@@ -23,10 +23,50 @@ $(function () {
         app.vent = {};
         _.extend(app.vent, Backbone.Events);
 
-        //get comments, pages for counting,  stamps from server side
-        app.comments    = new app.Comments(); 
+
+        //get comments from server side
+        app.comments  = new app.Comments(); 
         app.countpages  = new app.CountPages();
         app.stamps      = new app.Stamps();
+
+        /*  test pdf api */
+        var authToken       = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXUyJ9.eyJleHAiOjE0ODIyNjY4OTksInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOiIxNDgyMTgwNDk5In0.hH7chit3_MqerNs45COa4-vD8BAY5H7c8IwReYbVB-mK0fVDKveSKEXOWUEP3GHqj3Y0SrL59cn69MNp4WhAb3mDLHG1-ljoLiHmneVMpHnjWlBVmfjsIRPyUDSaheUGcRRvCBgLT-LJ629CRWswy402m5zZvYEJyZQAcFR5eylcGGB4qt_JtKgjW1ahKW-utbhon_vUMXXwFoKaNYTDVxrhmY_zgmDmndjmXPTREQh6oRD-DN0kY7jkg4ZmUGj8Ejn5WrOV4wFvAUizu_LC1RArmAAw1-92H2EgmZwrcfz16y8bqn8CA77MKxYU5aJypRcdtI3j83rQOafIiGbktQb4Vdnyw81DQnE39FIJKpK2Rx1fxzyvlDZFgk5KC0QLB3-52Rt3Hc3lSC50C4WXswRxvtSJPNNbgcR5gLT22npsdmpmWtik8F6emg99oivfGDzAG1PCZ8yxmAw4TxQaDGtYnizOVb-eWSJpGhsUzTkGpGFd__NwmDWseRDnhqQYMhtQv_yG87zfqR0jlMlx6vQmyWbinoC8xS0jd_A10jpBd-Wlf9vXt_Xv-jBebMVX4czqfSl8b1RAZXYpbuj9cMPdX7zaE34FkbRiYkduwjG59UFpXMt82-tszVGBuYBtUBRrm_JF1yAXVSrM-d_poqxjW8hx8BHDXK2utSLIQG4";
+        var baseUrlofJpeg   = "http://dev.prossimo.us/storage";
+
+        $.ajax({
+            method: 'POST',
+            url: 'http://dev.prossimo.us/api/api/pdf/splitmerge',
+            headers: {
+                'Accept': 'application/json',
+                //'Authorization': 'Bearer ' + window.localStorage.getItem('authToken')
+                'Authorization': 'Bearer ' + authToken //window.localStorage.getItem('authToken')
+            },
+            contentType: 'application/json',
+            dataType: 'json',
+            data: JSON.stringify({
+                url: 'https://static.googleusercontent.com/media/research.google.com/en//archive/bigtable-osdi06.pdf',
+                //url: "http://localhost:9987/countingdata/windows.pdf",
+                pages: '1-9'
+            }),
+            complete: function (xhr, status) {               
+
+                if (status === "success") {                                    
+                
+                    for (var i  in xhr.responseJSON.pages) {
+                        var item = {
+                                        "pagenum": i,
+                                        "title": "Window - " + i,
+                                        "url": baseUrlofJpeg + xhr.responseJSON.pages[i],
+                                        "labels": [] 
+                                    };
+
+                        app.countpages.add(new app.CountPage(item));
+                    }                    
+                    
+                }                
+            }
+        });
+
 
         //  Object to hold project-independent properties
         app.settings = new app.Settings();
@@ -109,6 +149,7 @@ $(function () {
             }
         });
     });
+  
 
     app.App.start();
 });

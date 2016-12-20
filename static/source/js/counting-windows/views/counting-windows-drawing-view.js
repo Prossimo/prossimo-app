@@ -73,8 +73,8 @@ var app = app || {};
             this.removeAllStampsOnCanvas();
             
             fabric.Image.fromURL(app.countpages.at(pagenum).get('url'), function (img) {
-                _self.Canvas.setWidth(img.width);
-                _self.Canvas.setHeight(img.height);                  
+                _self.Canvas.setWidth(img.width * 4);
+                _self.Canvas.setHeight(img.height * 4);                  
             });
 
             this.Canvas.setBackgroundImage(app.countpages.at(pagenum).get('url'), this.Canvas.renderAll.bind(this.Canvas), {

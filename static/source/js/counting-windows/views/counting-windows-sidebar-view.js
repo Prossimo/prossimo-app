@@ -53,7 +53,7 @@ var app = app || {};
             this.stamps     = app.stamps.toJSON();
 
             this.selpage    = 0;
-            this.lastSelectedStampIdx = 0;
+            this.lastSelectedStampIdx = -1;
 
             app.vent.trigger('counting_windows_view:page:load', 0);            
         },
@@ -148,9 +148,16 @@ var app = app || {};
             var index = this.ui.$select.val();
             var st = app.stamps.at(index);
 
-            var page = this.countpages[this.selpage];                        
+            var page = this.countpages[this.selpage];
+
+            var max = 0; 
+            if (page.labels.length != 0) {
+                max = page.labels[page.labels.length - 1].index;
+            }
+
+
             var lb = {          
-                        index: page.labels[page.labels.length - 1].index + 1 ,                                    
+                        index: max  + 1 ,                                    
                         position: { left: 0 ,  top:0 },
                         stamp: st.get("stamp")
                     }; 
@@ -206,7 +213,7 @@ var app = app || {};
                 selectedpage: this.countpages[this.selpage],                
                 countpages: this.countpages,
                 stamps:this.stamps,
-                lastSelectedStamp: app.stamps.at(this.lastSelectedStampIdx).get("stamp"),
+                lastSelectedStamp: this.lastSelectedStampIdx !=-1? app.stamps.at(this.lastSelectedStampIdx).get("stamp"): "",
                 tabs: this.tabs
             };
         },

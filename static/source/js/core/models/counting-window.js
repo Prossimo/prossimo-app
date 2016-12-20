@@ -56,17 +56,17 @@ var app = app || {};
     app.CountPages = Backbone.Collection.extend({ 
         initialize: function (options) {
             this.on("error", this.error, this);
-            this.fetch();
+            //this.fetch();
         },        
         model: app.CountPage,
 
-        url:'http://localhost:9987/fake_count_pages.json',
+        /*url:'http://localhost:9987/fake_count_pages.json',
        
         parse: function(response, options) {
             console.log(response);
 
             return response.pages;
-        },
+        },*/
 
         updateItemByIndex : function(index, value) {
             this.models[index] = value;
@@ -83,17 +83,17 @@ var app = app || {};
     app.Stamps = Backbone.Collection.extend({ 
         initialize: function (options) {
             this.on("error", this.error, this);
-            this.fetch();
+            //this.fetch();
         },        
         model: app.Stamp,
 
-        url:'http://localhost:9987/fake_count_pages.json',
+        /*url:'http://localhost:9987/fake_count_pages.json',
        
         parse: function(response, options) {
             console.log(response);
 
             return response.stamps;
-        },
+        },*/
         
         error: function(model, response, options) {
             console.log(model);
