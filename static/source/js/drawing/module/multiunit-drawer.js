@@ -112,7 +112,7 @@ var app = app || {};
                     listening: false
                 }));
                 var text = new Konva.Text({
-                    text: '1a',  // FIXME implement
+                    text: node.unit.get('position'),
                     padding: style.label.padding,
                     fill: style.label.color,
                     fontFamily: style.label.fontFamily,

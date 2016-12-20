@@ -295,6 +295,15 @@ var app = app || {};
 
             return rootSection;
         },
+        getSubtotalPrice: function () {
+            return this.getUnitPrice() * parseFloat(this.get('quantity'));
+        },
+        getUnitPriceDiscounted: function () {
+            return this.getUnitPrice() * (100 - parseFloat(this.get('discount'))) / 100;
+        },
+        getSubtotalPriceDiscounted: function () {
+            return this.getSubtotalPrice() * (100 - parseFloat(this.get('discount'))) / 100;
+        },
         // End TODO implement / remove methods
         getDefaultValue: function (name) {
             var value;
@@ -319,10 +328,12 @@ var app = app || {};
                 self.listenTo(self.collection, 'update', function (event) {
                     self.updateSubunitsCollection();
                     self.updateConnectorsLength();
+                    self.updateSubunitsIndices();
                 });
                 self.listenTo(self.collection.subunits, 'update', function (event) {
                     self.updateSubunitsCollection();
                     self.updateConnectorsLength();
+                    self.updateSubunitsIndices();
                 });
                 self.listenTo(self.collection.subunits, 'remove', function (unit) {
                     if (unit.isSubunitOf(self)) {
@@ -358,6 +369,32 @@ var app = app || {};
                     .filter(function (subunit) { return !_.isUndefined(subunit); })
                     .filter(function (subunit) { return self.subunits.indexOf(subunit) === -1; })
             );
+        },
+        updateSubunitsIndices: function () {  // reorders subunit models in their collection (not in this.subunits)
+            this.subunits.forEach(function (subunit, subunitIndex) {
+                var firstSubunit = self.subunits.at(0);
+                var firstSubunitPosition = firstSubunit.collection.indexOf(firstSubunit);
+                var currentPosition = self.collection.subunits.indexOf(subunit);
+                var newPosition = (firstSubunitPosition + subunitIndex < self.collection.subunits.length) ?
+                    firstSubunitPosition + subunitIndex :
+                    firstSubunitPosition + subunitIndex - 1;
+                self.collection.subunits.setItemPosition(currentPosition, newPosition);
+                self.updateSubunitPosition(subunit);
+            });
+        },
+        updateSubunitPosition: function (subunitOrId) {  // updates subunit's 'position' attribute
+            var subunit = (subunitOrId instanceof app.Unit) ?
+                subunitOrId :
+                this.getSubunitById(subunitOrId);
+
+            if (_.isUndefined(subunit)) { return; }
+
+            var multiunitPosition = parseInt(this.get('position')) + 1;
+            var subscript = app.utils.format.letters(this.getSubunitRelativePosition(subunit) + 1);
+            var subunitPosition = '' + multiunitPosition + subscript;
+            subunit.set('position', subunitPosition);
+
+            return subunitPosition;
         },
         hasOnlyDefaultAttributes: function () {
             var has_only_defaults = true;
@@ -424,6 +461,7 @@ var app = app || {};
             if (!_.contains(subunitsIds, subunitId)) {
                 subunitsIds.push(subunitId);
                 this.updateSubunitsCollection();
+                this.updateSubunitsIndices();
                 this.recalculateSizes();
             }
         },
@@ -438,6 +476,7 @@ var app = app || {};
                 subunitsIds.splice(subunitIndex, 1);
                 this.removeConnector(this.getParentConnector(subunitId).id);
                 this.updateSubunitsCollection();
+                this.updateSubunitsIndices();
                 this.recalculateSizes();
             }
         },
@@ -730,21 +769,7 @@ var app = app || {};
             if (connectorIndex !== -1) {
                 connector = connectors.splice(connectorIndex, 1)[0];
             }
-            // FIXME implement
-            return connector;
-        },
-        setConnectorProperties: function (id, options) {
-            if (_.isUndefined(id)) { return; }
-            if (!options || options.constructor !== Object) { return; }
 
-            var connector = this.getConnectorById(id);
-
-            if (connector) {
-                Object.keys(options).forEach(function (key) {
-                    connector[key] = options[key];
-                });
-            }
-            // FIXME implement
             return connector;
         },
         updateConnectorLength: function (connector) {

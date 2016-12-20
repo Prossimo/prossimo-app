@@ -86,20 +86,20 @@ var app = app || {};
                 this.ui.$optional_extras_table_container.append(this.quote_optional_extras_table_view.render().el);
             }
 
-            // var multiunitGroup;  // FIXME implement
-            // this.children.forEach(function (itemView) {  // wrap multiunit + subunits in a div
-            //     var itemData = itemView.serializeData();
-            //
-            //     if (itemData.is_multiunit) {
-            //         multiunitGroup = $();
-            //     }
-            //     if (itemData.is_multiunit || itemData.is_subunit) {
-            //         multiunitGroup = multiunitGroup.add(itemView.$el);
-            //     }
-            //     if (itemData.is_last_subunit) {
-            //         multiunitGroup.wrapAll('<div class="quote-unit-group multiunit"></div>');
-            //     }
-            // });
+            var multiunitGroup;  // wrap multiunit + subunits in a div
+            this.children.forEach(function (itemView) {
+                var itemData = itemView.templateContext();
+
+                if (itemData.multiunit_head) {
+                    multiunitGroup = $();
+                }
+                if (itemData.multiunit_head || itemData.is_subunit) {
+                    multiunitGroup = multiunitGroup.add(itemView.$el);
+                }
+                if (itemData.is_last_subunit) {
+                    multiunitGroup.wrapAll('<div class="quote-unit-group multiunit"></div>');
+                }
+            });
         },
         onBeforeDestroy: function () {
             if ( this.quote_extras_table_view ) {

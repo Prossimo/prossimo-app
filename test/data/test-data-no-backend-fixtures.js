@@ -117,12 +117,6 @@ $(document).ready(function () {
             quantity: 1,
             description: 'Site-mulled multi frame unit',
             notes: 'Assembled on site',
-            original_cost: 399,
-            original_currency: 'EUR',
-            conversion_rate: 0.90326078,
-            price_markup: 2.3,
-            uw: 0.8,
-            discount: 10,
             root_section: test_root_sections_data[0]
         }
     ];

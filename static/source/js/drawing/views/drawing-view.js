@@ -263,7 +263,6 @@ var app = app || {};
 
             this.options.parent_view.sidebar_view.render();
             this.selectUnit(multiunit);
-            // FIXME implement
         },
 
         // Marrionente lifecycle method

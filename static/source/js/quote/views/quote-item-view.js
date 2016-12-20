@@ -12,13 +12,14 @@ var app = app || {};
             this.el.classList.add(relationClass);
             this.listenTo(this.model, 'change', this.render);
         },
-        getPrices: function () {
+        getPrices: function (model) {
+            model = model || this.model;
             var f = app.utils.format;
-            var unit_price = this.model.getUnitPrice();
-            var subtotal_price = this.model.getSubtotalPrice();
-            var discount = this.model.get('discount');
-            var unit_price_discounted = this.model.getUnitPriceDiscounted();
-            var subtotal_price_discounted = this.model.getSubtotalPriceDiscounted();
+            var unit_price = model.getUnitPrice();
+            var subtotal_price = model.getSubtotalPrice();
+            var discount = model.get('discount');
+            var unit_price_discounted = model.getUnitPriceDiscounted();
+            var subtotal_price_discounted = model.getSubtotalPriceDiscounted();
 
             return {
                 unit: f.price_usd(unit_price),
@@ -29,9 +30,9 @@ var app = app || {};
             };
         },
         // TODO break into smaller pieces
-        getDescription: function () {
+        getDescription: function (model) {
             var view = this;
-            var model = this.model;
+            model = model || this.model;
             var project_settings = app.settings.getProjectSettings();
             var f = app.utils.format;
             var c = app.utils.convert;
@@ -97,6 +98,7 @@ var app = app || {};
                             project_settings && project_settings.get('inches_display_mode'));
 
                     return {
+                        position: subunit.get('position'),
                         mark: subunit.get('mark'),
                         size: size,
                         description: subunit.get('description'),
@@ -106,26 +108,27 @@ var app = app || {};
             }
             // End Prepare subunits info
 
-            var sash_list_source = this.model.getSashList(null, null, this.options.show_outside_units_view &&
+            var sash_list_source = model.getSashList(null, null, this.options.show_outside_units_view &&
                 project_settings && project_settings.get('hinge_indicator_mode') === 'american');
             var sashes = [];
 
             //  This is the list of params that we want to see in the quote. We
             //  throw out attributes that don't apply to the current unit
-            var params_list = _.filter(
-                ['rough_opening', 'description', 'opening_direction', 'glazing_bar_width'],
-            function (param) {
+            var raw_params_list = (model.isMultiunit()) ?
+                [] :
+                ['rough_opening', 'description', 'opening_direction', 'glazing_bar_width'];
+            var params_list = _.filter(raw_params_list, function (param) {
                 var condition = true;
 
-                if ( this.model.isOperableOnlyAttribute(param) && !this.model.hasOperableSections() ) {
+                if ( model.isOperableOnlyAttribute(param) && !model.hasOperableSections() ) {
                     condition = false;
-                } else if ( this.model.isGlazingBarProperty(param) && !this.model.hasGlazingBars() ) {
+                } else if ( model.isGlazingBarProperty(param) && !model.hasGlazingBars() ) {
                     condition = false;
                 }
 
                 return condition;
             }, this);
-            var source_hash = this.model.getNameTitleTypeHash(params_list);
+            var source_hash = model.getNameTitleTypeHash(params_list);
 
             //  Add section for each sash (Sash #N title + sash properties)
             _.each(sash_list_source, function (source_item, index) {
@@ -138,7 +141,7 @@ var app = app || {};
                 sash_item.type = source_item.type;
 
                 if ( source_item.opening.height && source_item.opening.width ) {
-                    opening_size_data = this.model.getSashOpeningSize(
+                    opening_size_data = model.getSashOpeningSize(
                         source_item.opening,
                         undefined,
                         undefined,
@@ -161,7 +164,7 @@ var app = app || {};
                             );
                     }
 
-                    egress_opening_size_data = this.model.getSashOpeningSize(
+                    egress_opening_size_data = model.getSashOpeningSize(
                         source_item.opening,
                         'egress',
                         source_item.original_type,
@@ -223,7 +226,7 @@ var app = app || {};
                 var is_restricted = false;
 
                 _.each(rules_and_restrictions, function (rule) {
-                    var restriction_applies = this.model.checkIfRestrictionApplies(rule);
+                    var restriction_applies = model.checkIfRestrictionApplies(rule);
 
                     if ( restriction_applies ) {
                         is_restricted = true;
@@ -257,34 +260,45 @@ var app = app || {};
                 return _.contains(_.pluck(source_hash, 'name'), property_to_override);
             }));
 
-            var params_source = {
-                system: this.options.show_supplier_system ?
-                    this.model.profile.get('supplier_system') :
-                    this.model.profile.get('system'),
-                size: this.options.show_sizes_in_mm ?
-                    f.dimensions_mm(c.inches_to_mm(this.model.get('width')), c.inches_to_mm(this.model.get('height'))) :
-                    f.dimensions(this.model.get('width'), this.model.get('height'), 'fraction',
-                        project_settings && project_settings.get('inches_display_mode')),
-                threshold: this.model.profile.isThresholdPossible() ?
-                    this.model.profile.getThresholdType() : false,
-                u_value: this.model.get('uw') ? f.fixed(this.model.getUValue(), 3) : false,
-                rough_opening: this.options.show_sizes_in_mm ?
-                    f.dimensions_mm(c.inches_to_mm(this.model.getRoughOpeningWidth()),
-                        c.inches_to_mm(this.model.getRoughOpeningHeight())) :
-                    f.dimensions(this.model.getRoughOpeningWidth(), this.model.getRoughOpeningHeight(),
-                        null, project_settings.get('inches_display_mode') || null),
-                glazing_bar_width: this.model.hasGlazingBars() ?
+            var params_system = (this.options.show_supplier_system) ?
+                model.profile.get('supplier_system') :
+                model.profile.get('system');
+            var params_size = (this.options.show_sizes_in_mm) ?
+                f.dimensions_mm(c.inches_to_mm(model.get('width')), c.inches_to_mm(model.get('height'))) :
+                f.dimensions(model.get('width'), model.get('height'), 'fraction',
+                    project_settings && project_settings.get('inches_display_mode'));
+            var params_threshold = (model.profile.isThresholdPossible()) ?
+                model.profile.getThresholdType() : false;
+            var params_u_value;
+            var params_rough_opening;
+            var params_glazing_bar_width;
+            if (!model.isMultiunit()) {
+                params_u_value = model.get('uw') ? f.fixed(model.getUValue(), 3) : false;
+                params_rough_opening = (this.options.show_sizes_in_mm) ?
+                    f.dimensions_mm(c.inches_to_mm(model.getRoughOpeningWidth()),
+                        c.inches_to_mm(model.getRoughOpeningHeight())) :
+                    f.dimensions(model.getRoughOpeningWidth(), model.getRoughOpeningHeight(),
+                        null, project_settings.get('inches_display_mode') || null);
+                params_glazing_bar_width = (model.hasGlazingBars()) ?
                     (
-                        this.options.show_sizes_in_mm ? f.dimension_mm(this.model.get('glazing_bar_width')) :
-                        f.dimension(c.mm_to_inches(this.model.get('glazing_bar_width')), 'fraction', null, 'remove')
-                    ) : false
+                        this.options.show_sizes_in_mm ? f.dimension_mm(model.get('glazing_bar_width')) :
+                            f.dimension(c.mm_to_inches(model.get('glazing_bar_width')), 'fraction', null, 'remove')
+                    ) : false;
+            }
+            var params_source = {
+                system: params_system,
+                size: params_size,
+                threshold: params_threshold,
+                u_value: params_u_value,
+                rough_opening: params_rough_opening,
+                glazing_bar_width: params_glazing_bar_width
             };
 
             params_source = _.extend({}, params_source, _.object(dictionaries, _.map(dictionaries,
                 function (dictionary_name) {
                     var dictionary_id = app.settings.getDictionaryIdByName(dictionary_name);
                     var current_options = dictionary_id ?
-                        this.model.getCurrentUnitOptionsByDictionaryId(dictionary_id) : [];
+                        model.getCurrentUnitOptionsByDictionaryId(dictionary_id) : [];
 
                     return current_options.length ? current_options[0].get('name') : false;
                 }, this)
@@ -292,7 +306,7 @@ var app = app || {};
 
             var params = _.map(name_title_hash, function (item, key) {
                 return { name: key, title: item, value: params_source[key] !== undefined ?
-                    params_source[key] : this.model.get(key) };
+                    params_source[key] : model.get(key) };
             }, this);
 
             return {
@@ -301,16 +315,19 @@ var app = app || {};
                 params: params
             };
         },
-        getCustomerImage: function () {
-            return this.model.get('customer_image');
+        getCustomerImage: function (model) {
+            model = model || this.model;
+            return model.get('customer_image');
         },
-        getProductImage: function (is_alternative) {
+        getProductImage: function (model, options) {
+            model = model || this.model;
+            options = options || {};
             var project_settings = app.settings && app.settings.getProjectSettings();
             var position = this.options.show_outside_units_view ?
-                ( !is_alternative ? 'outside' : 'inside' ) :
-                ( !is_alternative ? 'inside' : 'outside' );
-            var relation = this.model.getRelation();
-            var isSubunit = this.model.isSubunit();
+                ( !options.is_alternative ? 'outside' : 'inside' ) :
+                ( !options.is_alternative ? 'inside' : 'outside' );
+            var relation = model.getRelation();
+            var isSubunit = model.isSubunit();
             var preview_size;
             if (relation === 'multiunit') {
                 preview_size = 600;
@@ -322,7 +339,7 @@ var app = app || {};
             var title = position === 'inside' ? 'View from Interior' : 'View from Exterior';
 
             return {
-                img: app.preview(this.model, {
+                img: app.preview(model, {
                     width: preview_size,
                     height: preview_size,
                     mode: 'base64',
@@ -346,46 +363,62 @@ var app = app || {};
             return show_drawings;
         },
         templateContext: function () {
+            var model = this.model;
+            var modelIndex = model.collection.indexOf(model);
+            var previousModel = model.collection.at(modelIndex - 1);
+            var nextModel = model.collection.at(modelIndex + 1);
             var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
             var show_customer_image = this.shouldShowCustomerImage();
             var show_drawings = this.shouldShowDrawings();
             var show_price = this.options.show_price !== false;
+            var multiunit = model.getParentMultiunit();
+            var multiunitHead;
+            var multiunitPosition;
+            var isFirstSubunit;
             var isLastSubunit;
-            var position;
+            var modelPosition;
 
-            if (this.model.isSubunit()) {  // FIXME implement
-                // var multiunit = this.model.getParentMultiunit();
-                // var multiunitPosition = parseFloat(multiunit.get('position')) + 1;
-                // var subunitPosition = multiunit.getSubunitRelativePosition(this.model) + 1;
-                // var subscript = app.utils.format.letters(subunitPosition);
-                // position = '' + multiunitPosition + subscript;
+            if (model.isSubunit()) {
+                isFirstSubunit = previousModel.getParentMultiunit() !== multiunit;
+                isLastSubunit = nextModel.getParentMultiunit() !== multiunit;
+                modelPosition = model.get('position');
+                multiunitPosition = '' + (parseInt(multiunit.get('position')) + 1);
             } else {
-                position = parseFloat(this.model.get('position')) + 1;
+                modelPosition = '' + (parseInt(model.get('position')) + 1);
             }
-            position = parseFloat(this.model.get('position')) + 1;
 
-            // if (this.model.isSubunit() && this.model.collection) {
-            //     var index = this.model.collection.indexOf(this.model);
-            //     isLastSubunit = !this.model.collection.at(index + 1).isSubunit();
-            // }
+            if (isFirstSubunit) {
+                multiunitHead = {
+                    position: multiunitPosition,
+                    mark: multiunit.get('mark'),
+                    description: this.getDescription(multiunit),
+                    notes: multiunit.get('notes'),
+                    quantity: multiunit.get('quantity'),
+                    product_image: show_drawings ? this.getProductImage(multiunit) : '',
+                    show_price: show_price,
+                    price: show_price ? this.getPrices(multiunit) : null,
+                    is_price_estimated: project_settings && project_settings.get('pricing_mode') === 'estimates',
+                    has_dummy_profile: multiunit.hasDummyProfile()
+                };
+            }
 
             return {
-                position: position,
-                mark: this.model.get('mark'),
+                position: modelPosition,
+                mark: model.get('mark'),
                 description: this.getDescription(),
-                notes: this.model.get('notes'),
-                exceptions: this.model.get('exceptions'),
-                quantity: this.model.get('quantity'),
+                notes: model.get('notes'),
+                exceptions: model.get('exceptions'),
+                quantity: model.get('quantity'),
                 customer_image: show_customer_image ? this.getCustomerImage() : '',
                 product_image: show_drawings ? this.getProductImage() : '',
                 show_price: show_price,
                 price: show_price ? this.getPrices() : null,
                 is_price_estimated: project_settings && project_settings.get('pricing_mode') === 'estimates',
-                is_multiunit: this.model.isMultiunit(),
-                is_subunit: this.model.isSubunit(),
+                multiunit_head: multiunitHead,
+                is_subunit: model.isSubunit(),
                 is_last_subunit: isLastSubunit,
-                has_dummy_profile: this.model.hasDummyProfile(),
-                profile_name: this.model.get('profile_name') || this.model.get('profile_id') || ''
+                has_dummy_profile: model.hasDummyProfile(),
+                profile_name: model.get('profile_name') || model.get('profile_id') || ''
             };
         }
     });
