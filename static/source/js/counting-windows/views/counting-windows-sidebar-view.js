@@ -14,6 +14,8 @@ var app = app || {};
             $newLabel: '.newLabel',
             $stamp_plus: '.js-plus-stamp',            
             $label_plus: '.js-plus-label',
+            $page_loading_btn: '.js-loading-btn',
+            $page_preview_btn: '.js-preview-btn',
             $sidebar_toggle: '.js-sidebar-toggle',
             $tab_container: '.tab-container'           
         },
@@ -24,7 +26,9 @@ var app = app || {};
             'click @ui.$sidebar_toggle': 'onSidebarToggle',
             'click .counting-page':'onClickPageTable',
             'click .delete-stamp' : 'onDeleteStamp',
-            'click .delete-label' : 'onDeleteLabel'
+            'click .delete-label' : 'onDeleteLabel',
+            'click @ui.$page_loading_btn': 'onLoadPageList',
+            'click @ui.$page_preview_btn': 'onPreviewPage'
         },
         keyShortcuts: {
             up: 'onUpBtn',
@@ -33,6 +37,9 @@ var app = app || {};
             right: 'onRightBtn'
         },
         initialize: function () {
+            
+            this.pdfURL = "https://static.googleusercontent.com/media/research.google.com/en//archive/bigtable-osdi06.pdf";
+
             this.tabs = [
                 {
                     title: 'Pages',
@@ -49,13 +56,80 @@ var app = app || {};
             ];
             this.active_tab_Idx = 0;
 
-            this.countpages = app.countpages.toJSON();
-            this.stamps     = app.stamps.toJSON();
+            this.countpages = []; 
+            this.stamps     = []; 
 
             this.selpage    = 0;
             this.lastSelectedStampIdx = -1;
 
-            app.vent.trigger('counting_windows_view:page:load', 0);            
+            if (this.countpages.length > 0) {
+                app.vent.trigger('counting_windows_view:page:load', 0);            
+            }
+
+        },
+        onLoadPageList: function() {
+            if ($(".pageload").val() === "") {
+                return;
+            }
+
+            var self = this;
+
+            /*  test pdf api */
+            var authToken       = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXUyJ9.eyJleHAiOjE0ODI0MTAyMTgsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOiIxNDgyMzIzODE4In0.Qr-ZY1DnPTAQn-ZhZHagtrjbrCD2Hlgt2y8Pbdm9FEmzxya7ExxiN1rwI-vDTDHsKx3QBXefo-_dpJchy2_WeDK7G7Xa3izhR4ymOTmse-w7_nsO_YeGPBBjWEK1pzMj1sW2KDSR1I5AXBIo21LMP8ztcBiuT43wX05dFy0vp5QEjacD-0YGz6pr_s6jmSAxUrK9OfVl9VbuIjqJ5tJgIanz-2sRJPceIFcPtmokuoCfZlLUD7N90X8_xdFPlAZqozy8fIbmJFdVjV8i1rKdccG4oZTa8VpT78Mmhf2m-SlLskh4AIczVie9nbrcuBAs-F6DK8TurlA7vj8zccGijU6CNu3vcOICJqBnTtPbMyKCQB9eAO1ys3LolnRNAPx66x3b--LxjsHCR0PwQ_QDY28C7mO0bPp34k4r-LMPg0pTvdTVtKXNYwjiUKo5q2h4eSK5VWjxtPPjwC4nwoH_pmBz3TyNl3Y4wMzwqQp0s_HF1CZBe9H1zneTHSjuDnS089xkJ-CaXL1pNtwMlmnrhutCCzniFYcZVpDZV-y00HD0MrZ-ukjFfU3odyZs01baLMUiQcpc9licrhuKdgPFhcYq9lJBucPwNKnQIk3qA--Y5OE93sDmUAdc9KtK8O2pT_k6IzZjbxjqi1jj6zm177GzDQ5bVgK1AkiOy1i9W10";
+            var baseUrlofJpeg   = "http://dev.prossimo.us/storage";
+
+            $.ajax({
+                method: 'POST',
+                url: 'http://dev.prossimo.us/api/api/pdf/splitmerge',
+                headers: {
+                    'Accept': 'application/json',
+                    //'Authorization': 'Bearer ' + window.localStorage.getItem('authToken')
+                    'Authorization': 'Bearer ' + authToken
+                },
+                contentType: 'application/json',
+                dataType: 'json',
+                data: JSON.stringify({
+                    url: self.pdfURL,                    
+                    pages: $(".pageload").val() 
+                }),
+                complete: function (xhr, status) {               
+
+                    if (status === "success") {                                    
+                        app.countpages.reset();
+
+                        for (var i  in xhr.responseJSON.pages) {
+                            
+                            var item = {
+                                            "pagenum": i,
+                                            "title": "Window - " + i,
+                                            "url": baseUrlofJpeg + xhr.responseJSON.pages[i],
+                                            "labels": [] 
+                                        };
+
+                            app.countpages.add(new app.CountPage(item));
+                        }
+
+                        self.countpages = app.countpages.toJSON();
+                        self.stamps     = []; //app.stamps.toJSON();
+                        app.stamps.reset();
+
+                        self.selpage    = 0;
+                        self.lastSelectedStampIdx = -1;
+
+                        if (self.countpages.length > 0) {
+                            app.vent.trigger('counting_windows_view:page:load', 0);            
+                        }
+                      
+                        self.render();
+                    }                
+                }
+            });
+
+        },
+        onPreviewPage: function() {
+            
+            window.open(this.pdfURL);
+
         },
         setActiveTab: function (tabIdx) {
 
@@ -210,7 +284,7 @@ var app = app || {};
         serializeData: function () {
 
             return {                                
-                selectedpage: this.countpages[this.selpage],                
+                selectedpage: this.countpages.length !=0 ?this.countpages[this.selpage]:null,                
                 countpages: this.countpages,
                 stamps:this.stamps,
                 lastSelectedStamp: this.lastSelectedStampIdx !=-1? app.stamps.at(this.lastSelectedStampIdx).get("stamp"): "",
