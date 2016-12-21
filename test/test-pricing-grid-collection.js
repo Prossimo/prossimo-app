@@ -38,6 +38,34 @@ test('pricing grid collection basic tests', function () {
 });
 
 
+test('pricing grid collection append_default_grids option tests', function () {
+    var grids = new app.PricingGridCollection(null, { append_default_grids: true });
+
+    equal(grids.length, 2, 'Grids contain 2 entries if instantiated with append_default_grids');
+
+    deepEqual(
+        grids.toJSON(),
+        [{
+            name: 'fixed',
+            data: [
+                { height: 500, width: 500, value: 0 },
+                { height: 914, width: 1514, value: 0 },
+                { height: 2400, width: 3000, value: 0 }
+            ]
+        },
+        {
+            name: 'operable',
+            data: [
+                { height: 500, width: 500, value: 0 },
+                { height: 914, width: 1514, value: 0 },
+                { height: 1200, width: 2400, value: 0 }
+            ]
+        }],
+        'Grids data should match the expected'
+    );
+});
+
+
 test('pricing grid collection getByName function', function () {
     var grids = new app.PricingGridCollection([
         {
@@ -59,12 +87,12 @@ test('pricing grid collection getByName function', function () {
     ], { parse: true });
 
     var fixed_grid = grids.getByName('fixed');
-    var nonexisting_grd = grids.getByName('whatever');
+    var nonexistent_grid = grids.getByName('whatever');
 
     ok(fixed_grid instanceof Backbone.Model, 'Fixed Grid is a Backbone.Model object');
     equal(fixed_grid.get('data').length, 3, 'Fixed Grid has 3 grid items');
 
-    equal(nonexisting_grd, undefined, 'getByName returns undefined if there is no such grid');
+    equal(nonexistent_grid, undefined, 'getByName returns undefined if there is no such grid');
 });
 
 

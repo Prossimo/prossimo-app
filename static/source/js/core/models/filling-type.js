@@ -3,102 +3,6 @@ var app = app || {};
 (function () {
     'use strict';
 
-    //  --------------------------------------------------------------------
-    //  Filling Type to Profile Connection Model
-    //  --------------------------------------------------------------------
-
-    // var PROFILE_CONNECTION_PROPERTIES = [
-    //     { name: 'profile_id', title: 'Profile ID', type: 'number' },
-    //     { name: 'is_default', title: 'Is Default', type: 'boolean' },
-    //     { name: 'pricing_grids', title: 'Pricing Grids', type: 'array' }
-    // ];
-
-    //  TODO: defaults for fixed and operable should be different
-    //  TODO: collection should implement something like addEmptyGrid function
-    function getDefaultGridCollection() {
-        return [
-            {
-                name: 'fixed',
-                // data: []
-                sizes: ['500x500', '1514x914', '3000x2400']
-            },
-            {
-                name: 'operable',
-                // data: []
-                sizes: ['500x500', '1514x914', '2400x1200']
-            }
-        ];
-    }
-
-    // var FillingTypeProfile = Backbone.Model.extend({
-    var FillingTypeToProfileConnection = Backbone.Model.extend({
-        defaults: function () {
-            return {
-                id: 0,
-                is_default: false
-            };
-        },
-        parse: function (data) {
-            return data;
-        },
-        // toJSON: function () {
-
-        // },
-        initialize: function (attributes) {
-            // console.log( 'initialize filling type to profile connection', attributes );
-
-            // this.grid = new PricingGrid(attributes.pricing_grid);
-            // this.grids = new PricingGridCollection(attributes.pricing_grids || null, { parse: true });
-            // this.grids = new PricingGridCollection(null, { parse: true });
-
-            // this.grids = new app.PricingGridCollection(getDefaultGridCollection(), { parse: true });
-            // this.grids = new app.PricingGridCollection(null, { parse: true });
-
-            //  TODO: get rid of this demo functionality
-            this.grids = new app.PricingGridCollection([
-                {
-                    name: 'fixed',
-                    data: [
-                        { height: 500, width: 500, value: 15 },
-                        { height: 914, width: 1514, value: 12 },
-                        { height: 2400, width: 3000, value: 10 }
-                    ]
-                },
-                {
-                    name: 'operable',
-                    data: [
-                        { height: 500, width: 500, value: 11 },
-                        { height: 914, width: 1514, value: 10 },
-                        { height: 1200, width: 2400, value: 8 }
-                    ]
-                }
-            ], { parse: true });
-
-            // this.listenTo(this.grids, 'change', function () {
-            //     console.log( 'wow, our grids did change' );
-            //     console.log( 'we are going to save grids as', this.grids.toJSON() );
-            // });
-        }
-    });
-
-    var FillingTypeProfiles = Backbone.Collection.extend({
-        model: FillingTypeToProfileConnection,
-        comparator: function (item) {
-            // return item.id;
-            var corresponding_profile = app.settings && app.settings.profiles.get(item.id);
-
-            return corresponding_profile ? corresponding_profile.get('position') : false;
-        },
-        initialize: function (models, options) {
-            // console.log( 'initialize FillingTypeProfiles collection with data', models );
-        }
-    });
-
-
-    //  --------------------------------------------------------------------
-    //  Filling Type Model
-    //  --------------------------------------------------------------------
-
     var UNSET_VALUE = '--';
 
     var BASE_TYPES = [
@@ -367,18 +271,21 @@ var app = app || {};
             return _.pluck(_.where(this.get('filling_type_profiles'), { is_default: true }), 'profile_id');
         },
         //  TODO: we need to have a way better nesting
+        //  TODO: add defaults for options
+        //  TODO: might be called like getPricingGridValueForProfile
+        //  TODO: are we sure we need this function at all?
         getPricingGridValue: function (profile_id, options) {
             // console.log( 'getPricingGridValue' );
             // console.log( 'profile_id', profile_id );
             // console.log( 'options', options );
 
-            var profile_connection = this.profiles.get(profile_id);
+            var profile_connection = this.profiles.getByProfileId(profile_id);
             var value = 0;
 
             // console.log( 'profile_connection', profile_connection );
 
             if ( profile_connection ) {
-                var target_grid = profile_connection.grids.getByName(options.type);
+                var target_grid = profile_connection.get('pricing_grids').getByName(options.type);
 
                 // console.log( 'target_grid', target_grid );
 
@@ -398,7 +305,33 @@ var app = app || {};
             //  TODO: do we want to have it like this? it'd fine if they are
             //  a separate model with the separate endpoint, but if they're
             //  not, we better have profiles as a model attribute
-            this.profiles = new FillingTypeProfiles(this.get('filling_type_profiles'));
+            // this.profiles = new app.FillingTypeProfileCollection(this.get('filling_type_profiles'), { parse: true });
+            //  TODO: remove this
+            this.profiles = new app.FillingTypeProfileCollection(
+                _.map(this.get('filling_type_profiles'), function (item) {
+                    return _.extend({}, item, {
+                        pricing_grids: [
+                            {
+                                name: 'fixed',
+                                data: [
+                                    { height: 500, width: 500, value: 15 },
+                                    { height: 914, width: 1514, value: 12 },
+                                    { height: 2400, width: 3000, value: 10 }
+                                ]
+                            },
+                            {
+                                name: 'operable',
+                                data: [
+                                    { height: 500, width: 500, value: 11 },
+                                    { height: 914, width: 1514, value: 10 },
+                                    { height: 1200, width: 2400, value: 8 }
+                                ]
+                            }
+                        ]
+                    });
+                }, this),
+                { parse: true }
+            );
         }
     });
 })();

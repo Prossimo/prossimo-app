@@ -17,10 +17,7 @@ var app = app || {};
         toggleGrid: function () {
             this.show_grid = !this.show_grid;
 
-            // console.log( 'toggle grid', this.show_grid );
-
-            // this.render();
-            // TODO: we do this instead of callign this.render() to avoid
+            // TODO: we do this instead of calling this.render() to avoid
             // issues with event delegation, although I'm not sure if this is
             // an optimal way, we probably have to use regions
             this.ui.$grid_container.toggleClass('is-open', this.show_grid);
@@ -31,13 +28,10 @@ var app = app || {};
 
             return profile ? profile.get('name') : 'Err: no profile with ID=' + profile_id;
         },
+        //  TODO: it should maybe compare with defaults
         getPricingGridString: function () {
-            // var grid = this.model.get('pricing_grid');
-            var grids = this.model.grids;
+            var grids = this.model.get('pricing_grids');
             var grid_string = '--';
-
-            // console.log( 'this.model', this.model );
-            // console.log( 'grids', grids );
 
             if ( grids && grids.length ) {
                 var values_num = grids
@@ -47,7 +41,6 @@ var app = app || {};
                         return memo + item;
                     }, 0);
                 grid_string = grids.length + ' grids, ' + values_num + ' values';
-                // grid_string = grids.length + ' values';
             }
 
             return grid_string;
@@ -72,11 +65,11 @@ var app = app || {};
         initialize: function () {
             this.show_grid = false;
 
-            // console.log( 'this.model', this.model );
-
-            if ( this.model.grids ) {
+            //  TODO: the actual name of attribure might be different for
+            //  filling types / dictionary entries
+            if ( this.model.get('pricing_grids') ) {
                 this.pricing_grid_view = new app.PerProfilePricingGridsEditorView({
-                    grids: this.model.grids,
+                    grids: this.model.get('pricing_grids'),
                     parent_view: this
                 });
             }

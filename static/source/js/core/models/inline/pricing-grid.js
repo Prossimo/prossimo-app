@@ -89,11 +89,6 @@ var app = app || {};
             { height: 914, width: 1514, value: 0 },
             { height: 2400, width: 3000, value: 0 }
         ];
-        // return [
-        //     { height: 500, width: 500, value: 15 },
-        //     { height: 914, width: 1514, value: 12 },
-        //     { height: 2400, width: 3000, value: 10 }
-        // ];
     }
 
     var PRICING_GRID_PROPERTIES = [
@@ -133,12 +128,6 @@ var app = app || {};
 
             return default_value;
         },
-        //  TODO: this syntax could be a way to go
-        // nestedModels: function () {
-        //     return {
-        //         data: 'Grid'
-        //     };
-        // },
         getValue: function () {
             return this.get('data').getValue.apply(this.get('data'), arguments);
         },
