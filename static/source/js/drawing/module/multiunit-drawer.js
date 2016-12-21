@@ -8,6 +8,7 @@ var app = app || {};
     var module;
     var model;
     var ratio;
+    var isInside;
 
     app.Drawers = app.Drawers || {};
     app.Drawers.MultiunitDrawer = Backbone.KonvaView.extend({
@@ -16,6 +17,7 @@ var app = app || {};
 
             module = params.builder;
             model = module.get('model');
+            isInside = module.getState('insideView');
 
             this.layer = params.layer;
             this.stage = params.stage;
@@ -27,6 +29,7 @@ var app = app || {};
         },
         render: function () {
             ratio = module.get('ratio');
+            isInside = module.getState('insideView');
 
             // Clear all previous objects
             this.layer.destroyChildren();
@@ -64,7 +67,7 @@ var app = app || {};
         },
         createSubunits: function () {
             var group = new Konva.Group({ name: 'subunits' });
-            var tree = model.getSubunitsCoordinatesTree();
+            var tree = model.getSubunitsCoordinatesTree({ flipX: isInside });
 
             model.subunitsTreeForEach(tree, function (node) {
 
@@ -72,7 +75,7 @@ var app = app || {};
                     width: node.width * ratio,
                     height: node.height * ratio,
                     mode: 'image',
-                    position: (module.getState('insideView')) ? 'inside' : 'outside',
+                    position: (isInside) ? 'inside' : 'outside',
                     metricSize: 0,
                     preview: true,
                     isMaximized: true,
@@ -94,7 +97,7 @@ var app = app || {};
         },
         createSubunitsIndexes: function () {
             var group = new Konva.Group({ name: 'subunit_indexes' });
-            var tree = model.getSubunitsCoordinatesTree();
+            var tree = model.getSubunitsCoordinatesTree({ flipX: isInside });
             var style = module.getStyle('subunit_indexes');
 
             model.subunitsTreeForEach(tree, function (node) {
@@ -139,7 +142,10 @@ var app = app || {};
             var nonOriginSubunits = _.tail(subunitGroup.getChildren());
             var connectorsKonvas = nonOriginSubunits.map(function (subunit) {
                 var parentConnector = model.getParentConnector(subunit.getAttr('subunitId'));
-                var connectorKonva = self.createConnector(parentConnector, { subunitKonvas: subunitGroup.getChildren() });
+                var connectorKonva = self.createConnector(parentConnector, {
+                    subunitKonvas: subunitGroup.getChildren(),
+                    flipX: isInside
+                });
                 return connectorKonva;
             });
             group.add.apply(group, connectorsKonvas);
@@ -150,6 +156,7 @@ var app = app || {};
             if (!connector) { return; }
             if (!(options && options.subunitKonvas)) { return; }
 
+            var flipX = options && options.flipX;
             var group = new Konva.Group({
                 name: 'connector',
                 connectorId: connector.id
@@ -179,22 +186,30 @@ var app = app || {};
             if (side === 'top') {
                 drawingWidth = length;
                 drawingHeight = facewidth;
-                drawingX = parentX;
+                drawingX = (flipX) ?
+                    parentX + parentWidth - length :
+                    parentX;
                 drawingY = parentY - width - faceOverlap;
             } else if (side === 'right') {
                 drawingWidth = facewidth;
                 drawingHeight = length;
-                drawingX = parentX + parentWidth - faceOverlap;
+                drawingX = (flipX) ?
+                    parentX - width - faceOverlap :
+                    parentX + parentWidth - faceOverlap;
                 drawingY = parentY;
             } else if (side === 'bottom') {
                 drawingWidth = length;
                 drawingHeight = facewidth;
-                drawingX = parentX;
+                drawingX = (flipX) ?
+                    parentX + parentWidth - length :
+                    parentX;
                 drawingY = parentY + parentHeight - faceOverlap;
             } else if (side === 'left') {
                 drawingWidth = facewidth;
                 drawingHeight = length;
-                drawingX = parentX - width - faceOverlap;
+                drawingX = (flipX) ?
+                    parentX + parentWidth - faceOverlap :
+                    parentX - width - faceOverlap;
                 drawingY = parentY;
             } else { return; }
 

@@ -73,7 +73,11 @@ var app = app || {};
             this.render();
         },
         onChange: function () {
-            this.selectUnit(this.collection.get(this.ui.$select.val()));
+            var model = this.collection.get(this.ui.$select.val());
+            if (!model) {
+                model = this.collection.multiunits.get(this.ui.$select.val());
+            }
+            this.selectUnit(model);
         },
         onNextBtn: function () {
             var collection_size = this.templateContext().unit_list.length;

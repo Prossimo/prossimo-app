@@ -482,23 +482,12 @@ var app = app || {};
         },
         recalculateSizes: function () {  // updates multiunit width/height from subunit changes
             var subunitPositionsTree = this.getSubunitsCoordinatesTree();
+            var rect = this.subunitsTreeGetRect(subunitPositionsTree);
 
-            var minX = 0;
-            var maxX = 0;
-            var minY = 0;
-            var maxY = 0;
-            this.subunitsTreeForEach(subunitPositionsTree, function (node) {
-                minX = Math.min(minX, node.x);
-                maxX = Math.max(maxX, node.x + node.width);
-                minY = Math.min(minY, node.y);
-                maxY = Math.max(maxY, node.y + node.height);
-            });
-            var multiunitWidth = app.utils.convert.mm_to_inches(maxX - minX).toFixed(5);
-            var multiunitHeight = app.utils.convert.mm_to_inches(maxY - minY).toFixed(5);
-            this.set('width', multiunitWidth);
-            this.set('height', multiunitHeight);
+            this.set('width', app.utils.convert.mm_to_inches(rect.width));
+            this.set('height', app.utils.convert.mm_to_inches(rect.height));
 
-            return { width: multiunitWidth, height: multiunitHeight };
+            return { width: rect.width, height: rect.height };
         },
         getSubunitNode: function (subunitId) {
             var subunitPositionsTree = this.getSubunitsCoordinatesTree();
@@ -573,7 +562,8 @@ var app = app || {};
             return subunitsTree;
         },
         // Returns subunit tree with coordinate information at each node, in mm
-        getSubunitsCoordinatesTree: function () {
+        getSubunitsCoordinatesTree: function (options) {
+            var flipX = options && options.flipX;
             var subunitsTree = this.getSubunitsTree();
             this.subunitsTreeForEach(subunitsTree, function (node) {
                 var isOrigin = self.isOriginId(node.unit.getId());
@@ -598,20 +588,36 @@ var app = app || {};
                     node.height = height;
 
                     if (side && side === 'top') {
-                        node.x = parentX;
+                        node.x = (flipX) ?
+                            parentX + parentWidth - width :
+                            parentX;
                         node.y = parentY - gap - height;
                     } else if (side && side === 'right') {
-                        node.x = parentX + parentWidth + gap;
+                        node.x = (flipX) ?
+                            parentX - gap - width :
+                            parentX + parentWidth + gap;
                         node.y = parentY;
                     } else if (side && side === 'bottom') {
-                        node.x = parentX;
+                        node.x = (flipX) ?
+                            parentX + parentWidth - width :
+                            parentX;
                         node.y = parentY + parentHeight + gap;
                     } else if (side && side === 'left') {
-                        node.x = parentX - gap - width;
+                        node.x = (flipX) ?
+                            parentX + parentWidth + gap :
+                            parentX - gap - width;
                         node.y = parentY;
                     }
                 }
             });
+
+            var rect = this.subunitsTreeGetRect(subunitsTree);
+            if (rect.x < 0) {
+                var delta = Math.abs(rect.x);
+                this.subunitsTreeForEach(subunitsTree, function (node) {
+                    node.x = node.x + delta;
+                });
+            }
 
             return subunitsTree;
         },
@@ -625,6 +631,24 @@ var app = app || {};
                     self.subunitsTreeForEach(node, func);
                 });
             }
+        },
+        subunitsTreeGetRect: function (subunitPositionsTree) {
+            if (!subunitPositionsTree) { return {}; }
+
+            var minX = 0;
+            var maxX = 0;
+            var minY = 0;
+            var maxY = 0;
+            this.subunitsTreeForEach(subunitPositionsTree, function (node) {
+                minX = Math.min(minX, node.x);
+                maxX = Math.max(maxX, node.x + node.width);
+                minY = Math.min(minY, node.y);
+                maxY = Math.max(maxY, node.y + node.height);
+            });
+            var multiunitWidth = maxX - minX;
+            var multiunitHeight = maxY - minY;
+
+            return { x: minX, y: minY, width: multiunitWidth, height: multiunitHeight };
         },
         getSubunitRelativePosition: function (subunit) {
             return this.subunits.indexOf(subunit);
