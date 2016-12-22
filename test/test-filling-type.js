@@ -8,11 +8,27 @@ app.session.set('no_backend', true);
 
 app.settings = new app.Settings();
 
+//  This is here to avoid creating side effects inside tests.
+//  TODO: we need to get rid of globals eventually
+app.settings.profiles = new app.ProfileCollection([
+    { id: 1, position: 0 },
+    { id: 2, position: 1 },
+    { id: 3, position: 2 },
+    { id: 22, position: 3 },
+    { id: 77, position: 4 },
+    { id: 17, position: 5 }
+], { parse: true });
+
+
 test('filling type model basic tests', function () {
     var filling = new app.FillingType();
 
     equal(filling.get('type'), 'glass', 'Filling gets "glass" type by default');
-    deepEqual(filling.get('filling_type_profiles'), [], 'Profiles is just an empty array upon filling creation');
+    ok(
+        filling.get('filling_type_profiles') instanceof Backbone.Collection,
+        'Profiles is an instance of Backbone.Collection upon filling creation'
+    );
+    equal(filling.get('filling_type_profiles').length, 0, 'Profiles is an empty collection upon filling creation');
 
     //  Another entry, to test profiles sorting on load
     var filling_two = new app.FillingType({
@@ -35,7 +51,7 @@ test('filling type model basic tests', function () {
     }, { parse: true });
 
     deepEqual(
-        _.pluck(filling_two.get('filling_type_profiles'), 'profile_id'),
+        filling_two.get('filling_type_profiles').pluck('profile_id'),
         [1, 2, 3],
         'filling_type_profiles should be sorted on parse'
     );
@@ -65,6 +81,74 @@ test('filling type getBaseTypeTitle function', function () {
 });
 
 
+test('filling type toJSON function', function () {
+    var filling = new app.FillingType({
+        name: 'Insulated PVC Panel',
+        type: 'recessed',
+        filling_type_profiles: [
+            {
+                profile_id: 3,
+                is_default: true
+            }
+        ]
+    }, { parse: true });
+
+    deepEqual(
+        filling.toJSON(),
+        {
+            name: 'Insulated PVC Panel',
+            type: 'recessed',
+            position: 0,
+            supplier_name: '',
+            weight_per_area: 0,
+            filling_type_profiles: [
+                {
+                    profile_id: 3,
+                    is_default: true,
+                    pricing_grids: JSON.stringify([
+                        {
+                            name: 'fixed',
+                            data: [
+                                { height: 500, width: 500, value: 0 },
+                                { height: 914, width: 1514, value: 0 },
+                                { height: 2400, width: 3000, value: 0 }
+                            ]
+                        },
+                        {
+                            name: 'operable',
+                            data: [
+                                { height: 500, width: 500, value: 0 },
+                                { height: 914, width: 1514, value: 0 },
+                                { height: 1200, width: 2400, value: 0 }
+                            ]
+                        }
+                    ])
+                }
+            ]
+        },
+        'Filling type should be properly cast to json'
+    );
+});
+
+
+test('filling type hasOnlyDefaultAttributes function', function () {
+    var new_filling = new app.FillingType();
+    var another_new_filling = new app.FillingType();
+
+    ok(new_filling.hasOnlyDefaultAttributes(), 'Filling type has only default attributes upon creation');
+    ok(another_new_filling.hasOnlyDefaultAttributes(), 'Another filling type has only default attributes upon creation');
+
+    new_filling.set('name', 'Nice Filling');
+    another_new_filling.setProfileAvailability(1, true, true);
+
+    notOk(new_filling.hasOnlyDefaultAttributes(), 'Filling type has non-default attributes after calling set');
+    notOk(
+        new_filling.hasOnlyDefaultAttributes(),
+        'Another filling has type non-default attributes after calling setProfileAvailability'
+    );
+});
+
+
 test('filling type isAvailableForProfile function', function () {
     var filling_one = new app.FillingType({
         name: 'Test Type',
@@ -75,7 +159,7 @@ test('filling type isAvailableForProfile function', function () {
                 is_default: true
             }
         ]
-    });
+    }, { parse: true });
     var filling_two = new app.FillingType({
         name: 'Another Test Type',
         type: 'recessed',
@@ -89,7 +173,7 @@ test('filling type isAvailableForProfile function', function () {
                 is_default: true
             }
         ]
-    });
+    }, { parse: true });
     var base_filling = new app.FillingType({
         is_base_type: true
     });
@@ -114,7 +198,7 @@ test('filling type isDefaultForProfile function', function () {
                 is_default: true
             }
         ]
-    });
+    }, { parse: true });
     var filling_two = new app.FillingType({
         name: 'Another Test Type',
         type: 'recessed',
@@ -128,7 +212,7 @@ test('filling type isDefaultForProfile function', function () {
                 is_default: true
             }
         ]
-    });
+    }, { parse: true });
     var base_filling = new app.FillingType({
         is_base_type: true
     });
@@ -161,7 +245,7 @@ test('filling type setProfileAvailability function', function () {
                 is_default: false
             }
         ]
-    });
+    }, { parse: true });
 
     equal(filling.isAvailableForProfile(1), true, 'Should be available for profile_id=1 upon creation');
     equal(filling.isAvailableForProfile(2), true, 'Should be available for profile_id=2 upon creation');
@@ -241,7 +325,7 @@ test('filling type getIdsOfProfilesWhereIsAvailable function', function () {
                 is_default: false
             }
         ]
-    });
+    }, { parse: true });
     var base_filling = new app.FillingType({
         is_base_type: true
     });
@@ -277,7 +361,7 @@ test('filling type getIdsOfProfilesWhereIsDefault function', function () {
                 is_default: false
             }
         ]
-    });
+    }, { parse: true });
     var base_filling = new app.FillingType({
         is_base_type: true
     });

@@ -132,7 +132,7 @@ test('filling type collection getAvailableForProfile, getDefaultForProfile getDe
                 }
             ]
         }
-    ]);
+    ], { parse: true });
 
     equal(collection.getAvailableForProfile(1).length, 7, 'getAvailableForProfile returns expected result for profile_id=1');
     equal(collection.getAvailableForProfile(2).length, 7, 'getAvailableForProfile returns expected result for profile_id=2');
@@ -187,7 +187,7 @@ test('filling type collection getIdsOfAllConnectedProfiles', function () {
                 }
             ]
         }
-    ]);
+    ], { parse: true });
 
     deepEqual(
         collection.getIdsOfAllConnectedProfiles(),
@@ -204,7 +204,7 @@ test('filling type collection getIdsOfAllConnectedProfiles', function () {
                 is_default: true
             }
         ]
-    });
+    }, { parse: true });
     collection.setItemAvailabilityForProfile(18, collection.at(1), true);
 
     deepEqual(
@@ -241,7 +241,7 @@ test('filling type collection validatePerProfileDefaults', function () {
                 }
             ]
         }
-    ]);
+    ], { parse: true });
 
     equal(collection.at(0).isDefaultForProfile(1), true, 'First collection item is set as default for profile_id=1');
     equal(collection.at(1).isDefaultForProfile(1), true, 'Second collection item is set as default for profile_id=1');
@@ -293,7 +293,7 @@ test('filling type collection setItemAvailabilityForProfile', function () {
                 }
             ]
         }
-    ]);
+    ], { parse: true });
     var item_one = collection.at(0);
     var item_two = collection.at(1);
 
@@ -350,7 +350,7 @@ test('filling type collection setItemAsDefaultForProfile', function () {
                 }
             ]
         }
-    ]);
+    ], { parse: true });
     var item_one = collection.at(0);
     var item_two = collection.at(1);
 

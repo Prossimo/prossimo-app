@@ -11,7 +11,7 @@ var app = app || {};
             var corresponding_profile = app.settings && app.settings.profiles &&
                 app.settings.profiles.get(item.get('profile_id'));
 
-            return corresponding_profile ? corresponding_profile.get('position') : 0;
+            return corresponding_profile ? corresponding_profile.get('position') : Infinity;
         },
         getByProfileId: function (profile_id) {
             return this.findWhere({ profile_id: profile_id });

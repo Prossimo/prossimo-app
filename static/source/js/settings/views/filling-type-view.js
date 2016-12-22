@@ -19,20 +19,6 @@ var app = app || {};
             'click @ui.$clone': 'cloneItem',
             'click @ui.$remove': 'removeItem'
         },
-        getProfilesNamesList: function () {
-            var profiles_ids = _.pluck(this.model.get('filling_type_profiles'), 'profile_id');
-            var profiles_names_list = [];
-
-            if ( profiles_ids && profiles_ids.length ) {
-                if ( app.settings ) {
-                    profiles_names_list = app.settings.getProfileNamesByIds(profiles_ids.sort());
-                } else {
-                    profiles_names_list = profiles_ids.sort();
-                }
-            }
-
-            return profiles_names_list;
-        },
         editProfiles: function () {
             app.dialogs.showDialog('items-profiles-table', {
                 collection_title: 'Filling Types',
@@ -75,13 +61,6 @@ var app = app || {};
                 this.profile_connections_table_view.destroy();
             }
         },
-        templateContext: function () {
-            var profiles = this.getProfilesNamesList();
-
-            return {
-                profiles_string: profiles.length ? profiles.join(', ') : '--'
-            };
-        },
         initialize: function () {
             this.attributes_to_render = this.model.getNameTitleTypeHash([
                 'name', 'supplier_name', 'type', 'weight_per_area'
@@ -118,15 +97,7 @@ var app = app || {};
             }, this);
 
             this.profile_connections_table_view = new app.ProfileConnectionsTableView({
-                collection: this.model.profiles
-            });
-
-            this.listenTo(this.model, 'change:filling_type_profiles change:name', function () {
-                this.render();
-
-                _.each(this.attribute_views, function (child_view) {
-                    child_view.view_instance.delegateEvents();
-                });
+                collection: this.model.get('filling_type_profiles')
             });
         }
     });

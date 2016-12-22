@@ -23,12 +23,8 @@ var app = app || {};
         { name: 'is_base_type', title: 'Is Base Type', type: 'boolean' },
         { name: 'weight_per_area', title: 'Weight per Area (kg/m2)', type: 'number' },
         { name: 'position', title: 'Position', type: 'number' },
-        { name: 'filling_type_profiles', title: 'Profiles', type: 'array' }
+        { name: 'filling_type_profiles', title: 'Profiles', type: 'collection:FillingTypeProfileCollection' }
     ];
-
-    function getDefaultProfilesList() {
-        return [];
-    }
 
     app.FillingType = Backbone.Model.extend({
         schema: app.schema.createSchema(FILLING_TYPE_PROPERTIES),
@@ -60,7 +56,7 @@ var app = app || {};
 
             var name_value_hash = {
                 type: this.getBaseTypes()[0].name,
-                filling_type_profiles: getDefaultProfilesList()
+                filling_type_profiles: new app.FillingTypeProfileCollection()
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -84,21 +80,28 @@ var app = app || {};
         },
         parse: function (data) {
             var filling_type_data = data && data.filling_type ? data.filling_type : data;
+            var parsed_data = app.schema.parseAccordingToSchema(filling_type_data, this.schema);
 
-            if ( filling_type_data && _.isArray(filling_type_data.filling_type_profiles) ) {
-                //  Sort profiles by id on load
-                filling_type_data.filling_type_profiles.sort(function (a, b) { return a.profile_id - b.profile_id; });
-
-                //  Remove excessive data from `filling_type_profiles`
-                //  TODO: we need to find a more elegant way to do that, like
-                //  parse them according to additional schema
-                _.each(filling_type_data.filling_type_profiles, function (entry) {
-                    delete entry.profile;
-                    delete entry.id;
-                }, this);
+            if ( parsed_data && parsed_data.filling_type_profiles ) {
+                parsed_data.filling_type_profiles = new app.FillingTypeProfileCollection(
+                    app.utils.object.extractObjectOrNull(parsed_data.filling_type_profiles),
+                    { parse: true }
+                );
             }
 
-            return app.schema.parseAccordingToSchema(filling_type_data, this.schema);
+            return parsed_data;
+        },
+        toJSON: function () {
+            var properties_to_omit = ['id', 'is_base_type'];
+            var json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+
+            json.filling_type_profiles = this.get('filling_type_profiles').toJSON();
+
+            _.each(properties_to_omit, function (prop) {
+                delete json[prop];
+            }, this);
+
+            return json;
         },
         validate: function (attributes, options) {
             var error_obj = null;
@@ -161,8 +164,9 @@ var app = app || {};
                     var property_source = _.findWhere(FILLING_TYPE_PROPERTIES, { name: key });
                     var type = property_source ? property_source.type : undefined;
 
+                    //  This might not be super accurate, but should work
                     if ( key === 'filling_type_profiles' ) {
-                        if ( JSON.stringify(value) !== JSON.stringify(this.getDefaultValue('filling_type_profiles')) ) {
+                        if ( value.length !== 0 ) {
                             has_only_defaults = false;
                         }
                     } else if ( this.getDefaultValue(key, type) !== value ) {
@@ -204,21 +208,23 @@ var app = app || {};
         isAvailableForProfile: function (profile_id) {
             return this.get('is_base_type') === true ||
                 this.get('filling_type_profiles') &&
-                _.contains(_.pluck(this.get('filling_type_profiles'), 'profile_id'), profile_id);
+                _.contains(this.get('filling_type_profiles').pluck('profile_id'), profile_id);
         },
         isDefaultForProfile: function (profile_id) {
             var is_default = false;
 
             if ( !this.get('is_base_type') && this.isAvailableForProfile(profile_id) ) {
-                var connection = _.findWhere(this.get('filling_type_profiles'), { profile_id: profile_id });
+                var connection = this.get('filling_type_profiles').getByProfileId(profile_id);
 
-                is_default = connection.is_default || false;
+                is_default = connection.get('is_default') || false;
             }
 
             return is_default;
         },
         //  TODO: Do we need to validate it against the list of globally
-        //  available profiles in the app? There are reasons to do so
+        //  available profiles in the app? Or maybe we do want to validate
+        //  them, but not on creation, rather separately, just to indicate
+        //  where it's wrong?
         /**
          * Toggle item availability and default status for a certain profile
          *
@@ -229,72 +235,52 @@ var app = app || {};
          * to unset. You can't make item default when it's not available
          */
         setProfileAvailability: function (profile_id, make_available, make_default) {
-            // Deep cloning gives us a `change` event here
-            var current_profiles_list = JSON.parse(JSON.stringify(this.get('filling_type_profiles')));
-            var connection = _.findWhere(current_profiles_list, { profile_id: profile_id });
-            var should_persist = false;
-            var new_profiles_list;
+            var profiles_list = this.get('filling_type_profiles');
+            var connection = profiles_list.getByProfileId(profile_id);
 
             //  If there is an existing connection that we want to unset
             if ( make_available === false && connection ) {
-                new_profiles_list = _.without(current_profiles_list, connection);
-                should_persist = true;
+                connection.destroy();
             } else if ( make_available === true ) {
                 //  If connection doesn't exist and we want to add it
                 if ( !connection ) {
-                    connection = {
+                    profiles_list.add({
                         profile_id: profile_id,
                         is_default: make_default === true
-                    };
-
-                    new_profiles_list = _.union(current_profiles_list, [connection]);
-                    new_profiles_list.sort(function (a, b) { return a.profile_id - b.profile_id; });
-                    should_persist = true;
+                    });
                 //  If connection exists and we want to just modify is_default
                 } else if ( make_default === true || make_default === false ) {
-                    should_persist = connection.is_default !== make_default;
-                    connection.is_default = make_default;
+                    connection.set('is_default', make_default);
                 }
-            }
-
-            //  Only save when there are any changes
-            if ( should_persist ) {
-                this.persist('filling_type_profiles', new_profiles_list || current_profiles_list);
             }
         },
         //  We assume that profiles list is sorted and deduplicated
         getIdsOfProfilesWhereIsAvailable: function () {
-            return _.pluck(this.get('filling_type_profiles'), 'profile_id');
+            return this.get('filling_type_profiles').pluck('profile_id');
         },
         //  We assume that profiles list is sorted and deduplicated
         getIdsOfProfilesWhereIsDefault: function () {
-            return _.pluck(_.where(this.get('filling_type_profiles'), { is_default: true }), 'profile_id');
+            return _.map(
+                this.get('filling_type_profiles').where({ is_default: true }),
+                function (item) {
+                    return item.get('profile_id');
+                }
+            );
         },
         //  TODO: we need to have a way better nesting
         //  TODO: add defaults for options
         //  TODO: might be called like getPricingGridValueForProfile
         //  TODO: are we sure we need this function at all?
         getPricingGridValue: function (profile_id, options) {
-            // console.log( 'getPricingGridValue' );
-            // console.log( 'profile_id', profile_id );
-            // console.log( 'options', options );
-
-            var profile_connection = this.profiles.getByProfileId(profile_id);
+            var profile_connection = this.get('filling_type_profiles').getByProfileId(profile_id);
+            var target_grid = profile_connection && profile_connection.get('pricing_grids').getByName(options.type);
             var value = 0;
 
-            // console.log( 'profile_connection', profile_connection );
-
-            if ( profile_connection ) {
-                var target_grid = profile_connection.get('pricing_grids').getByName(options.type);
-
-                // console.log( 'target_grid', target_grid );
-
-                if ( target_grid ) {
-                    value = target_grid.getValue({
-                        width: options.width,
-                        height: options.height
-                    });
-                }
+            if ( target_grid ) {
+                value = target_grid.getValue({
+                    width: options.width,
+                    height: options.height
+                });
             }
 
             return value;
@@ -302,36 +288,10 @@ var app = app || {};
         initialize: function (attributes, options) {
             this.options = options || {};
 
-            //  TODO: do we want to have it like this? it'd fine if they are
-            //  a separate model with the separate endpoint, but if they're
-            //  not, we better have profiles as a model attribute
-            // this.profiles = new app.FillingTypeProfileCollection(this.get('filling_type_profiles'), { parse: true });
-            //  TODO: remove this
-            this.profiles = new app.FillingTypeProfileCollection(
-                _.map(this.get('filling_type_profiles'), function (item) {
-                    return _.extend({}, item, {
-                        pricing_grids: [
-                            {
-                                name: 'fixed',
-                                data: [
-                                    { height: 500, width: 500, value: 15 },
-                                    { height: 914, width: 1514, value: 12 },
-                                    { height: 2400, width: 3000, value: 10 }
-                                ]
-                            },
-                            {
-                                name: 'operable',
-                                data: [
-                                    { height: 500, width: 500, value: 11 },
-                                    { height: 914, width: 1514, value: 10 },
-                                    { height: 1200, width: 2400, value: 8 }
-                                ]
-                            }
-                        ]
-                    });
-                }, this),
-                { parse: true }
-            );
+            //  Any change to `filling_type_profiles` should be persisted
+            this.listenTo(this.get('filling_type_profiles'), 'change update', function () {
+                this.persist('filling_type_profiles', this.get('filling_type_profiles'));
+            });
         }
     });
 })();

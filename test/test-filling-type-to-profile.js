@@ -63,6 +63,22 @@ test('FillingTypeProfile parse function', function () {
         data_to_set[0],
         'pricing_grids first entry should be similar to source data first entry'
     );
+
+    //  We want to make sure no extra data survives at the parse step
+    var extra_ftp = new app.FillingTypeProfile({
+        profile_id: 33,
+        profile: {
+            id: 12,
+            name: 'Random Profile'
+        },
+        id: 12,
+        pricing_grids: JSON.parse(JSON.stringify(data_to_set))
+    }, { parse: true });
+
+    equal(extra_ftp.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
+    equal(extra_ftp.get('profile_id'), 33, 'profile_id should be correct');
+    equal(extra_ftp.get('id'), undefined, 'id should be undefined');
+    equal(extra_ftp.get('profile'), undefined, 'profile should be undefined');
 });
 
 

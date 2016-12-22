@@ -93,7 +93,7 @@ var app = app || {};
 
     var PRICING_GRID_PROPERTIES = [
         { name: 'name', title: 'Name', type: 'string' },
-        { name: 'data', title: 'Grid Data', type: 'Grid' }
+        { name: 'data', title: 'Grid Data', type: 'collection:Grid' }
     ];
 
     //  TODO: we could have like Backbone.InlineModel class, or use a mixin
