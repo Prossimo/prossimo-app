@@ -219,9 +219,13 @@ var app = app || {};
         },
         onStampAdd: function() {
 
+            if (this.countpages.length == 0) {
+                alert("You have to load pages from server. Please enter page numbers and click 'Refresh' button");
+                return;
+            }
+
             var index = this.ui.$select.val();
             var st = app.stamps.at(index);
-
             var page = this.countpages[this.selpage];
 
             var max = 0; 
