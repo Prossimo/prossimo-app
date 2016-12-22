@@ -38,8 +38,8 @@ var app = app || {};
         },
         initialize: function () {
             
-            this.pdfURL = "https://static.googleusercontent.com/media/research.google.com/en//archive/bigtable-osdi06.pdf";
-
+            this.pdfURL = "http://dev.prossimo.us/storage/data/pdf/windows.pdf";
+            //this.pdfURL = "https://static.googleusercontent.com/media/research.google.com/en//archive/bigtable-osdi06.pdf";
             this.tabs = [
                 {
                     title: 'Pages',
@@ -75,7 +75,7 @@ var app = app || {};
             var self = this;
 
             /*  test pdf api */
-            var authToken       = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXUyJ9.eyJleHAiOjE0ODI0MTAyMTgsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOiIxNDgyMzIzODE4In0.Qr-ZY1DnPTAQn-ZhZHagtrjbrCD2Hlgt2y8Pbdm9FEmzxya7ExxiN1rwI-vDTDHsKx3QBXefo-_dpJchy2_WeDK7G7Xa3izhR4ymOTmse-w7_nsO_YeGPBBjWEK1pzMj1sW2KDSR1I5AXBIo21LMP8ztcBiuT43wX05dFy0vp5QEjacD-0YGz6pr_s6jmSAxUrK9OfVl9VbuIjqJ5tJgIanz-2sRJPceIFcPtmokuoCfZlLUD7N90X8_xdFPlAZqozy8fIbmJFdVjV8i1rKdccG4oZTa8VpT78Mmhf2m-SlLskh4AIczVie9nbrcuBAs-F6DK8TurlA7vj8zccGijU6CNu3vcOICJqBnTtPbMyKCQB9eAO1ys3LolnRNAPx66x3b--LxjsHCR0PwQ_QDY28C7mO0bPp34k4r-LMPg0pTvdTVtKXNYwjiUKo5q2h4eSK5VWjxtPPjwC4nwoH_pmBz3TyNl3Y4wMzwqQp0s_HF1CZBe9H1zneTHSjuDnS089xkJ-CaXL1pNtwMlmnrhutCCzniFYcZVpDZV-y00HD0MrZ-ukjFfU3odyZs01baLMUiQcpc9licrhuKdgPFhcYq9lJBucPwNKnQIk3qA--Y5OE93sDmUAdc9KtK8O2pT_k6IzZjbxjqi1jj6zm177GzDQ5bVgK1AkiOy1i9W10";
+            var authToken       = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXUyJ9.eyJleHAiOjE0ODI1MDU2MDUsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOiIxNDgyNDE5MjA1In0.fduFonfkBQg_CLKA5hmx6Tm231UtOVENPFzEaN4YipKPEq81tAtaokHSa_qPjdChLx6c4zhyzONqV8tUR8sx8AMtry1vIT7LZq7D3tAxxRpSPkda2DZw3HqyEHc6hQixZ9ZT267Y60g4_6VpICNQV12IifuwjUb_kKCU0pvQB9yvcBHhKknFBwUuMueLrDfPnTlCdGBl3jwd0rIsufANbBrI-WHhRB8gzbiIOJ2PwRjR_bupRWb4OxONpPw0wuxHmTew9LLW82O_SOxQhbcw6kccpn7xICUhMASHfAcF3T6M_AW1qv6Vsp0FzutDS4v4_Vvxjl9SBGl1zb_JVzQr7a0twPmjJsRegVR8Mqx42Qf4rwdQ4R5iuTnZ85IBm-4B0PsWKOLPakitm-PkXbzkdbILDfSdVYpMst8Xuu79m4Ir5tUvvVqQDy5CIUeE_X6657pbzWy25R-Er1ucu6mA5NEEuk1kyDPS-gVYjESNDxqFeuqdUVDxtQJwxCclmcV_B6yTmwT9IPE87Q2V_HOcXZ6Nr7thxKDwSNmpo3lvw5uraxBM97hnmsZJXxK-m149TMIqvtLAhiT-S6XweEgrdLFa3jThLEVyV44UlfDUZ5DaVnmNY6BfTJaxMsWbnqvGyiU0pP3dCoFz168V4m1QYg3DQAQRh97rIzi45BIChXk";
             var baseUrlofJpeg   = "http://dev.prossimo.us/storage";
 
             $.ajax({

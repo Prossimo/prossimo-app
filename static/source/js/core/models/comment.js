@@ -47,7 +47,7 @@ var app = app || {};
         },
         model: app.Comment,
        
-        url:'http://localhost:9987/fake_comments.json',
+        url:'/fake_comments.json',
        
         parse: function(response, options) {
             console.log(response);

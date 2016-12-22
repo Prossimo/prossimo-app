@@ -60,7 +60,7 @@ var app = app || {};
         },        
         model: app.CountPage,
 
-        /*url:'http://localhost:9987/fake_count_pages.json',
+        /*url:'/fake_count_pages.json',
        
         parse: function(response, options) {
             console.log(response);
@@ -87,7 +87,7 @@ var app = app || {};
         },        
         model: app.Stamp,
 
-        /*url:'http://localhost:9987/fake_count_pages.json',
+        /*url:'/fake_count_pages.json',
        
         parse: function(response, options) {
             console.log(response);
