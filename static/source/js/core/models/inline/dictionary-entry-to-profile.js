@@ -3,13 +3,15 @@ var app = app || {};
 (function () {
     'use strict';
 
+    //  We switch between cost_per_item and pricing_grids in getPricingData()
     var PROFILE_CONNECTION_PROPERTIES = [
         { name: 'profile_id', title: 'Profile ID', type: 'number' },
         { name: 'is_default', title: 'Is Default', type: 'boolean' },
+        { name: 'cost_per_item', title: 'Cost Per Item', type: 'number' },
         { name: 'pricing_grids', title: 'Pricing Grids', type: 'collection:PricingGridCollection' }
     ];
 
-    app.FillingTypeProfile = Backbone.Model.extend({
+    app.DictionaryEntryProfile = Backbone.Model.extend({
         schema: app.schema.createSchema(PROFILE_CONNECTION_PROPERTIES),
         defaults: function () {
             var defaults = {};
@@ -74,11 +76,26 @@ var app = app || {};
         persist: function () {
             return this.set.apply(this, arguments);
         },
+        //  Depending on the pricing_scheme we have for parent dictionary, we
+        //  return different combinations here
         getPricingData: function () {
-            return {
-                scheme: 'PRICING_GRIDS',
-                pricing_grids: this.get('pricing_grids')
+            var pricing_data = {
+                scheme: 'NONE'
             };
+
+            var parent_entry = this.collection && this.collection.options.parent_entry;
+            var parent_dictionary = parent_entry && parent_entry.collection &&
+                parent_entry.collection.options.dictionary;
+
+            if ( parent_dictionary && parent_dictionary.get('pricing_scheme') === 'PRICING_GRIDS' ) {
+                pricing_data.scheme = 'PRICING_GRIDS';
+                pricing_data.pricing_grids = this.get('pricing_grids');
+            } else if ( parent_dictionary && parent_dictionary.get('pricing_scheme') === 'PER_ITEM' ) {
+                pricing_data.scheme = 'PER_ITEM';
+                pricing_data.cost_per_item = this.get('cost_per_item');
+            }
+
+            return pricing_data;
         },
         initialize: function () {
             //  The order of events doesn't really match the way events
@@ -90,4 +107,3 @@ var app = app || {};
         }
     });
 })();
-

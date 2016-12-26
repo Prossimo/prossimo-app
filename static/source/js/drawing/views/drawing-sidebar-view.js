@@ -437,7 +437,7 @@ var app = app || {};
                 //  This is not super nice because we duplicate code from unit.js
                 result.converted_cost = f.price_usd(unit_cost.total / parseFloat(result.conversion_rate));
 
-                _.each(unit_cost.details, function (source_item, index) {
+                _.each(unit_cost.sections_list, function (source_item, index) {
                     var section_item = {};
 
                     section_item.name = 'Section #' + (index + 1);

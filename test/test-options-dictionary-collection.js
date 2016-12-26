@@ -89,7 +89,7 @@ test('dictionary collection getAvailableOptions, getDefaultOption, getFirstAvail
                 }
             ]
         }
-    ]);
+    ], { parse: true });
 
     //  Test function getAvailableOptions
     deepEqual(
@@ -167,7 +167,7 @@ test('dictionary collection getAvailableOptions, getDefaultOption, getFirstAvail
     );
 
     //  Now remove default option for a profile with id=4 and try again
-    handles.entries.get(2).set('dictionary_entry_profiles', [
+    handles.entries.get(2).get('dictionary_entry_profiles').set([
         {
             profile_id: 1,
             is_default: false
@@ -176,7 +176,7 @@ test('dictionary collection getAvailableOptions, getDefaultOption, getFirstAvail
             profile_id: 4,
             is_default: false
         }
-    ]);
+    ], { parse: true });
     equal(
         dictionaries.getDefaultOrFirstAvailableOption(1, 4).get('name'),
         'White Plastic Handle',

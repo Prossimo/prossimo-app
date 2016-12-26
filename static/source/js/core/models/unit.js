@@ -1920,54 +1920,37 @@ var app = app || {};
 
             return result;
         },
-        //  TODO: we need to test this also
-        //  TODO: we have different pricing schemes for options, we need to
-        //  have some neat way to gather all estimates in one place
-        // getEstimatedOptionsCost: function () {
-        getGridBasedOptionsList: function () {
+        getUnitOptionsGroupedByPricingScheme: function () {
             var connected_options = this.getCurrentUnitOptions();
             var profile_id = this.profile.id;
-            var grid_based_list = [];
+            var result = {
+                PRICING_GRIDS: [],
+                PER_ITEM: []
+            };
 
             _.each(connected_options, function (option) {
-                var profiles = option.profiles;
-                var target_profile = profiles && profiles.get(profile_id);
-                // var target_grid;
+                var parent_dictionary = option.getParentDictionary();
+                var pricing_data = option.getPricingDataForProfile(profile_id);
 
-                // console.log( 'option name', option.get('name') );
-
-                if ( target_profile && target_profile.grids && target_profile.grids.length ) {
-                    var option_name = option.get('name');
-                    //  TODO: This might not always work
-                    var dictionary_name = option.collection.options.dictionary.get('name');
-                    var grids = target_profile.grids;
-
-                    // console.log( 'grids', grids );
-
-                    grid_based_list.push({
-                        dictionary_name: dictionary_name,
-                        option_name: option_name,
-                        grids: grids
+                if ( pricing_data && pricing_data.scheme !== 'NONE' ) {
+                    result[pricing_data.scheme].push({
+                        dictionary_name: parent_dictionary.get('name'),
+                        option_name: option.get('name'),
+                        pricing_data: pricing_data
                     });
                 }
-
-                //  Price is per profile, so it should be somewhere there
             }, this);
 
-            return grid_based_list;
+            return result;
         },
         getSectionsListWithEstimatedCost: function () {
             var pricing_grids = this.profile.getPricingGrids();
             var sections_list = this.getFixedAndOperableSectionsList();
-            var grid_based_options = this.getGridBasedOptionsList();
-
-            // console.log( 'grid_based_options', grid_based_options );
+            var options_grouped_by_scheme = this.getUnitOptionsGroupedByPricingScheme();
 
             function getArea(item) {
                 return item.height * item.width;
             }
-
-            // console.log( 'sections list source', JSON.stringify(sections_list) );
 
             //  How this algorithm works:
             //  1. grids are already sorted by area size
@@ -2022,23 +2005,20 @@ var app = app || {};
 
                 section.filling_price_increase = 0;
 
-                //  TODO: maybe we need to have something similar to
-                //  getCurrentUnitOptions function, but for filling types
                 if ( app.settings && app.settings.filling_types ) {
-                    var profile_id = this.profile.id;
                     var filling_type = app.settings.filling_types.getByName(section.filling_name);
+                    var filling_type_pricing_data = filling_type &&
+                        filling_type.getPricingDataForProfile(this.profile.id);
 
-                    // console.log( 'profile_id', profile_id );
-                    // console.log( 'filling_type', filling_type );
-
-                    if ( profile_id && filling_type ) {
-                        section.filling_price_increase = filling_type.getPricingGridValue(profile_id, {
-                            type: section.type,
-                            height: section.height,
-                            width: section.width
-                        });
-
-                        // section.filling_price_increase = 10;
+                    //  If we have correct pricing scheme and data for filling
+                    if ( filling_type_pricing_data && filling_type_pricing_data.scheme === 'PRICING_GRIDS' ) {
+                        section.filling_price_increase = filling_type_pricing_data.pricing_grids.getValueForGrid(
+                            section.type,
+                            {
+                                height: section.height,
+                                width: section.width
+                            }
+                        ) || 0;
                     }
                 }
 
@@ -2047,23 +2027,17 @@ var app = app || {};
                 section.options_cost = 0;
                 section.options = [];
 
-                //  Now add prices for all options
-                //  TODO: we probably don't need to have getGridBasedOptionsList
-                //  function at all, but instead just select all options that
-                //  are grid-based from right here, and then call
-                //  getPricingGridValue for each one of them
-                //  TODO: this is inconsistend with what we do for fillings
-                _.each(grid_based_options, function (option_data) {
-                    var target_grid = option_data.grids.getByName(section.type);
-                    var price_increase = 0;
+                //  Now add prices for all grid-based options
+                _.each(options_grouped_by_scheme.PRICING_GRIDS, function (option_data) {
+                    var option_pricing_data = option_data.pricing_data;
                     var option_cost = 0;
-
-                    if ( target_grid ) {
-                        price_increase = target_grid.getValue({
+                    var price_increase = option_pricing_data.pricing_grids.getValueForGrid(
+                        section.type,
+                        {
                             height: section.height,
                             width: section.width
-                        });
-                    }
+                        }
+                    ) || 0;
 
                     option_cost = section.base_cost * price_increase / 100;
                     section.options_cost += option_cost;
@@ -2081,16 +2055,16 @@ var app = app || {};
 
             return sections_list;
         },
-        //  TODO: we also need to get per-item priced options at some point
         getEstimatedUnitCost: function () {
             var sections_list = this.getSectionsListWithEstimatedCost();
-            // var options_list = this.getEstimatedOptionsCost();
+            var options_list = this.getUnitOptionsGroupedByPricingScheme();
             var unit_cost = {
                 total: 0,
                 base: 0,
                 fillings: 0,
                 options: 0,
-                details: sections_list
+                sections_list: sections_list,
+                options_list: options_list
             };
 
             _.each(sections_list, function (section) {
@@ -2098,6 +2072,11 @@ var app = app || {};
                 unit_cost.base += section.base_cost;
                 unit_cost.fillings += section.filling_cost;
                 unit_cost.options += section.options_cost;
+            }, this);
+
+            //  Now add cost for all per-item priced options
+            _.each(options_list.PER_ITEM, function (option) {
+                unit_cost.options += option.pricing_data.cost_per_item;
             }, this);
 
             return unit_cost;

@@ -79,7 +79,7 @@ test('dictionary entry collection getAvailableForProfile, getDefaultForProfile g
                 }
             ]
         }
-    ]);
+    ], { parse: true });
 
     equal(
         collection.getAvailableForProfile(1).length,
@@ -157,7 +157,7 @@ test('dictionary entry collection profile availability functions', function () {
                 }
             ]
         }
-    ]);
+    ], { parse: true });
 
     deepEqual(
         getNames(entries.models),
@@ -233,7 +233,7 @@ test('dictionary entry collection getIdsOfAllConnectedProfiles', function () {
                 }
             ]
         }
-    ]);
+    ], { parse: true });
 
     deepEqual(
         collection.getIdsOfAllConnectedProfiles(),
@@ -249,7 +249,7 @@ test('dictionary entry collection getIdsOfAllConnectedProfiles', function () {
                 is_default: true
             }
         ]
-    });
+    }, { parse: true });
     collection.setItemAvailabilityForProfile(18, collection.at(1), true);
 
     deepEqual(
@@ -284,7 +284,7 @@ test('dictionary entry collection validatePerProfileDefaults', function () {
                 }
             ]
         }
-    ]);
+    ], { parse: true });
 
     equal(collection.at(0).isDefaultForProfile(1), true, 'First collection item is set as default for profile_id=1');
     equal(collection.at(1).isDefaultForProfile(1), true, 'Second collection item is set as default for profile_id=1');
@@ -334,7 +334,7 @@ test('dictionary entry collection setItemAvailabilityForProfile', function () {
                 }
             ]
         }
-    ]);
+    ], { parse: true });
     var item_one = collection.at(0);
     var item_two = collection.at(1);
 
@@ -389,7 +389,7 @@ test('dictionary entry collection setItemAsDefaultForProfile', function () {
                 }
             ]
         }
-    ]);
+    ], { parse: true });
     var item_one = collection.at(0);
     var item_two = collection.at(1);
 

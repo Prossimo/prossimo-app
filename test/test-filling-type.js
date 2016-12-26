@@ -377,3 +377,43 @@ test('filling type getIdsOfProfilesWhereIsDefault function', function () {
         'Base-type filling should not be default for any profile'
     );
 });
+
+
+test('filling type getPricingDataForProfile function', function () {
+    var filling = new app.FillingType({
+        name: 'Test Type',
+        filling_type_profiles: [
+            { profile_id: 1, is_default: true },
+            { profile_id: 54, is_default: false }
+        ]
+    }, { parse: true });
+
+    var ftp_one_pricing_data = filling.getPricingDataForProfile(54);
+    var nonexistent_ftp_pricing_data = filling.getPricingDataForProfile(177);
+
+    equal(ftp_one_pricing_data.scheme, 'PRICING_GRIDS', 'getPricingDataForProfile().scheme matches the expected scheme');
+    deepEqual(
+        ftp_one_pricing_data.pricing_grids.toJSON(),
+        [
+            {
+                name: 'fixed',
+                data: [
+                    { height: 500, width: 500, value: 0 },
+                    { height: 914, width: 1514, value: 0 },
+                    { height: 2400, width: 3000, value: 0 }
+                ]
+            },
+            {
+                name: 'operable',
+                data: [
+                    { height: 500, width: 500, value: 0 },
+                    { height: 914, width: 1514, value: 0 },
+                    { height: 1200, width: 2400, value: 0 }
+                ]
+            }
+        ],
+        'getPricingDataForProfile().pricing_grids matches the expected data'
+    );
+
+    equal(nonexistent_ftp_pricing_data, null, 'getPricingDataForProfile returns null for a nonexistent ftp');
+});

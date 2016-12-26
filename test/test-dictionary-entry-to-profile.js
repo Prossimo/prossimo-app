@@ -9,18 +9,18 @@ app.session.set('no_backend', true);
 app.settings = new app.Settings();
 
 
-test('FillingTypeProfile model basic tests', function () {
-    var ftp = new app.FillingTypeProfile();
+test('DictionaryEntryProfile model basic tests', function () {
+    var dep = new app.DictionaryEntryProfile();
 
-    equal(ftp.get('profile_id'), 0, 'profile_id is 0 upon creation');
-    equal(ftp.get('is_default'), false, 'is_default is false upon creation');
-    ok(ftp.get('pricing_grids') instanceof Backbone.Collection, 'pricing_grids is a Backbone.Collection object');
+    equal(dep.get('profile_id'), 0, 'profile_id is 0 upon creation');
+    equal(dep.get('is_default'), false, 'is_default is false upon creation');
+    ok(dep.get('pricing_grids') instanceof Backbone.Collection, 'pricing_grids is a Backbone.Collection object');
 
-    equal(ftp.get('pricing_grids').length, 2, 'Grids should contain 2 entries by default');
+    equal(dep.get('pricing_grids').length, 2, 'Grids should contain 2 entries by default');
 });
 
 
-test('FillingTypeProfile parse function', function () {
+test('DictionaryEntryProfile parse function', function () {
     var data_to_set = [
         {
             name: 'fixed',
@@ -39,33 +39,33 @@ test('FillingTypeProfile parse function', function () {
             ]
         }
     ];
-    var ftp = new app.FillingTypeProfile({
+    var dep = new app.DictionaryEntryProfile({
         pricing_grids: JSON.parse(JSON.stringify(data_to_set))
     }, { parse: true });
 
-    equal(ftp.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
-    ok(ftp.get('pricing_grids') instanceof Backbone.Collection, 'pricing_grids is a Backbone.Collection object');
+    equal(dep.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
+    ok(dep.get('pricing_grids') instanceof Backbone.Collection, 'pricing_grids is a Backbone.Collection object');
     deepEqual(
-        ftp.get('pricing_grids').at(0).toJSON(),
+        dep.get('pricing_grids').at(0).toJSON(),
         data_to_set[0],
         'pricing_grids first entry should be similar to source data first entry'
     );
 
     //  Now we want it to pass the same set of tests, but the source data is a string
-    var another_ftp = new app.FillingTypeProfile({
+    var another_dep = new app.DictionaryEntryProfile({
         pricing_grids: JSON.stringify(_.clone(data_to_set))
     }, { parse: true });
 
-    equal(another_ftp.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
-    ok(another_ftp.get('pricing_grids') instanceof Backbone.Collection, 'pricing_grids is a Backbone.Collection object');
+    equal(another_dep.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
+    ok(another_dep.get('pricing_grids') instanceof Backbone.Collection, 'pricing_grids is a Backbone.Collection object');
     deepEqual(
-        another_ftp.get('pricing_grids').at(0).toJSON(),
+        another_dep.get('pricing_grids').at(0).toJSON(),
         data_to_set[0],
         'pricing_grids first entry should be similar to source data first entry'
     );
 
     //  We want to make sure no extra data survives at the parse step
-    var extra_ftp = new app.FillingTypeProfile({
+    var extra_dep = new app.DictionaryEntryProfile({
         profile_id: 33,
         profile: {
             id: 12,
@@ -75,21 +75,22 @@ test('FillingTypeProfile parse function', function () {
         pricing_grids: JSON.parse(JSON.stringify(data_to_set))
     }, { parse: true });
 
-    equal(extra_ftp.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
-    equal(extra_ftp.get('profile_id'), 33, 'profile_id should be correct');
-    equal(extra_ftp.get('id'), undefined, 'id should be undefined');
-    equal(extra_ftp.get('profile'), undefined, 'profile should be undefined');
+    equal(extra_dep.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
+    equal(extra_dep.get('profile_id'), 33, 'profile_id should be correct');
+    equal(extra_dep.get('id'), undefined, 'id should be undefined');
+    equal(extra_dep.get('profile'), undefined, 'profile should be undefined');
 });
 
 
-test('FillingTypeProfile toJSON function', function () {
-    var default_ftp = new app.FillingTypeProfile();
+test('DictionaryEntryProfile toJSON function', function () {
+    var default_dep = new app.DictionaryEntryProfile();
 
     deepEqual(
-        default_ftp.toJSON(),
+        default_dep.toJSON(),
         {
             profile_id: 0,
             is_default: false,
+            cost_per_item: 0,
             pricing_grids: JSON.stringify([
                 {
                     name: 'fixed',
@@ -109,10 +110,10 @@ test('FillingTypeProfile toJSON function', function () {
                 }
             ])
         },
-        'Default FillingTypeProfile should be correctly cast to JSON representation'
+        'Default DictionaryEntryProfile should be correctly cast to JSON representation'
     );
 
-    var another_ftp = new app.FillingTypeProfile({
+    var another_dep = new app.DictionaryEntryProfile({
         profile_id: 15,
         is_default: true,
         pricing_grids: [
@@ -128,10 +129,11 @@ test('FillingTypeProfile toJSON function', function () {
     }, { parse: true });
 
     deepEqual(
-        another_ftp.toJSON(),
+        another_dep.toJSON(),
         {
             profile_id: 15,
             is_default: true,
+            cost_per_item: 0,
             pricing_grids: JSON.stringify([
                 {
                     name: 'fixed',
@@ -143,18 +145,46 @@ test('FillingTypeProfile toJSON function', function () {
                 }
             ])
         },
-        'FillingTypeProfile should be correctly cast to JSON representation'
+        'DictionaryEntryProfile should be correctly cast to JSON representation'
     );
 });
 
 
-test('FillingTypeProfile getPricingData function', function () {
-    var default_ftp = new app.FillingTypeProfile();
-    var pricing_data = default_ftp.getPricingData();
+test('DictionaryEntryProfile getPricingData function', function () {
+    var default_dep = new app.DictionaryEntryProfile();
 
-    equal(pricing_data.scheme, 'PRICING_GRIDS', 'getPricingData().scheme matches the expected scheme');
+    //  Just a single DEP item, no collection, meaning no parent dictionary
     deepEqual(
-        pricing_data.pricing_grids.toJSON(),
+        default_dep.getPricingData(),
+        { scheme: 'NONE' },
+        'getPricingData returns NONE scheme with no data for a single dep with no collection'
+    );
+
+    var dictionary = new app.OptionsDictionary({
+        name: 'Interior Handle',
+        entries: [{
+            name: 'White Plastic No Lock',
+            dictionary_entry_profiles: [
+                { profile_id: 15, is_default: false }
+            ]
+        }]
+    }, { parse: true });
+
+    //  An item within collection which is a child of a default dictionary
+    var dep_within_collection = dictionary.entries.at(0).get('dictionary_entry_profiles').at(0);
+
+    deepEqual(
+        dep_within_collection.getPricingData(),
+        { scheme: 'NONE' },
+        'getPricingData returns NONE scheme with no data for a dep within a collection'
+    );
+
+    //  Now change scheme for the parent dictionary
+    dictionary.set('pricing_scheme', 'PRICING_GRIDS');
+
+    equal(dep_within_collection.getPricingData().scheme, 'PRICING_GRIDS', 'scheme matches the expected');
+    deepEqual(
+        dep_within_collection.getPricingData().pricing_grids.toJSON(),
         [
             {
                 name: 'fixed',
@@ -173,13 +203,23 @@ test('FillingTypeProfile getPricingData function', function () {
                 ]
             }
         ],
-        'getPricingData().pricing_grids matches the expected data'
+        'getPricingData() returns the expected pricing_grids'
+    );
+
+    //  Now change scheme for the parent dictionary again
+    dictionary.set('pricing_scheme', 'PER_ITEM');
+
+    equal(dep_within_collection.getPricingData().scheme, 'PER_ITEM', 'scheme matches the expected');
+    equal(
+        dep_within_collection.getPricingData().cost_per_item,
+        0,
+        'getPricingData() returns the expected matches the expected cost_per_item'
     );
 });
 
 
-test('FillingTypeProfile change events bubble up properly', function () {
-    var ftp = new app.FillingTypeProfile({
+test('DictionaryEntryProfile change events bubble up properly', function () {
+    var dep = new app.DictionaryEntryProfile({
         profile_id: 15,
         is_default: true,
         pricing_grids: [
@@ -194,15 +234,15 @@ test('FillingTypeProfile change events bubble up properly', function () {
         ]
     }, { parse: true });
 
-    var grid_collection = ftp.get('pricing_grids');
+    var grid_collection = dep.get('pricing_grids');
     var grid_item = grid_collection.getByName('fixed').get('data').at(0);
 
-    var ftp_event_counter = 0;
+    var dep_event_counter = 0;
     var grid_collection_event_counter = 0;
     var item_event_counter = 0;
 
-    ftp.on('change', function () {
-        ftp_event_counter += 1;
+    dep.on('change', function () {
+        dep_event_counter += 1;
     });
 
     grid_collection.on('change update', function () {
@@ -217,14 +257,14 @@ test('FillingTypeProfile change events bubble up properly', function () {
     grid_item.persist('value', 20);
 
     equal(
-        ftp_event_counter,
+        dep_event_counter,
         grid_collection_event_counter,
-        'Number of change events on the FillingTypeProfile should match the number of events on the grid collection'
+        'Number of change events on the DictionaryEntryProfile should match the number of events on the grid collection'
     );
     equal(
-        ftp_event_counter,
+        dep_event_counter,
         item_event_counter,
-        'Number of change events on the FillingTypeProfile should match the number of events on the grid item'
+        'Number of change events on the DictionaryEntryProfile should match the number of events on the grid item'
     );
 
     //  Now destroy one grid item
@@ -232,14 +272,14 @@ test('FillingTypeProfile change events bubble up properly', function () {
     grid_item.destroy();
 
     equal(
-        ftp_event_counter,
+        dep_event_counter,
         grid_collection_event_counter,
-        'Number of change events on the FillingTypeProfile should match the number of events on the grid collection'
+        'Number of change events on the DictionaryEntryProfile should match the number of events on the grid collection'
     );
     equal(
-        ftp_event_counter,
+        dep_event_counter,
         item_event_counter,
-        'Number of change events on the FillingTypeProfile should match the number of events on the grid item'
+        'Number of change events on the DictionaryEntryProfile should match the number of events on the grid item'
     );
 
     //  Now add new item to the collection
@@ -253,9 +293,9 @@ test('FillingTypeProfile change events bubble up properly', function () {
     }, { parse: true });
 
     equal(
-        ftp_event_counter,
+        dep_event_counter,
         grid_collection_event_counter,
-        'Number of change events on the FillingTypeProfile should match the number of events on the grid collection'
+        'Number of change events on the DictionaryEntryProfile should match the number of events on the grid collection'
     );
 
     //  Now reset the collection
@@ -271,11 +311,11 @@ test('FillingTypeProfile change events bubble up properly', function () {
     ], { parse: true });
 
     equal(
-        ftp_event_counter,
+        dep_event_counter,
         grid_collection_event_counter,
-        'Number of change events on the FillingTypeProfile should match the number of events on the grid collection'
+        'Number of change events on the DictionaryEntryProfile should match the number of events on the grid collection'
     );
 
-    ftp.off();
+    dep.off();
     grid_collection.off();
 });

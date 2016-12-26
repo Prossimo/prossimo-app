@@ -64,8 +64,10 @@ module.exports = function (grunt) {
         //  Inlined models and collections
         'core/models/inline/pricing-grid.js',
         'core/models/inline/filling-type-to-profile.js',
+        'core/models/inline/dictionary-entry-to-profile.js',
         'core/collections/inline/pricing-grid-collection.js',
         'core/collections/inline/filling-type-to-profile-collection.js',
+        'core/collections/inline/dictionary-entry-to-profile-collection.js',
         //  Regular models
         'core/models/user.js',
         'core/models/session.js',

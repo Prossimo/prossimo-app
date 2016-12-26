@@ -115,9 +115,10 @@ var app = app || {};
             this.options = options || {};
             this.proxy_entry = new app.OptionsDictionaryEntry(null, { proxy: true });
 
-            //  When parent dictionary is fully loaded, we validate positions
-            this.listenTo(this.options.dictionary, 'fully_loaded', this.validatePositions);
-            this.listenTo(this.options.dictionary, 'fully_loaded', this.validatePerProfileDefaults);
+            this.once('fully_loaded', function () {
+                this.validatePositions();
+                this.validatePerProfileDefaults();
+            }, this);
         }
     });
 })();

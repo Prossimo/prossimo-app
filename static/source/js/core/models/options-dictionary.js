@@ -15,24 +15,13 @@ var app = app || {};
         'DOOR_ONLY', 'OPERABLE_ONLY', 'GLAZING_BARS_ONLY', 'IS_OPTIONAL'
     ];
 
-    //  TODO: none should be default
-    //  TODO: IS_COLOR rule might force pricing grids as a scheme, but that's
-    //  not really necessary
     var POSSIBLE_PRICING_SCHEMES = [
         'NONE', 'PRICING_GRIDS', 'PER_ITEM'
-        // 'PRICING_GRIDS', 'NONE', 'PER_ITEM'
     ];
 
     function getDefaultRulesAndRestrictions() {
         return [];
     }
-
-    //  Basically, Interior/Exterior Finish dictionaries are priced by grid by default
-    // function getDefaultPricingScheme() {
-    //     return this.get('name') === 'Interior Finish' || this.get('name') === 'Exterior Finish' ?
-    //         POSSIBLE_PRICING_SCHEMES[1] :
-    //         POSSIBLE_PRICING_SCHEMES[0];
-    // }
 
     app.OptionsDictionary = Backbone.Model.extend({
         schema: app.schema.createSchema(DICTIONARY_PROPERTIES),
@@ -56,11 +45,8 @@ var app = app || {};
             };
 
             var name_value_hash = {
-                rules_and_restrictions: getDefaultRulesAndRestrictions()
-                // pricing_scheme: getDefaultPricingScheme()
-                // pricing_scheme: this.get('name') === 'Interior Finish' || this.get('name') === 'Exterior Finish' ?
-                //     POSSIBLE_PRICING_SCHEMES[1] :
-                //     POSSIBLE_PRICING_SCHEMES[0]
+                rules_and_restrictions: getDefaultRulesAndRestrictions(),
+                pricing_scheme: this.getPossiblePricingSchemes()[0]
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -77,32 +63,34 @@ var app = app || {};
             var dictionary_data = data && data.dictionary ? data.dictionary : data;
             var filtered_data = app.schema.parseAccordingToSchema(dictionary_data, this.schema);
 
+            //  Entries are not part of the schema, so they were filtered out,
+            //  but we want them back
             if ( dictionary_data && dictionary_data.entries ) {
                 filtered_data.entries = dictionary_data.entries;
             }
 
-            //  FIXME: this is causing errors on dictionary rename
-            //  TODO: remove this
-            if ( dictionary_data.name === 'Interior Finish' || dictionary_data.name === 'Exterior Finish' ) {
-                filtered_data.pricing_scheme = POSSIBLE_PRICING_SCHEMES[1];
-            } else {
-                filtered_data.pricing_scheme = POSSIBLE_PRICING_SCHEMES[0];
+            if ( filtered_data && filtered_data.rules_and_restrictions ) {
+                filtered_data.rules_and_restrictions =
+                    app.utils.object.extractObjectOrNull(filtered_data.rules_and_restrictions) ||
+                    this.getDefaultValue('rules_and_restrictions');
             }
 
             return filtered_data;
         },
         sync: function (method, model, options) {
-            //  TODO: switch back
-            // var properties_to_omit = ['id', 'entries'];
-            var properties_to_omit = ['id', 'entries', 'pricing_scheme'];
-
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { dictionary: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
-                    rules_and_restrictions: JSON.stringify(model.get('rules_and_restrictions'))
-                }) };
+                options.attrs = { dictionary: model.toJSON() };
             }
 
             return Backbone.sync.call(this, method, model, options);
+        },
+        toJSON: function () {
+            var properties_to_omit = ['id', 'entries'];
+            var json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+
+            json.rules_and_restrictions = JSON.stringify(json.rules_and_restrictions);
+
+            return _.omit(json, properties_to_omit);
         },
         validate: function (attributes, options) {
             var error_obj = null;
@@ -209,53 +197,6 @@ var app = app || {};
 
             return _.pluck(name_title_hash, 'title');
         },
-        //  TODO: this actually should just happen on parse
-        validateRulesAndRestrictions: function () {
-            var rules = this.get('rules_and_restrictions');
-            var rules_parsed;
-
-            if ( _.isString(rules) ) {
-                try {
-                    rules_parsed = JSON.parse(rules);
-                } catch (error) {
-                    // Do nothing
-                }
-
-                if ( rules_parsed ) {
-                    this.set('rules_and_restrictions', rules_parsed);
-                    return;
-                }
-            }
-
-            if ( !_.isObject(rules) ) {
-                this.set('rules_and_restrictions', this.getDefaultValue('rules_and_restrictions'));
-            }
-        },
-        setDependencies: function (model, response, options) {
-            var changed_flag = false;
-
-            //  If response is empty or there was an error
-            if ( !response && app.session.get('no_backend') !== true ||
-                options && options.xhr && options.xhr.status && options.xhr.status !== 200
-            ) {
-                return;
-            }
-
-            if ( this.get('entries') ) {
-                this.entries.set(this.get('entries'), { parse: true });
-                this.unset('entries', { silent: true });
-                changed_flag = true;
-            }
-
-            if ( changed_flag ) {
-                this.trigger('set_dependencies');
-            }
-
-            if ( !this._wasLoaded ) {
-                this._wasLoaded = true;
-                this.trigger('fully_loaded');
-            }
-        },
         getPossibleRulesAndRestrictions: function () {
             return POSSIBLE_RULES_AND_RESTRICTIONS;
         },
@@ -264,15 +205,14 @@ var app = app || {};
         },
         initialize: function (attributes, options) {
             this.options = options || {};
-            //  Was it fully loaded already? This means it was fetched and all
-            //  dependencies (units etc.) were processed correctly. This flag
-            //  could be used to tell if it's good to render any views
-            this._wasLoaded = false;
 
             if ( !this.options.proxy ) {
-                this.entries = new app.OptionsDictionaryEntryCollection(null, { dictionary: this });
-                this.on('add', this.setDependencies, this);
-                this.validateRulesAndRestrictions();
+                this.entries = new app.OptionsDictionaryEntryCollection(this.get('entries'), {
+                    parse: true,
+                    dictionary: this
+                });
+                this.unset('entries', { silent: true });
+                this.entries.trigger('fully_loaded');
 
                 this.listenTo(this.entries, 'change', function (e) {
                     this.trigger('entries_change', e);

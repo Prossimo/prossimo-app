@@ -70,10 +70,8 @@ var app = app || {};
             return default_value;
         },
         sync: function (method, model, options) {
-            var properties_to_omit = ['id', 'is_base_type'];
-
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { filling_type: _.omit(model.toJSON(), properties_to_omit) };
+                options.attrs = { filling_type: model.toJSON() };
             }
 
             return Backbone.sync.call(this, method, model, options);
@@ -97,11 +95,7 @@ var app = app || {};
 
             json.filling_type_profiles = this.get('filling_type_profiles').toJSON();
 
-            _.each(properties_to_omit, function (prop) {
-                delete json[prop];
-            }, this);
-
-            return json;
+            return _.omit(json, properties_to_omit);
         },
         validate: function (attributes, options) {
             var error_obj = null;
@@ -267,23 +261,17 @@ var app = app || {};
                 }
             );
         },
-        //  TODO: we need to have a way better nesting
-        //  TODO: add defaults for options
-        //  TODO: might be called like getPricingGridValueForProfile
-        //  TODO: are we sure we need this function at all?
-        getPricingGridValue: function (profile_id, options) {
-            var profile_connection = this.get('filling_type_profiles').getByProfileId(profile_id);
-            var target_grid = profile_connection && profile_connection.get('pricing_grids').getByName(options.type);
-            var value = 0;
+        //  It returns a combination of scheme and data to calculate price
+        getPricingDataForProfile: function (profile_id) {
+            var pricing_data = null;
 
-            if ( target_grid ) {
-                value = target_grid.getValue({
-                    width: options.width,
-                    height: options.height
-                });
+            if ( this.isAvailableForProfile(profile_id) ) {
+                var connection = this.get('filling_type_profiles').getByProfileId(profile_id);
+
+                pricing_data = (connection && connection.getPricingData()) || null;
             }
 
-            return value;
+            return pricing_data;
         },
         initialize: function (attributes, options) {
             this.options = options || {};

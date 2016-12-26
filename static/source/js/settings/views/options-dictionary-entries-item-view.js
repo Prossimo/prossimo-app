@@ -35,7 +35,7 @@ var app = app || {};
             });
         },
         getProfilesNamesList: function () {
-            var profiles_ids = _.pluck(this.model.get('dictionary_entry_profiles'), 'profile_id');
+            var profiles_ids = this.model.get('dictionary_entry_profiles').pluck('profile_id');
             var profiles_names_list = [];
 
             if ( profiles_ids && profiles_ids.length ) {
@@ -136,7 +136,7 @@ var app = app || {};
             });
 
             this.profile_connections_table_view = new app.ProfileConnectionsTableView({
-                collection: this.model.profiles
+                collection: this.model.get('dictionary_entry_profiles')
             });
 
             this.listenTo(this.model, 'change:dictionary_entry_profiles change:name change:supplier_name', function () {

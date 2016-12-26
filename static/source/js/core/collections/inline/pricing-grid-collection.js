@@ -32,6 +32,11 @@ var app = app || {};
         getByName: function (grid_name) {
             return this.findWhere({ name: grid_name });
         },
+        getValueForGrid: function (grid_name, options) {
+            var target_grid = this.getByName(grid_name);
+
+            return target_grid && target_grid.getValue(options);
+        },
         initialize: function (attribures, options) {
             if ( options.append_default_grids && this.length === 0 ) {
                 this.set(getDefaultGridCollection(), { parse: true });

@@ -3,135 +3,18 @@ var app = app || {};
 (function () {
     'use strict';
 
-    //  --------------------------------------------------------------------
-    //  Entry to Profile Connection Model
-    //  --------------------------------------------------------------------
-
-    // var PROFILE_CONNECTION_PROPERTIES = [
-    //     { name: 'profile_id', title: 'Profile ID', type: 'number' },
-    //     { name: 'is_default', title: 'Is Default', type: 'boolean' },
-    //     { name: 'pricing_grids', title: 'Pricing Grids', type: 'array' }
-    // ];
-
-    //  TODO: defaults for fixed and operable should be different
-    //  TODO: collection should implement something like addEmptyGrid function
-    function getDefaultGridCollection() {
-        return [
-            {
-                name: 'fixed',
-                // data: []
-                sizes: ['500x500', '1514x914', '3000x2400']
-            },
-            {
-                name: 'operable',
-                // data: []
-                sizes: ['500x500', '1514x914', '2400x1200']
-            }
-        ];
-    }
-
-    var EntryToProfileConnection = Backbone.Model.extend({
-        defaults: function () {
-            return {
-                id: 0,
-                is_default: false
-            };
-        },
-        parse: function (data) {
-            return data;
-        },
-        // toJSON: function () {
-
-        // },
-        initialize: function (attributes) {
-            // console.log( 'initialize filling type to profile connection', attributes );
-
-            // this.grid = new PricingGrid(attributes.pricing_grid);
-            // this.grids = new PricingGridCollection(attributes.pricing_grids || null, { parse: true });
-            // this.grids = new PricingGridCollection(null, { parse: true });
-
-            // this.grids = new app.PricingGridCollection(getDefaultGridCollection(), { parse: true });
-            // this.grids = new app.PricingGridCollection(null, { parse: true });
-
-            //  TODO: not very elegant, should be improved
-            var parent_entry = this.collection && this.collection.options && this.collection.options.entry;
-            var parent_dictionary = parent_entry && parent_entry.collection &&
-                parent_entry.collection.options && parent_entry.collection.options.dictionary;
-
-            // console.log( 'this.collection', this.collection );
-
-            // console.log( 'parent_entry', parent_entry );
-            // console.log( 'parent_dictionary', parent_dictionary );
-
-            //  TODO: get rid of this demo functionality
-            if ( parent_dictionary && parent_dictionary.get('pricing_scheme') === 'PRICING_GRIDS' ) {
-                this.grids = new app.PricingGridCollection([
-                    {
-                        name: 'fixed',
-                        data: [
-                            { height: 500, width: 500, value: 15 },
-                            { height: 914, width: 1514, value: 14 },
-                            { height: 2400, width: 3000, value: 11 }
-                        ]
-                    },
-                    {
-                        name: 'operable',
-                        data: [
-                            { height: 500, width: 500, value: 13 },
-                            { height: 914, width: 1514, value: 12 },
-                            { height: 1200, width: 2400, value: 10 }
-                        ]
-                    }
-                ], { parse: true });
-            }
-
-            // this.listenTo(this.grids, 'change', function () {
-            //     console.log( 'wow, our grids did change' );
-            //     console.log( 'we are going to save grids as', this.grids.toJSON() );
-            // });
-        }
-    });
-
-    var EntryProfiles = Backbone.Collection.extend({
-        model: EntryToProfileConnection,
-        comparator: function (item) {
-            // return item.id;
-            var corresponding_profile = app.settings && app.settings.profiles.get(item.id);
-
-            return corresponding_profile ? corresponding_profile.get('position') : false;
-        },
-        initialize: function (models, options) {
-            this.options = options || {};
-            // console.log( 'initialize FillingTypeProfiles collection with data', models );
-        }
-    });
-
-
-    //  --------------------------------------------------------------------
-    //  Entry Model
-    //  --------------------------------------------------------------------
-
     var UNSET_VALUE = '--';
 
-    //  TODO: we better have original_cost and original_currency here, similar
-    //  to units / accessories, instead of price
-    //  TODO: maybe we don't want to have price here and instead want it in
-    //  the entry-to-profile connection model
     var ENTRY_PROPERTIES = [
         { name: 'name', title: 'Name', type: 'string' },
         { name: 'supplier_name', title: 'Supplier Name', type: 'string' },
-        { name: 'price', title: 'Price', type: 'number' },
         { name: 'data', title: 'Additional Data', type: 'string' },
         { name: 'position', title: 'Position', type: 'number' },
-        { name: 'dictionary_entry_profiles', title: 'Profiles', type: 'array' }
+        { name: 'dictionary_entry_profiles', title: 'Profiles', type: 'collection:DictionaryEntryProfileCollection' }
     ];
 
     function getDefaultEntryData() {
-        return _.extend({}, {});
-    }
-
-    function getDefaultProfilesList() {
-        return [];
+        return _.clone({});
     }
 
     app.OptionsDictionaryEntry = Backbone.Model.extend({
@@ -157,7 +40,9 @@ var app = app || {};
 
             var name_value_hash = {
                 data: getDefaultEntryData(),
-                dictionary_entry_profiles: getDefaultProfilesList()
+                dictionary_entry_profiles: new app.DictionaryEntryProfileCollection(null, {
+                    parent_entry: this
+                })
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -171,34 +56,41 @@ var app = app || {};
             return default_value;
         },
         sync: function (method, model, options) {
-            var properties_to_omit = ['id'];
-
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { entry: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
-                    //  TODO: we need to parse this value first, then we could
-                    //  stringify it with no problem
-                    data: _.isString(model.get('data')) ? model.get('data') : JSON.stringify(model.get('data'))
-                }) };
+                options.attrs = { entry: model.toJSON() };
             }
 
             return Backbone.sync.call(this, method, model, options);
         },
         parse: function (data) {
             var entry_data = data && data.entry ? data.entry : data;
+            var parsed_data = app.schema.parseAccordingToSchema(entry_data, this.schema);
 
-            if ( entry_data && _.isArray(entry_data.dictionary_entry_profiles) ) {
-                //  Sort profiles by id on load
-                entry_data.dictionary_entry_profiles.sort(function (a, b) { return a.profile_id - b.profile_id; });
-
-                //  Remove excessive data from `dictionary_entry_profiles`
-                //  TODO: we need to find a more elegant way to do that, like
-                //  parse them according to additional schema
-                _.each(entry_data.dictionary_entry_profiles, function (entry) {
-                    delete entry.id;
-                }, this);
+            if ( parsed_data && parsed_data.dictionary_entry_profiles ) {
+                parsed_data.dictionary_entry_profiles = new app.DictionaryEntryProfileCollection(
+                    app.utils.object.extractObjectOrNull(parsed_data.dictionary_entry_profiles),
+                    {
+                        parent_entry: this,
+                        parse: true
+                    }
+                );
             }
 
-            return app.schema.parseAccordingToSchema(entry_data, this.schema);
+            if ( parsed_data && parsed_data.data ) {
+                parsed_data.data =
+                    app.utils.object.extractObjectOrNull(parsed_data.data) || this.getDefaultValue('data');
+            }
+
+            return parsed_data;
+        },
+        toJSON: function () {
+            var properties_to_omit = ['id'];
+            var json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+
+            json.dictionary_entry_profiles = this.get('dictionary_entry_profiles').toJSON();
+            json.data = _.isString(json.data) ? json.data : JSON.stringify(json.data);
+
+            return _.omit(json, properties_to_omit);
         },
         validate: function (attributes, options) {
             var error_obj = null;
@@ -272,11 +164,11 @@ var app = app || {};
                     var type = property_source ? property_source.type : undefined;
 
                     if ( key === 'data' ) {
-                        if ( JSON.stringify(value) !== JSON.stringify(this.getDefaultValue('data')) ) {
+                        if ( value !== JSON.stringify(this.getDefaultValue('data')) ) {
                             has_only_defaults = false;
                         }
                     } else if ( key === 'dictionary_entry_profiles' ) {
-                        if ( JSON.stringify(value) !== JSON.stringify(this.getDefaultValue('dictionary_entry_profiles')) ) {
+                        if ( value.length !== 0 ) {
                             has_only_defaults = false;
                         }
                     } else if ( this.getDefaultValue(key, type) !== value ) {
@@ -317,21 +209,23 @@ var app = app || {};
         },
         isAvailableForProfile: function (profile_id) {
             return this.get('dictionary_entry_profiles') &&
-                _.contains(_.pluck(this.get('dictionary_entry_profiles'), 'profile_id'), profile_id);
+                _.contains(this.get('dictionary_entry_profiles').pluck('profile_id'), profile_id);
         },
         isDefaultForProfile: function (profile_id) {
             var is_default = false;
 
             if ( this.isAvailableForProfile(profile_id) ) {
-                var connection = _.findWhere(this.get('dictionary_entry_profiles'), { profile_id: profile_id });
+                var connection = this.get('dictionary_entry_profiles').getByProfileId(profile_id);
 
-                is_default = connection.is_default || false;
+                is_default = connection.get('is_default') || false;
             }
 
             return is_default;
         },
         //  TODO: Do we need to validate it against the list of globally
-        //  available profiles in the app? There are reasons to do so
+        //  available profiles in the app? Or maybe we do want to validate
+        //  them, but not on creation, rather separately, just to indicate
+        //  where it's wrong?
         /**
          * Toggle item availability and default status for a certain profile
          *
@@ -342,60 +236,59 @@ var app = app || {};
          * to unset. You can't make item default when it's not available
          */
         setProfileAvailability: function (profile_id, make_available, make_default) {
-            // Deep cloning gives us a `change` event here
-            var current_profiles_list = JSON.parse(JSON.stringify(this.get('dictionary_entry_profiles')));
-            var connection = _.findWhere(current_profiles_list, { profile_id: profile_id });
-            var should_persist = false;
-            var new_profiles_list;
+            var profiles_list = this.get('dictionary_entry_profiles');
+            var connection = profiles_list.getByProfileId(profile_id);
 
             //  If there is an existing connection that we want to unset
             if ( make_available === false && connection ) {
-                new_profiles_list = _.without(current_profiles_list, connection);
-                should_persist = true;
+                connection.destroy();
             } else if ( make_available === true ) {
                 //  If connection doesn't exist and we want to add it
                 if ( !connection ) {
-                    connection = {
+                    profiles_list.add({
                         profile_id: profile_id,
                         is_default: make_default === true
-                    };
-
-                    new_profiles_list = _.union(current_profiles_list, [connection]);
-                    new_profiles_list.sort(function (a, b) { return a.profile_id - b.profile_id; });
-                    should_persist = true;
+                    });
                 //  If connection exists and we want to just modify is_default
                 } else if ( make_default === true || make_default === false ) {
-                    should_persist = connection.is_default !== make_default;
-                    connection.is_default = make_default;
+                    connection.set('is_default', make_default);
                 }
-            }
-
-            //  Only save when there are any changes
-            if ( should_persist ) {
-                this.persist('dictionary_entry_profiles', new_profiles_list || current_profiles_list);
             }
         },
         //  We assume that profiles list is sorted and deduplicated
         getIdsOfProfilesWhereIsAvailable: function () {
-            return _.pluck(this.get('dictionary_entry_profiles'), 'profile_id');
+            return this.get('dictionary_entry_profiles').pluck('profile_id');
         },
         //  We assume that profiles list is sorted and deduplicated
         getIdsOfProfilesWhereIsDefault: function () {
-            return _.pluck(_.where(this.get('dictionary_entry_profiles'), { is_default: true }), 'profile_id');
+            return _.map(
+                this.get('dictionary_entry_profiles').where({ is_default: true }),
+                function (item) {
+                    return item.get('profile_id');
+                }
+            );
         },
-        //  TODO: do something about this, this is supposed to obtain the
-        //  proper scheme from the parent dictionary and use it for validation
-        //  and such stuff in the future
-        // getPricingScheme: function () {
-        //     return
-        // },
+        //  It returns a combination of scheme and data to calculate cost
+        getPricingDataForProfile: function (profile_id) {
+            var pricing_data = null;
+
+            if ( this.isAvailableForProfile(profile_id) ) {
+                var connection = this.get('dictionary_entry_profiles').getByProfileId(profile_id);
+
+                pricing_data = connection.getPricingData();
+            }
+
+            return pricing_data;
+        },
+        getParentDictionary: function () {
+            return this.collection && this.collection.options.dictionary;
+        },
         initialize: function (attributes, options) {
             this.options = options || {};
 
-            //  TODO: do something about this
-            this.profiles = new EntryProfiles(this.get('dictionary_entry_profiles'), {
-                entry: this,
-                parse: true
+            //  Any change to `dictionary_entry_profiles` should be persisted
+            this.listenTo(this.get('dictionary_entry_profiles'), 'change update', function () {
+                this.persist('dictionary_entry_profiles', this.get('dictionary_entry_profiles'));
             });
         }
     });
