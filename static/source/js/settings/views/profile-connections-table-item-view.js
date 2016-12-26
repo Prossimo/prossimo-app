@@ -9,6 +9,7 @@ var app = app || {};
         template: app.templates['settings/profile-connections-table-item-view'],
         ui: {
             $grid_container: '.grid-container',
+            $cost_per_item_container: 'td.profile-cost-per-item',
             $toggle_grid: '.js-toggle-grid'
         },
         events: {
@@ -21,6 +22,16 @@ var app = app || {};
             // issues with event delegation, although I'm not sure if this is
             // an optimal way, we probably have to use regions
             this.ui.$grid_container.toggleClass('is-open', this.show_grid);
+
+            if ( this.ui.$grid_container.hasClass('is-open') && this.pricing_grids_view ) {
+                this.pricing_grids_view.updateTable();
+            }
+        },
+        //  TODO: this causes some issues (like Expand doesn't work sometimes).
+        //  Maybe we should avoid re-rendering (we also lose open grid state
+        //  for some reason) or just fix delegation problems
+        onChangeIsDefault: function () {
+            this.render();
         },
         getProfileName: function () {
             var profile_id = this.model.get('profile_id');
@@ -28,7 +39,6 @@ var app = app || {};
 
             return profile ? profile.get('name') : 'Err: no profile with ID=' + profile_id;
         },
-        //  TODO: it should maybe compare with defaults
         getPricingGridString: function () {
             var grids = this.model.get('pricing_grids');
             var grid_string = '--';
@@ -46,33 +56,58 @@ var app = app || {};
             return grid_string;
         },
         templateContext: function () {
+            var pricing_data = this.model.getPricingData();
+            var has_grids = pricing_data && pricing_data.scheme === 'PRICING_GRIDS';
+            var has_per_item_cost = pricing_data && pricing_data.scheme === 'PER_ITEM';
+
             return {
-                show_grid: this.show_grid,
+                has_grids: has_grids,
+                has_per_item_cost: has_per_item_cost,
+                show_grids: this.show_grids,
                 profile_name: this.getProfileName(),
-                pricing_grid_string: this.getPricingGridString()
+                pricing_grid_string: has_grids && this.getPricingGridString()
             };
         },
         onRender: function () {
+            var context = this.templateContext();
+
             if ( this.pricing_grid_view ) {
-                this.ui.$grid_container.append(this.pricing_grid_view.render().el);
+                this.pricing_grids_view.destroy();
+            }
+
+            if ( this.per_item_cost_editor_view ) {
+                this.per_item_cost_editor_view.destroy();
+            }
+
+            if ( context.has_grids ) {
+                this.pricing_grids_view = new app.PerProfilePricingGridsEditorView({
+                    grids: this.model.get('pricing_grids'),
+                    parent_view: this
+                });
+                this.ui.$grid_container.append(this.pricing_grids_view.render().el);
+            }
+
+            if ( context.has_per_item_cost ) {
+                this.per_item_cost_editor_view = new app.BaseInputView({
+                    model: this.model,
+                    param: 'cost_per_item'
+                });
+                this.ui.$cost_per_item_container.append(this.per_item_cost_editor_view.render().el);
             }
         },
         onBeforeDestroy: function () {
             if ( this.pricing_grid_view ) {
-                this.pricing_grid_view.destroy();
+                this.pricing_grids_view.destroy();
+            }
+
+            if ( this.per_item_cost_editor_view ) {
+                this.per_item_cost_editor_view.destroy();
             }
         },
         initialize: function () {
-            this.show_grid = false;
+            this.show_grids = false;
 
-            //  TODO: the actual name of attribure might be different for
-            //  filling types / dictionary entries
-            if ( this.model.get('pricing_grids') ) {
-                this.pricing_grid_view = new app.PerProfilePricingGridsEditorView({
-                    grids: this.model.get('pricing_grids'),
-                    parent_view: this
-                });
-            }
+            this.listenTo(this.model, 'change:is_default', this.onChangeIsDefault);
         }
     });
 })();

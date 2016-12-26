@@ -26,6 +26,11 @@ var app = app || {};
                 this.renderElements();
             }
         },
+        onChangePricingScheme: function () {
+            if ( this.entries_table_view ) {
+                this.entries_table_view.render();
+            }
+        },
         shouldMakeEverythingEditable: function () {
             return !this.model.hasOnlyDefaultAttributes();
         },
@@ -93,6 +98,7 @@ var app = app || {};
             });
 
             this.listenTo(this.model, 'change:name', this.onChangeName);
+            this.listenTo(this.model, 'change:pricing_scheme', this.onChangePricingScheme);
         }
     });
 })();

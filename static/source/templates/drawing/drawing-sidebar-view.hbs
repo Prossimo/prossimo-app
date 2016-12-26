@@ -290,6 +290,33 @@
             </tbody>
         </table>
         {{/each}}
+
+        <h4>Estimated Cost for Per-Item-Priced Options</h4>
+        <table>
+            <tbody>
+                {{#each active_unit_estimated_cost.per_item_priced_options }}
+                <tr>
+                    <th colspan="2">{{ option_index }}</th>
+                </tr>
+                <tr>
+                    <td class="title">Dictionary Name</td>
+                    <td class="value">{{{ dictionary_name }}}</td>
+                </tr>
+                <tr>
+                    <td class="title">Option Name</td>
+                    <td class="value">{{{ option_name }}}</td>
+                </tr>
+                <tr>
+                    <td class="title">Added Cost</td>
+                    <td class="value">{{{ cost }}}</td>
+                </tr>
+                {{/each}}
+                <tr class="total">
+                    <td class="title">Total Cost for Options</td>
+                    <td class="value">{{{ active_unit_estimated_cost.per_item_priced_options_total_cost }}}</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 {{/if}}
 {{/if}}

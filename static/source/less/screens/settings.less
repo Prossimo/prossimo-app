@@ -284,8 +284,6 @@
     max-width: 1000px;
 }
 
-// .profile-connections-table th,
-
 .profile-connections-table .table-item {
     border: 1px solid darken(@white, 20%);
 
@@ -313,14 +311,27 @@
     font-weight: 800;
 }
 
+.profile-connections-table .item-representation p {
+    position: relative;
+    margin: 0;
+}
+
+//  OK icon near default profile
+.profile-connections-table .item-representation p span.glyphicon-ok {
+    position: absolute;
+    top: 0.35em;
+    left: -1.8em;
+    font-size: 0.8em;
+    font-weight: normal;
+    color: #378d59;
+}
+
 .profile-connections-table .toggle-grid {
     float: right;
     border: 1px solid darken(@white, 40%);
 }
 
 .profile-connections-table .grid-container {
-    // min-height: 80px;
-    // min-height: 80px;
     overflow: hidden;
     height: 0;
 
@@ -338,8 +349,6 @@
     display: block;
     flex: none;
     height: 110px;
-    // height: auto;
-    // overflow: visible;
     background-color: transparent;
 }
 

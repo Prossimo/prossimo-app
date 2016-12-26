@@ -2076,6 +2076,7 @@ var app = app || {};
 
             //  Now add cost for all per-item priced options
             _.each(options_list.PER_ITEM, function (option) {
+                unit_cost.total += option.pricing_data.cost_per_item;
                 unit_cost.options += option.pricing_data.cost_per_item;
             }, this);
 

@@ -419,7 +419,8 @@ var app = app || {};
             var m = app.utils.math;
             var active_unit_profile;
             var result = {
-                sections: []
+                sections: [],
+                per_item_priced_options: []
             };
 
             if ( this.options.parent_view.active_unit ) {
@@ -437,6 +438,7 @@ var app = app || {};
                 //  This is not super nice because we duplicate code from unit.js
                 result.converted_cost = f.price_usd(unit_cost.total / parseFloat(result.conversion_rate));
 
+                //  Collect detailed pricing data for sections
                 _.each(unit_cost.sections_list, function (source_item, index) {
                     var section_item = {};
 
@@ -472,6 +474,24 @@ var app = app || {};
 
                     result.sections.push(section_item);
                 }, this);
+
+                var per_item_priced_options_total_cost = 0;
+
+                //  Collect detailed pricing data for per-item-priced options
+                _.each(unit_cost.options_list.PER_ITEM, function (source_item, index) {
+                    var option_item = {};
+
+                    option_item.option_index = 'Option #' + (index + 1);
+                    option_item.option_name = source_item.option_name;
+                    option_item.dictionary_name = source_item.dictionary_name;
+                    option_item.cost = f.fixed(source_item.pricing_data.cost_per_item);
+
+                    per_item_priced_options_total_cost += source_item.pricing_data.cost_per_item;
+
+                    result.per_item_priced_options.push(option_item);
+                }, this);
+
+                result.per_item_priced_options_total_cost = f.fixed(per_item_priced_options_total_cost);
             }
 
             return result;
