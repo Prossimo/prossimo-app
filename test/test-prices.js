@@ -384,3 +384,244 @@ test('estimated unit cost', function () {
     equal(estimated_list[0].base_cost.toFixed(2), '314.55', 'First section: estimated base cost');
     equal(estimated_list[1].base_cost.toFixed(2), '314.55', 'Second section: estimated base cost');
 });
+
+
+//  ------------------------------------------------------------------------
+//  Test some estimation-related functions, inc. priced fillings / options
+//  ------------------------------------------------------------------------
+
+test('unit getUnitOptionsGroupedByPricingScheme function', function () {
+    app.settings = new app.Settings();
+
+    app.settings.dictionaries = new app.OptionsDictionaryCollection([
+        {
+            name: 'Interior Finish',
+            id: 1,
+            pricing_scheme: 'PRICING_GRIDS',
+            entries: [
+                {
+                    name: 'White Color',
+                    id: 5,
+                    dictionary_entry_profiles: [
+                        { profile_id: 3 }
+                    ]
+                }
+            ]
+        },
+        {
+            name: 'Interior Handle',
+            pricing_scheme: 'PER_ITEM',
+            id: 2,
+            entries: [
+                {
+                    name: 'White Plastic Handle',
+                    id: 7,
+                    dictionary_entry_profiles: [
+                        { profile_id: 3 },
+                        { profile_id: 6 }
+                    ]
+                }
+            ]
+        }
+    ], { parse: true });
+
+    var unit = new app.Unit({
+        width: 62,
+        height: 96
+    });
+
+    unit.profile = new app.Profile({
+        id: 3,
+        name: 'Nice and Cool Profile',
+        unit_type: 'Window'
+    });
+
+    //  Here we basically assign some default options to our unit
+    unit.validateUnitOptions();
+
+    var grouped_options = unit.getUnitOptionsGroupedByPricingScheme();
+
+    equal(grouped_options.PER_ITEM.length, 1, 'PER_ITEM group contains one option');
+    equal(grouped_options.PRICING_GRIDS.length, 1, 'PRICING_GRIDS group contains one option');
+
+    equal(
+        grouped_options.PRICING_GRIDS[0].dictionary_name,
+        'Interior Finish',
+        'The option inside PRICING_GRIDS group is from Interior Finish dictionary'
+    );
+    deepEqual(
+        grouped_options.PER_ITEM[0],
+        {
+            dictionary_name: 'Interior Handle',
+            option_name: 'White Plastic Handle',
+            pricing_data: {
+                scheme: 'PER_ITEM',
+                cost_per_item: 0
+            }
+        },
+        'The option inside PER_ITEM group matches the expected data'
+    );
+
+    //  Now we want to restrict one dictionary to DOOR_ONLY and see if this
+    //  option won't be included into unit options anymore
+    app.settings.dictionaries.get(1).set('rules_and_restrictions', ['DOOR_ONLY']);
+    grouped_options = unit.getUnitOptionsGroupedByPricingScheme();
+
+    equal(grouped_options.PER_ITEM.length, 1, 'PER_ITEM group still contains one option');
+    equal(grouped_options.PRICING_GRIDS.length, 0, 'PRICING_GRIDS group does not contain any options anymore');
+
+    delete app.settings.dictionaries;
+    delete app.settings;
+});
+
+
+test('unit getSectionsListWithEstimatedCost, getEstimatedUnitCost functions', function () {
+    app.settings = new app.Settings();
+
+    app.settings.dictionaries = new app.OptionsDictionaryCollection([
+        {
+            name: 'Interior Finish',
+            id: 1,
+            pricing_scheme: 'PRICING_GRIDS',
+            entries: [
+                {
+                    name: 'White Color',
+                    id: 5,
+                    dictionary_entry_profiles: [
+                        {
+                            profile_id: 3,
+                            pricing_grids: [
+                                {
+                                    name: 'fixed',
+                                    data: [
+                                        { height: 500, width: 500, value: 15 },
+                                        { height: 914, width: 1514, value: 14 },
+                                        { height: 2400, width: 3000, value: 11 }
+                                    ]
+                                },
+                                {
+                                    name: 'operable',
+                                    data: [
+                                        { height: 500, width: 500, value: 13 },
+                                        { height: 914, width: 1514, value: 12 },
+                                        { height: 1200, width: 2400, value: 10 }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            name: 'Interior Handle',
+            pricing_scheme: 'PER_ITEM',
+            id: 2,
+            entries: [
+                {
+                    name: 'White Plastic Handle',
+                    id: 7,
+                    dictionary_entry_profiles: [
+                        { profile_id: 3, cost_per_item: 14 },
+                        { profile_id: 6 }
+                    ]
+                }
+            ]
+        }
+    ], { parse: true });
+
+    app.settings.filling_types = new app.FillingTypeCollection([
+        {
+            name: 'Triple Glazed Low-e: U=.11 SHGC=.5 VT=.71',
+            type: 'glass',
+            id: 18,
+            filling_type_profiles: [
+                {
+                    profile_id: 3,
+                    pricing_grids: [
+                        {
+                            name: 'fixed',
+                            data: [
+                                { height: 500, width: 500, value: 15 },
+                                { height: 914, width: 1514, value: 12 },
+                                { height: 2400, width: 3000, value: 10 }
+                            ]
+                        },
+                        {
+                            name: 'operable',
+                            data: [
+                                { height: 500, width: 500, value: 11 },
+                                { height: 914, width: 1514, value: 10 },
+                                { height: 1200, width: 2400, value: 8 }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ], { parse: true });
+
+    var unit = new app.Unit({
+        width: 62,
+        height: 96
+    });
+
+    unit.profile = new app.Profile({
+        id: 3,
+        name: 'Nice and Cool Profile',
+        unit_type: 'Window',
+        pricing_grids: {
+            fixed: [
+                { title: 'Small', height: 500, width: 500, price_per_square_meter: 50 },
+                { title: 'Medium', height: 914, width: 1514, price_per_square_meter: 45 },
+                { title: 'Large', height: 2400, width: 3000, price_per_square_meter: 40 }
+            ],
+            operable: [
+                { title: 'Small', height: 500, width: 500, price_per_square_meter: 70 },
+                { title: 'Medium', height: 914, width: 1514, price_per_square_meter: 65 },
+                { title: 'Large', height: 1200, width: 2400, price_per_square_meter: 60 }
+            ]
+        }
+    });
+
+    unit.validateUnitOptions();
+    unit.setFillingType(
+        unit.get('root_section').id,
+        app.settings.filling_types.at(0).get('type'),
+        app.settings.filling_types.at(0).get('name')
+    );
+
+    var sections_list = unit.getSectionsListWithEstimatedCost();
+    var estimated_cost = unit.getEstimatedUnitCost();
+
+    //  First section base cost
+    equal(sections_list[0].width.toFixed(2), '1574.80', 'Section width is correct');
+    equal(sections_list[0].height.toFixed(2), '2438.40', 'Section height is correct');
+    equal(sections_list[0].price_per_square_meter.toFixed(2), '42.89', 'Section price_per_square_meter is correct');
+    equal(sections_list[0].base_cost.toFixed(2), '164.69', 'Section base_cost is correct');
+
+    //  First section filling cost
+    equal(sections_list[0].filling_price_increase.toFixed(2), '11.16', 'Section filling_price_increase is correct');
+    equal(sections_list[0].filling_cost.toFixed(2), '18.37', 'Section filling_cost is correct');
+
+    //  First section options cost
+    equal(sections_list[0].options.length, 1, 'Section has one priced option');
+    equal(sections_list[0].options[0].price_increase.toFixed(2), '12.73', 'First option price_increase is correct');
+    equal(sections_list[0].options_cost.toFixed(2), '20.97', 'Section options_cost is correct');
+
+    //  First section total cost
+    equal(sections_list[0].total_cost.toFixed(2), '204.03', 'Section total_cost is correct');
+    equal(
+        sections_list[0].total_cost,
+        sections_list[0].base_cost + sections_list[0].filling_cost + sections_list[0].options_cost,
+        'Section total_cost is the combination of base, fillling and options cost'
+    );
+
+    //  Unit total cost
+    equal(estimated_cost.total.toFixed(2), '218.03', 'Unit total cost is correct');
+    equal(
+        estimated_cost.total,
+        estimated_cost.base + estimated_cost.fillings + estimated_cost.options,
+        'Unit total cost is the combination of base, filllings and options cost'
+    );
+});

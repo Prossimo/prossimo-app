@@ -1931,8 +1931,17 @@ var app = app || {};
             _.each(connected_options, function (option) {
                 var parent_dictionary = option.getParentDictionary();
                 var pricing_data = option.getPricingDataForProfile(profile_id);
+                var is_restricted = false;
 
-                if ( pricing_data && pricing_data.scheme !== 'NONE' ) {
+                //  We filter out any option that doesn't apply to the unit
+                //  TODO: would be great if getCurrentUnitOptions has this data
+                _.each(parent_dictionary.get('rules_and_restrictions'), function (rule) {
+                    if ( this.checkIfRestrictionApplies(rule) ) {
+                        is_restricted = true;
+                    }
+                }, this);
+
+                if ( !is_restricted && pricing_data && pricing_data.scheme !== 'NONE' ) {
                     result[pricing_data.scheme].push({
                         dictionary_name: parent_dictionary.get('name'),
                         option_name: option.get('name'),
@@ -2190,6 +2199,8 @@ var app = app || {};
             return result;
         },
         //  Get list of options that are currently selected for this unit
+        //  TODO: we might include some meta information on whether this option
+        //  is restricted (and why) or is no longer available or whatever
         getCurrentUnitOptions: function () {
             var options_list = this.get('unit_options');
             var result = [];
