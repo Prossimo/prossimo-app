@@ -4,7 +4,7 @@ var app = app || {};
     'use strict';
 
     app.OptionsDictionaryEntriesItemView = Marionette.View.extend({
-        tagName: 'tr',
+        tagName: 'div',
         className: 'options-dictionary-entries-item',
         template: app.templates['settings/options-dictionary-entries-item-view'],
         ui: {
@@ -13,12 +13,15 @@ var app = app || {};
             $profiles_list_container: '.entry-profiles p',
             $edit_profiles: '.js-edit-entry-profiles',
             $clone: '.js-clone-entry',
-            $remove: '.js-remove-entry'
+            $remove: '.js-remove-entry',
+            $expand: '.js-expand-entry',
+            $expand_container: '.profile-availability'
         },
         events: {
             'click @ui.$edit_profiles': 'editProfiles',
             'click @ui.$clone': 'cloneEntry',
-            'click @ui.$remove': 'removeEntry'
+            'click @ui.$remove': 'removeEntry',
+            'click @ui.$expand': 'expandEntry'
         },
         editProfiles: function () {
             app.dialogs.showDialog('items-profiles-table', {
@@ -32,7 +35,7 @@ var app = app || {};
             });
         },
         getProfilesNamesList: function () {
-            var profiles_ids = _.pluck(this.model.get('dictionary_entry_profiles'), 'profile_id');
+            var profiles_ids = this.model.get('dictionary_entry_profiles').pluck('profile_id');
             var profiles_names_list = [];
 
             if ( profiles_ids && profiles_ids.length ) {
@@ -51,10 +54,16 @@ var app = app || {};
         cloneEntry: function () {
             this.model.duplicate();
         },
+        expandEntry: function () {
+            this.is_expanded = !this.is_expanded;
+
+            this.ui.$expand_container.toggleClass('is-shown', this.is_expanded);
+        },
         templateContext: function () {
             var profiles = this.getProfilesNamesList();
 
             return {
+                is_expanded: this.is_expanded,
                 name: this.model.get('name'),
                 supplier_name: this.model.get('supplier_name'),
                 profiles: profiles,
@@ -90,10 +99,16 @@ var app = app || {};
             } else {
                 this.$el.removeClass('is-new');
             }
+
+            this.ui.$expand_container.append(this.profile_connections_table_view.render().el);
         },
         onBeforeDestroy: function () {
             if ( this.name_input_view ) {
                 this.name_input_view.destroy();
+            }
+
+            if ( this.profile_connections_table_view ) {
+                this.profile_connections_table_view.destroy();
             }
 
             if ( this.supplier_name_input_view ) {
@@ -104,6 +119,8 @@ var app = app || {};
             this.ui.$profiles_list_container.tooltip('destroy');
         },
         initialize: function () {
+            this.is_expanded = false;
+
             this.name_input_view = new app.BaseInputView({
                 model: this.model,
                 param: 'name',
@@ -116,6 +133,10 @@ var app = app || {};
                 param: 'supplier_name',
                 input_type: 'text',
                 placeholder: ''
+            });
+
+            this.profile_connections_table_view = new app.ProfileConnectionsTableView({
+                collection: this.model.get('dictionary_entry_profiles')
             });
 
             this.listenTo(this.model, 'change:dictionary_entry_profiles change:name change:supplier_name', function () {

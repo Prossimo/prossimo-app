@@ -361,6 +361,22 @@ var app = app || {};
                 }
 
                 return a;
+            },
+            extractObjectOrNull: function (data_object) {
+                var result = null;
+
+                if ( typeof data_object === 'string' ) {
+                    try {
+                        result = JSON.parse(data_object);
+                    } catch (e) {
+                        // Do nothing
+                    }
+                //  For regular objects and arrays
+                } else if ( typeof data_object === 'object' ) {
+                    result = data_object;
+                }
+
+                return result;
             }
         },
         vector2d: {

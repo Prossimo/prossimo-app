@@ -61,6 +61,14 @@ module.exports = function (grunt) {
         'paste-image.js',
         'hot-renderers.js',
         'undomanager.js',
+        //  Inlined models and collections
+        'core/models/inline/pricing-grid.js',
+        'core/models/inline/filling-type-to-profile.js',
+        'core/models/inline/dictionary-entry-to-profile.js',
+        'core/collections/inline/pricing-grid-collection.js',
+        'core/collections/inline/filling-type-to-profile-collection.js',
+        'core/collections/inline/dictionary-entry-to-profile-collection.js',
+        //  Regular models
         'core/models/user.js',
         'core/models/session.js',
         'core/models/unit.js',
@@ -73,6 +81,7 @@ module.exports = function (grunt) {
         'core/models/options-dictionary.js',
         'core/models/options-dictionary-entry.js',
         'core/models/settings.js',
+        //  Collections
         'core/collections/unit-collection.js',
         'core/collections/accessory-collection.js',
         'core/collections/profile-collection.js',
@@ -81,6 +90,7 @@ module.exports = function (grunt) {
         'core/collections/filling-type-collection.js',
         'core/collections/options-dictionary-collection.js',
         'core/collections/options-dictionary-entry-collection.js',
+        //  Core and Generic viws
         'core/views/base/base-toggle-view.js',
         'core/views/base/base-input-view.js',
         'core/views/base/base-select-view.js',
@@ -95,7 +105,9 @@ module.exports = function (grunt) {
         'core/views/project-settings-panel-view.js',
         'core/views/spinner-view.js',
         'core/views/top-bar-view.js',
+        //  Units table screen
         'units-table/views/main-units-table-view.js',
+        //  Drawing module
         'drawing/module/handle-data.js',
         'drawing/module/konva-clip-patch.js',
         'drawing/module/drawing-module.js',
@@ -103,37 +115,47 @@ module.exports = function (grunt) {
         'drawing/module/unit-drawer.js',
         'drawing/module/trapezoid-unit-drawer.js',
         'drawing/module/metrics-drawer.js',
+        //  Drawing screen
         'drawing/views/main-drawing-view.js',
         'drawing/views/drawing-view.js',
         'drawing/views/drawing-sidebar-view.js',
         'drawing/module/glazing-drawer.js',
         'drawing/views/drawing-glazing-view.js',
+        //  Quote screen
         'quote/views/main-quote-view.js',
         'quote/views/quote-item-view.js',
         'quote/views/quote-extras-item-view.js',
         'quote/views/quote-header-view.js',
         'quote/views/quote-table-view.js',
         'quote/views/quote-extras-table-view.js',
+        //  Settings screen
+        'settings/views/per-profile-pricing-grids-editor-view.js',
         'settings/views/main-settings-view.js',
         'settings/views/profiles-table-view.js',
         'settings/views/pricing-grids-table-view.js',
+        'settings/views/profile-connections-table-item-view.js',
+        'settings/views/profile-connections-table-view.js',
         'settings/views/filling-types-view.js',
         'settings/views/filling-type-view.js',
         'settings/views/options-view.js',
         'settings/views/options-dictionary-entries-item-view.js',
         'settings/views/options-dictionary-entries-table-view.js',
         'settings/views/options-dictionary-view.js',
+        //  Supplier Request screen
         'supplier-request/views/main-supplier-request-view.js',
         'supplier-request/views/supplier-request-header-view.js',
+        //  Dashboard screen
         'dashboard/views/project-totals-view.js',
         'dashboard/views/project-info-view.js',
         'dashboard/views/project-documents-view.js',
         'dashboard/views/main-dashboard-view.js',
+        //  Dialogs
         'dialogs/views/base-dialog-view.js',
         'dialogs/views/login-dialog-view.js',
         'dialogs/views/items-profiles-table-dialog-view.js',
         'components/file-uploader-view.js',
         'dialogs/views/create-project-dialog-view.js',
+        //  App entry
         'app.js'
     ];
 

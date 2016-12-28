@@ -1,0 +1,35 @@
+<table class="item-representation">
+    <thead><tr>
+        <th class="profile-name">Profile Name</th>
+        <th class="profile-is-default">Is Default?</th>
+        {{#if has_per_item_cost }}
+        <th class="profile-cost-per-item">Cost Per Item</th>
+        {{/if}}
+        {{#if has_grids }}
+        <th class="profile-pricing-grid">Pricing Grid</th>
+        {{/if}}
+    </tr></thead>
+    <tbody><tr>
+        <td class="profile-name">{{ profile_name }}</td>
+        <td class="profile-is-default"><p>
+            {{#if is_default }}
+            <span class="glyphicon glyphicon-ok"></span>
+            <span>Yes</span>
+            {{else}}
+            <span>No</span>
+            {{/if}}
+        </p></td>
+        {{#if has_per_item_cost }}
+        <td class="profile-cost-per-item"></td>
+        {{/if}}
+        {{#if has_grids }}
+        <td class="profile-pricing-grid">
+            <span>{{ pricing_grid_string }}</span>
+            <button class="btn btn-xs toggle-grid js-toggle-grid">Expand grid</button>
+        </td>
+        {{/if}}
+    </tr></tbody>
+</table>
+{{#if has_grids }}
+    <div class="grid-container{{#if show_grids }} is-open{{/if}}"></div>
+{{/if}}

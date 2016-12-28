@@ -1,21 +1,30 @@
-<td class="entry-drag">
-    <span class="glyphicon glyphicon-move"></span>
-</td>
-<td class="entry-name"></td>
-<td class="entry-supplier-name"></td>
-<td class="entry-profiles">
-    <p>{{ profiles_string }}</p>
-    <button class="edit-entry-profiles js-edit-entry-profiles" title="Edit availability">
-        <span class="glyphicon glyphicon-pencil"></span>
-    </button>
-</td>
-<td class="entry-clone">
-    <button class="clone-entry js-clone-entry" title="Clone entry">
-        <span class="glyphicon glyphicon-duplicate"></span>
-    </button>
-</td>
-<td class="entry-remove">
-    <button class="remove-entry js-remove-entry" title="Remove entry">
-        <span class="glyphicon glyphicon-trash"></span>
-    </button>
-</td>
+<table>
+    <tbody><tr>
+        <td class="entry-drag">
+            <span class="glyphicon glyphicon-move"></span>
+        </td>
+        <td class="entry-name"></td>
+        <td class="entry-supplier-name"></td>
+        <td class="entry-profiles">
+            <p>{{ profiles_string }}</p>
+            <button class="edit-entry-profiles js-edit-entry-profiles" title="Edit availability">
+                <span class="glyphicon glyphicon-pencil"></span>
+            </button>
+        </td>
+        <td class="entry-actions">
+            <button class="clone-entry js-clone-entry" title="Clone entry">
+                <span class="glyphicon glyphicon-duplicate"></span>
+            </button>
+            <button class="remove-entry js-remove-entry" title="Remove entry">
+                <span class="glyphicon glyphicon-trash"></span>
+            </button>
+
+            <button class="expand-entry js-expand-entry" title="Expand entry">
+                <span>Expand</span>
+            </button>
+        </td>
+    </tr></tbody>
+</table>
+<div class="profile-availability{{#if is_expanded }} is-shown{{/if}}">
+    <h3>Available for Profiles</h3>
+</div>

@@ -73,6 +73,8 @@ var app = app || {};
 
             return this.save.apply(this, arguments);
         },
+        //  TODO: test that cloned item doesn't share any objects with the
+        //  source item by reference
         duplicate: function () {
             if ( this.hasOnlyDefaultAttributes() ) {
                 throw new Error('Item could not be cloned: it has only default attributes, create a new one instead');
@@ -188,7 +190,7 @@ var app = app || {};
             if ( invalid_flag ) {
                 this.trigger('sort');
 
-                if ( proper_order.length ) {
+                if ( proper_order.length && app.session && app.session.get('no_backend') !== true ) {
                     this.savePositions(proper_order);
                 }
             }

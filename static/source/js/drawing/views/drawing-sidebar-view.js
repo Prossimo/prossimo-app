@@ -40,8 +40,8 @@ var app = app || {};
                 active_unit_stats: {
                     title: 'Unit Stats'
                 },
-                active_unit_estimated_section_prices: {
-                    title: 'Est. Prices'
+                active_unit_estimated_cost: {
+                    title: 'Est. Cost'
                 }
             };
             this.active_tab = 'active_unit_properties';
@@ -163,14 +163,14 @@ var app = app || {};
         },
         getActiveUnitOptions: function () {
             var active_unit_options = [];
-            var options_list = app.settings.getAvailableDictionaryNames();
+            var options_list = app.settings.dictionaries.getAvailableDictionaryNames();
             var active_unit;
 
             if ( this.options.parent_view.active_unit ) {
                 active_unit = this.options.parent_view.active_unit;
 
                 active_unit_options = _.map(options_list, function (dictionary_name) {
-                    var dictionary_id = app.settings.getDictionaryIdByName(dictionary_name);
+                    var dictionary_id = app.settings.dictionaries.getDictionaryIdByName(dictionary_name);
                     var rules_and_restrictions;
                     var value = '(None)';
                     var is_restricted = false;
@@ -414,17 +414,32 @@ var app = app || {};
 
             return stats_data;
         },
-        getActiveUnitEstimatedSectionPrices: function () {
-            var project_settings = app.settings.getProjectSettings();
+        getActiveUnitEstimatedCost: function () {
             var f = app.utils.format;
             var m = app.utils.math;
-            var section_list_source;
-            var sections = [];
+            var active_unit_profile;
+            var result = {
+                sections: [],
+                per_item_priced_options: []
+            };
 
-            if ( this.options.parent_view.active_unit && project_settings.get('pricing_mode') === 'estimates' ) {
-                section_list_source = this.options.parent_view.active_unit.getSectionsListWithEstimatedPrices();
+            if ( this.options.parent_view.active_unit ) {
+                active_unit_profile = this.options.parent_view.active_unit.profile;
+                var unit_cost = this.options.parent_view.active_unit.getEstimatedUnitCost();
 
-                _.each(section_list_source, function (source_item, index) {
+                result.profile_name = active_unit_profile ? active_unit_profile.get('name') : UNSET_VALUE;
+                result.base_cost = f.fixed(unit_cost.base);
+                result.fillings_cost = f.fixed(unit_cost.fillings);
+                result.options_cost = f.fixed(unit_cost.options);
+                result.total_cost = f.fixed(unit_cost.total);
+                result.original_currency = this.options.parent_view.active_unit.get('original_currency');
+                result.conversion_rate = f.fixed(this.options.parent_view.active_unit.get('conversion_rate'), 3);
+
+                //  This is not super nice because we duplicate code from unit.js
+                result.converted_cost = f.price_usd(unit_cost.total / parseFloat(result.conversion_rate));
+
+                //  Collect detailed pricing data for sections
+                _.each(unit_cost.sections_list, function (source_item, index) {
                     var section_item = {};
 
                     section_item.name = 'Section #' + (index + 1);
@@ -436,21 +451,57 @@ var app = app || {};
                         m.square_meters(source_item.width, source_item.height),
                         2, 'sup');
 
-                    section_item.price_per_square_meter = f.price_usd(source_item.price_per_square_meter);
-                    section_item.price = f.price_usd(source_item.estimated_price);
+                    section_item.price_per_square_meter = f.fixed(source_item.price_per_square_meter);
+                    section_item.base_cost = f.fixed(source_item.base_cost);
 
-                    sections.push(section_item);
+                    //  Add cost for Filling
+                    section_item.filling_name = source_item.filling_name;
+                    section_item.filling_price_increase = f.percent(source_item.filling_price_increase);
+                    section_item.filling_cost = f.fixed(source_item.filling_cost);
+
+                    //  Add cost for Options
+                    section_item.options = _.map(source_item.options, function (item, item_index) {
+                        return {
+                            index: 'Option #' + (item_index + 1),
+                            dictionary_name: item.dictionary_name,
+                            option_name: item.option_name,
+                            price_increase: f.percent(item.price_increase),
+                            cost: f.fixed(item.cost)
+                        };
+                    }, this);
+
+                    section_item.total_cost = f.fixed(source_item.total_cost);
+
+                    result.sections.push(section_item);
                 }, this);
+
+                var per_item_priced_options_total_cost = 0;
+
+                //  Collect detailed pricing data for per-item-priced options
+                _.each(unit_cost.options_list.PER_ITEM, function (source_item, index) {
+                    var option_item = {};
+
+                    option_item.option_index = 'Option #' + (index + 1);
+                    option_item.option_name = source_item.option_name;
+                    option_item.dictionary_name = source_item.dictionary_name;
+                    option_item.cost = f.fixed(source_item.pricing_data.cost_per_item);
+
+                    per_item_priced_options_total_cost += source_item.pricing_data.cost_per_item;
+
+                    result.per_item_priced_options.push(option_item);
+                }, this);
+
+                result.per_item_priced_options_total_cost = f.fixed(per_item_priced_options_total_cost);
             }
 
-            return sections;
+            return result;
         },
         templateContext: function () {
             var tab_contents = {
                 active_unit_properties: this.getActiveUnitProperties(),
                 active_unit_profile_properties: this.getActiveUnitProfileProperties(),
                 active_unit_stats: this.getActiveUnitStats(),
-                active_unit_estimated_section_prices: this.getActiveUnitEstimatedSectionPrices()
+                active_unit_estimated_cost: this.getActiveUnitEstimatedCost()
             };
 
             return {
@@ -470,10 +521,9 @@ var app = app || {};
                 active_unit_options: this.getActiveUnitOptions(),
                 active_unit_profile_properties: tab_contents.active_unit_profile_properties,
                 active_unit_stats: tab_contents.active_unit_stats,
-                active_unit_estimated_section_prices: tab_contents.active_unit_estimated_section_prices,
+                active_unit_estimated_cost: tab_contents.active_unit_estimated_cost,
                 tabs: _.each(this.tabs, function (item, key) {
                     item.is_active = key === this.active_tab;
-                    item.is_visible = tab_contents[key] && tab_contents[key].length;
                     return item;
                 }, this)
             };

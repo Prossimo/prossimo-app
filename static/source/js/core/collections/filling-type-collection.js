@@ -56,28 +56,23 @@ var app = app || {};
         getTitles: function (names) {
             return this.proxy_type.getTitles(names);
         },
-        getTypeTitle: function (name) {
-            return this.findWhere({ name: name }).get('title') || this.proxy_type.getBaseTypeTitle(name);
-        },
         //  TODO: why this works by cid? probably because we have base types
-        getFillingTypeById: function (cid) {
+        //  we need to rework this to use ids when we get rid of base types.
+        //  Also, there is a get() actually available on collections natively
+        getById: function (cid) {
             return this.get(cid);
         },
-        //  TODO: rename to `getByName`
-        getFillingTypeByName: function (name) {
+        getByName: function (name) {
             return this.findWhere({ name: name });
         },
-        //  TODO: rename? remove completely?
-        getAvailableFillingTypes: function () {
-            return this.models;
-        },
-        //  TODO: rename to `getNames` or smth similar
-        getAvailableFillingTypeNames: function () {
+        //  TODO: remove, this is used only once
+        getNames: function () {
             return this.models.map(function (item) {
                 return item.get('name');
             });
         },
-        //  TODO: should we allow to put default item at the top?
+        //  TODO: we should add a flag to indicate whether we want to
+        //  put the default item to the top spot in the returned list
         getAvailableForProfile: function (profile_id) {
             return this.models.filter(function (item) {
                 return item.isAvailableForProfile(profile_id);
@@ -99,64 +94,52 @@ var app = app || {};
                 return item.isDefaultForProfile(profile_id);
             });
 
-            return default_item || available_items.length ? available_items[0] : undefined;
+            return default_item || ( available_items.length ? available_items[0] : undefined );
+        },
+        //  We collect an array of ids for all profiles that are connected to
+        //  at least one item in our collection
+        getIdsOfAllConnectedProfiles: function () {
+            var arrays = this.map(function (item) {
+                return item.getIdsOfProfilesWhereIsAvailable();
+            });
+
+            return _.uniq(_.flatten(arrays, true).sort(function (a, b) { return a - b; }), true);
         },
         //  We go over all profiles and make sure we only have one default
         //  filling type per profile. If not, the first one wins.
-        //  This is executed on collection load
+        //  This is executed on collection load.
+        //  TODO: this might have a different name (to distinguish from
+        //  validation which is a slightly different concept)
         validatePerProfileDefaults: function () {
-            var profiles = app.settings && app.settings.profiles;
+            var profiles = this.getIdsOfAllConnectedProfiles();
 
-            profiles.each(function (profile) {
-                var profile_id = profile.id;
+            _.each(profiles, function (profile_id) {
                 var all_items = this.getAvailableForProfile(profile_id);
                 var default_item = this.getDefaultForProfile(profile_id);
-                var non_default_items = _.filter(all_items, function (item) {
-                    return item !== default_item;
-                }, this);
+                var non_default_items = _.without(all_items, default_item);
 
                 //  Iterate over non default items and make sure they're
-                //  set as non fefault. If all's fine, no requests are fired
-                if ( all_items && default_item && non_default_items ) {
+                //  set as non default. If all's fine, no requests are fired
+                if ( default_item && non_default_items ) {
                     _.each(non_default_items, function (item) {
-                        var item_profiles = item.get('filling_type_profiles');
-                        var connection = _.findWhere(item_profiles, { profile_id: profile_id });
-
-                        if ( connection && connection.is_default === true ) {
-                            connection.is_default = false;
-                            item.persist('filling_type_profiles', item_profiles);
-                        }
+                        item.setProfileAvailability(profile_id, true, false);
                     }, this);
                 }
             }, this);
         },
         setItemAvailabilityForProfile: function (profile_id, target_item, new_value) {
             if ( !this.get(target_item) ) {
-                throw new Error('Cannot set item availability: target item does not belong to this collection ');
+                throw new Error('Cannot set item availability: target item does not belong to this collection');
             }
 
-            var old_profiles_list = target_item.get('filling_type_profiles');
-            var new_profiles_list;
-
-            if ( new_value === true || new_value === 'true' ) {
-                var profile_to_add = {
-                    profile_id: profile_id,
-                    is_default: false
-                };
-                new_profiles_list = _.union(old_profiles_list, [profile_to_add]);
-                new_profiles_list.sort(function (a, b) { return a.profile_id - b.profile_id; });
-            } else if ( new_value === false || new_value === 'false' ) {
-                var profile_to_remove = _.findWhere(old_profiles_list, { profile_id: profile_id });
-                new_profiles_list = _.without(old_profiles_list, profile_to_remove);
-                new_profiles_list.sort(function (a, b) { return a.profile_id - b.profile_id; });
-            }
-
-            if ( old_profiles_list !== new_profiles_list ) {
-                target_item.persist('filling_type_profiles', new_profiles_list);
-            }
+            target_item.setProfileAvailability(profile_id, new_value);
         },
-        setItemAsDefaultForProfile: function (profile_id, new_item, old_item) {
-            //  We want to make profile default for a new item
+        //  new_item could either point to an item within collection, or be an
+        //  undefined value, in which case we want to unset the default value
+        //  for a given profile
+        setItemAsDefaultForProfile: function (profile_id, new_item) {
+            var old_item = this.getDefaultForProfile(profile_id);
+
             if ( new_item ) {
                 if ( !this.get(new_item) ) {
                     throw new Error(
@@ -164,37 +147,22 @@ var app = app || {};
                     );
                 }
 
-                var new_item_profiles = new_item.get('filling_type_profiles');
-                var profile_to_set = _.findWhere(new_item_profiles, { profile_id: profile_id });
-
-                if ( profile_to_set && profile_to_set.is_default === false ) {
-                    profile_to_set.is_default = true;
-                    new_item.persist('filling_type_profiles', new_item_profiles);
-                }
+                //  Set new_item as available and default for profile_id
+                new_item.setProfileAvailability(profile_id, true, true);
             }
 
-            //  And we also want to make sure this profile is not default
-            //  anymore for an old item
             if ( old_item ) {
-                if ( !this.get(old_item) ) {
-                    throw new Error(
-                        'Cannot unset item as default for profile: target item does not belong to this collection'
-                    );
-                }
-
-                var old_item_profiles = old_item.get('filling_type_profiles');
-                var profile_to_unset = _.findWhere(old_item_profiles, { profile_id: profile_id });
-
-                if ( profile_to_unset && profile_to_unset.is_default === true ) {
-                    profile_to_unset.is_default = false;
-                    old_item.persist('filling_type_profiles', old_item_profiles);
-                }
+                //  Set old_item as available but not default for profile_id
+                old_item.setProfileAvailability(profile_id, true, false);
             }
         },
         initialize: function (models, options) {
             this.options = options || {};
             this.proxy_type = new app.FillingType(null, { proxy: true });
-            this.appendBaseTypes();
+
+            if ( this.options.append_base_types ) {
+                this.appendBaseTypes();
+            }
         }
     });
 })();
