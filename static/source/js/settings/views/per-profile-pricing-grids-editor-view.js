@@ -171,15 +171,7 @@ var app = app || {};
         getDataObject: function () {
             var data_object;
 
-            // console.log( 'this', this );
-
-            // if ( this.current_profile ) {
-                // data_object = this.current_profile.getPricingGrids()[this.active_tab];
-            // data_object = this.options.grids.getByName(this.active_tab);
             data_object = this.options.grids.getByName(this.active_tab).get('data');
-            // }
-
-            // console.log( 'data_object', data_object );
 
             return data_object;
         },
