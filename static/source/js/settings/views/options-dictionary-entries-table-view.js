@@ -8,7 +8,6 @@ var app = app || {};
         className: 'options-dictionary-entries-table',
         template: app.templates['settings/options-dictionary-entries-table-view'],
         childView: app.OptionsDictionaryEntriesItemView,
-        // childViewContainer: 'tbody',
         childViewContainer: '.entries-container',
         childViewOptions: function () {
             return {
@@ -16,7 +15,6 @@ var app = app || {};
             };
         },
         ui: {
-            // $container: 'tbody',
             $container: '.entries-container',
             $add_new_entry: '.js-add-new-entry',
             $undo: '.js-undo',
@@ -81,7 +79,6 @@ var app = app || {};
 
             this.ui.$container.sortable({
                 handle: 'td.entry-drag',
-                // draggable: 'tr',
                 draggable: '.options-dictionary-entries-item',
                 onSort: function (event) {
                     self.onSort(event);

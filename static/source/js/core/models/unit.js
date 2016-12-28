@@ -1867,7 +1867,7 @@ var app = app || {};
         //  every sash, we not only use size of the sash itself, but add size
         //  of the surrounding frame (and sometimes mullion) to this "section",
         //  so each part of the unit belongs to some section, and we could use
-        //  it this list of sections as a source for cost estimation
+        //  this list of sections as a source for cost estimation
         //
         //  Returns sizes in mms
         getFixedAndOperableSectionsList: function (current_root) {
