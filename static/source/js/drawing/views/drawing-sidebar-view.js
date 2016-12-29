@@ -154,7 +154,17 @@ var app = app || {};
                 active_unit_properties = _.map(relevant_properties, function (prop_name) {
                     return {
                         title: active_unit.getTitles([prop_name]),
-                        value: params_source[prop_name] || active_unit.get(prop_name)
+                        value: function () {
+                            var val = params_source[prop_name] || active_unit.get(prop_name);
+
+                            if ( active_unit.isOperableOnlyAttribute(prop_name) && !active_unit.hasOperableSections() ) {
+                                val = '(Operable Only)';
+                            } else if ( active_unit.isGlazingBarProperty(prop_name) && !active_unit.hasGlazingBars() ) {
+                                val = '(Has no Bars)';
+                            }
+
+                            return val;
+                        }
                     };
                 }, this);
             }
