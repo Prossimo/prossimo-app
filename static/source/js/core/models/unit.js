@@ -99,7 +99,7 @@ var app = app || {};
         var default_type;
 
         if ( app.settings && default_glazing_name ) {
-            default_type = app.settings.filling_types.getFillingTypeByName(default_glazing_name);
+            default_type = app.settings.filling_types.getByName(default_glazing_name);
         }
 
         if ( !default_type && app.settings && profile_id ) {
@@ -218,7 +218,7 @@ var app = app || {};
             if ( app.settings ) {
                 name_value_hash.glazing_bar_width = app.settings.getGlazingBarWidths()[0];
                 name_value_hash.opening_direction = app.settings.getOpeningDirections()[0];
-                name_value_hash.glazing = app.settings.filling_types.getAvailableFillingTypeNames()[0];
+                name_value_hash.glazing = app.settings.filling_types.getNames()[0];
             }
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -376,7 +376,11 @@ var app = app || {};
                     var is_optional = _.contains(rules, 'IS_OPTIONAL');
 
                     if ( !is_optional && dictionary_id && profile_id ) {
-                        var option = app.settings.getDefaultOrFirstAvailableOption(dictionary_id, profile_id);
+                        //  TODO: we need to call this directly on `dictionary` iterable
+                        var option = app.settings.dictionaries.getDefaultOrFirstAvailableOption(
+                            dictionary_id,
+                            profile_id
+                        );
 
                         if ( option && option.id && dictionary.id ) {
                             default_options.push({
@@ -618,7 +622,7 @@ var app = app || {};
             var glazing = this.get('glazing');
 
             if ( glazing && app.settings ) {
-                filling_type = app.settings.filling_types.getFillingTypeByName(glazing);
+                filling_type = app.settings.filling_types.getByName(glazing);
 
                 if ( filling_type ) {
                     this.setFillingType(
@@ -687,7 +691,7 @@ var app = app || {};
             var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
 
             if ( project_settings && project_settings.get('pricing_mode') === 'estimates' ) {
-                original_cost = this.getEstimatedUnitCost();
+                original_cost = this.getEstimatedUnitCost().total;
             }
 
             return parseFloat(original_cost);
@@ -1857,6 +1861,14 @@ var app = app || {};
 
             return result.sashes;
         },
+        //  This function is used to "slice" unit into a set of fixed and
+        //  operable sections, meaning we just draw some imaginary lines so
+        //  that each part of the unit should belong to some section. And for
+        //  every sash, we not only use size of the sash itself, but add size
+        //  of the surrounding frame (and sometimes mullion) to this "section",
+        //  so each part of the unit belongs to some section, and we could use
+        //  this list of sections as a source for cost estimation
+        //
         //  Returns sizes in mms
         getFixedAndOperableSectionsList: function (current_root) {
             var profile = this.profile;
@@ -1885,6 +1897,7 @@ var app = app || {};
             if ( current_root.sections.length === 0 ) {
                 current_area.width = current_root.openingParams.width;
                 current_area.height = current_root.openingParams.height;
+                current_area.filling_name = current_root.fillingName;
 
                 _.each(['top', 'right', 'bottom', 'left'], function (position) {
                     var measurement = position === 'top' || position === 'bottom' ?
@@ -1907,9 +1920,42 @@ var app = app || {};
 
             return result;
         },
-        getSectionsListWithEstimatedPrices: function () {
+        getUnitOptionsGroupedByPricingScheme: function () {
+            var connected_options = this.getCurrentUnitOptions();
+            var profile_id = this.profile.id;
+            var result = {
+                PRICING_GRIDS: [],
+                PER_ITEM: []
+            };
+
+            _.each(connected_options, function (option) {
+                var parent_dictionary = option.getParentDictionary();
+                var pricing_data = option.getPricingDataForProfile(profile_id);
+                var is_restricted = false;
+
+                //  We filter out any option that doesn't apply to the unit
+                //  TODO: would be great if getCurrentUnitOptions has this data
+                _.each(parent_dictionary.get('rules_and_restrictions'), function (rule) {
+                    if ( this.checkIfRestrictionApplies(rule) ) {
+                        is_restricted = true;
+                    }
+                }, this);
+
+                if ( !is_restricted && pricing_data && pricing_data.scheme !== 'NONE' ) {
+                    result[pricing_data.scheme].push({
+                        dictionary_name: parent_dictionary.get('name'),
+                        option_name: option.get('name'),
+                        pricing_data: pricing_data
+                    });
+                }
+            }, this);
+
+            return result;
+        },
+        getSectionsListWithEstimatedCost: function () {
             var pricing_grids = this.profile.getPricingGrids();
             var sections_list = this.getFixedAndOperableSectionsList();
+            var options_grouped_by_scheme = this.getUnitOptionsGroupedByPricingScheme();
 
             function getArea(item) {
                 return item.height * item.width;
@@ -1922,6 +1968,8 @@ var app = app || {};
             //  4. if our size === some size, price = some size price
             //  5. if our size > some size and < some other size, price is
             //  linear interpolation between prices for these sizes
+            //  TODO: calculation for `price_per_square_meter` should be
+            //  encapsulated to profile model
             _.each(sections_list, function (section) {
                 var section_area = getArea(section);
                 var pricing_grid;
@@ -1961,21 +2009,87 @@ var app = app || {};
                     }
                 }
 
-                section.estimated_price = app.utils.math.square_meters(section.width, section.height) *
+                section.base_cost = app.utils.math.square_meters(section.width, section.height) *
                     section.price_per_square_meter;
+
+                section.filling_price_increase = 0;
+
+                if ( app.settings && app.settings.filling_types ) {
+                    var filling_type = app.settings.filling_types.getByName(section.filling_name);
+                    var filling_type_pricing_data = filling_type &&
+                        filling_type.getPricingDataForProfile(this.profile.id);
+
+                    //  If we have correct pricing scheme and data for filling
+                    if ( filling_type_pricing_data && filling_type_pricing_data.scheme === 'PRICING_GRIDS' ) {
+                        section.filling_price_increase = filling_type_pricing_data.pricing_grids.getValueForGrid(
+                            section.type,
+                            {
+                                height: section.height,
+                                width: section.width
+                            }
+                        ) || 0;
+                    }
+                }
+
+                section.filling_cost = section.base_cost * section.filling_price_increase / 100;
+
+                section.options_cost = 0;
+                section.options = [];
+
+                //  Now add prices for all grid-based options
+                _.each(options_grouped_by_scheme.PRICING_GRIDS, function (option_data) {
+                    var option_pricing_data = option_data.pricing_data;
+                    var option_cost = 0;
+                    var price_increase = option_pricing_data.pricing_grids.getValueForGrid(
+                        section.type,
+                        {
+                            height: section.height,
+                            width: section.width
+                        }
+                    ) || 0;
+
+                    option_cost = section.base_cost * price_increase / 100;
+                    section.options_cost += option_cost;
+
+                    section.options.push({
+                        dictionary_name: option_data.dictionary_name,
+                        option_name: option_data.option_name,
+                        price_increase: price_increase,
+                        cost: option_cost
+                    });
+                }, this);
+
+                section.total_cost = section.base_cost + section.filling_cost + section.options_cost;
             }, this);
 
             return sections_list;
         },
         getEstimatedUnitCost: function () {
-            var sections_list = this.getSectionsListWithEstimatedPrices();
-            var price = _.reduce(_.map(sections_list, function (item) {
-                return item.estimated_price;
-            }), function (memo, number) {
-                return memo + number;
-            }, 0);
+            var sections_list = this.getSectionsListWithEstimatedCost();
+            var options_list = this.getUnitOptionsGroupedByPricingScheme();
+            var unit_cost = {
+                total: 0,
+                base: 0,
+                fillings: 0,
+                options: 0,
+                sections_list: sections_list,
+                options_list: options_list
+            };
 
-            return price;
+            _.each(sections_list, function (section) {
+                unit_cost.total += section.total_cost;
+                unit_cost.base += section.base_cost;
+                unit_cost.fillings += section.filling_cost;
+                unit_cost.options += section.options_cost;
+            }, this);
+
+            //  Now add cost for all per-item priced options
+            _.each(options_list.PER_ITEM, function (option) {
+                unit_cost.total += option.pricing_data.cost_per_item;
+                unit_cost.options += option.pricing_data.cost_per_item;
+            }, this);
+
+            return unit_cost;
         },
         //  Check if unit has at least one operable section. This could be used
         //  to determine whether we should allow editing handles and such stuff
@@ -2085,6 +2199,8 @@ var app = app || {};
             return result;
         },
         //  Get list of options that are currently selected for this unit
+        //  TODO: we might include some meta information on whether this option
+        //  is restricted (and why) or is no longer available or whatever
         getCurrentUnitOptions: function () {
             var options_list = this.get('unit_options');
             var result = [];
@@ -2121,7 +2237,7 @@ var app = app || {};
             var profile_id = this.profile && this.profile.id;
 
             if ( app.settings && profile_id ) {
-                result = app.settings.getAvailableOptions(dictionary_id, profile_id, true);
+                result = app.settings.dictionaries.getAvailableOptions(dictionary_id, profile_id, true);
             }
 
             return result;

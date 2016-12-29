@@ -103,13 +103,13 @@ var app = app || {};
             },
             dimensions: function (width, height, decimal_format, inches_display_mode) {
                 return this.dimension(width, decimal_format, inches_display_mode) +
-                    ' x ' + this.dimension(height, decimal_format, inches_display_mode);
+                    ' × ' + this.dimension(height, decimal_format, inches_display_mode);
             },
             dimension_mm: function (value) {
                 return this.fixed_minimal(value, 0) + ' mm';
             },
             dimensions_mm: function (width, height) {
-                return this.fixed_minimal(width, 0) + ' x ' + this.fixed_minimal(height, 0);
+                return this.fixed_minimal(width, 0) + ' × ' + this.fixed_minimal(height, 0);
             },
             //  TODO: why do we have these dimension_in and dimensions_in
             //  functions and why do we use fixed_minimal instead of dimension
@@ -118,7 +118,7 @@ var app = app || {};
                 return this.fixed_minimal(value, 2) + '″';
             },
             dimensions_in: function (width, height) {
-                return this.dimension_in(width) + ' x ' + this.dimension_in(height);
+                return this.dimension_in(width) + ' × ' + this.dimension_in(height);
             },
             price_usd: function (price) {
                 return (parseFloat(price) < 0 ? '-' : '') + '$' +
@@ -173,8 +173,8 @@ var app = app || {};
                 return this.fixed_minimal(value, 3) + ' kg';
             },
             dimensions_and_area: function (
-                height,
                 width,
+                height,
                 decimal_format,
                 inches_display_mode,
                 area,
@@ -192,12 +192,12 @@ var app = app || {};
                 area_format = (area_format && _.indexOf(['normal', 'sup'], area_format) !== -1) ?
                     area_format : 'sup';
 
-                return this.dimensions(height, width, decimal_format, inches_display_mode) +
+                return this.dimensions(width, height, decimal_format, inches_display_mode) +
                     ' (' + this.square_feet(area, area_num, area_format) + ')';
             },
             dimensions_and_area_mm: function (
-                height,
                 width,
+                height,
                 area,
                 area_num,
                 area_format
@@ -361,6 +361,22 @@ var app = app || {};
                 }
 
                 return a;
+            },
+            extractObjectOrNull: function (data_object) {
+                var result = null;
+
+                if ( typeof data_object === 'string' ) {
+                    try {
+                        result = JSON.parse(data_object);
+                    } catch (e) {
+                        // Do nothing
+                    }
+                //  For regular objects and arrays
+                } else if ( typeof data_object === 'object' ) {
+                    result = data_object;
+                }
+
+                return result;
             }
         },
         vector2d: {

@@ -7,6 +7,5 @@
     {{/if}}
 </div>
 <div class="edit">
-    <input autocomplete="off" type="{{ input_type }}" value="{{ value }}"{{#if is_disabled }} disabled{{/if}} />
-    <span class="glyphicon glyphicon-remove revert-editable js-revert-editable" aria-hidden="true" tooltip="Reset"></span>
+    <input autocomplete="off" type="{{ input_type }}" value="{{ value }}"{{#if is_disabled }} disabled{{/if}} formnovalidate />
 </div>

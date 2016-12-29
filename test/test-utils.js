@@ -47,10 +47,10 @@ test('utils.format.dimension', function () {
 test('utils.format.dimensions', function () {
     var f = app.utils.format;
 
-    equal(f.dimensions(20, 30), '1′−8″ x 2′−6″', 'Expected value is 1′−8″ x 2′−6″');
-    equal(f.dimensions(0, 0), '0″ x 0″', 'Expected value is 0′−0″ x 0′−0″');
-    equal(f.dimensions(12, 12), '1′−0″ x 1′−0″', 'Expected value is 1′−0″ x 1′−0″');
-    equal(f.dimensions('12', '12'), '1′−0″ x 1′−0″', 'Expected value is 1′−0″ x 1′−0″');
+    equal(f.dimensions(20, 30), '1′−8″ × 2′−6″', 'Expected value is 1′−8″ × 2′−6″');
+    equal(f.dimensions(0, 0), '0″ × 0″', 'Expected value is 0′−0″ × 0′−0″');
+    equal(f.dimensions(12, 12), '1′−0″ × 1′−0″', 'Expected value is 1′−0″ × 1′−0″');
+    equal(f.dimensions('12', '12'), '1′−0″ × 1′−0″', 'Expected value is 1′−0″ × 1′−0″');
 });
 
 test('utils.format.dimension_mm', function () {
@@ -63,7 +63,7 @@ test('utils.format.dimension_mm', function () {
 test('utils.format.dimensions_mm', function () {
     var f = app.utils.format;
 
-    equal(f.dimensions_mm(2500, 1300), '2,500 x 1,300', 'Expected value is 2,500 x 1,300');
+    equal(f.dimensions_mm(2500, 1300), '2,500 × 1,300', 'Expected value is 2,500 × 1,300');
 });
 
 test('utils.format.dimension_in', function () {
@@ -76,7 +76,7 @@ test('utils.format.dimension_in', function () {
 test('utils.format.dimensions_in', function () {
     var f = app.utils.format;
 
-    equal(f.dimensions_in(38.14, 22), '38.14″ x 22″', 'Expected value is 38.14″ x 22″');
+    equal(f.dimensions_in(38.14, 22), '38.14″ × 22″', 'Expected value is 38.14″ × 22″');
 });
 
 test('utils.format.price_usd', function () {
@@ -130,12 +130,12 @@ test('utils.format.dimensions_and_area', function () {
 
     equal(
         f.dimensions_and_area(26, 32.0625, 'fraction', 'inches_only', 5.78, 2, 'sup'),
-        '26″ x 32 1/16″ (5.78 ft<sup>2</sup>)',
+        '26″ × 32 1/16″ (5.78 ft<sup>2</sup>)',
         'Test with all values set the same way as defaults'
     );
     equal(
         f.dimensions_and_area(26, 32.0625, undefined, undefined, 5.78, undefined, undefined),
-        '26″ x 32 1/16″ (5.78 ft<sup>2</sup>)',
+        '26″ × 32 1/16″ (5.78 ft<sup>2</sup>)',
         'Test with no formatting-related values set, and defaults used instead'
     );
 });
@@ -145,12 +145,12 @@ test('utils.format.dimensions_and_area_mm', function () {
 
     equal(
         f.dimensions_and_area_mm(722, 417, 0.301, 2, 'sup'),
-        '417 x 722 (0.3 m<sup>2</sup>)',
+        '722 × 417 (0.3 m<sup>2</sup>)',
         'Test with all values set the same way as defaults'
     );
     equal(
         f.dimensions_and_area_mm(722, 417, 0.301, undefined, undefined),
-        '417 x 722 (0.3 m<sup>2</sup>)',
+        '722 × 417 (0.3 m<sup>2</sup>)',
         'Test with no formatting-related values set, and defaults used instead'
     );
 });

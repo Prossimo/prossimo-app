@@ -1,0 +1,15 @@
+<div class="pricing-grids-table-title">
+    <div class="tab-container">
+        <ul class="nav nav-tabs">
+        {{#each tabs }}
+            <li class="{{ @key }}{{#if is_active }} active{{/if}}"><a href="#{{ @key }}">{{ title }}</a></li>
+        {{/each}}
+        </ul>
+    </div>
+</div>
+<div class="pricing-grids-table-scroll-wrapper">
+    <div class="pricing-grids-handsontable-container"></div>
+</div>
+<div class="notice">
+    <p>Please note that sizes in the above table are meant to be interpreted as sizes of the whole unit section, not as sizes of a certain filling or option.</p>
+</div>
