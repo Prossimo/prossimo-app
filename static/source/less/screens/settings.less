@@ -228,13 +228,12 @@
     }
 }
 
-
-.filling-type table {
+.filling-type-attributes {
     margin-top: 3rem;
 }
 
-.filling-type table td,
-.filling-type table th {
+.filling-type-attributes td,
+.filling-type-attributes th {
     padding-bottom: 2rem;
     vertical-align: bottom;
 }
@@ -267,11 +266,95 @@
     position: relative;
     margin-top: 3.5rem;
 
-    button {
+    .edit-fillingtype-profiles {
         position: absolute;
         top: 0;
         left: 20em;
+        border: 1px solid darken(@white, 40%);
     }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Profile Connections table inside Filling Type editor
+//  ------------------------------------------------------------------------
+
+.profile-connections-table {
+    margin: 3rem 0;
+    max-width: 1000px;
+}
+
+.profile-connections-table .table-item {
+    border: 1px solid darken(@white, 20%);
+
+    &:not(:last-child) {
+        margin-bottom: 0.5rem;
+    }
+}
+
+.profile-connections-table .item-representation {
+    width: 100%;
+    table-layout: fixed;
+    border-bottom: 1px solid darken(@white, 20%);
+    background-color: darken(@white, 1%);
+}
+
+.profile-connections-table .item-representation th {
+    padding: 0.5rem 1rem 0;
+    font-size: 0.8em;
+    font-weight: 400;
+    text-transform: uppercase;
+}
+
+.profile-connections-table .item-representation td {
+    padding: 0.5rem 1rem;
+    font-weight: 800;
+}
+
+.profile-connections-table .item-representation p {
+    position: relative;
+    margin: 0;
+}
+
+//  OK icon near default profile
+.profile-connections-table .item-representation p span.glyphicon-ok {
+    position: absolute;
+    top: 0.35em;
+    left: -1.8em;
+    font-size: 0.8em;
+    font-weight: normal;
+    color: #378d59;
+}
+
+.profile-connections-table .toggle-grid {
+    float: right;
+    border: 1px solid darken(@white, 40%);
+}
+
+.profile-connections-table .grid-container {
+    overflow: hidden;
+    height: 0;
+
+    &.is-open {
+        min-height: 80px;
+        height: auto;
+    }
+
+    > div {
+        padding-top: 0.8rem;
+    }
+}
+
+.profile-connections-table .grid-container .pricing-grids-table-scroll-wrapper {
+    display: block;
+    flex: none;
+    height: 110px;
+    background-color: transparent;
+}
+
+.profile-connections-table .grid-container .notice p {
+    padding: 0 2rem;
+    font-style: italic;
 }
 
 
@@ -328,6 +411,10 @@
     &:active {
         background-color: @white;
     }
+}
+
+.dictionary-pricing-scheme {
+    &:extend(.dictionary-restrictions all);
 }
 
 .dictionary-actions {
@@ -390,10 +477,6 @@
     vertical-align: middle;
 }
 
-.options-dictionary-entries-table table button {
-    float: right;
-}
-
 .options-dictionary-entries-table thead tr {
     border-top: 1px solid darken(@white, 30%);
     border-bottom: 1px solid darken(@white, 30%);
@@ -413,18 +496,25 @@
     vertical-align: middle;
 }
 
-.options-dictionary-entries-table th.entry-name {
-    width: 50%;
+
+.options-dictionary-entries-table th.entry-name,
+.options-dictionary-entries-table td.entry-name {
+    width: 25%;
 }
 
-.options-dictionary-entries-table td.entry-name {
+.options-dictionary-entries-table th.entry-supplier-name,
+.options-dictionary-entries-table td.entry-supplier-name {
+    width: 20%;
+}
+
+.options-dictionary-entries-table td.entry-name,
+.options-dictionary-entries-table td.entry-supplier-name {
     padding: 0;
-    width: 50%;
 }
 
 .options-dictionary-entries-table th.entry-profiles,
 .options-dictionary-entries-table td.entry-profiles {
-    width: 35%;
+    width: 25%;
 
     button {
         opacity: 0;
@@ -436,21 +526,25 @@
     float: right;
 }
 
+.options-dictionary-entries-table button.expand-entry {
+    float: right;
+    opacity: 1;
+}
+
 .options-dictionary-entries-table .entry-profiles p {
     .text-overflow();
     max-width: 75%;
 }
 
-.options-dictionary-entries-table th.entry-clone,
-.options-dictionary-entries-table td.entry-clone {
-    width: 5%;
+.options-dictionary-entries-table th.entry-actions,
+.options-dictionary-entries-table td.entry-actions {
+    width: 25%;
     opacity: 0;
 }
 
-.options-dictionary-entries-table th.entry-remove,
-.options-dictionary-entries-table td.entry-remove {
+.options-dictionary-entries-table th.entry-drag,
+.options-dictionary-entries-table td.entry-drag {
     width: 5%;
-    opacity: 0;
 }
 
 .options-dictionary-entries-table td.entry-drag {
@@ -463,7 +557,6 @@
     cursor: move;
     cursor: -webkit-grabbing;
     font-size: 1.1em;
-    width: 5%;
 }
 
 .options-dictionary-entries-table tr:hover {
@@ -472,19 +565,21 @@
         opacity: 1;
     }
 
-    td.entry-clone,
-    td.entry-remove,
+    td.entry-actions,
     td.entry-profiles button {
         opacity: 1;
     }
 }
 
 //  Don't show some buttons for new entries
-.options-dictionary-entries-table tr.is-new {
+//  TODO: this doesn't work very well
+.options-dictionary-entries-table .is-new {
     &:hover {
-        td.entry-clone,
+        // td.entry-clone,
+        td.entry-actions button.clone-entry,
         td.entry-profiles button {
-            opacity: 0;
+            // opacity: 0;
+            display: none;
         }
     }
 }
@@ -493,12 +588,22 @@
     opacity: 0.3;
 }
 
+.options-dictionary-entries-item .profile-availability {
+    display: none;
+    padding-left: 4rem;
+    border-left: 1px solid #ccc;
+
+    &.is-shown {
+        display: block;
+    }
+}
+
 .options-dictionary-entries-table .input-container .value,
 .options-dictionary-entries-table .input-container input {
     border-color: transparent;
 }
 
-.options-dictionary-entries-table table + p {
+.options-dictionary-entries-table .entries-container + p {
     margin-top: 3rem;
     margin-left: 6%;
     color: lighten(@black, 45%);

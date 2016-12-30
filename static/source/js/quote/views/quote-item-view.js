@@ -77,8 +77,8 @@ var app = app || {};
                 result.filling_size = getFillingSize( source.filling.width, source.filling.height );
 
                 //  Show supplier name for filling if it exists
-                if ( options.show_supplier_filling_name && app.settings && source.filling && source.filling.name ) {
-                    var filling_type = app.settings.filling_types.getFillingTypeByName(source.filling.name);
+                if ( options.show_supplier_names && app.settings && source.filling && source.filling.name ) {
+                    var filling_type = app.settings.filling_types.getByName(source.filling.name);
 
                     if ( filling_type && filling_type.get('supplier_name') ) {
                         result.filling_name = filling_type.get('supplier_name');
@@ -219,10 +219,8 @@ var app = app || {};
             }, this);
 
             //  Now get list of Unit Options applicable for this unit
-            var dictionaries = _.filter(app.settings.getAvailableDictionaryNames(), function (dictionary_name) {
-                var dictionary_id = app.settings.getDictionaryIdByName(dictionary_name);
-                var rules_and_restrictions = app.settings.dictionaries.get(dictionary_id)
-                    .get('rules_and_restrictions');
+            var dictionaries = _.map(app.settings.dictionaries.filter(function (dictionary) {
+                var rules_and_restrictions = dictionary.get('rules_and_restrictions');
                 var is_restricted = false;
 
                 _.each(rules_and_restrictions, function (rule) {
@@ -234,6 +232,8 @@ var app = app || {};
                 }, this);
 
                 return !is_restricted;
+            }, this), function (filtered_dictionary) {
+                return filtered_dictionary.get('name');
             }, this);
 
             //  Here we form the final list of properties to be shown in the
@@ -296,11 +296,20 @@ var app = app || {};
 
             params_source = _.extend({}, params_source, _.object(dictionaries, _.map(dictionaries,
                 function (dictionary_name) {
-                    var dictionary_id = app.settings.getDictionaryIdByName(dictionary_name);
+                    var dictionary_id = app.settings.dictionaries.getDictionaryIdByName(dictionary_name);
                     var current_options = dictionary_id ?
                         model.getCurrentUnitOptionsByDictionaryId(dictionary_id) : [];
 
-                    return current_options.length ? current_options[0].get('name') : false;
+                    //  We assume that we have only one option per dictionary,
+                    //  although in theory it's possible to have multiple
+                    var option_name = current_options.length ?
+                        (
+                            this.options.show_supplier_names && current_options[0].get('supplier_name') ||
+                            current_options[0].get('name')
+                        ) :
+                        false;
+
+                    return option_name;
                 }, this)
             ));
 

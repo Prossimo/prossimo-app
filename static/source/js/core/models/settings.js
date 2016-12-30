@@ -84,7 +84,8 @@ var app = app || {};
             });
 
             this.filling_types = new app.FillingTypeCollection(null, {
-                api_base_path: this.get('api_base_path')
+                api_base_path: this.get('api_base_path'),
+                append_base_types: true
             });
 
             this.dictionaries = new app.OptionsDictionaryCollection(null, {
@@ -115,6 +116,7 @@ var app = app || {};
 
             this._dependencies_changed = {};
         },
+        //  TODO: why don't we call this directly from the current project?
         setProjectSettings: function () {
             this.project_settings = app.current_project.settings;
         },
@@ -252,73 +254,6 @@ var app = app || {};
         },
         getOpeningDirections: function () {
             return OPENING_DIRECTIONS;
-        },
-        //  TODO: move all Options-related functions to Dictionary Collection
-        getAvailableOptions: function (dictionary_id, profile_id, put_default_first) {
-            var target_dictionary = this.dictionaries.get(dictionary_id);
-            var available_options = [];
-            var default_option;
-
-            put_default_first = put_default_first || false;
-
-            if ( target_dictionary ) {
-                available_options = target_dictionary.entries.getAvailableForProfile(profile_id);
-                default_option = target_dictionary.entries.getDefaultForProfile(profile_id);
-            }
-
-            //  Union merges arrays and removes duplicates
-            if ( put_default_first && default_option && available_options.length > 1 ) {
-                available_options = _.union([default_option], available_options);
-            }
-
-            return available_options;
-        },
-        getDefaultOption: function (dictionary_id, profile_id) {
-            var target_dictionary = this.dictionaries.get(dictionary_id);
-            var default_option;
-
-            if ( target_dictionary ) {
-                default_option = target_dictionary.entries.getDefaultForProfile(profile_id);
-            }
-
-            return default_option || undefined;
-        },
-        getFirstAvailableOption: function (dictionary_id, profile_id) {
-            var available_options = this.getAvailableOptions(dictionary_id, profile_id);
-
-            return available_options.length ? available_options[0] : undefined;
-        },
-        //  This function use a composition of two functions above
-        getDefaultOrFirstAvailableOption: function (dictionary_id, profile_id) {
-            var target_option = this.getDefaultOption(dictionary_id, profile_id);
-
-            if ( !target_option ) {
-                target_option = this.getFirstAvailableOption(dictionary_id, profile_id);
-            }
-
-            return target_option;
-        },
-        getDictionaryIdByName: function (name) {
-            var target_dictionary = this.dictionaries.findWhere({name: name});
-
-            return target_dictionary ? target_dictionary.id : undefined;
-        },
-        getDictionaryEntryIdByName: function (dictionary_id, name) {
-            var target_dictionary = this.dictionaries.get(dictionary_id);
-
-            if (!target_dictionary) {
-                throw new Error('No dictionary with id=' + dictionary_id);
-            }
-
-            var target_entry = target_dictionary.entries.findWhere({name: name});
-
-            return target_entry ? target_entry.id : undefined;
-        },
-        getAvailableDictionaries: function () {
-            return this.dictionaries;
-        },
-        getAvailableDictionaryNames: function () {
-            return this.getAvailableDictionaries().pluck('name');
         }
     });
 })();

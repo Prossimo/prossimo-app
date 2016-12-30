@@ -304,18 +304,29 @@
     margin-top: 3rem;
 }
 
+.drawing-sidebar table + h5 {
+    margin-top: 2rem;
+}
+
 .drawing-sidebar table {
     width: 100%;
 }
 
+.drawing-sidebar table th,
 .drawing-sidebar table td {
     padding: 0.2rem 0.8rem;
     border: 1px solid darken(@white, 20%);
     background-color: darken(@white, 10%);
 }
 
+.drawing-sidebar table td + td {
+    width: 60%;
+}
+
 .drawing-sidebar table tr.total td {
+    padding: 0.4rem 0.8rem;
     font-weight: 700;
+    background-color: darken(@white, 15%);
 }
 
 // Measurement controls (dimension-point)
