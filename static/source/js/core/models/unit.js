@@ -91,11 +91,27 @@ var app = app || {};
         'vertical_invisible', 'horizontal_invisible'
     ];
 
-    function getDefaultFillingType() {
-        return {
+    //  TODO: this could return dummy type object or something like that, so we
+    //  could know when we don't get the right thing, and try to fix that
+    function getDefaultFillingType(default_glazing_name, profile_id) {
+        var dummy_type = {
             fillingType: 'glass',
             fillingName: 'Glass'
         };
+        var default_type;
+
+        if ( app.settings && default_glazing_name ) {
+            default_type = app.settings.filling_types.getByName(default_glazing_name);
+        }
+
+        if ( !default_type && app.settings && profile_id ) {
+            default_type = app.settings.filling_types.getDefaultOrFirstAvailableForProfile(profile_id);
+        }
+
+        return default_type ? {
+            fillingType: default_type.get('type'),
+            fillingName: default_type.get('name')
+        } : dummy_type;
     }
 
     function getDefaultBars() {
@@ -132,14 +148,15 @@ var app = app || {};
         return result;
     }
 
-    function getSectionDefaults(type) {
-        var isRootSection = ( type === 'root_section' );
+    function getSectionDefaults(section_type, default_glazing_name, profile_id) {
+        var isRootSection = ( section_type === 'root_section' );
+        var defaultFilling = getDefaultFillingType(default_glazing_name, profile_id);
 
         return {
             id: _.uniqueId(),
             sashType: 'fixed_in_frame',
-            fillingType: getDefaultFillingType().fillingType,
-            fillingName: getDefaultFillingType().fillingName,
+            fillingType: defaultFilling.fillingType,
+            fillingName: defaultFilling.fillingName,
             bars: getDefaultBars(),
             measurements: getDefaultMeasurements(isRootSection)
         };
@@ -184,6 +201,9 @@ var app = app || {};
         getNameAttribute: function () {
             return 'mark';
         },
+        //  TODO: stuff inside name_value_hash gets evaluated for each
+        //  attribute, but we actually want it to be evaluated only for the
+        //  corresponding attribute (see example for root_section)
         getDefaultValue: function (name, type) {
             var default_value = (type === 'array') ? [] : '';
 
@@ -197,13 +217,13 @@ var app = app || {};
                 conversion_rate: 0.9,
                 price_markup: 2.3,
                 quantity: 1,
-                root_section: getSectionDefaults(name)
+                root_section: name === 'root_section' ? getSectionDefaults(name) : ''
             };
 
             if ( app.settings ) {
                 name_value_hash.glazing_bar_width = app.settings.getGlazingBarWidths()[0];
                 name_value_hash.opening_direction = app.settings.getOpeningDirections()[0];
-                name_value_hash.glazing = app.settings.filling_types.getAvailableFillingTypeNames()[0];
+                name_value_hash.glazing = app.settings.filling_types.getNames()[0];
             }
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -239,14 +259,18 @@ var app = app || {};
             this.profile = null;
 
             if ( !this.options.proxy ) {
-                this.setProfile();
                 this.validateOpeningDirection();
                 this.validateRootSection();
-                this.on('change:profile_id', this.setProfile, this);
-                this.on('change:glazing', this.setDefaultFillingType, this);
+                this.setProfile();
+
+                this.on('change:profile_id', function () {
+                    this.setProfile({ validate_filling_types: true });
+                }, this);
+                this.on('change:glazing', this.onGlazingUpdate, this);
 
                 //  If we know that something was changed in dictionaries,
                 //  we have to re-validate our unit options
+                //  TODO: we want to do the same thing for filling types
                 this.listenTo(app.vent, 'validate_units:dictionaries', function () {
                     if ( this.isParentProjectActive() ) {
                         this.validateUnitOptions();
@@ -259,6 +283,18 @@ var app = app || {};
                         this.validateUnitOptions();
                     }
                 });
+
+                //  If we just created a unit, we want to set root_section
+                //  considering the id of this unit's profile
+                //  TODO: this might be not optimal place to do this since
+                //  it doesn't work for fixtures and might not work in some
+                //  other conditions
+                if ( this.isNew() && app.session && app.session.get('no_backend') !== true ) {
+                    var profile_id = this.profile && this.profile.id;
+                    var glazing_name = this.get('glazing');
+
+                    this.set('root_section', getSectionDefaults('root_section', glazing_name, profile_id));
+                }
             }
         },
         validateOpeningDirection: function () {
@@ -274,6 +310,7 @@ var app = app || {};
         //  The idea is to call this function on model init (maybe not only)
         //  and check whether root section could be used by our drawing code or
         //  should it be reset to defaults.
+        //  TODO: this should be done at parse step
         validateRootSection: function () {
             var root_section = this.get('root_section');
             var root_section_parsed;
@@ -346,7 +383,11 @@ var app = app || {};
                     var is_optional = _.contains(rules, 'IS_OPTIONAL');
 
                     if ( !is_optional && dictionary_id && profile_id ) {
-                        var option = app.settings.getDefaultOrFirstAvailableOption(dictionary_id, profile_id);
+                        //  TODO: we need to call this directly on `dictionary` iterable
+                        var option = app.settings.dictionaries.getDefaultOrFirstAvailableOption(
+                            dictionary_id,
+                            profile_id
+                        );
 
                         if ( option && option.id && dictionary.id ) {
                             default_options.push({
@@ -359,6 +400,14 @@ var app = app || {};
             }
 
             return default_options;
+        },
+        resetUnitOptionsToDefaults: function () {
+            var current_options = this.get('unit_options');
+            var default_options = this.getDefaultUnitOptions();
+
+            if ( !_.isEqual(current_options, default_options) ) {
+                this.persist('unit_options', default_options);
+            }
         },
         validateUnitOptions: function () {
             var default_options = this.getDefaultUnitOptions();
@@ -410,6 +459,70 @@ var app = app || {};
                 this.set('unit_options', getValidatedUnitOptions(this, current_options, default_options));
             }
         },
+        getCurrentFillingsList: function (current_root) {
+            var section_result;
+            var result = [];
+
+            current_root = current_root || this.generateFullRoot();
+
+            _.each(current_root.sections, function (section) {
+                section_result = this.getCurrentFillingsList(section);
+
+                if (current_root.divider === 'vertical' || current_root.divider === 'vertical_invisible') {
+                    result = section_result.concat(result);
+                } else {
+                    result = result.concat(section_result);
+                }
+            }, this);
+
+            if ( current_root.sections.length === 0 ) {
+                result.unshift({
+                    name: current_root.fillingName,
+                    type: current_root.fillingType
+                });
+            }
+
+            return result;
+        },
+        //  The idea here is to check if all the filling types we got are valid
+        //  for the currently selected profile. If this is not the case, we
+        //  want to automatically change all of them to the default type for
+        //  this profile
+        //  TODO: change only those not available, not all types
+        //  TODO: it's not a proper name, but it's the same as
+        //  validateUnitOptions we have above
+        //  TODO: this needs tests
+        validateFillingTypes: function () {
+            //  Do nothing in case of dummy profile or no profile
+            if ( this.isNew() || !this.profile || this.hasDummyProfile() || !app.settings ) {
+                return;
+            }
+
+            var glazing = this.get('glazing');
+            var current_fillings_list = _.pluck(this.getCurrentFillingsList(), 'name');
+            var complete_fillings_list = _.union(current_fillings_list, [glazing]);
+
+            var available_for_profile_list = _.difference(
+                _.map(app.settings.filling_types.getAvailableForProfile(this.profile.id), function (item) {
+                    return item.get('name');
+                }),
+                _.pluck(app.settings.filling_types.getBaseTypes(), 'title')
+            );
+            var invalid_flag = false;
+
+            _.find(complete_fillings_list, function (filling_name) {
+                if ( _.contains(available_for_profile_list, filling_name) === false ) {
+                    invalid_flag = true;
+                    return true;
+                }
+            }, this);
+
+            //  TODO: maybe we could do only one call here?
+            if ( invalid_flag ) {
+                this.persist('glazing', getDefaultFillingType(undefined, this.profile.id).fillingName);
+                this.onGlazingUpdate();
+            }
+        },
         validate: function (attributes, options) {
             var error_obj = null;
 
@@ -442,7 +555,13 @@ var app = app || {};
                 return error_obj;
             }
         },
-        setProfile: function () {
+        setProfile: function (options) {
+            var default_options = {
+                validate_filling_types: false
+            };
+
+            options = _.defaults({}, options, default_options);
+
             this.profile = null;
 
             //  Assign the default profile id to a newly created unit
@@ -461,6 +580,10 @@ var app = app || {};
             }
 
             this.validateUnitOptions();
+
+            if ( options.validate_filling_types ) {
+                this.validateFillingTypes();
+            }
         },
         hasDummyProfile: function () {
             return this.profile && this.profile.get('is_dummy');
@@ -501,12 +624,12 @@ var app = app || {};
 
             return has_only_defaults;
         },
-        setDefaultFillingType: function () {
+        onGlazingUpdate: function () {
             var filling_type;
             var glazing = this.get('glazing');
 
             if ( glazing && app.settings ) {
-                filling_type = app.settings.filling_types.getFillingTypeByName(glazing);
+                filling_type = app.settings.filling_types.getByName(glazing);
 
                 if ( filling_type ) {
                     this.setFillingType(
@@ -575,7 +698,7 @@ var app = app || {};
             var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
 
             if ( project_settings && project_settings.get('pricing_mode') === 'estimates' ) {
-                original_cost = this.getEstimatedUnitCost();
+                original_cost = this.getEstimatedUnitCost().total;
             }
 
             return parseFloat(original_cost);
@@ -961,9 +1084,12 @@ var app = app || {};
             });
         },
         removeSash: function (sectionId) {
+            var glazing_name = this.get('glazing');
+            var profile_id = this.profile && this.profile.id;
+
             this._updateSection(sectionId, function (section) {
                 section.sashType = 'fixed_in_frame';
-                _.assign(section, getDefaultFillingType());
+                _.assign(section, getDefaultFillingType(glazing_name, profile_id));
                 section.divider = null;
                 section.sections = [];
                 section.position = null;
@@ -1397,6 +1523,8 @@ var app = app || {};
         },
         clearFrame: function () {
             var rootId = this.get('root_section').id;
+            var profile_id = this.profile && this.profile.id;
+            var glazing_name = this.get('glazing');
 
             //  Similar to removeMullion but affects more properties
             this._updateSection(rootId, function (section) {
@@ -1404,7 +1532,7 @@ var app = app || {};
                 section.sections = [];
                 section.position = null;
                 section.sashType = 'fixed_in_frame';
-                _.assign(section, getDefaultFillingType());
+                _.assign(section, getDefaultFillingType(glazing_name, profile_id));
             });
         },
         //  Here we get a list with basic sizes for each piece of the unit:
@@ -1723,15 +1851,13 @@ var app = app || {};
                 } else if ( parent_root && parent_root.fillingType && parent_root.fillingName ) {
                     current_sash.filling.type = parent_root.fillingType;
                     current_sash.filling.name = parent_root.fillingName;
-                } else if (
-                    this.get('glazing') && app.settings &&
-                    app.settings.filling_types.getFillingTypeByName(this.get('glazing'))
-                ) {
-                    filling_type = app.settings.filling_types.getFillingTypeByName(this.get('glazing'));
-                    current_sash.filling.type = filling_type.get('type');
-                    current_sash.filling.name = filling_type.get('name');
+                //  If there is no filling data provided for this section,
+                //  we just show default filling info
                 } else {
-                    filling_type = getDefaultFillingType();
+                    var profile_id = this.profile && this.profile.id;
+                    var glazing_name = this.get('glazing');
+
+                    filling_type = getDefaultFillingType(glazing_name, profile_id);
                     current_sash.filling.type = filling_type.fillingType;
                     current_sash.filling.name = filling_type.fillingName;
                 }
@@ -1745,6 +1871,14 @@ var app = app || {};
 
             return result.sashes;
         },
+        //  This function is used to "slice" unit into a set of fixed and
+        //  operable sections, meaning we just draw some imaginary lines so
+        //  that each part of the unit should belong to some section. And for
+        //  every sash, we not only use size of the sash itself, but add size
+        //  of the surrounding frame (and sometimes mullion) to this "section",
+        //  so each part of the unit belongs to some section, and we could use
+        //  this list of sections as a source for cost estimation
+        //
         //  Returns sizes in mms
         getFixedAndOperableSectionsList: function (current_root) {
             var profile = this.profile;
@@ -1773,6 +1907,7 @@ var app = app || {};
             if ( current_root.sections.length === 0 ) {
                 current_area.width = current_root.openingParams.width;
                 current_area.height = current_root.openingParams.height;
+                current_area.filling_name = current_root.fillingName;
 
                 _.each(['top', 'right', 'bottom', 'left'], function (position) {
                     var measurement = position === 'top' || position === 'bottom' ?
@@ -1783,7 +1918,6 @@ var app = app || {};
                     } else {
                         current_area[measurement] += profile.get('frame_width');
                     }
-
                 }, this);
 
                 if ( current_root.thresholdEdge ) {
@@ -1796,9 +1930,42 @@ var app = app || {};
 
             return result;
         },
-        getSectionsListWithEstimatedPrices: function () {
+        getUnitOptionsGroupedByPricingScheme: function () {
+            var connected_options = this.getCurrentUnitOptions();
+            var profile_id = this.profile.id;
+            var result = {
+                PRICING_GRIDS: [],
+                PER_ITEM: []
+            };
+
+            _.each(connected_options, function (option) {
+                var parent_dictionary = option.getParentDictionary();
+                var pricing_data = option.getPricingDataForProfile(profile_id);
+                var is_restricted = false;
+
+                //  We filter out any option that doesn't apply to the unit
+                //  TODO: would be great if getCurrentUnitOptions has this data
+                _.each(parent_dictionary.get('rules_and_restrictions'), function (rule) {
+                    if ( this.checkIfRestrictionApplies(rule) ) {
+                        is_restricted = true;
+                    }
+                }, this);
+
+                if ( !is_restricted && pricing_data && pricing_data.scheme !== 'NONE' ) {
+                    result[pricing_data.scheme].push({
+                        dictionary_name: parent_dictionary.get('name'),
+                        option_name: option.get('name'),
+                        pricing_data: pricing_data
+                    });
+                }
+            }, this);
+
+            return result;
+        },
+        getSectionsListWithEstimatedCost: function () {
             var pricing_grids = this.profile.getPricingGrids();
             var sections_list = this.getFixedAndOperableSectionsList();
+            var options_grouped_by_scheme = this.getUnitOptionsGroupedByPricingScheme();
 
             function getArea(item) {
                 return item.height * item.width;
@@ -1811,6 +1978,8 @@ var app = app || {};
             //  4. if our size === some size, price = some size price
             //  5. if our size > some size and < some other size, price is
             //  linear interpolation between prices for these sizes
+            //  TODO: calculation for `price_per_square_meter` should be
+            //  encapsulated to profile model
             _.each(sections_list, function (section) {
                 var section_area = getArea(section);
                 var pricing_grid;
@@ -1850,21 +2019,87 @@ var app = app || {};
                     }
                 }
 
-                section.estimated_price = app.utils.math.square_meters(section.width, section.height) *
+                section.base_cost = app.utils.math.square_meters(section.width, section.height) *
                     section.price_per_square_meter;
+
+                section.filling_price_increase = 0;
+
+                if ( app.settings && app.settings.filling_types ) {
+                    var filling_type = app.settings.filling_types.getByName(section.filling_name);
+                    var filling_type_pricing_data = filling_type &&
+                        filling_type.getPricingDataForProfile(this.profile.id);
+
+                    //  If we have correct pricing scheme and data for filling
+                    if ( filling_type_pricing_data && filling_type_pricing_data.scheme === 'PRICING_GRIDS' ) {
+                        section.filling_price_increase = filling_type_pricing_data.pricing_grids.getValueForGrid(
+                            section.type,
+                            {
+                                height: section.height,
+                                width: section.width
+                            }
+                        ) || 0;
+                    }
+                }
+
+                section.filling_cost = section.base_cost * section.filling_price_increase / 100;
+
+                section.options_cost = 0;
+                section.options = [];
+
+                //  Now add prices for all grid-based options
+                _.each(options_grouped_by_scheme.PRICING_GRIDS, function (option_data) {
+                    var option_pricing_data = option_data.pricing_data;
+                    var option_cost = 0;
+                    var price_increase = option_pricing_data.pricing_grids.getValueForGrid(
+                        section.type,
+                        {
+                            height: section.height,
+                            width: section.width
+                        }
+                    ) || 0;
+
+                    option_cost = section.base_cost * price_increase / 100;
+                    section.options_cost += option_cost;
+
+                    section.options.push({
+                        dictionary_name: option_data.dictionary_name,
+                        option_name: option_data.option_name,
+                        price_increase: price_increase,
+                        cost: option_cost
+                    });
+                }, this);
+
+                section.total_cost = section.base_cost + section.filling_cost + section.options_cost;
             }, this);
 
             return sections_list;
         },
         getEstimatedUnitCost: function () {
-            var sections_list = this.getSectionsListWithEstimatedPrices();
-            var price = _.reduce(_.map(sections_list, function (item) {
-                return item.estimated_price;
-            }), function (memo, number) {
-                return memo + number;
-            }, 0);
+            var sections_list = this.getSectionsListWithEstimatedCost();
+            var options_list = this.getUnitOptionsGroupedByPricingScheme();
+            var unit_cost = {
+                total: 0,
+                base: 0,
+                fillings: 0,
+                options: 0,
+                sections_list: sections_list,
+                options_list: options_list
+            };
 
-            return price;
+            _.each(sections_list, function (section) {
+                unit_cost.total += section.total_cost;
+                unit_cost.base += section.base_cost;
+                unit_cost.fillings += section.filling_cost;
+                unit_cost.options += section.options_cost;
+            }, this);
+
+            //  Now add cost for all per-item priced options
+            _.each(options_list.PER_ITEM, function (option) {
+                unit_cost.total += option.pricing_data.cost_per_item;
+                unit_cost.options += option.pricing_data.cost_per_item;
+            }, this);
+
+            return unit_cost;
         },
         //  Check if unit has at least one operable section. This could be used
         //  to determine whether we should allow editing handles and such stuff
@@ -1974,6 +2209,8 @@ var app = app || {};
             return result;
         },
         //  Get list of options that are currently selected for this unit
+        //  TODO: we might include some meta information on whether this option
+        //  is restricted (and why) or is no longer available or whatever
         getCurrentUnitOptions: function () {
             var options_list = this.get('unit_options');
             var result = [];
@@ -2003,12 +2240,14 @@ var app = app || {};
         },
         //  Get list of all possible variants from a certain dictionary that
         //  could be selected for this unit
+        //  TODO: why do we need this function in unit.js if we could call it
+        //  on dictionary collection?
         getAvailableOptionsByDictionaryId: function (dictionary_id) {
             var result = [];
             var profile_id = this.profile && this.profile.id;
 
             if ( app.settings && profile_id ) {
-                result = app.settings.getAvailableOptions(dictionary_id, profile_id, true);
+                result = app.settings.dictionaries.getAvailableOptions(dictionary_id, profile_id, true);
             }
 
             return result;

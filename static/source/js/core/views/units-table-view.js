@@ -18,6 +18,7 @@ var app = app || {};
             $add_new_accessory: '.js-add-new-accessory',
             $undo: '.js-undo',
             $redo: '.js-redo',
+            $reset_unit_options: '.js-reset-unit-options',
             $remove: '.js-remove-selected-items',
             $clone: '.js-clone-selected-items'
         },
@@ -30,6 +31,7 @@ var app = app || {};
             'click .js-move-item-down': 'onMoveItemDown',
             'click @ui.$undo': 'onUndo',
             'click @ui.$redo': 'onRedo',
+            'click @ui.$reset_unit_options': 'onResetUnitOptionsForSelected',
             'click @ui.$remove': 'onRemoveSelected',
             'click @ui.$clone': 'onCloneSelected'
         },
@@ -63,7 +65,7 @@ var app = app || {};
                     title: 'Unit Options',
                     collection: this.collection,
                     columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing'],
-                    unit_options_columns: app.settings.getAvailableDictionaryNames()
+                    unit_options_columns: app.settings.dictionaries.getAvailableDictionaryNames()
                 },
                 prices: {
                     title: 'Prices',
@@ -174,12 +176,25 @@ var app = app || {};
             this.undo_manager.handler.redo();
             this.ui.$redo.blur();
         },
+        onResetUnitOptionsForSelected: function () {
+            if ( this.selected.length && this.hot ) {
+                for (var i = this.selected.length - 1; i >= 0; i--) {
+                    this.hot.getSourceData().at(this.selected[i]).resetUnitOptionsToDefaults();
+                }
+
+                //  TODO: do we really need two calls just to unselect?
+                this.selected = [];
+                this.hot.selectCell(0, 0, 0, 0, false);
+                this.hot.deselectCell();
+            }
+        },
         onRemoveSelected: function () {
             if ( this.selected.length && this.hot ) {
                 for (var i = this.selected.length - 1; i >= 0; i--) {
                     this.hot.getSourceData().at(this.selected[i]).destroy();
                 }
 
+                //  TODO: do we really need two calls just to unselect?
                 this.selected = [];
                 this.hot.selectCell(0, 0, 0, 0, false);
                 this.hot.deselectCell();
@@ -229,6 +244,7 @@ var app = app || {};
         },
         templateContext: function () {
             return {
+                active_tab: this.active_tab,
                 tabs: _.each(this.tabs, function (item, key) {
                     item.is_active = key === this.active_tab;
                     return item;
@@ -363,7 +379,7 @@ var app = app || {};
             ) {
                 //  TODO: deal with multiple values per dictionary somehow
                 getter = function (model, attr_name) {
-                    var target_dictionary_id = app.settings.getDictionaryIdByName(attr_name);
+                    var target_dictionary_id = app.settings.dictionaries.getDictionaryIdByName(attr_name);
                     var current_options = target_dictionary_id ?
                         model.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
 
@@ -445,10 +461,13 @@ var app = app || {};
                 _.contains(this.getActiveTab().unit_options_columns, column_name)
             ) {
                 setter = function (model, attr_name, val) {
-                    var target_dictionary_id = app.settings.getDictionaryIdByName(attr_name);
+                    var target_dictionary_id = app.settings.dictionaries.getDictionaryIdByName(attr_name);
 
                     if ( target_dictionary_id ) {
-                        var target_entry_id = app.settings.getDictionaryEntryIdByName(target_dictionary_id, val);
+                        var target_entry_id = app.settings.dictionaries.getDictionaryEntryIdByName(
+                            target_dictionary_id,
+                            val
+                        );
 
                         if ( target_entry_id ) {
                             return model.persistOption(target_dictionary_id, target_entry_id);
@@ -750,7 +769,7 @@ var app = app || {};
                         self.active_tab === 'unit_options' &&
                         _.contains(self.getActiveTab().unit_options_columns, property)
                     ) {
-                        var dictionary_id = app.settings.getDictionaryIdByName(property);
+                        var dictionary_id = app.settings.dictionaries.getDictionaryIdByName(property);
                         var rules_and_restrictions = [];
                         var is_restricted = false;
                         var is_optional = false;
@@ -760,7 +779,7 @@ var app = app || {};
                         message = UNSET_VALUE;
 
                         if ( profile_id && dictionary_id ) {
-                            options = app.settings.getAvailableOptions(dictionary_id, profile_id, true);
+                            options = app.settings.dictionaries.getAvailableOptions(dictionary_id, profile_id, true);
                         }
 
                         if ( dictionary_id ) {
@@ -951,8 +970,8 @@ var app = app || {};
 
             //  Calculate optimal width for Unit Options columns
             unit_options_col_widths = _.object(
-                app.settings.getAvailableDictionaryNames(),
-                _.map(app.settings.getAvailableDictionaryNames(), function (dictionary_name) {
+                app.settings.dictionaries.getAvailableDictionaryNames(),
+                _.map(app.settings.dictionaries.getAvailableDictionaryNames(), function (dictionary_name) {
                     var calculated_length = 30 + dictionary_name.length * 7;
 
                     return unit_options_col_widths[dictionary_name] ?
@@ -1047,6 +1066,7 @@ var app = app || {};
 
                             if ( startColumn === 0 && endColumn === this.countCols() - 1 ) {
                                 self.ui.$remove.removeClass('disabled');
+                                self.ui.$reset_unit_options.removeClass('disabled');
 
                                 if ( startRow === endRow ) {
                                     self.selected = [startRow];
@@ -1073,6 +1093,7 @@ var app = app || {};
                                     self.ui.$clone.addClass('disabled');
                                 }
                             } else {
+                                self.ui.$reset_unit_options.addClass('disabled');
                                 self.ui.$remove.addClass('disabled');
                                 self.ui.$clone.addClass('disabled');
                             }

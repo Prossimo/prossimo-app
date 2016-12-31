@@ -5,23 +5,16 @@ var app = app || {};
 
     var UNSET_VALUE = '--';
 
-    //  TODO: we better have original_cost and original_currency here, similar
-    //  to units / accessories, instead of price
     var ENTRY_PROPERTIES = [
         { name: 'name', title: 'Name', type: 'string' },
-        //  TODO: price should be a number on the backend as well
-        { name: 'price', title: 'Price', type: 'number' },
+        { name: 'supplier_name', title: 'Supplier Name', type: 'string' },
         { name: 'data', title: 'Additional Data', type: 'string' },
         { name: 'position', title: 'Position', type: 'number' },
-        { name: 'profiles', title: 'Profiles', type: 'array' }
+        { name: 'dictionary_entry_profiles', title: 'Profiles', type: 'collection:DictionaryEntryProfileCollection' }
     ];
 
     function getDefaultEntryData() {
-        return _.extend({}, {});
-    }
-
-    function getDefaultProfilesList() {
-        return [];
+        return _.clone({});
     }
 
     app.OptionsDictionaryEntry = Backbone.Model.extend({
@@ -47,7 +40,9 @@ var app = app || {};
 
             var name_value_hash = {
                 data: getDefaultEntryData(),
-                profiles: getDefaultProfilesList()
+                dictionary_entry_profiles: new app.DictionaryEntryProfileCollection(null, {
+                    parent_entry: this
+                })
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -61,22 +56,41 @@ var app = app || {};
             return default_value;
         },
         sync: function (method, model, options) {
-            var properties_to_omit = ['id'];
-
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { entry: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
-                    //  TODO: we need to parse this value first, then we could
-                    //  stringify it with no problem
-                    data: _.isString(model.get('data')) ? model.get('data') : JSON.stringify(model.get('data'))
-                }) };
+                options.attrs = { entry: model.toJSON() };
             }
 
             return Backbone.sync.call(this, method, model, options);
         },
         parse: function (data) {
             var entry_data = data && data.entry ? data.entry : data;
+            var parsed_data = app.schema.parseAccordingToSchema(entry_data, this.schema);
 
-            return app.schema.parseAccordingToSchema(entry_data, this.schema);
+            if ( parsed_data && parsed_data.dictionary_entry_profiles ) {
+                parsed_data.dictionary_entry_profiles = new app.DictionaryEntryProfileCollection(
+                    app.utils.object.extractObjectOrNull(parsed_data.dictionary_entry_profiles),
+                    {
+                        parent_entry: this,
+                        parse: true
+                    }
+                );
+            }
+
+            if ( parsed_data && parsed_data.data ) {
+                parsed_data.data =
+                    app.utils.object.extractObjectOrNull(parsed_data.data) || this.getDefaultValue('data');
+            }
+
+            return parsed_data;
+        },
+        toJSON: function () {
+            var properties_to_omit = ['id'];
+            var json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+
+            json.dictionary_entry_profiles = this.get('dictionary_entry_profiles').toJSON();
+            json.data = _.isString(json.data) ? json.data : JSON.stringify(json.data);
+
+            return _.omit(json, properties_to_omit);
         },
         validate: function (attributes, options) {
             var error_obj = null;
@@ -150,11 +164,11 @@ var app = app || {};
                     var type = property_source ? property_source.type : undefined;
 
                     if ( key === 'data' ) {
-                        if ( JSON.stringify(value) !== JSON.stringify(this.getDefaultValue('data')) ) {
+                        if ( value !== JSON.stringify(this.getDefaultValue('data')) ) {
                             has_only_defaults = false;
                         }
-                    } else if ( key === 'profiles' ) {
-                        if ( JSON.stringify(value) !== JSON.stringify(this.getDefaultValue('profiles')) ) {
+                    } else if ( key === 'dictionary_entry_profiles' ) {
+                        if ( value.length !== 0 ) {
                             has_only_defaults = false;
                         }
                     } else if ( this.getDefaultValue(key, type) !== value ) {
@@ -194,21 +208,88 @@ var app = app || {};
             return _.pluck(name_title_hash, 'title');
         },
         isAvailableForProfile: function (profile_id) {
-            return this.get('profiles') && _.contains(_.pluck(this.get('profiles'), 'id'), profile_id);
+            return this.get('dictionary_entry_profiles') &&
+                _.contains(this.get('dictionary_entry_profiles').pluck('profile_id'), profile_id);
         },
         isDefaultForProfile: function (profile_id) {
             var is_default = false;
 
             if ( this.isAvailableForProfile(profile_id) ) {
-                var connection = _.findWhere(this.get('profiles'), { id: profile_id });
+                var connection = this.get('dictionary_entry_profiles').getByProfileId(profile_id);
 
-                is_default = connection.is_default || false;
+                is_default = connection.get('is_default') || false;
             }
 
             return is_default;
         },
+        //  TODO: Do we need to validate it against the list of globally
+        //  available profiles in the app? Or maybe we do want to validate
+        //  them, but not on creation, rather separately, just to indicate
+        //  where it's wrong?
+        /**
+         * Toggle item availability and default status for a certain profile
+         *
+         * @param {number} profile_id - id of the target profile
+         * @param {boolean} make_available - true to make item available,
+         * false to make it unavailable for this profile
+         * @param {boolean} make_default - true to set as default, false
+         * to unset. You can't make item default when it's not available
+         */
+        setProfileAvailability: function (profile_id, make_available, make_default) {
+            var profiles_list = this.get('dictionary_entry_profiles');
+            var connection = profiles_list.getByProfileId(profile_id);
+
+            //  If there is an existing connection that we want to unset
+            if ( make_available === false && connection ) {
+                connection.destroy();
+            } else if ( make_available === true ) {
+                //  If connection doesn't exist and we want to add it
+                if ( !connection ) {
+                    profiles_list.add({
+                        profile_id: profile_id,
+                        is_default: make_default === true
+                    });
+                //  If connection exists and we want to just modify is_default
+                } else if ( make_default === true || make_default === false ) {
+                    connection.set('is_default', make_default);
+                }
+            }
+        },
+        //  We assume that profiles list is sorted and deduplicated
+        getIdsOfProfilesWhereIsAvailable: function () {
+            return this.get('dictionary_entry_profiles').pluck('profile_id');
+        },
+        //  We assume that profiles list is sorted and deduplicated
+        getIdsOfProfilesWhereIsDefault: function () {
+            return _.map(
+                this.get('dictionary_entry_profiles').where({ is_default: true }),
+                function (item) {
+                    return item.get('profile_id');
+                }
+            );
+        },
+        //  It returns a combination of scheme and data to calculate cost
+        getPricingDataForProfile: function (profile_id) {
+            var pricing_data = null;
+
+            if ( this.isAvailableForProfile(profile_id) ) {
+                var connection = this.get('dictionary_entry_profiles').getByProfileId(profile_id);
+
+                pricing_data = connection.getPricingData();
+            }
+
+            return pricing_data;
+        },
+        getParentDictionary: function () {
+            return this.collection && this.collection.options.dictionary;
+        },
         initialize: function (attributes, options) {
             this.options = options || {};
+
+            //  Any change to `dictionary_entry_profiles` should be persisted
+            this.listenTo(this.get('dictionary_entry_profiles'), 'change update', function () {
+                this.persist('dictionary_entry_profiles', this.get('dictionary_entry_profiles'));
+            });
         }
     });
 })();

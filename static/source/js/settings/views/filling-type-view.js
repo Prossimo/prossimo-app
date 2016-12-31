@@ -11,26 +11,13 @@ var app = app || {};
             $table: '.filling-type-attributes',
             $edit_profiles: '.js-edit-fillingtype-profiles',
             $clone: '.js-clone-filling-type',
-            $remove: '.js-remove-filling-type'
+            $remove: '.js-remove-filling-type',
+            $profiles_container: '.profile-availability'
         },
         events: {
             'click @ui.$edit_profiles': 'editProfiles',
             'click @ui.$clone': 'cloneItem',
             'click @ui.$remove': 'removeItem'
-        },
-        getProfilesNamesList: function () {
-            var profiles_ids = _.pluck(this.model.get('profiles'), 'id');
-            var profiles_names_list = [];
-
-            if ( profiles_ids && profiles_ids.length ) {
-                if ( app.settings ) {
-                    profiles_names_list = app.settings.getProfileNamesByIds(profiles_ids.sort());
-                } else {
-                    profiles_names_list = profiles_ids.sort();
-                }
-            }
-
-            return profiles_names_list;
         },
         editProfiles: function () {
             app.dialogs.showDialog('items-profiles-table', {
@@ -62,18 +49,17 @@ var app = app || {};
                     child_view.view_instance.disable();
                 }
             }, this);
+
+            this.ui.$profiles_container.append(this.profile_connections_table_view.render().el);
         },
         onBeforeDestroy: function () {
             _.each(this.attribute_views, function (child_view) {
                 child_view.view_instance.destroy();
             }, this);
-        },
-        templateContext: function () {
-            var profiles = this.getProfilesNamesList();
 
-            return {
-                profiles_string: profiles.length ? profiles.join(', ') : '--'
-            };
+            if ( this.profile_connections_table_view ) {
+                this.profile_connections_table_view.destroy();
+            }
         },
         initialize: function () {
             this.attributes_to_render = this.model.getNameTitleTypeHash([
@@ -110,12 +96,8 @@ var app = app || {};
                 };
             }, this);
 
-            this.listenTo(this.model, 'change:profiles change:name', function () {
-                this.render();
-
-                _.each(this.attribute_views, function (child_view) {
-                    child_view.view_instance.delegateEvents();
-                });
+            this.profile_connections_table_view = new app.ProfileConnectionsTableView({
+                collection: this.model.get('filling_type_profiles')
             });
         }
     });

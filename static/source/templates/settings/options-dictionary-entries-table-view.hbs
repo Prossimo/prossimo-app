@@ -10,17 +10,18 @@
     <thead>
         <th class="entry-drag"></th>
         <th class="entry-name">Name</th>
+        <th class="entry-supplier-name">Supplier Name</th>
         <th class="entry-profiles">Available for Profiles</th>
-        <th class="entry-remove"></th>
+        <th class="entry-actions"></th>
     </thead>
-    <tbody>
-        {{#unless entries_length }}
-        <tr><td colspan="4" class="no-entries-message">
-            <p>No entries to show. Please create one.</p>
-        </td></tr>
-        {{/unless}}
-    </tbody>
 </table>
+<div class="entries-container">
+    {{#unless entries_length }}
+    <div class="no-entries-message">
+        <p>No entries to show. Please create one.</p>
+    </div>
+    {{/unless}}
+</div>
 {{#if entries_length }}
     <p>Drag table rows to reorder.</p>
 {{/if}}

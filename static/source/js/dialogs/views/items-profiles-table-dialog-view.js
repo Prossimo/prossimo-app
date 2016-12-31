@@ -36,6 +36,13 @@ var app = app || {};
                     return;
                 }
 
+                //  Fix HoT issue with booleans cast to strings on copy/paste
+                if ( new_value === 'true' ) {
+                    new_value = true;
+                } else if ( new_value === 'false' ) {
+                    new_value = false;
+                }
+
                 //  This means we changed a default value for some profile
                 if ( column_index === 0 ) {
                     //  Set item `new_item` to be default for this profile,
@@ -118,7 +125,7 @@ var app = app || {};
             return this.options.profiles.map(function (profile) {
                 return [this.getDefaultItemName(profile.id)].concat(
                     _.map(this.options.items_filtered, function (item) {
-                        return _.contains(_.pluck(item.get('profiles'), 'id') || [], profile.id);
+                        return _.contains(item.getIdsOfProfilesWhereIsAvailable() || [], profile.id);
                     })
                 );
             }, this);

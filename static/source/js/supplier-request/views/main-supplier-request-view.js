@@ -29,7 +29,7 @@ var app = app || {};
                 show_customer_image: false,
                 show_sizes_in_mm: true,
                 show_supplier_system: true,
-                show_supplier_filling_name: true,
+                show_supplier_names: true,
                 force_european_hinge_indicators: true
             });
 
