@@ -9,7 +9,35 @@ function getPath(protocol, hostname, port, pathname) {
 
 function createBackendProxy(pach) {
     let proxy = httpProxy.createProxyServer({
-        target: pach
+        target: pach,
+        xfwd: false,
+        cookieDomainRewrite: {
+            '*': ''
+        }
+    });
+
+    proxy.on('error', function (err, req, res) {
+        res.writeHead(500, {
+            'Content-Type': 'text/plain'
+        });
+
+        console.log('Error in proxy pass: ', err);
+        console.log(`${pach}${req.url}: ${JSON.stringify(req.body, true, 2)}`);
+
+        res.end('Something went wrong. Check availability server api.');
+    });
+
+    proxy.on('proxyReq', function (proxyReq, req, res) {
+        // This is necessary for correct delivery body
+        if (req.method === 'POST' && req.body) {
+            proxyReq.write(JSON.stringify(req.body));
+        }
+
+        console.log(`${proxyReq.path}: ${JSON.stringify(proxyReq._headers, true, 2)}`);
+    });
+
+    proxy.on('proxyRes', function (proxyRes, req, res) {
+        console.log(`RAW Response from the target ${pach}${req.path} `, JSON.stringify(proxyRes.headers, true, 2));
     });
 
     return proxy;
