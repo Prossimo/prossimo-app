@@ -3,8 +3,6 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var model;
-
     // This view is organized in React-like approach but with multiple sources
     // of state as we have:
     //
@@ -26,8 +24,6 @@ var app = app || {};
         tagName: 'div',
         template: app.templates['drawing/drawing-view'],
         initialize: function (opts) {
-            model = this.model;
-
             var project_settings = app.settings.getProjectSettings();
 
             this.listenTo(this.model, 'all', this.updateRenderedScene);
@@ -250,16 +246,16 @@ var app = app || {};
         },
         handleAddConnectorClick: function (event) {
             var connectorSide = $(event.target).data().side;
-            var relation = model.getRelation();
+            var relation = this.model.getRelation();
             var multiunit;
 
             if (relation === 'subunit') {
-                multiunit = model.getParentMultiunit();
-            } else if(relation === 'loneunit') {
-                multiunit = model.toMultiunit();
+                multiunit = this.model.getParentMultiunit();
+            } else if (relation === 'loneunit') {
+                multiunit = this.model.toMultiunit();
             } else { return; }
 
-            multiunit.addConnector({ connects: [model.getId()], side: connectorSide });
+            multiunit.addConnector({ connects: [this.model.getId()], side: connectorSide });
 
             this.options.parent_view.sidebar_view.render();
             this.selectUnit(multiunit);

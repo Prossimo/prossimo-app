@@ -340,6 +340,7 @@ var app = app || {};
          * parent - points to the parent node
          * children - points to array of child nodes
          */
+        /* eslint-disable no-loop-func */
         getSubunitsTree: function () {
             var subunitsIds = this.getSubunitsIds();  // prepare flat array of node templates
             var nodeTemplates = subunitsIds.map(function (subunitId) {
@@ -382,6 +383,7 @@ var app = app || {};
 
             return subunitsTree;
         },
+        /* eslint-enable no-loop-func */
         // Returns subunit tree with coordinate information at each node, in mm
         getSubunitsCoordinatesTree: function (options) {
             var flipX = options && options.flipX;
@@ -525,9 +527,7 @@ var app = app || {};
          * { id: '17', side: 'right', connects: ['123', '124'], width: 20, facewidth: 40 }
          */
         getConnectors: function () {
-            var connectors = this.get('root_section').connectors.slice();
-
-            return connectors;
+            return this.get('root_section').connectors.slice();
         },
         getConnectorById: function (id) {
             return this.getConnectors().find(function (connector) { return connector.id === id; });

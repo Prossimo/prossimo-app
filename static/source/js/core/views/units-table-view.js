@@ -442,7 +442,6 @@ var app = app || {};
             return parser.apply(this, arguments);
         },
         getSetterFunction: function (unit_model, column_name) {
-            var self = this;
             var setter;
 
             var setters_hash = {
@@ -485,8 +484,6 @@ var app = app || {};
             return setter.apply(this, arguments);
         },
         getColumnData: function (column_name) {
-            var self = this;
-
             return function (unit_model, value) {
                 if ( unit_model ) {
                     if ( _.isUndefined(value) ) {
@@ -500,7 +497,6 @@ var app = app || {};
         showValidationError: function (model, error) {
             if ( this.hot && model.collection === this.getActiveTab().collection ) {
                 var hot = this.hot;
-                var self = this;
 
                 var row_index = model.collection.indexOf(model);
                 var col_index = _.indexOf(this.getActiveTab().columns, error.attribute_name);
@@ -524,10 +520,7 @@ var app = app || {};
             }
         },
         getColumnValidator: function (column_name) {
-            var self = this;
-            var validator;
-
-            validator = function (value, callback) {
+            var validator = function (value, callback) {
                 var attributes_object = {};
                 var model = this.instance.getSourceData().at(this.row);
 
@@ -724,8 +717,6 @@ var app = app || {};
         //  prevent editing of some attributes that shouldn't be editable for
         //  a certain unit / accessory
         getActiveTabCellsSpecificOptions: function () {
-            var self = this;
-
             return function (row, col) {
                 var cell_properties = {};
                 var item = this.instance.getSourceData().at(row);
@@ -904,8 +895,6 @@ var app = app || {};
             return custom_column_headers_hash[column_name];
         },
         updateTable: function (e) {
-            var self = this;
-
             //  We don't want to update table on validation errors, we have
             //  a special function for that
             if ( e === 'invalid' ) {
@@ -989,7 +978,6 @@ var app = app || {};
         onRender: function () {
             var is_visible = this.options.is_always_visible ||
                 this.table_visibility === 'visible';
-            var self = this;
 
             //  We have to duplicate keydown event handling here because of the
             //  way copyPaste plugin for HoT works. It intercepts focus once
