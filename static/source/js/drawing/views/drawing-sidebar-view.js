@@ -298,7 +298,7 @@ var app = app || {};
                 return result;
             }
 
-            if ( this.options.parent_view.active_unit ) {
+            if ( this.options.parent_view.active_unit && this.options.parent_view.active_unit.getSashList ) {
                 sash_list_source = this.options.parent_view.active_unit.getSashList(null, null,
                     project_settings && project_settings.get('hinge_indicator_mode') === 'american');
 
@@ -395,7 +395,9 @@ var app = app || {};
                 var group_data = {};
                 var hasBaseFilling = this.options.parent_view.active_unit.hasBaseFilling();
 
-                unit_stats = this.options.parent_view.active_unit.getLinearAndAreaStats();
+                unit_stats = (this.options.parent_view.active_unit.getLinearAndAreaStats) ?
+                    this.options.parent_view.active_unit.getLinearAndAreaStats() :
+                    [];
 
                 _.each(unit_stats, function (item, key) {
                     _.each(data_groups, function (group_name) {

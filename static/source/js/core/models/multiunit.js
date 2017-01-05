@@ -6,7 +6,17 @@ var app = app || {};
     var self;
 
     var MULTIUNIT_PROPERTIES = [
-        { name: 'multiunit_subunits', title: 'Subunits', type: 'array' }
+        { name: 'multiunit_subunits', title: 'Subunits', type: 'array' },
+
+        { name: 'mark', title: 'Mark', type: 'string' },
+        { name: 'width', title: 'Width (inches)', type: 'number' },
+        { name: 'height', title: 'Height (inches)', type: 'string' },
+        { name: 'quantity', title: 'Quantity', type: 'number' },
+        { name: 'description', title: 'Customer Description', type: 'string' },
+        { name: 'notes', title: 'Notes', type: 'string' },
+
+        { name: 'position', title: 'Position', type: 'number' },
+        { name: 'root_section', title: 'Root Section', type: 'object' }
     ];
 
     var CONNECTOR_DEFAULTS = {
@@ -14,131 +24,16 @@ var app = app || {};
         facewidth: 40
     };
 
-    function getSectionDefaults() {
-        return {
-            id: _.uniqueId(),
-            connectors: []
-        };
-    }
-
     app.Multiunit = Backbone.Model.extend({
-        schema: _.defaults(app.schema.createSchema(MULTIUNIT_PROPERTIES), app.Unit.schema),
+        schema: app.schema.createSchema(MULTIUNIT_PROPERTIES),
         defaults: function () {
-            var defaults = app.Unit.prototype.defaults.apply(this, arguments);
+            var defaults = {};
 
             _.each(MULTIUNIT_PROPERTIES, function (item) {
                 defaults[item.name] = this.getDefaultValue(item.name, item.type);
             }, this);
 
             return defaults;
-        },
-        // Start TODO implement / remove methods
-        setProfile: function () {
-            this.profile = null;
-
-            //  Assign the default profile id to a newly created unit
-            if ( app.settings && !this.get('profile_id') && !this.get('profile_name') ) {
-                this.set('profile_id', app.settings.getDefaultProfileId());
-            }
-
-            if ( app.settings ) {
-                this.profile = app.settings.getProfileByIdOrDummy(this.get('profile_id'));
-            }
-
-            //  Store profile name so in case when profile was deleted we can
-            //  have its old name for the reference
-            if ( this.profile && !this.hasDummyProfile() ) {
-                this.set('profile_name', this.profile.get('name'));
-            }
-
-            this.validateUnitOptions();
-        },
-        hasDummyProfile: function () {
-            return this.profile && this.profile.get('is_dummy');
-        },
-        validateUnitOptions: function () {
-            var default_options = this.getDefaultUnitOptions();
-            var current_options = this.get('unit_options');
-            var current_options_parsed;
-
-            function getValidatedUnitOptions(model, currents, defaults) {
-                var options_to_set = [];
-
-                if ( app.settings ) {
-                    app.settings.dictionaries.each(function (dictionary) {
-                        var dictionary_id = dictionary.id;
-                        var profile_id = model.profile && model.profile.id;
-
-                        if ( dictionary_id && profile_id ) {
-                            var current_option = _.findWhere(currents, { dictionary_id: dictionary_id });
-                            var default_option = _.findWhere(defaults, { dictionary_id: dictionary_id });
-                            var target_entry = current_option &&
-                                dictionary.entries.get(current_option.dictionary_entry_id);
-
-                            if ( current_option && target_entry ) {
-                                options_to_set.push(current_option);
-                            } else if ( default_option ) {
-                                options_to_set.push(default_option);
-                            }
-                        }
-                    });
-                }
-
-                return options_to_set;
-            }
-
-            if ( _.isString(current_options) ) {
-                try {
-                    current_options_parsed = JSON.parse(current_options);
-                } catch (error) {
-                    // Do nothing
-                }
-
-                if ( current_options_parsed ) {
-                    this.set('unit_options', getValidatedUnitOptions(this, current_options_parsed, default_options));
-                    return;
-                }
-            }
-
-            if ( !_.isObject(current_options) ) {
-                this.set('unit_options', default_options);
-            } else {
-                this.set('unit_options', getValidatedUnitOptions(this, current_options, default_options));
-            }
-        },
-        getDefaultUnitOptions: function () {
-            var default_options = [];
-
-            if ( app.settings ) {
-                app.settings.dictionaries.each(function (dictionary) {
-                    var dictionary_id = dictionary.id;
-                    var profile_id = this.profile && this.profile.id;
-                    var rules = dictionary.get('rules_and_restrictions');
-                    var is_optional = _.contains(rules, 'IS_OPTIONAL');
-
-                    if ( !is_optional && dictionary_id && profile_id ) {
-                        var option = app.settings.getDefaultOrFirstAvailableOption(dictionary_id, profile_id);
-
-                        if ( option && option.id && dictionary.id ) {
-                            default_options.push({
-                                dictionary_id: dictionary.id,
-                                dictionary_entry_id: option.id
-                            });
-                        }
-                    }
-                }, this);
-            }
-
-            return default_options;
-        },
-        validateOpeningDirection: function () {
-            if ( !app.settings ) {
-                return;
-            }
-
-            if ( !_.contains(app.settings.getOpeningDirections(), this.get('opening_direction')) ) {
-                this.set('opening_direction', app.settings.getOpeningDirections()[0]);
-            }
         },
         //  TODO: this function should be improved
         //  The idea is to call this function on model init (maybe not only)
@@ -156,7 +51,8 @@ var app = app || {};
                 }
 
                 if ( root_section_parsed ) {
-                    this.set('root_section', this.validateSection(root_section_parsed, true));
+                    this.set('root_section', root_section_parsed);
+                    // TODO implement connector validation
                     return;
                 }
             }
@@ -164,10 +60,6 @@ var app = app || {};
             if ( !_.isObject(root_section) ) {
                 this.set('root_section', this.getDefaultValue('root_section'));
             }
-        },
-        //  Check if some of the section values aren't valid and try to fix that
-        validateSection: function (current_section, is_root) {
-            return current_section;
         },
         //  Check if this unit belongs to the project which is currently active
         isParentProjectActive: function () {
@@ -181,6 +73,101 @@ var app = app || {};
 
             return is_active;
         },
+        getInMetric: function (attr, metric) {
+            if (!metric || (['mm', 'inches'].indexOf(metric) === -1)) {
+                throw new Error('Set metric! "mm" or "inches"');
+            }
+
+            if (metric === 'inches') {
+                return this.get(attr);
+            }
+
+            return app.utils.convert.inches_to_mm(this.get(attr));
+        },
+        getRefNum: function () {
+            return this.collection ? this.collection.indexOf(this) + 1 : -1;
+        },
+        getTitles: function (names) {
+            var name_title_hash = this.getNameTitleTypeHash(names);
+
+            return _.pluck(name_title_hash, 'title');
+        },
+        //  Return { name: 'name', title: 'Title' } pairs for each item in
+        //  `names` array. If the array is empty, return all possible pairs
+        getNameTitleTypeHash: function (names) {
+            var name_title_hash = [];
+
+            if ( !names ) {
+                names = _.pluck( MULTIUNIT_PROPERTIES, 'name' );
+            }
+
+            _.each(MULTIUNIT_PROPERTIES, function (item) {
+                if ( _.indexOf(names, item.name) !== -1 ) {
+                    name_title_hash.push({ name: item.name, title: item.title, type: item.type });
+                }
+            });
+
+            return name_title_hash;
+        },
+        //  TODO: stuff inside name_value_hash gets evaluated for each
+        //  attribute, but we actually want it to be evaluated only for the
+        //  corresponding attribute (see example for root_section)
+        getDefaultValue: function (name, type) {
+            var default_value = (type === 'array') ? [] : '';
+
+            var type_value_hash = {
+                number: 0
+            };
+
+            var name_value_hash = {
+                height: '0',
+                quantity: 1,
+                root_section: (name === 'root_section') ? { id: _.uniqueId(), connectors: [] } : ''
+            };
+
+            if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
+                default_value = type_value_hash[type];
+            }
+
+            if ( _.indexOf(_.keys(name_value_hash), name) !== -1 ) {
+                default_value = name_value_hash[name];
+            }
+
+            return default_value;
+        },
+        /**
+         * Root section looks like this:
+         * {
+         *     id: 123,
+         *     connectors: [Array]
+         * }
+         */
+        generateFullRoot: function (rootSection, openingParams) {
+            rootSection = rootSection || JSON.parse(JSON.stringify(this.get('root_section')));
+
+            return rootSection;
+        },
+        getSubunitsSum: function (funcName) {
+            if (!_.isFunction(this.subunits.at(0)[funcName])) { return 0; }
+
+            var sum = this.subunits.reduce(function (tmpSum, subunit) {
+                return tmpSum + subunit[funcName]();
+            }, 0);
+
+            return sum;
+        },
+        getUnitPrice: function () {
+            return this.getSubunitsSum('getUnitPrice');
+        },
+        getSubtotalPrice: function () {
+            return this.getSubunitsSum('getSubtotalPrice');
+        },
+        getUnitPriceDiscounted: function () {
+            return this.getSubunitsSum('getUnitPriceDiscounted');
+        },
+        getSubtotalPriceDiscounted: function () {
+            return this.getSubunitsSum('getSubtotalPriceDiscounted');
+        },
         getRelation: function () {
             return 'multiunit';
         },
@@ -193,21 +180,6 @@ var app = app || {};
         getId: function () {
             return this.get('root_section').id;
         },
-        getSashList: function () {
-            return undefined;
-        },
-        getInMetric: function (attr, metric) {
-            if (!metric || (['mm', 'inches'].indexOf(metric) === -1)) {
-                throw new Error('Set metric! "mm" or "inches"');
-            }
-
-            if (metric === 'inches') {
-                return this.get(attr);
-            }
-
-            return app.utils.convert.inches_to_mm(this.get(attr));
-        },
-        /* trapezoid start */
         isTrapezoid: function () {
             return false;
         },
@@ -221,137 +193,41 @@ var app = app || {};
             return 0;
         },
         isOpeningDirectionOutward: function () {
-            return this.get('opening_direction') === 'Outward';
-        },
-        getTitles: function (names) {
-            var name_title_hash = this.getNameTitleTypeHash(names);
-
-            return _.pluck(name_title_hash, 'title');
+            return false;
         },
         hasBaseFilling: function () {
             return false;
         },
-        //  Get linear and area size stats for various parts of the window.
-        //  These values could be used as a base to calculate estimated
-        //  cost of options for the unit
-        getLinearAndAreaStats: function () {
-
-            var result = {
-                frame: {
-                    linear: 0,
-                    linear_without_intersections: 0,
-                    area: 0,
-                    area_both_sides: 0
-                },
-                sashes: {
-                    linear: 0,
-                    linear_without_intersections: 0,
-                    area: 0,
-                    area_both_sides: 0
-                },
-                glasses: {
-                    area: 0,
-                    area_both_sides: 0,
-                    weight: 0
-                },
-                openings: {
-                    area: 0
-                },
-                mullions: {
-                    linear: 0,
-                    area: 0,
-                    area_both_sides: 0
-                },
-                glazing_bars: {
-                    linear: 0,
-                    linear_without_intersections: 0,
-                    area: 0,
-                    area_both_sides: 0
-                },
-                profile_total: {
-                    linear: 0,
-                    linear_without_intersections: 0,
-                    area: 0,
-                    area_both_sides: 0,
-                    weight: 0
-                },
-                unit_total: {
-                    weight: 0
-                }
-            };
-
-            return result;
-        },
-        getRefNum: function () {
-            return this.collection ? this.collection.indexOf(this) + 1 : -1;
-        },
-        // after full calulcalation section will be something like:
-        // {
-        //     id: 123,
-        //     connectors: [Array]
-        // }
-        generateFullRoot: function (rootSection, openingParams) {
-            rootSection = rootSection || JSON.parse(JSON.stringify(this.get('root_section')));
-
-            return rootSection;
-        },
-        getSubtotalPrice: function () {
-            return this.getUnitPrice() * parseFloat(this.get('quantity'));
-        },
-        getUnitPriceDiscounted: function () {
-            return this.getUnitPrice() * (100 - parseFloat(this.get('discount'))) / 100;
-        },
-        getSubtotalPriceDiscounted: function () {
-            return this.getSubtotalPrice() * (100 - parseFloat(this.get('discount'))) / 100;
-        },
-        // End TODO implement / remove methods
-        getDefaultValue: function (name) {
-            var value;
-            var defaults = {
-                root_section: getSectionDefaults()
-            };
-
-            if (Object.keys(defaults).indexOf(name) !== -1) {
-                value = defaults[name];
-            } else {
-                value = app.Unit.prototype.getDefaultValue.apply(this, arguments);
-            }
-
-            return value;
-        },
-        initialize: function () {
+        initialize: function (attributes, options) {
             self = this;
 
-            app.Unit.prototype.initialize.apply(this, arguments);
+            this.options = options || {};
+            this.profile = null;
 
-            this.on('add', function () {
-                self.listenTo(self.collection, 'update', function (event) {
-                    self.updateSubunitsCollection();
-                    self.updateConnectorsLength();
-                    self.updateSubunitsIndices();
-                });
-                self.listenTo(self.collection.subunits, 'update', function (event) {
-                    self.updateSubunitsCollection();
-                    self.updateConnectorsLength();
-                    self.updateSubunitsIndices();
-                });
-                self.listenTo(self.collection.subunits, 'remove', function (unit) {
-                    if (unit.isSubunitOf(self)) {
-                        self.removeSubunit(unit);
-                    }
-                });
-            });
-        },
-        getUnitPrice: function () {
-            var price = this.subunits.reduce(function (priceSum, subunit) {
-                return priceSum + subunit.getUnitPrice();
-            }, 0);
+            if ( !this.options.proxy ) {
+                this.validateRootSection();
 
-            return price;
+                this.on('add', function () {
+                    self.listenTo(self.collection, 'update', function (event) {
+                        self.updateSubunitsCollection();
+                        self.updateConnectorsLength();
+                        self.updateSubunitsIndices();
+                    });
+                    self.listenTo(self.collection.subunits, 'update', function (event) {
+                        self.updateSubunitsCollection();
+                        self.updateConnectorsLength();
+                        self.updateSubunitsIndices();
+                    });
+                    self.listenTo(self.collection.subunits, 'remove', function (unit) {
+                        if (unit.isSubunitOf(self)) {
+                            self.removeSubunit(unit);
+                        }
+                    });
+                });
+            }
         },
         /**
-         * this.subunits is a backbone collection that holds respective subunit models, the very same models that exist
-         * in multiunit's primary parent collection.
+         * this.subunits is a collection with models from project's units collection
          */
         updateSubunitsCollection: function () {
             if (!this.subunits) {
@@ -383,9 +259,7 @@ var app = app || {};
             });
         },
         updateSubunitPosition: function (subunitOrId) {  // updates subunit's 'position' attribute
-            var subunit = (subunitOrId instanceof app.Unit) ?
-                subunitOrId :
-                this.getSubunitById(subunitOrId);
+            var subunit = (subunitOrId instanceof app.Unit) ? subunitOrId : this.getSubunitById(subunitOrId);
 
             if (_.isUndefined(subunit)) { return; }
 
@@ -395,59 +269,6 @@ var app = app || {};
             subunit.set('position', subunitPosition);
 
             return subunitPosition;
-        },
-        hasOnlyDefaultAttributes: function () {
-            var has_only_defaults = true;
-
-            _.each(this.toJSON(), function (value, key) {
-                if ( key !== 'position' && has_only_defaults ) {
-                    var property_source = _.findWhere(MULTIUNIT_PROPERTIES, { name: key });
-                    var type = property_source ? property_source.type : undefined;
-
-                    if ( key === 'profile_id' ) {
-                        if ( app.settings && app.settings.getDefaultProfileId() !== value ) {
-                            has_only_defaults = false;
-                        }
-                    } else if ( key === 'profile_name' ) {
-                        var profile = app.settings && app.settings.getProfileByIdOrDummy(this.get('profile_id'));
-
-                        if ( profile && profile.get('name') !== value ) {
-                            has_only_defaults = false;
-                        }
-                    } else if ( key === 'root_section' ) {
-                        if ( JSON.stringify(_.omit(value, 'id')) !==
-                            JSON.stringify(_.omit(this.getDefaultValue('root_section'), 'id'))
-                        ) {
-                            has_only_defaults = false;
-                        }
-                    } else if ( key === 'unit_options' ) {
-                        if ( JSON.stringify(this.getDefaultUnitOptions()) !== JSON.stringify(value) ) {
-                            has_only_defaults = false;
-                        }
-                    } else if ( this.getDefaultValue(key, type) !== value ) {
-                        has_only_defaults = false;
-                    }
-                }
-            }, this);
-
-            return has_only_defaults;
-        },
-        //  Return { name: 'name', title: 'Title' } pairs for each item in
-        //  `names` array. If the array is empty, return all possible pairs
-        getNameTitleTypeHash: function (names) {
-            var name_title_hash = [];
-
-            if ( !names ) {
-                names = _.pluck( MULTIUNIT_PROPERTIES, 'name' );
-            }
-
-            _.each(MULTIUNIT_PROPERTIES, function (item) {
-                if ( _.indexOf(names, item.name) !== -1 ) {
-                    name_title_hash.push({ name: item.name, title: item.title, type: item.type });
-                }
-            });
-
-            return name_title_hash;
         },
         getSubunitById: function (id) {
             return this.collection.subunits.getById(id);
@@ -497,7 +318,7 @@ var app = app || {};
                     subunitNode = node;
                 }
             });
-            
+
             return subunitNode;
         },
         getSubunitCoords: function (subunitId) {
@@ -509,7 +330,7 @@ var app = app || {};
                     y: subunitNode.y
                 };
             }
-            
+
             return coords;  // mm
         },
         /**
@@ -660,10 +481,9 @@ var app = app || {};
             return this.get('multiunit_subunits')[0];
         },
         isOriginId: function (subunitId) {
-            return (subunitId === this.getOriginSubunitId())
+            return (subunitId === this.getOriginSubunitId());
         },
         getParentSubunitId: function (subunitId) {
-            if (_.isUndefined(subunitId)) { return; }
             if (this.isOriginId(subunitId)) { return; }
 
             var parentConnectorId = this.getParentConnector(subunitId).id;
@@ -672,8 +492,6 @@ var app = app || {};
             return parentSubunitId;
         },
         getChildSubunitsIds: function (subunitId) {
-            if (_.isUndefined(subunitId)) { return; }
-
             var childConnectors = this.getChildConnectors(subunitId);
             var childSubunitsIds = childConnectors.map(function (connector) {
                 return self.getConnectorChildSubunitId(connector.id);
@@ -712,13 +530,9 @@ var app = app || {};
             return connectors;
         },
         getConnectorById: function (id) {
-            if (_.isUndefined(id)) { return; }
-
             return this.getConnectors().find(function (connector) { return connector.id === id; });
         },
         getParentConnector: function (subunitId) {
-            if (_.isUndefined(subunitId)) { return; }
-
             var parentConnector = this.getConnectors()
                 .filter(function (connector) {
                     return (connector.connects[1] === subunitId);
@@ -727,8 +541,6 @@ var app = app || {};
             return parentConnector;
         },
         getChildConnectors: function (subunitId) {
-            if (_.isUndefined(subunitId)) { return; }
-
             var childConnectors = this.getConnectors()
                 .filter(function (connector) {
                     return (connector.connects[0] === subunitId);
@@ -737,17 +549,13 @@ var app = app || {};
             return childConnectors;
         },
         getConnectorParentSubunitId: function (connectorId) {
-            if (_.isUndefined(connectorId)) { return; }
-
             var parentSubunitId = this.getConnectorById(connectorId).connects[0];
-            
+
             return parentSubunitId;
         },
         getConnectorChildSubunitId: function (connectorId) {
-            if (_.isUndefined(connectorId)) { return; }
-
             var childSubunitId = this.getConnectorById(connectorId).connects[1];
-            
+
             return childSubunitId;
         },
         addConnector: function (options) {
@@ -783,8 +591,6 @@ var app = app || {};
             return connector;
         },
         removeConnector: function (id) {
-            if (_.isUndefined(id)) { return; }
-
             var connectors = this.get('root_section').connectors;
             var connector;
 
@@ -797,8 +603,6 @@ var app = app || {};
             return connector;
         },
         updateConnectorLength: function (connector) {
-            if (_.isUndefined(connector)) { return; }
-
             var parent = this.getSubunitById(connector.connects[0]);
             var child = this.getSubunitById(connector.connects[1]);
             var parentSide;
