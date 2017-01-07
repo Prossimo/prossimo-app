@@ -136,7 +136,8 @@ test('subtotal project prices', function () {
             price_markup: 2.3,
             uw: 0.77,
             glazing: '3Std U=.09 SGHC=.5',
-            discount: 20
+            discount: 20,
+            root_section: '{"id":"101"}'
         },
         {
             mark: 'B1',
@@ -151,7 +152,21 @@ test('subtotal project prices', function () {
             price_markup: 2.3,
             uw: 0.78,
             glazing: '3Std U=.09 SGHC=.5',
-            discount: 20
+            discount: 20,
+            root_section: '{"id":"102"}'
+        }
+    ]);
+
+    current_project.multiunits.add([
+        {
+            multiunit_subunits: ["101", "102"],
+            mark: 'A',
+            width: 68.78740,
+            height: 40,
+            quantity: 1,
+            description: 'Site-mulled multi frame unit',
+            notes: 'Assembled on site',
+            root_section: '{"id":"99999","connectors":[{"id":"1","side":"right","connects":["101","102"],"width":20,"facewidth":40}]}'
         }
     ]);
 
@@ -624,4 +639,77 @@ test('unit getSectionsListWithEstimatedCost, getEstimatedUnitCost functions', fu
         estimated_cost.base + estimated_cost.fillings + estimated_cost.options,
         'Unit total cost is the combination of base, filllings and options cost'
     );
+});
+
+
+//  ------------------------------------------------------------------------
+//  Test that prices for a single Multiunit model are calculated properly
+//  ------------------------------------------------------------------------
+
+test('single multiunit tests', function () {
+    var current_project = new app.Project();
+
+    current_project.units.add([
+        {
+            mark: 'A',
+            width: 62,
+            height: 96,
+            quantity: 1,
+            glazing_bar_width: 12,
+            description: 'Tilt and turn inswing / fixed PVC',
+            notes: 'Opening restriction cord included',
+            profile_id: 9991,
+            original_cost: 399,
+            original_currency: 'EUR',
+            conversion_rate: 0.90326078,
+            price_markup: 2.3,
+            uw: 0.77,
+            glazing: '3Std U=.09 SGHC=.5',
+            discount: 20,
+            root_section: '{"id":"106"}'
+        },
+        {
+            mark: '11 W 126th Unit H/I',
+            width: 145,
+            height: 90,
+            quantity: 1,
+            profile_id: 9993,
+            original_cost: 321,
+            glazing: 'Triple Low Gain - Tempered',
+            root_section: '{"id":"19991"}'
+        },
+        {
+            mark: 'Moyers Residence Unit A',
+            width: 36.75,
+            height: 72.75,
+            quantity: 1,
+            profile_id: 9991,
+            original_cost: 111,
+            glazing: 'Triple Standard - Ug=.09 SGHC=.50 LT=71%',
+            root_section: '{"id":"10565"}'
+        }
+    ]);
+
+    current_project.multiunits.add([
+        {
+            multiunit_subunits: ["106", "10565", "19991"],
+            mark: 'A',
+            width: 207.78740,
+            height: 169.53740,
+            quantity: 1,
+            description: 'Site-mulled multi frame unit',
+            notes: 'Assembled on site',
+            root_section: '{"id":"99999","connectors":[{"id":"123","side":"bottom","connects":["106","10565"],"width":20,"facewidth":40},{"id":"130","side":"right","connects":["106","19991"],"width":20,"facewidth":40}]}'
+        }
+    ]);
+
+    var multiunit = current_project.multiunits.first();
+
+    equal(multiunit.get('mark'), 'A', 'Unit mark is expected to be A');
+
+    equal(multiunit.getUnitPrice().toFixed(2), '2119.99', 'Multiunit end price is expected to be 2119.99');
+
+    equal(multiunit.getSubtotalPrice(), multiunit.getUnitPrice(), 'Price should be same for a single multiunit and for subtotal');
+    equal(multiunit.getUnitPriceDiscounted().toFixed(2), '1916.79', 'Price with discount is expected to be 1916.79');
+    equal(multiunit.getSubtotalPriceDiscounted(), multiunit.getUnitPriceDiscounted(), 'Discounted price should be same for a single multiunit and for subtotal');
 });
