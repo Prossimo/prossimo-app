@@ -3,10 +3,10 @@
 
 require('babel-polyfill');
 const express = require('express');
-const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const compress = require('compression');
 
+const bodyParserMiddleware = require('./middlewares/bodyParserMiddleware');
 const routers = require('./routers');
 const config = require('../configs/config');
 const port = config.get('server:port');
@@ -17,8 +17,9 @@ const app = express();
 
 app.use(cookieParser());
 app.use(compress()); // Apply gzip compression
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(bodyParser.json());
+
+app.use(bodyParserMiddleware.bodyParserJsonMiddleware());
+app.use(bodyParserMiddleware.bodyParserUrlencodedMiddleware());
 
 if (isDebug) {
     const webpack = require('webpack');
