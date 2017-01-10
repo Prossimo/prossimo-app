@@ -9,6 +9,7 @@ import TopBarView from './core/views/top-bar-view';
 import Dialogs from './dialogs';
 import PasteImageHelper from './utils/paste-image';
 import MainNavigationView from './core/views/main-navigation-view';
+import MainDashboardView from './components/dashboard/views/main-dashboard-view';
 import 'bootstrap';
 import 'bootstrap-select';
 import 'bootstrap-toggle';
@@ -28,19 +29,19 @@ class Application extends Marionette.Application {
         this.projects = new ProjectCollection();
         this.top_bar_view = new TopBarView({collection: this.projects});
 
-        this.main_region = new Marionette.Region({el: '#main'});
+        const main_region = this.main_region = new Marionette.Region({el: '#main'});
         this.dialogs = new Dialogs();
 
-        this.main_navigation = new MainNavigationView(/**{
+        this.main_navigation = new MainNavigationView({
             dashboard: {
                 title: 'Dashboard',
                 path: 'dashboard',
                 icon_name: 'dashboard',
                 onAttach: function () {
-                    app.main_region.show(new app.MainDashboardView());
+                    main_region.show(new MainDashboardView());
                 }
-            },
-            units_table: {
+            }/**,
+             units_table: {
                 title: 'Units',
                 path: 'units',
                 icon_name: 'th',
@@ -48,7 +49,7 @@ class Application extends Marionette.Application {
                     app.main_region.show(new app.MainUnitsTableView());
                 }
             },
-            drawing: {
+             drawing: {
                 title: 'Drawing',
                 path: 'drawing',
                 icon_name: 'pencil',
@@ -56,7 +57,7 @@ class Application extends Marionette.Application {
                     app.main_region.show(new app.MainDrawingView());
                 }
             },
-            quote: {
+             quote: {
                 title: 'Quote',
                 path: 'quote',
                 icon_name: 'shopping-cart',
@@ -64,7 +65,7 @@ class Application extends Marionette.Application {
                     app.main_region.show(new app.MainQuoteView());
                 }
             },
-            supplier_request: {
+             supplier_request: {
                 title: 'Supplier',
                 path: 'supplier',
                 icon_name: 'send',
@@ -72,15 +73,15 @@ class Application extends Marionette.Application {
                     app.main_region.show(new app.MainSupplierRequestView());
                 }
             },
-            settings: {
+             settings: {
                 title: 'Settings',
                 path: 'settings',
                 icon_name: 'wrench',
                 onAttach: function () {
                     app.main_region.show(new app.MainSettingsView());
                 }
-            }
-        }*/);
+            }*/
+        });
 
         this.paste_image_helper = new PasteImageHelper();
         this.session.checkAuth();

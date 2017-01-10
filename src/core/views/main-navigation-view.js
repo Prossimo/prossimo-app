@@ -2,6 +2,7 @@ import Marionette from 'backbone.marionette';
 import $ from 'jquery';
 import App from '../../main';
 import _ from 'underscore';
+import NoProjectSelectedView from '../../core/views/no-project-selected-view';
 import template from '../../templates/core/main-navigation-view.hbs';
 import templateItem from '../../templates/core/main-navigation-item-view.hbs';
 
@@ -48,7 +49,7 @@ export default Marionette.View.extend({
                         if (App.current_project || item.path === 'settings') {
                             item.onAttach.call();
                         } else {
-                            App.main_region.show(new App.NoProjectSelectedView());
+                            App.main_region.show(new NoProjectSelectedView());
                         }
 
                         self.setActivePath(item.path);
