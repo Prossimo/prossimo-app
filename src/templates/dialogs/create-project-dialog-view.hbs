@@ -1,4 +1,4 @@
-{{> 'dialogs/partials/base-dialog-start-wrapper' }}
+@require('./partials/base-dialog-start-wrapper.hbs')
 <div class="create-project-box">
     <form action="">
         <input name="project_name" type="text" required class="form-control" placeholder="Project name">
@@ -17,4 +17,4 @@
         <button type="button" class="btn btn-cancel" data-dismiss="modal">Cancel</button>
     </form>
 </div>
-{{> 'dialogs/partials/base-dialog-end-wrapper' }}
+@require('./partials/base-dialog-end-wrapper.hbs')

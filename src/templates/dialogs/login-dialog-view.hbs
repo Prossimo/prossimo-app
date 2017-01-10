@@ -1,4 +1,4 @@
-{{> 'dialogs/partials/base-dialog-start-wrapper' }}
+@require('./partials/base-dialog-start-wrapper.hbs')
     <div class="login-box">
         <h4>Sign In to Prossimo App</h4>
         {{#if token_expired }}<h5>Your previous session has expired. For security reasons, we ask you to re-login</h5>{{/if}}
@@ -9,4 +9,4 @@
             <button class="btn btn-login">Sign In</button>
         </form>
     </div>
-{{> 'dialogs/partials/base-dialog-end-wrapper' }}
+@require('./partials/base-dialog-end-wrapper.hbs')

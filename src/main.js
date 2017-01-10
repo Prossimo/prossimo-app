@@ -1,12 +1,16 @@
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 import Backbone from 'backbone';
-
 import Settings from './core/models/settings';
 import Session from './core/models/session';
 import Router from './router';
 import ProjectCollection from './core/collections/project-collection';
 import TopBarView from './core/views/top-bar-view';
+import Dialogs from './dialogs';
+import 'bootstrap';
+import 'bootstrap-select';
+import 'bootstrap-toggle';
+import 'bootstrap-datepicker';
 
 class Application extends Marionette.Application {
     onStart() {
@@ -20,12 +24,12 @@ class Application extends Marionette.Application {
         this.router = new Router();
 
         this.projects = new ProjectCollection();
-        this.top_bar_view = new TopBarView({ collection: this.projects });
-        /**
-        app.main_region = new Marionette.Region({ el: '#main' });
-        app.dialogs = new app.Dialogs();
+        this.top_bar_view = new TopBarView({collection: this.projects});
 
-        app.main_navigation = new app.MainNavigationView({
+        this.main_region = new Marionette.Region({el: '#main'});
+        this.dialogs = new Dialogs();
+        /**
+         app.main_navigation = new app.MainNavigationView({
             dashboard: {
                 title: 'Dashboard',
                 path: 'dashboard',
@@ -76,17 +80,16 @@ class Application extends Marionette.Application {
             }
         });
 
-        app.paste_image_helper = new app.PasteImageHelper();
-        app.session.checkAuth();
+         app.paste_image_helper = new app.PasteImageHelper();*/
+        this.session.checkAuth();
 
-        app.vent.on('auth:initial_login auth:no_backend', function () {
-            Backbone.history.start({ pushState: true });
+        this.vent.on('auth:initial_login auth:no_backend', function () {
+            Backbone.history.start({pushState: false});
 
-            if ( Backbone.history.fragment === '' ) {
-                app.router.navigate('/dashboard/', { trigger: true });
+            if (Backbone.history.fragment === '') {
+                this.router.navigate('dashboard/', {trigger: true});
             }
-        });
-         */
+        }.bind(this));
     }
 }
 
