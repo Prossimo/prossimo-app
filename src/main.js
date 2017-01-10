@@ -7,6 +7,7 @@ import Router from './router';
 import ProjectCollection from './core/collections/project-collection';
 import TopBarView from './core/views/top-bar-view';
 import Dialogs from './dialogs';
+import PasteImageHelper from './utils/paste-image';
 import 'bootstrap';
 import 'bootstrap-select';
 import 'bootstrap-toggle';
@@ -78,9 +79,9 @@ class Application extends Marionette.Application {
                     app.main_region.show(new app.MainSettingsView());
                 }
             }
-        });
+        });*/
 
-         app.paste_image_helper = new app.PasteImageHelper();*/
+        this.paste_image_helper = new PasteImageHelper();
         this.session.checkAuth();
 
         this.vent.on('auth:initial_login auth:no_backend', function () {
