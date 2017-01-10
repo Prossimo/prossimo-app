@@ -8,6 +8,7 @@ import ProjectCollection from './core/collections/project-collection';
 import TopBarView from './core/views/top-bar-view';
 import Dialogs from './dialogs';
 import PasteImageHelper from './utils/paste-image';
+import MainNavigationView from './core/views/main-navigation-view';
 import 'bootstrap';
 import 'bootstrap-select';
 import 'bootstrap-toggle';
@@ -29,8 +30,8 @@ class Application extends Marionette.Application {
 
         this.main_region = new Marionette.Region({el: '#main'});
         this.dialogs = new Dialogs();
-        /**
-         app.main_navigation = new app.MainNavigationView({
+
+        this.main_navigation = new MainNavigationView(/**{
             dashboard: {
                 title: 'Dashboard',
                 path: 'dashboard',
@@ -79,7 +80,7 @@ class Application extends Marionette.Application {
                     app.main_region.show(new app.MainSettingsView());
                 }
             }
-        });*/
+        }*/);
 
         this.paste_image_helper = new PasteImageHelper();
         this.session.checkAuth();
