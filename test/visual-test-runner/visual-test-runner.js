@@ -37,7 +37,7 @@ var app = app || {};
 
         unit.profile = profile;
 
-        var preview = app.preview(unit, {
+        var preview = unit.getPreview({
             width: options.test_case.preview_settings.width,
             height: options.test_case.preview_settings.height,
             mode: 'base64',

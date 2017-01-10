@@ -342,7 +342,7 @@ var app = app || {};
             var title = position === 'inside' ? 'View from Interior' : 'View from Exterior';
 
             return {
-                img: app.preview(model, {
+                img: model.getPreview({
                     width: preview_size,
                     height: preview_size,
                     mode: 'base64',

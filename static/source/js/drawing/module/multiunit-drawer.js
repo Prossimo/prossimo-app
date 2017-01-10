@@ -70,8 +70,7 @@ var app = app || {};
             var tree = model.getSubunitsCoordinatesTree({ flipX: isInside });
 
             model.subunitsTreeForEach(tree, function (node) {
-
-                var previewImage = app.preview(node.unit, {
+                var previewImage = node.unit.getPreview({
                     width: node.width * ratio,
                     height: node.height * ratio,
                     mode: 'image',

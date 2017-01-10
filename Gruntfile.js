@@ -118,6 +118,7 @@ module.exports = function (grunt) {
         'drawing/module/trapezoid-unit-drawer.js',
         'drawing/module/multiunit-drawer.js',
         'drawing/module/metrics-drawer.js',
+        'drawing/module/preview.js',
         //  Drawing screen
         'drawing/views/main-drawing-view.js',
         'drawing/views/drawing-view.js',

@@ -628,6 +628,67 @@ var app = app || {};
             connectors.forEach(function (connector) {
                 self.updateConnectorLength(connector);
             });
+        },
+        //  Drawing representation for multiunits includes subunits as well,
+        //  so if any subunit did change, we want to redraw multiunut preview
+        getDrawingRepresentation: function () {
+            var model_attributes_to_cache = [
+                'multiunit_subunits', 'root_section'
+            ];
+
+            return {
+                model: this.pick(model_attributes_to_cache),
+                subunits: this.subunits.map(function (subunit) {
+                    return subunit.getDrawingRepresentation();
+                })
+            };
+        },
+        //  TODO: this is identical to getPreview from Unit model so maybe
+        //  we want to move them both to a mixin or something
+        getPreview: function (preview_options) {
+            var complete_preview_options = app.preview.mergeOptions(this, preview_options);
+            var ignore_cache = false;
+
+            //  In some cases we want to ignore the cache completely, like when
+            //  preview is expected to return a canvas
+            if ( complete_preview_options.mode === 'canvas' ) {
+                ignore_cache = true;
+            }
+
+            var drawing_representation_string = JSON.stringify(this.getDrawingRepresentation());
+            var options_json_string = JSON.stringify(_.omit(complete_preview_options, 'model'));
+
+            //  If we already got an image for the same model representation
+            //  and same preview options, just return it from the cache
+            if (
+                ignore_cache === false && this.preview && this.preview.result &&
+                this.preview.result[options_json_string] &&
+                drawing_representation_string === this.preview.drawing_representation_string
+            ) {
+                return this.preview.result[options_json_string];
+            }
+
+            var result = app.preview.getPreview(this, preview_options);
+
+            //  If model representation changes, preview cache should be erased
+            if (
+                ignore_cache === false &&
+                !this.preview ||
+                !this.preview.result ||
+                drawing_representation_string !== this.preview.drawing_representation_string
+            ) {
+                this.preview = {
+                    drawing_representation_string: drawing_representation_string,
+                    result: {}
+                };
+            }
+
+            //  Add new preview to cache
+            if ( ignore_cache === false ) {
+                this.preview.result[options_json_string] = result;
+            }
+
+            return result;
         }
     });
 })();
