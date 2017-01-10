@@ -315,7 +315,7 @@ var app = app || {};
                     return model.getUnitCostDiscounted();
                 },
                 drawing: function (model) {
-                    return app.preview(model, {
+                    return model.getPreview({
                         width: 600,
                         height: 600,
                         mode: 'base64',

@@ -2573,8 +2573,75 @@ var app = app || {};
             var multiunit = this.collection.multiunits.add(new app.Multiunit());
             multiunit.addSubunit(this);
             return multiunit;
+        },
+        //  List attributes that cause unit redraw on change
+        //  TODO: ideally, this should be just the root_section attribute,
+        //  but it is not enough in the current state
+        getDrawingRepresentation: function () {
+            var model_attributes_to_cache = [
+                'glazing', 'glazing_bar_width', 'height', 'opening_direction',
+                'profile_id', 'root_section', 'unit_options', 'width'
+            ];
+
+            return this.pick(model_attributes_to_cache);
+        },
+        //  This is a wrapper for `app.preview`, we need it because we want to
+        //  cache preview at the model level to improve app rendering times.
+        //  The way it works is it assumes that preview should be the same if
+        //  none of the model attributes that affect drawing did change
+        //
+        //  - For each combination of preview options we store a separate
+        //    preview image inside the Unit model. For example, we have
+        //    different previews for Customer Quote / Supplier Request, and
+        //    we cache them both
+        //  - If drawing_representation_string changes, we want preview cache
+        //    to be erased, and all previews are removed and then re-created
+        //    again at request
+        getPreview: function (preview_options) {
+            var complete_preview_options = app.preview.mergeOptions(this, preview_options);
+            var ignore_cache = false;
+
+            //  In some cases we want to ignore the cache completely, like when
+            //  preview is expected to return a canvas
+            if ( complete_preview_options.mode === 'canvas' ) {
+                ignore_cache = true;
+            }
+
+            var drawing_representation_string = JSON.stringify(this.getDrawingRepresentation());
+            var options_json_string = JSON.stringify(_.omit(complete_preview_options, 'model'));
+
+            //  If we already got an image for the same model representation
+            //  and same preview options, just return it from the cache
+            if (
+                ignore_cache === false && this.preview && this.preview.result &&
+                this.preview.result[options_json_string] &&
+                drawing_representation_string === this.preview.drawing_representation_string
+            ) {
+                return this.preview.result[options_json_string];
+            }
+
+            var result = app.preview.getPreview(this, preview_options);
+
+            //  If model representation changes, preview cache should be erased
+            if (
+                ignore_cache === false &&
+                !this.preview ||
+                !this.preview.result ||
+                drawing_representation_string !== this.preview.drawing_representation_string
+            ) {
+                this.preview = {
+                    drawing_representation_string: drawing_representation_string,
+                    result: {}
+                };
+            }
+
+            //  Add new preview to cache
+            if ( ignore_cache === false ) {
+                this.preview.result[options_json_string] = result;
+            }
+
+            return result;
         }
-        /* trapezoid end */
     });
 
     // static function
