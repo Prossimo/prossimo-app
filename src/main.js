@@ -16,6 +16,7 @@ import 'bootstrap';
 import 'bootstrap-select';
 import 'bootstrap-toggle';
 import 'bootstrap-datepicker';
+import 'backbone.marionette.keyshortcuts';
 
 class Application extends Marionette.Application {
     onStart() {
