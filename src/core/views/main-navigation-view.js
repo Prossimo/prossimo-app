@@ -24,7 +24,7 @@ export default Marionette.View.extend({
     },
     setTitle: function (title_part) {
         document.title = 'Prossimo App: ' + title_part +
-            ' (current version: ' + $('meta[name="latest-commit-sha"]').attr('value') + ')';
+            ' (current version: ' + $('meta[name="latest-version"]').attr('value') + ')';
     },
     setActiveNavItem: function (key) {
         this.ui.$list.find('.' + key).addClass('active').siblings().removeClass('active');
