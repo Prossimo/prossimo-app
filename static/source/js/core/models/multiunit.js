@@ -14,6 +14,7 @@ var app = app || {};
         { name: 'quantity', title: 'Quantity', type: 'number' },
         { name: 'description', title: 'Customer Description', type: 'string' },
         { name: 'notes', title: 'Notes', type: 'string' },
+        { name: 'exceptions', title: 'Exceptions', type: 'string' },
 
         { name: 'position', title: 'Position', type: 'number' },
         { name: 'root_section', title: 'Root Section', type: 'object' }
@@ -113,14 +114,14 @@ var app = app || {};
         //  attribute, but we actually want it to be evaluated only for the
         //  corresponding attribute (see example for root_section)
         getDefaultValue: function (name, type) {
-            var default_value = (type === 'array') ? [] : '';
+            var default_value = '';
 
             var type_value_hash = {
-                number: 0
+                number: 0,
+                array: []
             };
 
             var name_value_hash = {
-                height: '0',
                 quantity: 1,
                 root_section: (name === 'root_section') ? { id: _.uniqueId(), connectors: [] } : ''
             };
@@ -142,7 +143,7 @@ var app = app || {};
          *     connectors: [Array]
          * }
          */
-        generateFullRoot: function (rootSection, openingParams) {
+        generateFullRoot: function (rootSection) {
             rootSection = rootSection || JSON.parse(JSON.stringify(this.get('root_section')));
 
             return rootSection;

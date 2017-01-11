@@ -88,7 +88,7 @@ var app = app || {};
                     title: 'Multiunits',
                     collection: this.collection.multiunits,
                     columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing',
-                        'width_mm', 'height_mm', 'description', 'notes']
+                        'width_mm', 'height_mm', 'description', 'notes', 'exceptions']
                 }
             };
             this.active_tab = 'specs';

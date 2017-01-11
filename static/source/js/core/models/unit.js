@@ -205,10 +205,11 @@ var app = app || {};
         //  attribute, but we actually want it to be evaluated only for the
         //  corresponding attribute (see example for root_section)
         getDefaultValue: function (name, type) {
-            var default_value = (type === 'array') ? [] : '';
+            var default_value = '';
 
             var type_value_hash = {
-                number: 0
+                number: 0,
+                array: []
             };
 
             var name_value_hash = {
@@ -661,9 +662,6 @@ var app = app || {};
             var name_title_hash = this.getNameTitleTypeHash(names);
 
             return _.pluck(name_title_hash, 'title');
-        },
-        getProfileProperties: function () {
-            return app.settings ? app.settings.getProfileProperties(this.get('profile')) : {};
         },
         getRefNum: function () {
             return this.collection ? this.collection.indexOf(this) + 1 : -1;

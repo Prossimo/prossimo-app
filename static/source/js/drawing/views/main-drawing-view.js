@@ -60,7 +60,6 @@ var app = app || {};
             this.trigger('drawing_view:' + e);
         },
         onRender: function () {
-
             if (app.current_project.multiunits.length) {
                 this.active_unit = app.current_project.multiunits.first();
             } else if (app.current_project.units.length) {
