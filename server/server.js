@@ -10,6 +10,8 @@ const bodyParserMiddleware = require('./middlewares/bodyParserMiddleware');
 const routers = require('./routers');
 const config = require('../configs/config');
 const port = config.get('server:port');
+const sourcePath = config.get('app:sourcePath');
+const distPath = config.get('dist:path');
 const isDebug = !config.get('release');
 
 // Create app
@@ -20,6 +22,7 @@ app.use(compress()); // Apply gzip compression
 
 app.use(bodyParserMiddleware.bodyParserJsonMiddleware());
 app.use(bodyParserMiddleware.bodyParserUrlencodedMiddleware());
+app.use('/static/public', express.static(sourcePath));
 
 if (isDebug) {
     const webpack = require('webpack');
@@ -33,7 +36,7 @@ if (isDebug) {
     }));
     // app.use(require('webpack-hot-middleware')(compiler));
 } else {
-    app.use(express.static(config.get('dist:path')));
+    app.use(express.static(distPath));
 }
 
 app.use('/', routers(config));
