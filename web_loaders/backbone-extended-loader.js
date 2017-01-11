@@ -9,6 +9,7 @@ module.exports = function (source) {
     let slug = source + '\n'
         + 'var _ = require(' + JSON.stringify('underscore') + ');\n'
         + 'var ext = require(' + JSON.stringify('utils/backbone-extended') + ').default;\n'
+        + 'require(' + JSON.stringify('backbone.konvaview') + ');\n'
         + 'module.exports = ext(Backbone);';
 
     loaderAsyncCallback(null, slug);

@@ -10,6 +10,8 @@ import Dialogs from './dialogs';
 import PasteImageHelper from './utils/paste-image';
 import MainNavigationView from './core/views/main-navigation-view';
 import MainDashboardView from './components/dashboard/views/main-dashboard-view';
+import MainUnitsTableView from './components/units-table/views/main-units-table-view';
+// import MainDrawingView from './components/units-table/views/main-units-table-view';
 import 'bootstrap';
 import 'bootstrap-select';
 import 'bootstrap-toggle';
@@ -29,7 +31,7 @@ class Application extends Marionette.Application {
         this.projects = new ProjectCollection();
         this.top_bar_view = new TopBarView({collection: this.projects});
 
-        const main_region = this.main_region = new Marionette.Region({el: '#main'});
+        this.main_region = new Marionette.Region({el: '#main'});
         this.dialogs = new Dialogs();
 
         this.main_navigation = new MainNavigationView({
@@ -37,24 +39,24 @@ class Application extends Marionette.Application {
                 title: 'Dashboard',
                 path: 'dashboard',
                 icon_name: 'dashboard',
-                onAttach: function () {
-                    main_region.show(new MainDashboardView());
+                onAttach: () => {
+                    this.main_region.show(new MainDashboardView());
                 }
-            }/**,
-             units_table: {
+            },
+            units_table: {
                 title: 'Units',
                 path: 'units',
                 icon_name: 'th',
-                onAttach: function () {
-                    app.main_region.show(new app.MainUnitsTableView());
+                onAttach: () => {
+                    this.main_region.show(new MainUnitsTableView());
                 }
-            },
-             drawing: {
+            }/**,
+            drawing: {
                 title: 'Drawing',
                 path: 'drawing',
                 icon_name: 'pencil',
-                onAttach: function () {
-                    app.main_region.show(new app.MainDrawingView());
+                onAttach: () => {
+                    this.main_region.show(new MainDrawingView());
                 }
             },
              quote: {
