@@ -1,4 +1,5 @@
 import UndoManager from 'backbone-undo';
+import _ from 'underscore';
 
 export default function (opts) {
     var undo_manager = new UndoManager(opts);
