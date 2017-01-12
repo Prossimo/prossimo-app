@@ -122,6 +122,8 @@ module.exports = function (grunt) {
         //  Drawing screen
         'drawing/views/main-drawing-view.js',
         'drawing/views/drawing-view.js',
+        'drawing/views/drawing-sidebar-unit-details-view.js',
+        'drawing/views/drawing-sidebar-multiunit-details-view.js',
         'drawing/views/drawing-sidebar-view.js',
         'drawing/module/glazing-drawer.js',
         'drawing/views/drawing-glazing-view.js',
