@@ -28,11 +28,12 @@ var app = app || {};
 
             options = this.mergeOptions(unitModel, options);
             var module = new app.DrawingModule(options);
+            var isInside = (options.position === 'inside');
 
             if ( _.indexOf(['inside', 'outside'], options.position) !== -1 ) {
                 module.setState({
-                    insideView: options.position === 'inside',
-                    openingView: options.position === 'inside' && !unitModel.isOpeningDirectionOutward() ||
+                    insideView: isInside,
+                    openingView: isInside && !unitModel.isOpeningDirectionOutward() ||
                         options.position === 'outside' && unitModel.isOpeningDirectionOutward(),
                     inchesDisplayMode: options.inchesDisplayMode,
                     hingeIndicatorMode: options.hingeIndicatorMode,
@@ -45,21 +46,28 @@ var app = app || {};
             }
 
             if (options.drawNeighbors) {
+                var previewRatio = module.get('ratio');
                 var originCoords = module.layerManager.layers.unit.drawer.layer.getClientRect();
                 var originX = originCoords.x;
                 var originY = originCoords.y;
                 var parentMultiunit = unitModel.getParentMultiunit();
-                var previewRatio = module.get('ratio');
+                var parentMultiunitWidth = parentMultiunit.getInMetric('width', 'mm') * previewRatio;
+                var parentMultiunitHeight = parentMultiunit.getInMetric('height', 'mm') * previewRatio;
+                var unitWidth = unitModel.getInMetric('width', 'mm') * previewRatio;
                 var unitCoords = parentMultiunit.getSubunitCoords(unitModel.getId());
-                var backgroundDeltaX = (unitCoords) ? unitCoords.x * previewRatio : 0;
-                var backgroundDeltaY = (unitCoords) ? unitCoords.y * previewRatio : 0;
+                var adjustedUnitCoords = {
+                    x: (unitCoords) ? unitCoords.x * previewRatio : 0,
+                    y: (unitCoords) ? unitCoords.y * previewRatio : 0
+                };
+                var backgroundDeltaX = (isInside) ?
+                    parentMultiunitWidth - adjustedUnitCoords.x - unitWidth :
+                    adjustedUnitCoords.x;
+                var backgroundDeltaY = adjustedUnitCoords.y;
                 var backgroundX = originX - backgroundDeltaX;
                 var backgroundY = originY - backgroundDeltaY;
-                var backgroundWidth = parentMultiunit.getInMetric('width', 'mm') * previewRatio;
-                var backgroundHeight = parentMultiunit.getInMetric('height', 'mm') * previewRatio;
                 var backgroundOptions = _.defaults({
-                    width: backgroundWidth,
-                    height: backgroundHeight,
+                    width: parentMultiunitWidth,
+                    height: parentMultiunitHeight,
                     mode: 'group',
                     metricSize: 0,
                     isMaximized: true,
@@ -87,7 +95,7 @@ var app = app || {};
                 result.setAttr('name', 'preview');
             }
 
-            // TODO destroy module in group mode too, by event when it is no longer needed
+            // TODO disentangle Konva.Group from the module and destroy module
             if (options.mode !== 'group') {
                 module.destroy();
             }
