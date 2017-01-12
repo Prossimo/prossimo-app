@@ -2599,12 +2599,12 @@ var app = app || {};
         //    again at request
         getPreview: function (preview_options) {
             var complete_preview_options = app.preview.mergeOptions(this, preview_options);
-            var ignore_cache = false;
+            var use_cache = true;
 
             //  In some cases we want to ignore the cache completely, like when
-            //  preview is expected to return a canvas
-            if ( complete_preview_options.mode === 'canvas' ) {
-                ignore_cache = true;
+            //  preview is expected to return a canvas or a Konva.Group
+            if ( complete_preview_options.mode === 'canvas' || complete_preview_options.mode === 'group' ) {
+                use_cache = false;
             }
 
             var drawing_representation_string = JSON.stringify(this.getDrawingRepresentation());
@@ -2613,7 +2613,7 @@ var app = app || {};
             //  If we already got an image for the same model representation
             //  and same preview options, just return it from the cache
             if (
-                ignore_cache === false && this.preview && this.preview.result &&
+                use_cache === true && this.preview && this.preview.result &&
                 this.preview.result[options_json_string] &&
                 drawing_representation_string === this.preview.drawing_representation_string
             ) {
@@ -2624,10 +2624,8 @@ var app = app || {};
 
             //  If model representation changes, preview cache should be erased
             if (
-                ignore_cache === false &&
-                !this.preview ||
-                !this.preview.result ||
-                drawing_representation_string !== this.preview.drawing_representation_string
+                use_cache === true && (!this.preview || !this.preview.result) ||
+                use_cache === true && drawing_representation_string !== this.preview.drawing_representation_string
             ) {
                 this.preview = {
                     drawing_representation_string: drawing_representation_string,
@@ -2636,7 +2634,7 @@ var app = app || {};
             }
 
             //  Add new preview to cache
-            if ( ignore_cache === false ) {
+            if ( use_cache === true ) {
                 this.preview.result[options_json_string] = result;
             }
 

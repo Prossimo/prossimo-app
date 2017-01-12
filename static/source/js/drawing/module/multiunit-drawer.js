@@ -42,10 +42,6 @@ var app = app || {};
             this.undelegateEvents();
             this.delegateEvents();
         },
-        events: {
-            'click #back': 'onBackClick',
-            'tap #back': 'onBackClick'
-        },
         createMultiunit: function () {
             var group = this.el;
 
@@ -70,10 +66,10 @@ var app = app || {};
             var tree = model.getSubunitsCoordinatesTree({ flipX: isInside });
 
             model.subunitsTreeForEach(tree, function (node) {
-                var previewImage = node.unit.getPreview({
+                var previewGroup = node.unit.getPreview({
                     width: node.width * ratio,
                     height: node.height * ratio,
-                    mode: 'image',
+                    mode: 'group',
                     position: (isInside) ? 'inside' : 'outside',
                     metricSize: 0,
                     preview: true,
@@ -81,15 +77,14 @@ var app = app || {};
                     drawIndexes: false
                 });
 
-                var konvaImage = new Konva.Image({
+                previewGroup.setAttrs({
                     name: 'subunitPreview',
                     subunitId: node.unit.getId(),
-                    image: previewImage,
                     x: node.x * ratio,
                     y: node.y * ratio
                 });
 
-                group.add(konvaImage);
+                group.add(previewGroup);
             });
 
             return group;
@@ -168,8 +163,8 @@ var app = app || {};
             var parentKonva = options.subunitKonvas.filter(function (konva) {
                 return (konva.getAttr('subunitId') === parentSubunitId);
             })[0];
-            var parentWidth = parentKonva.width() / ratio;
-            var parentHeight = parentKonva.height() / ratio;
+            var parentWidth = parentKonva.getClientRect().width / ratio;
+            var parentHeight = parentKonva.getClientRect().height / ratio;
             var parentX = parentKonva.x() / ratio;
             var parentY = parentKonva.y() / ratio;
             var side = connector.side;

@@ -453,21 +453,20 @@ var app = app || {};
             return stage;
         },
         setBackground: function (background, options) {
-            if (_.isUndefined(background) || !(background instanceof Image)) { return; }
+            if (_.isUndefined(background) || !(background instanceof Konva.Group)) { return; }
 
-            var opacity = (options && options.opacity) ? options.opacity : 1;
             var stage = this.get('stage');
             var layer = new Konva.Layer({ name: 'background' });
-            var image = new Konva.Image({
+            var filters = (options && options.filters) ? options.filters : [];
+            var opacity = (options && options.opacity) ? options.opacity : 1;
+
+            background.cache();
+            background.filters(filters);
+            background.setAttrs({
                 name: 'background',
-                image: background,
                 opacity: opacity
             });
-            var filters = (options && options.filters) ? options.filters : [];
-
-            image.cache();
-            image.filters(filters);
-            layer.add(image);
+            layer.add(background);
             if (options.x) { layer.offsetX(-options.x); }
             if (options.y) { layer.offsetY(-options.y); }
             stage.add(layer);
@@ -493,7 +492,7 @@ var app = app || {};
 
             return false;
         },
-        // Get result for preview method: canvas / base64 / image
+        // Get result for preview method: canvas / base64 / image / group
         getCanvas: function () {
             return this.get('stage').container();
         },
@@ -506,6 +505,9 @@ var app = app || {};
             img.src = this.get('stage').toDataURL();
 
             return img;
+        },
+        getGroup: function () {
+            return this.get('stage').findOne('Group');
         },
         onBeforeDestroy: function () {
             var stage = this.get('stage');

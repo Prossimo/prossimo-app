@@ -5,19 +5,18 @@ var app = app || {};
 
     var PREVIEW_BACKGROUND_OPACITY = 0.3;
 
-    //  TODO: add details on what options do
     app.preview = {
         mergeOptions: function (unitModel, options) {
             var defaults = {
-                width: 300,  // px
-                height: 300,
-                mode: 'base64',
-                position: 'inside',
-                metricSize: 50,
-                preview: true,
-                isMaximized: false,
-                drawNeighbors: false,
-                drawIndexes: true
+                width: 300,            // Image width, px
+                height: 300,           // Image height, px
+                mode: 'base64',        // Output type, canvas | base64 | image | group
+                position: 'inside',    // Inside or outside
+                metricSize: 50,        // Size of metrics drawn, px
+                preview: true,         //
+                isMaximized: false,    // Remove cosmetic padding?
+                drawNeighbors: false,  // In subunit, draw multiunit surroundings, in grayscale?
+                drawIndexes: true      // In multiunit, draw subunit position labels?
             };
 
             options = _.defaults({}, options, defaults, { model: unitModel });
@@ -28,7 +27,6 @@ var app = app || {};
             var result;
 
             options = this.mergeOptions(unitModel, options);
-
             var module = new app.DrawingModule(options);
 
             if ( _.indexOf(['inside', 'outside'], options.position) !== -1 ) {
@@ -62,7 +60,7 @@ var app = app || {};
                 var backgroundOptions = _.defaults({
                     width: backgroundWidth,
                     height: backgroundHeight,
-                    mode: 'image',
+                    mode: 'group',
                     metricSize: 0,
                     isMaximized: true,
                     drawNeighbors: false,
@@ -84,9 +82,15 @@ var app = app || {};
                 result = module.getBase64();
             } else if (options.mode === 'image') {
                 result = module.getImage();
+            } else if (options.mode === 'group') {
+                result = module.getGroup();
+                result.setAttr('name', 'preview');
             }
 
-            module.destroy();
+            // TODO destroy module in group mode too, by event when it is no longer needed
+            if (options.mode !== 'group') {
+                module.destroy();
+            }
 
             return result;
         }
