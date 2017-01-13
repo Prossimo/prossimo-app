@@ -79,9 +79,11 @@ var app = app || {};
         },
         removeSelected: function () {
             var selectedSubunitId = module.getState('selected:subunit');
+            var selectedSubunit;
 
             if (selectedSubunitId) {
-                model.removeSubunit(model.getSubunitById(selectedSubunitId));
+                selectedSubunit = model.getSubunitById(selectedSubunitId);
+                model.removeSubunit(selectedSubunit) && selectedSubunit.destroy();
             }
 
             this.deselectAll();
@@ -162,7 +164,9 @@ var app = app || {};
                 });
                 return connectorKonva;
             });
-            group.add.apply(group, connectorsKonvas);
+            if (connectorsKonvas.length > 0) {
+                group.add.apply(group, connectorsKonvas);
+            }
 
             return group;
         },

@@ -293,13 +293,16 @@ var app = app || {};
             var subunitsIds = this.get('multiunit_subunits');
             var subunitId = subunit.getId();
             var subunitIndex = subunitsIds.indexOf(subunitId);
+            var isSubunitOf = subunitIndex !== -1;
+            var isLeafSubunit = this.isLeafSubunit(subunitId);
 
-            if (subunitIndex !== -1) {
+            if (isSubunitOf && isLeafSubunit) {
                 subunitsIds.splice(subunitIndex, 1);
                 this.removeConnector(this.getParentConnector(subunitId).id);
                 this.updateSubunitsCollection();
                 this.updateSubunitsIndices();
                 this.recalculateSizes();
+                return subunit;
             }
         },
         recalculateSizes: function () {  // updates multiunit width/height from subunit changes
@@ -333,6 +336,12 @@ var app = app || {};
             }
 
             return coords;  // mm
+        },
+        isLeafSubunit: function (subunitId) {
+            var subunitNode = this.getSubunitNode(subunitId);
+            var isLeafSubunit = (subunitNode.children.length === 0);
+
+            return isLeafSubunit;
         },
         /**
          * Subunit tree consists of nodes corresponding to subunits.
