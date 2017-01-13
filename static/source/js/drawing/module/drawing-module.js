@@ -483,6 +483,7 @@ var app = app || {};
             this.setState('selected:mullion', null, preventUpdate);
             this.setState('selected:sash', null, preventUpdate);
             this.setState('selected:frame', null, preventUpdate);
+            this.setState('selected:subunit', null, preventUpdate);
         },
         // Get layer to work directly with drawer, for example
         getLayer: function (name) {

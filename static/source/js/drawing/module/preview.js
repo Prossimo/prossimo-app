@@ -16,7 +16,8 @@ var app = app || {};
                 preview: true,         //
                 isMaximized: false,    // Remove cosmetic padding?
                 drawNeighbors: false,  // In subunit, draw multiunit surroundings, in grayscale?
-                drawIndexes: true      // In multiunit, draw subunit position labels?
+                drawIndexes: true,     // In multiunit, draw subunit position labels?
+                isSelected: false      // Draw unit selected?
             };
 
             options = _.defaults({}, options, defaults, { model: unitModel });
@@ -37,7 +38,8 @@ var app = app || {};
                         options.position === 'outside' && unitModel.isOpeningDirectionOutward(),
                     inchesDisplayMode: options.inchesDisplayMode,
                     hingeIndicatorMode: options.hingeIndicatorMode,
-                    drawIndexes: options.drawIndexes
+                    drawIndexes: options.drawIndexes,
+                    'selected:frame': (options.isSelected) ? 'whole' : undefined
                 }, false);
             }
 

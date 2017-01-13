@@ -42,16 +42,64 @@ var app = app || {};
             this.undelegateEvents();
             this.delegateEvents();
         },
+        events: {
+            'click .subunitOverlay': 'onSubunitOverlayClick',
+            'tap .subunitOverlay': 'onSubunitOverlayClick',
+
+            'click #back': 'onBackClick',
+            'tap #back': 'onBackClick'
+        },
+        // Handlers
+        onSubunitOverlayClick: function (event) {
+            this.setSelection(event, 'subunit', 'subunit');
+        },
+        onBackClick: function () {
+            this.deselectAll();
+        },
+
+        // Keyboards handlers
+        onKeyDown: function (e) {
+            if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
+                e.preventDefault();
+                this.removeSelected();
+            }
+        },
+
+        // Selections
+        setSelection: function (event, type) {
+            var origin = event.target;
+            this.deselectAll();
+
+            if (type === 'subunit') {
+                module.setState('selected:subunit', origin.attrs.subunitId, false);
+            }
+        },
+        deselectAll: function (preventUpdate) {
+            module.deselectAll(preventUpdate);
+        },
+        removeSelected: function () {
+            var selectedSubunitId = module.getState('selected:subunit');
+
+            if (selectedSubunitId) {
+                model.removeSubunit(model.getSubunitById(selectedSubunitId));
+            }
+
+            this.deselectAll();
+        },
+
         createMultiunit: function () {
             var group = this.el;
 
             var subunitGroup = this.createSubunits();
             var connectorGroup = this.createConnectors(subunitGroup);
             var subunitsIndexesGroup = this.createSubunitsIndexes(subunitGroup);
+            var subunitsOverlaysGroup = this.createSubunitsOverlays(subunitGroup);
 
+            group.add(this.createBack());
             group.add(subunitGroup);
             group.add(connectorGroup);
             group.add(subunitsIndexesGroup);
+            group.add(subunitsOverlaysGroup);
 
             var center = module.get('center');
             // place unit on stage center
@@ -66,7 +114,7 @@ var app = app || {};
             var tree = model.getSubunitsCoordinatesTree({ flipX: isInside });
 
             model.subunitsTreeForEach(tree, function (node) {
-                var previewGroup = node.unit.getPreview({
+                var subunitGroup = node.unit.getPreview({
                     width: node.width * ratio,
                     height: node.height * ratio,
                     mode: 'group',
@@ -74,59 +122,31 @@ var app = app || {};
                     metricSize: 0,
                     preview: true,
                     isMaximized: true,
-                    drawIndexes: false
+                    drawIndexes: false,
+                    isSelected: (module.getState('selected:subunit') === node.unit.getId())
                 });
 
-                previewGroup.setAttrs({
-                    name: 'subunitPreview',
+                subunitGroup.setAttrs({
+                    name: 'subunit',
                     subunitId: node.unit.getId(),
                     x: node.x * ratio,
                     y: node.y * ratio
                 });
 
-                group.add(previewGroup);
+                group.add(subunitGroup);
             });
 
             return group;
         },
-        createSubunitsIndexes: function () {
-            var group = new Konva.Group({ name: 'subunit_indexes' });
-            var tree = model.getSubunitsCoordinatesTree({ flipX: isInside });
-            var style = module.getStyle('subunit_indexes');
-
-            model.subunitsTreeForEach(tree, function (node) {
-
-                var subunitWidth = node.width * ratio;
-                var subunitHeight = node.height * ratio;
-                var subunitX = node.x * ratio;
-                var subunitY = node.y * ratio;
-                var label = new Konva.Label({ name: 'subunit_label' });
-
-                label.add(new Konva.Tag({
-                    fill: style.label.fill,
-                    stroke: style.label.stroke,
-                    strokeWidth: style.label.strokeWidth,
-                    listening: false
-                }));
-                var text = new Konva.Text({
-                    text: node.unit.get('position'),
-                    padding: style.label.padding,
-                    fill: style.label.color,
-                    fontFamily: style.label.fontFamily,
-                    fontSize: style.label.fontSize,
-                    listening: false
-                });
-                label.add(text);
-
-                label.position({
-                    x: label.x() + subunitX + subunitWidth / 2 - label.width() / 2,
-                    y: label.y() + subunitY + subunitHeight / 2 - label.height() / 2
-                });
-
-                group.add(label);
+        // Create transparent background to detect click on empty space
+        createBack: function () {
+            var back = new Konva.Rect({
+                id: 'back',
+                width: this.stage.width(),
+                height: this.stage.height()
             });
 
-            return group;
+            return back;
         },
         createConnectors: function (subunitGroup) {
             if (!subunitGroup) { return; }
@@ -224,6 +244,65 @@ var app = app || {};
                 .fill(style.fill)
                 .scale({ x: ratio, y: ratio })  // to pixels
                 .position({ x: drawingX * ratio, y: drawingY * ratio });
+
+            return group;
+        },
+        createSubunitsIndexes: function () {
+            var group = new Konva.Group({ name: 'subunit_indexes' });
+            var tree = model.getSubunitsCoordinatesTree({ flipX: isInside });
+            var style = module.getStyle('subunit_indexes');
+
+            model.subunitsTreeForEach(tree, function (node) {
+
+                var subunitWidth = node.width * ratio;
+                var subunitHeight = node.height * ratio;
+                var subunitX = node.x * ratio;
+                var subunitY = node.y * ratio;
+                var label = new Konva.Label({ name: 'subunit_label' });
+
+                label.add(new Konva.Tag({
+                    fill: style.label.fill,
+                    stroke: style.label.stroke,
+                    strokeWidth: style.label.strokeWidth,
+                    listening: false
+                }));
+                var text = new Konva.Text({
+                    text: node.unit.get('position'),
+                    padding: style.label.padding,
+                    fill: style.label.color,
+                    fontFamily: style.label.fontFamily,
+                    fontSize: style.label.fontSize,
+                    listening: false
+                });
+                label.add(text);
+
+                label.position({
+                    x: label.x() + subunitX + subunitWidth / 2 - label.width() / 2,
+                    y: label.y() + subunitY + subunitHeight / 2 - label.height() / 2
+                });
+
+                group.add(label);
+            });
+
+            return group;
+        },
+        createSubunitsOverlays: function (subunitGroup) {
+            if (!subunitGroup) { return; }
+
+            var group = new Konva.Group({ name: 'subunitOverlays' });
+
+            var subunitsKonvas = subunitGroup.getChildren();
+            var overlaysKonvas = subunitsKonvas.map(function (subunit) {
+                return new Konva.Rect({
+                    name: 'subunitOverlay',
+                    subunitId: subunit.getAttr('subunitId'),
+                    x: subunit.x(),
+                    y: subunit.y(),
+                    width: subunit.getClientRect().width,
+                    height: subunit.getClientRect().height
+                });
+            });
+            group.add.apply(group, overlaysKonvas);
 
             return group;
         }
