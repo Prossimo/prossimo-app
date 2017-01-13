@@ -12,6 +12,7 @@ import MainNavigationView from './core/views/main-navigation-view';
 import MainDashboardView from './components/dashboard/views/main-dashboard-view';
 import MainUnitsTableView from './components/units-table/views/main-units-table-view';
 import MainDrawingView from './components/drawing/views/main-drawing-view';
+import MainQuoteView from './components/quote/views/main-quote-view';
 import 'bootstrap';
 import 'bootstrap-select';
 import 'bootstrap-toggle';
@@ -59,15 +60,15 @@ class Application extends Marionette.Application {
                 onAttach: () => {
                     this.main_region.show(new MainDrawingView());
                 }
-            }/**,
-             quote: {
+            },
+            quote: {
                 title: 'Quote',
                 path: 'quote',
                 icon_name: 'shopping-cart',
-                onAttach: function () {
-                    app.main_region.show(new app.MainQuoteView());
+                onAttach: () => {
+                    this.main_region.show(new MainQuoteView());
                 }
-            },
+            }/**,
              supplier_request: {
                 title: 'Supplier',
                 path: 'supplier',
