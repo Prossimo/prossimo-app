@@ -14,6 +14,7 @@ import MainUnitsTableView from './components/units-table/views/main-units-table-
 import MainDrawingView from './components/drawing/views/main-drawing-view';
 import MainQuoteView from './components/quote/views/main-quote-view';
 import MainSettingsView from './components/settings/views/main-settings-view';
+import MainSupplierRequestView from './components/supplier-request/views/main-supplier-request-view';
 import 'bootstrap';
 import 'bootstrap-select';
 import 'bootstrap-toggle';
@@ -69,16 +70,16 @@ class Application extends Marionette.Application {
                 onAttach: () => {
                     this.main_region.show(new MainQuoteView());
                 }
-            }/**,
-             supplier_request: {
+            },
+            supplier_request: {
                 title: 'Supplier',
                 path: 'supplier',
                 icon_name: 'send',
-                onAttach: function () {
-                    app.main_region.show(new app.MainSupplierRequestView());
+                onAttach: () => {
+                    this.main_region.show(new MainSupplierRequestView());
                 }
-            }*/,
-             settings: {
+            },
+            settings: {
                 title: 'Settings',
                 path: 'settings',
                 icon_name: 'wrench',

@@ -2,6 +2,7 @@ import _ from 'underscore';
 import Konva from '../konva-clip-patch';
 import Backbone from 'backbone';
 import utils from '../../../../utils';
+import handle_data from '../../data/handle-data';
 
 var module;
 var model;
@@ -1646,13 +1647,13 @@ export default Backbone.KonvaView.extend({
         var handleBg = new Konva.Path({
             name: 'handleBg',
             fill: style.fill,
-            data: app.handle_data.fill
+            data: handle_data.fill
         });
         var handleStroke = new Konva.Path({
             name: 'handleStroke',
             stroke: style.stroke,
             strokeWidth: 1,
-            data: app.handle_data.stroke
+            data: handle_data.stroke
         });
 
         handle.add(handleBg, handleStroke);
