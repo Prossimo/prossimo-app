@@ -13,6 +13,7 @@ import MainDashboardView from './components/dashboard/views/main-dashboard-view'
 import MainUnitsTableView from './components/units-table/views/main-units-table-view';
 import MainDrawingView from './components/drawing/views/main-drawing-view';
 import MainQuoteView from './components/quote/views/main-quote-view';
+import MainSettingsView from './components/settings/views/main-settings-view';
 import 'bootstrap';
 import 'bootstrap-select';
 import 'bootstrap-toggle';
@@ -76,15 +77,15 @@ class Application extends Marionette.Application {
                 onAttach: function () {
                     app.main_region.show(new app.MainSupplierRequestView());
                 }
-            },
+            }*/,
              settings: {
                 title: 'Settings',
                 path: 'settings',
                 icon_name: 'wrench',
-                onAttach: function () {
-                    app.main_region.show(new app.MainSettingsView());
+                onAttach: () => {
+                    this.main_region.show(new MainSettingsView());
                 }
-            }*/
+            }
         });
 
         this.paste_image_helper = new PasteImageHelper();

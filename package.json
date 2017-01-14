@@ -73,6 +73,7 @@
     "qunitjs": "^1.21.0",
     "resemblejs": "^2.2.0",
     "script-loader": "^0.7.0",
+    "sortablejs": "^1.5.0-rc1",
     "style-loader": "^0.13.1",
     "url-loader": "^0.5.7",
     "webpack": "^1.13.3",
