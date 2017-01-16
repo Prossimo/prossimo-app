@@ -382,6 +382,10 @@ var app = app || {};
                             opacity: 0.3
                         }
                     }
+                },
+                neighbors_background: {
+                    opacity: 0.3,
+                    filters: [Konva.Filters.Grayscale]
                 }
             };
 
