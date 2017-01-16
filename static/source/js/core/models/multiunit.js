@@ -325,7 +325,7 @@ var app = app || {};
             var subunitId = subunit.getId();
             var subunitIndex = subunitsIds.indexOf(subunitId);
             var isSubunitOf = subunitIndex !== -1;
-            var isSubunitRemovable= this.isSubunitRemovable(subunitId);
+            var isSubunitRemovable = this.isSubunitRemovable(subunitId);
             var parentConnector;
 
             if (isSubunitOf && isSubunitRemovable) {

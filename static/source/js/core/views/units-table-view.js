@@ -104,7 +104,7 @@ var app = app || {};
             }
 
             this.undo_manager = new app.UndoManager({
-                register: this.collection,
+                register: [this.collection, this.collection.multiunits],
                 track: true
             });
 
