@@ -225,16 +225,25 @@ var app = app || {};
                         }
                     });
                 });
+
+                this.on('change', function (eventData) {
+                    if (eventData.changed.width || eventData.changed.height) {
+                        self.recalculateSizes();
+                    }
+                });
             }
         },
-        /**
-         * this.subunits is a collection with models from project's units collection
-         */
+        // this.subunits is a collection with models from project's units collection
         updateSubunitsCollection: function () {
             if (!this.subunits) {
                 this.subunits = new app.UnitCollection();
                 this.listenTo(this.subunits, 'change', function () {  // trigger self change if any subunit changes
                     self.trigger.apply(this, ['change'].concat(Array.prototype.slice.call(arguments)));
+                });
+                this.listenTo(this.subunits, 'remove', function () {  // remove multiunit if last subunit is removed
+                    if (self.subunits.length === 0) {
+                        self.destroy();
+                    }
                 });
             }
 
@@ -245,6 +254,10 @@ var app = app || {};
                     .map(function (id) { return self.getSubunitById(id); })
                     .filter(function (subunit) { return !_.isUndefined(subunit); })
                     .filter(function (subunit) { return self.subunits.indexOf(subunit) === -1; })
+            );
+            this.subunits.remove(
+                this.subunits
+                    .filter(function (subunit) { return subunitsIds.indexOf(subunit.getId()) === -1; })
             );
         },
         updateSubunitsIndices: function () {  // reorders subunit models in their collection (not in this.subunits)
@@ -295,10 +308,14 @@ var app = app || {};
             var subunitIndex = subunitsIds.indexOf(subunitId);
             var isSubunitOf = subunitIndex !== -1;
             var isLeafSubunit = this.isLeafSubunit(subunitId);
+            var parentConnector;
 
             if (isSubunitOf && isLeafSubunit) {
                 subunitsIds.splice(subunitIndex, 1);
-                this.removeConnector(this.getParentConnector(subunitId).id);
+                parentConnector = this.getParentConnector(subunitId);
+                if (parentConnector) {
+                    this.removeConnector(parentConnector.id);
+                }
                 this.updateSubunitsCollection();
                 this.updateSubunitsIndices();
                 this.recalculateSizes();
@@ -364,6 +381,8 @@ var app = app || {};
                 };
                 return node;
             });
+
+            if (nodeTemplates.length === 0) { return; }
 
             var originId = this.getOriginSubunitId();  // bootstrap tree
             var originNode = nodeTemplates.filter(function (node) {

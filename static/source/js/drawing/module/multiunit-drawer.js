@@ -306,7 +306,9 @@ var app = app || {};
                     height: subunit.getClientRect().height
                 });
             });
-            group.add.apply(group, overlaysKonvas);
+            if (overlaysKonvas.length > 0) {
+                group.add.apply(group, overlaysKonvas);
+            }
 
             return group;
         }
