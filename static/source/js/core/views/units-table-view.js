@@ -111,6 +111,7 @@ var app = app || {};
             this.selected = [];
 
             this.listenTo(this.collection, 'all', this.updateTable);
+            this.listenTo(this.collection.multiunits, 'all', this.updateTable);
             this.listenTo(this.options.extras, 'all', this.updateTable);
             this.listenTo(this.options.parent_view, 'attach', this.updateTable);
 
@@ -189,9 +190,16 @@ var app = app || {};
             }
         },
         onRemoveSelected: function () {
+            var unit;
+
             if ( this.selected.length && this.hot ) {
                 for (var i = this.selected.length - 1; i >= 0; i--) {
-                    this.hot.getSourceData().at(this.selected[i]).destroy();
+                    unit = this.hot.getSourceData().at(this.selected[i]);
+                    if (unit.isSubunit()) {
+                        unit.getParentMultiunit().removeSubunit(unit);
+                    } else {
+                        unit.destroy();
+                    }
                 }
 
                 //  TODO: do we really need two calls just to unselect?
@@ -1064,6 +1072,13 @@ var app = app || {};
                                         self.ui.$clone.addClass('disabled');
                                     } else {
                                         self.ui.$clone.removeClass('disabled');
+                                    }
+
+                                    if (selectedData.isSubunit() &&
+                                        !selectedData.getParentMultiunit().isSubunitRemovable(selectedData.getId())) {
+                                        self.ui.$remove.addClass('disabled');
+                                    } else {
+                                        self.ui.$remove.removeClass('disabled');
                                     }
                                 } else {
                                     var start = startRow;

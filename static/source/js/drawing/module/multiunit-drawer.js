@@ -83,7 +83,7 @@ var app = app || {};
 
             if (selectedSubunitId) {
                 selectedSubunit = model.getSubunitById(selectedSubunitId);
-                model.removeSubunit(selectedSubunit).destroy();
+                model.removeSubunit(selectedSubunit);
             }
 
             this.deselectAll();

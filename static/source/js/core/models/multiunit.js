@@ -199,6 +199,28 @@ var app = app || {};
         hasBaseFilling: function () {
             return false;
         },
+        hasOnlyDefaultAttributes: function () {
+            var has_only_defaults = true;
+
+            _.each(this.toJSON(), function (value, key) {
+                if ( key !== 'position' && has_only_defaults ) {
+                    var property_source = _.findWhere(MULTIUNIT_PROPERTIES, { name: key });
+                    var type = property_source ? property_source.type : undefined;
+
+                    if ( key === 'root_section' ) {
+                        if ( JSON.stringify(_.omit(value, 'id')) !==
+                            JSON.stringify(_.omit(this.getDefaultValue('root_section'), 'id'))
+                        ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( this.getDefaultValue(key, type) !== value ) {
+                        has_only_defaults = false;
+                    }
+                }
+            }, this);
+
+            return has_only_defaults;
+        },
         initialize: function (attributes, options) {
             self = this;
 
@@ -218,11 +240,6 @@ var app = app || {};
                         self.updateSubunitsCollection();
                         self.updateConnectorsLength();
                         self.updateSubunitsIndices();
-                    });
-                    self.listenTo(self.collection.subunits, 'remove', function (unit) {
-                        if (unit.isSubunitOf(self)) {
-                            self.removeSubunit(unit);
-                        }
                     });
                 });
 
@@ -300,6 +317,7 @@ var app = app || {};
                 this.recalculateSizes();
             }
         },
+        // This is the only proper way to remove a subunit
         removeSubunit: function (subunit) {
             if (!(subunit.isSubunitOf && subunit.isSubunitOf(this))) { return; }
 
@@ -307,10 +325,10 @@ var app = app || {};
             var subunitId = subunit.getId();
             var subunitIndex = subunitsIds.indexOf(subunitId);
             var isSubunitOf = subunitIndex !== -1;
-            var isLeafSubunit = this.isLeafSubunit(subunitId);
+            var isSubunitRemovable= this.isSubunitRemovable(subunitId);
             var parentConnector;
 
-            if (isSubunitOf && isLeafSubunit) {
+            if (isSubunitOf && isSubunitRemovable) {
                 subunitsIds.splice(subunitIndex, 1);
                 parentConnector = this.getParentConnector(subunitId);
                 if (parentConnector) {
@@ -319,7 +337,8 @@ var app = app || {};
                 this.updateSubunitsCollection();
                 this.updateSubunitsIndices();
                 this.recalculateSizes();
-                return subunit;
+                subunit.destroy();
+                return true;
             }
         },
         recalculateSizes: function () {  // updates multiunit width/height from subunit changes
@@ -354,7 +373,7 @@ var app = app || {};
 
             return coords;  // mm
         },
-        isLeafSubunit: function (subunitId) {
+        isSubunitRemovable: function (subunitId) {
             var subunitNode = this.getSubunitNode(subunitId);
             var isLeafSubunit = (subunitNode.children.length === 0);
 
