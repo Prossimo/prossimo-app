@@ -3,8 +3,6 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var self;
-
     var MULTIUNIT_PROPERTIES = [
         { name: 'multiunit_subunits', title: 'Subunits', type: 'array' },
 
@@ -222,7 +220,7 @@ var app = app || {};
             return has_only_defaults;
         },
         initialize: function (attributes, options) {
-            self = this;
+            var self = this;
 
             this.options = options || {};
             this.profile = null;
@@ -258,6 +256,8 @@ var app = app || {};
         },
         // this.subunits is a collection with models from project's units collection
         updateSubunitsCollection: function () {
+            var self = this;
+
             if (!this.subunits) {
                 this.subunits = new app.UnitCollection();
                 this.listenTo(this.subunits, 'change', function () {  // trigger self change if any subunit changes
@@ -284,6 +284,8 @@ var app = app || {};
             );
         },
         updateSubunitsIndices: function () {  // reorders subunit models in their collection (not in this.subunits)
+            var self = this;
+
             this.subunits.forEach(function (subunit, subunitIndex) {
                 var firstSubunit = self.subunits.at(0);
                 var firstSubunitPosition = firstSubunit.collection.indexOf(firstSubunit);
@@ -394,6 +396,7 @@ var app = app || {};
          */
         /* eslint-disable no-loop-func */
         getSubunitsTree: function () {
+            var self = this;
             var subunitsIds = this.getSubunitsIds();  // prepare flat array of node templates
             var nodeTemplates = subunitsIds.map(function (subunitId) {
                 var unitId = subunitId;
@@ -440,6 +443,7 @@ var app = app || {};
         /* eslint-enable no-loop-func */
         // Returns subunit tree with coordinate information at each node, in mm
         getSubunitsCoordinatesTree: function (options) {
+            var self = this;
             var flipX = options && options.flipX;
             var subunitsTree = this.getSubunitsTree();
             this.subunitsTreeForEach(subunitsTree, function (node) {
@@ -501,6 +505,7 @@ var app = app || {};
         subunitsTreeForEach: function (subunitNode, func) {
             if (!subunitNode || !_.isFunction(func)) { return; }
 
+            var self = this;
             var children = subunitNode.children;  // start at node and apply down
             func.call(this, subunitNode);
             if (children && children.length > 0) {
@@ -548,6 +553,7 @@ var app = app || {};
             return parentSubunitId;
         },
         getChildSubunitsIds: function (subunitId) {
+            var self = this;
             var childConnectors = this.getChildConnectors(subunitId);
             var childSubunitsIds = childConnectors.map(function (connector) {
                 return self.getConnectorChildSubunitId(connector.id);
@@ -677,6 +683,7 @@ var app = app || {};
             return connector;
         },
         updateConnectorsLength: function () {
+            var self = this;
             var connectors = this.get('root_section').connectors;
 
             connectors.forEach(function (connector) {
