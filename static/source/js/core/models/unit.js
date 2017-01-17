@@ -2568,8 +2568,8 @@ var app = app || {};
         toMultiunit: function () {
             if (this.isMultiunit()) { return this; }
 
-            var multiunit = this.collection.multiunits.add(new app.Multiunit());
-            multiunit.addSubunit(this);
+            var multiunit = new app.Multiunit(null, { subunits: [this] });
+            this.collection.multiunits.add(multiunit);
             return multiunit;
         },
         //  List attributes that cause unit redraw on change

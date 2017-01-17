@@ -231,6 +231,12 @@ var app = app || {};
                 this.validateRootSection();
 
                 this.on('add', function () {
+                    if (_.isArray(this.options.subunits)) {
+                        _.each(this.options.subunits, function (subunit) {
+                            self.addSubunit(subunit);
+                        });
+                    }
+
                     self.listenTo(self.collection, 'update', function (event) {
                         self.updateSubunitsCollection();
                         self.updateConnectorsLength();
