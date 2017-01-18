@@ -137,7 +137,8 @@ test('subtotal project prices', function () {
             uw: 0.77,
             glazing: '3Std U=.09 SGHC=.5',
             discount: 20,
-            root_section: '{"id":"101"}'
+            root_section: '{"id":"101"}',
+            id: 5
         },
         {
             mark: 'B1',
@@ -153,22 +154,23 @@ test('subtotal project prices', function () {
             uw: 0.78,
             glazing: '3Std U=.09 SGHC=.5',
             discount: 20,
-            root_section: '{"id":"102"}'
+            root_section: '{"id":"102"}',
+            id: 18
         }
-    ]);
+    ], { parse: true });
 
     current_project.multiunits.add([
         {
-            multiunit_subunits: ["101", "102"],
+            multiunit_subunits: [5, 18],
             mark: 'A',
             width: 68.78740,
             height: 40,
             quantity: 1,
             description: 'Site-mulled multi frame unit',
             notes: 'Assembled on site',
-            root_section: '{"id":"99999","connectors":[{"id":"1","side":"right","connects":["101","102"],"width":20,"facewidth":40}]}'
+            root_section: '{"id":"99999","connectors":[{"id":"1","side":"right","connects":[5,18],"width":20,"facewidth":40}]}'
         }
-    ]);
+    ], { parse: true });
 
     current_project.extras.add([
         {
@@ -225,7 +227,7 @@ test('subtotal project prices', function () {
             price_markup: 1.3,
             extras_type: 'Tax'
         }
-    ]);
+    ], { parse: true });
 
     //  End prices for units
     equal(current_project.units.getSubtotalPrice().toFixed(2), '2436.84', 'Subtotal for units is expected to be 2436.84');
@@ -666,7 +668,8 @@ test('single multiunit tests', function () {
             uw: 0.77,
             glazing: '3Std U=.09 SGHC=.5',
             discount: 20,
-            root_section: '{"id":"106"}'
+            root_section: '{"id":"106"}',
+            id: 5
         },
         {
             mark: '11 W 126th Unit H/I',
@@ -676,7 +679,8 @@ test('single multiunit tests', function () {
             profile_id: 9993,
             original_cost: 321,
             glazing: 'Triple Low Gain - Tempered',
-            root_section: '{"id":"19991"}'
+            root_section: '{"id":"19991"}',
+            id: 18
         },
         {
             mark: 'Moyers Residence Unit A',
@@ -686,22 +690,23 @@ test('single multiunit tests', function () {
             profile_id: 9991,
             original_cost: 111,
             glazing: 'Triple Standard - Ug=.09 SGHC=.50 LT=71%',
-            root_section: '{"id":"10565"}'
+            root_section: '{"id":"10565"}',
+            id: 22
         }
-    ]);
+    ], { parse: true });
 
     current_project.multiunits.add([
         {
-            multiunit_subunits: ["106", "10565", "19991"],
+            multiunit_subunits: [5, 18, 22],
             mark: 'A',
             width: 207.78740,
             height: 169.53740,
             quantity: 1,
             description: 'Site-mulled multi frame unit',
             notes: 'Assembled on site',
-            root_section: '{"id":"99999","connectors":[{"id":"123","side":"bottom","connects":["106","10565"],"width":20,"facewidth":40},{"id":"130","side":"right","connects":["106","19991"],"width":20,"facewidth":40}]}'
+            root_section: '{"id":"99999","connectors":[{"id":"123","side":"bottom","connects":[5,22],"width":20,"facewidth":40},{"id":"130","side":"right","connects":[5,18],"width":20,"facewidth":40}]}'
         }
-    ]);
+    ], { parse: true });
 
     var multiunit = current_project.multiunits.first();
 

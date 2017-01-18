@@ -17,10 +17,9 @@ var app = app || {};
         initialize: function (models, options) {
             this.options = options || {};
             this.proxy_unit = new app.Multiunit(null, { proxy: true });
-            this.subunits = options.subunits;
 
-            if (this.options.profile) {
-                this.profile = this.options.profile;
+            if (this.options.subunits) {
+                this.subunits = this.options.subunits;
             }
 
             if (this.subunits) {

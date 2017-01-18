@@ -14,23 +14,30 @@ var app = app || {};
             var project_settings = app.settings.getProjectSettings();
 
             var relevant_properties = [
-                'mark', 'width', 'height', 'description', 'notes', 'exceptions'
+                'ref_num', 'mark', 'width', 'height', 'description', 'notes', 'exceptions'
             ];
 
+            var custom_titles = {
+                ref_num: 'Ref #',
+                width: 'Width (inches)',
+                height: 'Height (inches)'
+            };
+
             params_source = {
-                width: f.dimension(this.model.get('width'), null,
+                ref_num: this.model.getRefNum(),
+                width: f.dimension(this.model.getWidth(), null,
                     project_settings && project_settings.get('inches_display_mode')),
-                height: f.dimension(this.model.get('height'), null,
+                height: f.dimension(this.model.getHeight(), null,
                     project_settings && project_settings.get('inches_display_mode'))
             };
 
             multiunit_properties = _.map(relevant_properties, function (prop_name) {
-                var title = this.model.getTitles([prop_name])[0] || '';
+                var title = custom_titles[prop_name] || this.model.getTitles([prop_name])[0];
                 var value = params_source[prop_name] || this.model.get(prop_name);
 
                 return {
-                    title: title,
-                    value: value
+                    title: title || '',
+                    value: value || ''
                 };
             }, this).filter(function (property) {
                 return !_.isUndefined(property.value);

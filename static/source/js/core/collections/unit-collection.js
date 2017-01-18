@@ -25,13 +25,6 @@ var app = app || {};
             //  When parent project is fully loaded, we validate unit positions
             this.listenTo(this.options.project, 'fully_loaded', this.validatePositions);
         },
-        /* eslint-disable eqeqeq */
-        getById: function (id) {
-            return _.find(this.models, function (model) {
-                return model.get('root_section').id == id;
-            });
-        },
-        /* eslint-enable eqeqeq */
         getNameTitleTypeHash: function (names) {
             return this.proxy_unit.getNameTitleTypeHash(names);
         },

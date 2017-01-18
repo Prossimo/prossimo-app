@@ -9,12 +9,11 @@ var app = app || {};
         { name: 'multiunit_subunits', title: 'Subunits', type: 'array' },
 
         { name: 'mark', title: 'Mark', type: 'string' },
-        { name: 'width', title: 'Width (inches)', type: 'number' },
-        { name: 'height', title: 'Height (inches)', type: 'string' },
         { name: 'quantity', title: 'Quantity', type: 'number' },
         { name: 'description', title: 'Customer Description', type: 'string' },
         { name: 'notes', title: 'Notes', type: 'string' },
         { name: 'exceptions', title: 'Exceptions', type: 'string' },
+        { name: 'customer_image', title: 'Customer Image', type: 'string' },
 
         { name: 'position', title: 'Position', type: 'number' },
         { name: 'root_section', title: 'Root Section', type: 'object' }
@@ -36,79 +35,8 @@ var app = app || {};
 
             return defaults;
         },
-        //  TODO: this function should be improved
-        //  The idea is to call this function on model init (maybe not only)
-        //  and check whether root section could be used by our drawing code or
-        //  should it be reset to defaults.
-        validateRootSection: function () {
-            var root_section = this.get('root_section');
-            var root_section_parsed;
-
-            if ( _.isString(root_section) ) {
-                try {
-                    root_section_parsed = JSON.parse(root_section);
-                } catch (error) {
-                    // Do nothing
-                }
-
-                if ( root_section_parsed ) {
-                    this.set('root_section', root_section_parsed);
-                    // TODO implement connector validation
-                    return;
-                }
-            }
-
-            if ( !_.isObject(root_section) ) {
-                this.set('root_section', this.getDefaultValue('root_section'));
-            }
-        },
-        //  Check if this unit belongs to the project which is currently active
-        isParentProjectActive: function () {
-            var is_active = false;
-
-            if ( app.current_project && this.collection && this.collection.options.project &&
-                this.collection.options.project === app.current_project
-            ) {
-                is_active = true;
-            }
-
-            return is_active;
-        },
-        getInMetric: function (attr, metric) {
-            if (!metric || (['mm', 'inches'].indexOf(metric) === -1)) {
-                throw new Error('Set metric! "mm" or "inches"');
-            }
-
-            if (metric === 'inches') {
-                return this.get(attr);
-            }
-
-            return app.utils.convert.inches_to_mm(this.get(attr));
-        },
-        getRefNum: function () {
-            return this.collection ? this.collection.indexOf(this) + 1 : -1;
-        },
-        getTitles: function (names) {
-            var name_title_hash = this.getNameTitleTypeHash(names);
-
-            return _.pluck(name_title_hash, 'title');
-        },
-        //  Return { name: 'name', title: 'Title' } pairs for each item in
-        //  `names` array. If the array is empty, return all possible pairs
-        getNameTitleTypeHash: function (names) {
-            var name_title_hash = [];
-
-            if ( !names ) {
-                names = _.pluck( MULTIUNIT_PROPERTIES, 'name' );
-            }
-
-            _.each(MULTIUNIT_PROPERTIES, function (item) {
-                if ( _.indexOf(names, item.name) !== -1 ) {
-                    name_title_hash.push({ name: item.name, title: item.title, type: item.type });
-                }
-            });
-
-            return name_title_hash;
+        getNameAttribute: function () {
+            return 'mark';
         },
         //  TODO: stuff inside name_value_hash gets evaluated for each
         //  attribute, but we actually want it to be evaluated only for the
@@ -135,6 +63,143 @@ var app = app || {};
             }
 
             return default_value;
+        },
+        //  TODO: implement connector validation here, make sure it's
+        //  consistent with multiunit_subunits array
+        parseAndFixRootSection: function (root_section_data) {
+            var root_section_parsed = app.utils.object.extractObjectOrNull(root_section_data);
+
+            if ( !_.isObject(root_section_parsed) ) {
+                root_section_parsed = this.getDefaultValue('root_section');
+            }
+
+            return root_section_parsed;
+        },
+        parse: function (data) {
+            var multiunit_data = data && data.multiunit ? data.multiunit : data;
+            var filtered_data = app.schema.parseAccordingToSchema(multiunit_data, this.schema);
+
+            if ( filtered_data && filtered_data.multiunit_subunits ) {
+                filtered_data.multiunit_subunits =
+                    app.utils.object.extractObjectOrNull(filtered_data.multiunit_subunits) ||
+                    this.getDefaultValue('multiunit_subunits', 'array');
+            }
+
+            if ( filtered_data && filtered_data.root_section ) {
+                filtered_data.root_section = this.parseAndFixRootSection(filtered_data.root_section);
+            }
+
+            return filtered_data;
+        },
+        sync: function (method, model, options) {
+            if ( method === 'create' || method === 'update' ) {
+                options.attrs = { project_multiunit: model.toJSON() };
+            }
+
+            return Backbone.sync.call(this, method, model, options);
+        },
+        toJSON: function () {
+            var properties_to_omit = ['id', 'height', 'width'];
+            var json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+
+            json.multiunit_subunits = JSON.stringify(json.multiunit_subunits);
+            json.root_section = JSON.stringify(json.root_section);
+
+            return _.omit(json, properties_to_omit);
+        },
+        hasOnlyDefaultAttributes: function () {
+            var has_only_defaults = true;
+
+            _.each(this.toJSON(), function (value, key) {
+                if ( key !== 'position' && has_only_defaults ) {
+                    var property_source = _.findWhere(MULTIUNIT_PROPERTIES, { name: key });
+                    var type = property_source ? property_source.type : undefined;
+
+                    if ( key === 'root_section' ) {
+                        if ( value !==
+                            JSON.stringify(_.extend(
+                                {},
+                                this.getDefaultValue('root_section'),
+                                { id: this.get('root_section').id }
+                            ))
+                        ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( key === 'multiunit_subunits' ) {
+                        if ( value !==
+                            JSON.stringify(this.getDefaultValue('multiunit_subunits', 'array'))
+                        ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( this.getDefaultValue(key, type) !== value ) {
+                        has_only_defaults = false;
+                    }
+                }
+            }, this);
+
+            return has_only_defaults;
+        },
+        //  Check if this unit belongs to the project which is currently active
+        isParentProjectActive: function () {
+            var is_active = false;
+
+            if ( app.current_project && this.collection && this.collection.options.project &&
+                this.collection.options.project === app.current_project
+            ) {
+                is_active = true;
+            }
+
+            return is_active;
+        },
+        getInMetric: function (attr, metric) {
+            if (!metric || (['mm', 'inches'].indexOf(metric) === -1)) {
+                throw new Error('Set metric! "mm" or "inches"');
+            }
+
+            if (!attr || (['width', 'height'].indexOf(attr) === -1)) {
+                throw new Error('This function is only supposed to get width or height');
+            }
+
+            var value = (attr === 'width') ? this.getWidth() : this.getHeight();
+
+            return (metric === 'inches') ? value : app.utils.convert.inches_to_mm(value);
+        },
+        //  Multiunits and normal units share reference numbers within project.
+        //  Numbering starts with multiunits, the first multiunit within the
+        //  project gets 1, and its subunits are 1a, 1b, 1c etc. Second
+        //  multiunit is 2, and so on. The first normal unit that doesn't
+        //  belong to any collection gets the number of last multiunit + 1,
+        //  the remaining normal units are numbered according to their position
+        getRefNum: function () {
+            var ref_num = -1;
+
+            if (this.collection) {
+                ref_num = this.get('position') + 1;
+            }
+
+            return ref_num;
+        },
+        getTitles: function (names) {
+            var name_title_hash = this.getNameTitleTypeHash(names);
+
+            return _.pluck(name_title_hash, 'title');
+        },
+        //  Return { name: 'name', title: 'Title' } pairs for each item in
+        //  `names` array. If the array is empty, return all possible pairs
+        getNameTitleTypeHash: function (names) {
+            var name_title_hash = [];
+
+            if ( !names ) {
+                names = _.pluck( MULTIUNIT_PROPERTIES, 'name' );
+            }
+
+            _.each(MULTIUNIT_PROPERTIES, function (item) {
+                if ( _.indexOf(names, item.name) !== -1 ) {
+                    name_title_hash.push({ name: item.name, title: item.title, type: item.type });
+                }
+            });
+
+            return name_title_hash;
         },
         /**
          * Root section looks like this:
@@ -178,9 +243,6 @@ var app = app || {};
         isSubunit: function () {
             return false;
         },
-        getId: function () {
-            return this.get('root_section').id;
-        },
         isTrapezoid: function () {
             return false;
         },
@@ -196,18 +258,13 @@ var app = app || {};
         isOpeningDirectionOutward: function () {
             return false;
         },
-        hasBaseFilling: function () {
-            return false;
-        },
         initialize: function (attributes, options) {
             self = this;
 
             this.options = options || {};
-            this.profile = null;
+            this._cache = {};
 
             if ( !this.options.proxy ) {
-                this.validateRootSection();
-
                 this.on('add', function () {
                     self.listenTo(self.collection, 'update', function (event) {
                         self.updateSubunitsCollection();
@@ -256,29 +313,19 @@ var app = app || {};
                     firstSubunitPosition + subunitIndex :
                     firstSubunitPosition + subunitIndex - 1;
                 self.collection.subunits.setItemPosition(currentPosition, newPosition);
-                self.updateSubunitPosition(subunit);
             });
         },
-        updateSubunitPosition: function (subunitOrId) {  // updates subunit's 'position' attribute
-            var subunit = (subunitOrId instanceof app.Unit) ? subunitOrId : this.getSubunitById(subunitOrId);
-
-            if (_.isUndefined(subunit)) { return; }
-
-            var multiunitPosition = parseInt(this.get('position')) + 1;
-            var subscript = app.utils.format.letters(this.getSubunitRelativePosition(subunit) + 1);
-            var subunitPosition = '' + multiunitPosition + subscript;
-            subunit.set('position', subunitPosition);
-
-            return subunitPosition;
-        },
         getSubunitById: function (id) {
-            return this.collection.subunits.getById(id);
+            return this.collection.subunits.get(id);
         },
+        //  TODO: check that subunit has id, throw if it doesn't
+        //  TODO: or maybe we should just persist subunit to the backend and
+        //  then attach it (or maybe use cid, but attempt to obtain id asap)
         addSubunit: function (subunit) {
             if (!(subunit instanceof app.Unit)) { return; }
 
             var subunitsIds = this.get('multiunit_subunits');
-            var subunitId = subunit.getId();
+            var subunitId = subunit.id;
 
             if (!_.contains(subunitsIds, subunitId)) {
                 subunitsIds.push(subunitId);
@@ -291,7 +338,7 @@ var app = app || {};
             if (!(subunit.isSubunitOf && subunit.isSubunitOf(this))) { return; }
 
             var subunitsIds = this.get('multiunit_subunits');
-            var subunitId = subunit.getId();
+            var subunitId = subunit.id;
             var subunitIndex = subunitsIds.indexOf(subunitId);
             var isSubunitOf = subunitIndex !== -1;
             var isLeafSubunit = this.isLeafSubunit(subunitId);
@@ -305,12 +352,18 @@ var app = app || {};
                 return subunit;
             }
         },
+        getWidth: function () {
+            return this._cache.width || this.recalculateSizes().width;
+        },
+        getHeight: function () {
+            return this._cache.height || this.recalculateSizes().height;
+        },
         recalculateSizes: function () {  // updates multiunit width/height from subunit changes
             var subunitPositionsTree = this.getSubunitsCoordinatesTree();
             var rect = this.subunitsTreeGetRect(subunitPositionsTree);
 
-            this.set('width', app.utils.convert.mm_to_inches(rect.width));
-            this.set('height', app.utils.convert.mm_to_inches(rect.height));
+            this._cache.width = app.utils.convert.mm_to_inches(rect.width);
+            this._cache.height = app.utils.convert.mm_to_inches(rect.height);
 
             return { width: rect.width, height: rect.height };
         },
@@ -318,7 +371,7 @@ var app = app || {};
             var subunitPositionsTree = this.getSubunitsCoordinatesTree();
             var subunitNode;
             this.subunitsTreeForEach(subunitPositionsTree, function (node) {
-                if (node.unit.getId() === subunitId) {
+                if (node.unit.id === subunitId) {
                     subunitNode = node;
                 }
             });
@@ -399,7 +452,7 @@ var app = app || {};
             var flipX = options && options.flipX;
             var subunitsTree = this.getSubunitsTree();
             this.subunitsTreeForEach(subunitsTree, function (node) {
-                var isOrigin = self.isOriginId(node.unit.getId());
+                var isOrigin = self.isOriginId(node.unit.id);
 
                 if (isOrigin) {
                     node.width = node.unit.getInMetric('width', 'mm');
@@ -413,7 +466,7 @@ var app = app || {};
                     var parentY = node.parent.y;
                     var parentWidth = node.parent.unit.getInMetric('width', 'mm');
                     var parentHeight = node.parent.unit.getInMetric('height', 'mm');
-                    var parentConnector = self.getParentConnector(node.unit.getId());
+                    var parentConnector = self.getParentConnector(node.unit.id);
                     var gap = parentConnector.width;
                     var side = parentConnector.side;
 
@@ -482,9 +535,6 @@ var app = app || {};
             var multiunitHeight = maxY - minY;
 
             return { x: minX, y: minY, width: multiunitWidth, height: multiunitHeight };
-        },
-        getSubunitRelativePosition: function (subunit) {
-            return this.subunits.indexOf(subunit);
         },
         getSubunitsIds: function () {
             return this.get('multiunit_subunits').slice();
@@ -584,7 +634,7 @@ var app = app || {};
                     width: parentSubunit.get('width'),
                     height: parentSubunit.get('height')
                 });
-                options.connects[1] = parentSubunit.collection.add(newChildSubunit).getId();
+                options.connects[1] = parentSubunit.collection.add(newChildSubunit).id;
             }
 
             var connector = {
@@ -655,6 +705,7 @@ var app = app || {};
         },
         //  TODO: this is identical to getPreview from Unit model so maybe
         //  we want to move them both to a mixin or something
+        //  TODO: use this._cache.preview instead of this.preview
         getPreview: function (preview_options) {
             var complete_preview_options = app.preview.mergeOptions(this, preview_options);
             var use_cache = true;

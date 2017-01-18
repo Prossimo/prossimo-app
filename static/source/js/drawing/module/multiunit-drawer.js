@@ -125,12 +125,12 @@ var app = app || {};
                     preview: true,
                     isMaximized: true,
                     drawIndexes: false,
-                    isSelected: (module.getState('selected:subunit') === node.unit.getId())
+                    isSelected: (module.getState('selected:subunit') === node.unit.id)
                 });
 
                 subunitGroup.setAttrs({
                     name: 'subunit',
-                    subunitId: node.unit.getId(),
+                    subunitId: node.unit.id,
                     x: node.x * ratio,
                     y: node.y * ratio
                 });
@@ -271,7 +271,7 @@ var app = app || {};
                     listening: false
                 }));
                 var text = new Konva.Text({
-                    text: node.unit.get('position'),
+                    text: node.unit.getRefNum(),
                     padding: style.label.padding,
                     fill: style.label.color,
                     fontFamily: style.label.fontFamily,

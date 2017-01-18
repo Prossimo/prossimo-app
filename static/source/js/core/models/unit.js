@@ -195,9 +195,9 @@ var app = app || {};
 
             return defaults;
         },
-        getId: function () {
-            return this.get('root_section').id;
-        },
+        // getId: function () {
+        //     return this.get('root_section').id;
+        // },
         getNameAttribute: function () {
             return 'mark';
         },
@@ -663,8 +663,32 @@ var app = app || {};
 
             return _.pluck(name_title_hash, 'title');
         },
+        //  Multiunits and normal units share reference numbers within project.
+        //  Numbering starts with multiunits, the first multiunit within the
+        //  project gets 1, and its subunits are 1a, 1b, 1c etc. Second
+        //  multiunit is 2, and so on. The first normal unit that doesn't
+        //  belong to any collection gets the number of last multiunit + 1,
+        //  the remaining normal units are numbered according to their position
         getRefNum: function () {
-            return this.collection ? this.collection.indexOf(this) + 1 : -1;
+            var ref_num = -1;
+
+            if (this.collection) {
+                if ( this.collection.multiunits && this.collection.multiunits.length ) {
+                    if ( this.isSubunit() ) {
+                        var parent_multiunit = this.getParentMultiunit();
+                        ref_num = parent_multiunit.getRefNum() + app.utils.format.letters(this.get('position') + 1);
+                    } else {
+                        var number_of_subunits_in_collection = this.collection.filter(function (item) {
+                            return item.isSubunit();
+                        }).length;
+                        ref_num = this.get('position') - number_of_subunits_in_collection + 2;
+                    }
+                } else {
+                    ref_num = this.get('position') + 1;
+                }
+            }
+
+            return ref_num;
         },
         getWidthMM: function () {
             return app.utils.convert.inches_to_mm(this.get('width'));
@@ -2536,10 +2560,10 @@ var app = app || {};
                 .flatten()
                 .value();
 
-            return _.contains(allSubunitIds, this.getId());
+            return _.contains(allSubunitIds, this.id);
         },
         getParentMultiunit: function () {
-            var subunitId = this.getId();
+            var subunitId = this.id;
 
             var parentMultiunit = this.collection.multiunits.chain()
                 .find(function (multiunit) { return _.contains(multiunit.getSubunitsIds(), subunitId); })
@@ -2550,26 +2574,16 @@ var app = app || {};
         isSubunitOf: function (multiunit) {
             var multiunitSubunitsIds = multiunit.getSubunitsIds();
 
-            return _.contains(multiunitSubunitsIds, this.getId());
+            return _.contains(multiunitSubunitsIds, this.id);
         },
         getRelation: function () {
-            var unitRelation;
-
-            if (this.isMultiunit()) {
-                unitRelation = 'multiunit';
-            } else if (this.isSubunit()) {
-                unitRelation = 'subunit';
-            } else {
-                unitRelation = 'loneunit';
-            }
-
-            return unitRelation;
+            return this.isSubunit() ? 'subunit' : 'loneunit';
         },
         toMultiunit: function () {
-            if (this.isMultiunit()) { return this; }
-
             var multiunit = this.collection.multiunits.add(new app.Multiunit());
+
             multiunit.addSubunit(this);
+
             return multiunit;
         },
         //  List attributes that cause unit redraw on change

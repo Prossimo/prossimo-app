@@ -101,7 +101,7 @@ var app = app || {};
                                 project_settings && project_settings.get('inches_display_mode'));
 
                         return {
-                            position: subunit.get('position'),
+                            ref_num: subunit.getRefNum(),
                             mark: subunit.get('mark'),
                             size: size,
                             description: subunit.get('description'),
@@ -376,23 +376,17 @@ var app = app || {};
             var show_price = this.options.show_price !== false;
             var multiunit = model.getParentMultiunit();
             var multiunitHead;
-            var multiunitPosition;
             var isFirstSubunit;
             var isLastSubunit;
-            var modelPosition;
 
             if (model.isSubunit()) {
                 isFirstSubunit = previousModel.getParentMultiunit() !== multiunit;
                 isLastSubunit = nextModel.getParentMultiunit() !== multiunit;
-                modelPosition = model.get('position');
-                multiunitPosition = '' + (parseInt(multiunit.get('position')) + 1);
-            } else {
-                modelPosition = '' + (parseInt(model.get('position')) + 1);
             }
 
             if (isFirstSubunit) {
                 multiunitHead = {
-                    position: multiunitPosition,
+                    ref_num: multiunit.getRefNum(),
                     mark: multiunit.get('mark'),
                     description: this.getDescription(multiunit),
                     notes: multiunit.get('notes'),
@@ -406,7 +400,7 @@ var app = app || {};
             }
 
             return {
-                position: modelPosition,
+                ref_num: model.getRefNum(),
                 mark: model.get('mark'),
                 description: this.getDescription(),
                 notes: model.get('notes'),

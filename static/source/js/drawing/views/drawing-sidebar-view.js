@@ -90,7 +90,11 @@ var app = app || {};
                         reference_id: item.getRefNum(),
                         cid: item.cid,
                         mark: item.get('mark'),
-                        dimensions: app.utils.format.dimensions(item.get('width'), item.get('height'), 'fraction'),
+                        dimensions: app.utils.format.dimensions(
+                            item.getInMetric('width', 'inches'),
+                            item.getInMetric('height', 'inches'),
+                            'fraction'
+                        ),
                         unit_relation: item.getRelation()
                     };
                 }, this)

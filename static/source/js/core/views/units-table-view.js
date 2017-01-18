@@ -56,7 +56,7 @@ var app = app || {};
                 specs: {
                     title: 'Specs',
                     collection: this.collection,
-                    columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing',
+                    columns: ['move_item', 'ref_num', 'mark', 'quantity', 'width', 'height', 'drawing',
                         'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'profile_id', 'description',
                         'notes', 'exceptions', 'system', 'opening_direction',
                         'threshold', 'glazing', 'glazing_bar_width', 'uw', 'u_value']
@@ -64,16 +64,16 @@ var app = app || {};
                 unit_options: {
                     title: 'Unit Options',
                     collection: this.collection,
-                    columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing'],
+                    columns: ['move_item', 'ref_num', 'mark', 'quantity', 'width', 'height', 'drawing'],
                     unit_options_columns: app.settings.dictionaries.getAvailableDictionaryNames()
                 },
                 prices: {
                     title: 'Prices',
                     collection: this.collection,
-                    columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing', 'width_mm', 'height_mm',
-                        'original_cost', 'original_currency', 'conversion_rate', 'unit_cost', 'subtotal_cost',
-                        'supplier_discount', 'unit_cost_discounted', 'subtotal_cost_discounted', 'price_markup',
-                        'unit_price', 'subtotal_price', 'discount', 'unit_price_discounted',
+                    columns: ['move_item', 'ref_num', 'mark', 'quantity', 'width', 'height', 'drawing', 'width_mm',
+                        'height_mm', 'original_cost', 'original_currency', 'conversion_rate', 'unit_cost',
+                        'subtotal_cost', 'supplier_discount', 'unit_cost_discounted', 'subtotal_cost_discounted',
+                        'price_markup', 'unit_price', 'subtotal_price', 'discount', 'unit_price_discounted',
                         'subtotal_price_discounted', 'subtotal_profit', 'total_square_feet', 'square_feet_price',
                         'square_feet_price_discounted']
                 },
@@ -87,7 +87,7 @@ var app = app || {};
                 multiunits: {
                     title: 'Multiunits',
                     collection: this.collection.multiunits,
-                    columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing',
+                    columns: ['move_item', 'ref_num', 'mark', 'quantity', 'width', 'height', 'drawing', 'customer_image',
                         'width_mm', 'height_mm', 'description', 'notes', 'exceptions']
                 }
             };
@@ -295,6 +295,9 @@ var app = app || {};
             var getter;
 
             var getters_hash = {
+                width: function (model) {
+                    return (model.isMultiunit()) ? model.getInMetric('width', 'inches') : model.get('width');
+                },
                 height: function (model) {
                     return (model.isMultiunit()) ? model.getInMetric('height', 'inches') : model.getTrapezoidHeight();
                 },
@@ -303,6 +306,9 @@ var app = app || {};
                 },
                 height_mm: function (model) {
                     return (model.isMultiunit()) ? model.getInMetric('height', 'mm') : model.getTrapezoidHeightMM();
+                },
+                ref_num: function (model) {
+                    return model.getRefNum();
                 },
                 dimensions: function (model) {
                     return f.dimensions(model.get('width'), model.get('height'), null,
@@ -570,6 +576,7 @@ var app = app || {};
                     renderer: app.hot_renderers.getFormattedRenderer('dimension_heights', null,
                         project_settings.get('inches_display_mode') || null)
                 },
+                ref_num: { readOnly: true },
                 width_mm: {
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('fixed_minimal')
@@ -861,6 +868,7 @@ var app = app || {};
             var custom_column_headers_hash = {
                 width: 'Width, in',
                 height: 'Height, in',
+                ref_num: 'Ref #',
                 drawing: 'Drawing',
                 width_mm: 'Width, mm',
                 height_mm: 'Height, mm',
@@ -916,6 +924,7 @@ var app = app || {};
             var col_widths = {
                 move_item: 55,
                 mark: 60,
+                ref_num: 55,
                 customer_image: 100,
                 dimensions: 120,
                 rough_opening: 140,

@@ -14,9 +14,9 @@
                 <td class="primary-info{{#if show_price }} has-price{{/if}}" colspan="2">
                     <table>
                         <tbody><tr>
-                            <td class="position">
-                                <strong>Unit #</strong>
-                                <span>{{ position }}</span>
+                            <td class="ref_num">
+                                <strong>Ref #</strong>
+                                <span>{{ ref_num }}</span>
                             </td>
                             <td class="mark">
                                 <strong>Mark</strong>
@@ -80,7 +80,7 @@
                         <h5>Unit List</h5>
                         {{#each description.subunits }}
                             <div class="subunit">
-                                <h6><em>{{ position }}:</em> {{ mark }}</h6>
+                                <h6><em>{{ ref_num }}:</em> {{ mark }}</h6>
                                 <ul>
                                     <li><strong>Size <small class="size-label">WxH</small></strong> <span>{{ size }}</span></li>
                                     {{#if description }}<li><strong>Customer Description:</strong> <span>{{ description }}</span></li>{{/if}}
@@ -115,9 +115,9 @@
             <td class="primary-info{{#if show_price }} has-price{{#if price.discount }} has-discounted-price{{/if}}{{/if}}">
                 <table>
                     <tbody><tr>
-                        <td class="position">
-                            <strong>Unit #</strong>
-                            <span>{{ position }}</span>
+                        <td class="ref_num">
+                            <strong>Ref #</strong>
+                            <span>{{ ref_num }}</span>
                         </td>
                         {{#if has_dummy_profile }}
                             <td class="no-profile-warning">
@@ -244,9 +244,9 @@
             <td class="primary-info{{#if show_price }} has-price{{#if price.discount }} has-discounted-price{{/if}}{{/if}}">
                 <table>
                     <tbody><tr>
-                        <td class="position">
-                            <strong>Unit #</strong>
-                            <span>{{ position }}</span>
+                        <td class="ref_num">
+                            <strong>Ref #</strong>
+                            <span>{{ ref_num }}</span>
                         </td>
                         <td class="mark">
                             <strong>Mark</strong>

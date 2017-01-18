@@ -72,11 +72,16 @@ var app = app || {};
             var project_settings = app.settings.getProjectSettings();
 
             var relevant_properties = [
-                'mark', 'width', 'height', 'description', 'notes', 'exceptions',
+                'ref_num', 'mark', 'width', 'height', 'description', 'notes', 'exceptions',
                 'uw', 'glazing', 'opening_direction', 'glazing_bar_width'
             ];
 
+            var custom_titles = {
+                ref_num: 'Ref #'
+            };
+
             params_source = {
+                ref_num: this.model.getRefNum(),
                 width: f.dimension(this.model.get('width'), null,
                     project_settings && project_settings.get('inches_display_mode')),
                 height: f.dimension(this.model.get('height'), null,
@@ -84,7 +89,7 @@ var app = app || {};
             };
 
             unit_properties = _.map(relevant_properties, function (prop_name) {
-                var title = this.model.getTitles([prop_name])[0] || '';
+                var title = custom_titles[prop_name] || this.model.getTitles([prop_name])[0];
                 var value = params_source[prop_name] || this.model.get(prop_name);
 
                 if (
@@ -98,8 +103,8 @@ var app = app || {};
                 }
 
                 return {
-                    title: title,
-                    value: value
+                    title: title || '',
+                    value: value || ''
                 };
             }, this).filter(function (property) {
                 return !_.isUndefined(property.value);

@@ -81,7 +81,7 @@ var app = app || {};
                 Handsontable.renderers.TextRenderer.apply(this, arguments);
 
                 if ( _.indexOf(['dimension', 'percent', 'fixed_minimal', 'fixed',
-                        'price_usd', 'align_right'], attr_name) !== -1
+                    'price_usd', 'align_right'], attr_name) !== -1
                 ) {
                     $td.addClass('htNumeric');
                 }

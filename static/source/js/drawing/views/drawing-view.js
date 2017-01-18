@@ -255,13 +255,13 @@ var app = app || {};
                 multiunit = this.model.toMultiunit();
             } else { return; }
 
-            multiunit.addConnector({ connects: [this.model.getId()], side: connectorSide });
+            multiunit.addConnector({ connects: [this.model.id], side: connectorSide });
 
             this.options.parent_view.sidebar_view.render();
             this.selectUnit(multiunit);
         },
 
-        // Marrionente lifecycle method
+        // Marionente lifecycle method
         onRender: function () {
             this.changeIcons();
 

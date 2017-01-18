@@ -28,6 +28,7 @@ var app = app || {};
             var result;
 
             options = this.mergeOptions(unitModel, options);
+
             var module = new app.DrawingModule(options);
             var isInside = (options.position === 'inside');
 
@@ -56,7 +57,7 @@ var app = app || {};
                 var parentMultiunitWidth = parentMultiunit.getInMetric('width', 'mm') * previewRatio;
                 var parentMultiunitHeight = parentMultiunit.getInMetric('height', 'mm') * previewRatio;
                 var unitWidth = unitModel.getInMetric('width', 'mm') * previewRatio;
-                var unitCoords = parentMultiunit.getSubunitCoords(unitModel.getId());
+                var unitCoords = parentMultiunit.getSubunitCoords(unitModel.id);
                 var adjustedUnitCoords = {
                     x: (unitCoords) ? unitCoords.x * previewRatio : 0,
                     y: (unitCoords) ? unitCoords.y * previewRatio : 0
