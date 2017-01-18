@@ -3,8 +3,6 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var self;
-
     var UNSET_VALUE = '--';
 
     app.UnitsTableView = Marionette.View.extend({
@@ -45,7 +43,7 @@ var app = app || {};
             'command+y': 'onRedo'
         },
         initialize: function () {
-            self = this;
+            var self = this;
 
             this.table_update_timeout = null;
             this.dropdown_scroll_timer = null;
@@ -104,13 +102,14 @@ var app = app || {};
             }
 
             this.undo_manager = new app.UndoManager({
-                register: this.collection,
+                register: [this.collection, this.collection.multiunits],
                 track: true
             });
 
             this.selected = [];
 
             this.listenTo(this.collection, 'all', this.updateTable);
+            this.listenTo(this.collection.multiunits, 'all', this.updateTable);
             this.listenTo(this.options.extras, 'all', this.updateTable);
             this.listenTo(this.options.parent_view, 'attach', this.updateTable);
 
@@ -189,9 +188,16 @@ var app = app || {};
             }
         },
         onRemoveSelected: function () {
+            var unit;
+
             if ( this.selected.length && this.hot ) {
                 for (var i = this.selected.length - 1; i >= 0; i--) {
-                    this.hot.getSourceData().at(this.selected[i]).destroy();
+                    unit = this.hot.getSourceData().at(this.selected[i]);
+                    if (unit.isSubunit()) {
+                        unit.getParentMultiunit().removeSubunit(unit);
+                    } else {
+                        unit.destroy();
+                    }
                 }
 
                 //  TODO: do we really need two calls just to unselect?
@@ -448,6 +454,7 @@ var app = app || {};
             return parser.apply(this, arguments);
         },
         getSetterFunction: function (unit_model, column_name) {
+            var self = this;
             var setter;
 
             var setters_hash = {
@@ -490,6 +497,8 @@ var app = app || {};
             return setter.apply(this, arguments);
         },
         getColumnData: function (column_name) {
+            var self = this;
+
             return function (unit_model, value) {
                 if ( unit_model ) {
                     if ( _.isUndefined(value) ) {
@@ -501,6 +510,8 @@ var app = app || {};
             };
         },
         showValidationError: function (model, error) {
+            var self = this;
+
             if ( this.hot && model.collection === this.getActiveTab().collection ) {
                 var hot = this.hot;
 
@@ -526,6 +537,7 @@ var app = app || {};
             }
         },
         getColumnValidator: function (column_name) {
+            var self = this;
             var validator = function (value, callback) {
                 var attributes_object = {};
                 var model = this.instance.getSourceData().at(this.row);
@@ -542,6 +554,7 @@ var app = app || {};
             return validator;
         },
         getColumnExtraProperties: function (column_name) {
+            var self = this;
             var project_settings = app.settings.getProjectSettings();
             var properties_obj = {};
             var isMultiunitCollection = self.getActiveTab().collection instanceof app.MultiunitCollection;
@@ -724,6 +737,8 @@ var app = app || {};
         //  prevent editing of some attributes that shouldn't be editable for
         //  a certain unit / accessory
         getActiveTabCellsSpecificOptions: function () {
+            var self = this;
+
             return function (row, col) {
                 var cell_properties = {};
                 var item = this.instance.getSourceData().at(row);
@@ -903,6 +918,8 @@ var app = app || {};
             return custom_column_headers_hash[column_name];
         },
         updateTable: function (e) {
+            var self = this;
+
             //  We don't want to update table on validation errors, we have
             //  a special function for that
             if ( e === 'invalid' ) {
@@ -985,8 +1002,8 @@ var app = app || {};
             return widths_table;
         },
         onRender: function () {
-            var is_visible = this.options.is_always_visible ||
-                this.table_visibility === 'visible';
+            var self = this;
+            var is_visible = this.options.is_always_visible || this.table_visibility === 'visible';
 
             //  We have to duplicate keydown event handling here because of the
             //  way copyPaste plugin for HoT works. It intercepts focus once
@@ -1073,6 +1090,13 @@ var app = app || {};
                                         self.ui.$clone.addClass('disabled');
                                     } else {
                                         self.ui.$clone.removeClass('disabled');
+                                    }
+
+                                    if (selectedData.isSubunit() &&
+                                        !selectedData.getParentMultiunit().isSubunitRemovable(selectedData.id)) {
+                                        self.ui.$remove.addClass('disabled');
+                                    } else {
+                                        self.ui.$remove.removeClass('disabled');
                                     }
                                 } else {
                                     var start = startRow;

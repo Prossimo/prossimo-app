@@ -3,8 +3,6 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var PREVIEW_BACKGROUND_OPACITY = 0.3;
-
     app.preview = {
         mergeOptions: function (unitModel, options) {
             var defaults = {
@@ -49,6 +47,7 @@ var app = app || {};
             }
 
             if (options.drawNeighbors) {
+                var style = module.getStyle('neighbors_background');
                 var previewRatio = module.get('ratio');
                 var originCoords = module.layerManager.layers.unit.drawer.layer.getClientRect();
                 var originX = originCoords.x;
@@ -80,8 +79,8 @@ var app = app || {};
                 var background = parentMultiunit.getPreview(backgroundOptions);
 
                 module.setBackground(background, {
-                    opacity: PREVIEW_BACKGROUND_OPACITY,
-                    filters: [Konva.Filters.Grayscale],
+                    opacity: style.opacity,
+                    filters: style.filters,
                     x: backgroundX,
                     y: backgroundY
                 });

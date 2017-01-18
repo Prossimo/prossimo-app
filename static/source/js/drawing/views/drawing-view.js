@@ -59,6 +59,7 @@ var app = app || {};
             $filling_select: '#filling-select',
             $undo: '#undo',
             $redo: '#redo',
+            $clear_frame: '#clear-frame',
             $sash_types: '.change-sash-type',
             $metrics_glass: '#additional-metrics-glass',
             $metrics_opening: '#additional-metrics-opening',
@@ -69,7 +70,7 @@ var app = app || {};
             // Click
             'click .split-section': 'handleSplitSectionClick',
             'click @ui.$sash_types': 'handleChangeSashTypeClick',
-            'click #clear-frame': 'handleClearFrameClick',
+            'click @ui.$clear_frame': 'handleClearFrameClick',
             'click #change-view-button': 'handleChangeView',
             'click .toggle-arched': 'handleArchedClick',
             'click .toggle-circular': 'handleCircularClick',
@@ -80,7 +81,7 @@ var app = app || {};
             // Tap
             'tap .split-section': 'handleSplitSectionClick',
             'tap @ui.$sash_types': 'handleChangeSashTypeClick',
-            'tap #clear-frame': 'handleClearFrameClick',
+            'tap @ui.$clear_frame': 'handleClearFrameClick',
             'tap #change-view-button': 'handleChangeView',
             'tap .toggle-arched': 'handleArchedClick',
             'tap .toggle-circular': 'handleCircularClick',
@@ -478,6 +479,7 @@ var app = app || {};
 
             var selectedSashId = this.state.selectedSashId;
             var selectedSash = (this.model.getSection) ? this.model.getSection(selectedSashId) : undefined;
+            var isMultiunit = this.model.isMultiunit();
             var isSashSelected = !!selectedSash;
             var isFrameSelected = !!this.state.isFrameSelected;
             var isArched = selectedSash && selectedSash.arched;
@@ -548,6 +550,8 @@ var app = app || {};
                 this.undo_manager.registerButton('redo', this.ui.$redo);
                 this.undo_manager.registered = true;
             }
+
+            this.ui.$clear_frame.toggle(!isMultiunit);
 
             // Additional overlay metrics
             this.$('.additional-metrics').toggle(

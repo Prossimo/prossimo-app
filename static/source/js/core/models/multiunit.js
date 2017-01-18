@@ -3,8 +3,6 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var self;
-
     var MULTIUNIT_PROPERTIES = [
         { name: 'multiunit_subunits', title: 'Subunits', type: 'array' },
 
@@ -259,13 +257,19 @@ var app = app || {};
             return false;
         },
         initialize: function (attributes, options) {
-            self = this;
+            var self = this;
 
             this.options = options || {};
             this._cache = {};
 
             if ( !this.options.proxy ) {
                 this.on('add', function () {
+                    if (_.isArray(this.options.subunits)) {
+                        _.each(this.options.subunits, function (subunit) {
+                            self.addSubunit(subunit);
+                        });
+                    }
+
                     self.listenTo(self.collection, 'update', function (event) {
                         self.updateSubunitsCollection();
                         self.updateConnectorsLength();
@@ -276,22 +280,28 @@ var app = app || {};
                         self.updateConnectorsLength();
                         self.updateSubunitsIndices();
                     });
-                    self.listenTo(self.collection.subunits, 'remove', function (unit) {
-                        if (unit.isSubunitOf(self)) {
-                            self.removeSubunit(unit);
-                        }
-                    });
+                });
+
+                this.on('change', function (eventData) {
+                    if (eventData.changed.width || eventData.changed.height) {
+                        self.recalculateSizes();
+                    }
                 });
             }
         },
-        /**
-         * this.subunits is a collection with models from project's units collection
-         */
+        // this.subunits is a collection with models from project's units collection
         updateSubunitsCollection: function () {
+            var self = this;
+
             if (!this.subunits) {
                 this.subunits = new app.UnitCollection();
                 this.listenTo(this.subunits, 'change', function () {  // trigger self change if any subunit changes
                     self.trigger.apply(this, ['change'].concat(Array.prototype.slice.call(arguments)));
+                });
+                this.listenTo(this.subunits, 'remove', function () {  // remove multiunit if last subunit is removed
+                    if (self.subunits.length === 0) {
+                        self.destroy();
+                    }
                 });
             }
 
@@ -303,8 +313,14 @@ var app = app || {};
                     .filter(function (subunit) { return !_.isUndefined(subunit); })
                     .filter(function (subunit) { return self.subunits.indexOf(subunit) === -1; })
             );
+            this.subunits.remove(
+                this.subunits
+                    .filter(function (subunit) { return subunitsIds.indexOf(subunit.id) === -1; })
+            );
         },
         updateSubunitsIndices: function () {  // reorders subunit models in their collection (not in this.subunits)
+            var self = this;
+
             this.subunits.forEach(function (subunit, subunitIndex) {
                 var firstSubunit = self.subunits.at(0);
                 var firstSubunitPosition = firstSubunit.collection.indexOf(firstSubunit);
@@ -334,6 +350,7 @@ var app = app || {};
                 this.recalculateSizes();
             }
         },
+        // This is the only proper way to remove a subunit
         removeSubunit: function (subunit) {
             if (!(subunit.isSubunitOf && subunit.isSubunitOf(this))) { return; }
 
@@ -341,15 +358,20 @@ var app = app || {};
             var subunitId = subunit.id;
             var subunitIndex = subunitsIds.indexOf(subunitId);
             var isSubunitOf = subunitIndex !== -1;
-            var isLeafSubunit = this.isLeafSubunit(subunitId);
+            var isSubunitRemovable = this.isSubunitRemovable(subunitId);
+            var parentConnector;
 
-            if (isSubunitOf && isLeafSubunit) {
+            if (isSubunitOf && isSubunitRemovable) {
                 subunitsIds.splice(subunitIndex, 1);
-                this.removeConnector(this.getParentConnector(subunitId).id);
+                parentConnector = this.getParentConnector(subunitId);
+                if (parentConnector) {
+                    this.removeConnector(parentConnector.id);
+                }
                 this.updateSubunitsCollection();
                 this.updateSubunitsIndices();
                 this.recalculateSizes();
-                return subunit;
+                subunit.destroy();
+                return true;
             }
         },
         getWidth: function () {
@@ -390,7 +412,7 @@ var app = app || {};
 
             return coords;  // mm
         },
-        isLeafSubunit: function (subunitId) {
+        isSubunitRemovable: function (subunitId) {
             var subunitNode = this.getSubunitNode(subunitId);
             var isLeafSubunit = (subunitNode.children.length === 0);
 
@@ -405,6 +427,7 @@ var app = app || {};
          */
         /* eslint-disable no-loop-func */
         getSubunitsTree: function () {
+            var self = this;
             var subunitsIds = this.getSubunitsIds();  // prepare flat array of node templates
             var nodeTemplates = subunitsIds.map(function (subunitId) {
                 var unitId = subunitId;
@@ -417,6 +440,8 @@ var app = app || {};
                 };
                 return node;
             });
+
+            if (nodeTemplates.length === 0) { return; }
 
             var originId = this.getOriginSubunitId();  // bootstrap tree
             var originNode = nodeTemplates.filter(function (node) {
@@ -449,6 +474,7 @@ var app = app || {};
         /* eslint-enable no-loop-func */
         // Returns subunit tree with coordinate information at each node, in mm
         getSubunitsCoordinatesTree: function (options) {
+            var self = this;
             var flipX = options && options.flipX;
             var subunitsTree = this.getSubunitsTree();
             this.subunitsTreeForEach(subunitsTree, function (node) {
@@ -510,6 +536,7 @@ var app = app || {};
         subunitsTreeForEach: function (subunitNode, func) {
             if (!subunitNode || !_.isFunction(func)) { return; }
 
+            var self = this;
             var children = subunitNode.children;  // start at node and apply down
             func.call(this, subunitNode);
             if (children && children.length > 0) {
@@ -554,6 +581,7 @@ var app = app || {};
             return parentSubunitId;
         },
         getChildSubunitsIds: function (subunitId) {
+            var self = this;
             var childConnectors = this.getChildConnectors(subunitId);
             var childSubunitsIds = childConnectors.map(function (connector) {
                 return self.getConnectorChildSubunitId(connector.id);
@@ -683,6 +711,7 @@ var app = app || {};
             return connector;
         },
         updateConnectorsLength: function () {
+            var self = this;
             var connectors = this.get('root_section').connectors;
 
             connectors.forEach(function (connector) {

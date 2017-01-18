@@ -3,8 +3,6 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var self;
-
     var UNIT_PROPERTIES = [
         { name: 'mark', title: 'Mark', type: 'string' },
         { name: 'width', title: 'Width (inches)', type: 'number' },
@@ -254,7 +252,7 @@ var app = app || {};
             return app.schema.parseAccordingToSchema(unit_data, this.schema);
         },
         initialize: function (attributes, options) {
-            self = this;
+            var self = this;
 
             this.options = options || {};
             this.profile = null;
@@ -2580,9 +2578,9 @@ var app = app || {};
             return this.isSubunit() ? 'subunit' : 'loneunit';
         },
         toMultiunit: function () {
-            var multiunit = this.collection.multiunits.add(new app.Multiunit());
+            var multiunit = new app.Multiunit(null, { subunits: [this] });
 
-            multiunit.addSubunit(this);
+            this.collection.multiunits.add(multiunit);
 
             return multiunit;
         },

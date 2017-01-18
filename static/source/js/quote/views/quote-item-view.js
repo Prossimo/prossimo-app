@@ -89,10 +89,10 @@ var app = app || {};
         getDescription: function (model) {
             model = model || this.model;
             var project_settings = app.settings.getProjectSettings();
+            var subunits;
             var result;
 
             if (model.isMultiunit()) {
-                var subunits = [];
                 if (model.subunits) {
                     subunits = model.subunits.map(function (subunit) {
                         var size = view.options.show_sizes_in_mm ?
@@ -109,7 +109,9 @@ var app = app || {};
                         };
                     });
                 }
-                result = subunits;
+                result = {
+                    subunits: subunits
+                };
 
             } else {
                 var sash_list_source = model.getSashList(null, null, this.options.show_outside_units_view &&

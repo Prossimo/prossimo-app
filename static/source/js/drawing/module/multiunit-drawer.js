@@ -3,8 +3,6 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var self;
-
     var module;
     var model;
     var ratio;
@@ -13,7 +11,7 @@ var app = app || {};
     app.Drawers = app.Drawers || {};
     app.Drawers.MultiunitDrawer = Backbone.KonvaView.extend({
         initialize: function (params) {
-            self = this;
+            var self = this;
 
             module = params.builder;
             model = module.get('model');
@@ -83,7 +81,7 @@ var app = app || {};
 
             if (selectedSubunitId) {
                 selectedSubunit = model.getSubunitById(selectedSubunitId);
-                model.removeSubunit(selectedSubunit).destroy();
+                model.removeSubunit(selectedSubunit);
             }
 
             this.deselectAll();
@@ -153,6 +151,7 @@ var app = app || {};
         createConnectors: function (subunitGroup) {
             if (!subunitGroup) { return; }
 
+            var self = this;
             var group = new Konva.Group({ name: 'connectors' });
 
             var nonOriginSubunits = _.tail(subunitGroup.getChildren());
@@ -306,7 +305,9 @@ var app = app || {};
                     height: subunit.getClientRect().height
                 });
             });
-            group.add.apply(group, overlaysKonvas);
+            if (overlaysKonvas.length > 0) {
+                group.add.apply(group, overlaysKonvas);
+            }
 
             return group;
         }
