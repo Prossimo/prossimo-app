@@ -249,6 +249,7 @@ var app = app || {};
             var connectorSide = $(event.target).data().side;
             var relation = this.model.getRelation();
             var multiunit;
+            var self = this;
 
             if (relation === 'subunit') {
                 multiunit = this.model.getParentMultiunit();
@@ -256,10 +257,14 @@ var app = app || {};
                 multiunit = this.model.toMultiunit();
             } else { return; }
 
-            multiunit.addConnector({ connects: [this.model.id], side: connectorSide });
-
-            this.options.parent_view.sidebar_view.render();
-            this.selectUnit(multiunit);
+            multiunit.addConnector({
+                connects: [this.model.id],
+                side: connectorSide,
+                success: function () {
+                    self.options.parent_view.sidebar_view.render();
+                    self.selectUnit(multiunit);
+                }
+            });
         },
 
         // Marionente lifecycle method

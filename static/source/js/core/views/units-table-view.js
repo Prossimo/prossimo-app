@@ -43,8 +43,6 @@ var app = app || {};
             'command+y': 'onRedo'
         },
         initialize: function () {
-            var self = this;
-
             this.table_update_timeout = null;
             this.dropdown_scroll_timer = null;
             this.table_visibility = this.options.is_always_visible ? 'visible' :
@@ -188,15 +186,14 @@ var app = app || {};
             }
         },
         onRemoveSelected: function () {
-            var unit;
-
             if ( this.selected.length && this.hot ) {
                 for (var i = this.selected.length - 1; i >= 0; i--) {
-                    unit = this.hot.getSourceData().at(this.selected[i]);
-                    if (unit.isSubunit()) {
-                        unit.getParentMultiunit().removeSubunit(unit);
+                    var selected_model = this.hot.getSourceData().at(this.selected[i]);
+
+                    if (selected_model instanceof app.Unit && selected_model.isSubunit()) {
+                        selected_model.getParentMultiunit().removeSubunit(selected_model);
                     } else {
-                        unit.destroy();
+                        selected_model.destroy();
                     }
                 }
 
@@ -208,10 +205,10 @@ var app = app || {};
         },
         onCloneSelected: function () {
             if ( this.selected.length === 1 && this.hot ) {
-                var selectedData = this.hot.getSourceData().at(this.selected[0]);
+                var selected_model = this.hot.getSourceData().at(this.selected[0]);
 
-                if (!selectedData.hasOnlyDefaultAttributes()) {
-                    selectedData.duplicate();
+                if (!selected_model.hasOnlyDefaultAttributes()) {
+                    selected_model.duplicate();
                 }
             }
         },
@@ -255,7 +252,8 @@ var app = app || {};
                     item.is_active = key === this.active_tab;
                     return item;
                 }, this),
-                mode: this.getActiveTab().title === 'Extras' ? 'extras' : 'units',
+                mode: (this.getActiveTab().title === 'Extras') ? 'extras' :
+                    (this.getActiveTab().title === 'Multiunits' ? 'multiunits' : 'units'),
                 table_visibility: this.table_visibility,
                 is_always_visible: this.options.is_always_visible
             };
@@ -1086,14 +1084,19 @@ var app = app || {};
                                     self.selected = [startRow];
                                     var selectedData = self.hot.getSourceData().at(startRow);
 
-                                    if (selectedData.hasOnlyDefaultAttributes()) {
+                                    if (
+                                        (_.isFunction(selectedData.isMultiunit) && selectedData.isMultiunit()) ||
+                                        selectedData.hasOnlyDefaultAttributes()
+                                    ) {
                                         self.ui.$clone.addClass('disabled');
                                     } else {
                                         self.ui.$clone.removeClass('disabled');
                                     }
 
-                                    if (selectedData.isSubunit() &&
-                                        !selectedData.getParentMultiunit().isSubunitRemovable(selectedData.id)) {
+                                    if (
+                                        _.isFunction(selectedData.isSubunit) && selectedData.isSubunit() &&
+                                        !selectedData.getParentMultiunit().isSubunitRemovable(selectedData.id)
+                                    ) {
                                         self.ui.$remove.addClass('disabled');
                                     } else {
                                         self.ui.$remove.removeClass('disabled');

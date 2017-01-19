@@ -649,34 +649,48 @@ var app = app || {};
         addConnector: function (options) {
             if (!(options && options.connects && options.side)) { return; }
 
+            var self = this;
             var parentSubunit = this.getSubunitById(options.connects[0]);
             var connectors = this.get('root_section').connectors;
             var newChildSubunit;
+
+            function pushConnector() {
+                var connector = {
+                    id: highestId + 1,
+                    connects: options.connects,
+                    side: options.side,
+                    width: options.width || CONNECTOR_DEFAULTS.width,
+                    facewidth: options.facewidth || CONNECTOR_DEFAULTS.facewidth
+                };
+
+                connectors.push(connector);
+                self.updateConnectorLength(connector);
+
+                if ( options.success ) {
+                    options.success();
+                }
+            }
 
             var highestId = connectors
                 .map(function (connector) { return connector.id; })
                 .reduce(function (lastHighestId, currentId) { return Math.max(currentId, lastHighestId); }, 0);
 
             if (!options.connects[1]) {
-                newChildSubunit = new app.Unit({
+                newChildSubunit = new app.Unit();
+                parentSubunit.collection.add(newChildSubunit);
+                newChildSubunit.persist({
                     width: parentSubunit.get('width'),
                     height: parentSubunit.get('height')
+                }, {
+                    success: function () {
+                        options.connects[1] = newChildSubunit.id;
+                        pushConnector();
+                        self.addSubunit(newChildSubunit);
+                    }
                 });
-                options.connects[1] = parentSubunit.collection.add(newChildSubunit).id;
+            } else {
+                pushConnector();
             }
-
-            var connector = {
-                id: highestId + 1,
-                connects: options.connects,
-                side: options.side,
-                width: options.width || CONNECTOR_DEFAULTS.width,
-                facewidth: options.facewidth || CONNECTOR_DEFAULTS.facewidth
-            };
-
-            connectors.push(connector);
-            this.updateConnectorLength(connector);
-            if (newChildSubunit) { this.addSubunit(newChildSubunit); }
-            return connector;
         },
         removeConnector: function (id) {
             var connectors = this.get('root_section').connectors;
