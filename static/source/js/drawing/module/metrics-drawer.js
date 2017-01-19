@@ -3,23 +3,17 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var module;
-    var model;
-    var metricSize;
-    var controlSize;
-    var ratio;
-
     app.Drawers = app.Drawers || {};
     app.Drawers.MetricsDrawer = Backbone.KonvaView.extend({
         initialize: function (params) {
-            module = params.builder;
+            this._module = params.builder;
 
             this.layer = params.layer;
             this.stage = params.stage;
 
-            model = module.get('model');
-            metricSize = params.metricSize;
-            controlSize = metricSize / 4;
+            this._model = this._module.get('model');
+            this._metricSize = params.metricSize;
+            this._controlSize = this._metricSize / 4;
         },
         el: function () {
             var group = new Konva.Group();
@@ -27,7 +21,7 @@ var app = app || {};
             return group;
         },
         render: function () {
-            ratio = module.get('ratio');
+            this._ratio = this._module.get('ratio');
 
             // Clear all previous objects
             this.layer.destroyChildren();
@@ -44,6 +38,8 @@ var app = app || {};
 
         },
         createMetrics: function () {
+            var model = this._model;
+            var ratio = this._ratio;
             var group = new Konva.Group();
             var infoGroup;
 
@@ -57,7 +53,7 @@ var app = app || {};
             } else {
                 var mullions;
 
-                if (module.getState('openingView')) {
+                if (this._module.getState('openingView')) {
                     mullions = model.getMullions();
                 } else {
                     mullions = model.getRevertedMullions();
@@ -69,7 +65,7 @@ var app = app || {};
             group.add( infoGroup );
 
             // get stage center
-            var center = module.get('center');
+            var center = this._module.get('center');
             // place unit on stage center
             group.position( center );
 
@@ -91,7 +87,7 @@ var app = app || {};
             // Draw whole metrics
             group.add( this.createWholeMetrics(measurements, width, height) );
 
-            if (!module.getState('isPreview')) {
+            if (!this._module.getState('isPreview')) {
                 // Draw mullion controls
                 group.add( this.createMullionControls(controls, width, height) );
             }
@@ -102,6 +98,7 @@ var app = app || {};
             return group;
         },
         sortMullions: function (mullions) {
+            var module = this._module;
             var verticalMullions = [];
             var horizontalMullions = [];
 
@@ -127,6 +124,8 @@ var app = app || {};
         },
         getMeasurements: function (mullions) {
             var view = this;
+            var module = this._module;
+            var model = this._model;
             var root_section = model.get('root_section');
 
             var result = {};
@@ -349,6 +348,9 @@ var app = app || {};
         },
         createMullionMetrics: function (mullions, width, height) {
             var view = this;
+            var model = this._model;
+            var metricSize = this._metricSize;
+            var ratio = this._ratio;
             var group = new Konva.Group();
 
             _.each(mullions, function (mulGroup, type) {
@@ -407,6 +409,8 @@ var app = app || {};
         },
         createMetric: function ( mullion, params, type ) {
             var view = this;
+            var model = this._model;
+            var ratio = this._ratio;
             var section = model.getSection( mullion.section_id );
             var group = new Konva.Group();
             var gap = (mullion.index === 1) ? '_gap' : '';
@@ -466,7 +470,7 @@ var app = app || {};
             // Attach setter
             if (params.setter) {
                 params.methods.setter = methods[methodName].bind({
-                    openingView: module.getState('openingView'),
+                    openingView: this._module.getState('openingView'),
                     id: section.id,
                     model: model
                 });
@@ -485,13 +489,15 @@ var app = app || {};
         },
         getCorrection: function () {
             return {
-                frame_width: model.profile.get('frame_width'),
-                mullion_width: model.profile.get('mullion_width') / 2,
+                frame_width: this._model.profile.get('frame_width'),
+                mullion_width: this._model.profile.get('mullion_width') / 2,
                 size: 0,
                 pos: 0
             };
         },
         getControls: function (mullions) {
+            var module = this._module;
+            var model = this._model;
             var result = {};
 
             _.each(mullions, function (mGroup, type) {
@@ -572,10 +578,10 @@ var app = app || {};
             return correction;
         },
         getFrameCorrectionSum: function (type, correction) {
-            var root_section = model.get('root_section');
+            var root_section = this._model.get('root_section');
             var measurementData = root_section.measurements.frame;
 
-            if (type === 'horizontal' && module.getState('openingView')) {
+            if (type === 'horizontal' && this._module.getState('openingView')) {
                 measurementData[type].reverse();
             }
 
@@ -591,7 +597,7 @@ var app = app || {};
             return correction;
         },
         getFrameCorrection: function (type) {
-            var root_section = model.get('root_section');
+            var root_section = this._model.get('root_section');
             var measurementData = root_section.measurements.frame;
             var correction = [this.getCorrection(), this.getCorrection()];
 
@@ -616,7 +622,7 @@ var app = app || {};
         },
         createControl: function (width, height) {
             var view = this;
-            var style = module.getStyle('measurements');
+            var style = this._module.getStyle('measurements');
             var control = new Konva.Rect({
                 width: width,
                 height: height,
@@ -636,6 +642,7 @@ var app = app || {};
             return control;
         },
         createWholeControls: function (section_id, width, height, type) {
+            var controlSize = this._controlSize;
             var group = new Konva.Group();
             // prepare size and position
             var size_1 = 0;
@@ -660,7 +667,7 @@ var app = app || {};
             for (var i = 0; i < 2; i++) {
                 // Create control
                 var control = this.createControl( size_1, size_2 );
-                var index = (!module.getState('openingView')) ? i : (i + 1) % 2;
+                var index = (!this._module.getState('openingView')) ? i : (i + 1) % 2;
 
                 // Attach event
                 control.on('click', this.createMeasurementSelectFrame.bind(this, section_id, 'frame', type, index));
@@ -675,6 +682,11 @@ var app = app || {};
         },
         createMullionControls: function (controls, width, height) {
             var view = this;
+            var module = this._module;
+            var model = this._model;
+            var metricSize = this._metricSize;
+            var controlSize = this._controlSize;
+            var ratio = this._ratio;
             var group = new Konva.Group();
 
             /* eslint-disable max-nested-callbacks */
@@ -792,7 +804,11 @@ var app = app || {};
         },
         createMeasurementSelectUI: function (event, opts) {
             var view = this;
-            var contolSize = metricSize / 4;
+            var module = this._module;
+            var model = this._model;
+            var metricSize = this._metricSize;
+            var controlSize = this._controlSize;
+            var ratio = this._ratio;
             var style = module.getStyle('measurements');
 
             var min = 'min';
@@ -810,8 +826,8 @@ var app = app || {};
             var sign = (opts.kind === 'frame' && opts.index === 1) ? -1 : 1;
             var origPosition = target.getAbsolutePosition();
             var posParam = (opts.type === 'vertical') ? 'y' : 'x';
-            var width = (opts.type === 'vertical') ? metricSize : contolSize;
-            var height = (opts.type === 'vertical') ? contolSize : metricSize;
+            var width = (opts.type === 'vertical') ? metricSize : controlSize;
+            var height = (opts.type === 'vertical') ? controlSize : metricSize;
             var offset = (opts.kind === 'mullion') ?
                           view.getCorrection().mullion_width : view.getCorrection().frame_width;
             var posCorrection = (opts.type === 'vertical') ? target.height() : target.width();
@@ -888,6 +904,7 @@ var app = app || {};
         },
         createMeasurementSelectFrame: function (section_id, mType, type, index, event) {
             var view = this;
+            var model = this._model;
             var section = model.getSection( section_id );
             // Get available states
             var states = model.getMeasurementStates( mType );
@@ -912,6 +929,7 @@ var app = app || {};
         },
         createMeasurementSelectMullion: function (control, event) {
             var view = this;
+            var model = this._model;
 
             // Get available states
             var states = model.getMeasurementStates( 'mullion' );
@@ -941,6 +959,9 @@ var app = app || {};
             return view.createMeasurementSelectUI(event, opts);
         },
         createWholeMetrics: function (mullions, width, height) {
+            var model = this._model;
+            var metricSize = this._metricSize;
+            var ratio = this._ratio;
             var group = new Konva.Group();
             var root_section = model.generateFullRoot();
             var rows = {
@@ -1059,7 +1080,7 @@ var app = app || {};
             group.add(horizontalWholeMertic);
 
             // Create controls
-            if (!module.getState('isPreview')) {
+            if (!this._module.getState('isPreview')) {
                 var vControls = this.createWholeControls(root_section.id, metricSize, vHeight, 'vertical');
                 var hControls = this.createWholeControls(root_section.id, hWidth, metricSize, 'horizontal');
 
@@ -1071,6 +1092,8 @@ var app = app || {};
             return group;
         },
         createOverlayMetrics: function () {
+            var ratio = this._ratio;
+
             // Algorithm:
             // 1. Get a full root
             // 2. Recursively look at each child section:
@@ -1112,6 +1135,9 @@ var app = app || {};
             }
 
             var view = this;
+            var module = this._module;
+            var model = this._model;
+            var metricSize = this._metricSize;
             var style = module.getStyle('overlay_measurements');
             var group = new Konva.Group();
             var root = (module.getState('openingView')) ? model.generateFullRoot() : model.generateFullReversedRoot();
@@ -1159,6 +1185,9 @@ var app = app || {};
             return group;
         },
         createArchedInfo: function (width, height) {
+            var model = this._model;
+            var metricSize = this._metricSize;
+            var ratio = this._ratio;
             var group = new Konva.Group();
 
             var vCorrection = this.getFrameCorrection('vertical');
@@ -1276,13 +1305,13 @@ var app = app || {};
             return group;
         },
         getMeasurementEdges: function (section_id, type) {
-            var edges = model.getMeasurementEdges( section_id );
+            var edges = this._model.getMeasurementEdges( section_id );
             var edgeTypes = [];
 
             if (type === 'horizontal') {
                 edgeTypes = [edges.left, edges.right];
 
-                if (!module.getState('insideView')) {
+                if (!this._module.getState('insideView')) {
                     edgeTypes.reverse();
                 }
 
@@ -1293,6 +1322,7 @@ var app = app || {};
             return edgeTypes;
         },
         createVerticalMetric: function (width, height, params, styles) {
+            var module = this._module;
             var arrowOffset = width / 2;
             var arrowSize = 5;
             var group = new Konva.Group({name: params.name});
@@ -1402,6 +1432,7 @@ var app = app || {};
         },
 
         createHorizontalMetric: function (width, height, params, styles) {
+            var module = this._module;
             var arrowOffset = height / 2;
             var arrowSize = 5;
             var group = new Konva.Group();
@@ -1508,7 +1539,7 @@ var app = app || {};
             return group;
         },
         getDefaultMetricStyles: function () {
-            return module.getStyle('measurements');
+            return this._module.getStyle('measurements');
         },
         updateLayer: function () {
             this.layer.draw();

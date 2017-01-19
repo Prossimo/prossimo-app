@@ -3,19 +3,15 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var module;
-    var model;
-    var ratio;
-
     app.Drawers = app.Drawers || {};
     app.Drawers.UnitDrawer = Backbone.KonvaView.extend({
         initialize: function (params) {
-            module = params.builder;
+            this._module = params.builder;
 
             this.layer = params.layer;
             this.stage = params.stage;
 
-            model = module.get('model');
+            this._model = this._module.get('model');
         },
         el: function () {
             var group = new Konva.Group();
@@ -23,7 +19,7 @@ var app = app || {};
             return group;
         },
         render: function () {
-            ratio = module.get('ratio');
+            this._ratio = this._module.get('ratio');
 
             // Clear all previous objects
             this.layer.destroyChildren();
@@ -89,26 +85,26 @@ var app = app || {};
             this.deselectAll();
 
             if (type === 'frame') {
-                module.setState('selected:frame', 'whole', false);
+                this._module.setState('selected:frame', 'whole', false);
             } else if (type === 'sash' && origin) {
-                module.setState('selected:sash', origin.attrs.sectionId, false);
+                this._module.setState('selected:sash', origin.attrs.sectionId, false);
             } else if (type === 'mullion' && origin) {
-                module.setState('selected:mullion', origin.attrs.sectionId, false);
+                this._module.setState('selected:mullion', origin.attrs.sectionId, false);
             }
         },
         deselectAll: function (preventUpdate) {
-            module.deselectAll(preventUpdate);
+            this._module.deselectAll(preventUpdate);
         },
         removeSelected: function () {
-            var selectedMullionId = module.getState('selected:mullion');
-            var selectedSashId = module.getState('selected:sash');
+            var selectedMullionId = this._module.getState('selected:mullion');
+            var selectedSashId = this._module.getState('selected:sash');
 
             if (selectedMullionId) {
-                model.removeMullion(selectedMullionId);
+                this._model.removeMullion(selectedMullionId);
             }
 
             if (selectedSashId) {
-                model.removeSash(selectedSashId);
+                this._model.removeSash(selectedSashId);
             }
 
             this.deselectAll();
@@ -116,6 +112,8 @@ var app = app || {};
 
         // Create unit
         createUnit: function () {
+            var module = this._module;
+            var model = this._model;
             var group = this.el;
             var root = (module.getState('openingView')) ? model.generateFullRoot() : model.generateFullReversedRoot();
 
@@ -150,6 +148,7 @@ var app = app || {};
         },
         // Create main frame
         createMainFrame: function (root) {
+            var model = this._model;
             var group = new Konva.Group();
 
             var frameGroup;
@@ -191,7 +190,7 @@ var app = app || {};
                 });
             }
 
-            frameGroup.scale({x: ratio, y: ratio});
+            frameGroup.scale({x: this._ratio, y: this._ratio});
             group.add(frameGroup);
 
             return group;
@@ -233,7 +232,7 @@ var app = app || {};
             return group;
         },
         createArchSashFrame: function (params) {
-            var style = module.getStyle('frame');
+            var style = this._module.getStyle('frame');
 
             var opts = this.getCircleSashDrawingOpts(params);
 
@@ -440,6 +439,7 @@ var app = app || {};
         },
 
         createFrame: function (params) {
+            var module = this._module;
             var frameWidth = params.frameWidth;  // in mm
             var width = params.width;
             var height = params.height;
@@ -504,7 +504,7 @@ var app = app || {};
             var opts = {};
 
             // Extend opts with styles
-            _.extend(opts, module.getStyle('flush_frame'));
+            _.extend(opts, this._module.getStyle('flush_frame'));
             // Extend with sizes and data
             _.extend(opts, {
                 width: width,
@@ -520,8 +520,9 @@ var app = app || {};
 
         // door frame have special case for threshold drawing
         createDoorFrame: function (params) {
+            var module = this._module;
             var frameWidth = params.frameWidth;  // in mm
-            var thresholdWidth = model.profile.get('threshold_width');
+            var thresholdWidth = this._model.profile.get('threshold_width');
             var width = params.width;
             var height = params.height;
             var isSelected = module.getState('selected:frame') === 'whole';
@@ -588,6 +589,7 @@ var app = app || {};
 
         // arched frame have special case for arched part
         createArchedFrame: function (params) {
+            var module = this._module;
             var frameWidth = params.frameWidth;
             var width = params.width;
             var height = params.height;
@@ -668,7 +670,7 @@ var app = app || {};
         },
 
         clipCircle: function (group, params) {
-            var root = model.generateFullRoot();
+            var root = this._model.generateFullRoot();
 
             params = params || {};
             params = _.defaults(params, {
@@ -688,7 +690,7 @@ var app = app || {};
         createCircleFrame: function (params) {
             var frameWidth = params.frameWidth;
             var radius = params.radius;
-            var style = module.getStyle('frame');
+            var style = this._module.getStyle('frame');
             var group = new Konva.Group({
                 name: 'frame',
                 sectionId: params.sectionId
@@ -723,6 +725,7 @@ var app = app || {};
         // Create sections
         createSectionGroup: function (root) {
             var drawer = this;
+            var model = this._model;
             // group for all nested elements
             var sectionsGroup = new Konva.Group();
 
@@ -759,7 +762,7 @@ var app = app || {};
             }
 
             drawSectionGroup( sections );
-            sectionsGroup.scale({x: ratio, y: ratio});
+            sectionsGroup.scale({x: this._ratio, y: this._ratio});
 
             // Clip a whole unit
             if (model.isCircleWindow()) {
@@ -784,11 +787,11 @@ var app = app || {};
                 ];
 
                 // Get section data
-                var section = model.getSection(group.attrs.sectionId);
+                var section = this._model.getSection(group.attrs.sectionId);
                 // Make some correction in sorting order if section has...
                 if (
-                    section.fillingType === 'interior-flush-panel' && module.getState('openingView') ||
-                    section.fillingType === 'exterior-flush-panel' && !module.getState('openingView') ||
+                    section.fillingType === 'interior-flush-panel' && this._module.getState('openingView') ||
+                    section.fillingType === 'exterior-flush-panel' && !this._module.getState('openingView') ||
                     section.fillingType === 'full-flush-panel'
                 ) {
                     // Move frame before filling
@@ -815,7 +818,7 @@ var app = app || {};
                 var mullion = this.createMullion(rootSection);
 
                 // fix bug width different mullion width
-                if (module.getState('openingView')) {
+                if (this._module.getState('openingView')) {
                     objects.push(mullion);
                 }
 
@@ -828,7 +831,7 @@ var app = app || {};
                 objects.push(level);
 
                 // fix bug width different mullion width
-                if (!module.getState('openingView')) {
+                if (!this._module.getState('openingView')) {
                     objects.push(mullion);
                 }
 
@@ -839,8 +842,8 @@ var app = app || {};
             return objects;
         },
         createMullion: function (section) {
-            var style = module.getStyle('mullions');
-            var fillStyle = module.getStyle('fillings');
+            var style = this._module.getStyle('mullions');
+            var fillStyle = this._module.getStyle('fillings');
             var group = new Konva.Group({
                 name: 'mullion',
                 sectionId: section.id
@@ -859,7 +862,7 @@ var app = app || {};
             var isHorizontalInvisible = (
                 section.divider === 'horizontal_invisible'
             );
-            var isSelected = module.getState('selected:mullion') === section.id;
+            var isSelected = this._module.getState('selected:mullion') === section.id;
 
             // do not show mullion for type vertical_invisible
             // and sash is added for both right and left sides
@@ -900,6 +903,7 @@ var app = app || {};
                 return group;
             }
 
+            var ratio = this._ratio;
             var direction = sectionData.sashType.split('_').pop();
             var factors = {
                 offsetX: sectionData.sashParams.width / 3,
@@ -943,6 +947,7 @@ var app = app || {};
                 return group;
             }
 
+            var ratio = this._ratio;
             var direction = sectionData.sashType.split('_').pop();
             var factors = {
                 stepX: sectionData.sashParams.width / 5,
@@ -985,6 +990,8 @@ var app = app || {};
         },
         /* eslint-disable max-statements */
         createSash: function (sectionData) {
+            var module = this._module;
+            var model = this._model;
             var group = new Konva.Group({
                 x: sectionData.sashParams.x,
                 y: sectionData.sashParams.y,
@@ -1233,8 +1240,8 @@ var app = app || {};
             result = (
                         typeResult &&
                         (
-                            (module.getState('insideView')) ||
-                            (!module.getState('insideView') && model.profile.hasOutsideHandle())
+                            (this._module.getState('insideView')) ||
+                            (!this._module.getState('insideView') && this._model.profile.hasOutsideHandle())
                         )
                 );
 
@@ -1243,7 +1250,7 @@ var app = app || {};
         createHandle: function (section, params) {
             var type = section.sashType;
             var offset = params.frameWidth / 2;
-            var style = module.getStyle('handle');
+            var style = this._module.getStyle('handle');
             var pos = {
                 x: null,
                 y: null,
@@ -1302,11 +1309,12 @@ var app = app || {};
             return handle;
         },
         createDirectionLine: function (section) {
+            var ratio = this._ratio;
             var group = new Konva.Group({
                 name: 'direction'
             });
             var type = section.sashType;
-            var style = module.getStyle('direction_line');
+            var style = this._module.getStyle('direction_line');
             var directionLine = new Konva.Shape({
                 stroke: style.stroke,
                 x: section.glassParams.x - section.sashParams.x,
@@ -1349,7 +1357,7 @@ var app = app || {};
             }
 
             // #192: Reverse hinge indicator for outside view
-            if ( module.getState('hingeIndicatorMode') === 'american' ) {
+            if ( this._module.getState('hingeIndicatorMode') === 'american' ) {
                 directionLine.scale({
                     x: -1,
                     y: -1
@@ -1379,7 +1387,7 @@ var app = app || {};
             // If section have a children — create Indexes for them recursively
             if (mainSection.sections.length) {
 
-                if (module.getState('insideView') && mainSection.divider === 'vertical') {
+                if (this._module.getState('insideView') && mainSection.divider === 'vertical') {
                     mainSection.sections.reverse();
                 }
 
@@ -1445,6 +1453,8 @@ var app = app || {};
             return result;
         },
         createIndexes: function (indexes) {
+            var module = this._module;
+            var ratio = this._ratio;
             var group = new Konva.Group({
                 name: 'index'
             });
@@ -1472,6 +1482,7 @@ var app = app || {};
             return group;
         },
         createFilling: function (section, params) {
+            var model = this._model;
             var fillX = params.x;
             var fillY = params.y;
             var fillWidth = params.width;
@@ -1481,7 +1492,7 @@ var app = app || {};
             var sceneFunc;
             var opts;
 
-            var style = module.getStyle('fillings');
+            var style = this._module.getStyle('fillings');
 
             if (section.arched) {
                 // Arched
@@ -1566,6 +1577,7 @@ var app = app || {};
             return group;
         },
         createBars: function (section, params) {
+            var model = this._model;
             var fillX = params.x;
             var fillY = params.y;
             var fillWidth = params.width;
@@ -1582,7 +1594,7 @@ var app = app || {};
             var data;
             var space;
 
-            var style = module.getStyle('bars');
+            var style = this._module.getStyle('bars');
 
             var _from;
             var _to;
@@ -1658,11 +1670,12 @@ var app = app || {};
         // it is simple to draw shape with alpha on top
         // then change styles of selected object
         createSelectionShape: function (section, params) {
+            var model = this._model;
             var fillX = params.x;
             var fillY = params.y;
             var fillWidth = params.width;
             var fillHeight = params.height;
-            var style = module.getStyle('selection');
+            var style = this._module.getStyle('selection');
 
             var group = new Konva.Group({
                 name: 'selection'
@@ -1726,8 +1739,8 @@ var app = app || {};
             opts.width = params.section.sashParams.width;
             opts.height = params.section.sashParams.height;
             opts.frameWidth = params.frameWidth;
-            opts.mainFrameWidth = model.profile.get('frame_width') / 2;
-            opts.radius = model.getCircleRadius();
+            opts.mainFrameWidth = this._model.profile.get('frame_width') / 2;
+            opts.radius = this._model.getCircleRadius();
             opts.center = {
                 x: opts.radius - opts.mainFrameWidth,
                 y: opts.radius - opts.mainFrameWidth
