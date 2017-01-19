@@ -6,6 +6,7 @@ const config = require('./config');
 
 const version = config.get('version');
 const srcPath = config.get('app:srcPath');
+const webLoaders = config.get('app:webLoaders');
 const distPath = config.get('dist:path');
 const isDebug = !config.get('release');
 const isVerbose = config.get('verbose');
@@ -26,7 +27,10 @@ const lessLoader = `less-loader?${JSON.stringify({
 module.exports = {
     context: srcPath,
     resolve: {
-        root: srcPath,
+        modules: [
+            srcPath,
+            'node_modules'
+        ],
         alias: {
             'load-image': 'blueimp-load-image/js/load-image.js',
             'load-image-meta': 'blueimp-load-image/js/load-image-meta.js',
@@ -43,35 +47,31 @@ module.exports = {
 
     module: {
         noParse: [/handsontable.full.js/],
-        loaders: [
-            {
-                test: /\.js$/,
-                exclude: /(node_modules|bower_components)/,
-                include: [srcPath],
-                loader: 'babel'
-            },
-            {test: /backbone\.js$/, loader: 'backbone-extended-loader'},
-            {test: /\.hbs$/, loader: 'handlebars-template-loader'},
+        rules: [
+            {test: /backbone\.js$/, use: [path.resolve(webLoaders, 'backbone-extended-loader')]},
+            {test: /\.hbs$/, use: ['handlebars-template-loader']},
             {
                 test: /\.less$/,
-                loader: ExtractTextPlugin.extract('style-loader', [cssLoader, lessLoader].join('!'))
+                loader: ExtractTextPlugin.extract({
+                    fallbackLoader: 'style-loader',
+                    loader: [cssLoader, lessLoader].join('!')
+                })
             },
             {
                 test: /\.css$/,
-                loader: ExtractTextPlugin.extract('style-loader', [cssLoader].join('!'))
-            },
-            {
-                test: /\.json$/,
-                loader: 'json-loader'
+                loader: ExtractTextPlugin.extract({
+                    fallbackLoader: 'style-loader',
+                    loader: [cssLoader].join('!')
+                })
             },
             {
                 test: /\.txt$/,
-                loader: 'raw-loader'
+                use: ['raw-loader']
             },
             {
                 test: /\.(png|jpe?g|gif|svg)$/,
                 loader: 'url-loader',
-                query: {
+                options: {
                     name: isDebug ? 'img/[name].[ext]?[hash]' : 'img/[hash].[ext]',
                     limit: 10000
                 }
@@ -79,14 +79,14 @@ module.exports = {
             {
                 test: /\.(woff|woff2|eot|ttf)$/,
                 loader: 'file-loader',
-                query: {
+                options: {
                     name: isDebug ? 'font/[name].[ext]?[hash]' : 'font/[hash].[ext]'
                 }
             },
             {
                 test: /\.(wav|mp3)$/,
                 loader: 'file-loader',
-                query: {
+                options: {
                     name: isDebug ? 'file/[name].[ext]?[hash]' : 'file/[hash].[ext]'
                 }
             }
@@ -111,13 +111,17 @@ module.exports = {
             jQuery: 'jquery',
             'window.jQuery': 'jquery'
         }),
-        new webpack.NoErrorsPlugin(),
+        new webpack.NoEmitOnErrorsPlugin(),
+        new webpack.LoaderOptionsPlugin({
+            debug: isDebug
+        }),
 
         ...isDebug ? [
             // new webpack.HotModuleReplacementPlugin()
         ] : [
             new webpack.optimize.DedupePlugin(),
             new webpack.optimize.UglifyJsPlugin({
+                minimize: true,
                 compress: {
                     screw_ie8: true,
                     warnings: isVerbose
@@ -130,7 +134,6 @@ module.exports = {
 
     devtool: isDebug ? config.get('app:devtool') : config.get('dist:devtool'),
     cache: isDebug,
-    debug: isDebug,
 
     stats: {
         colors: true,
