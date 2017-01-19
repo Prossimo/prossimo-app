@@ -552,10 +552,8 @@ var app = app || {};
             return validator;
         },
         getColumnExtraProperties: function (column_name) {
-            var self = this;
             var project_settings = app.settings.getProjectSettings();
             var properties_obj = {};
-            var isMultiunitCollection = self.getActiveTab().collection instanceof app.MultiunitCollection;
 
             var names_title_type_hash = this.getActiveTab()
                 .collection.getNameTitleTypeHash([column_name]);
@@ -578,12 +576,10 @@ var app = app || {};
 
             var properties_hash = {
                 width: {
-                    readOnly: isMultiunitCollection,
                     renderer: app.hot_renderers.getFormattedRenderer('dimension', null,
                         project_settings.get('inches_display_mode') || null)
                 },
                 height: {
-                    readOnly: isMultiunitCollection,
                     renderer: app.hot_renderers.getFormattedRenderer('dimension_heights', null,
                         project_settings.get('inches_display_mode') || null)
                 },

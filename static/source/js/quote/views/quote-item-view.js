@@ -3,14 +3,13 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var view;
     var f = app.utils.format;
     var c = app.utils.convert;
     var m = app.utils.math;
 
     //  TODO: this name is a bit misleading
-    function getFillingPerimeter(width, height) {
-        return view.options.show_sizes_in_mm ?
+    function getFillingPerimeter(width, height, show_sizes_in_mm) {
+        return show_sizes_in_mm ?
             f.dimensions_mm(width, height) :
             f.dimensions(
                 c.mm_to_inches(width),
@@ -20,10 +19,10 @@ var app = app || {};
             );
     }
 
-    function getFillingArea(width, height, format) {
+    function getFillingArea(width, height, format, show_sizes_in_mm) {
         format = format || 'sup';
 
-        var result = view.options.show_sizes_in_mm ?
+        var result = show_sizes_in_mm ?
             f.square_meters(m.square_meters(width, height)) :
             f.square_feet(m.square_feet(c.mm_to_inches(width),
                 c.mm_to_inches(height)), 2, format);
@@ -31,9 +30,9 @@ var app = app || {};
         return result;
     }
 
-    function getFillingSize(width, height) {
-        var filling_size = getFillingPerimeter(width, height);
-        var filling_area = getFillingArea(width, height);
+    function getFillingSize(width, height, show_sizes_in_mm) {
+        var filling_size = getFillingPerimeter(width, height, show_sizes_in_mm);
+        var filling_area = getFillingArea(width, height, undefined, show_sizes_in_mm);
 
         return filling_size + ' (' + filling_area + ')';
     }
@@ -44,7 +43,11 @@ var app = app || {};
 
         result.filling_is_glass = source.filling.type === 'glass';
         result.filling_name = source.filling.name;
-        result.filling_size = getFillingSize( source.filling.width, source.filling.height );
+        result.filling_size = getFillingSize(
+            source.filling.width,
+            source.filling.height,
+            options.show_sizes_in_mm
+        );
 
         //  Show supplier name for filling if it exists
         if ( options.show_supplier_names && app.settings && source.filling && source.filling.name ) {
@@ -63,8 +66,6 @@ var app = app || {};
         className: 'quote-item',
         template: app.templates['quote/quote-item-view'],
         initialize: function () {
-            view = this;
-
             var relationClass = this.model.getRelation();
             this.el.classList.add(relationClass);
             this.listenTo(this.model, 'change', this.render);
@@ -95,7 +96,7 @@ var app = app || {};
             if (model.isMultiunit()) {
                 if (model.subunits) {
                     subunits = model.subunits.map(function (subunit) {
-                        var size = view.options.show_sizes_in_mm ?
+                        var size = this.options.show_sizes_in_mm ?
                             f.dimensions_mm(c.inches_to_mm(subunit.get('width')), c.inches_to_mm(subunit.get('height'))) :
                             f.dimensions(subunit.get('width'), subunit.get('height'), 'fraction',
                                 project_settings && project_settings.get('inches_display_mode'));
@@ -107,15 +108,14 @@ var app = app || {};
                             description: subunit.get('description'),
                             notes: subunit.get('notes')
                         };
-                    });
+                    }, this);
                 }
                 result = {
                     subunits: subunits
                 };
-
             } else {
                 var sash_list_source = model.getSashList(null, null, this.options.show_outside_units_view &&
-                        project_settings && project_settings.get('hinge_indicator_mode') === 'american');
+                    project_settings && project_settings.get('hinge_indicator_mode') === 'american');
                 var sashes = [];
 
                 //  This is the list of params that we want to see in the quote. We
@@ -206,8 +206,14 @@ var app = app || {};
                             _.extend(section_item, section_info);
 
                             if ( section_info.filling_is_glass ) {
-                                sum += parseFloat(getFillingArea(section.filling.width,
-                                    section.filling.height, 'numeric'));
+                                sum += parseFloat(
+                                    getFillingArea(
+                                        section.filling.width,
+                                        section.filling.height,
+                                        'numeric',
+                                        this.options.show_sizes_in_mm
+                                    )
+                                );
                             }
 
                             sash_item.sections.push(section_item);
@@ -251,18 +257,18 @@ var app = app || {};
                 //  5. Override default titles for some properties but only if they
                 //  were included at steps 1-4
                 var name_title_hash = _.extend({
-                        size: 'Size <small class="size-label">WxH</small>',
-                        rough_opening: 'Rough Opening <small class="size-label">WxH</small>',
-                        system: 'System'
-                    }, _.object( _.pluck(source_hash, 'name'), _.pluck(source_hash, 'title') ),
-                    _.object( dictionaries, dictionaries ), {
-                        threshold: 'Threshold',
-                        u_value: 'U Value'
-                    }, _.pick({
-                        glazing_bar_width: 'Muntin Width'
-                    }, function (new_title, property_to_override) {
-                        return _.contains(_.pluck(source_hash, 'name'), property_to_override);
-                    }));
+                    size: 'Size <small class="size-label">WxH</small>',
+                    rough_opening: 'Rough Opening <small class="size-label">WxH</small>',
+                    system: 'System'
+                }, _.object( _.pluck(source_hash, 'name'), _.pluck(source_hash, 'title') ),
+                _.object( dictionaries, dictionaries ), {
+                    threshold: 'Threshold',
+                    u_value: 'U Value'
+                }, _.pick({
+                    glazing_bar_width: 'Muntin Width'
+                }, function (new_title, property_to_override) {
+                    return _.contains(_.pluck(source_hash, 'name'), property_to_override);
+                }));
 
                 var params_system = (this.options.show_supplier_system) ?
                     model.profile.get('supplier_system') :
