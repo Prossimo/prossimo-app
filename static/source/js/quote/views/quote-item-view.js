@@ -3,68 +3,15 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var view;
     var f = app.utils.format;
     var c = app.utils.convert;
     var m = app.utils.math;
-
-    //  TODO: this name is a bit misleading
-    function getFillingPerimeter(width, height) {
-        return view.options.show_sizes_in_mm ?
-            f.dimensions_mm(width, height) :
-            f.dimensions(
-                c.mm_to_inches(width),
-                c.mm_to_inches(height),
-                'fraction',
-                'inches_only'
-            );
-    }
-
-    function getFillingArea(width, height, format) {
-        format = format || 'sup';
-
-        var result = view.options.show_sizes_in_mm ?
-            f.square_meters(m.square_meters(width, height)) :
-            f.square_feet(m.square_feet(c.mm_to_inches(width),
-                c.mm_to_inches(height)), 2, format);
-
-        return result;
-    }
-
-    function getFillingSize(width, height) {
-        var filling_size = getFillingPerimeter(width, height);
-        var filling_area = getFillingArea(width, height);
-
-        return filling_size + ' (' + filling_area + ')';
-    }
-
-    function getSectionInfo(source, options) {
-        options = options || {};
-        var result = {};
-
-        result.filling_is_glass = source.filling.type === 'glass';
-        result.filling_name = source.filling.name;
-        result.filling_size = getFillingSize( source.filling.width, source.filling.height );
-
-        //  Show supplier name for filling if it exists
-        if ( options.show_supplier_names && app.settings && source.filling && source.filling.name ) {
-            var filling_type = app.settings.filling_types.getByName(source.filling.name);
-
-            if ( filling_type && filling_type.get('supplier_name') ) {
-                result.filling_name = filling_type.get('supplier_name');
-            }
-        }
-
-        return result;
-    }
 
     app.QuoteItemView = Marionette.View.extend({
         tagName: 'div',
         className: 'quote-item',
         template: app.templates['quote/quote-item-view'],
         initialize: function () {
-            view = this;
-
             var relationClass = this.model.getRelation();
             this.el.classList.add(relationClass);
             this.listenTo(this.model, 'change', this.render);
@@ -85,8 +32,55 @@ var app = app || {};
                 subtotal_discounted: discount ? f.price_usd(subtotal_price_discounted) : null
             };
         },
+        //  TODO: this name is a bit misleading
+        getFillingPerimeter: function (width, height) {
+        return this.options.show_sizes_in_mm ?
+            f.dimensions_mm(width, height) :
+            f.dimensions(
+                c.mm_to_inches(width),
+                c.mm_to_inches(height),
+                'fraction',
+                'inches_only'
+            );
+        },
+        getFillingArea: function (width, height, format) {
+            format = format || 'sup';
+
+            var result = this.options.show_sizes_in_mm ?
+                f.square_meters(m.square_meters(width, height)) :
+                f.square_feet(m.square_feet(c.mm_to_inches(width),
+                    c.mm_to_inches(height)), 2, format);
+
+            return result;
+        },
+        getFillingSize: function (width, height) {
+            var filling_size = this.getFillingPerimeter(width, height);
+            var filling_area = this.getFillingArea(width, height);
+
+            return filling_size + ' (' + filling_area + ')';
+        },
+        getSectionInfo: function (source, options) {
+            options = options || {};
+            var result = {};
+
+            result.filling_is_glass = source.filling.type === 'glass';
+            result.filling_name = source.filling.name;
+            result.filling_size = this.getFillingSize( source.filling.width, source.filling.height );
+
+            //  Show supplier name for filling if it exists
+            if ( options.show_supplier_names && app.settings && source.filling && source.filling.name ) {
+                var filling_type = app.settings.filling_types.getByName(source.filling.name);
+
+                if ( filling_type && filling_type.get('supplier_name') ) {
+                    result.filling_name = filling_type.get('supplier_name');
+                }
+            }
+
+            return result;
+        },
         // TODO break into smaller pieces
         getDescription: function (model) {
+            var view = this;
             model = model || this.model;
             var project_settings = app.settings.getProjectSettings();
             var subunits;
@@ -202,11 +196,11 @@ var app = app || {};
                             var section_item = {};
 
                             section_item.name = 'Section #' + (index + 1) + '.' + (s_index + 1);
-                            section_info = getSectionInfo(section, this.options);
+                            section_info = view.getSectionInfo(section, this.options);
                             _.extend(section_item, section_info);
 
                             if ( section_info.filling_is_glass ) {
-                                sum += parseFloat(getFillingArea(section.filling.width,
+                                sum += parseFloat(view.getFillingArea(section.filling.width,
                                     section.filling.height, 'numeric'));
                             }
 
@@ -215,7 +209,7 @@ var app = app || {};
 
                         sash_item.daylight_sum = sum ? f.square_feet(sum, 2, 'sup') : false;
                     } else {
-                        section_info = getSectionInfo(source_item, this.options);
+                        section_info = view.getSectionInfo(source_item, this.options);
                         _.extend(sash_item, section_info);
                     }
 

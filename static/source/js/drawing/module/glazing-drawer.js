@@ -3,17 +3,13 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var module;
-    var model;
-    var metricSize;
-    var ratio;
-    var minimalGap = 25; // minimal gap between bars
+    var MINIMAL_GAP = 25; // minimal gap between bars
 
     app.Drawers = app.Drawers || {};
     app.Drawers.GlazingBarDrawer = Backbone.KonvaView.extend({
         initialize: function (params) {
-            module = params.builder;
-            model = module.get('model');
+            this._module = params.builder;
+            this._model = this._module.get('model');
 
             this.layer = params.layer;
             this.stage = params.stage;
@@ -21,7 +17,7 @@ var app = app || {};
 
             this.sectionId = params.data.sectionId;
 
-            metricSize = params.metricSize;
+            this._metricSize = params.metricSize;
         },
         el: function () {
             var group = new Konva.Group();
@@ -30,9 +26,9 @@ var app = app || {};
         },
         render: function () {
             if (this.sectionId) {
-                this.section = model.getSection(this.sectionId);
+                this.section = this._model.getSection(this.sectionId);
 
-                ratio = module.get('ratio');
+                this._ratio = this._module.get('ratio');
 
                 // Clear all previous objects
                 this.layer.destroyChildren();
@@ -45,33 +41,33 @@ var app = app || {};
         events: {},
         // handlers
         handleBarClick: function (data) {
-            module.setState({
+            this._module.setState({
                 selectedBar: data,
                 selectedEdge: null
             });
         },
         handleEdgeOver: function (key) {
-            module.setState({
+            this._module.setState({
                 hoverEdge: key
             });
         },
         handleEdgeOut: function () {
-            module.setState({
+            this._module.setState({
                 hoverEdge: null
             });
         },
         handleEdgeClick: function (key) {
-            module.setState({
+            this._module.setState({
                 selectedEdge: key
             });
         },
         handleControlOver: function (key) {
-            module.setState({
+            this._module.setState({
                 hoverControl: key
             });
         },
         handleControlOut: function () {
-            module.setState({
+            this._module.setState({
                 hoverControl: null
             });
         },
@@ -100,7 +96,7 @@ var app = app || {};
             }
 
             bar.links[params.bar.edge] = id;
-            model.setSectionBars( this.section.id, this.section.bars );
+            this._model.setSectionBars( this.section.id, this.section.bars );
 
             this.resetStates();
         },
@@ -109,7 +105,7 @@ var app = app || {};
         },
         // Common methods
         resetStates: function () {
-            module.setState({
+            this._module.setState({
                 selectedBar: null,
                 selectedEdge: null,
                 hoverEdge: null,
@@ -117,7 +113,7 @@ var app = app || {};
             });
         },
         getDefaultMetricStyles: function () {
-            return module.getStyle('measurements');
+            return this._module.getStyle('measurements');
         },
         updateLayer: function () {
             this.layer.draw();
@@ -139,14 +135,14 @@ var app = app || {};
                 if (type === 'horizontal') {
                     position = {
                         x: 0,
-                        y: (bar.position - bar.space) * ratio
+                        y: (bar.position - bar.space) * this._ratio
                     };
                 }
 
                 if (type === 'vertical') {
                     position = {
-                        x: metricSize + ((bar.position - bar.space) * ratio),
-                        y: this.getSize().height * ratio
+                        x: this._metricSize + ((bar.position - bar.space) * this._ratio),
+                        y: this.getSize().height * this._ratio
                     };
                 }
             }
@@ -196,13 +192,15 @@ var app = app || {};
             group.add( section );
 
             section.setAbsolutePosition({
-                x: (this.stage.width() / 2) - (this.getSize().width * ratio / 2) - metricSize,
+                x: (this.stage.width() / 2) - (this.getSize().width * this._ratio / 2) - this._metricSize,
                 y: 0
             });
 
             return group;
         },
         createSection: function () {
+            var ratio = this._ratio;
+
             var group = new Konva.Group({
                 x: 20,
                 y: 20
@@ -214,7 +212,7 @@ var app = app || {};
 
             // zero position for children graphics
             var zeroPos = {
-                x: (0 + metricSize) / ratio,
+                x: (0 + this._metricSize) / ratio,
                 y: 0
             };
 
@@ -232,7 +230,7 @@ var app = app || {};
                 height: fillHeight
             });
             var metrics = this.createMetrics({
-                metricSize: metricSize,
+                metricSize: this._metricSize,
                 width: fillWidth,
                 height: fillHeight
             });
@@ -251,7 +249,7 @@ var app = app || {};
         },
         createGlass: function ( params ) {
             var group = new Konva.Group();
-            var style = module.getStyle('fillings');
+            var style = this._module.getStyle('fillings');
 
             var glass = new Konva.Rect({
                 x: params.x,
@@ -266,6 +264,8 @@ var app = app || {};
             return group;
         },
         createBars: function (params) {
+            var module = this._module;
+
             var fillX = params.x;
             var fillY = params.y;
             var fillOffset;
@@ -311,12 +311,12 @@ var app = app || {};
 
                     if (data.links) {
                         if (data.links[0] !== null) {
-                            tbar = model.getBar(this.section.id, data.links[0]);
+                            tbar = this._model.getBar(this.section.id, data.links[0]);
                             pos_from = (tbar !== null && 'position' in tbar) ? tbar.position : fillOffset;
                         }
 
                         if (data.links[1] !== null) {
-                            tbar = model.getBar(this.section.id, data.links[1]);
+                            tbar = this._model.getBar(this.section.id, data.links[1]);
 
                             if (type === 'vertical') {
                                 size_to = (tbar !== null && 'position' in tbar) ? tbar.position : fillSize;
@@ -421,6 +421,7 @@ var app = app || {};
             return group;
         },
         createBar: function (params) {
+            var model = this._model;
             var selectedColor = 'yellow';
             var normalColor = 'white';
 
@@ -477,6 +478,7 @@ var app = app || {};
             return bar;
         },
         createEdgeControls: function (params) {
+            var module = this._module;
             var controls = new Konva.Group();
             var circle;
 
@@ -505,7 +507,7 @@ var app = app || {};
                     }
                     // Styles
                     opts.name = 'edge';
-                    opts.radius = model.get('glazing_bar_width') * 3;
+                    opts.radius = this._model.get('glazing_bar_width') * 3;
                     opts.fill = 'red';
                     opts.opacity = (isCircleHover) ? 0.7 : 0.3;
 
@@ -523,14 +525,14 @@ var app = app || {};
             return controls;
         },
         createBoundControl: function (params) {
-            var style = module.getStyle('glazing_controls');
+            var style = this._module.getStyle('glazing_controls');
             var circle = new Konva.Circle({
                 name: 'control',
                 x: params.position.x,
                 y: params.position.y,
-                radius: model.get('glazing_bar_width') * style.bound.radius,
+                radius: this._model.get('glazing_bar_width') * style.bound.radius,
                 fill: style.bound.fill,
-                opacity: (module.getState('hoverControl') === params.index) ?
+                opacity: (this._module.getState('hoverControl') === params.index) ?
                             style.bound.hover.opacity : style.bound.normal.opacity
             });
 
@@ -574,7 +576,7 @@ var app = app || {};
 
                     if (
                         view &&
-                        (mm >= max[type] - minimalGap || (this.position + delta) < 0 + minimalGap )
+                        (mm >= max[type] - MINIMAL_GAP || (this.position + delta) < 0 + MINIMAL_GAP )
                     ) {
                         view.showError();
                         return;
@@ -599,7 +601,7 @@ var app = app || {};
 
                     if (
                         view &&
-                        (mm > max[type] - minimalGap || val < 0 + minimalGap )
+                        (mm > max[type] - MINIMAL_GAP || val < 0 + MINIMAL_GAP )
                     ) {
                         view.showError();
                         return;
@@ -666,16 +668,17 @@ var app = app || {};
             return metrics;
         },
         createVerticalMetrics: function ( params ) {
-            var drawerParams = [params.metricSize, params.height * ratio, params.methods];
+            var drawerParams = [params.metricSize, params.height * this._ratio, params.methods];
 
             return this.createVerticalMetric.apply(this, drawerParams);
         },
         createHorizontalMetrics: function ( params ) {
-            var drawerParams = [params.width * ratio, params.metricSize, params.methods];
+            var drawerParams = [params.width * this._ratio, params.metricSize, params.methods];
 
             return this.createHorizontalMetric.apply(this, drawerParams);
         },
         createVerticalMetric: function (width, height, params, styles) {
+            var module = this._module;
             var arrowOffset = width / 2;
             var arrowSize = 5;
             var group = new Konva.Group();
@@ -788,6 +791,7 @@ var app = app || {};
             return group;
         },
         createHorizontalMetric: function (width, height, params, styles) {
+            var module = this._module;
             var arrowOffset = height / 2;
             var arrowSize = 5;
             var group = new Konva.Group();

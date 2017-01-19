@@ -3,19 +3,14 @@ var app = app || {};
 (function () {
     'use strict';
 
-    var module;
-    var model;
-    var ratio;
-    var isInside;
-
     app.Drawers = app.Drawers || {};
     app.Drawers.MultiunitDrawer = Backbone.KonvaView.extend({
         initialize: function (params) {
             var self = this;
 
-            module = params.builder;
-            model = module.get('model');
-            isInside = module.getState('insideView');
+            this._module = params.builder;
+            this._model = this._module.get('model');
+            this._isInside = this._module.getState('insideView');
 
             this.layer = params.layer;
             this.stage = params.stage;
@@ -26,8 +21,8 @@ var app = app || {};
             return group;
         },
         render: function () {
-            ratio = module.get('ratio');
-            isInside = module.getState('insideView');
+            this._ratio = this._module.get('ratio');
+            this._isInside = this._module.getState('insideView');
 
             // Clear all previous objects
             this.layer.destroyChildren();
@@ -69,19 +64,19 @@ var app = app || {};
             this.deselectAll();
 
             if (type === 'subunit') {
-                module.setState('selected:subunit', origin.attrs.subunitId, false);
+                this._module.setState('selected:subunit', origin.attrs.subunitId, false);
             }
         },
         deselectAll: function (preventUpdate) {
-            module.deselectAll(preventUpdate);
+            this._module.deselectAll(preventUpdate);
         },
         removeSelected: function () {
-            var selectedSubunitId = module.getState('selected:subunit');
+            var selectedSubunitId = this._module.getState('selected:subunit');
             var selectedSubunit;
 
             if (selectedSubunitId) {
-                selectedSubunit = model.getSubunitById(selectedSubunitId);
-                model.removeSubunit(selectedSubunit);
+                selectedSubunit = this._model.getSubunitById(selectedSubunitId);
+                this._model.removeSubunit(selectedSubunit);
             }
 
             this.deselectAll();
@@ -101,7 +96,7 @@ var app = app || {};
             group.add(subunitsIndexesGroup);
             group.add(subunitsOverlaysGroup);
 
-            var center = module.get('center');
+            var center = this._module.get('center');
             // place unit on stage center
             group.position(center);
 
@@ -110,10 +105,13 @@ var app = app || {};
             return group;
         },
         createSubunits: function () {
+            var module = this._module;
+            var ratio = this._ratio;
+            var isInside = this._isInside;
             var group = new Konva.Group({ name: 'subunits' });
-            var tree = model.getSubunitsCoordinatesTree({ flipX: isInside });
+            var tree = this._model.getSubunitsCoordinatesTree({ flipX: isInside });
 
-            model.subunitsTreeForEach(tree, function (node) {
+            this._model.subunitsTreeForEach(tree, function (node) {
                 var subunitGroup = node.unit.getPreview({
                     width: node.width * ratio,
                     height: node.height * ratio,
@@ -152,6 +150,8 @@ var app = app || {};
             if (!subunitGroup) { return; }
 
             var self = this;
+            var model = this._model;
+            var isInside = this._isInside;
             var group = new Konva.Group({ name: 'connectors' });
 
             var nonOriginSubunits = _.tail(subunitGroup.getChildren());
@@ -173,6 +173,7 @@ var app = app || {};
             if (!connector) { return; }
             if (!(options && options.subunitKonvas)) { return; }
 
+            var ratio = this._ratio;
             var flipX = options && options.flipX;
             var group = new Konva.Group({
                 name: 'connector',
@@ -180,8 +181,8 @@ var app = app || {};
             });
 
             // to millimetres
-            var style = module.getStyle('frame').default;
-            var parentSubunitId = model.getConnectorParentSubunitId(connector.id);
+            var style = this._module.getStyle('frame').default;
+            var parentSubunitId = this._model.getConnectorParentSubunitId(connector.id);
 
             var parentKonva = options.subunitKonvas.filter(function (konva) {
                 return (konva.getAttr('subunitId') === parentSubunitId);
@@ -251,11 +252,12 @@ var app = app || {};
             return group;
         },
         createSubunitsIndexes: function () {
+            var ratio = this._ratio;
             var group = new Konva.Group({ name: 'subunit_indexes' });
-            var tree = model.getSubunitsCoordinatesTree({ flipX: isInside });
-            var style = module.getStyle('subunit_indexes');
+            var tree = this._model.getSubunitsCoordinatesTree({ flipX: this._isInside });
+            var style = this._module.getStyle('subunit_indexes');
 
-            model.subunitsTreeForEach(tree, function (node) {
+            this._model.subunitsTreeForEach(tree, function (node) {
 
                 var subunitWidth = node.width * ratio;
                 var subunitHeight = node.height * ratio;
