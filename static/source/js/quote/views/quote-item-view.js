@@ -45,24 +45,24 @@ var app = app || {};
         },
         getFillingArea: function (width, height, format, show_sizes_in_mm) {
             format = format || 'sup';
-    
+
             var result = show_sizes_in_mm ?
                 f.square_meters(m.square_meters(width, height)) :
                 f.square_feet(m.square_feet(c.mm_to_inches(width),
                     c.mm_to_inches(height)), 2, format);
-    
+
             return result;
         },
         getFillingSize: function (width, height, show_sizes_in_mm) {
             var filling_size = this.getFillingPerimeter(width, height, show_sizes_in_mm);
             var filling_area = this.getFillingArea(width, height, undefined, show_sizes_in_mm);
-    
+
             return filling_size + ' (' + filling_area + ')';
         },
         getSectionInfo: function (source, options) {
             options = options || {};
             var result = {};
-    
+
             result.filling_is_glass = source.filling.type === 'glass';
             result.filling_name = source.filling.name;
             result.filling_size = this.getFillingSize(
@@ -70,16 +70,16 @@ var app = app || {};
                 source.filling.height,
                 options.show_sizes_in_mm
             );
-    
+
             //  Show supplier name for filling if it exists
             if ( options.show_supplier_names && app.settings && source.filling && source.filling.name ) {
                 var filling_type = app.settings.filling_types.getByName(source.filling.name);
-    
+
                 if ( filling_type && filling_type.get('supplier_name') ) {
                     result.filling_name = filling_type.get('supplier_name');
                 }
             }
-    
+
             return result;
         },
         // TODO break into smaller pieces
