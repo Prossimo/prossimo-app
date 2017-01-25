@@ -189,6 +189,7 @@ var app = app || {};
                 this.trigger('fully_loaded');
             }
         },
+        //  TODO: this should actually be part of model.parse step
         parseSettings: function (source_data) {
             var settings_object = {};
             var source_data_parsed;

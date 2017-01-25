@@ -320,7 +320,6 @@ var app = app || {};
             return show_drawings;
         },
         templateContext: function () {
-            var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
             var show_customer_image = this.shouldShowCustomerImage();
             var show_drawings = this.shouldShowDrawings();
             var show_price = this.options.show_price !== false;
@@ -336,7 +335,6 @@ var app = app || {};
                 product_image: show_drawings ? this.getProductImage() : '',
                 show_price: show_price,
                 price: show_price ? this.getPrices() : null,
-                is_price_estimated: project_settings && project_settings.get('pricing_mode') === 'estimates',
                 has_dummy_profile: this.model.hasDummyProfile(),
                 profile_name: this.model.get('profile_name') || this.model.get('profile_id') || ''
             };

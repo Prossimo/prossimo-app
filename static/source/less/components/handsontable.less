@@ -1,5 +1,14 @@
+//  Numeric cell is right-aligned
+.handsontable tbody tr td.htNumeric {
+    text-align: right;
+}
+
+//  Cell colors
+
 @zebra-row-color: #fffdea;
 @dimmed-cell-color: darken(@white, 5%);
+@highlighted-cell-color: #FFF0DE;
+@perfect-cell-color: #aaf59f;
 
 .handsontable tbody tr:nth-child(2n) td {
     background-color: @zebra-row-color;
@@ -10,9 +19,29 @@
     color: lighten(@black, 40%);
 }
 
+.handsontable tbody tr td.is-highlighted {
+    background-color: @highlighted-cell-color;
+}
+
+.handsontable tbody tr td.is-perfect,
+.handsontable tbody tr td.is-okay {
+    background-color: @perfect-cell-color;
+    color: multiply(@black, @perfect-cell-color);
+}
+
 .handsontable tbody tr:nth-child(2n) td.htDimmed {
     background-color: multiply(@zebra-row-color, darken(@dimmed-cell-color, 1%));
 }
+
+.handsontable tbody tr:nth-child(2n) td.is-highlighted {
+    background-color: multiply(@zebra-row-color, darken(@highlighted-cell-color, 1%));
+}
+
+.handsontable tbody tr:nth-child(2n) td.is-perfect,
+.handsontable tbody tr:nth-child(2n) td.is-okay {
+    background-color: multiply(@zebra-row-color, darken(@perfect-cell-color, 1%));
+}
+
 
 //  Dropdown
 

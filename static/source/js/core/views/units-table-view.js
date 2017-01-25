@@ -67,7 +67,8 @@ var app = app || {};
                     title: 'Prices',
                     collection: this.collection,
                     columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing', 'width_mm', 'height_mm',
-                        'original_cost', 'original_currency', 'conversion_rate', 'unit_cost', 'subtotal_cost',
+                        'original_cost_estimated', 'original_cost', 'original_cost_difference', 'original_currency',
+                        'conversion_rate', 'unit_cost', 'subtotal_cost',
                         'supplier_discount', 'unit_cost_discounted', 'subtotal_cost_discounted', 'price_markup',
                         'unit_price', 'subtotal_price', 'discount', 'unit_price_discounted',
                         'subtotal_price_discounted', 'subtotal_profit', 'total_square_feet', 'square_feet_price',
@@ -352,8 +353,11 @@ var app = app || {};
                 square_feet_price_discounted: function (model) {
                     return model.getSquareFeetPriceDiscounted();
                 },
-                original_cost: function (model) {
-                    return model.getOriginalCost();
+                original_cost_estimated: function (model) {
+                    return model.getEstimatedUnitCost().total;
+                },
+                original_cost_difference: function (model) {
+                    return model.getEstimatedUnitCost().real_cost.difference;
                 },
                 rough_opening: function (model) {
                     return f.dimensions(model.getRoughOpeningWidth(), model.getRoughOpeningHeight(), null,
@@ -669,8 +673,13 @@ var app = app || {};
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('price_usd')
                 },
-                original_cost: {
-                    readOnly: project_settings && project_settings.get('pricing_mode') === 'estimates'
+                original_cost_estimated: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('fixed_minimal')
+                },
+                original_cost_difference: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('percent_difference', 0)
                 },
                 rough_opening: {
                     readOnly: true,
@@ -852,8 +861,6 @@ var app = app || {};
             return headers;
         },
         getCustomColumnHeader: function (column_name) {
-            var project_settings = app.settings.getProjectSettings();
-
             var custom_column_headers_hash = {
                 width: 'Width, in',
                 height: 'Height, in',
@@ -869,8 +876,9 @@ var app = app || {};
                 glazing_bar_width: 'Muntin Width',
                 u_value: 'U Value',
                 move_item: 'Move',
-                original_cost: project_settings && project_settings.get('pricing_mode') === 'estimates' ?
-                    'Orig. Cost (est.)' : 'Orig. Cost',
+                original_cost_estimated: 'Orig. Cost (est.)',
+                original_cost: 'Orig. Cost',
+                original_cost_difference: 'Est./Real Cost Diff.',
                 original_currency: 'Orig. Curr.',
                 conversion_rate: 'Conv. Rate',
                 unit_cost: 'Unit Cost',
@@ -925,7 +933,9 @@ var app = app || {};
                 opening_direction: 110,
                 glazing: 300,
                 glazing_bar_width: 100,
+                original_cost_estimated: 120,
                 original_cost: 100,
+                original_cost_difference: 120,
                 unit_cost: 100,
                 subtotal_cost: 100,
                 unit_cost_discounted: 100,

@@ -128,6 +128,11 @@ var app = app || {};
                 num = _.isNumber(num) ? (num < MAX_SIGNIFICANT_DIGITS ? num : MAX_SIGNIFICANT_DIGITS) : 2;
                 return new Decimal(parseFloat(value).toFixed(num)).toFormat() + '%';
             },
+            percent_difference: function (value, num) {
+                var result = this.percent(value, num);
+
+                return result === '0%' || result.indexOf('-') !== -1 ? result : '+' + result;
+            },
             fixed: function (value, num) {
                 num = _.isNumber(num) ? (num < MAX_SIGNIFICANT_DIGITS ? num : MAX_SIGNIFICANT_DIGITS) : 2;
                 return new Decimal(parseFloat(value).toFixed(num)).toFormat(num);
