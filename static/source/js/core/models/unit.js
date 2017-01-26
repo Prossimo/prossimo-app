@@ -684,20 +684,8 @@ var app = app || {};
 
             return app.utils.math.square_meters(c.inches_to_mm(this.get('width')), c.inches_to_mm(this.get('height')));
         },
-        //  We either get a value from model, or get get estimated unit cost
-        //  when special toggle is enabled in settings
-        getOriginalCost: function () {
-            var original_cost = this.get('original_cost');
-            var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
-
-            if ( project_settings && project_settings.get('pricing_mode') === 'estimates' ) {
-                original_cost = this.getEstimatedUnitCost().total;
-            }
-
-            return parseFloat(original_cost);
-        },
         getUnitCost: function () {
-            return this.getOriginalCost() / parseFloat(this.get('conversion_rate'));
+            return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
         },
         getSubtotalCost: function () {
             return this.getUnitCost() * parseFloat(this.get('quantity'));
@@ -2073,7 +2061,11 @@ var app = app || {};
                 fillings: 0,
                 options: 0,
                 sections_list: sections_list,
-                options_list: options_list
+                options_list: options_list,
+                real_cost: {
+                    total: this.get('original_cost'),
+                    difference: 0
+                }
             };
 
             _.each(sections_list, function (section) {
@@ -2088,6 +2080,10 @@ var app = app || {};
                 unit_cost.total += option.pricing_data.cost_per_item;
                 unit_cost.options += option.pricing_data.cost_per_item;
             }, this);
+
+            unit_cost.real_cost.difference = unit_cost.total ?
+                (unit_cost.real_cost.total - unit_cost.total) / unit_cost.total * 100 :
+                (unit_cost.real_cost.total ? 100 : 0);
 
             return unit_cost;
         },

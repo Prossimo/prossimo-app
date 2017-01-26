@@ -163,11 +163,8 @@ var app = app || {};
         getMarkupPercent: function () {
             return (parseFloat(this.get('price_markup')) - 1) * 100;
         },
-        getOriginalCost: function () {
-            return parseFloat(this.get('original_cost'));
-        },
         getUnitCost: function () {
-            return this.getOriginalCost() / parseFloat(this.get('conversion_rate'));
+            return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
         },
         getSubtotalCost: function () {
             return this.getUnitCost() * parseFloat(this.get('quantity'));

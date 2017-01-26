@@ -6,7 +6,6 @@ var app = app || {};
     var PROJECT_SETTINGS_PROPERTIES = [
         { name: 'inches_display_mode', title: 'Inches Display Mode', type: 'string' },
         { name: 'hinge_indicator_mode', title: 'Hinge Indicator Mode', type: 'string' },
-        { name: 'pricing_mode', title: 'Pricing Mode', type: 'string' },
         { name: 'show_drawings_in_quote', title: 'Show Drawings in Quote', type: 'string' }
     ];
 
@@ -20,17 +19,13 @@ var app = app || {};
         { value: 'european', title: 'European' }
     ];
 
-    var PRICING_MODES = [
-        { value: 'normal', title: 'Normal' },
-        { value: 'estimates', title: 'Estimates' }
-    ];
-
     var SHOW_DRAWINGS_IN_QUOTE_OPTIONS = [
         { value: true, title: 'Yes' },
         { value: false, title: 'No' }
     ];
 
     app.ProjectSettings = Backbone.Model.extend({
+        schema: app.schema.createSchema(PROJECT_SETTINGS_PROPERTIES),
         defaults: function () {
             var defaults = {};
 
@@ -50,7 +45,6 @@ var app = app || {};
             var name_value_hash = {
                 inches_display_mode: INCHES_DISPLAY_MODES[0].value,
                 hinge_indicator_mode: HINGE_INDICATOR_MODES[0].value,
-                pricing_mode: PRICING_MODES[0].value,
                 show_drawings_in_quote: SHOW_DRAWINGS_IN_QUOTE_OPTIONS[0].value
             };
 
@@ -64,8 +58,10 @@ var app = app || {};
 
             return default_value;
         },
-        initialize: function (attributes, options) {
-            this.options = options || {};
+        parse: function (data) {
+            var settings_data = data && data.settings ? data.settings : data;
+
+            return app.schema.parseAccordingToSchema(settings_data, this.schema);
         },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs
@@ -88,7 +84,6 @@ var app = app || {};
             return {
                 inches_display_mode: INCHES_DISPLAY_MODES,
                 hinge_indicator_mode: HINGE_INDICATOR_MODES,
-                pricing_mode: PRICING_MODES,
                 show_drawings_in_quote: SHOW_DRAWINGS_IN_QUOTE_OPTIONS
             };
         },
@@ -96,6 +91,9 @@ var app = app || {};
             var name_title_hash = this.getNameTitleTypeHash(names);
 
             return _.pluck(name_title_hash, 'title');
+        },
+        initialize: function (attributes, options) {
+            this.options = options || {};
         }
     });
 })();

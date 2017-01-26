@@ -53,17 +53,13 @@ var app = app || {};
             return has_one;
         },
         templateContext: function () {
-            var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
-
             return {
                 items_count: this.getItemsCount(),
                 price_colspan: this.getPriceColspan(),
                 total_prices: this.getTotalPrices(),
                 heading: this.options.type === 'Regular' ? 'Extras' : 'Optional Extras',
                 is_optional: this.options.type === 'Optional',
-                show_price: this.options.show_price !== false,
-                is_price_estimated: project_settings && project_settings.get('pricing_mode') === 'estimates' &&
-                    this.hasAtLeastOneOptionalPercentBased()
+                show_price: this.options.show_price !== false
             };
         }
     });
