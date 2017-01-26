@@ -83,8 +83,9 @@ var app = app || {};
 
                 Handsontable.renderers.TextRenderer.apply(this, arguments);
 
-                if ( _.indexOf(['dimension', 'percent', 'percent_difference', 'fixed_minimal', 'fixed',
-                    'fixed_heights', 'dimension_heights', 'price_usd', 'align_right'], attr_name) !== -1
+                if (
+                    _.indexOf(['dimension', 'percent', 'percent_difference', 'fixed_minimal', 'fixed',
+                        'fixed_heights', 'dimension_heights', 'price_usd', 'align_right'], attr_name) !== -1
                 ) {
                     $td.addClass('htNumeric');
                 }
@@ -96,7 +97,7 @@ var app = app || {};
                 if ( attr_name === 'percent_difference' ) {
                     if ( parseInt(arguments[5], 10) === 0 ) {
                         $td.addClass('is-perfect');
-                    } else if ( parseInt(arguments[5], 10) === 1 ) {
+                    } else if ( Math.abs(parseInt(arguments[5], 10)) <= 15 ) {
                         $td.addClass('is-okay');
                     } else {
                         $td.addClass('is-average');
