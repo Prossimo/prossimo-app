@@ -3,6 +3,11 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var PRICING_SCHEME_NONE = app.constants.PRICING_SCHEME_NONE;
+    var PRICING_SCHEME_PRICING_GRIDS = app.constants.PRICING_SCHEME_PRICING_GRIDS;
+    var PRICING_SCHEME_PER_ITEM = app.constants.PRICING_SCHEME_PER_ITEM;
+    var PRICING_SCHEME_LINEAR_EQUATION = app.constants.PRICING_SCHEME_LINEAR_EQUATION;
+
     var UNIT_PROPERTIES = [
         { name: 'mark', title: 'Mark', type: 'string' },
         { name: 'width', title: 'Width (inches)', type: 'number' },
@@ -1911,10 +1916,11 @@ var app = app || {};
         getUnitOptionsGroupedByPricingScheme: function () {
             var connected_options = this.getCurrentUnitOptions();
             var profile_id = this.profile.id;
-            var result = {
-                PRICING_GRIDS: [],
-                PER_ITEM: []
-            };
+            var result = {};
+
+            result[PRICING_SCHEME_PRICING_GRIDS] = [];
+            result[PRICING_SCHEME_PER_ITEM] = [];
+            result[PRICING_SCHEME_LINEAR_EQUATION] = [];
 
             _.each(connected_options, function (option) {
                 var parent_dictionary = option.getParentDictionary();
@@ -1929,7 +1935,7 @@ var app = app || {};
                     }
                 }, this);
 
-                if ( !is_restricted && pricing_data && pricing_data.scheme !== 'NONE' ) {
+                if ( !is_restricted && pricing_data && pricing_data.scheme !== PRICING_SCHEME_NONE ) {
                     result[pricing_data.scheme].push({
                         dictionary_name: parent_dictionary.get('name'),
                         option_name: option.get('name'),
@@ -2008,7 +2014,10 @@ var app = app || {};
                         filling_type.getPricingDataForProfile(this.profile.id);
 
                     //  If we have correct pricing scheme and data for filling
-                    if ( filling_type_pricing_data && filling_type_pricing_data.scheme === 'PRICING_GRIDS' ) {
+                    if (
+                        filling_type_pricing_data &&
+                        filling_type_pricing_data.scheme === PRICING_SCHEME_PRICING_GRIDS
+                    ) {
                         section.filling_price_increase = filling_type_pricing_data.pricing_grids.getValueForGrid(
                             section.type,
                             {
@@ -2025,7 +2034,7 @@ var app = app || {};
                 section.options = [];
 
                 //  Now add prices for all grid-based options
-                _.each(options_grouped_by_scheme.PRICING_GRIDS, function (option_data) {
+                _.each(options_grouped_by_scheme[PRICING_SCHEME_PRICING_GRIDS], function (option_data) {
                     var option_pricing_data = option_data.pricing_data;
                     var option_cost = 0;
                     var price_increase = option_pricing_data.pricing_grids.getValueForGrid(
@@ -2035,6 +2044,25 @@ var app = app || {};
                             width: section.width
                         }
                     ) || 0;
+
+                    option_cost = section.base_cost * price_increase / 100;
+                    section.options_cost += option_cost;
+
+                    section.options.push({
+                        dictionary_name: option_data.dictionary_name,
+                        option_name: option_data.option_name,
+                        price_increase: price_increase,
+                        cost: option_cost
+                    });
+                }, this);
+
+                //  Add prices for options with equation-based pricing
+                _.each(options_grouped_by_scheme[PRICING_SCHEME_LINEAR_EQUATION], function (option_data) {
+                    var option_pricing_data = option_data.pricing_data;
+                    var option_cost = 0;
+                    var param_a = option_pricing_data.pricing_equation_params.get('param_a') || 0;
+                    var param_b = option_pricing_data.pricing_equation_params.get('param_b') || 0;
+                    var price_increase = param_a * section.height / 1000 * section.width / 1000 + param_b;
 
                     option_cost = section.base_cost * price_increase / 100;
                     section.options_cost += option_cost;
@@ -2076,7 +2104,7 @@ var app = app || {};
             }, this);
 
             //  Now add cost for all per-item priced options
-            _.each(options_list.PER_ITEM, function (option) {
+            _.each(options_list[PRICING_SCHEME_PER_ITEM], function (option) {
                 unit_cost.total += option.pricing_data.cost_per_item;
                 unit_cost.options += option.pricing_data.cost_per_item;
             }, this);

@@ -3,12 +3,20 @@ var app = app || {};
 (function () {
     'use strict';
 
-    //  We switch between cost_per_item and pricing_grids in getPricingData()
+    var PRICING_SCHEME_NONE = app.constants.PRICING_SCHEME_NONE;
+    var PRICING_SCHEME_PRICING_GRIDS = app.constants.PRICING_SCHEME_PRICING_GRIDS;
+    var PRICING_SCHEME_PER_ITEM = app.constants.PRICING_SCHEME_PER_ITEM;
+    var PRICING_SCHEME_LINEAR_EQUATION = app.constants.PRICING_SCHEME_LINEAR_EQUATION;
+
+    //  We switch between cost_per_item, pricing_grids, pricing_equation_params
+    //  when we call getPricingData(), only value for one of them is returned,
+    //  depending on what pricing scheme is in use
     var PROFILE_CONNECTION_PROPERTIES = [
         { name: 'profile_id', title: 'Profile ID', type: 'number' },
         { name: 'is_default', title: 'Is Default', type: 'boolean' },
         { name: 'cost_per_item', title: 'Cost Per Item', type: 'number' },
-        { name: 'pricing_grids', title: 'Pricing Grids', type: 'collection:PricingGridCollection' }
+        { name: 'pricing_grids', title: 'Pricing Grids', type: 'collection:PricingGridCollection' },
+        { name: 'pricing_equation_params', title: 'Pricing Equation Params', type: 'model:PricingEquationParams' }
     ];
 
     app.DictionaryEntryProfile = Backbone.Model.extend({
@@ -31,7 +39,8 @@ var app = app || {};
             };
 
             var name_value_hash = {
-                pricing_grids: new app.PricingGridCollection(null, { append_default_grids: true })
+                pricing_grids: new app.PricingGridCollection(null, { append_default_grids: true }),
+                pricing_equation_params: new app.PricingEquationParams()
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -62,14 +71,24 @@ var app = app || {};
                 );
             }
 
+            if ( parsed_data && parsed_data.pricing_equation_params ) {
+                parsed_data.pricing_equation_params = new app.PricingEquationParams(
+                    app.utils.object.extractObjectOrNull(parsed_data.pricing_equation_params),
+                    { parse: true }
+                );
+            }
+
             return parsed_data;
         },
         //  We want `pricing_grids` to be serialized and stored as string
         toJSON: function () {
-            var properties_to_omit = ['id'];
+            //  FIXME: change this back
+            // var properties_to_omit = ['id'];
+            var properties_to_omit = ['id', 'pricing_equation_params'];
             var json = Backbone.Model.prototype.toJSON.apply(this, arguments);
 
             json.pricing_grids = JSON.stringify(this.get('pricing_grids').toJSON());
+            json.pricing_equation_params = JSON.stringify(this.get('pricing_equation_params').toJSON());
 
             return _.omit(json, properties_to_omit);
         },
@@ -80,19 +99,24 @@ var app = app || {};
         //  return different combinations here
         getPricingData: function () {
             var pricing_data = {
-                scheme: 'NONE'
+                scheme: PRICING_SCHEME_NONE
             };
 
             var parent_entry = this.collection && this.collection.options.parent_entry;
             var parent_dictionary = parent_entry && parent_entry.collection &&
                 parent_entry.collection.options.dictionary;
 
-            if ( parent_dictionary && parent_dictionary.get('pricing_scheme') === 'PRICING_GRIDS' ) {
-                pricing_data.scheme = 'PRICING_GRIDS';
+            if ( parent_dictionary && parent_dictionary.get('pricing_scheme') === PRICING_SCHEME_PRICING_GRIDS ) {
+                pricing_data.scheme = PRICING_SCHEME_PRICING_GRIDS;
                 pricing_data.pricing_grids = this.get('pricing_grids');
-            } else if ( parent_dictionary && parent_dictionary.get('pricing_scheme') === 'PER_ITEM' ) {
-                pricing_data.scheme = 'PER_ITEM';
+            } else if ( parent_dictionary && parent_dictionary.get('pricing_scheme') === PRICING_SCHEME_PER_ITEM ) {
+                pricing_data.scheme = PRICING_SCHEME_PER_ITEM;
                 pricing_data.cost_per_item = this.get('cost_per_item');
+            } else if (
+                parent_dictionary && parent_dictionary.get('pricing_scheme') === PRICING_SCHEME_LINEAR_EQUATION
+            ) {
+                pricing_data.scheme = PRICING_SCHEME_LINEAR_EQUATION;
+                pricing_data.pricing_equation_params = this.get('pricing_equation_params');
             }
 
             return pricing_data;
@@ -103,6 +127,9 @@ var app = app || {};
             //  the purpose of persisting the model on grid item change
             this.listenTo(this.get('pricing_grids'), 'change update', function (changed_object) {
                 this.trigger('change:pricing_grids change', changed_object);
+            });
+            this.listenTo(this.get('pricing_equation_params'), 'change update', function (changed_object) {
+                this.trigger('change:pricing_equation_params change', changed_object);
             });
         }
     });

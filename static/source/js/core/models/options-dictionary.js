@@ -3,6 +3,11 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var PRICING_SCHEME_NONE = app.constants.PRICING_SCHEME_NONE;
+    var PRICING_SCHEME_PRICING_GRIDS = app.constants.PRICING_SCHEME_PRICING_GRIDS;
+    var PRICING_SCHEME_PER_ITEM = app.constants.PRICING_SCHEME_PER_ITEM;
+    var PRICING_SCHEME_LINEAR_EQUATION = app.constants.PRICING_SCHEME_LINEAR_EQUATION;
+
     //  TODO: should `rules_and_restrctions` here be an array? or inline model?
     var DICTIONARY_PROPERTIES = [
         { name: 'name', title: 'Name', type: 'string' },
@@ -16,7 +21,10 @@ var app = app || {};
     ];
 
     var POSSIBLE_PRICING_SCHEMES = [
-        'NONE', 'PRICING_GRIDS', 'PER_ITEM'
+        PRICING_SCHEME_NONE,
+        PRICING_SCHEME_PRICING_GRIDS,
+        PRICING_SCHEME_PER_ITEM,
+        PRICING_SCHEME_LINEAR_EQUATION
     ];
 
     function getDefaultRulesAndRestrictions() {

@@ -130,7 +130,6 @@ var app = app || {};
         },
         onBeforeDestroy: function () {
             this.ui.$edit.popover('destroy');
-
         },
         //  TODO: we could pass a formatter function to format readable value,
         //  see getFormattedRenderer from hot-renderers for example
@@ -144,7 +143,7 @@ var app = app || {};
 
             this.options = _.extend({}, default_options, options);
 
-            //  TODO: we could use inpuut type number here, but the problem is
+            //  TODO: we could use input type number here, but the problem is
             //  it has some serious issues in firefox
             if ( this.options.input_type && !_.contains(['text'], this.options.input_type) ) {
                 throw new Error('Input type ' + this.options.input_type + ' is not allowed');

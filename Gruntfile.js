@@ -54,6 +54,7 @@ module.exports = function (grunt) {
     var js_files = [
         'backbone-extensions.js',
         'backbone-safesync.js',
+        'constants.js',
         'router.js',
         'dialogs.js',
         'utils.js',
@@ -63,6 +64,7 @@ module.exports = function (grunt) {
         'undomanager.js',
         //  Inlined models and collections
         'core/models/inline/pricing-grid.js',
+        'core/models/inline/pricing-equation-params.js',
         'core/models/inline/filling-type-to-profile.js',
         'core/models/inline/dictionary-entry-to-profile.js',
         'core/models/inline/project-settings.js',
@@ -132,6 +134,7 @@ module.exports = function (grunt) {
         'settings/views/per-profile-pricing-grids-editor-view.js',
         'settings/views/main-settings-view.js',
         'settings/views/profiles-table-view.js',
+        'settings/views/equation-params-view.js',
         'settings/views/pricing-grids-table-view.js',
         'settings/views/profile-connections-table-item-view.js',
         'settings/views/profile-connections-table-view.js',
