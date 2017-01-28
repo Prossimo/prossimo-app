@@ -48,6 +48,12 @@ module.exports = {
     module: {
         noParse: [/handsontable.full.js/],
         rules: [
+            {
+                test: /\.js$/,
+                use: 'babel-loader',
+                include: [srcPath],
+                exclude: /(node_modules)/
+            },
             {test: /backbone\.js$/, use: [path.resolve(webLoaders, 'backbone-extended-loader')]},
             {test: /\.hbs$/, use: ['handlebars-template-loader']},
             {
