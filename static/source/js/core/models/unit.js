@@ -1947,60 +1947,22 @@ var app = app || {};
             return result;
         },
         getSectionsListWithEstimatedCost: function () {
-            var pricing_grids = this.profile.getPricingGrids();
+            var profile_pricing_data = this.profile.getPricingData();
             var sections_list = this.getFixedAndOperableSectionsList();
             var options_grouped_by_scheme = this.getUnitOptionsGroupedByPricingScheme();
 
-            function getArea(item) {
-                return item.height * item.width;
-            }
-
-            //  How this algorithm works:
-            //  1. grids are already sorted by area size
-            //  2. if our size < lowest size, price = lowest size price
-            //  3. if our size > largest size, price = largest size price
-            //  4. if our size === some size, price = some size price
-            //  5. if our size > some size and < some other size, price is
-            //  linear interpolation between prices for these sizes
-            //  TODO: calculation for `price_per_square_meter` should be
-            //  encapsulated to profile model
             _.each(sections_list, function (section) {
-                var section_area = getArea(section);
-                var pricing_grid;
-
                 section.price_per_square_meter = 0;
 
-                if ( section.type === 'operable' ) {
-                    pricing_grid = pricing_grids.operable;
-                } else {
-                    pricing_grid = pricing_grids.fixed;
-                }
-
-                if ( pricing_grid.length ) {
-                    if ( section_area < getArea(pricing_grid[0]) ) {
-                        section.price_per_square_meter = pricing_grid[0].price_per_square_meter;
-                    } else if ( section_area > getArea(pricing_grid[pricing_grid.length - 1]) ) {
-                        section.price_per_square_meter = pricing_grid[pricing_grid.length - 1].price_per_square_meter;
-                    } else {
-                        _.some(pricing_grid, function (pricing_tier, tier_index) {
-                            if ( section_area === getArea(pricing_tier) ) {
-                                section.price_per_square_meter = pricing_tier.price_per_square_meter;
-                                return true;
-                            } else if ( pricing_grid[tier_index + 1] &&
-                                section_area < getArea(pricing_grid[tier_index + 1]) &&
-                                section_area > getArea(pricing_tier)
-                            ) {
-                                section.price_per_square_meter = app.utils.math.linear_interpolation(
-                                    section_area,
-                                    getArea(pricing_tier),
-                                    getArea(pricing_grid[tier_index + 1]),
-                                    pricing_tier.price_per_square_meter,
-                                    pricing_grid[tier_index + 1].price_per_square_meter
-                                );
-                                return true;
-                            }
-                        }, this);
-                    }
+                //  Add base cost for profile
+                if ( profile_pricing_data && profile_pricing_data.scheme === PRICING_SCHEME_PRICING_GRIDS ) {
+                    section.price_per_square_meter = profile_pricing_data.pricing_grids.getValueForGrid(
+                        section.type,
+                        {
+                            height: section.height,
+                            width: section.width
+                        }
+                    ) || 0;
                 }
 
                 section.base_cost = app.utils.math.square_meters(section.width, section.height) *
@@ -2008,6 +1970,7 @@ var app = app || {};
 
                 section.filling_price_increase = 0;
 
+                //  Add cost increase for fillings
                 if ( app.settings && app.settings.filling_types ) {
                     var filling_type = app.settings.filling_types.getByName(section.filling_name);
                     var filling_type_pricing_data = filling_type &&
@@ -2033,7 +1996,7 @@ var app = app || {};
                 section.options_cost = 0;
                 section.options = [];
 
-                //  Now add prices for all grid-based options
+                //  Now add costs for all grid-based options
                 _.each(options_grouped_by_scheme[PRICING_SCHEME_PRICING_GRIDS], function (option_data) {
                     var option_pricing_data = option_data.pricing_data;
                     var option_cost = 0;
@@ -2056,7 +2019,7 @@ var app = app || {};
                     });
                 }, this);
 
-                //  Add prices for options with equation-based pricing
+                //  Add costs for options with equation-based pricing
                 _.each(options_grouped_by_scheme[PRICING_SCHEME_LINEAR_EQUATION], function (option_data) {
                     var option_pricing_data = option_data.pricing_data;
                     var option_cost = 0;

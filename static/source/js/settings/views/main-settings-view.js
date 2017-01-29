@@ -10,7 +10,6 @@ var app = app || {};
         ui: {
             $profiles_container: '.profiles-container',
             $filling_types_container: '.filling_types-container',
-            $pricing_grids_container: '.pricing_grids-container',
             $options_container: '.options-container'
         },
         events: {
@@ -20,9 +19,6 @@ var app = app || {};
             this.tabs = {
                 profiles: {
                     title: 'Profiles'
-                },
-                pricing_grids: {
-                    title: 'Pricing Grids'
                 },
                 filling_types: {
                     title: 'Filling Types'
@@ -71,17 +67,6 @@ var app = app || {};
                 this.filling_types_view.destroy();
             }
 
-            if ( this.active_tab === 'pricing_grids' ) {
-                this.pricing_grids_table_view = new app.PricingGridsTableView({
-                    collection: app.settings.profiles,
-                    parent_view: this
-                });
-
-                this.ui.$pricing_grids_container.append(this.pricing_grids_table_view.render().el);
-            } else if ( this.pricing_grids_table_view ) {
-                this.pricing_grids_table_view.destroy();
-            }
-
             if ( this.active_tab === 'options' ) {
                 this.options_view = new app.OptionsView({
                     collection: app.settings.dictionaries,
@@ -108,10 +93,6 @@ var app = app || {};
 
             if ( this.filling_types_view ) {
                 this.filling_types_view.destroy();
-            }
-
-            if ( this.pricing_grids_table_view ) {
-                this.pricing_grids_table_view.destroy();
             }
 
             if ( this.options_view ) {

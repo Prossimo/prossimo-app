@@ -143,7 +143,7 @@ test('filling type hasOnlyDefaultAttributes function', function () {
 
     notOk(new_filling.hasOnlyDefaultAttributes(), 'Filling type has non-default attributes after calling set');
     notOk(
-        new_filling.hasOnlyDefaultAttributes(),
+        another_new_filling.hasOnlyDefaultAttributes(),
         'Another filling has type non-default attributes after calling setProfileAvailability'
     );
 });

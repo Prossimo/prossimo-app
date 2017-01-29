@@ -135,7 +135,6 @@ module.exports = function (grunt) {
         'settings/views/main-settings-view.js',
         'settings/views/profiles-table-view.js',
         'settings/views/equation-params-view.js',
-        'settings/views/pricing-grids-table-view.js',
         'settings/views/profile-connections-table-item-view.js',
         'settings/views/profile-connections-table-view.js',
         'settings/views/filling-types-view.js',
