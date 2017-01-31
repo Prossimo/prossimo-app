@@ -1963,6 +1963,12 @@ var app = app || {};
                             width: section.width
                         }
                     ) || 0;
+                } else if ( profile_pricing_data && profile_pricing_data.scheme === PRICING_SCHEME_LINEAR_EQUATION ) {
+                    var profile_param_a = profile_pricing_data.pricing_equation_params.get('param_a') || 0;
+                    var profile_param_b = profile_pricing_data.pricing_equation_params.get('param_b') || 0;
+
+                    section.price_per_square_meter =
+                        profile_param_a * section.height / 1000 * section.width / 1000 + profile_param_b;
                 }
 
                 section.base_cost = app.utils.math.square_meters(section.width, section.height) *

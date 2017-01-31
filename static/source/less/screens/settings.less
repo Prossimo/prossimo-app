@@ -186,8 +186,8 @@
     margin-top: 3rem;
 }
 
-.profile-attributes td,
-.profile-attributes th {
+.profile-attributes .profile-attribute-container > td,
+.profile-attributes .profile-attribute-container > th {
     padding-bottom: 1.5rem;
     vertical-align: bottom;
 }
@@ -217,14 +217,50 @@
     font-size: 1.1em;
 }
 
-.profile .profile-attribute-container td > p {
+.profile .profile-attribute-container > td > p {
     margin-bottom: 0.2rem;
     font-size: 1.1em;
+}
+
+.profile .pricing-grids-table {
+    display: flex;
+    flex-flow: column;
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 80px;
+}
+
+.profile .pricing-grids-table-scroll-wrapper {
+    display: block;
+    flex: none;
+    height: 110px;
+    background-color: transparent;
+}
+
+.profile .equation-params {
+    .clearfix();
+}
+
+.profile .equation-params > div {
+    float: left;
+    width: 50%;
+
+    span,
+    .input-container {
+        display: inline-block;
+    }
+
+    .input-container {
+        width: 80%;
+    }
 }
 
 
 //  ------------------------------------------------------------------------
 //  Pricing Grids
+//
+//  TODO: this table also was removed, but some styles are still re-used, we
+//  should fix that
 //  ------------------------------------------------------------------------
 
 .pricing_grids-container {

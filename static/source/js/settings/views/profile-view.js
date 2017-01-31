@@ -10,6 +10,7 @@ var app = app || {};
         ui: {
             $table_general: '.attributes-group-general .profile-attributes',
             $table_dimensions: '.attributes-group-dimensions .profile-attributes',
+            $table_pricing: '.attributes-group-pricing .profile-attributes',
             $table_threshold: '.attributes-group-threshold .profile-attributes',
             $table_performance: '.attributes-group-performance .profile-attributes',
             $clone: '.js-clone-profile',
@@ -33,10 +34,38 @@ var app = app || {};
                     var $row = $('<tr class="profile-attribute-container" />');
 
                     $row.append('<td><h4 class="title">' + child_view.title + '</h4></td>');
-                    $('<td />').appendTo($row).append(child_view.view_instance.render().el);
+                    $('<td class="' + child_view.name + '" />').appendTo($row).append(child_view.view_instance.render().el);
                     $container.append($row);
                 }, this);
             }, this);
+
+            this.renderPricingEditor();
+        },
+        renderPricingEditor: function () {
+            if ( this.pricing_grids_view ) {
+                this.pricing_grids_view.destroy();
+            }
+
+            if ( this.equation_params_view ) {
+                this.equation_params_view.destroy();
+            }
+
+            var pricing_data = this.model.getPricingData();
+
+            if ( pricing_data.pricing_grids ) {
+                this.pricing_grids_view = new app.PricingGridsEditorView({
+                    grids: this.model.get('pricing_grids'),
+                    parent_view: this
+                });
+                this.ui.$table_pricing.after(this.pricing_grids_view.render().el);
+            }
+
+            if ( pricing_data.pricing_equation_params ) {
+                this.equation_params_view = new app.EquationParamsView({
+                    model: this.model.get('pricing_equation_params')
+                });
+                this.ui.$table_pricing.after(this.equation_params_view.render().el);
+            }
         },
         renderCustomDimensionAttributes: function () {
             var target_views = _.filter(this.attributes_views.dimensions, function (child_view) {
@@ -73,6 +102,14 @@ var app = app || {};
                     }
                 }, this);
             }, this);
+
+            if ( this.pricing_grids_view ) {
+                this.pricing_grids_view.destroy();
+            }
+
+            if ( this.equation_params_view ) {
+                this.equation_params_view.destroy();
+            }
         },
         initialize: function () {
             this.attributes = {
@@ -83,6 +120,9 @@ var app = app || {};
                     'weight_per_length', 'frame_width', 'mullion_width', 'sash_frame_width', 'sash_frame_overlap',
                     'sash_mullion_overlap', 'clear_width_deduction', 'visible_frame_width_fixed',
                     'visible_frame_width_operable'
+                ],
+                pricing: [
+                    'pricing_scheme'
                 ],
                 threshold: [
                     'low_threshold', 'threshold_width'
@@ -119,6 +159,8 @@ var app = app || {};
                     data_array = app.settings.getSashCornerTypes();
                 } else if ( attribute_name === 'frame_corners' ) {
                     data_array = app.settings.getFrameCornerTypes();
+                } else if ( attribute_name === 'pricing_scheme' ) {
+                    data_array = model.getPossiblePricingSchemes();
                 }
 
                 return _.map(data_array, function (item) {
@@ -154,6 +196,8 @@ var app = app || {};
                         attr_data.value = this.model.get(attribute);
                     }
 
+                    //  Select appropriate view. For custom attributes it's
+                    //  just a generic view with no functionality
                     if ( attr_data.is_custom ) {
                         view = new Marionette.View({
                             tagName: 'p',
@@ -164,7 +208,9 @@ var app = app || {};
                         });
                     //  We use text inputs for most attributes except for some
                     //  where we want a selectbox
-                    } else if ( _.contains(['unit_type', 'sash_corners', 'frame_corners'], attr_data.name) ) {
+                    } else if (
+                        _.contains(['unit_type', 'sash_corners', 'frame_corners', 'pricing_scheme'], attr_data.name)
+                    ) {
                         view = new app.BaseSelectView({
                             model: this.model,
                             param: attr_data.name,
@@ -243,6 +289,11 @@ var app = app || {};
             //  threshold_width attribute
             this.listenTo(this.model, 'change:low_threshold', function () {
                 this.renderThresholdWidth();
+            });
+
+            //  When pricing_scheme is changed, it's time to show proper editor
+            this.listenTo(this.model, 'change:pricing_scheme', function () {
+                this.renderPricingEditor();
             });
         }
     });

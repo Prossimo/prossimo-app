@@ -91,9 +91,10 @@ var app = app || {};
             }
 
             if ( context.has_grids ) {
-                this.pricing_grids_view = new app.PerProfilePricingGridsEditorView({
+                this.pricing_grids_view = new app.PricingGridsEditorView({
                     grids: this.model.get('pricing_grids'),
-                    parent_view: this
+                    parent_view: this,
+                    show_notice: true
                 });
                 this.ui.$grid_container.append(this.pricing_grids_view.render().el);
             }

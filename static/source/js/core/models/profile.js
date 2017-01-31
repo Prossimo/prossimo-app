@@ -7,6 +7,11 @@ var app = app || {};
     var PRICING_SCHEME_PRICING_GRIDS = app.constants.PRICING_SCHEME_PRICING_GRIDS;
     var PRICING_SCHEME_LINEAR_EQUATION = app.constants.PRICING_SCHEME_LINEAR_EQUATION;
 
+    var POSSIBLE_PRICING_SCHEMES = [
+        PRICING_SCHEME_LINEAR_EQUATION,
+        PRICING_SCHEME_PRICING_GRIDS
+    ];
+
     var UNIT_TYPES = ['Window', 'Patio Door', 'Entry Door'];
     var DEFAULT_UNIT_TYPE = 'Window';
     var TYPES_WITH_POSSIBLE_THRESHOLD = ['Patio Door', 'Entry Door'];
@@ -37,6 +42,7 @@ var app = app || {};
         { name: 'weight_per_length', title: 'Weight per Length (kg/m)', type: 'number' },
         { name: 'clear_width_deduction', title: 'Clear Width Deduction (mm)', type: 'number' },
 
+        { name: 'pricing_scheme', title: 'Pricing Scheme', type: 'string' },
         { name: 'pricing_grids', title: 'Pricing Grids', type: 'collection:PricingGridCollection' },
         { name: 'pricing_equation_params', title: 'Pricing Equation Params', type: 'model:PricingEquationParams' }
     ];
@@ -72,6 +78,7 @@ var app = app || {};
                 unit_type: DEFAULT_UNIT_TYPE,
                 low_threshold: false,
                 threshold_width: 20,
+                pricing_scheme: this.getPossiblePricingSchemes()[0],
                 pricing_grids: new app.PricingGridCollection(null, { append_default_grids: true }),
                 pricing_equation_params: new app.PricingEquationParams()
             };
@@ -128,7 +135,7 @@ var app = app || {};
         toJSON: function () {
             //  FIXME: change this back
             // var properties_to_omit = ['id'];
-            var properties_to_omit = ['id', 'pricing_equation_params'];
+            var properties_to_omit = ['id', 'pricing_equation_params', 'pricing_scheme'];
             var json = Backbone.Model.prototype.toJSON.apply(this, arguments);
 
             json.pricing_grids = JSON.stringify(this.get('pricing_grids').toJSON());
@@ -290,6 +297,9 @@ var app = app || {};
         getUnitTypes: function () {
             return UNIT_TYPES;
         },
+        getPossiblePricingSchemes: function () {
+            return POSSIBLE_PRICING_SCHEMES;
+        },
         getVisibleFrameWidthFixed: function () {
             return this.get('frame_width');
         },
@@ -302,9 +312,7 @@ var app = app || {};
                 scheme: PRICING_SCHEME_NONE
             };
 
-            //  FIXME: make this work as intended
-            // if ( this.get('pricing_scheme') === PRICING_SCHEME_PRICING_GRIDS ) {
-            if ( true ) {
+            if ( this.get('pricing_scheme') === PRICING_SCHEME_PRICING_GRIDS ) {
                 pricing_data.scheme = PRICING_SCHEME_PRICING_GRIDS;
                 pricing_data.pricing_grids = this.get('pricing_grids');
             } else if ( this.get('pricing_scheme') === PRICING_SCHEME_LINEAR_EQUATION ) {
@@ -316,6 +324,18 @@ var app = app || {};
         },
         initialize: function (attributes, options) {
             this.options = options || {};
+
+            //  Save pricing grids on grid item change
+            this.listenTo(this.get('pricing_grids'), 'change update', function (changed_object) {
+                this.trigger('change:pricing_grids change', changed_object);
+                this.persist('pricing_grids', this.get('pricing_grids'));
+            });
+
+            //  Save pricing_equation_params on param change
+            this.listenTo(this.get('pricing_equation_params'), 'change update', function (changed_object) {
+                this.trigger('change:pricing_equation_params change', changed_object);
+                this.persist('pricing_equation_params', this.get('pricing_equation_params'));
+            });
         }
     });
 })();
