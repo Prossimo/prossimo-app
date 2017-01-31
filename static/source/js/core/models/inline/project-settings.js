@@ -58,6 +58,9 @@ var app = app || {};
 
             return default_value;
         },
+        persist: function () {
+            return this.set.apply(this, arguments);
+        },
         parse: function (data) {
             var settings_data = data && data.settings ? data.settings : data;
 

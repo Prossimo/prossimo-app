@@ -55,6 +55,12 @@ var app = app || {};
         getNameAttribute: function () {
             return 'name';
         },
+        getAttributeType: function (attribute_name) {
+            var name_title_hash = this.getNameTitleTypeHash();
+            var target_attribute = _.findWhere(name_title_hash, {name: attribute_name});
+
+            return target_attribute ? target_attribute.type : undefined;
+        },
         getDefaultValue: function (name, type) {
             var default_value = '';
 
@@ -244,16 +250,20 @@ var app = app || {};
 
             return threshold_type;
         },
-        //  FIXME: this is causing bugs probably: 1) if we update type,
-        //  the threshold change is not persisted, and 2) this also should
-        //  generate two undo events instead of one which is not cool. We need
-        //  to have setType function instead
-        onTypeUpdate: function () {
-            if ( !this.isThresholdPossible() ) {
-                this.set('low_threshold', false);
-            } else if ( this.hasAlwaysLowThreshold() ) {
-                this.set('low_threshold', true);
+        //  This is to set unit_type and low_threshold at once, because under
+        //  certain conditions low_threshold value depends on unit_type
+        setUnitType: function (new_type) {
+            var data_to_persist = {
+                unit_type: new_type
+            };
+
+            if ( !_.contains(TYPES_WITH_POSSIBLE_THRESHOLD, new_type) ) {
+                data_to_persist.low_threshold = false;
+            } else if ( _.contains(TYPES_WITH_ALWAYS_LOW_THRESHOLD, new_type) ) {
+                data_to_persist.low_threshold = true;
             }
+
+            this.persist(data_to_persist);
         },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs
@@ -306,10 +316,6 @@ var app = app || {};
         },
         initialize: function (attributes, options) {
             this.options = options || {};
-
-            if ( !this.options.proxy ) {
-                this.on('change:unit_type', this.onTypeUpdate, this);
-            }
         }
     });
 })();

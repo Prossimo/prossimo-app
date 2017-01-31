@@ -133,7 +133,8 @@ module.exports = function (grunt) {
         //  Settings screen
         'settings/views/per-profile-pricing-grids-editor-view.js',
         'settings/views/main-settings-view.js',
-        'settings/views/profiles-table-view.js',
+        'settings/views/profile-view.js',
+        'settings/views/profiles-view.js',
         'settings/views/equation-params-view.js',
         'settings/views/profile-connections-table-item-view.js',
         'settings/views/profile-connections-table-view.js',

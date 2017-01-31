@@ -107,38 +107,6 @@ var app = app || {};
                 return td;
             };
         },
-        //  Render Low Threshold checkbox, sometimes make cell read-only
-        thresholdCheckboxRenderer: function (instance, td, row, col) {
-            var isThresholdEditable = instance.getSourceData().at(row) &&
-                instance.getSourceData().at(row).isThresholdEditable();
-
-            instance.setCellMeta(row, col, 'editor', false);
-
-            Handsontable.renderers.CheckboxRenderer.apply(this, arguments);
-
-            //  We explicitly make input disabled because setting it to
-            //  `readOnly` doesn't prevent user from clicking
-            if ( !isThresholdEditable ) {
-                $(td).addClass('htDimmed').find('input').attr('disabled', true);
-            }
-
-            return td;
-        },
-        //  Render Threshold Width param cell, sometimes make cell read-only
-        thresholdWidthRenderer: function (instance, td, row, col) {
-            var is_threshold_possible = instance.getSourceData().at(row) &&
-                instance.getSourceData().at(row).isThresholdPossible();
-
-            if ( is_threshold_possible ) {
-                instance.setCellMeta(row, col, 'readOnly', false);
-                Handsontable.renderers.NumericRenderer.apply(this, arguments);
-            } else {
-                instance.setCellMeta(row, col, 'readOnly', true);
-                $(td).addClass('htDimmed htNumeric').text('--');
-            }
-
-            return td;
-        },
         //  Add move up / down buttons to move item within collection
         moveItemRenderer: function (instance, td, row) {
             var $td = $(td);

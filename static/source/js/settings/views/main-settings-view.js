@@ -46,14 +46,14 @@ var app = app || {};
         },
         onRender: function () {
             if ( this.active_tab === 'profiles' ) {
-                this.profiles_table_view = new app.ProfilesTableView({
+                this.profiles_view = new app.ProfilesView({
                     collection: app.settings.profiles,
                     parent_view: this
                 });
 
-                this.ui.$profiles_container.append(this.profiles_table_view.render().el);
-            } else if ( this.profiles_table_view ) {
-                this.profiles_table_view.destroy();
+                this.ui.$profiles_container.append(this.profiles_view.render().el);
+            } else if ( this.profiles_view ) {
+                this.profiles_view.destroy();
             }
 
             if ( this.active_tab === 'filling_types' ) {
@@ -87,8 +87,8 @@ var app = app || {};
             };
         },
         onBeforeDestroy: function () {
-            if ( this.profiles_table_view ) {
-                this.profiles_table_view.destroy();
+            if ( this.profiles_view ) {
+                this.profiles_view.destroy();
             }
 
             if ( this.filling_types_view ) {

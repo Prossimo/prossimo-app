@@ -27,7 +27,11 @@ var app = app || {};
             'click .js-revert-editable': 'revertEditable'
         },
         makeEditable: function () {
-            if (!this.options.is_disabled) {
+            var is_disabled = this.options.is_disabled && _.isFunction(this.options.is_disabled) ?
+                this.options.is_disabled() :
+                this.options.is_disabled;
+
+            if (!is_disabled) {
                 this.$el.addClass('is-edited');
                 this.ui.$input.trigger('focus').trigger('select');
             }
@@ -105,6 +109,7 @@ var app = app || {};
                 html: true
             });
         },
+        //  TODO: we need to handle a case where is_disabled is a function
         enable: function () {
             this.options.is_disabled = false;
             this.render();
@@ -116,13 +121,18 @@ var app = app || {};
         templateContext: function () {
             var value = this.model.get(this.options.param);
             var placeholder = this.options.placeholder || '&nbsp;';
+            var is_disabled = this.options.is_disabled && _.isFunction(this.options.is_disabled) ?
+                this.options.is_disabled() :
+                this.options.is_disabled;
 
             return {
                 input_type: this.options.input_type || 'text',
                 value: value,
-                readable_value: value !== '' ? value : placeholder,
+                readable_value: (is_disabled && this.options.disabled_value) ?
+                    this.options.disabled_value :
+                    (value !== '' ? value : placeholder),
                 show_placeholder: !value && placeholder,
-                is_disabled: this.options.is_disabled
+                is_disabled: is_disabled
             };
         },
         onRender: function () {
@@ -137,6 +147,7 @@ var app = app || {};
             var default_options = {
                 input_type: 'text',
                 is_disabled: false,
+                disabled_value: '',
                 placeholder: '',
                 formatter: false
             };
