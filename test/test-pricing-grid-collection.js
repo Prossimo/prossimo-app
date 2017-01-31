@@ -135,6 +135,19 @@ test('pricing grid collection json string parsing', function () {
         }
     ];
 
+    var collection_data_old_format_2 = {
+        fixed: [
+            { title: 'Small', height: 500, width: 500, price_per_square_meter: 55 },
+            { title: 'Medium', height: 914, width: 1514, price_per_square_meter: 50 },
+            { title: 'Large', height: 2400, width: 3000, price_per_square_meter: 45 }
+        ],
+        operable: [
+            { title: 'Small', height: 500, width: 500, price_per_square_meter: 70 },
+            { title: 'Medium', height: 914, width: 1514, price_per_square_meter: 65 },
+            { title: 'Large', height: 1200, width: 2400, price_per_square_meter: 60 }
+        ]
+    };
+
     //  We're testing the old data format here, but it still should work fine
     var grids = new app.PricingGridCollection(
         JSON.stringify(collection_data_old_format),
@@ -155,6 +168,30 @@ test('pricing grid collection json string parsing', function () {
     );
     equal(
         grids.getByName('operable').get('data').at(1).get('height'),
+        collection_data[1].data[1].height,
+        'Height for the second item of an Operable grid'
+    );
+
+    //  And this should work fine as well
+    var grids_2 = new app.PricingGridCollection(
+        JSON.stringify(collection_data_old_format_2),
+        { parse: true }
+    );
+
+    equal(grids_2.getByName('fixed').get('data').length, 3, 'Fixed Grid has 3 grid items');
+
+    equal(
+        grids_2.getByName('fixed').get('data').at(0).get('value'),
+        collection_data[0].data[0].value,
+        'Value for the first item of a Fixed grid'
+    );
+    equal(
+        grids_2.getByName('fixed').get('data').at(0).get('title'),
+        undefined,
+        'Title for the first item of a Fixed grid (non-existing property, should be ignored on parse)'
+    );
+    equal(
+        grids_2.getByName('operable').get('data').at(1).get('height'),
         collection_data[1].data[1].height,
         'Height for the second item of an Operable grid'
     );
