@@ -16,6 +16,8 @@ var app = app || {};
         { name: 'shipping_notes', title: 'Shipping Notes', type: 'string'},
         { name: 'project_notes', title: 'Project Notes', type: 'string'},
         { name: 'lead_time', title: 'Lead Time', type: 'number' },
+        { name: 'frontapp_thread_id', title: 'Frontapp Thread ID', type: 'string' },
+        { name: 'frontapp_gdrive_folder_id', title: 'Frontapp GDrive Folder ID', type: 'string' },
         { name: 'settings', title: 'Settings', type: 'model:ProjectSettings' }
     ];
 
