@@ -19,7 +19,7 @@ module.exports = {
 
     reporters: ['spec'],
 
-    webpack: Object.assign({}, webpackConfig, {entry: ''}),
+    webpack: Object.assign({}, webpackConfig, {entry: '', devtool: 'inline'}),
 
     webpackMiddleware: {
         noInfo: true
@@ -43,7 +43,8 @@ module.exports = {
         require('karma-spec-reporter'),
         require('karma-sinon-chai'),
         require('karma-jquery-chai'),
-        require('karma-sourcemap-loader')
+        require('karma-sourcemap-loader'),
+        require('karma-chrome-launcher')
     ],
 
     browsers: ['PhantomJS']

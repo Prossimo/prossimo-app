@@ -51,7 +51,6 @@ module.exports = {
             {
                 test: /\.js$/,
                 use: 'babel-loader',
-                include: [srcPath],
                 exclude: /(node_modules)/
             },
             {test: /backbone\.js$/, use: [path.resolve(webLoaders, 'backbone-extended-loader')]},
