@@ -1953,6 +1953,7 @@ var app = app || {};
 
             _.each(sections_list, function (section) {
                 section.price_per_square_meter = 0;
+                section.base_cost = 0;
 
                 //  Add base cost for profile
                 if ( profile_pricing_data && profile_pricing_data.scheme === PRICING_SCHEME_PRICING_GRIDS ) {
@@ -1963,16 +1964,17 @@ var app = app || {};
                             width: section.width
                         }
                     ) || 0;
-                } else if ( profile_pricing_data && profile_pricing_data.scheme === PRICING_SCHEME_LINEAR_EQUATION ) {
-                    var profile_param_a = profile_pricing_data.pricing_equation_params.get('param_a') || 0;
-                    var profile_param_b = profile_pricing_data.pricing_equation_params.get('param_b') || 0;
 
-                    section.price_per_square_meter =
+                    section.base_cost = app.utils.math.square_meters(section.width, section.height) *
+                        section.price_per_square_meter;
+                } else if ( profile_pricing_data && profile_pricing_data.scheme === PRICING_SCHEME_LINEAR_EQUATION ) {
+                    var params_source = profile_pricing_data.pricing_equation_params.getByName(section.type);
+                    var profile_param_a = params_source.get('param_a') || 0;
+                    var profile_param_b = params_source.get('param_b') || 0;
+
+                    section.base_cost =
                         profile_param_a * section.height / 1000 * section.width / 1000 + profile_param_b;
                 }
-
-                section.base_cost = app.utils.math.square_meters(section.width, section.height) *
-                    section.price_per_square_meter;
 
                 section.filling_price_increase = 0;
 
@@ -2027,13 +2029,13 @@ var app = app || {};
 
                 //  Add costs for options with equation-based pricing
                 _.each(options_grouped_by_scheme[PRICING_SCHEME_LINEAR_EQUATION], function (option_data) {
-                    var option_pricing_data = option_data.pricing_data;
+                    var option_pricing_data = option_data.pricing_data.pricing_equation_params.getByName(section.type);
                     var option_cost = 0;
-                    var param_a = option_pricing_data.pricing_equation_params.get('param_a') || 0;
-                    var param_b = option_pricing_data.pricing_equation_params.get('param_b') || 0;
-                    var price_increase = param_a * section.height / 1000 * section.width / 1000 + param_b;
+                    var param_a = option_pricing_data.get('param_a') || 0;
+                    var param_b = option_pricing_data.get('param_b') || 0;
+                    var price_increase = 0;
 
-                    option_cost = section.base_cost * price_increase / 100;
+                    option_cost = param_a * section.height / 1000 * section.width / 1000 + param_b;
                     section.options_cost += option_cost;
 
                     section.options.push({

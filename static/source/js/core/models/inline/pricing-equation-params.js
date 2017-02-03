@@ -33,6 +33,13 @@ var app = app || {};
 
             return default_value;
         },
+        //  TODO: this is probably how it should be implemented everywhere
+        getAttributeType: function (attribute_name) {
+            return this.schema && this.schema[attribute_name].type || undefined;
+        },
+        parse: function (data) {
+            return app.schema.parseAccordingToSchema(data, this.schema);
+        },
         persist: function () {
             return this.set.apply(this, arguments);
         }
