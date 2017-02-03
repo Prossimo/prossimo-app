@@ -11,6 +11,7 @@ function createBackendProxy(pach) {
     let proxy = httpProxy.createProxyServer({
         target: pach,
         xfwd: false,
+        changeOrigin: true,
         cookieDomainRewrite: {
             '*': ''
         }
