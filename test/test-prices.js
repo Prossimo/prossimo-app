@@ -287,7 +287,8 @@ test('estimated unit cost', function () {
         mullion_width: 92,
         sash_frame_width: 82,
         sash_frame_overlap: 34,
-        sash_mullion_overlap: 34
+        sash_mullion_overlap: 34,
+        pricing_scheme: 'PRICING_GRIDS'
     });
 
     pricing_grids = unit.profile.get('pricing_grids');
@@ -654,6 +655,7 @@ test('unit getSectionsListWithEstimatedCost, getEstimatedUnitCost functions', fu
         id: 3,
         name: 'Nice and Cool Profile',
         unit_type: 'Window',
+        pricing_scheme: 'PRICING_GRIDS',
         pricing_grids: [
             {
                 name: 'fixed',

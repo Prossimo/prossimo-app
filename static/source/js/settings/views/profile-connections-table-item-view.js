@@ -109,7 +109,7 @@ var app = app || {};
 
             if ( context.has_linear_cost ) {
                 this.equation_params_view = new app.EquationParamsView({
-                    model: this.model.get('pricing_equation_params')
+                    collection: this.model.get('pricing_equation_params')
                 });
                 this.ui.$equation_params_container.append(this.equation_params_view.render().el);
             }

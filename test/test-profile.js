@@ -17,8 +17,8 @@ test('profile model basic tests', function () {
         'pricing_grids is an instance of Backbone.Collection upon profile creation'
     );
     ok(
-        profile.get('pricing_equation_params') instanceof Backbone.Model,
-        'pricing_equation_params is an instance of Backbone.Model upon profile creation'
+        profile.get('pricing_equation_params') instanceof Backbone.Collection,
+        'pricing_equation_params is an instance of Backbone.Collection upon profile creation'
     );
 });
 
@@ -42,10 +42,18 @@ test('profile parse function', function () {
             ]
         }
     ];
-    var equation_data_to_set = {
-        param_a: 15,
-        param_b: 149
-    };
+    var equation_data_to_set = [
+        {
+            name: 'fixed',
+            param_a: 15,
+            param_b: 149
+        },
+        {
+            name: 'operable',
+            param_a: 17,
+            param_b: 184
+        }
+    ];
     var profile = new app.Profile({
         pricing_grids: JSON.parse(JSON.stringify(grids_data_to_set)),
         pricing_equation_params: JSON.parse(JSON.stringify(equation_data_to_set))
@@ -76,8 +84,8 @@ test('profile parse function', function () {
         'pricing_grids should be parsed properly'
     );
     ok(
-        profile.get('pricing_equation_params') instanceof Backbone.Model,
-        'pricing_equation_params is a Backbone.Model object'
+        profile.get('pricing_equation_params') instanceof Backbone.Collection,
+        'pricing_equation_params is a Backbone.Collection object'
     );
     deepEqual(
         profile.get('pricing_equation_params').get('param_a'),
@@ -100,8 +108,8 @@ test('profile parse function', function () {
         'pricing_grids second entry should be similar to source data first entry'
     );
     ok(
-        another_profile.get('pricing_equation_params') instanceof Backbone.Model,
-        'pricing_equation_params is a Backbone.Model object'
+        another_profile.get('pricing_equation_params') instanceof Backbone.Collection,
+        'pricing_equation_params is a Backbone.Collection object'
     );
     deepEqual(
         another_profile.get('pricing_equation_params').get('param_a'),
@@ -126,10 +134,18 @@ test('profile toJSON function', function () {
     var data_to_set = {
         name: 'Some random profile',
         threshold_width: 33,
-        pricing_equation_params: JSON.stringify({
-            param_a: 12,
-            param_b: 177
-        }),
+        pricing_equation_params: JSON.stringify([
+            {
+                name: 'fixed',
+                param_a: 12,
+                param_b: 177
+            },
+            {
+                name: 'operable',
+                param_a: 17,
+                param_b: 184
+            }
+        ]),
         pricing_grids: JSON.stringify([
             {
                 name: 'fixed',
@@ -165,10 +181,18 @@ test('profile toJSON function', function () {
             mullion_width: 0,
             name: '',
             position: 0,
-            pricing_equation_params: JSON.stringify({
-                param_a: 0,
-                param_b: 0
-            }),
+            pricing_equation_params: JSON.stringify([
+                {
+                    name: 'fixed',
+                    param_a: 0,
+                    param_b: 0
+                },
+                {
+                    name: 'operable',
+                    param_a: 0,
+                    param_b: 0
+                }
+            ]),
             pricing_grids: JSON.stringify([
                 {
                     name: 'fixed',
@@ -187,6 +211,7 @@ test('profile toJSON function', function () {
                     ]
                 }
             ]),
+            pricing_scheme: 'LINEAR_EQUATION',
             sash_corners: '',
             sash_frame_overlap: 0,
             sash_frame_width: 0,
@@ -212,10 +237,18 @@ test('profile toJSON function', function () {
             mullion_width: 0,
             name: 'Some random profile',
             position: 0,
-            pricing_equation_params: JSON.stringify({
-                param_a: 12,
-                param_b: 177
-            }),
+            pricing_equation_params: JSON.stringify([
+                {
+                    name: 'fixed',
+                    param_a: 12,
+                    param_b: 177
+                },
+                {
+                    name: 'operable',
+                    param_a: 17,
+                    param_b: 184
+                }
+            ]),
             pricing_grids: JSON.stringify([
                 {
                     name: 'fixed',
@@ -234,6 +267,7 @@ test('profile toJSON function', function () {
                     ]
                 }
             ]),
+            pricing_scheme: 'LINEAR_EQUATION',
             sash_corners: '',
             sash_frame_overlap: 0,
             sash_frame_width: 0,

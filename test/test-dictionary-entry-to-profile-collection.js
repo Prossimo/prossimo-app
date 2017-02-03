@@ -196,10 +196,18 @@ test('DictionaryEntryProfileCollection toJSON function', function () {
                         ]
                     }
                 ]),
-                pricing_equation_params: JSON.stringify({
-                    param_a: 0,
-                    param_b: 0
-                })
+                pricing_equation_params: JSON.stringify([
+                    {
+                        name: 'fixed',
+                        param_a: 0,
+                        param_b: 0
+                    },
+                    {
+                        name: 'operable',
+                        param_a: 0,
+                        param_b: 0
+                    }
+                ])
             },
             {
                 profile_id: 17,
@@ -223,10 +231,18 @@ test('DictionaryEntryProfileCollection toJSON function', function () {
                         ]
                     }
                 ]),
-                pricing_equation_params: JSON.stringify({
-                    param_a: 0,
-                    param_b: 0
-                })
+                pricing_equation_params: JSON.stringify([
+                    {
+                        name: 'fixed',
+                        param_a: 0,
+                        param_b: 0
+                    },
+                    {
+                        name: 'operable',
+                        param_a: 0,
+                        param_b: 0
+                    }
+                ])
             }
         ],
         'DictionaryEntryProfileCollection toJSON representation should match the expected data'

@@ -16,7 +16,11 @@ var app = app || {};
         { name: 'is_default', title: 'Is Default', type: 'boolean' },
         { name: 'cost_per_item', title: 'Cost Per Item', type: 'number' },
         { name: 'pricing_grids', title: 'Pricing Grids', type: 'collection:PricingGridCollection' },
-        { name: 'pricing_equation_params', title: 'Pricing Equation Params', type: 'model:PricingEquationParams' }
+        {
+            name: 'pricing_equation_params',
+            title: 'Pricing Equation Params',
+            type: 'collection:PricingEquationParamsCollection'
+        }
     ];
 
     app.DictionaryEntryProfile = Backbone.Model.extend({
@@ -40,7 +44,7 @@ var app = app || {};
 
             var name_value_hash = {
                 pricing_grids: new app.PricingGridCollection(null, { append_default_grids: true }),
-                pricing_equation_params: new app.PricingEquationParams()
+                pricing_equation_params: new app.PricingEquationParamsCollection(null, { append_default_sets: true })
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -72,9 +76,12 @@ var app = app || {};
             }
 
             if ( parsed_data && parsed_data.pricing_equation_params ) {
-                parsed_data.pricing_equation_params = new app.PricingEquationParams(
+                parsed_data.pricing_equation_params = new app.PricingEquationParamsCollection(
                     app.utils.object.extractObjectOrNull(parsed_data.pricing_equation_params),
-                    { parse: true }
+                    {
+                        parse: true,
+                        append_default_sets: true
+                    }
                 );
             }
 
@@ -82,9 +89,7 @@ var app = app || {};
         },
         //  We want `pricing_grids` to be serialized and stored as string
         toJSON: function () {
-            //  FIXME: change this back
-            // var properties_to_omit = ['id'];
-            var properties_to_omit = ['id', 'pricing_equation_params'];
+            var properties_to_omit = ['id'];
             var json = Backbone.Model.prototype.toJSON.apply(this, arguments);
 
             json.pricing_grids = JSON.stringify(this.get('pricing_grids').toJSON());

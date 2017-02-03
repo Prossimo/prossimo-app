@@ -145,8 +145,7 @@ var app = app || {};
                 area: 'Area (m<sup>2</sup>)',
                 width: 'Width (mm)',
                 height: 'Height (mm)',
-                //  TODO: should be configurable via options
-                value: 'Price Increase (percents)'
+                value: this.options.value_column_title || 'Price Increase (percents)'
             };
 
             return custom_column_headers_hash[column_name];
@@ -201,7 +200,8 @@ var app = app || {};
             var default_options = {
                 grids: undefined,
                 parent_view: undefined,
-                show_notice: false
+                show_notice: false,
+                value_column_title: ''
             };
 
             this.options = _.extend(default_options, options);

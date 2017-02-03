@@ -4,6 +4,7 @@ var app = app || {};
     'use strict';
 
     var EQUATION_PROPERTIES = [
+        { name: 'name', title: 'Name', type: 'string' },
         { name: 'param_a', title: 'Param A', type: 'number' },
         { name: 'param_b', title: 'Param B', type: 'number' }
     ];
@@ -34,11 +35,6 @@ var app = app || {};
         },
         persist: function () {
             return this.set.apply(this, arguments);
-        },
-        initialize: function () {
-            //  FIXME: remove this
-            this.set('param_a', 10);
-            this.set('param_b', 15);
         }
     });
 })();

@@ -39,10 +39,18 @@ test('DictionaryEntryProfile parse function', function () {
             ]
         }
     ];
-    var equation_data_to_set = {
-        param_a: 15,
-        param_b: 149
-    };
+    var equation_data_to_set = [
+        {
+            name: 'fixed',
+            param_a: 15,
+            param_b: 149
+        },
+        {
+            name: 'operable',
+            param_a: 17,
+            param_b: 184
+        }
+    ];
     var dep = new app.DictionaryEntryProfile({
         pricing_grids: JSON.parse(JSON.stringify(grids_data_to_set)),
         pricing_equation_params: JSON.parse(JSON.stringify(equation_data_to_set))
@@ -56,8 +64,8 @@ test('DictionaryEntryProfile parse function', function () {
         'pricing_grids first entry should be similar to source data first entry'
     );
     ok(
-        dep.get('pricing_equation_params') instanceof Backbone.Model,
-        'pricing_equation_params is a Backbone.Model object'
+        dep.get('pricing_equation_params') instanceof Backbone.Collection,
+        'pricing_equation_params is a Backbone.Collection object'
     );
     deepEqual(
         dep.get('pricing_equation_params').get('param_a'),
@@ -79,8 +87,8 @@ test('DictionaryEntryProfile parse function', function () {
         'pricing_grids first entry should be similar to source data first entry'
     );
     ok(
-        another_dep.get('pricing_equation_params') instanceof Backbone.Model,
-        'pricing_equation_params is a Backbone.Model object'
+        another_dep.get('pricing_equation_params') instanceof Backbone.Collection,
+        'pricing_equation_params is a Backbone.Collection object'
     );
     deepEqual(
         another_dep.get('pricing_equation_params').get('param_a'),
@@ -133,10 +141,18 @@ test('DictionaryEntryProfile toJSON function', function () {
                     ]
                 }
             ]),
-            pricing_equation_params: JSON.stringify({
-                param_a: 0,
-                param_b: 0
-            })
+            pricing_equation_params: JSON.stringify([
+                {
+                    name: 'fixed',
+                    param_a: 0,
+                    param_b: 0
+                },
+                {
+                    name: 'operable',
+                    param_a: 0,
+                    param_b: 0
+                }
+            ])
         },
         'Default DictionaryEntryProfile should be correctly cast to JSON representation'
     );
@@ -154,10 +170,13 @@ test('DictionaryEntryProfile toJSON function', function () {
                 name: 'fixed'
             }
         ],
-        pricing_equation_params: {
-            param_a: 15,
-            param_b: 149
-        }
+        pricing_equation_params: [
+            {
+                name: 'fixed',
+                param_a: 15,
+                param_b: 149
+            }
+        ]
     }, { parse: true });
 
     deepEqual(
@@ -176,10 +195,13 @@ test('DictionaryEntryProfile toJSON function', function () {
                     ]
                 }
             ]),
-            pricing_equation_params: JSON.stringify({
-                param_a: 15,
-                param_b: 149
-            })
+            pricing_equation_params: JSON.stringify([
+                {
+                    name: 'fixed',
+                    param_a: 15,
+                    param_b: 149
+                }
+            ])
         },
         'DictionaryEntryProfile should be correctly cast to JSON representation'
     );

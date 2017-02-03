@@ -55,14 +55,15 @@ var app = app || {};
             if ( pricing_data.pricing_grids ) {
                 this.pricing_grids_view = new app.PricingGridsEditorView({
                     grids: this.model.get('pricing_grids'),
-                    parent_view: this
+                    parent_view: this,
+                    value_column_title: 'Price / m<sup>2</sup>'
                 });
                 this.ui.$table_pricing.after(this.pricing_grids_view.render().el);
             }
 
             if ( pricing_data.pricing_equation_params ) {
                 this.equation_params_view = new app.EquationParamsView({
-                    model: this.model.get('pricing_equation_params')
+                    collection: this.model.get('pricing_equation_params')
                 });
                 this.ui.$table_pricing.after(this.equation_params_view.render().el);
             }

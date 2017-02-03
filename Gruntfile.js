@@ -69,6 +69,7 @@ module.exports = function (grunt) {
         'core/models/inline/dictionary-entry-to-profile.js',
         'core/models/inline/project-settings.js',
         'core/collections/inline/pricing-grid-collection.js',
+        'core/collections/inline/pricing-equation-params-collection.js',
         'core/collections/inline/filling-type-to-profile-collection.js',
         'core/collections/inline/dictionary-entry-to-profile-collection.js',
         //  Regular models
@@ -132,6 +133,7 @@ module.exports = function (grunt) {
         'quote/views/quote-extras-table-view.js',
         //  Settings screen
         'settings/views/pricing-grids-editor-view.js',
+        'settings/views/equation-params-item-view.js',
         'settings/views/equation-params-view.js',
         'settings/views/main-settings-view.js',
         'settings/views/profile-view.js',

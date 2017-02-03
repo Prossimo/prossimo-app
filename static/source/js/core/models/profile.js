@@ -44,7 +44,11 @@ var app = app || {};
 
         { name: 'pricing_scheme', title: 'Pricing Scheme', type: 'string' },
         { name: 'pricing_grids', title: 'Pricing Grids', type: 'collection:PricingGridCollection' },
-        { name: 'pricing_equation_params', title: 'Pricing Equation Params', type: 'model:PricingEquationParams' }
+        {
+            name: 'pricing_equation_params',
+            title: 'Pricing Equation Params',
+            type: 'collection:PricingEquationParamsCollection'
+        }
     ];
 
     app.Profile = Backbone.Model.extend({
@@ -80,7 +84,7 @@ var app = app || {};
                 threshold_width: 20,
                 pricing_scheme: this.getPossiblePricingSchemes()[0],
                 pricing_grids: new app.PricingGridCollection(null, { append_default_grids: true }),
-                pricing_equation_params: new app.PricingEquationParams()
+                pricing_equation_params: new app.PricingEquationParamsCollection(null, { append_default_sets: true })
             };
 
             if ( app.settings ) {
@@ -124,18 +128,19 @@ var app = app || {};
             }
 
             if ( parsed_data && parsed_data.pricing_equation_params ) {
-                parsed_data.pricing_equation_params = new app.PricingEquationParams(
+                parsed_data.pricing_equation_params = new app.PricingEquationParamsCollection(
                     app.utils.object.extractObjectOrNull(parsed_data.pricing_equation_params),
-                    { parse: true }
+                    {
+                        parse: true,
+                        append_default_sets: true
+                    }
                 );
             }
 
             return parsed_data;
         },
         toJSON: function () {
-            //  FIXME: change this back
-            // var properties_to_omit = ['id'];
-            var properties_to_omit = ['id', 'pricing_equation_params', 'pricing_scheme'];
+            var properties_to_omit = ['id'];
             var json = Backbone.Model.prototype.toJSON.apply(this, arguments);
 
             json.pricing_grids = JSON.stringify(this.get('pricing_grids').toJSON());
