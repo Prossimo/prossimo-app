@@ -15,20 +15,6 @@ var app = app || {};
         events: {
             'click .nav-tabs a': 'onTabClick'
         },
-        initialize: function () {
-            this.tabs = {
-                profiles: {
-                    title: 'Profiles'
-                },
-                filling_types: {
-                    title: 'Filling Types'
-                },
-                options: {
-                    title: 'Options'
-                }
-            };
-            this.active_tab = 'profiles';
-        },
         getActiveTab: function () {
             return this.tabs[this.active_tab];
         },
@@ -98,6 +84,22 @@ var app = app || {};
             if ( this.options_view ) {
                 this.options_view.destroy();
             }
+        },
+        initialize: function () {
+            this.tabs = {
+                profiles: {
+                    title: 'Profiles'
+                },
+                filling_types: {
+                    title: 'Filling Types'
+                },
+                options: {
+                    title: 'Options'
+                }
+            };
+            this.active_tab = 'profiles';
+
+            this.listenTo(app.vent, 'settings:fetch_data:stop', this.render);
         }
     });
 })();
