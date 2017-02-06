@@ -95,9 +95,9 @@ var app = app || {};
                 }
 
                 if ( attr_name === 'percent_difference' ) {
-                    if ( parseInt(arguments[5], 10) === 0 ) {
+                    if ( parseInt(arguments[5].replace(',', ''), 10) === 0 ) {
                         $td.addClass('is-perfect');
-                    } else if ( Math.abs(parseInt(arguments[5], 10)) <= 15 ) {
+                    } else if ( Math.abs(parseInt(arguments[5].replace(',', ''), 10)) <= 15 ) {
                         $td.addClass('is-okay');
                     } else {
                         $td.addClass('is-average');
