@@ -1977,29 +1977,33 @@ var app = app || {};
                 }
 
                 section.filling_price_increase = 0;
+                section.filling_cost = 0;
 
                 //  Add cost increase for fillings
                 if ( app.settings && app.settings.filling_types ) {
                     var filling_type = app.settings.filling_types.getByName(section.filling_name);
-                    var filling_type_pricing_data = filling_type &&
+                    var ft_pricing_data = filling_type &&
                         filling_type.getPricingDataForProfile(this.profile.id);
 
                     //  If we have correct pricing scheme and data for filling
-                    if (
-                        filling_type_pricing_data &&
-                        filling_type_pricing_data.scheme === PRICING_SCHEME_PRICING_GRIDS
-                    ) {
-                        section.filling_price_increase = filling_type_pricing_data.pricing_grids.getValueForGrid(
+                    if ( ft_pricing_data && ft_pricing_data.scheme === PRICING_SCHEME_PRICING_GRIDS ) {
+                        section.filling_price_increase = ft_pricing_data.pricing_grids.getValueForGrid(
                             section.type,
                             {
                                 height: section.height,
                                 width: section.width
                             }
                         ) || 0;
+                        section.filling_cost = section.base_cost * section.filling_price_increase / 100;
+                    } else if ( ft_pricing_data && ft_pricing_data.scheme === PRICING_SCHEME_LINEAR_EQUATION ) {
+                        var ft_params_source = ft_pricing_data.pricing_equation_params.getByName(section.type);
+                        var ft_param_a = ft_params_source.get('param_a') || 0;
+                        var ft_param_b = ft_params_source.get('param_b') || 0;
+
+                        section.filling_cost =
+                            ft_param_a * section.height / 1000 * section.width / 1000 + ft_param_b;
                     }
                 }
-
-                section.filling_cost = section.base_cost * section.filling_price_increase / 100;
 
                 section.options_cost = 0;
                 section.options = [];

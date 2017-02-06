@@ -3,6 +3,14 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var PRICING_SCHEME_PRICING_GRIDS = app.constants.PRICING_SCHEME_PRICING_GRIDS;
+    var PRICING_SCHEME_LINEAR_EQUATION = app.constants.PRICING_SCHEME_LINEAR_EQUATION;
+
+    var POSSIBLE_PRICING_SCHEMES = [
+        PRICING_SCHEME_LINEAR_EQUATION,
+        PRICING_SCHEME_PRICING_GRIDS
+    ];
+
     var UNSET_VALUE = '--';
 
     var BASE_TYPES = [
@@ -23,6 +31,7 @@ var app = app || {};
         { name: 'is_base_type', title: 'Is Base Type', type: 'boolean' },
         { name: 'weight_per_area', title: 'Weight per Area (kg/m2)', type: 'number' },
         { name: 'position', title: 'Position', type: 'number' },
+        { name: 'pricing_scheme', title: 'Pricing Scheme', type: 'string' },
         { name: 'filling_type_profiles', title: 'Profiles', type: 'collection:FillingTypeProfileCollection' }
     ];
 
@@ -56,7 +65,10 @@ var app = app || {};
 
             var name_value_hash = {
                 type: this.getBaseTypes()[0].name,
-                filling_type_profiles: new app.FillingTypeProfileCollection()
+                pricing_scheme: this.getPossiblePricingSchemes()[0],
+                filling_type_profiles: new app.FillingTypeProfileCollection(null, {
+                    parent_filling_type: this
+                })
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -83,7 +95,10 @@ var app = app || {};
             if ( parsed_data && parsed_data.filling_type_profiles ) {
                 parsed_data.filling_type_profiles = new app.FillingTypeProfileCollection(
                     app.utils.object.extractObjectOrNull(parsed_data.filling_type_profiles),
-                    { parse: true }
+                    {
+                        parent_filling_type: this,
+                        parse: true
+                    }
                 );
             }
 
@@ -198,6 +213,9 @@ var app = app || {};
         },
         getBaseTypeTitle: function () {
             return _.findWhere(this.getBaseTypes(), { name: this.get('type') }).title || '';
+        },
+        getPossiblePricingSchemes: function () {
+            return POSSIBLE_PRICING_SCHEMES;
         },
         isAvailableForProfile: function (profile_id) {
             return this.get('is_base_type') === true ||

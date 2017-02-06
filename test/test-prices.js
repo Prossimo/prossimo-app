@@ -642,7 +642,8 @@ test('unit getSectionsListWithEstimatedCost, getEstimatedUnitCost functions', fu
                         }
                     ]
                 }
-            ]
+            ],
+            pricing_scheme: 'PRICING_GRIDS'
         }
     ], { parse: true });
 
