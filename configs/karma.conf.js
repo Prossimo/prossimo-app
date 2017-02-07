@@ -7,6 +7,7 @@ const rootPatch = path.join(__dirname, '../');
 module.exports = {
     basePath: '',
     files: [
+        path.resolve(rootPatch, './tests/index.js'),
         path.resolve(rootPatch, './tests/**/*_spec.js')
     ],
 
@@ -14,12 +15,13 @@ module.exports = {
     frameworks: ['mocha', 'sinon-chai', 'jquery-chai'],
 
     preprocessors: {
+        [path.resolve(rootPatch, './tests/index.js')]: ['webpack', 'sourcemap'],
         [path.resolve(rootPatch, './tests/**/*_spec.js')]: ['webpack', 'sourcemap']
     },
 
     reporters: ['spec'],
 
-    webpack: Object.assign({}, webpackConfig, {entry: '', devtool: 'inline'}),
+    webpack: Object.assign({}, webpackConfig, {entry: '', devtool: false}),
 
     webpackMiddleware: {
         noInfo: true

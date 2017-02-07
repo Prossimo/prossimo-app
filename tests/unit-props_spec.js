@@ -5,30 +5,6 @@ import {convert as c} from '../src/utils';
 import Unit from '../src/core/models/unit';
 import App from '../src/main';
 
-const ok = (actual, message) => {
-    it(message, () => {
-        expect(actual).to.be.ok;
-    });
-};
-
-const notOk = (actual, message) => {
-    it(message, () => {
-        expect(actual).to.not.be.ok;
-    });
-};
-
-const equal = (actual, expected, message = 'no_mess') => {
-    it(message, () => {
-        expect(actual).to.to.equal(expected);
-    });
-};
-
-const deepEqual = (actual, expected, message = 'no_mess') => {
-    it(message, () => {
-        expect(actual).to.deep.equal(expected);
-    });
-};
-
 App.start();
 App.session.set('no_backend', true);
 

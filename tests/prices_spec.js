@@ -5,34 +5,6 @@ import _ from 'underscore';
 import App from '../src/main';
 import Project from '../src/core/models/project';
 
-const ok = (actual, message) => {
-    it(message, () => {
-        expect(actual).to.be.ok;
-    });
-};
-
-const notOk = (actual, message) => {
-    it(message, () => {
-        expect(actual).to.not.be.ok;
-    });
-};
-
-const equal = (actual, expected, message = 'no_mess') => {
-    it(message, () => {
-        expect(actual).to.to.equal(expected);
-    });
-};
-
-const deepEqual = (actual, expected, message = 'no_mess') => {
-    it(message, () => {
-        expect(actual).to.deep.equal(expected);
-    });
-};
-
-function test(message, callback) {
-    describe(message, callback);
-}
-
 App.start();
 App.session.set('no_backend', true);
 

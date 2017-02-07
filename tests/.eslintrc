@@ -5,7 +5,13 @@
   "globals": {
     "expect": true,
     "sinon": true,
-    "scheduleNextTick": true
+    "scheduleNextTick": true,
+    "ok": true,
+    "notOk": true,
+    "equal": true,
+    "deepEqual": true,
+    "instanceOf": true,
+    "test": true
   },
   "rules": {
     "max-len": ["error", 140, 2, {

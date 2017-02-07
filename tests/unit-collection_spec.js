@@ -6,24 +6,6 @@ import UnitCollection from '../src/core/collections/unit-collection';
 import Project from '../src/core/models/project';
 // import Profile from '../src/core/models/profile';
 
-const instanceOf = (actual, expected, message = 'no_mess') => {
-    it(message, () => {
-        expect(actual).to.be.instanceof(expected);
-    });
-};
-
-const equal = (actual, expected, message = 'no_mess') => {
-    it(message, () => {
-        expect(actual).to.to.equal(expected);
-    });
-};
-
-const ok = (actual, message) => {
-    it(message, () => {
-        expect(actual).to.be.ok;
-    });
-};
-
 describe('units collection', function () {
     describe('instanceOf tests', function () {
         let units_collection = new UnitCollection();

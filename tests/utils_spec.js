@@ -3,18 +3,6 @@ import {expect} from 'chai';
 import _ from 'underscore';
 import {format, parseFormat, math, convert, vector2d, angle} from '../src/utils';
 
-const equal = (actual, expected, message) => {
-    it(message, () => {
-        expect(actual).to.to.equal(expected);
-    });
-};
-
-const deepEqual = (actual, expected, message) => {
-    it(message, () => {
-        expect(actual).to.deep.equal(expected);
-    });
-};
-
 describe('Utils.js tests: ', function () {
     //  ------------------------------------------------------------------------
     //  Test format functions from utils.js
