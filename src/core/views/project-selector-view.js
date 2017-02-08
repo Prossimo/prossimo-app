@@ -1,5 +1,6 @@
 import Marionette from 'backbone.marionette';
 import $ from 'jquery';
+import {globalChannel} from '../../utils/radio';
 import App from '../../main';
 import template from '../../templates/core/project-selector-view.hbs';
 
@@ -16,8 +17,8 @@ export default Marionette.View.extend({
     },
     initialize: function () {
         this.listenTo(this.collection, 'all', this.render);
-        this.listenTo(App.vent, 'settings:fetch_data:stop', this.onInitialLogin);
-        this.listenTo(App.vent, 'auth:fetched_no_backend', this.onNoBackend);
+        this.listenTo(globalChannel, 'settings:fetch_data:stop', this.onInitialLogin);
+        this.listenTo(globalChannel, 'auth:fetched_no_backend', this.onNoBackend);
     },
     //  This is called after we're done fetching profiles and filling types
     onInitialLogin: function () {
@@ -33,17 +34,17 @@ export default Marionette.View.extend({
     fetchProjectList: function () {
         var self = this;
 
-        App.vent.trigger('project_selector:fetch_list:start');
+        globalChannel.trigger('project_selector:fetch_list:start');
 
         this.collection.fetch({
             remove: false,
             success: function () {
                 self.loadLastProject();
-                App.vent.trigger('project_selector:fetch_list:stop');
+                globalChannel.trigger('project_selector:fetch_list:stop');
             },
             error: function () {
                 self.loadLastProject();
-                App.vent.trigger('project_selector:fetch_list:stop');
+                globalChannel.trigger('project_selector:fetch_list:stop');
             },
             data: {
                 limit: 0
@@ -92,7 +93,7 @@ export default Marionette.View.extend({
         if (App.current_project._wasFetched || App.session.get('no_backend')) {
             d.resolve('Project was already fetched');
         } else {
-            App.vent.trigger('project_selector:fetch_current:start');
+            globalChannel.trigger('project_selector:fetch_current:start');
 
             App.current_project.fetch({
                 success: function () {
@@ -102,16 +103,16 @@ export default Marionette.View.extend({
         }
 
         $.when(d).done(function () {
-            App.vent.trigger('current_project_changed');
+            globalChannel.trigger('current_project_changed');
             App.current_project.trigger('set_active');
 
             self.stopListening(App.current_project);
 
             if (App.current_project._wasLoaded) {
-                App.vent.trigger('project_selector:fetch_current:stop');
+                globalChannel.trigger('project_selector:fetch_current:stop');
             } else {
                 self.listenToOnce(App.current_project, 'fully_loaded', function () {
-                    App.vent.trigger('project_selector:fetch_current:stop');
+                    globalChannel.trigger('project_selector:fetch_current:stop');
                 }, self);
             }
 

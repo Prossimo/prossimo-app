@@ -1,5 +1,6 @@
 import Marionette from 'backbone.marionette';
 import App from '../../main';
+import {globalChannel} from '../../utils/radio';
 import template from '../../templates/core/status-panel-view.hbs';
 
 export default Marionette.View.extend({
@@ -12,7 +13,7 @@ export default Marionette.View.extend({
     },
     initialize: function () {
         this.listenTo(App.session, 'change:is_logged_in', this.render);
-        this.listenTo(App.vent, 'auth:no_backend', this.render);
+        this.listenTo(globalChannel, 'auth:no_backend', this.render);
     },
     onLogin: function (e) {
         e.preventDefault();

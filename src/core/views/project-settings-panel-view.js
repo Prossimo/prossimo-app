@@ -1,6 +1,7 @@
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 import $ from 'jquery';
+import {globalChannel} from '../../utils/radio';
 import App from '../../main';
 import template from '../../templates/core/project-settings-panel-view.hbs';
 import BaseToggleView from './base/base-toggle-view';
@@ -18,7 +19,7 @@ export default Marionette.View.extend({
     initialize: function () {
         this.setToggles();
 
-        this.listenTo(App.vent, 'project_selector:fetch_current:stop', this.onProjectLoaded);
+        this.listenTo(globalChannel, 'project_selector:fetch_current:stop', this.onProjectLoaded);
     },
     onProjectLoaded: function () {
         this.model = App.settings.getProjectSettings();

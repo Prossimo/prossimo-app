@@ -2,6 +2,7 @@ import Backbone from 'backbone';
 import _ from 'underscore';
 import $ from 'jquery';
 import App from '../../main';
+import {globalChannel} from '../../utils/radio';
 
 import Profile from './profile';
 import ProfileCollection from '../collections/profile-collection';
@@ -84,29 +85,32 @@ export default Backbone.Model.extend({
         return base_url + url;
     },
     initialize: function () {
-        this.profiles = new ProfileCollection(null, {
-            api_base_path: this.get('api_base_path')
+        this.listenTo(globalChannel, 'app:start', () => {
+            this.profiles = new ProfileCollection(null, {
+                api_base_path: this.get('api_base_path')
+            });
+
+            this.filling_types = new FillingTypeCollection(null, {
+                api_base_path: this.get('api_base_path')
+            });
+
+            this.dictionaries = new OptionsDictionaryCollection(null, {
+                api_base_path: this.get('api_base_path')
+            });
+
+            this.project_settings = null;
+            this._dependencies_changed = {};
+
+            //  When any dictionary or dictionary entry is changed, we remember
+            //  this fact to trigger an event later, when we switch screens
+            this.listenTo(this.dictionaries, 'change entries_change', function () {
+                this._dependencies_changed = _.extend({}, this._dependencies_changed, {dictionaries: true});
+            });
         });
 
-        this.filling_types = new FillingTypeCollection(null, {
-            api_base_path: this.get('api_base_path')
-        });
 
-        this.dictionaries = new OptionsDictionaryCollection(null, {
-            api_base_path: this.get('api_base_path')
-        });
-
-        this.project_settings = null;
-        this._dependencies_changed = {};
-
-        this.listenTo(App.vent, 'auth:initial_login', this.onInitialLogin);
-        this.listenTo(App.vent, 'project_selector:fetch_current:stop', this.setProjectSettings);
-
-        //  When any dictionary or dictionary entry is changed, we remember
-        //  this fact to trigger an event later, when we switch screens
-        this.listenTo(this.dictionaries, 'change entries_change', function () {
-            this._dependencies_changed = _.extend({}, this._dependencies_changed, {dictionaries: true});
-        });
+        this.listenTo(globalChannel, 'auth:initial_login', this.onInitialLogin);
+        this.listenTo(globalChannel, 'project_selector:fetch_current:stop', this.setProjectSettings);
     },
     //  We trigger an event when dictionaries / profiles / filling types
     //  have changed, so we get a chance to update units if needed
@@ -114,7 +118,7 @@ export default Backbone.Model.extend({
     onScreenChange: function () {
         _.each(this._dependencies_changed, function (value, depencency_name) {
             if (depencency_name === 'dictionaries') {
-                App.vent.trigger('validate_units:dictionaries');
+                globalChannel.trigger('validate_units:dictionaries');
             }
         }, this);
 
@@ -139,10 +143,10 @@ export default Backbone.Model.extend({
         var d2 = $.Deferred();
         var d3 = $.Deferred();
 
-        App.vent.trigger('settings:fetch_data:start');
+        globalChannel.trigger('settings:fetch_data:start');
 
         $.when(d1, d2, d3).done(function () {
-            App.vent.trigger('settings:fetch_data:stop');
+            globalChannel.trigger('settings:fetch_data:stop');
         });
 
         this.profiles.fetch({

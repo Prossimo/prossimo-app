@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import Marionette from 'backbone.marionette';
-import App from '../main';
+import {globalChannel} from '../utils/radio';
 
 //  This script is heavily based on the following code snippet:
 //  http://joelb.me/blog/2011/code-snippet-accessing-clipboard-images-with-javascript/
@@ -95,7 +95,7 @@ export default Marionette.Object.extend({
         var pastedImage = new Image();
 
         pastedImage.onload = function () {
-            App.vent.trigger('paste_image', source);
+            globalChannel.trigger('paste_image', source);
         };
 
         pastedImage.src = source;

@@ -1,5 +1,6 @@
 import Marionette from 'backbone.marionette';
 import $ from 'jquery';
+import {globalChannel} from '../../utils/radio';
 import App from '../../main';
 import ProjectSelectorView from './project-selector-view';
 import StatusPanelView from './status-panel-view';
@@ -33,7 +34,7 @@ export default Marionette.View.extend({
 
         $('#header').append(this.render().el);
 
-        this.listenTo(App.vent, 'project_selector:fetch_current:stop', this.onCurrentProjectLoaded);
+        this.listenTo(globalChannel, 'project_selector:fetch_current:stop', this.onCurrentProjectLoaded);
     },
     onSettingsToggle: function () {
         if (!this.isToggleDisabled()) {

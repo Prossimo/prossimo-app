@@ -3,6 +3,7 @@ import _ from 'underscore';
 import $ from 'jquery';
 import Handsontable from 'handsontable/dist/handsontable.full';
 import {parseFormat, format} from '../../utils';
+import {globalChannel} from '../../utils/radio';
 import hotRenderers from '../../hot-renderers';
 import App from '../../main';
 import UndoManager from '../../utils/undomanager';
@@ -116,7 +117,7 @@ export default Marionette.View.extend({
         this.listenTo(this.collection, 'invalid', this.showValidationError);
         this.listenTo(this.options.extras, 'invalid', this.showValidationError);
 
-        this.listenTo(App.vent, 'paste_image', this.onPasteImage);
+        this.listenTo(globalChannel, 'paste_image', this.onPasteImage);
     },
     appendPopovers: function () {
         this.$el.popover('destroy');

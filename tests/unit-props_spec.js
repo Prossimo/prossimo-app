@@ -1,12 +1,11 @@
-/* eslint-env mocha */
-import {expect} from 'chai';
 import {convert as c} from '../src/utils';
-// import Profile from '../src/core/models/profile';
-import Unit from '../src/core/models/unit';
+import _ from 'underscore';
 import App from '../src/main';
+import Unit from '../src/core/models/unit';
+import Profile from '../src/core/models/profile';
 
-App.start();
 App.session.set('no_backend', true);
+App.getChannel().trigger('app:start');
 
 describe('Unit model tests: ', function () {
     describe('project basic tests', function () {
@@ -17,7 +16,7 @@ describe('Unit model tests: ', function () {
 
         ok(unit.get('width'), 'width should be defined');
         ok(unit.get('height'), 'height should be defined');
-    });/**
+    });
     describe('default attributes', function () {
         let unit = new Unit();
 
@@ -967,5 +966,5 @@ describe('Unit model tests: ', function () {
         equal(stats.unit_total.weight.toFixed(3), 0.182 + 17.370, 'Total unit weight matches pre-calculated value');
 
         delete App.settings;
-    });*/
+    });
 });

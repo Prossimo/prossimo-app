@@ -3,6 +3,7 @@ import _ from 'underscore';
 import User from './user';
 import $ from 'jquery';
 import App from '../../main';
+import {globalChannel} from '../../utils/radio';
 
 //  Monkey-patch Backbone.Sync to include auth token with every request
 //  TODO: is this a good place to store this function? What if we move it
@@ -17,7 +18,7 @@ Backbone.sync = function (method, model, options) {
         //  We just received an 401 Unauthorized response. This means our
         //  current token does not work any longer
         if (textStatus === 'error' && xhr.status === 401) {
-            App.vent.trigger('auth:error');
+            globalChannel.trigger('auth:error');
         }
 
         //  This is the same thing they do in the original Backbone.Sync
@@ -50,8 +51,8 @@ export default Backbone.Model.extend({
 
         this.user = new User();
 
-        this.listenTo(App.vent, 'auth:error', this.onAuthError);
-        this.listenTo(App.vent, 'auth:logout', this.onAuthLogout);
+        this.listenTo(globalChannel, 'auth:error', this.onAuthError);
+        this.listenTo(globalChannel, 'auth:logout', this.onAuthLogout);
 
         //  Check auth status each 15 minutes
         setInterval(function () {
@@ -95,9 +96,9 @@ export default Backbone.Model.extend({
 
                     if (self.get('is_initial') === true) {
                         self.set('is_initial', false);
-                        App.vent.trigger('auth:initial_login');
+                        globalChannel.trigger('auth:initial_login');
                     } else {
-                        App.vent.trigger('auth:login');
+                        globalChannel.trigger('auth:login');
                     }
                 } else {
                     self.set({is_logged_in: false});
@@ -114,7 +115,7 @@ export default Backbone.Model.extend({
                 //  Status === 0 means no connection
                 if (response.status === 0 && self.get('is_initial') === true) {
                     self.set('no_backend', true);
-                    App.vent.trigger('auth:no_backend');
+                    globalChannel.trigger('auth:no_backend');
                 }
 
                 if (callback && 'error' in callback) {
@@ -180,6 +181,6 @@ export default Backbone.Model.extend({
         window.localStorage.removeItem('authToken');
         this.set({is_logged_in: false});
         this.resetSessionUser();
-        App.vent.trigger('auth:logout');
+        globalChannel.trigger('auth:logout');
     }
 });

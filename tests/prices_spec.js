@@ -1,12 +1,12 @@
 import _ from 'underscore';
-// import {math as m} from '../src/utils';
-// import Profile from '../src/core/models/profile';
-// import Unit from '../src/core/models/unit';
+import {math as m} from '../src/utils';
 import App from '../src/main';
+import Profile from '../src/core/models/profile';
+import Unit from '../src/core/models/unit';
 import Project from '../src/core/models/project';
 
-App.start();
 App.session.set('no_backend', true);
+App.getChannel().trigger('app:start');
 
 test('Prices tests', function () {
     //  ------------------------------------------------------------------------
@@ -248,7 +248,6 @@ test('Prices tests', function () {
     //  ------------------------------------------------------------------------
     //  Test that estimated prices for a unit are calculated properly
     //  ------------------------------------------------------------------------
-    /**
      test('estimated unit prices', function () {
         let unit;
         let root_id;
@@ -365,5 +364,5 @@ test('Prices tests', function () {
         //  Estimated prices should be calculated properly
         equal(estimated_list[0].estimated_price.toFixed(2), '314.55', 'First section: estimated price');
         equal(estimated_list[1].estimated_price.toFixed(2), '314.55', 'Second section: estimated price');
-    });*/
+    });
 });

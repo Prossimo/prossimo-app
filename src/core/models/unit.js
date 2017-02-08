@@ -3,6 +3,7 @@ import App from '../../main';
 import Backbone from 'backbone';
 import Schema from '../../schema';
 import utils from '../../utils';
+import {globalChannel} from '../../utils/radio';
 
 var UNIT_PROPERTIES = [
     {name: 'mark', title: 'Mark', type: 'string'},
@@ -243,14 +244,14 @@ const Unit = Backbone.Model.extend({
 
             //  If we know that something was changed in dictionaries,
             //  we have to re-validate our unit options
-            this.listenTo(App.vent, 'validate_units:dictionaries', function () {
+            this.listenTo(globalChannel, 'validate_units:dictionaries', function () {
                 if (this.isParentProjectActive()) {
                     this.validateUnitOptions();
                 }
             });
 
             //  Same as above, but when this unit's project becomes active
-            this.listenTo(App.vent, 'current_project_changed', function () {
+            this.listenTo(globalChannel, 'current_project_changed', function () {
                 if (this.isParentProjectActive()) {
                     this.validateUnitOptions();
                 }

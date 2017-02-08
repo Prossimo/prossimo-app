@@ -1,10 +1,13 @@
-/* eslint-env mocha */
-import {expect} from 'chai';
 import {Model, Collection} from 'backbone';
+import _ from 'underscore';
+import App from '../src/main';
 import Unit from '../src/core/models/unit';
 import UnitCollection from '../src/core/collections/unit-collection';
 import Project from '../src/core/models/project';
-// import Profile from '../src/core/models/profile';
+import Profile from '../src/core/models/profile';
+
+App.session.set('no_backend', true);
+App.getChannel().trigger('app:start');
 
 describe('units collection', function () {
     describe('instanceOf tests', function () {
@@ -54,7 +57,6 @@ describe('units collection', function () {
         equal(units_collection.getTotalUnitQuantity(), 3, '#getTotalUnitQuantity() should return sum all "quantity"');
         equal(units_collection.getTotalSquareFeet(), 21, '#getTotalSquareFeet() should return sum all squares');
     });
-    /**
     describe('by profiles', function () {
         let data = [{
             mark: 'A',
@@ -89,7 +91,7 @@ describe('units collection', function () {
         let profileUnits_collection = units_collection.getUnitsByProfiles();
 
         ok(_.isArray(profileUnits_collection), '#getUnitsByProfiles() should return array');
-        equal(profileUnits_collection.length, '1', '#getUnitsByProfiles() should return array');
+        equal(profileUnits_collection.length, 1, '#getUnitsByProfiles() should return array');
 
         _.map(profileUnits_collection, function (profileUnit) {
             let ProfileUnitModel = profileUnit.model;
@@ -107,5 +109,4 @@ describe('units collection', function () {
             equal(profileUnit.getTotalSquareFeet(), 21, '#getTotalSquareFeet() should return sum all squares');
         });
     });
-     */
 });

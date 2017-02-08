@@ -1,6 +1,6 @@
 import Marionette from 'backbone.marionette';
 import $ from 'jquery';
-import App from '../../main';
+import {globalChannel} from '../../utils/radio';
 import Spinner from 'spin';
 import template from '../../templates/core/spinner-view.hbs';
 
@@ -22,12 +22,12 @@ export default Marionette.View.extend({
 
         this.active_request_counter = 0;
 
-        this.listenTo(App.vent, 'settings:fetch_data:start', this.show);
-        this.listenTo(App.vent, 'settings:fetch_data:stop', this.hide);
-        this.listenTo(App.vent, 'project_selector:fetch_list:start', this.show);
-        this.listenTo(App.vent, 'project_selector:fetch_list:stop', this.hide);
-        this.listenTo(App.vent, 'project_selector:fetch_current:start', this.show);
-        this.listenTo(App.vent, 'project_selector:fetch_current:stop', this.hide);
+        this.listenTo(globalChannel, 'settings:fetch_data:start', this.show);
+        this.listenTo(globalChannel, 'settings:fetch_data:stop', this.hide);
+        this.listenTo(globalChannel, 'project_selector:fetch_list:start', this.show);
+        this.listenTo(globalChannel, 'project_selector:fetch_list:stop', this.hide);
+        this.listenTo(globalChannel, 'project_selector:fetch_current:start', this.show);
+        this.listenTo(globalChannel, 'project_selector:fetch_current:stop', this.hide);
     },
     onRender: function () {
         this.spinner = this.spinner || new Spinner(this.spinner_options);

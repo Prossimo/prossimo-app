@@ -1,5 +1,5 @@
-import _ from 'underscore';
 import Marionette from 'backbone.marionette';
+import {getGlobalChannelName} from './utils/radio';
 import Backbone from 'backbone';
 import Settings from './core/models/settings';
 import Session from './core/models/session';
@@ -22,13 +22,20 @@ import 'bootstrap-datepicker';
 import 'backbone.marionette.keyshortcuts';
 
 class Application extends Marionette.Application {
-    onStart() {
+    constructor(options = {}) {
         //  Register a communication channel for all events in the app
-        this.vent = _.extend({}, Backbone.Events);
+        options.channelName = getGlobalChannelName();
+        super(options);
+    }
 
-        //  Object to hold project-independent properties
+    initialize() {
         this.settings = new Settings();
         this.session = new Session();
+    }
+
+    onStart() {
+        this.getChannel().trigger('app:start');
+        //  Object to hold project-independent properties
 
         this.router = new Router();
 
@@ -92,7 +99,7 @@ class Application extends Marionette.Application {
         this.paste_image_helper = new PasteImageHelper();
         this.session.checkAuth();
 
-        this.vent.on('auth:initial_login auth:no_backend', function () {
+        this.getChannel().on('auth:initial_login auth:no_backend', function () {
             Backbone.history.start({pushState: false});
 
             if (Backbone.history.fragment === '') {

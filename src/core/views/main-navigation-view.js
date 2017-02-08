@@ -1,6 +1,7 @@
 import Marionette from 'backbone.marionette';
 import $ from 'jquery';
 import App from '../../main';
+import {globalChannel} from '../../utils/radio';
 import _ from 'underscore';
 import NoProjectSelectedView from '../../core/views/no-project-selected-view';
 import template from '../../templates/core/main-navigation-view.hbs';
@@ -69,7 +70,7 @@ export default Marionette.View.extend({
 
         $('#sidebar').append(this.render().el);
 
-        this.listenTo(App.vent, 'project_selector:fetch_current:stop', this.reloadActiveScreen);
+        this.listenTo(globalChannel, 'project_selector:fetch_current:stop', this.reloadActiveScreen);
     },
     onRender: function () {
         //  Append each navigation item
