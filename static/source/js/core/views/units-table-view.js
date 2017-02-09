@@ -61,7 +61,18 @@ var app = app || {};
                     title: 'Unit Options',
                     collection: this.collection,
                     columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing'],
-                    unit_options_columns: app.settings.dictionaries.getAvailableDictionaryNames()
+                    unit_options_columns: app.settings.dictionaries.getAvailableDictionaryNames(),
+                    unit_options_quantity_columns: (function () {
+                        var columns = [];
+
+                        app.settings.dictionaries.each(function (dictionary) {
+                            if ( dictionary.hasQuantity() ) {
+                                columns.push(dictionary.get('name') + ' Quantity');
+                            }
+                        });
+
+                        return columns;
+                    })()
                 },
                 prices: {
                     title: 'Prices',
@@ -92,6 +103,19 @@ var app = app || {};
                     this.tabs.unit_options.columns,
                     this.tabs.unit_options.unit_options_columns
                 );
+
+                //  We insert quantity columns at specific positions (after
+                //  the corresponding option column)
+                if ( this.tabs.unit_options.unit_options_quantity_columns.length ) {
+                    _.each(this.tabs.unit_options.unit_options_quantity_columns, function (qty_column_name) {
+                        var target_option_name = qty_column_name.replace(/ Quantity$/, '');
+                        var target_position = _.indexOf(this.tabs.unit_options.columns, target_option_name);
+
+                        if ( target_position !== -1 ) {
+                            this.tabs.unit_options.columns.splice(target_position + 1, 0, qty_column_name);
+                        }
+                    }, this);
+                }
             }
 
             this.undo_manager = new app.UndoManager({
@@ -377,7 +401,19 @@ var app = app || {};
                     var current_options = target_dictionary_id ?
                         model.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
 
-                    return current_options.length ? current_options[0].get('name') : UNSET_VALUE;
+                    return current_options.length ? current_options[0].entry.get('name') : UNSET_VALUE;
+                };
+            } else if (
+                this.active_tab === 'unit_options' &&
+                _.contains(this.getActiveTab().unit_options_quantity_columns, column_name)
+            ) {
+                getter = function (model, attr_name) {
+                    var target_dictionary_name = attr_name.replace(/ Quantity$/, '');
+                    var target_dictionary_id = app.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
+                    var current_options = target_dictionary_id ?
+                        model.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
+
+                    return current_options.length ? current_options[0].quantity : UNSET_VALUE;
                 };
             } else {
                 getter = function (model, attr_name) {
@@ -467,6 +503,23 @@ var app = app || {};
                             return model.persistOption(target_dictionary_id, target_entry_id);
                         } else if ( val === UNSET_VALUE ) {
                             return model.persistOption(target_dictionary_id, false);
+                        }
+                    }
+                };
+            } else if (
+                this.active_tab === 'unit_options' &&
+                _.contains(this.getActiveTab().unit_options_quantity_columns, column_name)
+            ) {
+                setter = function (model, attr_name, val) {
+                    var target_dictionary_name = attr_name.replace(/ Quantity$/, '');
+                    var target_dictionary_id = app.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
+
+                    if ( target_dictionary_id ) {
+                        var target_option = model.get('unit_options').getByDictionaryId(target_dictionary_id);
+                        var target_entry_id = target_option && target_option.get('dictionary_entry_id');
+
+                        if ( target_entry_id ) {
+                            return model.persistOption(target_dictionary_id, target_entry_id, parseInt(val, 10));
                         }
                     }
                 };
@@ -827,6 +880,25 @@ var app = app || {};
                             cell_properties.readOnly = true;
                             cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer(message);
                         }
+                    } else if (
+                        self.active_tab === 'unit_options' &&
+                        _.contains(self.getActiveTab().unit_options_quantity_columns, property)
+                    ) {
+                        //  We want to know what properties the column to the
+                        //  left has. And if it's set read-only for whatever
+                        //  reasons, we want this column to also be read-only
+                        var left_column_properties =
+                            self.getActiveTabCellsSpecificOptions().bind(this)(row, col - 1);
+                        var cell_value = this.instance.getDataAtCell(row, col);
+
+                        cell_properties.type = 'numeric';
+
+                        if ( left_column_properties.readOnly ) {
+                            cell_properties.readOnly = true;
+                            cell_properties.renderer = left_column_properties.renderer;
+                        } else if ( cell_value === UNSET_VALUE ) {
+                            cell_properties.readOnly = true;
+                        }
                     }
                 }
 
@@ -851,6 +923,11 @@ var app = app || {};
                     title = custom_header;
                 } else if ( original_header && original_header[0] ) {
                     title = original_header[0];
+                } else if (
+                    active_tab.unit_options_quantity_columns &&
+                    _.contains(active_tab.unit_options_quantity_columns, column_name)
+                ) {
+                    title = 'Option Qty';
                 } else {
                     title = column_name;
                 }
