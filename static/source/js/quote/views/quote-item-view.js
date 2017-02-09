@@ -267,8 +267,8 @@ var app = app || {};
                     //  although in theory it's possible to have multiple
                     var option_name = current_options.length ?
                         (
-                            this.options.show_supplier_names && current_options[0].get('supplier_name') ||
-                            current_options[0].get('name')
+                            this.options.show_supplier_names && current_options[0].entry.get('supplier_name') ||
+                            current_options[0].entry.get('name')
                         ) :
                         false;
 
