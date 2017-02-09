@@ -209,7 +209,7 @@ var app = app || {};
                     if ( !is_restricted ) {
                         current_options = dictionary_id ?
                             active_unit.getCurrentUnitOptionsByDictionaryId(dictionary_id) : [];
-                        value = current_options.length ? current_options[0].get('name') : UNSET_VALUE;
+                        value = current_options.length ? current_options[0].entry.get('name') : UNSET_VALUE;
                     }
 
                     return {
@@ -494,9 +494,11 @@ var app = app || {};
                     option_item.option_index = 'Option #' + (index + 1);
                     option_item.option_name = source_item.option_name;
                     option_item.dictionary_name = source_item.dictionary_name;
-                    option_item.cost = f.fixed(source_item.pricing_data.cost_per_item);
+                    option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
+                    option_item.quantity = source_item.quantity;
+                    option_item.cost = f.fixed(source_item.pricing_data.cost_per_item * source_item.quantity);
 
-                    per_item_priced_options_total_cost += source_item.pricing_data.cost_per_item;
+                    per_item_priced_options_total_cost += source_item.pricing_data.cost_per_item * source_item.quantity;
 
                     result.per_item_priced_options.push(option_item);
                 }, this);

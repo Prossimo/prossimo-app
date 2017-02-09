@@ -542,7 +542,9 @@ test('unit getUnitOptionsGroupedByPricingScheme function', function () {
             pricing_data: {
                 scheme: 'PER_ITEM',
                 cost_per_item: 0
-            }
+            },
+            has_quantity: true,
+            quantity: 1
         },
         'The option inside PER_ITEM group matches the expected data'
     );

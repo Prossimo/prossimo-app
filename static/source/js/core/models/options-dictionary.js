@@ -211,6 +211,9 @@ var app = app || {};
         getPossiblePricingSchemes: function () {
             return POSSIBLE_PRICING_SCHEMES;
         },
+        hasQuantity: function () {
+            return this.get('pricing_scheme') === PRICING_SCHEME_PER_ITEM;
+        },
         initialize: function (attributes, options) {
             this.options = options || {};
 

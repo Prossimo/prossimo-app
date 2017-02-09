@@ -68,10 +68,12 @@ module.exports = function (grunt) {
         'core/models/inline/filling-type-to-profile.js',
         'core/models/inline/dictionary-entry-to-profile.js',
         'core/models/inline/project-settings.js',
+        'core/models/inline/unit-option.js',
         'core/collections/inline/pricing-grid-collection.js',
         'core/collections/inline/pricing-equation-params-collection.js',
         'core/collections/inline/filling-type-to-profile-collection.js',
         'core/collections/inline/dictionary-entry-to-profile-collection.js',
+        'core/collections/inline/unit-option-collection.js',
         //  Regular models
         'core/models/user.js',
         'core/models/session.js',
