@@ -13,7 +13,7 @@
     "clean": "./node_modules/babel-cli/bin/babel-node.js tools/run clean"
   },
   "engines": {
-    "node": ">=6.9.1"
+    "node": ">=6.9.5"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",
@@ -85,9 +85,7 @@
     "less": "^2.7.1",
     "less-loader": "^2.2.3",
     "mocha": "^3.2.0",
-    "node-resemble-js": "^0.2.0",
     "qunitjs": "^1.21.0",
-    "resemble": "^1.4.0",
     "resemblejs": "^2.2.3",
     "script-loader": "^0.7.0",
     "sinon": "^1.17.7",
