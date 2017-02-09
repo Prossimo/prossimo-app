@@ -57,16 +57,16 @@ module.exports = {
             {test: /\.hbs$/, use: ['handlebars-template-loader']},
             {
                 test: /\.less$/,
-                loader: ExtractTextPlugin.extract({
-                    fallbackLoader: 'style-loader',
-                    loader: [cssLoader, lessLoader].join('!')
+                use: ExtractTextPlugin.extract({
+                    fallback: 'style-loader',
+                    use: [cssLoader, lessLoader].join('!')
                 })
             },
             {
                 test: /\.css$/,
-                loader: ExtractTextPlugin.extract({
-                    fallbackLoader: 'style-loader',
-                    loader: [cssLoader].join('!')
+                use: ExtractTextPlugin.extract({
+                    fallback: 'style-loader',
+                    use: [cssLoader].join('!')
                 })
             },
             {
