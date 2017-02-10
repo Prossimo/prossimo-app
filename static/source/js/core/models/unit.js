@@ -1955,6 +1955,7 @@ var app = app || {};
                         }
                     ) || 0;
 
+                    section.base_pricing_scheme = PRICING_SCHEME_PRICING_GRIDS;
                     section.base_cost = app.utils.math.square_meters(section.width, section.height) *
                         section.price_per_square_meter;
                 } else if ( profile_pricing_data && profile_pricing_data.scheme === PRICING_SCHEME_LINEAR_EQUATION ) {
@@ -1962,6 +1963,7 @@ var app = app || {};
                     var profile_param_a = params_source.get('param_a') || 0;
                     var profile_param_b = params_source.get('param_b') || 0;
 
+                    section.base_pricing_scheme = PRICING_SCHEME_LINEAR_EQUATION;
                     section.base_cost =
                         profile_param_a * section.height / 1000 * section.width / 1000 + profile_param_b;
                 }
@@ -1984,12 +1986,14 @@ var app = app || {};
                                 width: section.width
                             }
                         ) || 0;
+                        section.filling_pricing_scheme = PRICING_SCHEME_PRICING_GRIDS;
                         section.filling_cost = section.base_cost * section.filling_price_increase / 100;
                     } else if ( ft_pricing_data && ft_pricing_data.scheme === PRICING_SCHEME_LINEAR_EQUATION ) {
                         var ft_params_source = ft_pricing_data.pricing_equation_params.getByName(section.type);
                         var ft_param_a = ft_params_source.get('param_a') || 0;
                         var ft_param_b = ft_params_source.get('param_b') || 0;
 
+                        section.filling_pricing_scheme = PRICING_SCHEME_LINEAR_EQUATION;
                         section.filling_cost =
                             ft_param_a * section.height / 1000 * section.width / 1000 + ft_param_b;
                     }
@@ -2015,6 +2019,7 @@ var app = app || {};
 
                     section.options.push({
                         dictionary_name: option_data.dictionary_name,
+                        dictionary_pricing_scheme: PRICING_SCHEME_PRICING_GRIDS,
                         option_name: option_data.option_name,
                         price_increase: price_increase,
                         cost: option_cost
@@ -2034,6 +2039,7 @@ var app = app || {};
 
                     section.options.push({
                         dictionary_name: option_data.dictionary_name,
+                        dictionary_pricing_scheme: PRICING_SCHEME_LINEAR_EQUATION,
                         option_name: option_data.option_name,
                         price_increase: price_increase,
                         cost: option_cost

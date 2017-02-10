@@ -3,6 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var PRICING_SCHEME_PRICING_GRIDS = app.constants.PRICING_SCHEME_PRICING_GRIDS;
     var UNSET_VALUE = '--';
 
     app.DrawingSidebarView = Marionette.View.extend({
@@ -461,22 +462,30 @@ var app = app || {};
                         m.square_meters(source_item.width, source_item.height),
                         2, 'sup');
 
+                    section_item.base_pricing_scheme = source_item.base_pricing_scheme;
                     section_item.price_per_square_meter = f.fixed(source_item.price_per_square_meter);
                     section_item.base_cost = f.fixed(source_item.base_cost);
+                    section_item.show_price_per_square_meter =
+                        (source_item.base_pricing_scheme === PRICING_SCHEME_PRICING_GRIDS);
 
                     //  Add cost for Filling
                     section_item.filling_name = source_item.filling_name;
+                    section_item.filling_pricing_scheme = source_item.filling_pricing_scheme;
                     section_item.filling_price_increase = f.percent(source_item.filling_price_increase);
                     section_item.filling_cost = f.fixed(source_item.filling_cost);
+                    section_item.show_filling_price_increase =
+                        (source_item.filling_pricing_scheme === PRICING_SCHEME_PRICING_GRIDS);
 
                     //  Add cost for Options
                     section_item.options = _.map(source_item.options, function (item, item_index) {
                         return {
                             index: 'Option #' + (item_index + 1),
                             dictionary_name: item.dictionary_name,
+                            pricing_scheme: item.dictionary_pricing_scheme,
                             option_name: item.option_name,
                             price_increase: f.percent(item.price_increase),
-                            cost: f.fixed(item.cost)
+                            cost: f.fixed(item.cost),
+                            show_price_increase: (item.dictionary_pricing_scheme === PRICING_SCHEME_PRICING_GRIDS)
                         };
                     }, this);
 
