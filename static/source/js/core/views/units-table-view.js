@@ -1030,7 +1030,7 @@ var app = app || {};
             //  Custom widths for some Unit Options columns
             var unit_options_col_widths = {
                 'Interior Handle': 160,
-                'Exterior Handle': 160,
+                'Exterior Handle': 200,
                 'Internal Sill': 100,
                 'External Sill': 100,
                 'External Color': 100,
@@ -1039,7 +1039,9 @@ var app = app || {};
                 'Lock Mechanism': 120,
                 'Glazing Bead': 100,
                 'Gasket Color': 100,
-                'Hinge Style': 280
+                'Hinge Style': 280,
+                Hinges: 280,
+                Hardware: 100
             };
 
             //  Calculate optimal width for Unit Options columns
@@ -1055,7 +1057,7 @@ var app = app || {};
             col_widths = _.extend({}, col_widths, unit_options_col_widths);
 
             var widths_table = _.map(this.getActiveTab().columns, function (item) {
-                return col_widths[item] ? col_widths[item] : 80;
+                return col_widths[item] ? col_widths[item] : 90;
             }, this);
 
             return widths_table;

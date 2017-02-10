@@ -235,9 +235,15 @@
                     <td class="value">{{{ area }}}</td>
                 </tr>
                 <tr>
+                    <td class="title">Pricing Scheme</td>
+                    <td class="value">{{{ base_pricing_scheme }}}</td>
+                </tr>
+                {{#if show_price_per_square_meter }}
+                <tr>
                     <td class="title">Price / m<sup>2</sup></td>
                     <td class="value">{{{ price_per_square_meter }}}</td>
                 </tr>
+                {{/if}}
                 <tr>
                     <td class="title">Cost</td>
                     <td class="value">{{{ base_cost }}}</td>
@@ -250,9 +256,15 @@
                     <td class="value">{{ filling_name }}</td>
                 </tr>
                 <tr>
+                    <td class="title">Pricing Scheme</td>
+                    <td class="value">{{{ filling_pricing_scheme }}}</td>
+                </tr>
+                {{#if show_filling_price_increase }}
+                <tr>
                     <td class="title">Price Increase</td>
                     <td class="value">{{{ filling_price_increase }}}</td>
                 </tr>
+                {{/if}}
                 <tr>
                     <td class="title">Added Cost</td>
                     <td class="value">{{{ filling_cost }}}</td>
@@ -274,9 +286,15 @@
                         <td class="value">{{{ option_name }}}</td>
                     </tr>
                     <tr>
+                        <td class="title">Pricing Scheme</td>
+                        <td class="value">{{{ pricing_scheme }}}</td>
+                    </tr>
+                    {{#if show_price_increase }}
+                    <tr>
                         <td class="title">Price Increase</td>
                         <td class="value">{{{ price_increase }}}</td>
                     </tr>
+                    {{/if}}
                     <tr>
                         <td class="title">Added Cost</td>
                         <td class="value">{{{ cost }}}</td>

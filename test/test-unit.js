@@ -298,12 +298,14 @@ test('Unit getCurrentUnitOptions, getCurrentUnitOptionsByDictionaryId, getUnitOp
                 {
                     cost_per_item: 0,
                     is_default: true,
+                    pricing_equation_params: '[{"name":"fixed","param_a":0,"param_b":0},{"name":"operable","param_a":0,"param_b":0}]',
                     pricing_grids: '[{"name":"fixed","data":[{"height":500,"width":500,"value":0},{"height":914,"width":1514,"value":0},{"height":2400,"width":3000,"value":0}]},{"name":"operable","data":[{"height":500,"width":500,"value":0},{"height":914,"width":1514,"value":0},{"height":1200,"width":2400,"value":0}]}]',
                     profile_id: 1
                 },
                 {
                     cost_per_item: 0,
                     is_default: false,
+                    pricing_equation_params: '[{"name":"fixed","param_a":0,"param_b":0},{"name":"operable","param_a":0,"param_b":0}]',
                     pricing_grids: '[{"name":"fixed","data":[{"height":500,"width":500,"value":0},{"height":914,"width":1514,"value":0},{"height":2400,"width":3000,"value":0}]},{"name":"operable","data":[{"height":500,"width":500,"value":0},{"height":914,"width":1514,"value":0},{"height":1200,"width":2400,"value":0}]}]',
                     profile_id: 17
                 }

@@ -16,7 +16,11 @@ var app = app || {};
         onChange: function () {
             var new_value = this.ui.$select.val() || [];
 
-            this.model.persist(this.options.param, new_value);
+            if ( this.options.custom_setter && _.isFunction(this.options.custom_setter) ) {
+                this.options.custom_setter(new_value);
+            } else {
+                this.model.persist(this.options.param, new_value);
+            }
         },
         templateContext: function () {
             return {
@@ -45,19 +49,6 @@ var app = app || {};
             this.ui.$select.prop('disabled', true);
             this.ui.$select.selectpicker('refresh');
         },
-        initialize: function (options) {
-            var default_options = {
-                size: 'normal',
-                multiple: false,
-                values: []
-            };
-
-            this.options = _.extend({}, default_options, options);
-
-            if ( !_.isArray(this.options.values) || !_.isObject(this.options.values) ) {
-                throw new Error('Values should either be array or object');
-            }
-        },
         onRender: function () {
             this.ui.$select.selectpicker({
                 style: this.options.size === 'small' ? 'btn-xs' : 'btn',
@@ -66,6 +57,20 @@ var app = app || {};
         },
         onBeforeDestroy: function () {
             this.ui.$select.selectpicker('destroy');
+        },
+        initialize: function (options) {
+            var default_options = {
+                size: 'normal',
+                multiple: false,
+                values: [],
+                custom_setter: false
+            };
+
+            this.options = _.extend({}, default_options, options);
+
+            if ( !_.isArray(this.options.values) || !_.isObject(this.options.values) ) {
+                throw new Error('Values should either be array or object');
+            }
         }
     });
 })();

@@ -36,6 +36,11 @@ var app = app || {};
         cloneItem: function () {
             this.model.duplicate();
         },
+        onChangePricingScheme: function () {
+            if ( this.profile_connections_table_view ) {
+                this.profile_connections_table_view.render();
+            }
+        },
         onRender: function () {
             _.each(this.attribute_views, function (child_view) {
                 var $row = $('<tr class="filling-type-attribute-container" />');
@@ -63,24 +68,37 @@ var app = app || {};
         },
         initialize: function () {
             this.attributes_to_render = this.model.getNameTitleTypeHash([
-                'name', 'supplier_name', 'type', 'weight_per_area'
+                'name', 'supplier_name', 'type', 'weight_per_area', 'pricing_scheme'
             ]);
             //  For base types we want to disable editing at all
             this.is_disabled = this.model.get('is_base_type') === true;
 
+            //  TODO: maybe we should have something generic at the model level
+            function getAttributeSourceData(model, attribute_name) {
+                var data_array = [];
+
+                if ( attribute_name === 'type' ) {
+                    data_array = model.getBaseTypes();
+                } else if ( attribute_name === 'pricing_scheme' ) {
+                    data_array = model.getPossiblePricingSchemes();
+                }
+
+                return _.map(data_array, function (item) {
+                    return {
+                        value: item.name || item,
+                        title: item.title || item
+                    };
+                });
+            }
+
             this.attribute_views = _.map(this.attributes_to_render, function (attribute) {
                 //  We use text inputs for most attributes except for "type"
                 //  attribute where we want a selectbox
-                var view = attribute.name === 'type' ?
+                var view = _.contains(['type', 'pricing_scheme'], attribute.name) ?
                     new app.BaseSelectView({
                         model: this.model,
-                        param: 'type',
-                        values: _.map(this.model.getBaseTypes(), function (item) {
-                            return {
-                                value: item.name,
-                                title: item.title
-                            };
-                        }),
+                        param: attribute.name,
+                        values: getAttributeSourceData(this.model, attribute.name),
                         multiple: false
                     }) :
                     new app.BaseInputView({
@@ -91,6 +109,7 @@ var app = app || {};
                     });
 
                 return {
+                    name: attribute.name,
                     title: attribute.title,
                     view_instance: view
                 };
@@ -99,6 +118,8 @@ var app = app || {};
             this.profile_connections_table_view = new app.ProfileConnectionsTableView({
                 collection: this.model.get('filling_type_profiles')
             });
+
+            this.listenTo(this.model, 'change:pricing_scheme', this.onChangePricingScheme);
         }
     });
 })();
