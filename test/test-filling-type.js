@@ -137,7 +137,7 @@ test('filling type toJSON function', function () {
                     ])
                 }
             ],
-            pricing_scheme: 'LINEAR_EQUATION'
+            pricing_scheme: 'PRICING_GRIDS'
         },
         'Filling type should be properly cast to json'
     );

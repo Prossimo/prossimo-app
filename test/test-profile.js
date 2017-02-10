@@ -211,7 +211,7 @@ test('profile toJSON function', function () {
                     ]
                 }
             ]),
-            pricing_scheme: 'LINEAR_EQUATION',
+            pricing_scheme: 'PRICING_GRIDS',
             sash_corners: '',
             sash_frame_overlap: 0,
             sash_frame_width: 0,
@@ -267,7 +267,7 @@ test('profile toJSON function', function () {
                     ]
                 }
             ]),
-            pricing_scheme: 'LINEAR_EQUATION',
+            pricing_scheme: 'PRICING_GRIDS',
             sash_corners: '',
             sash_frame_overlap: 0,
             sash_frame_width: 0,
