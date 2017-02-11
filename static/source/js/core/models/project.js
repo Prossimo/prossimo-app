@@ -18,6 +18,8 @@ var app = app || {};
         { name: 'lead_time', title: 'Lead Time', type: 'number' },
         { name: 'frontapp_thread_id', title: 'Frontapp Thread ID', type: 'string' },
         { name: 'frontapp_gdrive_folder_id', title: 'Frontapp GDrive Folder ID', type: 'string' },
+        { name: 'dapulse_pulse_id', title: 'Dapulse Pulse ID', type: 'string' },
+        { name: 'extra_id_data', title: 'Extra ID Data', type: 'string' },
         { name: 'settings', title: 'Settings', type: 'model:ProjectSettings' }
     ];
 
