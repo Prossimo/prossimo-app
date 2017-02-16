@@ -15,6 +15,9 @@ var app = app || {};
         },
         getByProfileId: function (profile_id) {
             return this.findWhere({ profile_id: profile_id });
+        },
+        initialize: function (models, options) {
+            this.options = options || {};
         }
     });
 })();

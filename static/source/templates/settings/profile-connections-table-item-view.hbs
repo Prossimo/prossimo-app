@@ -8,6 +8,9 @@
         {{#if has_grids }}
         <th class="profile-pricing-grid">Pricing Grid</th>
         {{/if}}
+        {{#if has_linear_cost }}
+        <th class="profile-linear-cost">Equation Params (y = ax + b)</th>
+        {{/if}}
     </tr></thead>
     <tbody><tr>
         <td class="profile-name">{{ profile_name }}</td>
@@ -27,6 +30,9 @@
             <span>{{ pricing_grid_string }}</span>
             <button class="btn btn-xs toggle-grid js-toggle-grid">Expand grid</button>
         </td>
+        {{/if}}
+        {{#if has_linear_cost }}
+        <td class="profile-linear-cost"></td>
         {{/if}}
     </tr></tbody>
 </table>

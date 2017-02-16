@@ -177,6 +177,18 @@ test('FillingTypeProfileCollection toJSON function', function () {
             {
                 profile_id: 1,
                 is_default: false,
+                pricing_equation_params: JSON.stringify([
+                    {
+                        name: 'fixed',
+                        param_a: 0,
+                        param_b: 0
+                    },
+                    {
+                        name: 'operable',
+                        param_a: 0,
+                        param_b: 0
+                    }
+                ]),
                 pricing_grids: JSON.stringify([
                     {
                         name: 'fixed',
@@ -199,6 +211,18 @@ test('FillingTypeProfileCollection toJSON function', function () {
             {
                 profile_id: 17,
                 is_default: false,
+                pricing_equation_params: JSON.stringify([
+                    {
+                        name: 'fixed',
+                        param_a: 0,
+                        param_b: 0
+                    },
+                    {
+                        name: 'operable',
+                        param_a: 0,
+                        param_b: 0
+                    }
+                ]),
                 pricing_grids: JSON.stringify([
                     {
                         name: 'fixed',

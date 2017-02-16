@@ -5,10 +5,10 @@ var app = app || {};
 
     //  See `core/views/units-table-view.js` for reference, it's similar
     //  and better commented, this file borrows a lot from there
-    app.PerProfilePricingGridsEditorView = Marionette.View.extend({
+    app.PricingGridsEditorView = Marionette.View.extend({
         tagName: 'div',
-        className: 'per-profile-pricing-grids-table',
-        template: app.templates['settings/per-profile-pricing-grids-editor-view'],
+        className: 'pricing-grids-table',
+        template: app.templates['settings/pricing-grids-editor-view'],
         ui: {
             $hot_container: '.pricing-grids-handsontable-container',
             $tab_button: '.nav-tabs a'
@@ -18,6 +18,7 @@ var app = app || {};
         },
         templateContext: function () {
             return {
+                show_notice: this.options.show_notice,
                 tabs: _.each(this.tabs, function (item, key) {
                     item.is_active = key === this.active_tab;
                     return item;
@@ -144,8 +145,7 @@ var app = app || {};
                 area: 'Area (m<sup>2</sup>)',
                 width: 'Width (mm)',
                 height: 'Height (mm)',
-                //  TODO: should be configurable via options
-                value: 'Price Increase (percents)'
+                value: this.options.value_column_title || 'Price Increase (percents)'
             };
 
             return custom_column_headers_hash[column_name];
@@ -199,7 +199,9 @@ var app = app || {};
         initialize: function (options) {
             var default_options = {
                 grids: undefined,
-                parent_view: undefined
+                parent_view: undefined,
+                show_notice: false,
+                value_column_title: ''
             };
 
             this.options = _.extend(default_options, options);

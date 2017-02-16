@@ -10,28 +10,10 @@ var app = app || {};
         ui: {
             $profiles_container: '.profiles-container',
             $filling_types_container: '.filling_types-container',
-            $pricing_grids_container: '.pricing_grids-container',
             $options_container: '.options-container'
         },
         events: {
             'click .nav-tabs a': 'onTabClick'
-        },
-        initialize: function () {
-            this.tabs = {
-                profiles: {
-                    title: 'Profiles'
-                },
-                pricing_grids: {
-                    title: 'Pricing Grids'
-                },
-                filling_types: {
-                    title: 'Filling Types'
-                },
-                options: {
-                    title: 'Options'
-                }
-            };
-            this.active_tab = 'profiles';
         },
         getActiveTab: function () {
             return this.tabs[this.active_tab];
@@ -50,14 +32,14 @@ var app = app || {};
         },
         onRender: function () {
             if ( this.active_tab === 'profiles' ) {
-                this.profiles_table_view = new app.ProfilesTableView({
+                this.profiles_view = new app.ProfilesView({
                     collection: app.settings.profiles,
                     parent_view: this
                 });
 
-                this.ui.$profiles_container.append(this.profiles_table_view.render().el);
-            } else if ( this.profiles_table_view ) {
-                this.profiles_table_view.destroy();
+                this.ui.$profiles_container.append(this.profiles_view.render().el);
+            } else if ( this.profiles_view ) {
+                this.profiles_view.destroy();
             }
 
             if ( this.active_tab === 'filling_types' ) {
@@ -69,17 +51,6 @@ var app = app || {};
                 this.ui.$filling_types_container.append(this.filling_types_view.render().el);
             } else if ( this.filling_types_table_view ) {
                 this.filling_types_view.destroy();
-            }
-
-            if ( this.active_tab === 'pricing_grids' ) {
-                this.pricing_grids_table_view = new app.PricingGridsTableView({
-                    collection: app.settings.profiles,
-                    parent_view: this
-                });
-
-                this.ui.$pricing_grids_container.append(this.pricing_grids_table_view.render().el);
-            } else if ( this.pricing_grids_table_view ) {
-                this.pricing_grids_table_view.destroy();
             }
 
             if ( this.active_tab === 'options' ) {
@@ -102,21 +73,33 @@ var app = app || {};
             };
         },
         onBeforeDestroy: function () {
-            if ( this.profiles_table_view ) {
-                this.profiles_table_view.destroy();
+            if ( this.profiles_view ) {
+                this.profiles_view.destroy();
             }
 
             if ( this.filling_types_view ) {
                 this.filling_types_view.destroy();
             }
 
-            if ( this.pricing_grids_table_view ) {
-                this.pricing_grids_table_view.destroy();
-            }
-
             if ( this.options_view ) {
                 this.options_view.destroy();
             }
+        },
+        initialize: function () {
+            this.tabs = {
+                profiles: {
+                    title: 'Profiles'
+                },
+                filling_types: {
+                    title: 'Filling Types'
+                },
+                options: {
+                    title: 'Options'
+                }
+            };
+            this.active_tab = 'profiles';
+
+            this.listenTo(app.vent, 'settings:fetch_data:stop', this.render);
         }
     });
 })();

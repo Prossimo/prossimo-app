@@ -3,6 +3,10 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var PRICING_SCHEME_PRICING_GRIDS = app.constants.PRICING_SCHEME_PRICING_GRIDS;
+    var PRICING_SCHEME_PER_ITEM = app.constants.PRICING_SCHEME_PER_ITEM;
+    var PRICING_SCHEME_LINEAR_EQUATION = app.constants.PRICING_SCHEME_LINEAR_EQUATION;
+
     app.ProfileConnectionsTableItemView = Marionette.View.extend({
         tagName: 'div',
         className: 'table-item',
@@ -10,6 +14,7 @@ var app = app || {};
         ui: {
             $grid_container: '.grid-container',
             $cost_per_item_container: 'td.profile-cost-per-item',
+            $equation_params_container: 'td.profile-linear-cost',
             $toggle_grid: '.js-toggle-grid'
         },
         events: {
@@ -57,12 +62,14 @@ var app = app || {};
         },
         templateContext: function () {
             var pricing_data = this.model.getPricingData();
-            var has_grids = pricing_data && pricing_data.scheme === 'PRICING_GRIDS';
-            var has_per_item_cost = pricing_data && pricing_data.scheme === 'PER_ITEM';
+            var has_grids = pricing_data && pricing_data.scheme === PRICING_SCHEME_PRICING_GRIDS;
+            var has_per_item_cost = pricing_data && pricing_data.scheme === PRICING_SCHEME_PER_ITEM;
+            var has_linear_cost = pricing_data && pricing_data.scheme === PRICING_SCHEME_LINEAR_EQUATION;
 
             return {
                 has_grids: has_grids,
                 has_per_item_cost: has_per_item_cost,
+                has_linear_cost: has_linear_cost,
                 show_grids: this.show_grids,
                 profile_name: this.getProfileName(),
                 pricing_grid_string: has_grids && this.getPricingGridString()
@@ -79,10 +86,15 @@ var app = app || {};
                 this.per_item_cost_editor_view.destroy();
             }
 
+            if ( this.equation_params_view ) {
+                this.equation_params_view.destroy();
+            }
+
             if ( context.has_grids ) {
-                this.pricing_grids_view = new app.PerProfilePricingGridsEditorView({
+                this.pricing_grids_view = new app.PricingGridsEditorView({
                     grids: this.model.get('pricing_grids'),
-                    parent_view: this
+                    parent_view: this,
+                    show_notice: true
                 });
                 this.ui.$grid_container.append(this.pricing_grids_view.render().el);
             }
@@ -94,6 +106,13 @@ var app = app || {};
                 });
                 this.ui.$cost_per_item_container.append(this.per_item_cost_editor_view.render().el);
             }
+
+            if ( context.has_linear_cost ) {
+                this.equation_params_view = new app.EquationParamsView({
+                    collection: this.model.get('pricing_equation_params')
+                });
+                this.ui.$equation_params_container.append(this.equation_params_view.render().el);
+            }
         },
         onBeforeDestroy: function () {
             if ( this.pricing_grid_view ) {
@@ -102,6 +121,10 @@ var app = app || {};
 
             if ( this.per_item_cost_editor_view ) {
                 this.per_item_cost_editor_view.destroy();
+            }
+
+            if ( this.equation_params_view ) {
+                this.equation_params_view.destroy();
             }
         },
         initialize: function () {

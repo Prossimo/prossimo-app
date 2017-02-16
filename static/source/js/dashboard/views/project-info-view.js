@@ -1,6 +1,3 @@
-/**
- * Created by devico on 01.08.16.
- */
 var app = app || {};
 
 (function () {

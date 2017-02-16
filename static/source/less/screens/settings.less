@@ -64,10 +64,13 @@
 
 
 //  ------------------------------------------------------------------------
-//  Profiles
+//  Profiles Table
+//
+//  TODO: some styles from here are re-used, but generally this section is
+//  not needed anymore since we removed profiles table
 //  ------------------------------------------------------------------------
 
-.profiles-container {
+.profiles_table-container {
     padding: 1.5rem 3rem;
     height: 100%;
     flex: 1 1 auto;
@@ -124,7 +127,149 @@
 
 
 //  ------------------------------------------------------------------------
+//  Profiles
+//  ------------------------------------------------------------------------
+
+.profiles-container {
+    padding: 0;
+    height: 100%;
+    flex: 1 1 auto;
+    display: flex;
+    flex-flow: column;
+}
+
+.profiles-main-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: column;
+    flex: 1 1 auto;
+    overflow: auto;
+}
+
+.profiles-main-container .profile {
+    padding: 1em 2em 1em 330px;
+}
+
+.profile-actions {
+    position: absolute;
+    top: 3.5rem;
+    right: 3rem;
+
+    button {
+        display: block;
+        border-color: lighten(@black, 60%);
+    }
+
+    button + button {
+        margin-top: 1rem;
+    }
+}
+
+.attributes-group {
+    margin: 3rem 0 5rem;
+    max-width: 600px;
+    width: 80%;
+    border-top: 1px solid lighten(@black, 80%);
+}
+
+.attributes-group h2 {
+    margin: 1rem 0;
+    font-size: 0.8em;
+    text-align: right;
+    color: lighten(@black, 20%);
+    text-transform: uppercase;
+}
+
+.profile-attributes {
+    margin-top: 3rem;
+}
+
+.profile-attributes .profile-attribute-container > td,
+.profile-attributes .profile-attribute-container > th {
+    padding-bottom: 1.5rem;
+    vertical-align: bottom;
+}
+
+.profile .input-container {
+    max-width: 300px;
+    min-width: 250px;
+    font-size: 1.1em;
+}
+
+.profile .select-container .btn {
+    border: 1px solid darken(@white, 20%);
+    background-color: darken(@white, 10%);
+    transition:
+        background-color 200ms cubic-bezier(0.23, 1, 0.32, 1) 0ms,
+        border-color 200ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+
+    &:hover,
+    &:active {
+        background-color: @white;
+    }
+}
+
+.profile .profile-attribute-container .title {
+    margin-bottom: 0.5rem;
+    margin-right: 8rem;
+    font-size: 1.1em;
+}
+
+.profile .profile-attribute-container > td > p {
+    margin-bottom: 0.2rem;
+    font-size: 1.1em;
+}
+
+.profile .pricing-grids-table {
+    display: flex;
+    flex-flow: column;
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 80px;
+}
+
+.profile .pricing-grids-table-scroll-wrapper {
+    display: block;
+    flex: none;
+    height: 110px;
+    background-color: transparent;
+}
+
+.profile .equation-params-set {
+    margin: 2rem 0 3rem;
+}
+
+.profile .equation-params-set .title {
+    font-size: 0.8em;
+    text-transform: uppercase;
+}
+
+.profile .equation-params-set .params-container {
+    .clearfix();
+}
+
+.profile .equation-params-set .params-container > div {
+    float: left;
+    width: 50%;
+
+    span,
+    .input-container {
+        display: inline-block;
+    }
+
+    .input-container {
+        width: 80%;
+    }
+}
+
+
+//  ------------------------------------------------------------------------
 //  Pricing Grids
+//
+//  TODO: this table also was removed, but some styles are still re-used, we
+//  should fix that
 //  ------------------------------------------------------------------------
 
 .pricing_grids-container {
@@ -238,13 +383,13 @@
     vertical-align: bottom;
 }
 
-.filling-type .input-container {
+.filling-type-attributes .input-container {
     max-width: 300px;
     min-width: 250px;
     font-size: 1.1em;
 }
 
-.filling-type .select-container .btn {
+.filling-type-attributes .select-container .btn {
     border: 1px solid darken(@white, 20%);
     background-color: darken(@white, 10%);
     transition:
@@ -355,6 +500,30 @@
 .profile-connections-table .grid-container .notice p {
     padding: 0 2rem;
     font-style: italic;
+}
+
+
+.profile-connections-table .equation-params-set .title {
+    font-size: 0.8em;
+    text-transform: uppercase;
+}
+
+.profile-connections-table .equation-params-set .params-container {
+    .clearfix();
+}
+
+.profile-connections-table .equation-params-set .params-container > div {
+    float: left;
+    width: 50%;
+
+    span,
+    .input-container {
+        display: inline-block;
+    }
+
+    .input-container {
+        width: 80%;
+    }
 }
 
 

@@ -3,6 +3,7 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var PRICING_SCHEME_PRICING_GRIDS = app.constants.PRICING_SCHEME_PRICING_GRIDS;
     var UNSET_VALUE = '--';
 
     app.DrawingSidebarView = Marionette.View.extend({
@@ -209,7 +210,7 @@ var app = app || {};
                     if ( !is_restricted ) {
                         current_options = dictionary_id ?
                             active_unit.getCurrentUnitOptionsByDictionaryId(dictionary_id) : [];
-                        value = current_options.length ? current_options[0].get('name') : UNSET_VALUE;
+                        value = current_options.length ? current_options[0].entry.get('name') : UNSET_VALUE;
                     }
 
                     return {
@@ -461,22 +462,30 @@ var app = app || {};
                         m.square_meters(source_item.width, source_item.height),
                         2, 'sup');
 
+                    section_item.base_pricing_scheme = source_item.base_pricing_scheme;
                     section_item.price_per_square_meter = f.fixed(source_item.price_per_square_meter);
                     section_item.base_cost = f.fixed(source_item.base_cost);
+                    section_item.show_price_per_square_meter =
+                        (source_item.base_pricing_scheme === PRICING_SCHEME_PRICING_GRIDS);
 
                     //  Add cost for Filling
                     section_item.filling_name = source_item.filling_name;
+                    section_item.filling_pricing_scheme = source_item.filling_pricing_scheme;
                     section_item.filling_price_increase = f.percent(source_item.filling_price_increase);
                     section_item.filling_cost = f.fixed(source_item.filling_cost);
+                    section_item.show_filling_price_increase =
+                        (source_item.filling_pricing_scheme === PRICING_SCHEME_PRICING_GRIDS);
 
                     //  Add cost for Options
                     section_item.options = _.map(source_item.options, function (item, item_index) {
                         return {
                             index: 'Option #' + (item_index + 1),
                             dictionary_name: item.dictionary_name,
+                            pricing_scheme: item.dictionary_pricing_scheme,
                             option_name: item.option_name,
                             price_increase: f.percent(item.price_increase),
-                            cost: f.fixed(item.cost)
+                            cost: f.fixed(item.cost),
+                            show_price_increase: (item.dictionary_pricing_scheme === PRICING_SCHEME_PRICING_GRIDS)
                         };
                     }, this);
 
@@ -494,9 +503,11 @@ var app = app || {};
                     option_item.option_index = 'Option #' + (index + 1);
                     option_item.option_name = source_item.option_name;
                     option_item.dictionary_name = source_item.dictionary_name;
-                    option_item.cost = f.fixed(source_item.pricing_data.cost_per_item);
+                    option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
+                    option_item.quantity = source_item.quantity;
+                    option_item.cost = f.fixed(source_item.pricing_data.cost_per_item * source_item.quantity);
 
-                    per_item_priced_options_total_cost += source_item.pricing_data.cost_per_item;
+                    per_item_priced_options_total_cost += source_item.pricing_data.cost_per_item * source_item.quantity;
 
                     result.per_item_priced_options.push(option_item);
                 }, this);

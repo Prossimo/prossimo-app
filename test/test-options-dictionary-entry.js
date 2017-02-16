@@ -110,6 +110,18 @@ test('dictionary entry toJSON function', function () {
                                 { height: 1200, width: 2400, value: 0 }
                             ]
                         }
+                    ]),
+                    pricing_equation_params: JSON.stringify([
+                        {
+                            name: 'fixed',
+                            param_a: 0,
+                            param_b: 0
+                        },
+                        {
+                            name: 'operable',
+                            param_a: 0,
+                            param_b: 0
+                        }
                     ])
                 }
             ]

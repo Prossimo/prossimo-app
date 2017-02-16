@@ -3,6 +3,11 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var PRICING_SCHEME_NONE = app.constants.PRICING_SCHEME_NONE;
+    var PRICING_SCHEME_PRICING_GRIDS = app.constants.PRICING_SCHEME_PRICING_GRIDS;
+    var PRICING_SCHEME_PER_ITEM = app.constants.PRICING_SCHEME_PER_ITEM;
+    var PRICING_SCHEME_LINEAR_EQUATION = app.constants.PRICING_SCHEME_LINEAR_EQUATION;
+
     var UNIT_PROPERTIES = [
         { name: 'mark', title: 'Mark', type: 'string' },
         { name: 'width', title: 'Width (inches)', type: 'number' },
@@ -29,7 +34,7 @@ var app = app || {};
         { name: 'discount', title: 'Discount', type: 'number' },
 
         { name: 'position', title: 'Position', type: 'number' },
-        { name: 'unit_options', title: 'Unit Options', type: 'array' },
+        { name: 'unit_options', title: 'Unit Options', type: 'collection:UnitOptionCollection' },
         { name: 'root_section', title: 'Root Section', type: 'object' }
     ];
 
@@ -212,7 +217,8 @@ var app = app || {};
                 conversion_rate: 0.9,
                 price_markup: 2.3,
                 quantity: 1,
-                root_section: name === 'root_section' ? getSectionDefaults(name) : ''
+                root_section: name === 'root_section' ? getSectionDefaults(name) : '',
+                unit_options: name === 'unit_options' ? this.getDefaultUnitOptions() : []
             };
 
             if ( app.settings ) {
@@ -232,20 +238,33 @@ var app = app || {};
             return default_value;
         },
         sync: function (method, model, options) {
-            var properties_to_omit = ['id'];
-
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { project_unit: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
-                    root_section: JSON.stringify(model.get('root_section'))
-                }) };
+                options.attrs = { project_unit: model.toJSON() };
             }
 
             return Backbone.sync.call(this, method, model, options);
         },
+        toJSON: function () {
+            var properties_to_omit = ['id'];
+            var json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+
+            json.root_section = JSON.stringify(this.get('root_section'));
+            json.unit_options = this.get('unit_options').toJSON();
+
+            return _.omit(json, properties_to_omit);
+        },
         parse: function (data) {
             var unit_data = data && data.unit ? data.unit : data;
+            var parsed_data = app.schema.parseAccordingToSchema(unit_data, this.schema);
 
-            return app.schema.parseAccordingToSchema(unit_data, this.schema);
+            if ( parsed_data && parsed_data.unit_options ) {
+                parsed_data.unit_options = new app.UnitOptionCollection(
+                    app.utils.object.extractObjectOrNull(parsed_data.unit_options),
+                    { parse: true }
+                );
+            }
+
+            return parsed_data;
         },
         initialize: function (attributes, options) {
             this.options = options || {};
@@ -288,8 +307,14 @@ var app = app || {};
 
                     this.set('root_section', getSectionDefaults('root_section', glazing_name, profile_id));
                 }
+
+                this.listenTo(this.get('unit_options'), 'change update reset', function () {
+                    this.persist('unit_options', this.get('unit_options'));
+                });
             }
         },
+        //  TODO: this should happen on parse. Also, why only this property is
+        //  validated?
         validateOpeningDirection: function () {
             if ( !app.settings ) {
                 return;
@@ -366,7 +391,7 @@ var app = app || {};
             return current_section;
         },
         getDefaultUnitOptions: function () {
-            var default_options = [];
+            var default_options = new app.UnitOptionCollection();
 
             if ( app.settings ) {
                 app.settings.dictionaries.each(function (dictionary) {
@@ -383,7 +408,7 @@ var app = app || {};
                         );
 
                         if ( option && option.id && dictionary.id ) {
-                            default_options.push({
+                            default_options.add({
                                 dictionary_id: dictionary.id,
                                 dictionary_entry_id: option.id
                             });
@@ -398,59 +423,36 @@ var app = app || {};
             var current_options = this.get('unit_options');
             var default_options = this.getDefaultUnitOptions();
 
-            if ( !_.isEqual(current_options, default_options) ) {
-                this.persist('unit_options', default_options);
+            if ( JSON.stringify(current_options.toJSON()) !== JSON.stringify(default_options.toJSON()) ) {
+                this.get('unit_options').reset(default_options.models);
             }
         },
         validateUnitOptions: function () {
             var default_options = this.getDefaultUnitOptions();
             var current_options = this.get('unit_options');
-            var current_options_parsed;
+            var options_to_set = new app.UnitOptionCollection();
 
-            function getValidatedUnitOptions(model, currents, defaults) {
-                var options_to_set = [];
+            if ( app.settings ) {
+                app.settings.dictionaries.each(function (dictionary) {
+                    var dictionary_id = dictionary.id;
+                    var profile_id = this.profile && this.profile.id;
 
-                if ( app.settings ) {
-                    app.settings.dictionaries.each(function (dictionary) {
-                        var dictionary_id = dictionary.id;
-                        var profile_id = model.profile && model.profile.id;
+                    if ( dictionary_id && profile_id ) {
+                        var current_option = current_options.findWhere({ dictionary_id: dictionary_id });
+                        var default_option = default_options.findWhere({ dictionary_id: dictionary_id });
+                        var target_entry = current_option &&
+                            dictionary.entries.get(current_option.get('dictionary_entry_id'));
 
-                        if ( dictionary_id && profile_id ) {
-                            var current_option = _.findWhere(currents, { dictionary_id: dictionary_id });
-                            var default_option = _.findWhere(defaults, { dictionary_id: dictionary_id });
-                            var target_entry = current_option &&
-                                dictionary.entries.get(current_option.dictionary_entry_id);
-
-                            if ( current_option && target_entry ) {
-                                options_to_set.push(current_option);
-                            } else if ( default_option ) {
-                                options_to_set.push(default_option);
-                            }
+                        if ( current_option && target_entry ) {
+                            options_to_set.add(current_option);
+                        } else if ( default_option ) {
+                            options_to_set.add(default_option);
                         }
-                    });
-                }
-
-                return options_to_set;
+                    }
+                }, this);
             }
 
-            if ( _.isString(current_options) ) {
-                try {
-                    current_options_parsed = JSON.parse(current_options);
-                } catch (error) {
-                    // Do nothing
-                }
-
-                if ( current_options_parsed ) {
-                    this.set('unit_options', getValidatedUnitOptions(this, current_options_parsed, default_options));
-                    return;
-                }
-            }
-
-            if ( !_.isObject(current_options) ) {
-                this.set('unit_options', default_options);
-            } else {
-                this.set('unit_options', getValidatedUnitOptions(this, current_options, default_options));
-            }
+            this.get('unit_options').set(options_to_set.models);
         },
         getCurrentFillingsList: function (current_root) {
             var section_result;
@@ -600,13 +602,14 @@ var app = app || {};
                             has_only_defaults = false;
                         }
                     } else if ( key === 'root_section' ) {
-                        if ( JSON.stringify(_.omit(value, 'id')) !==
-                            JSON.stringify(_.omit(this.getDefaultValue('root_section'), 'id'))
+                        if (
+                            JSON.stringify(_.omit(this.getDefaultValue('root_section'), 'id')) !==
+                            JSON.stringify(_.omit(JSON.parse(value), 'id'))
                         ) {
                             has_only_defaults = false;
                         }
                     } else if ( key === 'unit_options' ) {
-                        if ( JSON.stringify(this.getDefaultUnitOptions()) !== JSON.stringify(value) ) {
+                        if ( JSON.stringify(this.getDefaultUnitOptions().toJSON()) !== JSON.stringify(value) ) {
                             has_only_defaults = false;
                         }
                     } else if ( this.getDefaultValue(key, type) !== value ) {
@@ -684,20 +687,8 @@ var app = app || {};
 
             return app.utils.math.square_meters(c.inches_to_mm(this.get('width')), c.inches_to_mm(this.get('height')));
         },
-        //  We either get a value from model, or get get estimated unit cost
-        //  when special toggle is enabled in settings
-        getOriginalCost: function () {
-            var original_cost = this.get('original_cost');
-            var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
-
-            if ( project_settings && project_settings.get('pricing_mode') === 'estimates' ) {
-                original_cost = this.getEstimatedUnitCost().total;
-            }
-
-            return parseFloat(original_cost);
-        },
         getUnitCost: function () {
-            return this.getOriginalCost() / parseFloat(this.get('conversion_rate'));
+            return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
         },
         getSubtotalCost: function () {
             return this.getUnitCost() * parseFloat(this.get('quantity'));
@@ -1923,29 +1914,22 @@ var app = app || {};
         getUnitOptionsGroupedByPricingScheme: function () {
             var connected_options = this.getCurrentUnitOptions();
             var profile_id = this.profile.id;
-            var result = {
-                PRICING_GRIDS: [],
-                PER_ITEM: []
-            };
+            var result = {};
+
+            result[PRICING_SCHEME_PRICING_GRIDS] = [];
+            result[PRICING_SCHEME_PER_ITEM] = [];
+            result[PRICING_SCHEME_LINEAR_EQUATION] = [];
 
             _.each(connected_options, function (option) {
-                var parent_dictionary = option.getParentDictionary();
-                var pricing_data = option.getPricingDataForProfile(profile_id);
-                var is_restricted = false;
+                var pricing_data = option.entry.getPricingDataForProfile(profile_id);
 
-                //  We filter out any option that doesn't apply to the unit
-                //  TODO: would be great if getCurrentUnitOptions has this data
-                _.each(parent_dictionary.get('rules_and_restrictions'), function (rule) {
-                    if ( this.checkIfRestrictionApplies(rule) ) {
-                        is_restricted = true;
-                    }
-                }, this);
-
-                if ( !is_restricted && pricing_data && pricing_data.scheme !== 'NONE' ) {
+                if ( !option.is_restricted && pricing_data && pricing_data.scheme !== PRICING_SCHEME_NONE ) {
                     result[pricing_data.scheme].push({
-                        dictionary_name: parent_dictionary.get('name'),
-                        option_name: option.get('name'),
-                        pricing_data: pricing_data
+                        dictionary_name: option.dictionary.get('name'),
+                        option_name: option.entry.get('name'),
+                        pricing_data: pricing_data,
+                        has_quantity: option.has_quantity,
+                        quantity: option.quantity
                     });
                 }
             }, this);
@@ -1953,91 +1937,73 @@ var app = app || {};
             return result;
         },
         getSectionsListWithEstimatedCost: function () {
-            var pricing_grids = this.profile.getPricingGrids();
+            var profile_pricing_data = this.profile.getPricingData();
             var sections_list = this.getFixedAndOperableSectionsList();
             var options_grouped_by_scheme = this.getUnitOptionsGroupedByPricingScheme();
 
-            function getArea(item) {
-                return item.height * item.width;
-            }
-
-            //  How this algorithm works:
-            //  1. grids are already sorted by area size
-            //  2. if our size < lowest size, price = lowest size price
-            //  3. if our size > largest size, price = largest size price
-            //  4. if our size === some size, price = some size price
-            //  5. if our size > some size and < some other size, price is
-            //  linear interpolation between prices for these sizes
-            //  TODO: calculation for `price_per_square_meter` should be
-            //  encapsulated to profile model
             _.each(sections_list, function (section) {
-                var section_area = getArea(section);
-                var pricing_grid;
-
                 section.price_per_square_meter = 0;
+                section.base_cost = 0;
 
-                if ( section.type === 'operable' ) {
-                    pricing_grid = pricing_grids.operable;
-                } else {
-                    pricing_grid = pricing_grids.fixed;
+                //  Add base cost for profile
+                if ( profile_pricing_data && profile_pricing_data.scheme === PRICING_SCHEME_PRICING_GRIDS ) {
+                    section.price_per_square_meter = profile_pricing_data.pricing_grids.getValueForGrid(
+                        section.type,
+                        {
+                            height: section.height,
+                            width: section.width
+                        }
+                    ) || 0;
+
+                    section.base_pricing_scheme = PRICING_SCHEME_PRICING_GRIDS;
+                    section.base_cost = app.utils.math.square_meters(section.width, section.height) *
+                        section.price_per_square_meter;
+                } else if ( profile_pricing_data && profile_pricing_data.scheme === PRICING_SCHEME_LINEAR_EQUATION ) {
+                    var params_source = profile_pricing_data.pricing_equation_params.getByName(section.type);
+                    var profile_param_a = params_source.get('param_a') || 0;
+                    var profile_param_b = params_source.get('param_b') || 0;
+
+                    section.base_pricing_scheme = PRICING_SCHEME_LINEAR_EQUATION;
+                    section.base_cost =
+                        profile_param_a * section.height / 1000 * section.width / 1000 + profile_param_b;
                 }
-
-                if ( pricing_grid.length ) {
-                    if ( section_area < getArea(pricing_grid[0]) ) {
-                        section.price_per_square_meter = pricing_grid[0].price_per_square_meter;
-                    } else if ( section_area > getArea(pricing_grid[pricing_grid.length - 1]) ) {
-                        section.price_per_square_meter = pricing_grid[pricing_grid.length - 1].price_per_square_meter;
-                    } else {
-                        _.some(pricing_grid, function (pricing_tier, tier_index) {
-                            if ( section_area === getArea(pricing_tier) ) {
-                                section.price_per_square_meter = pricing_tier.price_per_square_meter;
-                                return true;
-                            } else if ( pricing_grid[tier_index + 1] &&
-                                section_area < getArea(pricing_grid[tier_index + 1]) &&
-                                section_area > getArea(pricing_tier)
-                            ) {
-                                section.price_per_square_meter = app.utils.math.linear_interpolation(
-                                    section_area,
-                                    getArea(pricing_tier),
-                                    getArea(pricing_grid[tier_index + 1]),
-                                    pricing_tier.price_per_square_meter,
-                                    pricing_grid[tier_index + 1].price_per_square_meter
-                                );
-                                return true;
-                            }
-                        }, this);
-                    }
-                }
-
-                section.base_cost = app.utils.math.square_meters(section.width, section.height) *
-                    section.price_per_square_meter;
 
                 section.filling_price_increase = 0;
+                section.filling_cost = 0;
 
+                //  Add cost increase for fillings
                 if ( app.settings && app.settings.filling_types ) {
                     var filling_type = app.settings.filling_types.getByName(section.filling_name);
-                    var filling_type_pricing_data = filling_type &&
+                    var ft_pricing_data = filling_type &&
                         filling_type.getPricingDataForProfile(this.profile.id);
 
                     //  If we have correct pricing scheme and data for filling
-                    if ( filling_type_pricing_data && filling_type_pricing_data.scheme === 'PRICING_GRIDS' ) {
-                        section.filling_price_increase = filling_type_pricing_data.pricing_grids.getValueForGrid(
+                    if ( ft_pricing_data && ft_pricing_data.scheme === PRICING_SCHEME_PRICING_GRIDS ) {
+                        section.filling_price_increase = ft_pricing_data.pricing_grids.getValueForGrid(
                             section.type,
                             {
                                 height: section.height,
                                 width: section.width
                             }
                         ) || 0;
+                        section.filling_pricing_scheme = PRICING_SCHEME_PRICING_GRIDS;
+                        section.filling_cost = section.base_cost * section.filling_price_increase / 100;
+                    } else if ( ft_pricing_data && ft_pricing_data.scheme === PRICING_SCHEME_LINEAR_EQUATION ) {
+                        var ft_params_source = ft_pricing_data.pricing_equation_params.getByName(section.type);
+                        var ft_param_a = ft_params_source.get('param_a') || 0;
+                        var ft_param_b = ft_params_source.get('param_b') || 0;
+
+                        section.filling_pricing_scheme = PRICING_SCHEME_LINEAR_EQUATION;
+                        section.filling_cost =
+                            ft_param_a * section.height / 1000 * section.width / 1000 + ft_param_b;
                     }
                 }
-
-                section.filling_cost = section.base_cost * section.filling_price_increase / 100;
 
                 section.options_cost = 0;
                 section.options = [];
 
-                //  Now add prices for all grid-based options
-                _.each(options_grouped_by_scheme.PRICING_GRIDS, function (option_data) {
+                //  Now add costs for all grid-based options
+                _.each(options_grouped_by_scheme[PRICING_SCHEME_PRICING_GRIDS], function (option_data) {
                     var option_pricing_data = option_data.pricing_data;
                     var option_cost = 0;
                     var price_increase = option_pricing_data.pricing_grids.getValueForGrid(
@@ -2053,6 +2019,27 @@ var app = app || {};
 
                     section.options.push({
                         dictionary_name: option_data.dictionary_name,
+                        dictionary_pricing_scheme: PRICING_SCHEME_PRICING_GRIDS,
+                        option_name: option_data.option_name,
+                        price_increase: price_increase,
+                        cost: option_cost
+                    });
+                }, this);
+
+                //  Add costs for options with equation-based pricing
+                _.each(options_grouped_by_scheme[PRICING_SCHEME_LINEAR_EQUATION], function (option_data) {
+                    var option_pricing_data = option_data.pricing_data.pricing_equation_params.getByName(section.type);
+                    var option_cost = 0;
+                    var param_a = option_pricing_data.get('param_a') || 0;
+                    var param_b = option_pricing_data.get('param_b') || 0;
+                    var price_increase = 0;
+
+                    option_cost = param_a * section.height / 1000 * section.width / 1000 + param_b;
+                    section.options_cost += option_cost;
+
+                    section.options.push({
+                        dictionary_name: option_data.dictionary_name,
+                        dictionary_pricing_scheme: PRICING_SCHEME_LINEAR_EQUATION,
                         option_name: option_data.option_name,
                         price_increase: price_increase,
                         cost: option_cost
@@ -2073,7 +2060,11 @@ var app = app || {};
                 fillings: 0,
                 options: 0,
                 sections_list: sections_list,
-                options_list: options_list
+                options_list: options_list,
+                real_cost: {
+                    total: this.get('original_cost'),
+                    difference: 0
+                }
             };
 
             _.each(sections_list, function (section) {
@@ -2084,10 +2075,14 @@ var app = app || {};
             }, this);
 
             //  Now add cost for all per-item priced options
-            _.each(options_list.PER_ITEM, function (option) {
-                unit_cost.total += option.pricing_data.cost_per_item;
-                unit_cost.options += option.pricing_data.cost_per_item;
+            _.each(options_list[PRICING_SCHEME_PER_ITEM], function (option) {
+                unit_cost.total += option.pricing_data.cost_per_item * option.quantity;
+                unit_cost.options += option.pricing_data.cost_per_item * option.quantity;
             }, this);
+
+            unit_cost.real_cost.difference = unit_cost.total ?
+                (unit_cost.real_cost.total - unit_cost.total) / unit_cost.total * 100 :
+                (unit_cost.real_cost.total ? 100 : 0);
 
             return unit_cost;
         },
@@ -2199,21 +2194,41 @@ var app = app || {};
             return result;
         },
         //  Get list of options that are currently selected for this unit
-        //  TODO: we might include some meta information on whether this option
-        //  is restricted (and why) or is no longer available or whatever
         getCurrentUnitOptions: function () {
             var options_list = this.get('unit_options');
             var result = [];
 
             if ( app.settings ) {
-                _.each(options_list, function (list_item) {
-                    var target_dictionary = app.settings.dictionaries.get(list_item.dictionary_id);
+                options_list.each(function (list_item) {
+                    var option_data = {
+                        is_restricted: false,
+                        restrictions: [],
+                        has_quantity: false,
+                        quantity: undefined
+                    };
+                    var target_dictionary = app.settings.dictionaries.get(list_item.get('dictionary_id'));
 
                     if ( target_dictionary ) {
-                        var target_entry = target_dictionary.entries.get(list_item.dictionary_entry_id);
+                        var target_entry = target_dictionary.entries.get(list_item.get('dictionary_entry_id'));
 
                         if ( target_entry ) {
-                            result.push(target_entry);
+                            option_data.dictionary = target_dictionary;
+                            option_data.entry = target_entry;
+
+                            _.each(target_dictionary.get('rules_and_restrictions'), function (rule) {
+                                if ( this.checkIfRestrictionApplies(rule) ) {
+                                    option_data.is_restricted = true;
+                                    option_data.restrictions.push(rule);
+                                }
+                            }, this);
+
+                            option_data.has_quantity = target_dictionary.hasQuantity();
+
+                            if ( option_data.has_quantity ) {
+                                option_data.quantity = list_item.get('quantity');
+                            }
+
+                            result.push(option_data);
                         }
                     }
                 }, this);
@@ -2225,7 +2240,7 @@ var app = app || {};
         //  filtered by certain dictionary, e.g. "Interior Handle"
         getCurrentUnitOptionsByDictionaryId: function (dictionary_id) {
             return _.filter(this.getCurrentUnitOptions(), function (unit_option) {
-                return unit_option.collection.options.dictionary.id === dictionary_id;
+                return unit_option.dictionary.id === dictionary_id;
             }, this);
         },
         //  Get list of all possible variants from a certain dictionary that
@@ -2255,24 +2270,28 @@ var app = app || {};
 
             return restriction_applies;
         },
-        persistOption: function (dictionary_id, dictionary_entry_id) {
-            var current_unit_options = _.sortBy(this.get('unit_options'), 'dictionary_id');
-            var new_unit_options = _.filter(current_unit_options, function (unit_option) {
-                return unit_option.dictionary_id !== dictionary_id;
-            }, this);
+        persistOption: function (dictionary_id, dictionary_entry_id, quantity) {
+            var current_unit_options = this.get('unit_options');
+            //  New collection contains options from all dictionaries except
+            //  for the one we're going to update
+            var new_unit_options = new app.UnitOptionCollection(
+                current_unit_options.filter(function (unit_option) {
+                    return unit_option.get('dictionary_id') !== dictionary_id;
+                }, this),
+                { parse: true }
+            );
 
             if ( dictionary_entry_id ) {
-                new_unit_options.push({
+                new_unit_options.add({
                     dictionary_id: dictionary_id,
-                    dictionary_entry_id: dictionary_entry_id
+                    dictionary_entry_id: dictionary_entry_id,
+                    quantity: quantity || 1
                 });
             }
 
-            new_unit_options = _.sortBy(new_unit_options, 'dictionary_id');
-
             //  When arrays are the same, do nothing, otherwise persist
-            if ( JSON.stringify(current_unit_options) !== JSON.stringify(new_unit_options) ) {
-                this.persist('unit_options', new_unit_options);
+            if ( JSON.stringify(current_unit_options.toJSON()) !== JSON.stringify(new_unit_options.toJSON()) ) {
+                this.get('unit_options').reset(new_unit_options.models);
             }
         },
         //  Check if this unit belongs to the project which is currently active

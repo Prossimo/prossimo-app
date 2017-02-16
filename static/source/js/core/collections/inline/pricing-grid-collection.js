@@ -27,7 +27,17 @@ var app = app || {};
     app.PricingGridCollection = Backbone.Collection.extend({
         model: app.PricingGrid,
         parse: function (data) {
-            return app.utils.object.extractObjectOrNull(data);
+            var data_object = app.utils.object.extractObjectOrNull(data);
+
+            //  This is to deal with the old grids format
+            if ( data_object && !_.isArray(data_object) && _.isObject(data_object) ) {
+                data_object = [
+                    { name: 'fixed', data: data_object.fixed || [] },
+                    { name: 'operable', data: data_object.operable || [] }
+                ];
+            }
+
+            return data_object;
         },
         getByName: function (grid_name) {
             return this.findWhere({ name: grid_name });

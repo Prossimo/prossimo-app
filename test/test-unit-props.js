@@ -8,7 +8,7 @@ var c = app.utils.convert;
 app.session = new app.Session();
 app.session.set('no_backend', true);
 
-test('project basic tests', function () {
+test('unit basic tests', function () {
     var unit = new app.Unit({
         width: c.mm_to_inches(1000),
         height: c.mm_to_inches(2000)

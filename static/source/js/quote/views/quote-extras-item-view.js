@@ -47,16 +47,12 @@ var app = app || {};
             return quantity;
         },
         templateContext: function () {
-            var project_settings = app.settings ? app.settings.getProjectSettings() : undefined;
-
             return {
                 reference_id: this.getReferenceId(),
                 description: this.getDescription(),
                 quantity: this.getQuantity(),
                 price: this.getPrices(),
-                show_price: this.options.show_price !== false,
-                is_price_estimated: project_settings && project_settings.get('pricing_mode') === 'estimates' &&
-                    this.isOptionalPercentBased()
+                show_price: this.options.show_price !== false
             };
         }
     });

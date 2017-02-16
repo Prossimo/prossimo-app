@@ -57,6 +57,9 @@ var app = app || {};
                 percent: function () {
                     return f.percent.apply(this, arguments);
                 },
+                percent_difference: function () {
+                    return f.percent_difference.apply(this, arguments);
+                },
                 fixed_minimal: function () {
                     return f.fixed_minimal.apply(this, arguments);
                 },
@@ -80,50 +83,29 @@ var app = app || {};
 
                 Handsontable.renderers.TextRenderer.apply(this, arguments);
 
-                if ( _.indexOf(['dimension', 'percent', 'fixed_minimal', 'fixed',
-                        'price_usd', 'align_right'], attr_name) !== -1
+                if (
+                    _.indexOf(['dimension', 'percent', 'percent_difference', 'fixed_minimal', 'fixed',
+                        'fixed_heights', 'dimension_heights', 'price_usd', 'align_right'], attr_name) !== -1
                 ) {
                     $td.addClass('htNumeric');
                 }
 
                 if ( is_highlighted ) {
-                    $td.css('background-color', '#FFF0DE');
+                    $td.addClass('is-highlighted');
+                }
+
+                if ( attr_name === 'percent_difference' ) {
+                    if ( parseInt(arguments[5].replace(',', ''), 10) === 0 ) {
+                        $td.addClass('is-perfect');
+                    } else if ( Math.abs(parseInt(arguments[5].replace(',', ''), 10)) <= 15 ) {
+                        $td.addClass('is-okay');
+                    } else {
+                        $td.addClass('is-average');
+                    }
                 }
 
                 return td;
             };
-        },
-        //  Render Low Threshold checkbox, sometimes make cell read-only
-        thresholdCheckboxRenderer: function (instance, td, row, col) {
-            var isThresholdEditable = instance.getSourceData().at(row) &&
-                instance.getSourceData().at(row).isThresholdEditable();
-
-            instance.setCellMeta(row, col, 'editor', false);
-
-            Handsontable.renderers.CheckboxRenderer.apply(this, arguments);
-
-            //  We explicitly make input disabled because setting it to
-            //  `readOnly` doesn't prevent user from clicking
-            if ( !isThresholdEditable ) {
-                $(td).addClass('htDimmed').find('input').attr('disabled', true);
-            }
-
-            return td;
-        },
-        //  Render Threshold Width param cell, sometimes make cell read-only
-        thresholdWidthRenderer: function (instance, td, row, col) {
-            var is_threshold_possible = instance.getSourceData().at(row) &&
-                instance.getSourceData().at(row).isThresholdPossible();
-
-            if ( is_threshold_possible ) {
-                instance.setCellMeta(row, col, 'readOnly', false);
-                Handsontable.renderers.NumericRenderer.apply(this, arguments);
-            } else {
-                instance.setCellMeta(row, col, 'readOnly', true);
-                $(td).addClass('htDimmed htNumeric').text('--');
-            }
-
-            return td;
         },
         //  Add move up / down buttons to move item within collection
         moveItemRenderer: function (instance, td, row) {

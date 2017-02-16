@@ -61,13 +61,25 @@ var app = app || {};
                     title: 'Unit Options',
                     collection: this.collection,
                     columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing'],
-                    unit_options_columns: app.settings.dictionaries.getAvailableDictionaryNames()
+                    unit_options_columns: app.settings.dictionaries.getAvailableDictionaryNames(),
+                    unit_options_quantity_columns: (function () {
+                        var columns = [];
+
+                        app.settings.dictionaries.each(function (dictionary) {
+                            if ( dictionary.hasQuantity() ) {
+                                columns.push(dictionary.get('name') + ' Quantity');
+                            }
+                        });
+
+                        return columns;
+                    })()
                 },
                 prices: {
                     title: 'Prices',
                     collection: this.collection,
                     columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing', 'width_mm', 'height_mm',
-                        'original_cost', 'original_currency', 'conversion_rate', 'unit_cost', 'subtotal_cost',
+                        'original_cost_estimated', 'original_cost', 'original_cost_difference', 'original_currency',
+                        'conversion_rate', 'unit_cost', 'subtotal_cost',
                         'supplier_discount', 'unit_cost_discounted', 'subtotal_cost_discounted', 'price_markup',
                         'unit_price', 'subtotal_price', 'discount', 'unit_price_discounted',
                         'subtotal_price_discounted', 'subtotal_profit', 'total_square_feet', 'square_feet_price',
@@ -91,6 +103,19 @@ var app = app || {};
                     this.tabs.unit_options.columns,
                     this.tabs.unit_options.unit_options_columns
                 );
+
+                //  We insert quantity columns at specific positions (after
+                //  the corresponding option column)
+                if ( this.tabs.unit_options.unit_options_quantity_columns.length ) {
+                    _.each(this.tabs.unit_options.unit_options_quantity_columns, function (qty_column_name) {
+                        var target_option_name = qty_column_name.replace(/ Quantity$/, '');
+                        var target_position = _.indexOf(this.tabs.unit_options.columns, target_option_name);
+
+                        if ( target_position !== -1 ) {
+                            this.tabs.unit_options.columns.splice(target_position + 1, 0, qty_column_name);
+                        }
+                    }, this);
+                }
             }
 
             this.undo_manager = new app.UndoManager({
@@ -352,8 +377,11 @@ var app = app || {};
                 square_feet_price_discounted: function (model) {
                     return model.getSquareFeetPriceDiscounted();
                 },
-                original_cost: function (model) {
-                    return model.getOriginalCost();
+                original_cost_estimated: function (model) {
+                    return model.getEstimatedUnitCost().total;
+                },
+                original_cost_difference: function (model) {
+                    return model.getEstimatedUnitCost().real_cost.difference;
                 },
                 rough_opening: function (model) {
                     return f.dimensions(model.getRoughOpeningWidth(), model.getRoughOpeningHeight(), null,
@@ -373,7 +401,19 @@ var app = app || {};
                     var current_options = target_dictionary_id ?
                         model.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
 
-                    return current_options.length ? current_options[0].get('name') : UNSET_VALUE;
+                    return current_options.length ? current_options[0].entry.get('name') : UNSET_VALUE;
+                };
+            } else if (
+                this.active_tab === 'unit_options' &&
+                _.contains(this.getActiveTab().unit_options_quantity_columns, column_name)
+            ) {
+                getter = function (model, attr_name) {
+                    var target_dictionary_name = attr_name.replace(/ Quantity$/, '');
+                    var target_dictionary_id = app.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
+                    var current_options = target_dictionary_id ?
+                        model.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
+
+                    return current_options.length ? current_options[0].quantity : UNSET_VALUE;
                 };
             } else {
                 getter = function (model, attr_name) {
@@ -463,6 +503,23 @@ var app = app || {};
                             return model.persistOption(target_dictionary_id, target_entry_id);
                         } else if ( val === UNSET_VALUE ) {
                             return model.persistOption(target_dictionary_id, false);
+                        }
+                    }
+                };
+            } else if (
+                this.active_tab === 'unit_options' &&
+                _.contains(this.getActiveTab().unit_options_quantity_columns, column_name)
+            ) {
+                setter = function (model, attr_name, val) {
+                    var target_dictionary_name = attr_name.replace(/ Quantity$/, '');
+                    var target_dictionary_id = app.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
+
+                    if ( target_dictionary_id ) {
+                        var target_option = model.get('unit_options').getByDictionaryId(target_dictionary_id);
+                        var target_entry_id = target_option && target_option.get('dictionary_entry_id');
+
+                        if ( target_entry_id ) {
+                            return model.persistOption(target_dictionary_id, target_entry_id, parseInt(val, 10));
                         }
                     }
                 };
@@ -669,8 +726,13 @@ var app = app || {};
                     readOnly: true,
                     renderer: app.hot_renderers.getFormattedRenderer('price_usd')
                 },
-                original_cost: {
-                    readOnly: project_settings && project_settings.get('pricing_mode') === 'estimates'
+                original_cost_estimated: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('fixed_minimal')
+                },
+                original_cost_difference: {
+                    readOnly: true,
+                    renderer: app.hot_renderers.getFormattedRenderer('percent_difference', 0)
                 },
                 rough_opening: {
                     readOnly: true,
@@ -818,6 +880,25 @@ var app = app || {};
                             cell_properties.readOnly = true;
                             cell_properties.renderer = app.hot_renderers.getDisabledPropertyRenderer(message);
                         }
+                    } else if (
+                        self.active_tab === 'unit_options' &&
+                        _.contains(self.getActiveTab().unit_options_quantity_columns, property)
+                    ) {
+                        //  We want to know what properties the column to the
+                        //  left has. And if it's set read-only for whatever
+                        //  reasons, we want this column to also be read-only
+                        var left_column_properties =
+                            self.getActiveTabCellsSpecificOptions().bind(this)(row, col - 1);
+                        var cell_value = this.instance.getDataAtCell(row, col);
+
+                        cell_properties.type = 'numeric';
+
+                        if ( left_column_properties.readOnly ) {
+                            cell_properties.readOnly = true;
+                            cell_properties.renderer = left_column_properties.renderer;
+                        } else if ( cell_value === UNSET_VALUE ) {
+                            cell_properties.readOnly = true;
+                        }
                     }
                 }
 
@@ -842,6 +923,11 @@ var app = app || {};
                     title = custom_header;
                 } else if ( original_header && original_header[0] ) {
                     title = original_header[0];
+                } else if (
+                    active_tab.unit_options_quantity_columns &&
+                    _.contains(active_tab.unit_options_quantity_columns, column_name)
+                ) {
+                    title = 'Option Qty';
                 } else {
                     title = column_name;
                 }
@@ -852,8 +938,6 @@ var app = app || {};
             return headers;
         },
         getCustomColumnHeader: function (column_name) {
-            var project_settings = app.settings.getProjectSettings();
-
             var custom_column_headers_hash = {
                 width: 'Width, in',
                 height: 'Height, in',
@@ -869,8 +953,9 @@ var app = app || {};
                 glazing_bar_width: 'Muntin Width',
                 u_value: 'U Value',
                 move_item: 'Move',
-                original_cost: project_settings && project_settings.get('pricing_mode') === 'estimates' ?
-                    'Orig. Cost (est.)' : 'Orig. Cost',
+                original_cost_estimated: 'Orig. Cost (est.)',
+                original_cost: 'Orig. Cost',
+                original_cost_difference: 'Est./Real Cost Diff.',
                 original_currency: 'Orig. Curr.',
                 conversion_rate: 'Conv. Rate',
                 unit_cost: 'Unit Cost',
@@ -925,7 +1010,9 @@ var app = app || {};
                 opening_direction: 110,
                 glazing: 300,
                 glazing_bar_width: 100,
+                original_cost_estimated: 120,
                 original_cost: 100,
+                original_cost_difference: 120,
                 unit_cost: 100,
                 subtotal_cost: 100,
                 unit_cost_discounted: 100,
@@ -943,7 +1030,7 @@ var app = app || {};
             //  Custom widths for some Unit Options columns
             var unit_options_col_widths = {
                 'Interior Handle': 160,
-                'Exterior Handle': 160,
+                'Exterior Handle': 200,
                 'Internal Sill': 100,
                 'External Sill': 100,
                 'External Color': 100,
@@ -952,7 +1039,9 @@ var app = app || {};
                 'Lock Mechanism': 120,
                 'Glazing Bead': 100,
                 'Gasket Color': 100,
-                'Hinge Style': 280
+                'Hinge Style': 280,
+                Hinges: 280,
+                Hardware: 100
             };
 
             //  Calculate optimal width for Unit Options columns
@@ -968,7 +1057,7 @@ var app = app || {};
             col_widths = _.extend({}, col_widths, unit_options_col_widths);
 
             var widths_table = _.map(this.getActiveTab().columns, function (item) {
-                return col_widths[item] ? col_widths[item] : 80;
+                return col_widths[item] ? col_widths[item] : 90;
             }, this);
 
             return widths_table;

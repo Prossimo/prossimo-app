@@ -3,6 +3,15 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var PRICING_SCHEME_NONE = app.constants.PRICING_SCHEME_NONE;
+    var PRICING_SCHEME_PRICING_GRIDS = app.constants.PRICING_SCHEME_PRICING_GRIDS;
+    var PRICING_SCHEME_LINEAR_EQUATION = app.constants.PRICING_SCHEME_LINEAR_EQUATION;
+
+    var POSSIBLE_PRICING_SCHEMES = [
+        PRICING_SCHEME_PRICING_GRIDS,
+        PRICING_SCHEME_LINEAR_EQUATION
+    ];
+
     var UNIT_TYPES = ['Window', 'Patio Door', 'Entry Door'];
     var DEFAULT_UNIT_TYPE = 'Window';
     var TYPES_WITH_POSSIBLE_THRESHOLD = ['Patio Door', 'Entry Door'];
@@ -30,34 +39,17 @@ var app = app || {};
         { name: 'frame_u_value', title: 'Frame U Value', type: 'number' },
         { name: 'spacer_thermal_bridge_value', title: 'Spacer Thermal Bridge Value', type: 'number' },
         { name: 'position', title: 'Position', type: 'number' },
-        { name: 'pricing_grids', title: 'Pricing Grids', type: 'string' },
         { name: 'weight_per_length', title: 'Weight per Length (kg/m)', type: 'number' },
-        { name: 'clear_width_deduction', title: 'Clear Width Deduction (mm)', type: 'number' }
-    ];
+        { name: 'clear_width_deduction', title: 'Clear Width Deduction (mm)', type: 'number' },
 
-    function getDefaultPricingGrids() {
-        function getTier(title, height, width, price_per_square_meter) {
-            return _.extend({}, {
-                title: title,
-                height: height,
-                width: width,
-                price_per_square_meter: price_per_square_meter
-            });
+        { name: 'pricing_scheme', title: 'Pricing Scheme', type: 'string' },
+        { name: 'pricing_grids', title: 'Pricing Grids', type: 'collection:PricingGridCollection' },
+        {
+            name: 'pricing_equation_params',
+            title: 'Pricing Equation Params',
+            type: 'collection:PricingEquationParamsCollection'
         }
-
-        return {
-            fixed: [
-                getTier('Small', 500, 500, 0),
-                getTier('Medium', 914, 1514, 0),
-                getTier('Large', 2400, 3000, 0)
-            ],
-            operable: [
-                getTier('Small', 500, 500, 0),
-                getTier('Medium', 914, 1514, 0),
-                getTier('Large', 1200, 2400, 0)
-            ]
-        };
-    }
+    ];
 
     app.Profile = Backbone.Model.extend({
         schema: app.schema.createSchema(PROFILE_PROPERTIES),
@@ -73,6 +65,12 @@ var app = app || {};
         getNameAttribute: function () {
             return 'name';
         },
+        getAttributeType: function (attribute_name) {
+            var name_title_hash = this.getNameTitleTypeHash();
+            var target_attribute = _.findWhere(name_title_hash, {name: attribute_name});
+
+            return target_attribute ? target_attribute.type : undefined;
+        },
         getDefaultValue: function (name, type) {
             var default_value = '';
 
@@ -84,7 +82,9 @@ var app = app || {};
                 unit_type: DEFAULT_UNIT_TYPE,
                 low_threshold: false,
                 threshold_width: 20,
-                pricing_grids: getDefaultPricingGrids()
+                pricing_scheme: this.getPossiblePricingSchemes()[0],
+                pricing_grids: new app.PricingGridCollection(null, { append_default_grids: true }),
+                pricing_equation_params: new app.PricingEquationParamsCollection(null, { append_default_sets: true })
             };
 
             if ( app.settings ) {
@@ -105,60 +105,48 @@ var app = app || {};
             return default_value;
         },
         sync: function (method, model, options) {
-            var properties_to_omit = ['id'];
-
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { profile: _.extendOwn(_.omit(model.toJSON(), properties_to_omit), {
-                    pricing_grids: JSON.stringify(model.get('pricing_grids'))
-                }) };
+                options.attrs = { profile: model.toJSON() };
             }
 
             return Backbone.sync.call(this, method, model, options);
         },
         parse: function (data) {
             var profile_data = data && data.profile ? data.profile : data;
+            var parsed_data = app.schema.parseAccordingToSchema(profile_data, this.schema);
 
-            return app.schema.parseAccordingToSchema(profile_data, this.schema);
+            //  We append default pricing grids if we aren't able to recignize
+            //  source string as object
+            if ( parsed_data && parsed_data.pricing_grids ) {
+                parsed_data.pricing_grids = new app.PricingGridCollection(
+                    app.utils.object.extractObjectOrNull(parsed_data.pricing_grids),
+                    {
+                        parse: true,
+                        append_default_grids: true
+                    }
+                );
+            }
+
+            if ( parsed_data && parsed_data.pricing_equation_params ) {
+                parsed_data.pricing_equation_params = new app.PricingEquationParamsCollection(
+                    app.utils.object.extractObjectOrNull(parsed_data.pricing_equation_params),
+                    {
+                        parse: true,
+                        append_default_sets: true
+                    }
+                );
+            }
+
+            return parsed_data;
         },
-        initialize: function (attributes, options) {
-            this.options = options || {};
+        toJSON: function () {
+            var properties_to_omit = ['id'];
+            var json = Backbone.Model.prototype.toJSON.apply(this, arguments);
 
-            if ( !this.options.proxy ) {
-                this.validatePricingGrids();
-                this.on('change:unit_type', this.onTypeUpdate, this);
-            }
-        },
-        validatePricingGrids: function () {
-            var grids = this.get('pricing_grids');
-            var grids_parsed;
+            json.pricing_grids = JSON.stringify(this.get('pricing_grids').toJSON());
+            json.pricing_equation_params = JSON.stringify(this.get('pricing_equation_params').toJSON());
 
-            if ( _.isString(grids) ) {
-                try {
-                    grids_parsed = JSON.parse(grids);
-                } catch (error) {
-                    // Do nothing
-                }
-
-                if ( grids_parsed ) {
-                    this.set('pricing_grids', grids_parsed);
-                    return;
-                }
-            }
-
-            if ( !_.isObject(grids) ) {
-                this.set('pricing_grids', this.getDefaultValue('pricing_grids'));
-            }
-        },
-        _updatePricingGrids: function (grid, tier, func) {
-            var pricing_grids = this.get('pricing_grids');
-            var target_tier = _.find(pricing_grids[grid], function (item) {
-                return item === tier;
-            });
-
-            if ( target_tier ) {
-                func(target_tier);
-                this.persist('pricing_grids', pricing_grids);
-            }
+            return _.omit(json, properties_to_omit);
         },
         validate: function (attributes, options) {
             var error_obj = null;
@@ -224,8 +212,14 @@ var app = app || {};
                     var type = property_source ? property_source.type : undefined;
 
                     if ( key === 'pricing_grids' ) {
-                        if ( JSON.stringify(value) !==
-                            JSON.stringify(this.getDefaultValue('pricing_grids'))
+                        if ( value !==
+                            JSON.stringify(this.getDefaultValue('pricing_grids').toJSON())
+                        ) {
+                            has_only_defaults = false;
+                        }
+                    } else if ( key === 'pricing_equation_params' ) {
+                        if ( value !==
+                            JSON.stringify(this.getDefaultValue('pricing_equation_params').toJSON())
                         ) {
                             has_only_defaults = false;
                         }
@@ -268,12 +262,20 @@ var app = app || {};
 
             return threshold_type;
         },
-        onTypeUpdate: function () {
-            if ( !this.isThresholdPossible() ) {
-                this.set('low_threshold', false);
-            } else if ( this.hasAlwaysLowThreshold() ) {
-                this.set('low_threshold', true);
+        //  This is to set unit_type and low_threshold at once, because under
+        //  certain conditions low_threshold value depends on unit_type
+        setUnitType: function (new_type) {
+            var data_to_persist = {
+                unit_type: new_type
+            };
+
+            if ( !_.contains(TYPES_WITH_POSSIBLE_THRESHOLD, new_type) ) {
+                data_to_persist.low_threshold = false;
+            } else if ( _.contains(TYPES_WITH_ALWAYS_LOW_THRESHOLD, new_type) ) {
+                data_to_persist.low_threshold = true;
             }
+
+            this.persist(data_to_persist);
         },
         //  Return { name: 'name', title: 'Title' } pairs for each item in
         //  `names` array. If the array is empty, return all possible pairs
@@ -300,6 +302,9 @@ var app = app || {};
         getUnitTypes: function () {
             return UNIT_TYPES;
         },
+        getPossiblePricingSchemes: function () {
+            return POSSIBLE_PRICING_SCHEMES;
+        },
         getVisibleFrameWidthFixed: function () {
             return this.get('frame_width');
         },
@@ -307,16 +312,35 @@ var app = app || {};
             return parseFloat(this.get('frame_width')) + parseFloat(this.get('sash_frame_width')) -
                 parseFloat(this.get('sash_frame_overlap'));
         },
-        //  Returns grids sorted by area size
-        getPricingGrids: function () {
-            return {
-                fixed: _.sortBy(this.get('pricing_grids').fixed, function (item) {
-                    return item.width * item.height;
-                }, this),
-                operable: _.sortBy(this.get('pricing_grids').operable, function (item) {
-                    return item.width * item.height;
-                }, this)
+        getPricingData: function () {
+            var pricing_data = {
+                scheme: PRICING_SCHEME_NONE
             };
+
+            if ( this.get('pricing_scheme') === PRICING_SCHEME_PRICING_GRIDS ) {
+                pricing_data.scheme = PRICING_SCHEME_PRICING_GRIDS;
+                pricing_data.pricing_grids = this.get('pricing_grids');
+            } else if ( this.get('pricing_scheme') === PRICING_SCHEME_LINEAR_EQUATION ) {
+                pricing_data.scheme = PRICING_SCHEME_LINEAR_EQUATION;
+                pricing_data.pricing_equation_params = this.get('pricing_equation_params');
+            }
+
+            return pricing_data;
+        },
+        initialize: function (attributes, options) {
+            this.options = options || {};
+
+            //  Save pricing grids on grid item change
+            this.listenTo(this.get('pricing_grids'), 'change update', function (changed_object) {
+                this.trigger('change:pricing_grids change', changed_object);
+                this.persist('pricing_grids', this.get('pricing_grids'));
+            });
+
+            //  Save pricing_equation_params on param change
+            this.listenTo(this.get('pricing_equation_params'), 'change update', function (changed_object) {
+                this.trigger('change:pricing_equation_params change', changed_object);
+                this.persist('pricing_equation_params', this.get('pricing_equation_params'));
+            });
         }
     });
 })();

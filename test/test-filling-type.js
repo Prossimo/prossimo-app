@@ -105,6 +105,18 @@ test('filling type toJSON function', function () {
                 {
                     profile_id: 3,
                     is_default: true,
+                    pricing_equation_params: JSON.stringify([
+                        {
+                            name: 'fixed',
+                            param_a: 0,
+                            param_b: 0
+                        },
+                        {
+                            name: 'operable',
+                            param_a: 0,
+                            param_b: 0
+                        }
+                    ]),
                     pricing_grids: JSON.stringify([
                         {
                             name: 'fixed',
@@ -124,7 +136,8 @@ test('filling type toJSON function', function () {
                         }
                     ])
                 }
-            ]
+            ],
+            pricing_scheme: 'PRICING_GRIDS'
         },
         'Filling type should be properly cast to json'
     );
@@ -143,7 +156,7 @@ test('filling type hasOnlyDefaultAttributes function', function () {
 
     notOk(new_filling.hasOnlyDefaultAttributes(), 'Filling type has non-default attributes after calling set');
     notOk(
-        new_filling.hasOnlyDefaultAttributes(),
+        another_new_filling.hasOnlyDefaultAttributes(),
         'Another filling has type non-default attributes after calling setProfileAvailability'
     );
 });
@@ -385,7 +398,8 @@ test('filling type getPricingDataForProfile function', function () {
         filling_type_profiles: [
             { profile_id: 1, is_default: true },
             { profile_id: 54, is_default: false }
-        ]
+        ],
+        pricing_scheme: 'PRICING_GRIDS'
     }, { parse: true });
 
     var ftp_one_pricing_data = filling.getPricingDataForProfile(54);

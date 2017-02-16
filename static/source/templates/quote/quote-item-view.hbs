@@ -30,11 +30,11 @@
         <td class="price">
             <ul class="unit-price">
                 <li class="unit">
-                    <strong>Unit Price{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
+                    <strong>Unit Price:</strong>
                     <span class="value">{{ price.unit }}</span>
                 </li>
                 <li class="subtotal">
-                    <strong>Subtotal{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
+                    <strong>Subtotal:</strong>
                     <span class="value">{{ price.subtotal }}</span>
                 </li>
             </ul>
@@ -48,12 +48,12 @@
                 </li>
                 {{/if}}
                 {{#if price.unit_discounted }}<li class="unit">
-                    <strong>Unit Price w/Disc.{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
+                    <strong>Unit Price w/Disc.:</strong>
                     <span class="value">{{ price.unit_discounted }}</span>
                 </li>
                 {{/if}}
                 {{#if price.subtotal_discounted }}<li class="subtotal">
-                    <strong>Subtotal w/Disc.{{#if is_price_estimated}} <small>(est.)</small>{{/if}}:</strong>
+                    <strong>Subtotal w/Disc.:</strong>
                     <span class="value">{{ price.subtotal_discounted }}</span>
                 </li>
                 {{/if}}

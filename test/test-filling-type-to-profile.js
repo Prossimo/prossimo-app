@@ -39,8 +39,21 @@ test('FillingTypeProfile parse function', function () {
             ]
         }
     ];
+    var equation_data_to_set = [
+        {
+            name: 'fixed',
+            param_a: 15,
+            param_b: 149
+        },
+        {
+            name: 'operable',
+            param_a: 17,
+            param_b: 184
+        }
+    ];
     var ftp = new app.FillingTypeProfile({
-        pricing_grids: JSON.parse(JSON.stringify(data_to_set))
+        pricing_grids: JSON.parse(JSON.stringify(data_to_set)),
+        pricing_equation_params: JSON.parse(JSON.stringify(equation_data_to_set))
     }, { parse: true });
 
     equal(ftp.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
@@ -50,10 +63,20 @@ test('FillingTypeProfile parse function', function () {
         data_to_set[0],
         'pricing_grids first entry should be similar to source data first entry'
     );
+    ok(
+        ftp.get('pricing_equation_params') instanceof Backbone.Collection,
+        'pricing_equation_params is a Backbone.Collection object'
+    );
+    deepEqual(
+        ftp.get('pricing_equation_params').get('param_a'),
+        equation_data_to_set.param_a,
+        'pricing_equation_params param_a should be similar to source data param_a'
+    );
 
     //  Now we want it to pass the same set of tests, but the source data is a string
     var another_ftp = new app.FillingTypeProfile({
-        pricing_grids: JSON.stringify(_.clone(data_to_set))
+        pricing_grids: JSON.stringify(_.clone(data_to_set)),
+        pricing_equation_params: JSON.stringify(equation_data_to_set)
     }, { parse: true });
 
     equal(another_ftp.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
@@ -62,6 +85,15 @@ test('FillingTypeProfile parse function', function () {
         another_ftp.get('pricing_grids').at(0).toJSON(),
         data_to_set[0],
         'pricing_grids first entry should be similar to source data first entry'
+    );
+    ok(
+        another_ftp.get('pricing_equation_params') instanceof Backbone.Collection,
+        'pricing_equation_params is a Backbone.Collection object'
+    );
+    deepEqual(
+        another_ftp.get('pricing_equation_params').get('param_a'),
+        equation_data_to_set.param_a,
+        'pricing_equation_params param_a should be similar to source data param_a'
     );
 
     //  We want to make sure no extra data survives at the parse step
@@ -90,6 +122,18 @@ test('FillingTypeProfile toJSON function', function () {
         {
             profile_id: 0,
             is_default: false,
+            pricing_equation_params: JSON.stringify([
+                {
+                    name: 'fixed',
+                    param_a: 0,
+                    param_b: 0
+                },
+                {
+                    name: 'operable',
+                    param_a: 0,
+                    param_b: 0
+                }
+            ]),
             pricing_grids: JSON.stringify([
                 {
                     name: 'fixed',
@@ -115,6 +159,18 @@ test('FillingTypeProfile toJSON function', function () {
     var another_ftp = new app.FillingTypeProfile({
         profile_id: 15,
         is_default: true,
+        pricing_equation_params: JSON.stringify([
+            {
+                name: 'fixed',
+                param_a: 12,
+                param_b: 177
+            },
+            {
+                name: 'operable',
+                param_a: 17,
+                param_b: 184
+            }
+        ]),
         pricing_grids: [
             {
                 data: [
@@ -132,6 +188,18 @@ test('FillingTypeProfile toJSON function', function () {
         {
             profile_id: 15,
             is_default: true,
+            pricing_equation_params: JSON.stringify([
+                {
+                    name: 'fixed',
+                    param_a: 12,
+                    param_b: 177
+                },
+                {
+                    name: 'operable',
+                    param_a: 17,
+                    param_b: 184
+                }
+            ]),
             pricing_grids: JSON.stringify([
                 {
                     name: 'fixed',
@@ -149,7 +217,9 @@ test('FillingTypeProfile toJSON function', function () {
 
 
 test('FillingTypeProfile getPricingData function', function () {
+    var parent_filling_type = new app.FillingType({ pricing_scheme: 'PRICING_GRIDS' });
     var default_ftp = new app.FillingTypeProfile();
+    parent_filling_type.get('filling_type_profiles').add(default_ftp);
     var pricing_data = default_ftp.getPricingData();
 
     equal(pricing_data.scheme, 'PRICING_GRIDS', 'getPricingData().scheme matches the expected scheme');

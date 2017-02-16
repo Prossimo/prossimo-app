@@ -112,7 +112,7 @@ var app = app || {};
 
                 cloned_attributes[name_attr] = getClonedItemName(this.get(name_attr), name_attr, this.collection);
 
-                var new_object = this.collection.add(cloned_attributes);
+                var new_object = this.collection.add(cloned_attributes, { parse: true });
 
                 new_object.persist({}, {
                     validate: true,
