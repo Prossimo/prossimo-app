@@ -16,7 +16,8 @@ module.exports = {
 
     preprocessors: {
         [path.resolve(rootPatch, './tests/index.js')]: ['webpack', 'sourcemap'],
-        [path.resolve(rootPatch, './tests/**/*_spec.js')]: ['webpack', 'sourcemap']
+        [path.resolve(rootPatch, './tests/**/*_spec.js')]: ['webpack', 'sourcemap'],
+        [path.resolve(rootPatch, './tests/**/*.png')]: ['webpack']
     },
 
     reporters: ['spec'],

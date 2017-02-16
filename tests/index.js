@@ -32,5 +32,9 @@ window.test = (message, callback) => {
     describe(message, callback);
 };
 
+window.test.only = (message, callback) => {
+    describe.only(message, callback);
+};
+
 before(function () {
 });
