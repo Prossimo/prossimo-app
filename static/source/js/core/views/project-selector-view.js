@@ -55,7 +55,7 @@ var app = app || {};
         },
         onChange: function () {
             var hash = (window.location.hash) ? parseInt(window.location.hash.substr(1), 10) : false;
-            var new_id = (hash) ? hash : this.ui.$select.val();
+            var new_id = hash || this.ui.$select.val();
 
             this.setCurrentProject(new_id);
             this.storeLastProject(new_id);
@@ -135,7 +135,6 @@ var app = app || {};
         },
         onRender: function () {
             this.ui.$select.selectpicker({
-                style: 'btn-xs',
                 size: 10
             });
         },

@@ -10,7 +10,7 @@ var app = app || {};
             $list: 'ul'
         },
         events: {
-            'click .sidebar-nav a': 'onNavigationClick'
+            'click .main-nav a': 'onNavigationClick'
         },
         onNavigationClick: function (e) {
             var $event_target = $(e.currentTarget);
@@ -64,7 +64,7 @@ var app = app || {};
                 }, this);
             }
 
-            $('#sidebar').append( this.render().el );
+            $('#main-nav-container').append( this.render().el );
 
             this.listenTo(app.vent, 'project_selector:fetch_current:stop', this.reloadActiveScreen);
         },

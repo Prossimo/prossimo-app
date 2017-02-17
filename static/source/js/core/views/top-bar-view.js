@@ -13,7 +13,8 @@ var app = app || {};
             $create_project_button: '.create-project-button',
             $status_panel_container: '.status-panel-container',
             $settings_toggle: '.project-settings-toggle',
-            $spinner_container: '.spinner-container'
+            $spinner_container: '.spinner-container',
+            $main_nav_container: '.main-nav-container'
         },
         events: {
             'click @ui.$settings_toggle': 'onSettingsToggle',
@@ -26,6 +27,7 @@ var app = app || {};
                 model: app.settings.getProjectSettings()
             });
             this.spinner_view = new app.SpinnerView();
+            this.main_nav_view = this.options.main_nav_view;
 
             $('#header').append( this.render().el );
 
@@ -59,6 +61,7 @@ var app = app || {};
             this.ui.$status_panel_container.append(this.status_panel_view.render().el);
             this.$el.append(this.project_settings_panel_view.render().el);
             this.ui.$spinner_container.append(this.spinner_view.render().el);
+            this.ui.$main_nav_container.append(this.main_nav_view.render().el);
         }
     });
 })();
