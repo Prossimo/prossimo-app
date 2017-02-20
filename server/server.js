@@ -5,17 +5,22 @@ require('babel-polyfill');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const compress = require('compression');
+const log4js = require('log4js');
 
 const bodyParserMiddleware = require('./middlewares/bodyParserMiddleware');
 const routers = require('./routers');
 const config = require('../configs/config');
+const log = require('../configs/log');
 const port = config.get('server:port');
+const host = config.get('server:host');
 const sourcePath = config.get('app:sourcePath');
 const distPath = config.get('dist:path');
 const isDebug = !config.get('release');
 
 // Create app
 const app = express();
+
+app.use(log4js.connectLogger(log.http));
 
 app.use(cookieParser());
 app.use(compress()); // Apply gzip compression
@@ -29,7 +34,8 @@ if (isDebug) {
     const webpackConfig = require('../configs/webpack.config');
     const compiler = webpack(webpackConfig);
 
-    console.log('Enable webpack dev and HMR middleware');
+    log.info('Debug mode is true');
+    log.info('Enable webpack dev and HMR middleware');
     app.use(require('webpack-dev-middleware')(compiler, {
         publicPath: webpackConfig.output.publicPath,
         stats: webpackConfig.stats
@@ -39,9 +45,9 @@ if (isDebug) {
     app.use(express.static(distPath));
 }
 
-app.use('/', routers(config));
+app.use('/', routers(config, log.api));
 
 // And run the server
-app.listen(config.get('server:port'), () => {
-    console.log('Server running on port ' + port);
+app.listen(port, host, () => {
+    log.info(`Server running. Pleas open http://${host}:${port}/`);
 });

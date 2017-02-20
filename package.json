@@ -110,6 +110,7 @@
     "handsontable": "~0.25.0",
     "http-proxy": "^1.15.2",
     "jquery": "~2.2.4",
+    "log4js": "^1.1.0",
     "mkdirp": "^0.5.1",
     "nconf": "^0.8.4",
     "path": "^0.12.7",

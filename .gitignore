@@ -16,3 +16,4 @@ split
 /login.html
 .idea
 /local.conf.json
+/logs
