@@ -30,7 +30,7 @@ function createBackendProxy(pach) {
 
     proxy.on('proxyReq', function (proxyReq, req, res) {
         // This is necessary for correct delivery body
-        if (req.method === 'POST' && req.body) {
+        if (/PUT|POST|DELETE|PATCH|OPTIONS/.test(req.method) && req.body) {
             proxyReq.write(JSON.stringify(req.body));
         }
 
