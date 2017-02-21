@@ -14,20 +14,24 @@ var app = app || {};
             $status_panel_container: '.status-panel-container',
             $settings_toggle: '.project-settings-toggle',
             $spinner_container: '.spinner-container',
-            $main_nav_container: '.main-nav-container'
+            $quote_selector_container: '.quote-selector-container',
+            $main_nav_container: '.main-nav-container',
+            $edit_quotes: '.js-edit-quotes'
         },
         events: {
             'click @ui.$settings_toggle': 'onSettingsToggle',
-            'click @ui.$create_project_button': 'onOpenProjectForm'
+            'click @ui.$create_project_button': 'showCreateProjectDialog',
+            'click @ui.$edit_quotes': 'showEditQuotesDialog'
         },
         initialize: function () {
             this.project_selector_view = new app.ProjectSelectorView({ collection: this.collection });
+            this.quote_selector_view = new app.QuoteSelectorView();
             this.status_panel_view = new app.StatusPanelView();
+            this.spinner_view = new app.SpinnerView();
+            this.main_nav_view = this.options.main_nav_view;
             this.project_settings_panel_view = new app.ProjectSettingsPanelView({
                 model: app.settings.getProjectSettings()
             });
-            this.spinner_view = new app.SpinnerView();
-            this.main_nav_view = this.options.main_nav_view;
 
             $('#header').append( this.render().el );
 
@@ -38,7 +42,10 @@ var app = app || {};
                 this.$el.toggleClass('is-project-settings-panel-open');
             }
         },
-        onOpenProjectForm: function () {
+        showEditQuotesDialog: function () {
+            app.dialogs.showDialog('edit-quotes');
+        },
+        showCreateProjectDialog: function () {
             app.dialogs.showDialog('createProject');
         },
         onCurrentProjectLoaded: function () {
@@ -58,10 +65,11 @@ var app = app || {};
         },
         onRender: function () {
             this.ui.$project_selector_container.append(this.project_selector_view.render().el);
+            this.ui.$quote_selector_container.append(this.quote_selector_view.render().el);
             this.ui.$status_panel_container.append(this.status_panel_view.render().el);
-            this.$el.append(this.project_settings_panel_view.render().el);
             this.ui.$spinner_container.append(this.spinner_view.render().el);
             this.ui.$main_nav_container.append(this.main_nav_view.render().el);
+            this.$el.append(this.project_settings_panel_view.render().el);
         }
     });
 })();

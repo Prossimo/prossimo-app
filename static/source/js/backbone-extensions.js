@@ -75,10 +75,16 @@ var app = app || {};
         },
         //  TODO: test that cloned item doesn't share any objects with the
         //  source item by reference
-        duplicate: function () {
+        duplicate: function (options) {
             if ( this.hasOnlyDefaultAttributes() ) {
                 throw new Error('Item could not be cloned: it has only default attributes, create a new one instead');
             }
+
+            var default_options = {
+                attributes_to_omit: []
+            };
+
+            this.options = _.extend({}, default_options, options);
 
             function getClonedItemName(name, name_attr, collection) {
                 var old_name = name ? name.replace(/\s*\(copy#(\d+)\)/, '') : 'New';
@@ -108,7 +114,7 @@ var app = app || {};
 
             if ( this.collection ) {
                 var name_attr = this.getNameAttribute();
-                var cloned_attributes = _.omit(this.toJSON(), 'id');
+                var cloned_attributes = _.omit(this.toJSON(), _.union(options.attributes_to_omit, ['id']));
 
                 cloned_attributes[name_attr] = getClonedItemName(this.get(name_attr), name_attr, this.collection);
 

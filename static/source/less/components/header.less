@@ -3,7 +3,6 @@
 //  ------------------------------------------------------------------------
 
 .header {
-    .clearfix();
     position: fixed;
     z-index: 300;
     top: 0;
@@ -19,6 +18,7 @@
 }
 
 .top-bar-container {
+    .clearfix();
     position: relative;
     z-index: 200;
     height: @top-bar-height;
@@ -26,6 +26,7 @@
 }
 
 .bottom-bar-container {
+    .clearfix();
     position: relative;
     z-index: 150;
     height: @bottom-bar-height;
@@ -68,6 +69,7 @@
         cursor: pointer;
     }
 }
+
 
 //  ------------------------------------------------------------------------
 //  Project settings
@@ -176,4 +178,31 @@
 
 .status-panel a {
     color: inherit;
+}
+
+
+//  ------------------------------------------------------------------------
+//  Quote selector
+//  ------------------------------------------------------------------------
+
+.quote-selector-container {
+    float: left;
+}
+
+.quote-selector {
+    padding: 0.2rem 0.8rem 0.2rem 0.2rem;
+
+    .dropdown-toggle {
+        border-radius: 0;
+        background-color: darken(@white, 10%);
+    }
+}
+
+.edit-quotes-container {
+    float: left;
+    padding: 0.2rem 2rem 0.2rem 0.2rem;
+
+    .btn {
+        background-color: darken(@white, 10%);
+    }
 }

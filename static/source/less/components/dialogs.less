@@ -68,3 +68,47 @@
         border-color: darken(@white, 35%);
     }
 }
+
+
+//  ------------------------------------------------------------------------
+//  Edit Quotes modal
+//  ------------------------------------------------------------------------
+
+.edit-quotes-modal {
+    .modal-dialog {
+        width: 800px;
+    }
+
+    .btn {
+        border-color: darken(@white, 15%);
+    }
+
+    .quotes-actions-container {
+        .clearfix();
+        margin-bottom: 2rem;
+    }
+
+    .quotes-actions-container .add-new-quote {
+        float: right;
+    }
+
+    table {
+        table-layout: fixed;
+    }
+
+    th.name,
+    td.name {
+        padding: 3px;
+        width: 30%;
+    }
+
+    td.name p {
+        margin: 6px 4px;
+    }
+
+    th.date,
+    td.date {
+        padding: 3px;
+        width: 22%;
+    }
+}

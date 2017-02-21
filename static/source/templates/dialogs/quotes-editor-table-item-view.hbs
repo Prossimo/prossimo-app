@@ -1,0 +1,22 @@
+<td class="name">
+    <p>{{ name }}</p>
+</td>
+<td class="date">
+    <p>{{ quote_date }}</p>
+</td>
+<td class="units" title="Unit Types / Number of Units">
+    6 / 7
+</td>
+<td class="grand-total">
+    $6,949.61
+</td>
+<td class="actions">
+    <button class="btn btn-xs clone-quote js-clone-quote" title="Clone quote">
+        <span class="glyphicon glyphicon-duplicate"></span>
+    </button>
+    {{#if is_removable }}
+    <button class="btn btn-xs remove-quote js-remove-quote" title="Remove quote">
+        <span class="glyphicon glyphicon-trash"></span>
+    </button>
+    {{/if}}
+</td>

@@ -32,14 +32,10 @@ var app = app || {};
             }
         },
         enterViewMode: function () {
-            this.ui.$content.find('.date').datepicker('destroy');
             this.ui.$content.html(this.viewTemplate(this.model.toJSON()));
         },
         enterEditMode: function () {
             this.ui.$content.html(this.editTemplate(this.model.toJSON()));
-            this.ui.$content.find('.date').datepicker({
-                format: 'd MM, yyyy'
-            });
         },
         templateContext: function () {
             return _.extend({}, this.model.toJSON(), {editMode: this.editMode});
@@ -58,9 +54,6 @@ var app = app || {};
         },
         onRender: function () {
             this.enterMode();
-        },
-        onBeforeDestroy: function () {
-            this.ui.$content.find('.date').datepicker('destroy');
         }
     });
 })();

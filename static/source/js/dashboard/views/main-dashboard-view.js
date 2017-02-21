@@ -10,14 +10,19 @@ var app = app || {};
         ui: {
             $totals: '#totals',
             $project_info: '#project-info',
-            $documents: '#documents'
+            $documents: '#documents',
+            $quote_info: '#quote-info'
         },
         initialize: function () {
             this.project_info_view = new app.ProjectInfoView({
                 model: app.current_project
             });
 
-            this.totals_view = new app.ProjectTotalsView({
+            this.totals_view = new app.QuoteTotalsView({
+                model: app.current_project
+            });
+
+            this.quote_info_view = new app.QuoteInfoView({
                 model: app.current_project
             });
 
@@ -28,11 +33,13 @@ var app = app || {};
         onRender: function () {
             this.ui.$project_info.append(this.project_info_view.render().el);
             this.ui.$totals.append(this.totals_view.render().el);
+            this.ui.$quote_info.append(this.quote_info_view.render().el);
             this.ui.$documents.append(this.documents_view.render().el);
         },
         onBeforeDestroy: function () {
             this.project_info_view.destroy();
             this.totals_view.destroy();
+            this.quote_info_view.destroy();
             this.documents_view.destroy();
         }
     });
