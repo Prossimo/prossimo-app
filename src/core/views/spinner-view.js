@@ -1,7 +1,7 @@
 import Marionette from 'backbone.marionette';
 import $ from 'jquery';
 import {globalChannel} from '../../utils/radio';
-import Spinner from 'spin';
+import Spinner from 'spin.js';
 import template from '../../templates/core/spinner-view.hbs';
 
 export default Marionette.View.extend({
