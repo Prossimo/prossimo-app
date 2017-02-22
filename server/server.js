@@ -13,7 +13,7 @@ const config = require('../configs/config');
 const log = require('../configs/log');
 const port = config.get('server:port');
 const host = config.get('server:host');
-const sourcePath = config.get('app:sourcePath');
+const assetsPath = config.get('app:assetsPath');
 const distPath = config.get('dist:path');
 const isDebug = !config.get('release');
 
@@ -27,7 +27,7 @@ app.use(compress()); // Apply gzip compression
 
 app.use(bodyParserMiddleware.bodyParserJsonMiddleware());
 app.use(bodyParserMiddleware.bodyParserUrlencodedMiddleware());
-app.use('/static/public', express.static(sourcePath));
+app.use('/assets', express.static(assetsPath));
 
 if (isDebug) {
     const webpack = require('webpack');

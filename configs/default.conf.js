@@ -6,8 +6,8 @@ module.exports = {
     release: false,
     verbose: false,
     app: {
+        assetsPath: path.resolve(__dirname, '../assets'),
         srcPath: path.resolve(__dirname, '../src'),
-        sourcePath: path.resolve(__dirname, '../static/source'),
         webLoaders: path.resolve(__dirname, '../web_loaders'),
         devtool: 'source-map',
         apiPrefix: '/api',

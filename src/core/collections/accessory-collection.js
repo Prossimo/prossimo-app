@@ -1,7 +1,7 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
 import App from '../../main';
-import Accessory from '../../accessory';
+import Accessory from '../models/accessory';
 
 //  Helper function. Get total price for the subset of collection
 function getPrice(collection) {

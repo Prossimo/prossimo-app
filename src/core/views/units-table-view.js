@@ -8,8 +8,8 @@ import hotRenderers from '../../hot-renderers';
 import App from '../../main';
 import UndoManager from '../../utils/undomanager';
 import Unit from '../models/unit';
+import Accessory from '../models/accessory';
 import UnitsTableTotalPricesView from '../../core/views/units-table-total-prices-view';
-import Accessory from '../../accessory';
 import {preview} from '../../components/drawing/module/drawing-module';
 import templates from '../../templates/core/units-table-view.hbs';
 

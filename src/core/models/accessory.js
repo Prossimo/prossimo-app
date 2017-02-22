@@ -1,7 +1,7 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
-import Schema from './schema';
-import App from './main';
+import Schema from '../../schema';
+import App from '../../main';
 
 const EXTRAS_TYPES = ['Regular', 'Shipping', 'Optional', 'Optional, %', 'Hidden', 'Tax'];
 const DEFAULT_EXTRAS_TYPE = 'Regular';

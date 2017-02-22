@@ -6,13 +6,13 @@ const config = require('./config');
 
 const version = config.get('version');
 const srcPath = config.get('app:srcPath');
+const assetsPath = config.get('app:assetsPath');
 const webLoaders = config.get('app:webLoaders');
 const distPath = config.get('dist:path');
 const isDebug = !config.get('release');
 const isVerbose = config.get('verbose');
-const sourcePath = config.get('app:sourcePath');
 
-const APP_ENTRY = [path.resolve(srcPath, 'main.js'), path.resolve(sourcePath, 'less/styles.less')];
+const APP_ENTRY = [path.resolve(srcPath, 'main.js'), path.resolve(srcPath, 'less/styles.less')];
 
 const cssLoader = `css-loader?${JSON.stringify({
     importLoaders: 1,
@@ -85,14 +85,7 @@ module.exports = {
                 test: /\.(woff|woff2|eot|ttf)$/,
                 loader: 'file-loader',
                 options: {
-                    name: isDebug ? 'font/[name].[ext]?[hash]' : 'font/[hash].[ext]'
-                }
-            },
-            {
-                test: /\.(wav|mp3)$/,
-                loader: 'file-loader',
-                options: {
-                    name: isDebug ? 'file/[name].[ext]?[hash]' : 'file/[hash].[ext]'
+                    name: isDebug ? 'fonts/[name].[ext]?[hash]' : 'fonts/[hash].[ext]'
                 }
             }
         ]
@@ -107,7 +100,7 @@ module.exports = {
             version: version,
             api_prefix: config.get('app:apiPrefix'),
             printer_prefix: config.get('app:printerPrefix'),
-            favicon: path.resolve(sourcePath, './img/favicon' + (isDebug ? '-dev' : '') + '.png'),
+            favicon: path.resolve(assetsPath, './img/favicon' + (isDebug ? '-dev' : '') + '.png'),
             filename: 'index.html',
             inject: 'body'
         }),
