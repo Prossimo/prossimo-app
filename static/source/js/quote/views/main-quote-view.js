@@ -19,19 +19,20 @@ var app = app || {};
         },
         onRender: function () {
             this.units_table_view = new app.UnitsTableView({
-                collection: app.current_project.units,
-                extras: app.current_project.extras,
+                collection: app.current_quote.units,
+                extras: app.current_quote.extras,
                 parent_view: this
             });
 
             this.quote_header_view = new app.QuoteHeaderView({
-                model: app.current_project
+                model: app.current_quote
             });
 
             this.quote_table_view = new app.QuoteTableView({
                 project: app.current_project,
-                collection: app.current_project.units,
-                extras: app.current_project.extras,
+                quote: app.current_quote,
+                collection: app.current_quote.units,
+                extras: app.current_quote.extras,
                 show_outside_units_view: true
             });
 

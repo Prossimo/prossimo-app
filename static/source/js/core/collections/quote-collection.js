@@ -27,6 +27,9 @@ var app = app || {};
         getTitles: function (names) {
             return this.proxy_quote.getTitles(names);
         },
+        getDefaultQuote: function () {
+            return this.findWhere({ is_default: true });
+        },
         initialize: function (models, options) {
             this.options = options || {};
             this.proxy_quote = new app.Quote(null, { proxy: true });

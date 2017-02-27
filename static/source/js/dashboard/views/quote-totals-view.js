@@ -7,9 +7,6 @@ var app = app || {};
         tagName: 'div',
         className: 'quote-total-prices',
         template: app.templates['dashboard/quote-totals-view'],
-        initialize: function () {
-            this.listenTo(app.current_project.settings, 'change', this.render);
-        },
         templateContext: function () {
             var total_prices = this.model ? this.model.getTotalPrices() : undefined;
             var total_area = this.model ? this.model.units.getTotalSquareFeet() : undefined;

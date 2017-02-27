@@ -5,6 +5,7 @@ var app = app || {};
 
     var UNSET_VALUE = '--';
 
+    //  TODO: also show quote id and allow to edit name for non-default
     app.QuoteInfoView = Marionette.View.extend({
         tagName: 'div',
         className: 'quote-info',
@@ -13,13 +14,11 @@ var app = app || {};
             $revision_container: '.quote-revision-container',
             $date_container: '.quote-date-container'
         },
-        //  TODO: quote data is not real
         templateContext: function () {
             return {
-                quote_name: 'Default Quote'
+                is_default: this.model.get('is_default'),
+                quote_name: this.model.get('is_default') ? 'Default Quote' : this.model.get('name')
             };
-
-            // return _.extend({}, this.model.toJSON(), {editMode: this.editMode});
         },
         onRender: function () {
             this.ui.$revision_container.append(this.revision_view.render().el);
@@ -37,12 +36,12 @@ var app = app || {};
         initialize: function () {
             this.revision_view = new app.BaseInputView({
                 model: this.model,
-                param: 'quote_revision'
+                param: 'revision'
             });
 
             this.date_view = new app.BaseDatepickerInputView({
                 model: this.model,
-                param: 'quote_date',
+                param: 'date',
                 placeholder: UNSET_VALUE
             });
         }

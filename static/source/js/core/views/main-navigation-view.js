@@ -43,7 +43,7 @@ var app = app || {};
                         var self = this;
 
                         this.router_callbacks[item.path] = function () {
-                            if ( app.current_project || item.path === 'settings' ) {
+                            if ( app.current_quote || item.path === 'settings' ) {
                                 item.onAttach.call();
                             } else {
                                 app.main_region.show(new app.NoProjectSelectedView());
@@ -66,7 +66,7 @@ var app = app || {};
 
             $('#main-nav-container').append( this.render().el );
 
-            this.listenTo(app.vent, 'project_selector:fetch_current:stop', this.reloadActiveScreen);
+            this.listenTo(app.vent, 'quote_selector:load_current:stop', this.reloadActiveScreen);
         },
         onRender: function () {
             //  Append each navigation item

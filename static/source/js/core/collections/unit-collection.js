@@ -22,8 +22,8 @@ var app = app || {};
                 this.profile = this.options.profile;
             }
 
-            //  When parent project is fully loaded, we validate unit positions
-            this.listenTo(this.options.project, 'fully_loaded', this.validatePositions);
+            //  When parent quote is fully loaded, we validate unit positions
+            this.listenTo(this.options.quote, 'fully_loaded', this.validatePositions);
         },
         getNameTitleTypeHash: function (names) {
             return this.proxy_unit.getNameTitleTypeHash(names);

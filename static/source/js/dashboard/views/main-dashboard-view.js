@@ -19,15 +19,15 @@ var app = app || {};
             });
 
             this.totals_view = new app.QuoteTotalsView({
-                model: app.current_project
+                model: app.current_quote
             });
 
             this.quote_info_view = new app.QuoteInfoView({
-                model: app.current_project
+                model: app.current_quote
             });
 
             this.documents_view = new app.ProjectDocumentsView({
-                model: app.current_project
+                collection: app.current_project.files
             });
         },
         onRender: function () {

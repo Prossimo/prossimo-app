@@ -43,7 +43,9 @@ var app = app || {};
             }
         },
         showEditQuotesDialog: function () {
-            app.dialogs.showDialog('edit-quotes');
+            app.dialogs.showDialog('edit-quotes', {
+                collection: app.current_project.quotes
+            });
         },
         showCreateProjectDialog: function () {
             app.dialogs.showDialog('createProject');

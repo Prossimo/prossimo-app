@@ -42,7 +42,7 @@ var app = app || {};
 
             this.showChildView('date', new app.BaseDatepickerInputView({
                 model: this.model,
-                param: 'quote_date'
+                param: 'date'
             }));
         }
     });

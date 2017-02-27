@@ -11,8 +11,6 @@ var app = app || {};
         { name: 'client_address', title: 'Client Address', type: 'string' },
         { name: 'project_name', title: 'Project Name', type: 'string' },
         { name: 'project_address', title: 'Project Address', type: 'string' },
-        { name: 'quote_date', title: 'Quote Date', type: 'string' },
-        { name: 'quote_revision', title: 'Quote Revision', type: 'number' },
         { name: 'shipping_notes', title: 'Shipping Notes', type: 'string'},
         { name: 'project_notes', title: 'Project Notes', type: 'string'},
         { name: 'lead_time', title: 'Lead Time', type: 'number' },
@@ -41,16 +39,8 @@ var app = app || {};
                 number: 0
             };
 
-            var name_value_hash = {
-                quote_revision: 1
-            };
-
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
                 default_value = type_value_hash[type];
-            }
-
-            if ( _.indexOf(_.keys(name_value_hash), name) !== -1 ) {
-                default_value = name_value_hash[name];
             }
 
             return default_value;
@@ -139,10 +129,9 @@ var app = app || {};
             this._wasLoaded = false;
 
             if ( !this.options.proxy ) {
-                this.units = new app.UnitCollection(null, { project: this });
-                this.extras = new app.AccessoryCollection(null, { project: this });
                 this.files = new app.ProjectFileCollection(null, { project: this });
                 this.settings = new app.ProjectSettings(null, { project: this });
+                this.quotes = new app.QuoteCollection(null, { project: this });
 
                 this.on('sync', this.setDependencies, this);
                 this.on('set_active', this.setDependencies, this);
@@ -159,16 +148,33 @@ var app = app || {};
                 return;
             }
 
+            //  TODO: get rid of this
             if ( this.get('units') ) {
-                this.units.set(this.get('units'), { parse: true });
+                this.quotes.set([
+                    {
+                        is_default: true,
+                        name: 'Default Quote',
+                        revision: 12,
+                        id: 222,
+                        units: this.get('units'),
+                        accessories: this.get('accessories')
+                    },
+                    {
+                        is_default: false,
+                        name: 'Alternative Quote',
+                        revision: 1,
+                        id: 11
+                    }
+                ], { parse: true });
+
                 this.unset('units', { silent: true });
-                changed_flag = true;
+                this.unset('accessories', { silent: true });
             }
 
-            if ( this.get('accessories') ) {
-                this.extras.set(this.get('accessories'), { parse: true });
-                this.extras.trigger('loaded');
-                this.unset('accessories', { silent: true });
+            if ( this.get('quotes') ) {
+                this.quotes.set(this.get('quotes'), { parse: true });
+                this.quotes.trigger('loaded');
+                this.unset('quotes', { silent: true });
                 changed_flag = true;
             }
 
@@ -238,101 +244,6 @@ var app = app || {};
             var name_title_hash = this.getNameTitleTypeHash(names);
 
             return _.pluck(name_title_hash, 'title');
-        },
-        getQuoteNumber: function () {
-            return this.isNew() ? '--' : this.id;
-        },
-        getSubtotalUnitsPrice: function () {
-            return this.units.getSubtotalPriceDiscounted();
-        },
-        getExtrasPrice: function () {
-            return this.extras.getRegularItemsPrice();
-        },
-        //  This is what we use as tax base. Subtotal price for units + extras,
-        //  but no shipping or optional extras
-        getSubtotalPrice: function () {
-            var subtotal_units_price = this.getSubtotalUnitsPrice();
-            var extras_price = this.extras.getRegularItemsPrice();
-
-            return subtotal_units_price + extras_price;
-        },
-        getTax: function () {
-            var total_tax_percent = this.extras.getTotalTaxPercent();
-            var subtotal = this.getSubtotalPrice();
-            var tax = (total_tax_percent / 100) * subtotal;
-
-            return tax;
-        },
-        getGrandTotal: function () {
-            var subtotal = this.getSubtotalPrice();
-            var shipping_price = this.extras.getShippingPrice();
-            var tax = this.getTax();
-
-            var grand_total = subtotal + shipping_price + tax;
-
-            return grand_total;
-        },
-        getSubtotalCost: function () {
-            var subtotal_units_cost = this.units.getSubtotalCostDiscounted();
-            var extras_cost = this.extras.getRegularItemsCost();
-
-            return subtotal_units_cost + extras_cost;
-        },
-        getTotalCost: function () {
-            var subtotal_units_cost = this.units.getSubtotalCostDiscounted();
-            var extras_cost = this.extras.getRegularItemsCost();
-            var shipping = this.extras.getShippingPrice();
-            var hidden = this.extras.getHiddenPrice();
-            var tax = this.getTax();
-
-            return subtotal_units_cost + extras_cost + shipping + hidden + tax;
-        },
-        getProfit: function () {
-            return {
-                gross_profit: this.getSubtotalPrice() - this.getSubtotalCost(),
-                net_profit: this.getGrandTotal() - this.getTotalCost()
-            };
-        },
-        getTotalPrices: function () {
-            var subtotal_units_price = this.getSubtotalUnitsPrice();
-            var extras_price = this.getExtrasPrice();
-            var optional_extras_price = this.extras.getOptionalItemsPrice();
-
-            var shipping_price = this.extras.getShippingPrice();
-            var total_tax_percent = this.extras.getTotalTaxPercent();
-
-            var subtotal = this.getSubtotalPrice();
-            var tax = this.getTax();
-            var grand_total = this.getGrandTotal();
-
-            var total_cost = this.getTotalCost();
-            var profit = this.getProfit();
-            var net_profit_percent = grand_total ? profit.net_profit / grand_total * 100 : 0;
-
-            //  TODO: this value should be customizable, not just 50% always,
-            //  when it'll be customizable, it should also be tested. Maybe it
-            //  could be a special type of accessory? Or just a project attr?
-            var deposit_percent = 50;
-            var deposit_on_contract = (deposit_percent / 100) * grand_total;
-            var balance_due_at_delivery = grand_total - deposit_on_contract;
-
-            return {
-                subtotal_units: subtotal_units_price,
-                subtotal_extras: extras_price,
-                subtotal_optional_extras: optional_extras_price,
-                subtotal: subtotal,
-                tax_percent: total_tax_percent,
-                tax: tax,
-                shipping: shipping_price,
-                grand_total: grand_total,
-                total_cost: total_cost,
-                gross_profit: profit.gross_profit,
-                net_profit: profit.net_profit,
-                net_profit_percent: net_profit_percent,
-                deposit_percent: deposit_percent,
-                deposit_on_contract: deposit_on_contract,
-                balance_due_at_delivery: balance_due_at_delivery
-            };
         }
     });
 })();

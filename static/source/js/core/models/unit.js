@@ -284,14 +284,14 @@ var app = app || {};
                 //  we have to re-validate our unit options
                 //  TODO: we want to do the same thing for filling types
                 this.listenTo(app.vent, 'validate_units:dictionaries', function () {
-                    if ( this.isParentProjectActive() ) {
+                    if ( this.isParentQuoteActive() ) {
                         this.validateUnitOptions();
                     }
                 });
 
-                //  Same as above, but when this unit's project becomes active
-                this.listenTo(app.vent, 'current_project_changed', function () {
-                    if ( this.isParentProjectActive() ) {
+                //  Same as above, but when this unit's quote becomes active
+                this.listenTo(app.vent, 'current_quote_changed', function () {
+                    if ( this.isParentQuoteActive() ) {
                         this.validateUnitOptions();
                     }
                 });
@@ -2295,11 +2295,11 @@ var app = app || {};
             }
         },
         //  Check if this unit belongs to the project which is currently active
-        isParentProjectActive: function () {
+        isParentQuoteActive: function () {
             var is_active = false;
 
-            if ( app.current_project && this.collection && this.collection.options.project &&
-                this.collection.options.project === app.current_project
+            if ( app.current_quote && this.collection && this.collection.options.quote &&
+                this.collection.options.quote === app.current_quote
             ) {
                 is_active = true;
             }
