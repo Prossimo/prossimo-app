@@ -1630,7 +1630,7 @@ var app = app || {};
             var sinkThroughGlass = function () {
                 handle.setAttrs({
                     doSinkThroughGlass: true,
-                    opacity: 0.5
+                    opacity: style.sunk.opacity
                 });
             };
 

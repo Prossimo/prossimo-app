@@ -1253,7 +1253,7 @@ var app = app || {};
             var sinkThroughGlass = function () {
                 handle.setAttrs({
                     doSinkThroughGlass: true,
-                    opacity: 0.5
+                    opacity: style.sunk.opacity
                 });
             };
             var isLeftHandle = (type === 'tilt_turn_right' || type === 'turn_only_right' ||
