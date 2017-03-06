@@ -1589,41 +1589,41 @@ var app = app || {};
                 rotation: 0
             };
             var positionLeft = function () {
-                pos.x = offset - app.handle_data.rotationCenter.y / 2;
+                pos.x = offset - app.handle_data.base.rotationCenter.x;
                 if (section.trapezoid && section.trapezoid.frame) {
                     pos.y = section.trapezoid.frame.outer[0].y
                         + ( section.trapezoid.frame.outer[3].y - section.trapezoid.frame.outer[0].y ) / 2
-                        + app.handle_data.rotationCenter.x * 3;
+                        - app.handle_data.base.rotationCenter.y;
                 } else {
                     pos.y = section.sashParams.height / 2
-                        + app.handle_data.rotationCenter.x * 3;
+                        - app.handle_data.base.rotationCenter.y;
                 }
                 pos.rotation = -90;
             };
             var positionRight = function () {
-                pos.x = section.sashParams.width - offset + app.handle_data.rotationCenter.y;
+                pos.x = section.sashParams.width - offset - app.handle_data.base.rotationCenter.x;
                 if (section.trapezoid && section.trapezoid.frame) {
                     pos.y = section.trapezoid.frame.outer[1].y
                         + ( section.trapezoid.frame.outer[2].y - section.trapezoid.frame.outer[1].y ) / 2
-                        + app.handle_data.rotationCenter.x;
+                        - app.handle_data.base.rotationCenter.y;
                 } else {
                     pos.y = section.sashParams.height / 2
-                        + app.handle_data.rotationCenter.x;
+                        - app.handle_data.base.rotationCenter.y;
                 }
                 pos.rotation = 90;
             };
             var positionRightTilt = function () {
-                pos.x = section.sashParams.width / 2 + app.handle_data.rotationCenter.y;
+                pos.x = section.sashParams.width / 2 - app.handle_data.base.rotationCenter.x;
                 if (section.trapezoid && section.trapezoid.frame) {
                     pos.y = Math.abs( section.trapezoid.frame.outer[0].y - section.trapezoid.frame.outer[1].y ) / 2
                         + offset
                         + (( section.trapezoid.frame.outer[0].y > section.trapezoid.frame.outer[1].y )
                             ? section.trapezoid.frame.outer[1].y
                             : section.trapezoid.frame.outer[0].y)
-                        + app.handle_data.rotationCenter.x;
+                        - app.handle_data.base.rotationCenter.y;
                 } else {
                     pos.y = offset
-                        + app.handle_data.rotationCenter.x;
+                        - app.handle_data.base.rotationCenter.y;
                 }
                 pos.rotation = 90;
             };
@@ -1658,27 +1658,51 @@ var app = app || {};
             // Create a group of 2 paths (stroke and backdrop) from SVG path data
             handle.setAttrs({
                 name: 'handle',
-                x: pos.x - 15,  // If created paths are offset, use Inkscape's Save as -> Optimized SVG
-                y: pos.y - 22,
-                rotation: pos.rotation,
+                x: pos.x,  // If created paths are offset,
+                y: pos.y,  // use Inkscape's Save as -> Optimized SVG
                 scale: {
                     x: 1,
                     y: 1
                 }
             });
-            var handleBg = new Konva.Path({
-                name: 'handleBg',
+            var handleBaseBg = new Konva.Path({
+                name: 'handleBaseBg',
                 fill: style.fill,
-                data: app.handle_data.fill
+                data: app.handle_data.base.fill
             });
-            var handleStroke = new Konva.Path({
-                name: 'handleStroke',
+            var handleBaseStroke = new Konva.Path({
+                name: 'handleBaseStroke',
                 stroke: style.stroke,
                 strokeWidth: 1,
-                data: app.handle_data.stroke
+                data: app.handle_data.base.stroke
+            });
+            var handleGripBg = new Konva.Path({
+                name: 'handleGripBg',
+                fill: style.fill,
+                data: app.handle_data.grip.fill,
+                x: app.handle_data.base.rotationCenter.x,
+                y: app.handle_data.base.rotationCenter.y,
+                rotation: pos.rotation,
+                offset: {
+                    x: app.handle_data.base.rotationCenter.x,
+                    y: app.handle_data.base.rotationCenter.y
+                }
+            });
+            var handleGripStroke = new Konva.Path({
+                name: 'handleGripStroke',
+                stroke: style.stroke,
+                strokeWidth: 1,
+                data: app.handle_data.grip.stroke,
+                x: app.handle_data.base.rotationCenter.x,
+                y: app.handle_data.base.rotationCenter.y,
+                rotation: pos.rotation,
+                offset: {
+                    x: app.handle_data.base.rotationCenter.x,
+                    y: app.handle_data.base.rotationCenter.y
+                }
             });
 
-            handle.add(handleBg, handleStroke);
+            handle.add(handleBaseBg, handleBaseStroke, handleGripBg, handleGripStroke);
 
             return handle;
         },
