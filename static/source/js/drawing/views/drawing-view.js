@@ -516,7 +516,10 @@ var app = app || {};
                 this.ui.$metrics_opening_input.prop('checked', selectedSash.measurements.opening );
                 this.ui.$metrics_glass.toggle(selectedSash.sections.length === 0);
                 this.ui.$metrics_opening.toggle(selectedSash.sashType !== 'fixed_in_frame');
-                this.ui.$metrics.toggle(this.ui.$metrics_glass.is(':visible') || this.ui.$metrics_opening.is(':visible'));
+                this.ui.$metrics.toggle(
+                    this.ui.$metrics_glass.is('[style!="display: none;"]') ||
+                    this.ui.$metrics_opening.is('[style!="display: none;"]')
+                );
             }
         },
 
