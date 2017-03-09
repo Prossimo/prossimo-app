@@ -1,7 +1,7 @@
 <div class="top-bar-container">
     <div class="project-selector-container"></div>
     <div class="create-project-container">
-        <a class="create-project-button">Create project</a>
+        <button class="btn btn-primary btn-sm create-new-project js-create-new-project">Create project</button>
     </div>
     <div class="project-settings-toggle-container">
         <button class="btn project-settings-toggle glyphicon glyphicon-cog{{#if is_settings_toggle_disabled }} disabled{{/if}}" title="Project Settings"></button>
@@ -12,7 +12,7 @@
 <div class="bottom-bar-container">
     <div class="quote-selector-container"></div>
     <div class="edit-quotes-container">
-        <btn class="btn btn-xs edit-quotes js-edit-quotes">Edit quotes</btn>
+        <btn class="btn btn-primary btn-xs edit-quotes js-edit-quotes{{#if is_settings_toggle_disabled }} disabled{{/if}}">Edit quotes</btn>
     </div>
     <div class="main-nav-container"></div>
 </div>

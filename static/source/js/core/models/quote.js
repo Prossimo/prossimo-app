@@ -7,7 +7,8 @@ var app = app || {};
         { name: 'name', title: 'Name', type: 'string' },
         { name: 'is_default', title: 'Is Default', type: 'boolean' },
         { name: 'date', title: 'Quote Date', type: 'string' },
-        { name: 'revision', title: 'Quote Revision', type: 'number' }
+        { name: 'revision', title: 'Quote Revision', type: 'number' },
+        { name: 'position', title: 'Position', type: 'number' }
     ];
 
     app.Quote = Backbone.Model.extend({
@@ -29,7 +30,8 @@ var app = app || {};
             };
 
             var name_value_hash = {
-                revision: 1
+                revision: 1,
+                is_default: false
             };
 
             if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
@@ -44,6 +46,12 @@ var app = app || {};
         },
         getNameAttribute: function () {
             return 'name';
+        },
+        getAttributeType: function (attribute_name) {
+            var name_title_hash = this.getNameTitleTypeHash();
+            var target_attribute = _.findWhere(name_title_hash, {name: attribute_name});
+
+            return target_attribute ? target_attribute.type : undefined;
         },
         sync: function (method, model, options) {
             if ( method === 'create' || method === 'update' ) {
@@ -67,7 +75,7 @@ var app = app || {};
             return filtered_data;
         },
         toJSON: function () {
-            var properties_to_omit = ['id'];
+            var properties_to_omit = ['id', 'is_default'];
             var json = Backbone.Model.prototype.toJSON.apply(this, arguments);
 
             return _.omit(json, properties_to_omit);
@@ -219,6 +227,9 @@ var app = app || {};
                 balance_due_at_delivery: balance_due_at_delivery
             };
         },
+        getName: function () {
+            return this.get('is_default') ? 'Default Quote' : this.get('name');
+        },
         setDependencies: function () {
             var changed_flag = false;
 
@@ -242,6 +253,38 @@ var app = app || {};
             if ( !this._wasLoaded ) {
                 this._wasLoaded = true;
                 this.trigger('fully_loaded');
+            }
+        },
+        validate: function (attributes, options) {
+            var error_obj = null;
+
+            //  Simple type validation for numbers and booleans
+            _.find(attributes, function (value, key) {
+                var attribute_obj = this.getNameTitleTypeHash([key]);
+
+                attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
+
+                if ( attribute_obj && attribute_obj.type === 'number' &&
+                    (!_.isNumber(value) || _.isNaN(value))
+                ) {
+                    error_obj = {
+                        attribute_name: key,
+                        error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a number'
+                    };
+
+                    return false;
+                } else if ( attribute_obj && attribute_obj.type === 'boolean' && !_.isBoolean(value) ) {
+                    error_obj = {
+                        attribute_name: key,
+                        error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a boolean'
+                    };
+
+                    return false;
+                }
+            }, this);
+
+            if ( options.validate && error_obj ) {
+                return error_obj;
             }
         },
         initialize: function (attributes, options) {

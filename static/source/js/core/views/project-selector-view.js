@@ -11,8 +11,7 @@ var app = app || {};
             $select: '.selectpicker'
         },
         events: {
-            'change @ui.$select': 'onChange',
-            'click .js-add-new-local-project': 'onAddNewLocalProject'
+            'change @ui.$select': 'onChange'
         },
         initialize: function () {
             this.listenTo(this.collection, 'all', this.render);
@@ -59,15 +58,6 @@ var app = app || {};
 
             this.setCurrentProject(new_id);
             this.storeLastProject(new_id);
-        },
-        onAddNewLocalProject: function () {
-            var new_id = this.collection.length + 1;
-
-            this.collection.add({
-                id: new_id,
-                project_name: 'Local Project #' + new_id,
-                no_backend: true
-            });
         },
         //  On project change we check if project with this id was already
         //  fetched from the server (which means it already has units, files

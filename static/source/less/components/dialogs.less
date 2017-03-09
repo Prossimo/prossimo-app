@@ -96,6 +96,28 @@
         table-layout: fixed;
     }
 
+    th.entry-drag,
+    td.entry-drag {
+        width: 5%;
+    }
+
+    td.entry-drag {
+        opacity: 0;
+        border-color: transparent;
+        border-right-color: darken(@white, 30%);
+        padding: 0;
+        text-align: center;
+        color: darken(@white, 55%);
+        cursor: move;
+        cursor: -webkit-grabbing;
+        font-size: 1em;
+        vertical-align: middle;
+    }
+
+    td.entry-drag span {
+        pointer-events: none;
+    }
+
     th.name,
     td.name {
         padding: 3px;
@@ -110,5 +132,16 @@
     td.date {
         padding: 3px;
         width: 22%;
+    }
+
+    tr:hover {
+        td.entry-drag {
+            background-color: darken(@white, 5%);
+            opacity: 1;
+        }
+    }
+
+    tr.sortable-ghost {
+        opacity: 0.3;
     }
 }

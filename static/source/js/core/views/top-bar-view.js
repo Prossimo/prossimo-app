@@ -10,7 +10,7 @@ var app = app || {};
         ui: {
             $container: '.top-bar-container',
             $project_selector_container: '.project-selector-container',
-            $create_project_button: '.create-project-button',
+            $create_project_button: '.js-create-new-project',
             $status_panel_container: '.status-panel-container',
             $settings_toggle: '.project-settings-toggle',
             $spinner_container: '.spinner-container',
@@ -38,31 +38,35 @@ var app = app || {};
             this.listenTo(app.vent, 'project_selector:fetch_current:stop', this.onCurrentProjectLoaded);
         },
         onSettingsToggle: function () {
-            if ( !this.isToggleDisabled() ) {
+            if ( this.isProjectSelected() ) {
                 this.$el.toggleClass('is-project-settings-panel-open');
             }
         },
         showEditQuotesDialog: function () {
-            app.dialogs.showDialog('edit-quotes', {
-                collection: app.current_project.quotes
-            });
+            if ( this.isProjectSelected() ) {
+                app.dialogs.showDialog('edit-quotes', {
+                    collection: app.current_project.quotes
+                });
+            }
         },
         showCreateProjectDialog: function () {
             app.dialogs.showDialog('createProject');
         },
         onCurrentProjectLoaded: function () {
-            if ( !this.isToggleDisabled() ) {
+            if ( this.isProjectSelected() ) {
                 this.ui.$settings_toggle.removeClass('disabled');
+                this.ui.$edit_quotes.removeClass('disabled');
             }
 
             this.$el.removeClass('is-project-settings-panel-open');
         },
-        isToggleDisabled: function () {
-            return !app.settings.getProjectSettings();
+        isProjectSelected: function () {
+            return app.current_project !== undefined;
         },
         templateContext: function () {
             return {
-                is_settings_toggle_disabled: this.isToggleDisabled()
+                is_settings_toggle_disabled: !this.isProjectSelected(),
+                is_edit_quotes_disabled: !this.isProjectSelected()
             };
         },
         onRender: function () {

@@ -21,7 +21,12 @@ var app = app || {};
         },
         templateContext: function () {
             return {
-                is_removable: this.model.get('is_default') !== true
+                name: this.model.getName(),
+                date: this.model.get('date'),
+                is_removable: this.model.get('is_default') !== true,
+                units: this.model.units.getTotalUnitTypes() + ' / ' +
+                    this.model.units.getTotalUnitQuantity(),
+                grand_total: app.utils.format.price_usd(this.model.getTotalPrices().grand_total)
             };
         },
         regions: {

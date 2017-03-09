@@ -10,9 +10,11 @@ var app = app || {};
             'click .js-add-new-quote': 'addNewQuote'
         },
         addNewQuote: function () {
-            var new_quote = new app.Quote();
+            var make_default = this.collection.length === 0;
 
-            this.collection.add(new_quote);
+            this.collection.create({
+                is_default: make_default
+            });
         },
         templateContext: function () {
             return {

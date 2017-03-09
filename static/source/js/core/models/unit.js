@@ -239,7 +239,7 @@ var app = app || {};
         },
         sync: function (method, model, options) {
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { project_unit: model.toJSON() };
+                options.attrs = { unit: model.toJSON() };
             }
 
             return Backbone.sync.call(this, method, model, options);

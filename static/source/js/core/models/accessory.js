@@ -65,7 +65,7 @@ var app = app || {};
             var properties_to_omit = ['id'];
 
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { project_accessory: _.omit(model.toJSON(), properties_to_omit) };
+                options.attrs = { accessory: _.omit(model.toJSON(), properties_to_omit) };
             }
 
             return Backbone.sync.call(this, method, model, options);

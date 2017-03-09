@@ -19,11 +19,13 @@ var app = app || {};
         reorder_property_name: 'accessories',
         url: function () {
             return app.settings.get('api_base_path') +
-                '/projects/' + this.options.project.get('id') + '/accessories';
+                '/projects/' + this.options.project.get('id') +
+                '/quotes/' + this.options.quote.get('id') + '/accessories';
         },
         reorder_url: function () {
             return app.settings.get('api_base_path') +
-                '/projects/' + this.options.project.get('id') + '/reorder_accessories';
+                '/projects/' + this.options.project.get('id') +
+                '/quotes/' + this.options.quote.get('id') + '/reorder_accessories';
         },
         initialize: function (models, options) {
             this.options = options || {};

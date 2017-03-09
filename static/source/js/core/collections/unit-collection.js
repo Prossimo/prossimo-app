@@ -8,11 +8,13 @@ var app = app || {};
         reorder_property_name: 'units',
         url: function () {
             return app.settings.get('api_base_path') +
-                '/projects/' + this.options.project.get('id') + '/units';
+                '/projects/' + this.options.project.get('id') +
+                '/quotes/' + this.options.quote.get('id') + '/units';
         },
         reorder_url: function () {
             return app.settings.get('api_base_path') +
-                '/projects/' + this.options.project.get('id') + '/reorder_units';
+                '/projects/' + this.options.project.get('id') +
+                '/quotes/' + this.options.quote.get('id') + '/reorder_units';
         },
         initialize: function (models, options) {
             this.options = options || {};

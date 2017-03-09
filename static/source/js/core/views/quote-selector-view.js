@@ -55,7 +55,7 @@ var app = app || {};
                     return {
                         is_selected: app.current_quote && item.id === app.current_quote.id,
                         id: item.id,
-                        quote_name: item.get('is_default') ? 'Default Quote' : item.get('name')
+                        quote_name: item.getName()
                     };
                 }) : []
             };
@@ -70,9 +70,12 @@ var app = app || {};
                 this.collection = app.current_project.quotes;
                 this.listenTo(this.collection, 'all', this.render);
 
+                var first_quote = this.collection.at(0);
                 var default_quote = this.collection.getDefaultQuote();
 
-                if ( default_quote && default_quote.id ) {
+                if ( first_quote && first_quote.id ) {
+                    this.setCurrentQuote(first_quote.id);
+                } else if ( default_quote && default_quote.id ) {
                     this.setCurrentQuote(default_quote.id);
                 }
 

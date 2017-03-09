@@ -45,6 +45,15 @@ var app = app || {};
 
             return default_value;
         },
+        getNameAttribute: function () {
+            return 'project_name';
+        },
+        getAttributeType: function (attribute_name) {
+            var name_title_hash = this.getNameTitleTypeHash();
+            var target_attribute = _.findWhere(name_title_hash, {name: attribute_name});
+
+            return target_attribute ? target_attribute.type : undefined;
+        },
         sync: function (method, model, options) {
             var properties_to_omit = ['id'];
 
@@ -105,12 +114,8 @@ var app = app || {};
                 filtered_data.files = project_data.files;
             }
 
-            if ( project_data && project_data.accessories ) {
-                filtered_data.accessories = project_data.accessories;
-            }
-
-            if ( project_data && project_data.units ) {
-                filtered_data.units = project_data.units;
+            if ( project_data && project_data.quotes ) {
+                filtered_data.quotes = project_data.quotes;
             }
 
             return filtered_data;
@@ -124,7 +129,7 @@ var app = app || {};
             //  to tell whether we need to request data from server
             this._wasFetched = false;
             //  Was it fully loaded already? This means it was fetched and all
-            //  dependencies (units etc.) were processed correctly. This flag
+            //  dependencies (files etc.) were processed correctly. This flag
             //  could be used to tell if it's good to render any views
             this._wasLoaded = false;
 
@@ -146,29 +151,6 @@ var app = app || {};
                 options && options.xhr && options.xhr.status && options.xhr.status !== 200
             ) {
                 return;
-            }
-
-            //  TODO: get rid of this
-            if ( this.get('units') ) {
-                this.quotes.set([
-                    {
-                        is_default: true,
-                        name: 'Default Quote',
-                        revision: 12,
-                        id: 222,
-                        units: this.get('units'),
-                        accessories: this.get('accessories')
-                    },
-                    {
-                        is_default: false,
-                        name: 'Alternative Quote',
-                        revision: 1,
-                        id: 11
-                    }
-                ], { parse: true });
-
-                this.unset('units', { silent: true });
-                this.unset('accessories', { silent: true });
             }
 
             if ( this.get('quotes') ) {

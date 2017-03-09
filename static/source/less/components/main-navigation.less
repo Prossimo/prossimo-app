@@ -16,20 +16,21 @@
     }
 
     li a {
-        padding: 0.3em 1em;
-        color: darken(@white, 20%);
+        padding: 0.2em 0.8em 0.3em;
+        color: lighten(@black, 30%);
+        background-color: darken(@white, 40%);
 
         &:hover,
         &:active,
         &:focus {
-            background-color: lighten(@black, 30%);
-            color: darken(@white, 25%);
+            background-color: darken(@white, 20%);
             outline: none;
         }
     }
 
     li.active a {
-        background-color: lighten(@black, 20%);
+        background-color: darken(@white, 5%);
+        color: lighten(@black, 20%);
     }
 
     span {

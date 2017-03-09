@@ -1,14 +1,17 @@
+<td class="entry-drag">
+    <span class="glyphicon glyphicon-move"></span>
+</td>
 <td class="name">
     <p>{{ name }}</p>
 </td>
 <td class="date">
-    <p>{{ quote_date }}</p>
+    <p>{{ date }}</p>
 </td>
 <td class="units" title="Unit Types / Number of Units">
-    6 / 7
+    {{ units }}
 </td>
 <td class="grand-total">
-    $6,949.61
+    {{ grand_total }}
 </td>
 <td class="actions">
     <button class="btn btn-xs clone-quote js-clone-quote" title="Clone quote">
