@@ -37,11 +37,11 @@ var app = app || {};
             this.collection.fetch({
                 remove: false,
                 success: function () {
-                    self.loadLastProject();
+                    self.loadByHashOrLastProject();
                     app.vent.trigger('project_selector:fetch_list:stop');
                 },
                 error: function () {
-                    self.loadLastProject();
+                    self.loadByHashOrLastProject();
                     app.vent.trigger('project_selector:fetch_list:stop');
                 },
                 data: {
@@ -50,11 +50,10 @@ var app = app || {};
             });
         },
         onNoBackend: function () {
-            this.loadLastProject();
+            this.loadByHashOrLastProject();
         },
         onChange: function () {
-            var hash = (window.location.hash) ? parseInt(window.location.hash.substr(1), 10) : false;
-            var new_id = hash || this.ui.$select.val();
+            var new_id = this.ui.$select.val();
 
             this.setCurrentProject(new_id);
             this.storeLastProject(new_id);
@@ -115,9 +114,15 @@ var app = app || {};
                 window.localStorage.setItem('app_currentProject', new_id);
             }
         },
-        loadLastProject: function () {
+        loadByHashOrLastProject: function () {
+            var hash_parts = (window.location.hash) ? window.location.hash.substr(1).split('/') : false;
+            var hash_project_id = hash_parts && hash_parts.length ? parseInt(hash_parts[0], 10) : false;
+
+            //  If there is something in hash, load this project
+            if ( hash_project_id ) {
+                this.ui.$select.val(hash_project_id).trigger('change');
             // Get selected project from a localStorage
-            if ( 'localStorage' in window && 'getItem' in window.localStorage ) {
+            } else if ( 'localStorage' in window && 'getItem' in window.localStorage ) {
                 var last_id = window.localStorage.getItem('app_currentProject');
 
                 this.ui.$select.val(last_id).trigger('change');

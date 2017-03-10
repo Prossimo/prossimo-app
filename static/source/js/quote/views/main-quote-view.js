@@ -25,7 +25,8 @@ var app = app || {};
             });
 
             this.quote_header_view = new app.QuoteHeaderView({
-                model: app.current_quote
+                model: app.current_project,
+                quote: app.current_quote
             });
 
             this.quote_table_view = new app.QuoteTableView({

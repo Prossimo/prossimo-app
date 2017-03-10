@@ -63,11 +63,15 @@ var app = app || {};
             quote_type = _.contains(['quote', 'supplier'], quote_type) ? quote_type : 'quote';
 
             var base_url = this.get('pdf_api_base_path');
-            var url = '/:type/:id/:name/:revision/:token';
+            var url = '/:type/:project_id/:project_name/:quote_id/:quote_name/:revision/:token';
             var replacement_table = {
                 ':type': quote_type,
-                ':id': app.current_project.id,
-                ':name': encodeURIComponent(app.current_project.get('project_name')),
+                ':project_id': app.current_project.id,
+                ':project_name': encodeURIComponent(app.current_project.get('project_name')),
+                ':quote_id': app.current_quote.id,
+                ':quote_name': encodeURIComponent(
+                    app.current_quote.get('is_default') ? '' : app.current_quote.get('name')
+                ),
                 ':revision': String(app.current_quote.get('revision')),
                 ':token': window.localStorage.getItem('authToken')
             };
