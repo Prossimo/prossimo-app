@@ -1261,6 +1261,12 @@ var app = app || {};
                 rootSection.mullionParams = mullionAttrs;
             }
 
+            // Vars for use in the following map callback
+            var parentHasFrame = hasFrame;
+            var isParentFirst = openingParams.isFirst;
+            var isParentVertical = openingParams.isVertical;
+            var isParentHorizontal = openingParams.isHorizontal;
+
             rootSection.sections = _.map(rootSection.sections, function (sectionData, i) {
                 var sectionParams = {
                     x: null, y: null, width: null, height: null
@@ -1270,43 +1276,83 @@ var app = app || {};
                 sectionData.thresholdEdge = rootSection.thresholdEdge;
                 sectionData.parentId = rootSection.id;
 
-                // Correction params. Needed for sections in operable sash
+                // Calculate position & size corrections due to sash frame width and offset for hinges
                 var corr = -1 * (this.profile.get('sash_frame_width') - this.profile.get('sash_frame_overlap'));
-                var correction = {
-                    x: 0,
-                    y: 0,
-                    width: 0,
-                    height: 0
-                };
+                var correction = { x: 0, y: 0, width: 0, height: 0 };
+                var isVertical = rootSection.divider === 'vertical' ||
+                                 rootSection.divider === 'vertical_invisible';
+                var isHorizontal = rootSection.divider === 'horizontal' ||
+                                   rootSection.divider === 'horizontal_invisible';
+                var isFirst = i === 0;
 
-                // Calculate correction params
-                if (rootSection.sashType !== 'fixed_in_frame') {
-                    if (rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible') {
-                        // correction for vertical sections
-                        if (i === 0) {
-                            correction.x = -1 * corr;
-                        }
-
+                // Framed vertical parent, vertical section
+                if (parentHasFrame && isParentVertical && isVertical) {
+                    if (isParentFirst && isFirst) {  // Left section
+                        correction.x = -1 * corr;
                         correction.y = -1 * corr;
                         correction.width = corr;
-                        correction.height = corr * 2;
-                    } else {
-                        // correction for horizontal sections
-                        if (i === 0) {
-                            correction.y = -1 * corr;
-                        }
+                        correction.height = 2 * corr;
+                    } else if (isParentFirst && !isFirst) {  // Second section
+                        correction.x = 0;
+                        correction.y = -1 * corr;
+                        correction.width = 1.5 * corr;
+                        correction.height = 2 * corr;
+                    } else if (!isParentFirst && isFirst) {  // Third section
+                        correction.x = -1.5 * corr;
+                        correction.y = -1 * corr;
+                        correction.width = 1.5 * corr;
+                        correction.height = 2 * corr;
+                    } else if (!isParentFirst && !isFirst) {  // Right section
+                        correction.x = 0;
+                        correction.y = -1 * corr;
+                        correction.width = corr;
+                        correction.height = 2 * corr;
+                    }
 
+                // Framed vertical parent, horizontal section
+                } else if (parentHasFrame && isParentVertical && isHorizontal) {
+                    correction.x = (isParentFirst) ? -1 * corr : -1.5 * corr;
+                    correction.y = (isFirst) ? -1 * corr : 0;
+                    correction.width = 2.5 * corr;
+                    correction.height = corr;
+
+                // Framed horizontal parent, vertical section
+                } else if (parentHasFrame && isParentHorizontal && isVertical) {
+                    correction.x = (isFirst) ? -1 * corr : 0;
+                    correction.y = (isParentFirst) ? -1 * corr : -1.5 * corr;
+                    correction.width = corr;
+                    correction.height = 2.5 * corr;
+
+                // Framed horizontal parent, horizontal section
+                } else if (parentHasFrame && isParentHorizontal && isHorizontal) {
+                    if (isParentFirst && isFirst) {  // Top section
                         correction.x = -1 * corr;
-                        correction.width = corr * 2;
+                        correction.y = -1 * corr;
+                        correction.width = 2 * corr;
+                        correction.height = corr;
+                    } else if (isParentFirst && !isFirst) {  // Second section
+                        correction.x = -1 * corr;
+                        correction.y = 0;
+                        correction.width = 2 * corr;
+                        correction.height = 1.5 * corr;
+                    } else if (!isParentFirst && isFirst) {  // Third section
+                        correction.x = -1 * corr;
+                        correction.y = -1.5 * corr;
+                        correction.width = 2 * corr;
+                        correction.height = 1.5 * corr;
+                    } else if (!isParentFirst && !isFirst) {  // Bottom section
+                        correction.x = -1 * corr;
+                        correction.y = 0;
+                        correction.width = 2 * corr;
                         correction.height = corr;
                     }
                 }
 
-                if (rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible') {
+                if (isVertical) {
                     sectionParams.x = openingParams.x;
                     sectionParams.y = openingParams.y;
 
-                    if (i === 0) {
+                    if (isFirst) {
                         sectionParams.width = position - rootSection.openingParams.x -
                             this.profile.get('mullion_width') / 2;
                         sectionData.mullionEdges.right = rootSection.divider;
@@ -1323,7 +1369,7 @@ var app = app || {};
                     sectionParams.y = openingParams.y;
                     sectionParams.width = openingParams.width;
 
-                    if (i === 0) {
+                    if (isFirst) {
                         sectionData.mullionEdges.bottom = rootSection.divider;
                         sectionParams.height = position - rootSection.openingParams.y -
                             this.profile.get('mullion_width') / 2;
@@ -1341,6 +1387,9 @@ var app = app || {};
                 sectionParams.y += correction.y;
                 sectionParams.width += correction.width;
                 sectionParams.height += correction.height;
+                sectionParams.isFirst = isFirst;
+                sectionParams.isVertical = isVertical;
+                sectionParams.isHorizontal = isHorizontal;
 
                 return this.generateFullRoot(sectionData, sectionParams);
             }.bind(this));

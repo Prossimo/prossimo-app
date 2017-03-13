@@ -748,12 +748,12 @@ test('Total daylight calculations for sections of an operable sash', function ()
     sash_list = unit.getSashList();
 
     //  Top section
-    equal(sash_list[0].sections[0].filling.width.toFixed(), 2355, 'Top section glazing width');
-    equal(sash_list[0].sections[0].filling.height.toFixed(), 852, 'Top section glazing height');
+    equal(sash_list[0].sections[0].filling.width.toFixed(), 2451, 'Top section glazing width');
+    equal(sash_list[0].sections[0].filling.height.toFixed(), 900, 'Top section glazing height');
 
     //  Bottom section (is identical to the top one)
-    equal(sash_list[0].sections[1].filling.width.toFixed(), 2355, 'Bottom section glazing width');
-    equal(sash_list[0].sections[1].filling.height.toFixed(), 852, 'Bottom section glazing height');
+    equal(sash_list[0].sections[1].filling.width.toFixed(), 2451, 'Bottom section glazing width');
+    equal(sash_list[0].sections[1].filling.height.toFixed(), 900, 'Bottom section glazing height');
 });
 
 test('hasGlazingBars function', function () {
