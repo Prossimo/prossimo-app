@@ -305,7 +305,12 @@ var app = app || {};
                     var profile_id = this.profile && this.profile.id;
                     var glazing_name = this.get('glazing');
 
-                    this.set('root_section', getSectionDefaults('root_section', glazing_name, profile_id));
+                    if (
+                        JSON.stringify(_.omit(this.getDefaultValue('root_section'), 'id')) ===
+                        JSON.stringify(_.omit(this.get('root_section'), 'id'))
+                    ) {
+                        this.set('root_section', getSectionDefaults('root_section', glazing_name, profile_id));
+                    }
                 }
 
                 this.listenTo(this.get('unit_options'), 'change update reset', function () {
