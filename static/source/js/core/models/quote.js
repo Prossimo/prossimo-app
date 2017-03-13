@@ -303,9 +303,14 @@ var app = app || {};
                     quote: this,
                     project: this.collection && this.collection.options.project
                 });
-            }
 
-            this.on('set_active', this.setDependencies, this);
+                this.on('sync', this.setDependencies, this);
+                this.on('set_active', this.setDependencies, this);
+
+                if ( this.collection && this.collection.options.project ) {
+                    this.listenTo(this.collection.options.project, 'fully_loaded', this.setDependencies);
+                }
+            }
         }
     });
 })();

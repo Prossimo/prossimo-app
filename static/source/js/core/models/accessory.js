@@ -62,13 +62,17 @@ var app = app || {};
             return default_value;
         },
         sync: function (method, model, options) {
-            var properties_to_omit = ['id'];
-
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { accessory: _.omit(model.toJSON(), properties_to_omit) };
+                options.attrs = { accessory: model.toJSON() };
             }
 
             return Backbone.sync.call(this, method, model, options);
+        },
+        toJSON: function () {
+            var properties_to_omit = ['id'];
+            var json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+
+            return _.omit(json, properties_to_omit);
         },
         parse: function (data) {
             var accessory_data = data && data.accessory ? data.accessory : data;

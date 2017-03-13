@@ -38,6 +38,10 @@ var app = app || {};
                 }, this);
             }
 
+            this.listenTo(app.current_quote, 'remove', function () {
+                this.selectFirstOrDefaultQuote();
+            });
+
             this.render();
         },
         onRender: function () {
@@ -60,6 +64,16 @@ var app = app || {};
                 }) : []
             };
         },
+        selectFirstOrDefaultQuote: function () {
+            var first_quote = this.collection.at(0);
+            var default_quote = this.collection.getDefaultQuote();
+
+            if ( first_quote && first_quote.id ) {
+                this.setCurrentQuote(first_quote.id);
+            } else if ( default_quote && default_quote.id ) {
+                this.setCurrentQuote(default_quote.id);
+            }
+        },
         //  When project was changed, we want to select a default quote
         onCurrentProjectLoaded: function () {
             if ( this.collection ) {
@@ -74,18 +88,11 @@ var app = app || {};
                 var hash_parts = (window.location.hash) ? window.location.hash.substr(1).split('/') : false;
                 var hash_quote_id = hash_parts && hash_parts.length > 1 ? parseInt(hash_parts[1], 10) : false;
 
-                var first_quote = this.collection.at(0);
-                var default_quote = this.collection.getDefaultQuote();
-
                 if ( hash_quote_id ) {
                     this.setCurrentQuote(hash_quote_id);
-                } else if ( first_quote && first_quote.id ) {
-                    this.setCurrentQuote(first_quote.id);
-                } else if ( default_quote && default_quote.id ) {
-                    this.setCurrentQuote(default_quote.id);
+                } else {
+                    this.selectFirstOrDefaultQuote();
                 }
-
-                this.render();
             }
         },
         initialize: function () {

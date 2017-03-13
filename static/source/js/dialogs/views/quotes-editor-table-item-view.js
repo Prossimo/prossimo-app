@@ -13,7 +13,11 @@ var app = app || {};
         },
         cloneQuote: function () {
             this.model.duplicate({
-                attributes_to_omit: ['is_default']
+                attributes_to_omit: ['is_default'],
+                extra_attributes: {
+                    units: this.model.units.toJSON(),
+                    accessories: this.model.extras.toJSON()
+                }
             });
         },
         removeQuote: function () {
@@ -49,6 +53,9 @@ var app = app || {};
                 model: this.model,
                 param: 'date'
             }));
+        },
+        initialize: function () {
+            this.listenTo(this.model, 'fully_loaded', this.render);
         }
     });
 })();
