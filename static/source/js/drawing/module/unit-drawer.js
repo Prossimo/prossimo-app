@@ -1264,7 +1264,7 @@ var app = app || {};
                     type === 'slide_right' || type === 'tilt_slide_right');
             var isTiltSection = (type === 'tilt_only');
 
-            if (isInsideView) {
+            if (isInsideView || (isOutsideView && model.profile.hasOutsideHandle())) {
 
                 if (isLeftHandle) { positionLeft(); }
                 else if (isRightHandle) { positionRight(); }
