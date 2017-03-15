@@ -282,7 +282,10 @@ var app = app || {};
                 },
                 handle: {
                     fill: 'white',
-                    stroke: 'black'
+                    stroke: 'black',
+                    sunk: {
+                        opacity: 0.75
+                    }
                 },
                 direction_line: {
                     stroke: 'black'
