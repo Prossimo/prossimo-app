@@ -518,14 +518,16 @@ var app = app || {};
                     // Set first subsection dimension
                     } else if (isVertical && isInside && isKeyLeft ||
                                isVertical && isOutside && isKeyRight ||
+                               isVertical && isInside && isKeyEnter ||
                                isHorizontal && isKeyUp ||
-                               isKeyEnter) {
+                               isHorizontal && isKeyEnter) {
                         model.setSectionMullionPosition(mullionId, newValueMm);
                         closeWrap();
 
                     // Set second subsection dimension
                     } else if (isVertical && isInside && isKeyRight ||
                                isVertical && isOutside && isKeyLeft ||
+                               isVertical && isOutside && isKeyEnter ||
                                isHorizontal && isKeyDown) {
                         var containerDimension = (isVertical) ? model.getSizes().frame.width :
                                                                 model.getSizes().frame.height;
