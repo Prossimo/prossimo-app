@@ -1285,67 +1285,25 @@ var app = app || {};
                                    rootSection.divider === 'horizontal_invisible';
                 var isFirst = i === 0;
 
-                // Framed vertical parent, vertical section
-                if (parentHasFrame && isParentVertical && isVertical) {
-                    if (isParentFirst && isFirst) {  // Left section
+                // Calculate correction params
+                if (parentHasFrame && isVertical) {
+                    // correction for vertical sections
+                    if (isFirst) {
                         correction.x = -1 * corr;
-                        correction.y = -1 * corr;
-                        correction.width = corr;
-                        correction.height = 2 * corr;
-                    } else if (isParentFirst && !isFirst) {  // Second section
-                        correction.x = 0;
-                        correction.y = -1 * corr;
-                        correction.width = 1.5 * corr;
-                        correction.height = 2 * corr;
-                    } else if (!isParentFirst && isFirst) {  // Third section
-                        correction.x = -1.5 * corr;
-                        correction.y = -1 * corr;
-                        correction.width = 1.5 * corr;
-                        correction.height = 2 * corr;
-                    } else if (!isParentFirst && !isFirst) {  // Right section
-                        correction.x = 0;
-                        correction.y = -1 * corr;
-                        correction.width = corr;
-                        correction.height = 2 * corr;
                     }
 
-                // Framed vertical parent, horizontal section
-                } else if (parentHasFrame && isParentVertical && isHorizontal) {
-                    correction.x = (isParentFirst) ? -1 * corr : -1.5 * corr;
-                    correction.y = (isFirst) ? -1 * corr : 0;
-                    correction.width = 2.5 * corr;
-                    correction.height = corr;
-
-                // Framed horizontal parent, vertical section
-                } else if (parentHasFrame && isParentHorizontal && isVertical) {
-                    correction.x = (isFirst) ? -1 * corr : 0;
-                    correction.y = (isParentFirst) ? -1 * corr : -1.5 * corr;
+                    correction.y = -1 * corr;
                     correction.width = corr;
-                    correction.height = 2.5 * corr;
-
-                // Framed horizontal parent, horizontal section
-                } else if (parentHasFrame && isParentHorizontal && isHorizontal) {
-                    if (isParentFirst && isFirst) {  // Top section
-                        correction.x = -1 * corr;
+                    correction.height = corr * 2;
+                } else if (parentHasFrame && isHorizontal) {
+                    // correction for horizontal sections
+                    if (isFirst) {
                         correction.y = -1 * corr;
-                        correction.width = 2 * corr;
-                        correction.height = corr;
-                    } else if (isParentFirst && !isFirst) {  // Second section
-                        correction.x = -1 * corr;
-                        correction.y = 0;
-                        correction.width = 2 * corr;
-                        correction.height = 1.5 * corr;
-                    } else if (!isParentFirst && isFirst) {  // Third section
-                        correction.x = -1 * corr;
-                        correction.y = -1.5 * corr;
-                        correction.width = 2 * corr;
-                        correction.height = 1.5 * corr;
-                    } else if (!isParentFirst && !isFirst) {  // Bottom section
-                        correction.x = -1 * corr;
-                        correction.y = 0;
-                        correction.width = 2 * corr;
-                        correction.height = corr;
                     }
+
+                    correction.x = -1 * corr;
+                    correction.width = corr * 2;
+                    correction.height = corr;
                 }
 
                 if (isVertical) {
