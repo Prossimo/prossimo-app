@@ -723,6 +723,113 @@ var app = app || {};
         getSquareFeetPriceDiscounted: function () {
             return this.getTotalSquareFeet() ? this.getSubtotalPriceDiscounted() / this.getTotalSquareFeet() : 0;
         },
+        preparePricingDataForExport: function (options) {
+            var default_options = {
+                include_project: true,
+                include_supplier_cost: true,
+                include_price: true,
+                include_profile: true,
+                include_fillings: true,
+                include_options: true,
+                as_array: false
+            };
+
+            options = _.extend({}, default_options, options);
+
+            var sections_list = this.getFixedAndOperableSectionsList();
+            var options_grouped_by_scheme = this.getUnitOptionsGroupedByPricingScheme();
+            var parent_project = this.getParentProject();
+
+            var pricing_data = {};
+
+            //  Project info
+            if ( options.include_project && parent_project ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    project_id: parent_project.id,
+                    project_name: parent_project.get('project_name')
+                });
+            }
+
+            //  Base unit info, always included
+            pricing_data = _.extend({}, pricing_data, {
+                mark: this.get('mark'),
+                quantity: this.get('quantity'),
+                width: this.get('width'),
+                height: this.get('height')
+            });
+
+            //  Supplier cost
+            if ( options.include_supplier_cost ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    original_cost: this.get('original_cost'),
+                    original_currency: this.get('original_currency'),
+                    conversion_rate: this.get('conversion_rate'),
+                    unit_cost: this.getUnitCost(),
+                    subtotal_cost: this.getSubtotalCost(),
+                    supplier_discount: this.get('supplier_discount'),
+                    subtotal_cost_with_discount: this.getSubtotalCostDiscounted()
+                });
+            }
+
+            //  Our markup and price
+            if ( options.include_price ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    price_markup: this.get('price_markup'),
+                    unit_price: this.getUnitPrice(),
+                    subtotal_price: this.getSubtotalPrice(),
+                    discount: this.get('discount'),
+                    subtotal_price_with_discount: this.getSubtotalPriceDiscounted()
+                });
+            }
+
+            if ( options.include_profile ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    profile_name: this.profile.get('name'),
+                    unit_type: this.profile.get('unit_type')
+                });
+            }
+
+            if ( options.include_fillings ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    fillings_list: _.uniq(_.pluck(sections_list, 'filling_name'))
+                });
+            }
+
+            if ( options.include_options ) {
+                var options_list = [];
+
+                _.each(options_grouped_by_scheme, function (group_data) {
+                    _.each(group_data, function (option_item) {
+                        options_list.push(option_item.dictionary_name + ': ' + option_item.option_name);
+                    });
+                });
+
+                pricing_data = _.extend({}, pricing_data, { options_list: options_list });
+            }
+
+            var custom_titles = {
+                project_id: 'Project ID',
+                project_name: 'Project Name',
+                unit_cost: 'Unit Cost',
+                subtotal_cost: 'Subtotal Cost',
+                subtotal_cost_with_discount: 'Subtotal Cost w/D',
+                unit_price: 'Unit Price',
+                subtotal_price: 'Subtotal Price',
+                subtotal_price_with_discount: 'Subtotal Price w/D',
+                profile_name: 'Profile Name',
+                unit_type: 'Unit Type',
+                fillings_list: 'Fillings',
+                options_list: 'Options'
+            };
+
+            if ( options.as_array ) {
+                pricing_data = _.map(pricing_data, function (value, key) {
+                    return { key: key, title: this.getTitles([key])[0] || custom_titles[key], value: value };
+                }, this);
+            }
+
+            return pricing_data;
+        },
         getSection: function (sectionId) {
             return app.Unit.findSection(this.generateFullRoot(), sectionId);
         },
@@ -2293,6 +2400,9 @@ var app = app || {};
             if ( JSON.stringify(current_unit_options.toJSON()) !== JSON.stringify(new_unit_options.toJSON()) ) {
                 this.get('unit_options').reset(new_unit_options.models);
             }
+        },
+        getParentProject: function () {
+            return this.collection && this.collection.options.project;
         },
         //  Check if this unit belongs to the project which is currently active
         isParentProjectActive: function () {

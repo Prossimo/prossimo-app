@@ -333,6 +333,11 @@ var app = app || {};
                 deposit_on_contract: deposit_on_contract,
                 balance_due_at_delivery: balance_due_at_delivery
             };
+        },
+        preparePricingDataForExport: function (options) {
+            var units_data = this.units.invoke('preparePricingDataForExport', options);
+
+            return units_data;
         }
     });
 })();

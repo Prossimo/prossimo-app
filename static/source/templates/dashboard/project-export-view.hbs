@@ -1,0 +1,39 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Export Pricing Data</h3>
+    </div>
+    <div class="panel-body">
+        <div class="form-horizontal">
+            <h5>What to include</h5>
+            <div class="form-group">
+                <div class="col-sm-6">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" checked disabled>
+                            <small>Base info</small>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <small>Unit dimensions, mark and quantity</small>
+                </div>
+            </div>
+            {{#each export_options }}
+            <div class="form-group">
+                <div class="col-sm-6">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name={{ @key }} {{#if checked }} checked{{/if}}>
+                            <small>{{ title }}</small>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <small>{{ description }}</small>
+                </div>
+            </div>
+            {{/each}}
+            <a href="{{ csv_data }}" download="{{ filename }}" taget="_blank" class="btn btn-primary pull-right js-export-project-data">Export as .csv</a>
+        </div>
+    </div>
+</div>

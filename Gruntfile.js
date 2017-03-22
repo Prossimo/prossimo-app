@@ -155,6 +155,7 @@ module.exports = function (grunt) {
         'dashboard/views/project-totals-view.js',
         'dashboard/views/project-info-view.js',
         'dashboard/views/project-documents-view.js',
+        'dashboard/views/project-export-view.js',
         'dashboard/views/main-dashboard-view.js',
         //  Dialogs
         'dialogs/views/base-dialog-view.js',
