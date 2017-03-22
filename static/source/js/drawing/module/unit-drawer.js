@@ -448,7 +448,8 @@ var app = app || {};
 
             var group = new Konva.Group({
                 name: 'frame',
-                sectionId: params.sectionId
+                sectionId: params.sectionId,
+                opacity: 0.5
             });
             var top = new Konva.Line({
                 points: [

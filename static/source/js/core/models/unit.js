@@ -1345,17 +1345,37 @@ var app = app || {};
                     }
                 }
 
+                var magicOverlap = 20;
+
                 // Trim glasses inside subdivided framed sashes
                 if (parentHasFrame && isLeft) {
                     trim(sashFrameGlassOverlap, ['bottom', 'left', 'top']);
-                    trim(sashMullionOverlap, 'bottom');
+                    trim(magicOverlap, 'bottom');
                 } else if (parentHasFrame && isRight) {
                     trim(sashFrameGlassOverlap, ['top', 'right', 'bottom']);
-                    trim(sashMullionOverlap, 'bottom');
+                    trim(magicOverlap, 'bottom');
                 } else if (parentHasFrame && isTop) {
                     trim(sashFrameGlassOverlap, ['left', 'top', 'right']);
                 } else if (parentHasFrame && isBottom) {
                     trim(sashFrameGlassOverlap, ['right', 'bottom', 'left']);
+                }
+
+                // Trim glasses inside subdivided framed sashes in door profiles
+                if (isDoorProfile && parentHasFrame && (isLeft || isRight)) {
+                    trim(magicOverlap, 'bottom');
+                } else if (isDoorProfile && parentHasFrame && isBottom) {
+                    trim(magicOverlap, 'bottom');
+                }
+
+                // Trim glasses inside subdivided framed sashes overlapping a parent mullion on one side
+                if (parentHasFrame && isParentLeft && (isTop || isBottom || isRight)) {
+                    trim(magicOverlap, 'right');
+                } else if (parentHasFrame && isParentRight && (isTop || isBottom || isLeft)) {
+                    trim(magicOverlap, 'left');
+                // } else if (parentHasFrame && isParentTop && (isLeft || isRight || isBottom)) {
+                //     trim(magicOverlap, 'bottom');
+                } else if (parentHasFrame && isParentBottom && (isLeft || isRight || isTop)) {
+                    trim(magicOverlap, 'top');
                 }
 
                 // Save data to be referred as parent data in child sections
