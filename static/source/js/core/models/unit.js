@@ -1265,6 +1265,10 @@ var app = app || {};
             var parentHasFrame = hasFrame;
             var isParentOperable = openingParams.isOperable;
             var isParentFirst = openingParams.isFirst;
+            var isParentLeft = openingParams.isLeft;
+            var isParentRight = openingParams.isRight;
+            var isParentTop = openingParams.isTop;
+            var isParentBottom = openingParams.isBottom;
             var isParentVertical = openingParams.isVertical;
             var isParentHorizontal = openingParams.isHorizontal;
 
@@ -1274,15 +1278,16 @@ var app = app || {};
                 var isVertical = rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible';
                 var isHorizontal = rootSection.divider === 'horizontal' || rootSection.divider === 'horizontal_invisible';
                 var isFirst = i === 0;
-                var isLeft = isVertical && isFirst;  // Is this left section when looking from outside?
-                var isRight = isVertical && !isFirst;
+                var isLeft = isVertical && !isFirst;  // Is this left section when looking from outside?
+                var isRight = isVertical && isFirst;
                 var isTop = isHorizontal && isFirst;
                 var isBottom = isHorizontal && !isFirst;
                 var isOperable = _.contains(OPERABLE_SASH_TYPES, sectionData.sashType);
                 var isDoorProfile = this.isDoorType();
                 var sashFrameWidth = this.profile.get('sash_frame_width');
-                var sashFrameParentOverlap = this.profile.get('sash_frame_overlap');
-                var sashFrameGlassOverlap = sashFrameWidth - sashFrameParentOverlap;
+                var sashFrameOverlap = this.profile.get('sash_frame_overlap');
+                var sashMullionOverlap = this.profile.get('sash_mullion_overlap');
+                var sashFrameGlassOverlap = sashFrameWidth - sashFrameOverlap;
                 var trim = function (amount, sides) {
                     if (sides === 'all') { sides = ['top', 'right', 'bottom', 'left']; }
                     if (_.isString(sides)) { sides = [sides]; }
@@ -1292,11 +1297,11 @@ var app = app || {};
                             sectionParams.y += amount;
                             sectionParams.height -= amount;
                         } else if (side === 'right') {
+                            sectionParams.x += amount;
                             sectionParams.width -= amount;
                         } else if (side === 'bottom') {
                             sectionParams.height -= amount;
                         } else if (side === 'left') {
-                            sectionParams.x += amount;
                             sectionParams.width -= amount;
                         }
                     });
@@ -1340,11 +1345,13 @@ var app = app || {};
                     }
                 }
 
-                // Trim glasses according to sash frame width and offsets for hinges
+                // Trim glasses inside subdivided framed sashes
                 if (parentHasFrame && isLeft) {
                     trim(sashFrameGlassOverlap, ['bottom', 'left', 'top']);
+                    trim(sashMullionOverlap, 'bottom');
                 } else if (parentHasFrame && isRight) {
                     trim(sashFrameGlassOverlap, ['top', 'right', 'bottom']);
+                    trim(sashMullionOverlap, 'bottom');
                 } else if (parentHasFrame && isTop) {
                     trim(sashFrameGlassOverlap, ['left', 'top', 'right']);
                 } else if (parentHasFrame && isBottom) {
@@ -1354,6 +1361,10 @@ var app = app || {};
                 // Save data to be referred as parent data in child sections
                 sectionParams.isOperable = isOperable;
                 sectionParams.isFirst = isFirst;
+                sectionParams.isLeft = isLeft;
+                sectionParams.isRight = isRight;
+                sectionParams.isTop = isTop;
+                sectionParams.isBottom = isBottom;
                 sectionParams.isVertical = isVertical;
                 sectionParams.isHorizontal = isHorizontal;
 
