@@ -1263,14 +1263,6 @@ var app = app || {};
 
             // Vars for use in the following map callback
             var parentHasFrame = hasFrame;
-            var isParentOperable = openingParams.isOperable;
-            var isParentFirst = openingParams.isFirst;
-            var isParentLeft = openingParams.isLeft;
-            var isParentRight = openingParams.isRight;
-            var isParentTop = openingParams.isTop;
-            var isParentBottom = openingParams.isBottom;
-            var isParentVertical = openingParams.isVertical;
-            var isParentHorizontal = openingParams.isHorizontal;
 
             rootSection.sections = _.map(rootSection.sections, function (sectionData, i) {
 
@@ -1283,7 +1275,6 @@ var app = app || {};
                 var isTop = isHorizontal && isFirst;
                 var isBottom = isHorizontal && !isFirst;
                 var isOperable = _.contains(OPERABLE_SASH_TYPES, sectionData.sashType);
-                var isDoorProfile = this.isDoorType();
                 var sashFrameWidth = this.profile.get('sash_frame_width');
                 var sashFrameOverlap = this.profile.get('sash_frame_overlap');
                 var sashMullionOverlap = this.profile.get('sash_mullion_overlap');
@@ -1357,16 +1348,6 @@ var app = app || {};
                 } else if (parentHasFrame && isBottom) {
                     trim(sashFrameGlassOverlap, ['right', 'bottom', 'left']);
                 }
-
-                // Save data to be referred as parent data in child sections
-                sectionParams.isOperable = isOperable;
-                sectionParams.isFirst = isFirst;
-                sectionParams.isLeft = isLeft;
-                sectionParams.isRight = isRight;
-                sectionParams.isTop = isTop;
-                sectionParams.isBottom = isBottom;
-                sectionParams.isVertical = isVertical;
-                sectionParams.isHorizontal = isHorizontal;
 
                 return this.generateFullRoot(sectionData, sectionParams);
             }.bind(this));
