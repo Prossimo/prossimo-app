@@ -563,6 +563,7 @@ var app = app || {};
 
             var selectedSashId = this.state.selectedSashId;
             var selectedSash = this.model.getSection(selectedSashId);
+            var hasFrame = selectedSash && selectedSash.sashType !== 'fixed_in_frame';
             var isArched = selectedSash && selectedSash.arched;
             var isCircular = selectedSash && selectedSash.circular;
 
@@ -623,7 +624,7 @@ var app = app || {};
                 this.ui.$metrics_glass_input.prop('checked', selectedSash.measurements.glass );
                 this.ui.$metrics_opening_input.prop('checked', selectedSash.measurements.opening );
                 this.ui.$metrics_glass.toggle(selectedSash.sections.length === 0);
-                this.ui.$metrics_opening.toggle(selectedSash.sashType !== 'fixed_in_frame');
+                this.ui.$metrics_opening.toggle(hasFrame);
                 this.ui.$metrics.toggle(
                     this.ui.$metrics_glass.is('[style!="display: none;"]') ||
                     this.ui.$metrics_opening.is('[style!="display: none;"]')
