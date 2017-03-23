@@ -1447,6 +1447,11 @@ var app = app || {};
         getRevertedMullions: function () {
             return this.getMullions(this.generateFullReversedRoot());
         },
+        getMullion: function (id) {
+            return _.find(this.getMullions(), function (mullion) {
+                return mullion.id === id;
+            });
+        },
         getInMetric: function (attr, metric) {
             if (!metric || (['mm', 'inches'].indexOf(metric) === -1)) {
                 throw new Error('Set metric! "mm" or "inches"');

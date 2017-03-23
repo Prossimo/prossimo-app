@@ -77,9 +77,17 @@ var app = app || {};
 
         // Keyboards handlers
         onKeyDown: function (e) {
-            if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
+            var isRemove = e.key === 'Delete' || e.key === 'Backspace';
+            var isNumeric = /^[0-9]$/.test(e.key);
+            var selectedMullionId = module.getState('selected:mullion');
+            var isMullionSelected = !!selectedMullionId;
+
+            if (isRemove) {
                 e.preventDefault();
                 this.removeSelected();
+
+            } else if (isNumeric && isMullionSelected) {
+                module.trigger('mullionNumericInput', { mullionId: selectedMullionId });
             }
         },
 
@@ -842,6 +850,7 @@ var app = app || {};
             var style = module.getStyle('mullions');
             var fillStyle = module.getStyle('fillings');
             var group = new Konva.Group({
+                id: 'mullion-' + section.id,
                 name: 'mullion',
                 sectionId: section.id
             });
