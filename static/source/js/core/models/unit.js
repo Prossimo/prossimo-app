@@ -1287,6 +1287,7 @@ var app = app || {};
                 var sashFrameWidth = this.profile.get('sash_frame_width');
                 var sashFrameOverlap = this.profile.get('sash_frame_overlap');
                 var sashMullionOverlap = this.profile.get('sash_mullion_overlap');
+                var mullionWidth = this.profile.get('mullion_width');
                 var sashFrameGlassOverlap = sashFrameWidth - sashFrameOverlap;
                 var trim = function (amount, sides) {
                     if (sides === 'all') { sides = ['top', 'right', 'bottom', 'left']; }
@@ -1307,76 +1308,72 @@ var app = app || {};
                     });
                 };
 
-                // Set section data
+                // Set section data & glass sizes
                 sectionData.mullionEdges = _.clone(rootSection.mullionEdges);
                 sectionData.thresholdEdge = rootSection.thresholdEdge;
                 sectionData.parentId = rootSection.id;
-                if (isVertical) {
-                    sectionParams.x = openingParams.x;
-                    sectionParams.y = openingParams.y;
+                sectionParams.x = openingParams.x;
+                sectionParams.y = openingParams.y;
 
-                    if (isFirst) {
-                        sectionParams.width = position - rootSection.openingParams.x -
-                            this.profile.get('mullion_width') / 2;
-                        sectionData.mullionEdges.right = rootSection.divider;
-                    } else {
-                        sectionParams.x = position + this.profile.get('mullion_width') / 2;
-                        sectionParams.width = openingParams.width + openingParams.x -
-                            position - this.profile.get('mullion_width') / 2;
-                        sectionData.mullionEdges.left = rootSection.divider;
-                    }
-
+                if (isLeft) {
+                    sectionParams.x = position + mullionWidth / 2;
+                    sectionParams.width = openingParams.width + openingParams.x - position - mullionWidth / 2;
                     sectionParams.height = openingParams.height;
-                } else {
-                    sectionParams.x = openingParams.x;
-                    sectionParams.y = openingParams.y;
-                    sectionParams.width = openingParams.width;
+                    sectionData.mullionEdges.left = rootSection.divider;
 
-                    if (isFirst) {
-                        sectionData.mullionEdges.bottom = rootSection.divider;
-                        sectionParams.height = position - rootSection.openingParams.y -
-                            this.profile.get('mullion_width') / 2;
-                        sectionData.thresholdEdge = false;
-                    } else {
-                        sectionParams.y = position + this.profile.get('mullion_width') / 2;
-                        sectionParams.height = openingParams.height + openingParams.y - position -
-                            this.profile.get('mullion_width') / 2;
-                        sectionData.mullionEdges.top = rootSection.divider;
-                    }
+                } else if (isRight) {
+                    sectionParams.width = position - rootSection.openingParams.x - mullionWidth / 2;
+                    sectionParams.height = openingParams.height;
+                    sectionData.mullionEdges.right = rootSection.divider;
+
+                } else if (isTop) {
+                    sectionParams.width = openingParams.width;
+                    sectionParams.height = position - rootSection.openingParams.y - mullionWidth / 2;
+                    sectionData.mullionEdges.bottom = rootSection.divider;
+                    sectionData.thresholdEdge = false;
+
+                } else if (isBottom) {
+                    sectionParams.y = position + mullionWidth / 2;
+                    sectionParams.width = openingParams.width;
+                    sectionParams.height = openingParams.height + openingParams.y - position - mullionWidth / 2;
+                    sectionData.mullionEdges.top = rootSection.divider;
                 }
 
-                var magicOverlap = 20;
+                // var magicOverlap = 20;
 
                 // Trim glasses inside subdivided framed sashes
-                if (parentHasFrame && isLeft) {
+                if (isLeft && parentHasFrame) {
                     trim(sashFrameGlassOverlap, ['bottom', 'left', 'top']);
-                    trim(magicOverlap, 'bottom');
-                } else if (parentHasFrame && isRight) {
+                    // trim(magicOverlap, 'bottom');
+
+                } else if (isRight && parentHasFrame) {
                     trim(sashFrameGlassOverlap, ['top', 'right', 'bottom']);
-                    trim(magicOverlap, 'bottom');
-                } else if (parentHasFrame && isTop) {
+                    // trim(magicOverlap, 'bottom');
+
+                } else if (isTop && parentHasFrame) {
                     trim(sashFrameGlassOverlap, ['left', 'top', 'right']);
-                } else if (parentHasFrame && isBottom) {
+
+                } else if (isBottom && parentHasFrame) {
                     trim(sashFrameGlassOverlap, ['right', 'bottom', 'left']);
                 }
 
-                // Trim glasses inside subdivided framed sashes in door profiles
-                if (isDoorProfile && parentHasFrame && (isLeft || isRight)) {
-                    trim(magicOverlap, 'bottom');
-                } else if (isDoorProfile && parentHasFrame && isBottom) {
-                    trim(magicOverlap, 'bottom');
-                }
-
-                // Trim glasses inside subdivided framed sashes overlapping a parent mullion on one side
-                if (parentHasFrame && isParentLeft && (isTop || isBottom || isRight)) {
-                    trim(magicOverlap, 'right');
-                } else if (parentHasFrame && isParentRight && (isTop || isBottom || isLeft)) {
-                    trim(magicOverlap, 'left');
-                // } else if (parentHasFrame && isParentTop && (isLeft || isRight || isBottom)) {
+                // // Trim glasses inside subdivided framed sashes in door profiles
+                // if (isDoorProfile && parentHasFrame && (isLeft || isRight)) {
                 //     trim(magicOverlap, 'bottom');
-                } else if (parentHasFrame && isParentBottom && (isLeft || isRight || isTop)) {
-                    trim(magicOverlap, 'top');
-                }
+                // } else if (isDoorProfile && parentHasFrame && isBottom) {
+                //     trim(magicOverlap, 'bottom');
+                // }
+                //
+                // // Trim glasses inside subdivided framed sashes overlapping a parent mullion on one side
+                // if (parentHasFrame && isParentLeft && (isTop || isBottom || isRight)) {
+                //     trim(magicOverlap, 'right');
+                // } else if (parentHasFrame && isParentRight && (isTop || isBottom || isLeft)) {
+                //     trim(magicOverlap, 'left');
+                // // } else if (parentHasFrame && isParentTop && (isLeft || isRight || isBottom)) {
+                // //     trim(magicOverlap, 'bottom');
+                // } else if (parentHasFrame && isParentBottom && (isLeft || isRight || isTop)) {
+                //     trim(magicOverlap, 'top');
+                // }
 
                 // Save data to be referred as parent data in child sections
                 sectionParams.isOperable = isOperable;
