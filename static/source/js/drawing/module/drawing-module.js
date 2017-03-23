@@ -335,6 +335,12 @@ var app = app || {};
                         fontSize_big: 10
                     }
                 },
+                mullion_input: {
+                    width: 48,
+                    height: 20,
+                    padding: 3,
+                    fontSize: 12
+                },
                 indexes: {
                     align: 'center',
                     fontFamily: 'pt-sans',

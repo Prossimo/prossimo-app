@@ -331,7 +331,10 @@ var app = app || {};
                 });
             });
             this.listenTo(this.module, 'labelClicked', function (data) {
-                this.createInput( data.params, data.pos, data.size );
+                this.createInput(data.params, data.pos, data.size);
+            });
+            this.listenTo(this.module, 'mullionNumericInput', function (data) {
+                this.createMullionInput(data.mullionId);
             });
         },
         unbindModuleEvents: function () {
@@ -437,6 +440,111 @@ var app = app || {};
 
                     if (e.keyCode === 27) { // esc
                         closeWrap();
+                    }
+                })
+                .on('blur', closeWrap);
+        },
+        createMullionInput: function (mullionId) {
+            if (!mullionId) { return; }
+
+            var self = this;
+            var module = this.module;
+            var model = this.model;
+            var ratio = module.get('ratio');
+            var style = module.getStyle('mullion_input');
+            var isInside = this.isInsideView();
+            var isOutside = !isInside;
+            var unitLayer = module.getLayer('unit').layer;
+            var mullion = model.getMullion(mullionId);
+            var mullionRect = unitLayer.findOne('#mullion-' + mullionId).getClientRect();
+            var mullionX = mullionRect.x * ratio + unitLayer.getClientRect().x;
+            var mullionY = mullionRect.y * ratio + unitLayer.getClientRect().y;
+            var mullionCenterX = mullionX + mullionRect.width * ratio / 2;
+            var mullionCenterY = mullionY + mullionRect.height * ratio / 2;
+            var inputX = mullionCenterX - style.width / 2;
+            var inputY = mullionCenterY - style.height / 2;
+            var isVertical = mullion.type === 'vertical' || mullion.type === 'vertical_invisible';
+            var isHorizontal = mullion.type === 'horizontal' || mullion.type === 'horizontal_invisible';
+            var container = $(module.get('stage').container());
+            var containerPosition = (container.css('position') === 'relative') ? {top: 0, left: 0} : container.position();
+            var $wrap = $('<div>')
+                .addClass('popup-wrap')
+                .appendTo(container)
+                .on('click', function (e) {
+                    if (e.target === $wrap.get(0)) { $wrap.remove(); }
+                });
+            var closeWrap = function () {
+                if (self.setState) {
+                    self.setState({ inputFocused: false });
+                }
+                $wrap.remove();
+            };
+
+            $('<input>')
+                .css({
+                    position: 'absolute',
+                    top: (inputY - style.padding + containerPosition.top) + 'px',
+                    left: (inputX - style.padding + containerPosition.left) + 'px',
+                    height: (style.height + style.padding * 2) + 'px',
+                    width: (style.width + style.padding * 2) + 'px',
+                    fontSize: style.fontSize + 'px'
+                })
+                .appendTo($wrap)
+                .on('focus', function () {
+                    if (self.state) {
+                        self.state.inputFocused = true;
+                    }
+                })
+                .focus()
+                .select()
+                .on('keydown', function (e) {
+                    var input = e.target;
+                    var attr = (isVertical) ? 'width' : 'height';
+                    var newValue = app.utils.parseFormat.dimensions(this.value, attr);
+                    var newValueMm = (_.isArray(newValue)) ?
+                        newValue.map(function (value) { return app.utils.convert.inches_to_mm(value); }) :
+                        app.utils.convert.inches_to_mm(newValue);
+                    var isKeyUp = e.key === 'ArrowUp' || e.key === 'w';
+                    var isKeyRight = e.key === 'ArrowRight' || e.key === 'd';
+                    var isKeyDown = e.key === 'ArrowDown' || e.key === 's';
+                    var isKeyLeft = e.key === 'ArrowLeft' || e.key === 'a';
+                    var isKeyEscape = e.key === 'Escape';
+                    var isKeyEnter = e.key === 'Enter';
+
+                    // Cancel
+                    if (isKeyEscape) {
+                        closeWrap();
+
+                    // Set first subsection dimension
+                    } else if (isVertical && isInside && isKeyLeft ||
+                               isVertical && isOutside && isKeyRight ||
+                               isVertical && isInside && isKeyEnter ||
+                               isHorizontal && isKeyUp ||
+                               isHorizontal && isKeyEnter) {
+                        model.setSectionMullionPosition(mullionId, newValueMm);
+                        closeWrap();
+
+                    // Set second subsection dimension
+                    } else if (isVertical && isInside && isKeyRight ||
+                               isVertical && isOutside && isKeyLeft ||
+                               isVertical && isOutside && isKeyEnter ||
+                               isHorizontal && isKeyDown) {
+                        var containerDimension = (isVertical) ? model.getSizes().frame.width :
+                                                                model.getSizes().frame.height;
+                        model.setSectionMullionPosition(mullionId, containerDimension - newValueMm);
+                        closeWrap();
+
+                    // Move cursor left
+                    } else if (isVertical && isKeyUp ||
+                               isHorizontal && isKeyLeft) {
+                        input.selectionStart = input.selectionEnd -= 1;
+                        e.preventDefault();
+
+                    // Move cursor right
+                    } else if (isVertical && isKeyDown ||
+                               isHorizontal && isKeyRight) {
+                        input.selectionStart = input.selectionEnd += 1;
+                        e.preventDefault();
                     }
                 })
                 .on('blur', closeWrap);
