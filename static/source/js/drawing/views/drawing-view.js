@@ -60,8 +60,11 @@ var app = app || {};
             $undo: '#undo',
             $redo: '#redo',
             $sash_types: '.change-sash-type',
-            $metrics_glass: '#additional-metrics-glass',
-            $metrics_opening: '#additional-metrics-opening'
+            $metrics: '.additional-metrics',
+            $metrics_glass: '[for="additional-metrics-glass"]',
+            $metrics_glass_input: '#additional-metrics-glass',
+            $metrics_opening: '[for="additional-metrics-opening"]',
+            $metrics_opening_input: '#additional-metrics-opening'
         },
         events: {
             // Click
@@ -91,8 +94,8 @@ var app = app || {};
             'change #horizontal-bars-number': 'handleBarNumberChange',
             'input #horizontal-bars-number': 'handleBarNumberChange',
             'change #filling-select': 'handleFillingTypeChange',
-            'change @ui.$metrics_glass': 'handleAdditionalMetricsChange',
-            'change @ui.$metrics_opening': 'handleAdditionalMetricsChange'
+            'change @ui.$metrics_glass_input': 'handleAdditionalMetricsChange',
+            'change @ui.$metrics_opening_input': 'handleAdditionalMetricsChange'
         },
         keyShortcuts: {
             'ctrl+z': 'handleUndoClick',
@@ -560,6 +563,7 @@ var app = app || {};
 
             var selectedSashId = this.state.selectedSashId;
             var selectedSash = this.model.getSection(selectedSashId);
+            var hasFrame = selectedSash && selectedSash.sashType !== 'fixed_in_frame';
             var isArched = selectedSash && selectedSash.arched;
             var isCircular = selectedSash && selectedSash.circular;
 
@@ -617,14 +621,14 @@ var app = app || {};
 
             // Additional overlay metrics
             if ( selectedSash ) {
-                this.ui.$metrics_glass.prop('checked', selectedSash.measurements.glass );
-                this.ui.$metrics_opening.prop('checked', selectedSash.measurements.opening );
-
-                if ( selectedSash.sashType !== 'fixed_in_frame' ) {
-                    this.$('#additional-metrics-opening--label').show();
-                } else {
-                    this.$('#additional-metrics-opening--label').hide();
-                }
+                this.ui.$metrics_glass_input.prop('checked', selectedSash.measurements.glass );
+                this.ui.$metrics_opening_input.prop('checked', selectedSash.measurements.opening );
+                this.ui.$metrics_glass.toggle(selectedSash.sections.length === 0);
+                this.ui.$metrics_opening.toggle(hasFrame);
+                this.ui.$metrics.toggle(
+                    this.ui.$metrics_glass.is('[style!="display: none;"]') ||
+                    this.ui.$metrics_opening.is('[style!="display: none;"]')
+                );
             }
         },
 
