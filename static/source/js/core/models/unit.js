@@ -740,6 +740,9 @@ var app = app || {};
         isOpeningDirectionOutward: function () {
             return this.get('opening_direction') === 'Outward';
         },
+        isOpeningDirectionInward: function () {
+            return this.get('opening_direction') === 'Inward';
+        },
         isCircularPossible: function (sashId) {
             var root = this.generateFullRoot();
 

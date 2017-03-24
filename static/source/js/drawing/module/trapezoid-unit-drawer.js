@@ -1837,7 +1837,7 @@ var app = app || {};
                 }
             });
 
-            if ((type.indexOf('_hinge_hidden_latch') !== -1)) {
+            if (model.isOpeningDirectionInward() && model.hasOperableSections()) {
                 directionLine.dash([10 / ratio, 10 / ratio]);
             }
 
