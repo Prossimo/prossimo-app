@@ -1263,14 +1263,10 @@ var app = app || {};
 
             // Vars for use in the following map callback
             var parentHasFrame = hasFrame;
-            var isParentOperable = openingParams.isOperable;
-            var isParentFirst = openingParams.isFirst;
             var isParentLeft = openingParams.isLeft;
             var isParentRight = openingParams.isRight;
             var isParentTop = openingParams.isTop;
             var isParentBottom = openingParams.isBottom;
-            var isParentVertical = openingParams.isVertical;
-            var isParentHorizontal = openingParams.isHorizontal;
 
             rootSection.sections = _.map(rootSection.sections, function (sectionData, i) {
 
@@ -1282,13 +1278,13 @@ var app = app || {};
                 var isRight = isVertical && isFirst;
                 var isTop = isHorizontal && isFirst;
                 var isBottom = isHorizontal && !isFirst;
-                var isOperable = _.contains(OPERABLE_SASH_TYPES, sectionData.sashType);
                 var isDoorProfile = this.isDoorType();
                 var sashFrameWidth = this.profile.get('sash_frame_width');
                 var sashFrameOverlap = this.profile.get('sash_frame_overlap');
                 var sashMullionOverlap = this.profile.get('sash_mullion_overlap');
                 var mullionWidth = this.profile.get('mullion_width');
                 var sashFrameGlassOverlap = sashFrameWidth - sashFrameOverlap;
+                var overlapDifference = sashFrameOverlap - sashMullionOverlap;
                 var trim = function (amount, sides) {
                     if (sides === 'all') { sides = ['top', 'right', 'bottom', 'left']; }
                     if (_.isString(sides)) { sides = [sides]; }
@@ -1339,51 +1335,40 @@ var app = app || {};
                     sectionData.mullionEdges.top = rootSection.divider;
                 }
 
-                // var magicOverlap = 20;
-
                 // Trim glasses inside subdivided framed sashes
                 if (isLeft && parentHasFrame) {
                     trim(sashFrameGlassOverlap, ['bottom', 'left', 'top']);
-                    // trim(magicOverlap, 'bottom');
-
                 } else if (isRight && parentHasFrame) {
                     trim(sashFrameGlassOverlap, ['top', 'right', 'bottom']);
-                    // trim(magicOverlap, 'bottom');
-
                 } else if (isTop && parentHasFrame) {
                     trim(sashFrameGlassOverlap, ['left', 'top', 'right']);
-
                 } else if (isBottom && parentHasFrame) {
                     trim(sashFrameGlassOverlap, ['right', 'bottom', 'left']);
                 }
 
-                // // Trim glasses inside subdivided framed sashes in door profiles
-                // if (isDoorProfile && parentHasFrame && (isLeft || isRight)) {
-                //     trim(magicOverlap, 'bottom');
-                // } else if (isDoorProfile && parentHasFrame && isBottom) {
-                //     trim(magicOverlap, 'bottom');
-                // }
-                //
-                // // Trim glasses inside subdivided framed sashes overlapping a parent mullion on one side
-                // if (parentHasFrame && isParentLeft && (isTop || isBottom || isRight)) {
-                //     trim(magicOverlap, 'right');
-                // } else if (parentHasFrame && isParentRight && (isTop || isBottom || isLeft)) {
-                //     trim(magicOverlap, 'left');
-                // // } else if (parentHasFrame && isParentTop && (isLeft || isRight || isBottom)) {
-                // //     trim(magicOverlap, 'bottom');
-                // } else if (parentHasFrame && isParentBottom && (isLeft || isRight || isTop)) {
-                //     trim(magicOverlap, 'top');
-                // }
+                // Trim glasses inside subdivided framed sashes in door profiles
+                if (isDoorProfile && parentHasFrame && (isLeft || isRight)) {
+                    trim(overlapDifference, 'bottom');
+                } else if (isDoorProfile && parentHasFrame && isBottom) {
+                    trim(overlapDifference, 'bottom');
+                }
+
+                // Trim glasses inside subdivided framed sashes overlapping a parent mullion on one side
+                if (parentHasFrame && isParentLeft && (isTop || isBottom || isRight)) {
+                    trim(overlapDifference, 'right');
+                } else if (parentHasFrame && isParentRight && (isTop || isBottom || isLeft)) {
+                    trim(overlapDifference, 'left');
+                } else if (parentHasFrame && isParentTop && (isLeft || isRight || isBottom)) {
+                    trim(overlapDifference, 'bottom');
+                } else if (parentHasFrame && isParentBottom && (isLeft || isRight || isTop)) {
+                    trim(overlapDifference, 'top');
+                }
 
                 // Save data to be referred as parent data in child sections
-                sectionParams.isOperable = isOperable;
-                sectionParams.isFirst = isFirst;
                 sectionParams.isLeft = isLeft;
                 sectionParams.isRight = isRight;
                 sectionParams.isTop = isTop;
                 sectionParams.isBottom = isBottom;
-                sectionParams.isVertical = isVertical;
-                sectionParams.isHorizontal = isHorizontal;
 
                 return this.generateFullRoot(sectionData, sectionParams);
             }.bind(this));
