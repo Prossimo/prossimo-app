@@ -1,25 +1,26 @@
-var app = app || {};
+import Marionette from 'backbone.marionette';
+import _ from 'underscore';
+import templateMain from '../templates/project-info/main.hbs';
+import templateView from '../templates/project-info/view.hbs';
+import templateEdit from '../templates/project-info/edit.hbs';
 
-(function () {
-    'use strict';
-
-    app.ProjectInfoView = Marionette.View.extend({
-        tagName: 'div',
-        className: 'project-total-prices',
-        template: app.templates['dashboard/project-info/main'],
-        viewTemplate: app.templates['dashboard/project-info/view'],
-        editTemplate: app.templates['dashboard/project-info/edit'],
-        ui: {
-            $content: '#project-info-content',
-            $edit_button: '.toggle-edit-mode'
-        },
-        events: {
-            'click @ui.$edit_button': 'toggleEditMode'
-        },
-        toggleEditMode: function () {
-            if (this.editMode) {
-                this.saveFormData();
-            }
+export default Marionette.View.extend({
+    tagName: 'div',
+    className: 'project-total-prices',
+    template: templateMain,
+    viewTemplate: templateView,
+    editTemplate: templateEdit,
+    ui: {
+        $content: '#project-info-content',
+        $edit_button: '.toggle-edit-mode'
+    },
+    events: {
+        'click @ui.$edit_button': 'toggleEditMode'
+    },
+    toggleEditMode: function () {
+        if (this.editMode) {
+            this.saveFormData();
+        }
 
             this.editMode = !this.editMode;
             this.render();
@@ -32,10 +33,12 @@ var app = app || {};
             }
         },
         enterViewMode: function () {
+
             this.ui.$content.html(this.viewTemplate(this.model.toJSON()));
         },
         enterEditMode: function () {
             this.ui.$content.html(this.editTemplate(this.model.toJSON()));
+
         },
         templateContext: function () {
             return _.extend({}, this.model.toJSON(), {editMode: this.editMode});
@@ -43,9 +46,9 @@ var app = app || {};
         saveFormData: function () {
             var modelData = {};
 
-            _.map(this.$el.find('.form-horizontal').serializeArray(), function (item) {
-                modelData[item.name] = item.value;
-            });
+        _.map(this.$el.find('.form-horizontal').serializeArray(), function (item) {
+            modelData[item.name] = item.value;
+        });
 
             this.model.persist(modelData, { wait: true, success: this.enterViewMode.bind(this) });
         },
@@ -55,5 +58,5 @@ var app = app || {};
         onRender: function () {
             this.enterMode();
         }
+
     });
-})();

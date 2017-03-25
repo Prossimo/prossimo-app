@@ -1,17 +1,17 @@
-var app = app || {};
+import Backbone from 'backbone';
+import _ from 'underscore';
+import App from '../../main';
+import OptionsDictionaryEntry from '../models/options-dictionary-entry';
 
-(function () {
-    'use strict';
-
-    app.OptionsDictionaryEntryCollection = Backbone.Collection.extend({
-        model: app.OptionsDictionaryEntry,
+export default Backbone.Collection.extend({
+        model: OptionsDictionaryEntry,
         reorder_property_name: 'entries',
         url: function () {
-            return app.settings.get('api_base_path') + '/dictionaries/' +
+            return App.settings.get('api_base_path') + '/dictionaries/' +
                 this.options.dictionary.get('id') + '/entries';
         },
         reorder_url: function () {
-            return app.settings.get('api_base_path') + '/dictionaries/' +
+            return App.settings.get('api_base_path') + '/dictionaries/' +
                 this.options.dictionary.get('id') + '/reorder_entries';
         },
         parse: function (data) {
@@ -30,8 +30,7 @@ var app = app || {};
         },
         getByName: function (name) {
             return this.findWhere({ name: name });
-        },
-        getAvailableForProfile: function (profile_id) {
+        },getAvailableForProfile: function (profile_id) {
             return this.models.filter(function (entry) {
                 return entry.isAvailableForProfile(profile_id);
             }, this);
@@ -39,9 +38,9 @@ var app = app || {};
         getDefaultForProfile: function (profile_id) {
             var available_entries = this.getAvailableForProfile(profile_id);
 
-            var default_entry = _.find(available_entries, function (entry) {
-                return entry.isDefaultForProfile(profile_id);
-            });
+        var default_entry = _.find(available_entries, function (entry) {
+            return entry.isDefaultForProfile(profile_id);
+        });
 
             return default_entry || undefined;
         },
@@ -71,7 +70,7 @@ var app = app || {};
         validatePerProfileDefaults: function () {
             var profiles = this.getIdsOfAllConnectedProfiles();
 
-            _.each(profiles, function (profile_id) {
+            _.each(profiles,function ( profile_id ) {
                 var all_items = this.getAvailableForProfile(profile_id);
                 var default_item = this.getDefaultForProfile(profile_id);
                 var non_default_items = _.without(all_items, default_item);
@@ -80,20 +79,22 @@ var app = app || {};
                 //  set as non default. If all's fine, no requests are fired
                 if ( default_item && non_default_items ) {
                     _.each(non_default_items, function (item) {
-                        item.setProfileAvailability(profile_id, true, false);
+                        item.setProfileAvailability( profile_id , true , false);
+
                     }, this);
                 }
             }, this);
         },
         setItemAvailabilityForProfile: function (profile_id, target_item, new_value) {
             if ( !this.get(target_item) ) {
-                throw new Error('Cannot set item availability: target item does not belong to this collection');
+                throw new Error('Cannot set item availability: target item does not belong to this collection ');
             }
 
-            target_item.setProfileAvailability(profile_id, new_value);
+             target_item.setProfileAvailability( profile_id,
+                     new_value );
         },
         setItemAsDefaultForProfile: function (profile_id, new_item) {
-            var old_item = this.getDefaultForProfile(profile_id);
+            var old_item= this.getDefaultForProfile(profile_id) ;
 
             if ( new_item ) {
                 if ( !this.get(new_item) ) {
@@ -102,23 +103,26 @@ var app = app || {};
                     );
                 }
 
-                //  Set new_item as available and default for profile_id
-                new_item.setProfileAvailability(profile_id, true, true);
+                //  Set new_itemas available and default for profile_id
+
+
+                    new_item.setProfileAvailability(profile_id, true, true);
             }
 
+
             if ( old_item ) {
-                //  Set old_item as available but not default for profile_id
-                old_item.setProfileAvailability(profile_id, true, false);
+                //  Setold_item as available but notdefault for profile_id
+                     old_item.setProfileAvailability( profile_id , true , false);
+
             }
         },
         initialize: function (models, options) {
             this.options = options || {};
-            this.proxy_entry = new app.OptionsDictionaryEntry(null, { proxy: true });
+            this.proxy_entry = new OptionsDictionaryEntry(null, { proxy: true });
 
-            this.once('fully_loaded', function () {
-                this.validatePositions();
-                this.validatePerProfileDefaults();
-            }, this);
+
+            this.once( 'fully_loaded', function () {this.validatePositions();
+            this.validatePerProfileDefaults();
+            },this);
         }
     });
-})();

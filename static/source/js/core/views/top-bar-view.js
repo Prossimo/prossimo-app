@@ -1,12 +1,17 @@
-var app = app || {};
+import Marionette from 'backbone.marionette';
+import $ from 'jquery';
+import {globalChannel} from '../../utils/radio';
+import App from '../../main';
+import ProjectSelectorView from './project-selector-view';
+import StatusPanelView from './status-panel-view';
+import ProjectSettingsPanelView from './project-settings-panel-view';
+import SpinnerView from './spinner-view';
+import template from '../../templates/core/top-bar-view.hbs';
 
-(function () {
-    'use strict';
-
-    app.TopBarView = Marionette.View.extend({
+export default Marionette.View.extend({
         tagName: 'div',
         className: 'top-bar',
-        template: app.templates['core/top-bar-view'],
+        template: template,
         ui: {
             $container: '.top-bar-container',
             $project_selector_container: '.project-selector-container',
@@ -24,18 +29,18 @@ var app = app || {};
             'click @ui.$edit_quotes': 'showEditQuotesDialog'
         },
         initialize: function () {
-            this.project_selector_view = new app.ProjectSelectorView({ collection: this.collection });
-            this.quote_selector_view = new app.QuoteSelectorView();
-            this.status_panel_view = new app.StatusPanelView();
-            this.spinner_view = new app.SpinnerView();
+            this.project_selector_view = new ProjectSelectorView({ collection: this.collection });
+            this.quote_selector_view = new QuoteSelectorView();
+            this.status_panel_view = new StatusPanelView();
+            this.spinner_view = new SpinnerView();
             this.main_nav_view = this.options.main_nav_view;
-            this.project_settings_panel_view = new app.ProjectSettingsPanelView({
-                model: app.settings.getProjectSettings()
+            this.project_settings_panel_view = new ProjectSettingsPanelView({
+                model: App.settings.getProjectSettings()
             });
 
-            $('#header').append( this.render().el );
+        $('#header').append(this.render().el);
 
-            this.listenTo(app.vent, 'project_selector:fetch_current:stop', this.onCurrentProjectLoaded);
+            this.listenTo(globalChannel, 'project_selector:fetch_current:stop', this.onCurrentProjectLoaded);
         },
         onSettingsToggle: function () {
             if ( this.isProjectSelected() ) {
@@ -50,13 +55,12 @@ var app = app || {};
             }
         },
         showCreateProjectDialog: function () {
-            app.dialogs.showDialog('createProject');
+            App.dialogs.showDialog('createProject');
         },
         onCurrentProjectLoaded: function () {
             if ( this.isProjectSelected() ) {
                 this.ui.$settings_toggle.removeClass('disabled');
-                this.ui.$edit_quotes.removeClass('disabled');
-            }
+            this.ui.$edit_quotes.removeClass('disabled');}
 
             this.$el.removeClass('is-project-settings-panel-open');
         },
@@ -78,4 +82,4 @@ var app = app || {};
             this.$el.append(this.project_settings_panel_view.render().el);
         }
     });
-})();
+});

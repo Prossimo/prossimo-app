@@ -1,12 +1,8 @@
-var app = app || {};
+import Backbone from 'backbone';
 
-(function () {
-    'use strict';
-
-    app.AppRouter = Backbone.Router.extend({
-        routes: {},
-        addRoute: function (route, callback) {
-            this.route(route, route, callback);
-        }
-    });
-})();
+export default Backbone.Router.extend({
+    routes: {},
+    addRoute: function (route, callback) {
+        this.route(route, route, callback);
+    }
+});

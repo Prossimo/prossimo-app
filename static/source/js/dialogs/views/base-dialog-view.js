@@ -1,21 +1,18 @@
-var app = app || {};
+import Marionette from 'backbone.marionette';
+import template from '../../templates/dialogs/base-dialog-view.hbs';
 
-(function () {
-    'use strict';
-
-    app.BaseDialogView = Marionette.View.extend({
-        className: 'modal fade',
-        template: app.templates['dialogs/base-dialog-view'],
-        events: {
-            'submit form': 'returnFalse'
-        },
-        close: function () {
-            if ( this.$el.modal ) {
-                this.$el.modal('hide');
-            }
-        },
-        returnFalse: function () {
-            return false;
+export default Marionette.View.extend({
+    className: 'modal fade',
+    template: template,
+    events: {
+        'submit form': 'returnFalse'
+    },
+    close: function () {
+        if (this.$el.modal) {
+            this.$el.modal('hide');
         }
-    });
-})();
+    },
+    returnFalse: function () {
+        return false;
+    }
+});

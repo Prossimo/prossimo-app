@@ -1,20 +1,16 @@
-var app = app || {};
+import Backbone from 'backbone';
 
-(function () {
-    'use strict';
+function getUserDefaults() {
+    return {
+        email: '',
+        username: '',
+        roles: []
+    };
+}
 
-    function getUserDefaults() {
-        return {
-            email: '',
-            username: '',
-            roles: []
-        };
+export default Backbone.Model.extend({
+    defaults: getUserDefaults(),
+    reset: function () {
+        this.set(getUserDefaults());
     }
-
-    app.User = Backbone.Model.extend({
-        defaults: getUserDefaults(),
-        reset: function () {
-            this.set(getUserDefaults());
-        }
-    });
-})();
+});

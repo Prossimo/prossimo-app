@@ -1,11 +1,8 @@
-var app = app || {};
+import Marionette from 'backbone.marionette';
+import template from '../../templates/core/no-project-selected-view.hbs';
 
-(function () {
-    'use strict';
-
-    app.NoProjectSelectedView = Marionette.View.extend({
-        tagName: 'div',
-        className: 'screen no-project-selected-screen',
-        template: app.templates['core/no-project-selected-view']
-    });
-})();
+export default Marionette.View.extend({
+    tagName: 'div',
+    className: 'screen no-project-selected-screen',
+    template: template
+});

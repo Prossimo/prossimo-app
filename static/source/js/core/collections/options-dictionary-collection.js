@@ -1,10 +1,8 @@
-var app = app || {};
+import Backbone from 'backbone';
+import OptionsDictionary from '../models/options-dictionary';
 
-(function () {
-    'use strict';
-
-    app.OptionsDictionaryCollection = Backbone.Collection.extend({
-        model: app.OptionsDictionary,
+export default Backbone.Collection.extend({
+        model: OptionsDictionary,
         reorder_property_name: 'dictionaries',
         url: function () {
             return (this.options.api_base_path ? this.options.api_base_path : '') + '/dictionaries';
@@ -17,7 +15,7 @@ var app = app || {};
         },
         initialize: function (models, options) {
             this.options = options || {};
-            this.proxy_dictionary = new app.OptionsDictionary(null, { proxy: true });
+            this.proxy_dictionary = new OptionsDictionary(null, { proxy: true });
         },
         getNameTitleTypeHash: function (names) {
             return this.proxy_dictionary.getNameTitleTypeHash(names);
@@ -28,7 +26,7 @@ var app = app || {};
         getAttributeType: function () {
             return this.proxy_dictionary.getAttributeType();
         },
-        getAvailableOptions: function (dictionary_id, profile_id, put_default_first) {
+    getAvailableOptions: function (dictionary_id, profile_id, put_default_first) {
             var target_dictionary = this.get(dictionary_id);
             var available_options = [];
             var default_option;
@@ -94,6 +92,4 @@ var app = app || {};
         //  TODO: this is not really needed, should be removed everywhere
         getAvailableDictionaryNames: function () {
             return this.pluck('name');
-        }
-    });
-})();
+        }});

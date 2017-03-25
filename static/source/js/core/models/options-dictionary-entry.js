@@ -1,12 +1,13 @@
-var app = app || {};
+import Backbone from 'backbone';
+import _ from 'underscore';
+import Schema from '../../schema';
 
-(function () {
-    'use strict';
+var UNSET_VALUE = '--';
 
-    var UNSET_VALUE = '--';
 
     var ENTRY_PROPERTIES = [
         { name: 'name', title: 'Name', type: 'string' },
+
         { name: 'supplier_name', title: 'Supplier Name', type: 'string' },
         { name: 'data', title: 'Additional Data', type: 'string' },
         { name: 'position', title: 'Position', type: 'number' },
@@ -17,26 +18,26 @@ var app = app || {};
         return _.clone({});
     }
 
-    app.OptionsDictionaryEntry = Backbone.Model.extend({
-        schema: app.schema.createSchema(ENTRY_PROPERTIES),
-        defaults: function () {
-            var defaults = {};
+export default Backbone.Model.extend({
+    schema: Schema.createSchema(ENTRY_PROPERTIES),
+    defaults: function () {
+        var defaults = {};
 
-            _.each(ENTRY_PROPERTIES, function (item) {
-                defaults[item.name] = this.getDefaultValue(item.name, item.type);
-            }, this);
+        _.each(ENTRY_PROPERTIES, function (item) {
+            defaults[item.name] = this.getDefaultValue(item.name, item.type);
+        }, this);
 
-            return defaults;
-        },
-        getNameAttribute: function () {
-            return 'name';
-        },
-        getDefaultValue: function (name, type) {
-            var default_value = '';
+        return defaults;
+    },
+    getNameAttribute: function () {
+        return 'name';
+    },
+    getDefaultValue: function (name, type) {
+        var default_value = '';
 
-            var type_value_hash = {
-                number: 0
-            };
+        var type_value_hash = {
+            number: 0
+        };
 
             var name_value_hash = {
                 data: getDefaultEntryData(),
@@ -45,13 +46,13 @@ var app = app || {};
                 })
             };
 
-            if ( _.indexOf(_.keys(type_value_hash), type) !== -1 ) {
-                default_value = type_value_hash[type];
-            }
+        if (_.indexOf(_.keys(type_value_hash), type) !== -1) {
+            default_value = type_value_hash[type];
+        }
 
-            if ( _.indexOf(_.keys(name_value_hash), name) !== -1 ) {
-                default_value = name_value_hash[name];
-            }
+        if (_.indexOf(_.keys(name_value_hash), name) !== -1) {
+            default_value = name_value_hash[name];
+        }
 
             return default_value;
         },
@@ -60,15 +61,15 @@ var app = app || {};
                 options.attrs = { entry: model.toJSON() };
             }
 
-            return Backbone.sync.call(this, method, model, options);
-        },
-        parse: function (data) {
-            var entry_data = data && data.entry ? data.entry : data;
+        return Backbone.sync.call(this, method, model, options);
+    },
+    parse: function (data) {
+        var entry_data = data && data.entry ? data.entry : data;
             var parsed_data = app.schema.parseAccordingToSchema(entry_data, this.schema);
 
             if ( parsed_data && parsed_data.dictionary_entry_profiles ) {
-                parsed_data.dictionary_entry_profiles = new app.DictionaryEntryProfileCollection(
-                    app.utils.object.extractObjectOrNull(parsed_data.dictionary_entry_profiles),
+                parsed_data.dictionary_entry_profiles = new DictionaryEntryProfileCollection(
+                    utils.object.extractObjectOrNull(parsed_data.dictionary_entry_profiles),
                     {
                         parent_entry: this,
                         parse: true
@@ -78,7 +79,7 @@ var app = app || {};
 
             if ( parsed_data && parsed_data.data ) {
                 parsed_data.data =
-                    app.utils.object.extractObjectOrNull(parsed_data.data) || this.getDefaultValue('data');
+                    utils.object.extractObjectOrNull(parsed_data.data) || this.getDefaultValue('data');
             }
 
             return parsed_data;
@@ -98,70 +99,70 @@ var app = app || {};
                 return item.get('name');
             });
 
-            //  We want to have unique option names across the collection
-            if ( options.validate && collection_names &&
-                _.contains(collection_names, attributes.name)
+        //  We want to have unique option names across the collection
+        if (options.validate && collection_names &&
+            _.contains(collection_names, attributes.name)
+        ) {
+            return {
+                attribute_name: 'name',
+                error_message: 'Entry name "' + attributes.name + '" is already used in this collection'
+            };
+        }
+
+        //  Don't allow option names that consist of numbers only ("123")
+        if (options.validate && attributes.name &&
+            parseInt(attributes.name, 10).toString() === attributes.name
+        ) {
+            return {
+                attribute_name: 'name',
+                error_message: 'Entry name can\'t consist of only numbers'
+            };
+        }
+
+        //  Don't allow option names that is similar to UNSET_VALUE
+        if (options.validate && attributes.name && UNSET_VALUE === attributes.name) {
+            return {
+                attribute_name: 'name',
+                error_message: 'Entry name can\'t be set to ' + UNSET_VALUE
+            };
+        }
+
+        //  Simple type validation for numbers and booleans
+        _.find(attributes, function (value, key) {
+            var attribute_obj = this.getNameTitleTypeHash([key]);
+
+            attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
+
+            if (attribute_obj && attribute_obj.type === 'number' &&
+                (!_.isNumber(value) || _.isNaN(value))
             ) {
-                return {
-                    attribute_name: 'name',
-                    error_message: 'Entry name "' + attributes.name + '" is already used in this collection'
+                error_obj = {
+                    attribute_name: key,
+                    error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a number'
                 };
-            }
 
-            //  Don't allow option names that consist of numbers only ("123")
-            if ( options.validate && attributes.name &&
-                parseInt(attributes.name, 10).toString() === attributes.name
-            ) {
-                return {
-                    attribute_name: 'name',
-                    error_message: 'Entry name can\'t consist of only numbers'
+                return false;
+            } else if (attribute_obj && attribute_obj.type === 'boolean' && !_.isBoolean(value)) {
+                error_obj = {
+                    attribute_name: key,
+                    error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a boolean'
                 };
+
+                return false;
             }
+        }, this);
 
-            //  Don't allow option names that is similar to UNSET_VALUE
-            if ( options.validate && attributes.name && UNSET_VALUE === attributes.name ) {
-                return {
-                    attribute_name: 'name',
-                    error_message: 'Entry name can\'t be set to ' + UNSET_VALUE
-                };
-            }
+        if (options.validate && error_obj) {
+            return error_obj;
+        }
+    },
+    hasOnlyDefaultAttributes: function () {
+        var has_only_defaults = true;
 
-            //  Simple type validation for numbers and booleans
-            _.find(attributes, function (value, key) {
-                var attribute_obj = this.getNameTitleTypeHash([key]);
-
-                attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
-
-                if ( attribute_obj && attribute_obj.type === 'number' &&
-                    (!_.isNumber(value) || _.isNaN(value))
-                ) {
-                    error_obj = {
-                        attribute_name: key,
-                        error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a number'
-                    };
-
-                    return false;
-                } else if ( attribute_obj && attribute_obj.type === 'boolean' && !_.isBoolean(value) ) {
-                    error_obj = {
-                        attribute_name: key,
-                        error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a boolean'
-                    };
-
-                    return false;
-                }
-            }, this);
-
-            if ( options.validate && error_obj ) {
-                return error_obj;
-            }
-        },
-        hasOnlyDefaultAttributes: function () {
-            var has_only_defaults = true;
-
-            _.each(this.toJSON(), function (value, key) {
-                if ( key !== 'position' && has_only_defaults ) {
-                    var property_source = _.findWhere(ENTRY_PROPERTIES, { name: key });
-                    var type = property_source ? property_source.type : undefined;
+        _.each(this.toJSON(), function (value, key) {
+            if (key !== 'position' && has_only_defaults) {
+                var property_source = _.findWhere(ENTRY_PROPERTIES, {name: key});
+                var type = property_source ? property_source.type : undefined;
 
                     if ( key === 'data' ) {
                         if ( value !== JSON.stringify(this.getDefaultValue('data')) ) {
@@ -177,48 +178,48 @@ var app = app || {};
                 }
             }, this);
 
-            return has_only_defaults;
-        },
-        //  Return { name: 'name', title: 'Title' } pairs for each item in
-        //  `names` array. If the array is empty, return all possible pairs
-        getNameTitleTypeHash: function (names) {
-            var name_title_hash = [];
+        return has_only_defaults;
+    },
+    //  Return { name: 'name', title: 'Title' } pairs for each item in
+    //  `names` array. If the array is empty, return all possible pairs
+    getNameTitleTypeHash: function (names) {
+        var name_title_hash = [];
 
-            if ( !names ) {
-                names = _.pluck( ENTRY_PROPERTIES, 'name' );
+        if (!names) {
+            names = _.pluck(ENTRY_PROPERTIES, 'name');
+        }
+
+        _.each(ENTRY_PROPERTIES, function (item) {
+            if (_.indexOf(names, item.name) !== -1) {
+                name_title_hash.push({name: item.name, title: item.title, type: item.type});
             }
+        });
 
-            _.each(ENTRY_PROPERTIES, function (item) {
-                if ( _.indexOf(names, item.name) !== -1 ) {
-                    name_title_hash.push({ name: item.name, title: item.title, type: item.type });
-                }
-            });
+        return name_title_hash;
+    },
+    getAttributeType: function (attribute_name) {
+        var name_title_hash = this.getNameTitleTypeHash();
+        var target_attribute = _.findWhere(name_title_hash, {name: attribute_name});
 
-            return name_title_hash;
-        },
-        getAttributeType: function (attribute_name) {
-            var name_title_hash = this.getNameTitleTypeHash();
-            var target_attribute = _.findWhere(name_title_hash, {name: attribute_name});
+        return target_attribute ? target_attribute.type : undefined;
+    },
+    getTitles: function (names) {
+        var name_title_hash = this.getNameTitleTypeHash(names);
 
-            return target_attribute ? target_attribute.type : undefined;
-        },
-        getTitles: function (names) {
-            var name_title_hash = this.getNameTitleTypeHash(names);
-
-            return _.pluck(name_title_hash, 'title');
-        },
-        isAvailableForProfile: function (profile_id) {
-            return this.get('dictionary_entry_profiles') &&
+        return _.pluck(name_title_hash, 'title');
+    },
+    isAvailableForProfile: function (profile_id) {
+        return this.get('dictionary_entry_profiles') &&
                 _.contains(this.get('dictionary_entry_profiles').pluck('profile_id'), profile_id);
-        },
-        isDefaultForProfile: function (profile_id) {
-            var is_default = false;
+    },
+    isDefaultForProfile: function (profile_id) {
+        var is_default = false;
 
             if ( this.isAvailableForProfile(profile_id) ) {
-                var connection = this.get('dictionary_entry_profiles').getByProfileId(profile_id);
+                var connection = this.get('dictionary_entry_profiles').getByProfileId( profile_id );
 
-                is_default = connection.get('is_default') || false;
-            }
+            is_default = connection.get('is_default') || false;
+        }
 
             return is_default;
         },
@@ -287,8 +288,7 @@ var app = app || {};
             var dictionary = this.getParentDictionary();
 
             return dictionary && dictionary.get('is_hidden');
-        },
-        initialize: function (attributes, options) {
+        },initialize: function (attributes, options) {
             this.options = options || {};
 
             //  Any change to `dictionary_entry_profiles` should be persisted
@@ -297,4 +297,3 @@ var app = app || {};
             });
         }
     });
-})();

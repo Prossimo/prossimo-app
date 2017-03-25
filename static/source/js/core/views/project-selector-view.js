@@ -1,22 +1,24 @@
-var app = app || {};
+import Marionette from 'backbone.marionette';
+import $ from 'jquery';
+import {globalChannel} from '../../utils/radio';
+import App from '../../main';
+import template from '../../templates/core/project-selector-view.hbs';
 
-(function () {
-    'use strict';
-
-    app.ProjectSelectorView = Marionette.View.extend({
+export default Marionette.View.extend({
         tagName: 'div',
         className: 'project-selector',
-        template: app.templates['core/project-selector-view'],
+        template: template,
         ui: {
             $select: '.selectpicker'
         },
         events: {
             'change @ui.$select': 'onChange'
+
         },
         initialize: function () {
             this.listenTo(this.collection, 'all', this.render);
-            this.listenTo(app.vent, 'settings:fetch_data:stop', this.onInitialLogin);
-            this.listenTo(app.vent, 'auth:fetched_no_backend', this.onNoBackend);
+            this.listenTo(globalChannel, 'settings:fetch_data:stop', this.onInitialLogin);
+            this.listenTo(globalChannel, 'auth:fetched_no_backend', this.onNoBackend);
         },
         //  This is called after we're done fetching profiles and filling types
         onInitialLogin: function () {
@@ -32,17 +34,17 @@ var app = app || {};
         fetchProjectList: function () {
             var self = this;
 
-            app.vent.trigger('project_selector:fetch_list:start');
+        globalChannel.trigger('project_selector:fetch_list:start');
 
             this.collection.fetch({
                 remove: false,
                 success: function () {
                     self.loadByHashOrLastProject();
-                    app.vent.trigger('project_selector:fetch_list:stop');
+                    globalChannel.trigger('project_selector:fetch_list:stop');
                 },
                 error: function () {
                     self.loadByHashOrLastProject();
-                    app.vent.trigger('project_selector:fetch_list:stop');
+                    globalChannel.trigger('project_selector:fetch_list:stop');
                 },
                 data: {
                     limit: 0
@@ -53,11 +55,12 @@ var app = app || {};
             this.loadByHashOrLastProject();
         },
         onChange: function () {
-            var new_id = this.ui.$select.val();
+            var  new_id =  this.ui.$select.val();
 
             this.setCurrentProject(new_id);
             this.storeLastProject(new_id);
         },
+
         //  On project change we check if project with this id was already
         //  fetched from the server (which means it already has units, files
         //  and accessories, otherwise it only has simple properties like name
@@ -66,45 +69,45 @@ var app = app || {};
             var d = $.Deferred();
             var self = this;
 
-            app.current_project = this.collection.get(new_id);
+        App.current_project = this.collection.get(new_id);
 
-            if ( !app.current_project ) {
-                return;
-            }
+        if (!App.current_project) {
+            return;
+        }
 
-            if ( app.current_project.get('no_backend') === true ) {
-                app.session.set('no_backend', true);
-            } else if ( app.session.get('no_backend') === true ) {
-                app.session.set('no_backend', false);
-            }
+        if (App.current_project.get('no_backend') === true) {
+            App.session.set('no_backend', true);
+        } else if (App.session.get('no_backend') === true) {
+            App.session.set('no_backend', false);
+        }
 
-            if ( app.current_project._wasFetched || app.session.get('no_backend') ) {
-                d.resolve('Project was already fetched');
-            } else {
-                app.vent.trigger('project_selector:fetch_current:start');
+        if (App.current_project._wasFetched || App.session.get('no_backend')) {
+            d.resolve('Project was already fetched');
+        } else {
+            globalChannel.trigger('project_selector:fetch_current:start');
 
-                app.current_project.fetch({
-                    success: function () {
-                        d.resolve('Fetched project');
-                    }
-                });
-            }
-
-            $.when(d).done(function () {
-                app.vent.trigger('current_project_changed');
-                app.current_project.trigger('set_active');
-
-                self.stopListening(app.current_project);
-
-                if ( app.current_project._wasLoaded ) {
-                    app.vent.trigger('project_selector:fetch_current:stop');
-                } else {
-                    self.listenToOnce(app.current_project, 'fully_loaded', function () {
-                        app.vent.trigger('project_selector:fetch_current:stop');
-                    }, self);
+            App.current_project.fetch({
+                success: function () {
+                    d.resolve('Fetched project');
                 }
+            });
+        }
 
-                self.listenTo(app.current_project, 'change:project_name', self.setNewProjectName);
+        $.when(d).done(function () {
+            globalChannel.trigger('current_project_changed');
+            App.current_project.trigger('set_active');
+
+            self.stopListening(App.current_project);
+
+            if (App.current_project._wasLoaded) {
+                globalChannel.trigger('project_selector:fetch_current:stop');
+            } else {
+                self.listenToOnce(App.current_project, 'fully_loaded', function () {
+                    globalChannel.trigger('project_selector:fetch_current:stop');
+                }, self);
+            }
+
+                self.listenTo(App.current_project, 'change:project_name', self.setNewProjectName);
                 self.render();
             });
         },
@@ -120,9 +123,8 @@ var app = app || {};
 
             //  If there is something in hash, load this project
             if ( hash_project_id ) {
-                this.ui.$select.val(hash_project_id).trigger('change');
-            // Get selected project from a localStorage
-            } else if ( 'localStorage' in window && 'getItem' in window.localStorage ) {
+                this.ui.$select.val(hash_project_id).trigger('change');// Get selected project from a localStorage
+            } elseif ( 'localStorage' in window && 'getItem' in window.localStorage ) {
                 var last_id = window.localStorage.getItem('app_currentProject');
 
                 this.ui.$select.val(last_id).trigger('change');
@@ -130,15 +132,16 @@ var app = app || {};
         },
         onRender: function () {
             this.ui.$select.selectpicker({
+
                 size: 10
             });
         },
         templateContext: function () {
             return {
-                no_backend: app.session.get('no_backend'),
+                no_backend: App.session.get('no_backend'),
                 project_list: this.collection.map(function (item) {
                     return {
-                        is_selected: app.current_project && item.id === app.current_project.id,
+                        is_selected: App.current_project && item.id === App.current_project.id,
                         id: item.id,
                         project_name: item.get('project_name')
                     };
@@ -146,4 +149,3 @@ var app = app || {};
             };
         }
     });
-})();

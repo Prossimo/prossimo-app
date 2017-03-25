@@ -1,9 +1,8 @@
-var app = app || {};
+import Marionette from 'backbone.marionette';
+import App from '../../../main';
+import template from '../templates/project-documents-view.hbs';
 
-(function () {
-    'use strict';
-
-    app.ProjectDocumentsView = Marionette.View.extend({
+export default Marionette.View.extend({
         tagName: 'div',
         className: 'document-list',
         template: app.templates['dashboard/project-documents-view'],
@@ -21,4 +20,4 @@ var app = app || {};
             };
         }
     });
-})();
+});
