@@ -1,7 +1,20 @@
 {
     "extends": "airbnb-base/legacy",
+    "parser": "babel-eslint",
     "env": {
+        "es6": true,
         "browser": true
+    },
+    "plugins": [
+        "promise"
+    ],
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "arrowFunctions": true,
+            "jsx": false
+        }
     },
     "rules": {
         //  FIXME: should be error, not warning
@@ -22,6 +35,15 @@
             "ignoreStrings": true,
             "ignoreTemplateLiterals": true
         }],
+        "promise/always-return": "error",
+        "promise/no-return-wrap": "error",
+        "promise/param-names": "error",
+        "promise/catch-or-return": "error",
+        "promise/no-native": "off",
+        "promise/no-nesting": "warn",
+        "promise/no-promise-in-callback": "warn",
+        "promise/no-callback-in-promise": "warn",
+        "promise/avoid-new": "warn",
         //  TODO: We actually want to enable many of the following rules, but
         //  we need to make updates to our code first
         "space-in-parens": "off",
@@ -57,6 +79,7 @@
         "block-scoped-var": "warn"
     },
     "globals": {
+        "__DEV__": true,
         "Konva": false,
         "Marionette": false,
         "Backbone": false,
@@ -65,6 +88,6 @@
         "Handsontable": false,
         "Decimal": false,
         "Spinner": false,
-        "Clipboard": false
+        "App": false
     }
 }
