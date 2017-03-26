@@ -80,7 +80,10 @@ var app = app || {};
                 throw new Error('Item could not be cloned: it has only default attributes, create a new one instead');
             }
 
+            //  TODO: rework this so model name is obtained from model
+            //  attributes, not via options
             var default_options = {
+                model_name: '',
                 attributes_to_omit: [],
                 extra_attributes: {}
             };
@@ -88,7 +91,9 @@ var app = app || {};
             options = _.extend({}, default_options, options);
 
             function getClonedItemName(name, name_attr, collection) {
-                var old_name = name ? name.replace(/\s*\(copy#(\d+)\)/, '') : 'New';
+                var old_name = name ?
+                    name.replace(/\s*\(copy#(\d+)\)/, '') :
+                    (options.model_name ? 'New ' + options.model_name : 'New');
                 var possible_names = _.filter(collection.pluck(name_attr), function (value) {
                     return value.indexOf(old_name) !== -1;
                 }, this);

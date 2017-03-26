@@ -13,6 +13,7 @@ var app = app || {};
         },
         cloneQuote: function () {
             this.model.duplicate({
+                model_name: 'Quote',
                 attributes_to_omit: ['is_default'],
                 extra_attributes: {
                     units: this.model.units.toJSON(),
