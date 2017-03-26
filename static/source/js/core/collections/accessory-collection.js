@@ -19,18 +19,20 @@ var app = app || {};
         reorder_property_name: 'accessories',
         url: function () {
             return app.settings.get('api_base_path') +
-                '/projects/' + this.options.project.get('id') + '/accessories';
+                '/projects/' + this.options.project.get('id') +
+                '/quotes/' + this.options.quote.get('id') + '/accessories';
         },
         reorder_url: function () {
             return app.settings.get('api_base_path') +
-                '/projects/' + this.options.project.get('id') + '/reorder_accessories';
+                '/projects/' + this.options.project.get('id') +
+                '/quotes/' + this.options.quote.get('id') + '/reorder_accessories';
         },
         initialize: function (models, options) {
             this.options = options || {};
             this.proxy_accessory = new app.Accessory(null, { proxy: true });
 
-            //  When parent project is fully loaded, we validate positions
-            this.listenTo(this.options.project, 'fully_loaded', this.validatePositions);
+            //  When parent quote is fully loaded, we validate positions
+            this.listenTo(this.options.quote, 'fully_loaded', this.validatePositions);
             this.on('loaded', this.addDefaultShipping, this);
         },
         //  Add new `Shipping` item if there's no shipping yet

@@ -1,0 +1,5 @@
+<select name="quote-selector-dropdown" id="quote-selector-dropdown" class="selectpicker show-tick" title="Choose a quote"{{#if is_disabled }} disabled{{/if}}>
+    {{#each quote_list}}
+        <option {{#if is_selected }}selected{{/if}} value="{{ id }}">{{ quote_name }}</option>
+    {{/each}}
+</select>

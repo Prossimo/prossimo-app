@@ -1206,7 +1206,7 @@ var app = app || {};
                 }
 
                 this.total_prices_view = new app.UnitsTableTotalPricesView({
-                    model: app.current_project,
+                    model: app.current_quote,
                     units: this.collection,
                     extras: this.options.extras
                 });

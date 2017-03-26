@@ -12,8 +12,8 @@ var app = app || {};
         },
         onRender: function () {
             this.units_table_view = new app.UnitsTableView({
-                collection: app.current_project.units,
-                extras: app.current_project.extras,
+                collection: app.current_quote.units,
+                extras: app.current_quote.extras,
                 parent_view: this,
                 is_always_visible: true
             });

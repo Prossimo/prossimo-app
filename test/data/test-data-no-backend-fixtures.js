@@ -203,6 +203,15 @@ $(document).ready(function () {
         }
     ];
 
+    var test_quotes_data = [
+        {
+            id: 222,
+            date: '11 June, 2016',
+            revision: 1,
+            is_default: true
+        }
+    ];
+
     var test_project = new app.Project({
         id: 9999,
         client_name: 'John Doe',
@@ -221,8 +230,11 @@ $(document).ready(function () {
         app.settings.profiles.add(test_profiles_data);
 
         test_project.files.add(test_project_files_data);
-        test_project.units.add(test_project_units_data);
-        test_project.extras.add(test_project_extras_data);
+        test_project.quotes.add(test_quotes_data);
+
+        //  Units and extras go to the first quote in the list
+        test_project.quotes.at(0).units.add(test_project_units_data);
+        test_project.quotes.at(0).extras.add(test_project_extras_data);
 
         app.projects.add(test_project);
 

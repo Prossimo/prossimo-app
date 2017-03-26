@@ -13,12 +13,12 @@ app.settings = new app.Settings();
 test('units collection instanceOf tests', function () {
     var units_collection = new app.UnitCollection();
     var unit_model = new units_collection.model();
-    var project = new app.Project();
+    var quote = new app.Quote();
 
     instanceOf(units_collection, Backbone.Collection, 'should belong to Backbone.Collection object');
     instanceOf(unit_model, Backbone.Model, 'collection model should belong to Backbone.Model object');
     instanceOf(unit_model, app.Unit, 'collection model should belong to app.Unit object');
-    instanceOf(project.units, app.UnitCollection, 'app.Project().units should belong to app.UnitCollection object');
+    instanceOf(quote.units, app.UnitCollection, 'app.Quote().units should belong to app.UnitCollection object');
 });
 
 test('units collection basic tests', function () {
