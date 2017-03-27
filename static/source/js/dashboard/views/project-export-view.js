@@ -11,7 +11,8 @@ var app = app || {};
             $export_button: '.js-export-project-data'
         },
         events: {
-            'change input': 'onChangeInput'
+            'change input[type="checkbox"]': 'onChangeCheckboxInput',
+            'change input[type="radio"]': 'onChangeRadioInput'
         },
         getCsvData: function () {
             var column_delimiter = '","';
@@ -22,7 +23,10 @@ var app = app || {};
             });
             var source_data = this.model.preparePricingDataForExport(_.extend({},
                 export_options,
-                { as_array: true }
+                {
+                    as_array: true,
+                    quote_mode: this.export_quote_mode.value
+                }
             ));
             var csv_string = '"';
             var titles = source_data.length ? _.pluck(source_data[0], 'title') : [];
@@ -56,22 +60,42 @@ var app = app || {};
             var year = start_time.getFullYear();
             var month = (start_time.getMonth() > 8) ? (start_time.getMonth() + 1) : '0' + (start_time.getMonth() + 1);
             var date = (start_time.getDate() > 9) ? start_time.getDate() : '0' + start_time.getDate();
+            var project_name = this.model.get('project_name') ? this.model.get('project_name') : 'unnamed';
+            var quote_name = this.export_quote_mode.value === 'current' ?
+                this.options.quote.getName() :
+                'All Quotes';
+
+            project_name = project_name.split(/\s/).join('-');
+            quote_name = quote_name.split(/\s/).join('-');
 
             return year + '-' + month + '-' + date + '_' +
                 (this.model.id ? this.model.id + '_' : '') +
-                (this.model.get('project_name') ? this.model.get('project_name').split(/\s/).join('-') : 'unnamed')
+                project_name + '_' + quote_name
             ;
         },
         getFilename: function () {
+            this.filename = this.getDefaultFilename();
+
             return (this.filename ? this.filename : 'unnamed') + '.csv';
         },
-        onChangeInput: function (e) {
+        onChangeCheckboxInput: function (e) {
             var $target = $(e.target);
             var option_name = $target.attr('name');
             var new_value = $target.is(':checked');
 
             this.export_options[option_name].checked = new_value;
             this.updateExportButton();
+        },
+        onChangeRadioInput: function (e) {
+            var $target = $(e.target);
+            var option_name = $target.attr('name');
+            var $checked = this.$el.find('input[name="' + option_name + '"]:checked');
+            var new_value = $checked.length ? $checked.val() : undefined;
+
+            if ( new_value ) {
+                this.export_quote_mode.value = new_value;
+                this.updateExportButton();
+            }
         },
         updateExportButton: function () {
             var csv_data = this.getCsvData();
@@ -83,21 +107,30 @@ var app = app || {};
         templateContext: function () {
             return {
                 export_options: this.export_options,
+                export_quote_mode: this.export_quote_mode,
                 filename: this.getFilename(),
                 csv_data: this.getCsvData()
             };
         },
         initialize: function () {
-            //  It might be made customizable via input, but currently it's not
-            this.filename = this.getDefaultFilename();
             this.export_options = {
                 include_project: { checked: false, title: 'Project Info', description: 'Project ID and name' },
+                include_quote: { checked: false, title: 'Quote Info', description: 'Quote ID and name' },
                 include_supplier_cost: { checked: true, title: 'Supplier Cost', description: 'Costs provided by supplier' },
                 include_price: { checked: false, title: 'Price', description: 'Our markup and final price' },
                 include_profile: { checked: false, title: 'Profile Info', description: 'Profile name and unit type' },
                 include_fillings: { checked: false, title: 'Fillings', description: 'List of fillings used for unit' },
                 include_options: { checked: false, title: 'Options', description: 'List of options used for unit' }
             };
+            this.export_quote_mode = {
+                value: 'current',
+                possible_values: [
+                    { checked: true, value: 'current', title: 'Current Quote' },
+                    { checked: false, value: 'all', title: 'All Quotes' }
+                ]
+            };
+            //  It might be made customizable via input, but currently it's not
+            this.filename = this.getDefaultFilename();
         }
     });
 })();

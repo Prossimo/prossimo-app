@@ -23,7 +23,7 @@
                 <div class="col-sm-6">
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" name={{ @key }} {{#if checked }} checked{{/if}}>
+                            <input type="checkbox" name="{{ @key }}"{{#if checked }} checked{{/if}}>
                             <small>{{ title }}</small>
                         </label>
                     </div>
@@ -33,6 +33,21 @@
                 </div>
             </div>
             {{/each}}
+            <div class="form-group">
+                <div class="col-sm-6">
+                    {{#each export_quote_mode.possible_values }}
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="export_quote_mode" value="{{ value }}"{{#if checked }} checked{{/if}}>
+                            <small>{{ title }}</small>
+                        </label>
+                    </div>
+                    {{/each}}
+                </div>
+                <div class="col-sm-6">
+                    <small>Which Quote data to use</small>
+                </div>
+            </div>
             <a href="{{ csv_data }}" download="{{ filename }}" taget="_blank" class="btn btn-primary pull-right js-export-project-data">Export as .csv</a>
         </div>
     </div>

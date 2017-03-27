@@ -731,6 +731,7 @@ var app = app || {};
         preparePricingDataForExport: function (options) {
             var default_options = {
                 include_project: true,
+                include_quote: true,
                 include_supplier_cost: true,
                 include_price: true,
                 include_profile: true,
@@ -744,6 +745,7 @@ var app = app || {};
             var sections_list = this.getFixedAndOperableSectionsList();
             var options_grouped_by_scheme = this.getUnitOptionsGroupedByPricingScheme();
             var parent_project = this.getParentProject();
+            var parent_quote = this.getParentQuote();
 
             var pricing_data = {};
 
@@ -752,6 +754,14 @@ var app = app || {};
                 pricing_data = _.extend({}, pricing_data, {
                     project_id: parent_project.id,
                     project_name: parent_project.get('project_name')
+                });
+            }
+
+            //  Quote info
+            if ( options.include_quote && parent_quote ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    quote_id: parent_quote.id,
+                    quote_name: parent_quote.getName()
                 });
             }
 
@@ -815,6 +825,8 @@ var app = app || {};
             var custom_titles = {
                 project_id: 'Project ID',
                 project_name: 'Project Name',
+                quote_id: 'Quote ID',
+                quote_name: 'Quote Name',
                 unit_cost: 'Unit Cost',
                 subtotal_cost: 'Subtotal Cost',
                 subtotal_cost_with_discount: 'Subtotal Cost w/D',
@@ -2441,6 +2453,9 @@ var app = app || {};
         },
         getParentProject: function () {
             return this.collection && this.collection.options.project;
+        },
+        getParentQuote: function () {
+            return this.collection && this.collection.options.quote;
         },
         //  Check if this unit belongs to the project which is currently active
         isParentQuoteActive: function () {

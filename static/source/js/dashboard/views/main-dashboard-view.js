@@ -32,7 +32,8 @@ var app = app || {};
             });
 
             this.export_view = new app.ProjectExportView({
-                model: app.current_project
+                model: app.current_project,
+                quote: app.current_quote
             });
         },
         onRender: function () {
