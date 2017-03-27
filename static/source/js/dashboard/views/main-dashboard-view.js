@@ -11,6 +11,7 @@ var app = app || {};
             $totals: '#totals',
             $project_info: '#project-info',
             $documents: '#documents',
+            $quote_info: '#quote-info',
             $export: '#project-export'
         },
         initialize: function () {
@@ -18,12 +19,16 @@ var app = app || {};
                 model: app.current_project
             });
 
-            this.totals_view = new app.ProjectTotalsView({
-                model: app.current_project
+            this.totals_view = new app.QuoteTotalsView({
+                model: app.current_quote
+            });
+
+            this.quote_info_view = new app.QuoteInfoView({
+                model: app.current_quote
             });
 
             this.documents_view = new app.ProjectDocumentsView({
-                model: app.current_project
+                collection: app.current_project.files
             });
 
             this.export_view = new app.ProjectExportView({
@@ -33,12 +38,14 @@ var app = app || {};
         onRender: function () {
             this.ui.$project_info.append(this.project_info_view.render().el);
             this.ui.$totals.append(this.totals_view.render().el);
+            this.ui.$quote_info.append(this.quote_info_view.render().el);
             this.ui.$documents.append(this.documents_view.render().el);
             this.ui.$export.append(this.export_view.render().el);
         },
         onBeforeDestroy: function () {
             this.project_info_view.destroy();
             this.totals_view.destroy();
+            this.quote_info_view.destroy();
             this.documents_view.destroy();
             this.export_view.destroy();
         }

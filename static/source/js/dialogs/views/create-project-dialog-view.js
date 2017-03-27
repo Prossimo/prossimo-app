@@ -16,8 +16,6 @@ var app = app || {};
             $data_email: '.modal-body form input[name="email"]',
             $data_client_address: '.modal-body form input[name="client_address"]',
             $data_project_address: '.modal-body form input[name="project_address"]',
-            $data_quote_revision: '.modal-body form input[name="quote_revision"]',
-            $data_quote_date: '.modal-body form input[name="quote_date"]',
             $data_project_notes: '.modal-body form textarea[name="project_notes"]',
             $data_shipping_notes: '.modal-body form textarea[name="shipping_notes"]',
             $data_lead_time: '.modal-body form input[name="lead_time"]'
@@ -34,8 +32,6 @@ var app = app || {};
                 client_email: this.ui.$data_email.val().trim(),
                 client_address: this.ui.$data_client_address.val().trim(),
                 project_address: this.ui.$data_project_address.val().trim(),
-                quote_revision: this.ui.$data_quote_revision.val().trim(),
-                quote_date: this.ui.$data_quote_date.val().trim(),
                 project_notes: this.ui.$data_project_notes.val().trim(),
                 shipping_notes: this.ui.$data_shipping_notes.val().trim(),
                 lead_time: this.ui.$data_lead_time.val().trim(),
@@ -46,11 +42,12 @@ var app = app || {};
             this.$el.modal('hide');
             app.projects.create(newProject);
         },
+        templateContext: function () {
+            return {
+                dialog_title: 'Create Project'
+            };
+        },
         onRender: function () {
-            if (!this.$el.find('.modal-header').find('h4').length) {
-                this.$el.find('.modal-header').append('<h4></h4>');
-            }
-
             if ( this.file_uploader ) {
                 this.file_uploader.destroy();
             }
@@ -61,12 +58,6 @@ var app = app || {};
 
             this.file_uploader.render()
                 .$el.appendTo( this.ui.$filesRegion );
-
-            this.$el.find('.modal-header').find('h4').text('Create project');
-
-            this.ui.$form.find('.date').datepicker({
-                format: 'd MM, yyyy'
-            });
         },
         onBeforeDestroy: function () {
             if ( this.file_uploader ) {

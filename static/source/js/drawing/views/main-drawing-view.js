@@ -60,13 +60,13 @@ var app = app || {};
             this.trigger('drawing_view:' + e);
         },
         onRender: function () {
-            this.active_unit = app.current_project.units.length ?
-                app.current_project.units.first() : null;
+            this.active_unit = app.current_quote.units.length ?
+                app.current_quote.units.first() : null;
 
             this.updateDrawingView();
 
             this.sidebar_view = new app.DrawingSidebarView({
-                collection: app.current_project.units,
+                collection: app.current_quote.units,
                 parent_view: this
             });
 

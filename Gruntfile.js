@@ -80,6 +80,7 @@ module.exports = function (grunt) {
         'core/models/unit.js',
         'core/models/accessory.js',
         'core/models/profile.js',
+        'core/models/quote.js',
         'core/models/project.js',
         'core/models/project-file.js',
         'core/models/filling-type.js',
@@ -90,6 +91,7 @@ module.exports = function (grunt) {
         'core/collections/unit-collection.js',
         'core/collections/accessory-collection.js',
         'core/collections/profile-collection.js',
+        'core/collections/quote-collection.js',
         'core/collections/project-collection.js',
         'core/collections/project-file-collection.js',
         'core/collections/filling-type-collection.js',
@@ -99,12 +101,14 @@ module.exports = function (grunt) {
         'core/views/base/base-toggle-view.js',
         'core/views/base/base-input-view.js',
         'core/views/base/base-select-view.js',
+        'core/views/base/base-datepicker-input-view.js',
         'core/views/base/sidebar-list-item-view.js',
         'core/views/base/sidebar-list-view.js',
         'core/views/main-navigation-view.js',
         'core/views/units-table-view.js',
         'core/views/units-table-total-prices-view.js',
         'core/views/project-selector-view.js',
+        'core/views/quote-selector-view.js',
         'core/views/no-project-selected-view.js',
         'core/views/status-panel-view.js',
         'core/views/project-settings-panel-view.js',
@@ -152,10 +156,11 @@ module.exports = function (grunt) {
         'supplier-request/views/main-supplier-request-view.js',
         'supplier-request/views/supplier-request-header-view.js',
         //  Dashboard screen
-        'dashboard/views/project-totals-view.js',
         'dashboard/views/project-info-view.js',
         'dashboard/views/project-documents-view.js',
         'dashboard/views/project-export-view.js',
+        'dashboard/views/quote-info-view.js',
+        'dashboard/views/quote-totals-view.js',
         'dashboard/views/main-dashboard-view.js',
         //  Dialogs
         'dialogs/views/base-dialog-view.js',
@@ -163,6 +168,9 @@ module.exports = function (grunt) {
         'dialogs/views/items-profiles-table-dialog-view.js',
         'components/file-uploader-view.js',
         'dialogs/views/create-project-dialog-view.js',
+        'dialogs/views/quotes-editor-table-item-view.js',
+        'dialogs/views/quotes-editor-table-view.js',
+        'dialogs/views/edit-quotes-dialog-view.js',
         //  App entry
         'app.js'
     ];

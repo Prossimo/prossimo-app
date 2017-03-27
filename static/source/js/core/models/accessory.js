@@ -62,13 +62,17 @@ var app = app || {};
             return default_value;
         },
         sync: function (method, model, options) {
-            var properties_to_omit = ['id'];
-
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { project_accessory: _.omit(model.toJSON(), properties_to_omit) };
+                options.attrs = { accessory: model.toJSON() };
             }
 
             return Backbone.sync.call(this, method, model, options);
+        },
+        toJSON: function () {
+            var properties_to_omit = ['id'];
+            var json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+
+            return _.omit(json, properties_to_omit);
         },
         parse: function (data) {
             var accessory_data = data && data.accessory ? data.accessory : data;
@@ -177,13 +181,13 @@ var app = app || {};
         getSubtotalPrice: function () {
             var subtotal_price = this.getUnitPrice() * parseFloat(this.get('quantity'));
 
-            if ( app.current_project ) {
+            if ( app.current_quote ) {
                 //  If this is percent-based optional extras, base is Unit Subtotal
                 if ( this.isPercentBasedType() && this.isOptionalType() ) {
-                    subtotal_price = this.getMarkupPercent() / 100 * app.current_project.getSubtotalUnitsPrice();
+                    subtotal_price = this.getMarkupPercent() / 100 * app.current_quote.getSubtotalUnitsPrice();
                 //  If this is tax, base is everything except shipping
                 } else if ( this.isPercentBasedType() ) {
-                    subtotal_price = this.getMarkupPercent() / 100 * app.current_project.getSubtotalPrice();
+                    subtotal_price = this.getMarkupPercent() / 100 * app.current_quote.getSubtotalPrice();
                 }
             }
 

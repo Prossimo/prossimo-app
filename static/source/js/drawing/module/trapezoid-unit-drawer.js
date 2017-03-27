@@ -29,6 +29,7 @@ var app = app || {};
             this.layer.destroyChildren();
             // Creating unit and adding it to layer
             this.layer.add( this.createUnit() );
+            this.applyHandleFixes();
             // Draw layer
             this.layer.draw();
 
@@ -77,9 +78,17 @@ var app = app || {};
 
         // Keyboards handlers
         onKeyDown: function (e) {
-            if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
+            var isRemove = e.key === 'Delete' || e.key === 'Backspace';
+            var isNumeric = /^[0-9]$/.test(e.key);
+            var selectedMullionId = module.getState('selected:mullion');
+            var isMullionSelected = !!selectedMullionId;
+
+            if (isRemove) {
                 e.preventDefault();
                 this.removeSelected();
+
+            } else if (isNumeric && isMullionSelected) {
+                module.trigger('mullionNumericInput', { mullionId: selectedMullionId });
             }
         },
 
@@ -131,10 +140,6 @@ var app = app || {};
             if (!module.getState('openingView')) {
                 frameGroup.moveToTop();
             }
-
-            group.find('.handle').each(function (handle) {
-                if (handle.getAttr('doSinkThroughGlass')) { handle.moveDown(); handle.moveDown(); }
-            });
 
             return group;
         },
@@ -1109,6 +1114,7 @@ var app = app || {};
             var style = module.getStyle('mullions');
             var fillStyle = module.getStyle('fillings');
             var group = new Konva.Group({
+                id: 'mullion-' + section.id,
                 name: 'mullion',
                 sectionId: section.id
             });
@@ -1628,12 +1634,20 @@ var app = app || {};
                 pos.rotation = 90;
             };
             var sinkThroughGlass = function () {
+                var fixes = handle.getAttr('fixes') || [];
+
                 handle.setAttrs({
-                    doSinkThroughGlass: true,
+                    fixes: fixes.concat('sinkThroughGlass'),
                     opacity: style.sunk.opacity
                 });
             };
+            var raiseAboveFrame = function () {
+                var fixes = handle.getAttr('fixes') || [];
 
+                handle.setAttrs({
+                    fixes: fixes.concat('raiseAboveFrame')
+                });
+            };
             var isLeftHandle = (type === 'tilt_turn_right' || type === 'turn_only_right' ||
                     type === 'slide-right' || type === 'flush-turn-right' ||
                     type === 'slide_left' || type === 'tilt_slide_left');
@@ -1643,13 +1657,11 @@ var app = app || {};
             var isTiltSection = (type === 'tilt_only');
 
             if (isInsideView || (isOutsideView && model.profile.hasOutsideHandle())) {
-
-                if (isLeftHandle) { positionLeft(); }
-                else if (isRightHandle) { positionRight(); }
-                else if (isTiltSection) { positionRightTilt(); }
+                if (isLeftHandle) { positionLeft(); raiseAboveFrame(); }
+                else if (isRightHandle) { positionRight(); raiseAboveFrame(); }
+                else if (isTiltSection) { positionRightTilt(); raiseAboveFrame(); }
 
             } else if (isOutsideView) {
-
                 if (isLeftHandle) { positionLeft(); sinkThroughGlass(); }
                 else if (isRightHandle) { positionRight(); sinkThroughGlass(); }
                 else if (isTiltSection) { positionRightTilt(); sinkThroughGlass(); }
@@ -1705,6 +1717,25 @@ var app = app || {};
             handle.add(handleBaseBg, handleBaseStroke, handleGripBg, handleGripStroke);
 
             return handle;
+        },
+        applyHandleFixes: function () {
+            var self = this;
+
+            this.layer.find('.handle').forEach(function (handle) {
+                handle.getAttr('fixes').forEach(function (fix) {
+                    if (fix === 'sinkThroughGlass') {
+                        handle.moveDown();
+                        handle.moveDown();
+
+                    } else if (fix === 'raiseAboveFrame') {
+                        var transform = handle.getAbsoluteTransform().getMatrix();
+                        handle.moveTo(self.layer);
+                        handle.moveToTop();
+                        handle.scale({ x: transform[0], y: transform[3] });
+                        handle.position({ x: transform[4], y: transform[5] });
+                    }
+                });
+            });
         },
         createDirectionLine: function (section) {
             var group = new Konva.Group({
