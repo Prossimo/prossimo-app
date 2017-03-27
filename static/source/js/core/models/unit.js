@@ -1266,86 +1266,114 @@ var app = app || {};
                 rootSection.mullionParams = mullionAttrs;
             }
 
+            // Vars for use in the following map callback
+            var parentHasFrame = hasFrame;
+            var isParentLeft = openingParams.isLeft;
+            var isParentRight = openingParams.isRight;
+            var isParentTop = openingParams.isTop;
+            var isParentBottom = openingParams.isBottom;
+
             rootSection.sections = _.map(rootSection.sections, function (sectionData, i) {
-                var sectionParams = {
-                    x: null, y: null, width: null, height: null
+
+                var sectionParams = { x: null, y: null, width: null, height: null };
+                var isVertical = rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible';
+                var isHorizontal = rootSection.divider === 'horizontal' || rootSection.divider === 'horizontal_invisible';
+                var isFirst = i === 0;
+                var isLeft = isVertical && !isFirst;  // Is this left section when looking from outside?
+                var isRight = isVertical && isFirst;
+                var isTop = isHorizontal && isFirst;
+                var isBottom = isHorizontal && !isFirst;
+                var isDoorProfile = this.isDoorType();
+                var sashFrameWidth = this.profile.get('sash_frame_width');
+                var sashFrameOverlap = this.profile.get('sash_frame_overlap');
+                var sashMullionOverlap = this.profile.get('sash_mullion_overlap');
+                var mullionWidth = this.profile.get('mullion_width');
+                var sashFrameGlassOverlap = sashFrameWidth - sashFrameOverlap;
+                var overlapDifference = sashFrameOverlap - sashMullionOverlap;
+                var trim = function (amount, sides) {
+                    if (sides === 'all') { sides = ['top', 'right', 'bottom', 'left']; }
+                    if (_.isString(sides)) { sides = [sides]; }
+
+                    sides.forEach(function (side) {
+                        if (side === 'top') {
+                            sectionParams.y += amount;
+                            sectionParams.height -= amount;
+                        } else if (side === 'right') {
+                            sectionParams.x += amount;
+                            sectionParams.width -= amount;
+                        } else if (side === 'bottom') {
+                            sectionParams.height -= amount;
+                        } else if (side === 'left') {
+                            sectionParams.width -= amount;
+                        }
+                    });
                 };
 
+                // Set section data & glass sizes
                 sectionData.mullionEdges = _.clone(rootSection.mullionEdges);
                 sectionData.thresholdEdge = rootSection.thresholdEdge;
                 sectionData.parentId = rootSection.id;
+                sectionParams.x = openingParams.x;
+                sectionParams.y = openingParams.y;
 
-                // Correction params. Needed for sections in operable sash
-                var corr = -1 * (this.profile.get('sash_frame_width') - this.profile.get('sash_frame_overlap'));
-                var correction = {
-                    x: 0,
-                    y: 0,
-                    width: 0,
-                    height: 0
-                };
-
-                // Calculate correction params
-                if (rootSection.sashType !== 'fixed_in_frame') {
-                    if (rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible') {
-                        // correction for vertical sections
-                        if (i === 0) {
-                            correction.x = -1 * corr;
-                        }
-
-                        correction.y = -1 * corr;
-                        correction.width = corr;
-                        correction.height = corr * 2;
-                    } else {
-                        // correction for horizontal sections
-                        if (i === 0) {
-                            correction.y = -1 * corr;
-                        }
-
-                        correction.x = -1 * corr;
-                        correction.width = corr * 2;
-                        correction.height = corr;
-                    }
-                }
-
-                if (rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible') {
-                    sectionParams.x = openingParams.x;
-                    sectionParams.y = openingParams.y;
-
-                    if (i === 0) {
-                        sectionParams.width = position - rootSection.openingParams.x -
-                            this.profile.get('mullion_width') / 2;
-                        sectionData.mullionEdges.right = rootSection.divider;
-                    } else {
-                        sectionParams.x = position + this.profile.get('mullion_width') / 2;
-                        sectionParams.width = openingParams.width + openingParams.x -
-                            position - this.profile.get('mullion_width') / 2;
-                        sectionData.mullionEdges.left = rootSection.divider;
-                    }
-
+                if (isLeft) {
+                    sectionParams.x = position + mullionWidth / 2;
+                    sectionParams.width = openingParams.width + openingParams.x - position - mullionWidth / 2;
                     sectionParams.height = openingParams.height;
-                } else {
-                    sectionParams.x = openingParams.x;
-                    sectionParams.y = openingParams.y;
-                    sectionParams.width = openingParams.width;
+                    sectionData.mullionEdges.left = rootSection.divider;
 
-                    if (i === 0) {
-                        sectionData.mullionEdges.bottom = rootSection.divider;
-                        sectionParams.height = position - rootSection.openingParams.y -
-                            this.profile.get('mullion_width') / 2;
-                        sectionData.thresholdEdge = false;
-                    } else {
-                        sectionParams.y = position + this.profile.get('mullion_width') / 2;
-                        sectionParams.height = openingParams.height + openingParams.y - position -
-                            this.profile.get('mullion_width') / 2;
-                        sectionData.mullionEdges.top = rootSection.divider;
-                    }
+                } else if (isRight) {
+                    sectionParams.width = position - rootSection.openingParams.x - mullionWidth / 2;
+                    sectionParams.height = openingParams.height;
+                    sectionData.mullionEdges.right = rootSection.divider;
+
+                } else if (isTop) {
+                    sectionParams.width = openingParams.width;
+                    sectionParams.height = position - rootSection.openingParams.y - mullionWidth / 2;
+                    sectionData.mullionEdges.bottom = rootSection.divider;
+                    sectionData.thresholdEdge = false;
+
+                } else if (isBottom) {
+                    sectionParams.y = position + mullionWidth / 2;
+                    sectionParams.width = openingParams.width;
+                    sectionParams.height = openingParams.height + openingParams.y - position - mullionWidth / 2;
+                    sectionData.mullionEdges.top = rootSection.divider;
                 }
 
-                // Apply corrections
-                sectionParams.x += correction.x;
-                sectionParams.y += correction.y;
-                sectionParams.width += correction.width;
-                sectionParams.height += correction.height;
+                // Trim glasses inside subdivided framed sashes
+                if (isLeft && parentHasFrame) {
+                    trim(sashFrameGlassOverlap, ['bottom', 'left', 'top']);
+                } else if (isRight && parentHasFrame) {
+                    trim(sashFrameGlassOverlap, ['top', 'right', 'bottom']);
+                } else if (isTop && parentHasFrame) {
+                    trim(sashFrameGlassOverlap, ['left', 'top', 'right']);
+                } else if (isBottom && parentHasFrame) {
+                    trim(sashFrameGlassOverlap, ['right', 'bottom', 'left']);
+                }
+
+                // Trim glasses inside subdivided framed sashes in door profiles
+                if (isDoorProfile && parentHasFrame && (isLeft || isRight)) {
+                    trim(overlapDifference, 'bottom');
+                } else if (isDoorProfile && parentHasFrame && isBottom) {
+                    trim(overlapDifference, 'bottom');
+                }
+
+                // Trim glasses inside subdivided framed sashes overlapping a parent mullion on one side
+                if (parentHasFrame && isParentLeft && (isTop || isBottom || isRight)) {
+                    trim(overlapDifference, 'right');
+                } else if (parentHasFrame && isParentRight && (isTop || isBottom || isLeft)) {
+                    trim(overlapDifference, 'left');
+                } else if (parentHasFrame && isParentTop && (isLeft || isRight || isBottom)) {
+                    trim(overlapDifference, 'bottom');
+                } else if (parentHasFrame && isParentBottom && (isLeft || isRight || isTop)) {
+                    trim(overlapDifference, 'top');
+                }
+
+                // Save data to be referred as parent data in child sections
+                sectionParams.isLeft = isLeft;
+                sectionParams.isRight = isRight;
+                sectionParams.isTop = isTop;
+                sectionParams.isBottom = isBottom;
 
                 return this.generateFullRoot(sectionData, sectionParams);
             }.bind(this));
