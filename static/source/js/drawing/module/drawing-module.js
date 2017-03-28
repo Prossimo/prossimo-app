@@ -282,7 +282,10 @@ var app = app || {};
                 },
                 handle: {
                     fill: 'white',
-                    stroke: 'black'
+                    stroke: 'black',
+                    sunk: {
+                        opacity: 0.75
+                    }
                 },
                 direction_line: {
                     stroke: 'black'
@@ -331,6 +334,12 @@ var app = app || {};
                         fontSize: 9,
                         fontSize_big: 10
                     }
+                },
+                mullion_input: {
+                    width: 48,
+                    height: 20,
+                    padding: 3,
+                    fontSize: 12
                 },
                 indexes: {
                     align: 'center',

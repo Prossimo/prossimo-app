@@ -1,16 +1,18 @@
 <div class="top-bar-container">
-    <div class="float-center" >
-        <div class="float-center-child">
-            <div class="project-selector-container"></div>
-            <div class="create-project-container">
-                <a class="create-project-button">Create project</a>
-            </div>
-            <div class="project-settings-toggle-container">
-                <button class="btn project-settings-toggle glyphicon glyphicon-cog{{#if is_settings_toggle_disabled }} disabled{{/if}}"></button>
-            </div>
-            <div class="spinner-container"></div>
-            <div style="clear: both;"></div>
-        </div>
+    <div class="project-selector-container"></div>
+    <div class="create-project-container">
+        <button class="btn btn-primary btn-sm create-new-project js-create-new-project">Create project</button>
     </div>
+    <div class="project-settings-toggle-container">
+        <button class="btn project-settings-toggle glyphicon glyphicon-cog{{#if is_settings_toggle_disabled }} disabled{{/if}}" title="Project Settings"></button>
+    </div>
+    <div class="spinner-container"></div>
     <div class="status-panel-container"></div>
+</div>
+<div class="bottom-bar-container">
+    <div class="quote-selector-container"></div>
+    <div class="edit-quotes-container">
+        <btn class="btn btn-primary btn-xs edit-quotes js-edit-quotes{{#if is_settings_toggle_disabled }} disabled{{/if}}">Edit quotes</btn>
+    </div>
+    <div class="main-nav-container"></div>
 </div>

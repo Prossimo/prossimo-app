@@ -29,6 +29,7 @@ var app = app || {};
             this.layer.destroyChildren();
             // Creating unit and adding it to layer
             this.layer.add( this.createUnit() );
+            this.applyHandleFixes();
             // Draw layer
             this.layer.draw();
 
@@ -77,9 +78,17 @@ var app = app || {};
 
         // Keyboards handlers
         onKeyDown: function (e) {
-            if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
+            var isRemove = e.key === 'Delete' || e.key === 'Backspace';
+            var isNumeric = /^[0-9]$/.test(e.key);
+            var selectedMullionId = module.getState('selected:mullion');
+            var isMullionSelected = !!selectedMullionId;
+
+            if (isRemove) {
                 e.preventDefault();
                 this.removeSelected();
+
+            } else if (isNumeric && isMullionSelected) {
+                module.trigger('mullionNumericInput', { mullionId: selectedMullionId });
             }
         },
 
@@ -1105,6 +1114,7 @@ var app = app || {};
             var style = module.getStyle('mullions');
             var fillStyle = module.getStyle('fillings');
             var group = new Konva.Group({
+                id: 'mullion-' + section.id,
                 name: 'mullion',
                 sectionId: section.id
             });
@@ -1556,12 +1566,9 @@ var app = app || {};
         /* eslint-enable max-statements */
         shouldDrawHandle: function (type) {
             var result = false;
-            var typeResult = false;
 
             if (
                 type !== 'fixed_in_frame' &&
-                // type !== 'slide_left' &&
-                // type !== 'slide_right' &&
                 (
                     type.indexOf('left') >= 0 ||
                     type.indexOf('right') >= 0 ||
@@ -1569,98 +1576,166 @@ var app = app || {};
                 ) &&
                 (type.indexOf('_hinge_hidden_latch') === -1)
             ) {
-                typeResult = true;
+                result = true;
             }
 
-            // Draw handle if:
-            // 1). type of sash has handle
-            // 2a). it's inside view
-            // 2b). it's outside view & profile hasOutsideHandle (for example, door)
-            result = (
-                typeResult &&
-                (
-                    (module.getState('insideView')) ||
-                    (!module.getState('insideView') && model.profile.hasOutsideHandle())
-                )
-            );
-
+            // Draw handle if this type of sash has a handle
             return result;
         },
         createHandle: function (section, params) {
+            var handle = new Konva.Group();
             var type = section.sashType;
             var offset = params.frameWidth / 2;
             var style = module.getStyle('handle');
+            var isInsideView = module.getState('insideView');
+            var isOutsideView = !isInsideView;
             var pos = {
                 x: null,
                 y: null,
                 rotation: 0
             };
-
-            if ( type === 'tilt_turn_right' || type === 'turn_only_right' ||
-                type === 'slide-right' || type === 'flush-turn-right' ||
-                type === 'slide_left' || type === 'tilt_slide_left' )
-            {
-                pos.x = offset;
-                pos.y = (section.trapezoid && section.trapezoid.frame)
-                ? section.trapezoid.frame.outer[0].y +
-                    ( ( section.trapezoid.frame.outer[3].y - section.trapezoid.frame.outer[0].y ) / 2 )
-                : section.sashParams.height / 2;
-            }
-
-            if ( type === 'tilt_turn_left' || type === 'turn_only_left' ||
-                type === 'slide-left' || type === 'flush-turn-left' ||
-                type === 'slide_right' || type === 'tilt_slide_right' )
-            {
-                pos.x = section.sashParams.width - offset;
-                pos.y = (section.trapezoid && section.trapezoid.frame)
-                    ? section.trapezoid.frame.outer[1].y +
-                        ( ( section.trapezoid.frame.outer[2].y - section.trapezoid.frame.outer[1].y ) / 2 )
-                    : section.sashParams.height / 2;
-            }
-
-            if (type === 'tilt_only') {
-                pos.x = section.sashParams.width / 2;
-                pos.y = (section.trapezoid && section.trapezoid.frame)
-                    ? ( Math.abs( section.trapezoid.frame.outer[0].y - section.trapezoid.frame.outer[1].y ) / 2 )
-                        + offset
-                        + (
-                            ( section.trapezoid.frame.outer[0].y > section.trapezoid.frame.outer[1].y )
-                            ? section.trapezoid.frame.outer[1].y
-                            : section.trapezoid.frame.outer[0].y
-                        )
-                    : offset;
-
+            var positionLeft = function () {
+                pos.x = offset - app.handle_data.base.rotationCenter.x;
+                if (section.trapezoid && section.trapezoid.frame) {
+                    pos.y = section.trapezoid.frame.outer[0].y
+                        + ( section.trapezoid.frame.outer[3].y - section.trapezoid.frame.outer[0].y ) / 2
+                        - app.handle_data.base.rotationCenter.y;
+                } else {
+                    pos.y = section.sashParams.height / 2
+                        - app.handle_data.base.rotationCenter.y;
+                }
+                pos.rotation = -90;
+            };
+            var positionRight = function () {
+                pos.x = section.sashParams.width - offset - app.handle_data.base.rotationCenter.x;
+                if (section.trapezoid && section.trapezoid.frame) {
+                    pos.y = section.trapezoid.frame.outer[1].y
+                        + ( section.trapezoid.frame.outer[2].y - section.trapezoid.frame.outer[1].y ) / 2
+                        - app.handle_data.base.rotationCenter.y;
+                } else {
+                    pos.y = section.sashParams.height / 2
+                        - app.handle_data.base.rotationCenter.y;
+                }
                 pos.rotation = 90;
+            };
+            var positionRightTilt = function () {
+                pos.x = section.sashParams.width / 2 - app.handle_data.base.rotationCenter.x;
+                if (section.trapezoid && section.trapezoid.frame) {
+                    pos.y = Math.abs( section.trapezoid.frame.outer[0].y - section.trapezoid.frame.outer[1].y ) / 2
+                        + offset
+                        + (( section.trapezoid.frame.outer[0].y > section.trapezoid.frame.outer[1].y )
+                            ? section.trapezoid.frame.outer[1].y
+                            : section.trapezoid.frame.outer[0].y)
+                        - app.handle_data.base.rotationCenter.y;
+                } else {
+                    pos.y = offset
+                        - app.handle_data.base.rotationCenter.y;
+                }
+                pos.rotation = 90;
+            };
+            var sinkThroughGlass = function () {
+                var fixes = handle.getAttr('fixes') || [];
+
+                handle.setAttrs({
+                    fixes: fixes.concat('sinkThroughGlass'),
+                    opacity: style.sunk.opacity
+                });
+            };
+            var raiseAboveFrame = function () {
+                var fixes = handle.getAttr('fixes') || [];
+
+                handle.setAttrs({
+                    fixes: fixes.concat('raiseAboveFrame')
+                });
+            };
+            var isLeftHandle = (type === 'tilt_turn_right' || type === 'turn_only_right' ||
+                    type === 'slide-right' || type === 'flush-turn-right' ||
+                    type === 'slide_left' || type === 'tilt_slide_left');
+            var isRightHandle = (type === 'tilt_turn_left' || type === 'turn_only_left' ||
+                    type === 'slide-left' || type === 'flush-turn-left' ||
+                    type === 'slide_right' || type === 'tilt_slide_right');
+            var isTiltSection = (type === 'tilt_only');
+
+            if (isInsideView || (isOutsideView && model.profile.hasOutsideHandle())) {
+                if (isLeftHandle) { positionLeft(); raiseAboveFrame(); }
+                else if (isRightHandle) { positionRight(); raiseAboveFrame(); }
+                else if (isTiltSection) { positionRightTilt(); raiseAboveFrame(); }
+
+            } else if (isOutsideView) {
+                if (isLeftHandle) { positionLeft(); sinkThroughGlass(); }
+                else if (isRightHandle) { positionRight(); sinkThroughGlass(); }
+                else if (isTiltSection) { positionRightTilt(); sinkThroughGlass(); }
             }
 
             // Create a group of 2 paths (stroke and backdrop) from SVG path data
-            // Original SVG file at /design/handle.svg
-            // Duplicate code: /static/source/js/drawing/module/unit-drawer.js:1273
-            var handle = new Konva.Group({
+            handle.setAttrs({
                 name: 'handle',
-                x: pos.x - 15,  // If created paths are offset, use Inkscape's Save as -> Optimized SVG
-                y: pos.y - 22,
-                rotation: pos.rotation,
+                x: pos.x,  // If created paths are offset,
+                y: pos.y,  // use Inkscape's Save as -> Optimized SVG
                 scale: {
                     x: 1,
                     y: 1
                 }
             });
-            var handleBg = new Konva.Path({
-                name: 'handleBg',
+            var handleBaseBg = new Konva.Path({
+                name: 'handleBaseBg',
                 fill: style.fill,
-                data: app.handle_data.fill
+                data: app.handle_data.base.fill
             });
-            var handleStroke = new Konva.Path({
-                name: 'handleStroke',
+            var handleBaseStroke = new Konva.Path({
+                name: 'handleBaseStroke',
                 stroke: style.stroke,
                 strokeWidth: 1,
-                data: app.handle_data.stroke
+                data: app.handle_data.base.stroke
+            });
+            var handleGripBg = new Konva.Path({
+                name: 'handleGripBg',
+                fill: style.fill,
+                data: app.handle_data.grip.fill,
+                x: app.handle_data.base.rotationCenter.x,
+                y: app.handle_data.base.rotationCenter.y,
+                rotation: pos.rotation,
+                offset: {
+                    x: app.handle_data.base.rotationCenter.x,
+                    y: app.handle_data.base.rotationCenter.y
+                }
+            });
+            var handleGripStroke = new Konva.Path({
+                name: 'handleGripStroke',
+                stroke: style.stroke,
+                strokeWidth: 1,
+                data: app.handle_data.grip.stroke,
+                x: app.handle_data.base.rotationCenter.x,
+                y: app.handle_data.base.rotationCenter.y,
+                rotation: pos.rotation,
+                offset: {
+                    x: app.handle_data.base.rotationCenter.x,
+                    y: app.handle_data.base.rotationCenter.y
+                }
             });
 
-            handle.add(handleBg, handleStroke);
+            handle.add(handleBaseBg, handleBaseStroke, handleGripBg, handleGripStroke);
 
             return handle;
+        },
+        applyHandleFixes: function () {
+            var self = this;
+
+            this.layer.find('.handle').forEach(function (handle) {
+                handle.getAttr('fixes').forEach(function (fix) {
+                    if (fix === 'sinkThroughGlass') {
+                        handle.moveDown();
+                        handle.moveDown();
+
+                    } else if (fix === 'raiseAboveFrame') {
+                        var transform = handle.getAbsoluteTransform().getMatrix();
+                        handle.moveTo(self.layer);
+                        handle.moveToTop();
+                        handle.scale({ x: transform[0], y: transform[3] });
+                        handle.position({ x: transform[4], y: transform[5] });
+                    }
+                });
+            });
         },
         createDirectionLine: function (section) {
             var group = new Konva.Group({

@@ -60,8 +60,11 @@ var app = app || {};
             $undo: '#undo',
             $redo: '#redo',
             $sash_types: '.change-sash-type',
-            $metrics_glass: '#additional-metrics-glass',
-            $metrics_opening: '#additional-metrics-opening'
+            $metrics: '.additional-metrics',
+            $metrics_glass: '[for="additional-metrics-glass"]',
+            $metrics_glass_input: '#additional-metrics-glass',
+            $metrics_opening: '[for="additional-metrics-opening"]',
+            $metrics_opening_input: '#additional-metrics-opening'
         },
         events: {
             // Click
@@ -91,8 +94,8 @@ var app = app || {};
             'change #horizontal-bars-number': 'handleBarNumberChange',
             'input #horizontal-bars-number': 'handleBarNumberChange',
             'change #filling-select': 'handleFillingTypeChange',
-            'change @ui.$metrics_glass': 'handleAdditionalMetricsChange',
-            'change @ui.$metrics_opening': 'handleAdditionalMetricsChange'
+            'change @ui.$metrics_glass_input': 'handleAdditionalMetricsChange',
+            'change @ui.$metrics_opening_input': 'handleAdditionalMetricsChange'
         },
         keyShortcuts: {
             'ctrl+z': 'handleUndoClick',
@@ -331,7 +334,10 @@ var app = app || {};
                 });
             });
             this.listenTo(this.module, 'labelClicked', function (data) {
-                this.createInput( data.params, data.pos, data.size );
+                this.createInput(data.params, data.pos, data.size);
+            });
+            this.listenTo(this.module, 'mullionNumericInput', function (data) {
+                this.createMullionInput(data.mullionId);
             });
         },
         unbindModuleEvents: function () {
@@ -441,6 +447,111 @@ var app = app || {};
                 })
                 .on('blur', closeWrap);
         },
+        createMullionInput: function (mullionId) {
+            if (!mullionId) { return; }
+
+            var self = this;
+            var module = this.module;
+            var model = this.model;
+            var ratio = module.get('ratio');
+            var style = module.getStyle('mullion_input');
+            var isInside = this.isInsideView();
+            var isOutside = !isInside;
+            var unitLayer = module.getLayer('unit').layer;
+            var mullion = model.getMullion(mullionId);
+            var mullionRect = unitLayer.findOne('#mullion-' + mullionId).getClientRect();
+            var mullionX = mullionRect.x * ratio + unitLayer.getClientRect().x;
+            var mullionY = mullionRect.y * ratio + unitLayer.getClientRect().y;
+            var mullionCenterX = mullionX + mullionRect.width * ratio / 2;
+            var mullionCenterY = mullionY + mullionRect.height * ratio / 2;
+            var inputX = mullionCenterX - style.width / 2;
+            var inputY = mullionCenterY - style.height / 2;
+            var isVertical = mullion.type === 'vertical' || mullion.type === 'vertical_invisible';
+            var isHorizontal = mullion.type === 'horizontal' || mullion.type === 'horizontal_invisible';
+            var container = $(module.get('stage').container());
+            var containerPosition = (container.css('position') === 'relative') ? {top: 0, left: 0} : container.position();
+            var $wrap = $('<div>')
+                .addClass('popup-wrap')
+                .appendTo(container)
+                .on('click', function (e) {
+                    if (e.target === $wrap.get(0)) { $wrap.remove(); }
+                });
+            var closeWrap = function () {
+                if (self.setState) {
+                    self.setState({ inputFocused: false });
+                }
+                $wrap.remove();
+            };
+
+            $('<input>')
+                .css({
+                    position: 'absolute',
+                    top: (inputY - style.padding + containerPosition.top) + 'px',
+                    left: (inputX - style.padding + containerPosition.left) + 'px',
+                    height: (style.height + style.padding * 2) + 'px',
+                    width: (style.width + style.padding * 2) + 'px',
+                    fontSize: style.fontSize + 'px'
+                })
+                .appendTo($wrap)
+                .on('focus', function () {
+                    if (self.state) {
+                        self.state.inputFocused = true;
+                    }
+                })
+                .focus()
+                .select()
+                .on('keydown', function (e) {
+                    var input = e.target;
+                    var attr = (isVertical) ? 'width' : 'height';
+                    var newValue = app.utils.parseFormat.dimensions(this.value, attr);
+                    var newValueMm = (_.isArray(newValue)) ?
+                        newValue.map(function (value) { return app.utils.convert.inches_to_mm(value); }) :
+                        app.utils.convert.inches_to_mm(newValue);
+                    var isKeyUp = e.key === 'ArrowUp' || e.key === 'w';
+                    var isKeyRight = e.key === 'ArrowRight' || e.key === 'd';
+                    var isKeyDown = e.key === 'ArrowDown' || e.key === 's';
+                    var isKeyLeft = e.key === 'ArrowLeft' || e.key === 'a';
+                    var isKeyEscape = e.key === 'Escape';
+                    var isKeyEnter = e.key === 'Enter';
+
+                    // Cancel
+                    if (isKeyEscape) {
+                        closeWrap();
+
+                    // Set first subsection dimension
+                    } else if (isVertical && isInside && isKeyLeft ||
+                               isVertical && isOutside && isKeyRight ||
+                               isVertical && isInside && isKeyEnter ||
+                               isHorizontal && isKeyUp ||
+                               isHorizontal && isKeyEnter) {
+                        model.setSectionMullionPosition(mullionId, newValueMm);
+                        closeWrap();
+
+                    // Set second subsection dimension
+                    } else if (isVertical && isInside && isKeyRight ||
+                               isVertical && isOutside && isKeyLeft ||
+                               isVertical && isOutside && isKeyEnter ||
+                               isHorizontal && isKeyDown) {
+                        var containerDimension = (isVertical) ? model.getSizes().frame.width :
+                                                                model.getSizes().frame.height;
+                        model.setSectionMullionPosition(mullionId, containerDimension - newValueMm);
+                        closeWrap();
+
+                    // Move cursor left
+                    } else if (isVertical && isKeyUp ||
+                               isHorizontal && isKeyLeft) {
+                        input.selectionStart = input.selectionEnd -= 1;
+                        e.preventDefault();
+
+                    // Move cursor right
+                    } else if (isVertical && isKeyDown ||
+                               isHorizontal && isKeyRight) {
+                        input.selectionStart = input.selectionEnd += 1;
+                        e.preventDefault();
+                    }
+                })
+                .on('blur', closeWrap);
+        },
 
         updateUI: function () {
             // here we have to hide and should some elements in toolbar
@@ -452,6 +563,7 @@ var app = app || {};
 
             var selectedSashId = this.state.selectedSashId;
             var selectedSash = this.model.getSection(selectedSashId);
+            var hasFrame = selectedSash && selectedSash.sashType !== 'fixed_in_frame';
             var isArched = selectedSash && selectedSash.arched;
             var isCircular = selectedSash && selectedSash.circular;
 
@@ -509,14 +621,14 @@ var app = app || {};
 
             // Additional overlay metrics
             if ( selectedSash ) {
-                this.ui.$metrics_glass.prop('checked', selectedSash.measurements.glass );
-                this.ui.$metrics_opening.prop('checked', selectedSash.measurements.opening );
-
-                if ( selectedSash.sashType !== 'fixed_in_frame' ) {
-                    this.$('#additional-metrics-opening--label').show();
-                } else {
-                    this.$('#additional-metrics-opening--label').hide();
-                }
+                this.ui.$metrics_glass_input.prop('checked', selectedSash.measurements.glass );
+                this.ui.$metrics_opening_input.prop('checked', selectedSash.measurements.opening );
+                this.ui.$metrics_glass.toggle(selectedSash.sections.length === 0);
+                this.ui.$metrics_opening.toggle(hasFrame);
+                this.ui.$metrics.toggle(
+                    this.ui.$metrics_glass.is('[style!="display: none;"]') ||
+                    this.ui.$metrics_opening.is('[style!="display: none;"]')
+                );
             }
         },
 

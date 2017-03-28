@@ -1,0 +1,25 @@
+<td class="entry-drag">
+    <span class="glyphicon glyphicon-move"></span>
+</td>
+<td class="name">
+    <p>{{ name }}</p>
+</td>
+<td class="date">
+    <p>{{ date }}</p>
+</td>
+<td class="units" title="Unit Types / Number of Units">
+    {{ units }}
+</td>
+<td class="grand-total">
+    {{ grand_total }}
+</td>
+<td class="actions">
+    <button class="btn btn-xs clone-quote js-clone-quote" title="Clone quote">
+        <span class="glyphicon glyphicon-duplicate"></span>
+    </button>
+    {{#if is_removable }}
+    <button class="btn btn-xs remove-quote js-remove-quote" title="Remove quote">
+        <span class="glyphicon glyphicon-trash"></span>
+    </button>
+    {{/if}}
+</td>

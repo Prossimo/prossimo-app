@@ -23,8 +23,9 @@ var app = app || {};
 
             this.request_table_view = new app.QuoteTableView({
                 project: app.current_project,
-                collection: app.current_project.units,
-                extras: app.current_project.extras,
+                quote: app.current_quote,
+                collection: app.current_quote.units,
+                extras: app.current_quote.extras,
                 show_price: false,
                 show_customer_image: false,
                 show_sizes_in_mm: true,

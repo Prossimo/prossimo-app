@@ -14,16 +14,14 @@ var app = app || {};
         },
         initialize: function () {
             this.listenTo(app.current_project.settings, 'change', this.render);
-            //  TODO: this affects performance significantly. We need to
-            //  fine-tune what parts of quote are updated when, don't redraw
-            //  the whole thing
-            this.listenTo(app.current_project.units, 'change', this.render);
-            this.listenTo(app.current_project.extras, 'change', this.render);
+            this.listenTo(this.collection, 'change', this.render);
+            this.listenTo(this.options.extras, 'change', this.render);
         },
         childViewOptions: function () {
             return {
                 extras: this.options.extras,
                 project: this.options.project,
+                quote: this.options.quote,
                 show_price: this.options.show_price,
                 show_customer_image: this.options.show_customer_image,
                 show_outside_units_view: this.options.show_outside_units_view,
@@ -35,7 +33,7 @@ var app = app || {};
         },
         getTotalPrices: function () {
             var f = app.utils.format;
-            var total_prices = this.options.project.getTotalPrices();
+            var total_prices = this.options.quote.getTotalPrices();
 
             return {
                 subtotal_units: f.price_usd(total_prices.subtotal_units),

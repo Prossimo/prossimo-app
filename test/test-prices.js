@@ -32,10 +32,20 @@ test('project basic tests', function () {
     });
 
     equal(current_project.get('client_name'), 'Andy Huh', 'Client name should be Andy Huh');
-    ok(_.isArray(current_project.units.models), 'Units collection should be an array');
-    equal(current_project.units.models.length, 0, 'Units collection shoud have no items');
-    ok(_.isArray(current_project.extras.models), 'Extras collection should be an array');
-    equal(current_project.extras.models.length, 0, 'Extras collection shoud have no items');
+    ok(_.isArray(current_project.quotes.models), 'Quotes collection should be an array');
+    equal(current_project.quotes.models.length, 0, 'Quotes collection shoud have no items');
+});
+
+test('quote basic tests', function () {
+    var current_quote = new app.Quote({
+        name: 'One Nice Quote'
+    });
+
+    equal(current_quote.get('name'), 'One Nice Quote', 'Quote name should be correct');
+    ok(_.isArray(current_quote.units.models), 'Units collection should be an array');
+    equal(current_quote.units.models.length, 0, 'Units collection shoud have no items');
+    ok(_.isArray(current_quote.extras.models), 'Extras collection should be an array');
+    equal(current_quote.extras.models.length, 0, 'Extras collection shoud have no items');
 });
 
 
@@ -44,9 +54,9 @@ test('project basic tests', function () {
 //  ------------------------------------------------------------------------
 
 test('single unit tests', function () {
-    var current_project = new app.Project();
+    var current_quote = new app.Quote();
 
-    current_project.units.add([
+    current_quote.units.add([
         {
             mark: 'A',
             width: 30,
@@ -65,7 +75,7 @@ test('single unit tests', function () {
         }
     ]);
 
-    var first_unit = current_project.units.first();
+    var first_unit = current_quote.units.first();
 
     equal(first_unit.get('mark'), 'A', 'Unit mark is expected to be A');
     equal(first_unit.get('original_cost'), 399, 'Unit original cost is expected to be 399');
@@ -89,9 +99,9 @@ test('single unit tests', function () {
 //  ------------------------------------------------------------------------
 
 test('single accessory tests', function () {
-    var current_project = new app.Project();
+    var current_quote = new app.Quote();
 
-    current_project.extras.add([
+    current_quote.extras.add([
         {
             description: 'Grey restrictor cable w/key - 4.25" length',
             quantity: 90,
@@ -103,7 +113,7 @@ test('single accessory tests', function () {
         }
     ]);
 
-    var first_accessory = current_project.extras.first();
+    var first_accessory = current_quote.extras.first();
 
     equal(first_accessory.get('original_cost'), 10, 'Unit original cost is expected to be 10');
 
@@ -116,13 +126,13 @@ test('single accessory tests', function () {
 
 
 //  ------------------------------------------------------------------------
-//  Test that end project prices are calculated properly
+//  Test that end quote prices are calculated properly
 //  ------------------------------------------------------------------------
 
-test('subtotal project prices', function () {
-    var current_project = new app.Project();
+test('subtotal quote prices', function () {
+    var current_quote = new app.Quote();
 
-    current_project.units.add([
+    current_quote.units.add([
         {
             mark: 'A',
             width: 30,
@@ -155,7 +165,7 @@ test('subtotal project prices', function () {
         }
     ]);
 
-    current_project.extras.add([
+    current_quote.extras.add([
         {
             description: 'Grey restrictor cable w/key - 4.25" length',
             quantity: 90,
@@ -213,17 +223,17 @@ test('subtotal project prices', function () {
     ]);
 
     //  End prices for units
-    equal(current_project.units.getSubtotalPrice().toFixed(2), '2436.84', 'Subtotal for units is expected to be 2436.84');
-    equal(current_project.units.getSubtotalPriceDiscounted().toFixed(2), '1949.47', 'Subtotal w/Discount for units is expected to be 1949.47');
+    equal(current_quote.units.getSubtotalPrice().toFixed(2), '2436.84', 'Subtotal for units is expected to be 2436.84');
+    equal(current_quote.units.getSubtotalPriceDiscounted().toFixed(2), '1949.47', 'Subtotal w/Discount for units is expected to be 1949.47');
 
     //  End prices for accessories
-    equal(current_project.extras.getRegularItemsPrice().toFixed(2), '1629.26', 'Subtotal for regular extras is expected to be 1629.26');
-    equal(current_project.extras.getOptionalItemsPrice().toFixed(2), '900.00', 'Subtotal for optional extras is expected to be 900.00');
-    equal(current_project.extras.getHiddenPrice().toFixed(2), '1000.00', 'Subtotal for hidden extras is expected to be 1000.00');
-    equal(current_project.extras.getShippingPrice().toFixed(2), '1500.00', 'Subtotal for shipping is expected to be 1500.00');
+    equal(current_quote.extras.getRegularItemsPrice().toFixed(2), '1629.26', 'Subtotal for regular extras is expected to be 1629.26');
+    equal(current_quote.extras.getOptionalItemsPrice().toFixed(2), '900.00', 'Subtotal for optional extras is expected to be 900.00');
+    equal(current_quote.extras.getHiddenPrice().toFixed(2), '1000.00', 'Subtotal for hidden extras is expected to be 1000.00');
+    equal(current_quote.extras.getShippingPrice().toFixed(2), '1500.00', 'Subtotal for shipping is expected to be 1500.00');
 
     //  End prices for the whole project
-    var total_prices = current_project.getTotalPrices();
+    var total_prices = current_quote.getTotalPrices();
     equal(total_prices.subtotal_units.toFixed(2), '1949.47', 'Subtotal price for units is expected to be 1949.47');
     equal(total_prices.subtotal_extras.toFixed(2), '1629.26', 'Subtotal price for extras is expected to be 1629.26');
     equal(total_prices.subtotal.toFixed(2), '3578.73', 'Subtotal price for the whole order is expected to be 3578.73');
@@ -236,27 +246,27 @@ test('subtotal project prices', function () {
     equal(total_prices.net_profit_percent.toFixed(2), '7.45', 'Net Profit is expected to be 7.45% of Grand Total');
     equal(
         total_prices.net_profit.toFixed(2),
-        (total_prices.gross_profit - current_project.extras.getHiddenPrice()).toFixed(2),
+        (total_prices.gross_profit - current_quote.extras.getHiddenPrice()).toFixed(2),
         'Net Profit should be equal to Gross Profit - Hidden Costs'
     );
 
     //  Individual price calculation functions should match with `total_prices`
-    equal(total_prices.subtotal_units, current_project.getSubtotalUnitsPrice(), 'getSubtotalUnitsPrice result should match total_prices.subtotal_units');
-    equal(total_prices.subtotal_extras, current_project.getExtrasPrice(), 'getExtrasPrice result should match total_prices.subtotal_extras');
-    equal(total_prices.subtotal, current_project.getSubtotalPrice(), 'getSubtotalPrice result should match total_prices.subtotal');
+    equal(total_prices.subtotal_units, current_quote.getSubtotalUnitsPrice(), 'getSubtotalUnitsPrice result should match total_prices.subtotal_units');
+    equal(total_prices.subtotal_extras, current_quote.getExtrasPrice(), 'getExtrasPrice result should match total_prices.subtotal_extras');
+    equal(total_prices.subtotal, current_quote.getSubtotalPrice(), 'getSubtotalPrice result should match total_prices.subtotal');
 
     // Total Profit should be the same as profit for all units / extras individually
-    var subtotal_profit_units = _.reduce(current_project.units.map(function (unit) {
+    var subtotal_profit_units = _.reduce(current_quote.units.map(function (unit) {
         return unit.getSubtotalProfit();
     }), function (memo, item) {
         return memo + item;
     }, 0);
-    var subtotal_profit_extras = _.reduce(_.map(current_project.extras.getRegularItems(), function (unit) {
+    var subtotal_profit_extras = _.reduce(_.map(current_quote.extras.getRegularItems(), function (unit) {
         return unit.getSubtotalProfit();
     }), function (memo, item) {
         return memo + item;
     }, 0);
-    var hidden_cost = current_project.extras.getHiddenPrice();
+    var hidden_cost = current_quote.extras.getHiddenPrice();
     var combined_profit = subtotal_profit_units + subtotal_profit_extras - hidden_cost;
 
     equal(total_prices.net_profit.toFixed(2), combined_profit.toFixed(2), 'total_prices.net_profit should match combined profit for units & extras');
