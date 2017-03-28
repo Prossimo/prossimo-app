@@ -3,6 +3,8 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var UNSET_VALUE = '--';
+
     app.ProjectExportView = Marionette.View.extend({
         tagName: 'div',
         className: 'project-export',
@@ -14,6 +16,7 @@ var app = app || {};
             'change input[type="checkbox"]': 'onChangeCheckboxInput',
             'change input[type="radio"]': 'onChangeRadioInput'
         },
+        //  Inspired by https://gist.github.com/adilapapaya/9787842
         getCsvData: function () {
             var column_delimiter = '","';
             var row_delimiter = '"\r\n"';
@@ -24,12 +27,15 @@ var app = app || {};
             var source_data = this.model.preparePricingDataForExport(_.extend({},
                 export_options,
                 {
-                    as_array: true,
                     quote_mode: this.export_quote_mode.value
                 }
             ));
             var csv_string = '"';
-            var titles = source_data.length ? _.pluck(source_data[0], 'title') : [];
+            //  Determine titles by the largest entry array
+            var longest_row = source_data.length && _.max(source_data, function (row) {
+                return row.length;
+            });
+            var titles = longest_row ? _.pluck(longest_row, 'title') : [];
 
             if ( titles.length ) {
                 csv_string += titles.join(column_delimiter);
@@ -38,13 +44,18 @@ var app = app || {};
 
             if ( source_data.length ) {
                 var rows_array = _.map(source_data, function (unit_data) {
-                    return _.map(unit_data, function (item) {
-                        if ( _.isArray(item.value) ) {
-                            return item.value.join('\n');
-                        }
+                    var row_data = _.pluck(unit_data, 'value');
+                    var length_difference = titles.length - row_data.length;
 
-                        return item.value;
-                    }).join(column_delimiter);
+                    //  We pad some entries with empty sash data columns, so
+                    //  each row has the same number of columns, even if empty
+                    if ( length_difference > 0 ) {
+                        for (var i = 0; i < length_difference; i++) {
+                            row_data.push(UNSET_VALUE);
+                        }
+                    }
+
+                    return row_data.join(column_delimiter);
                 });
 
                 csv_string += rows_array.join(row_delimiter);
@@ -116,11 +127,14 @@ var app = app || {};
             this.export_options = {
                 include_project: { checked: false, title: 'Project Info', description: 'Project ID and name' },
                 include_quote: { checked: false, title: 'Quote Info', description: 'Quote ID and name' },
-                include_supplier_cost: { checked: true, title: 'Supplier Cost', description: 'Costs provided by supplier' },
-                include_price: { checked: false, title: 'Price', description: 'Our markup and final price' },
+                include_dimensions_mm: { checked: false, title: 'Dimensions, mm', description: 'Width and height in mm' },
+                include_supplier_cost_original: { checked: true, title: 'Supplier Cost, Original', description: 'Costs provided by supplier' },
+                include_supplier_cost_converted: { checked: false, title: 'Supplier Cost, Converted', description: 'Supplier costs converted to USD' },
+                include_price: { checked: true, title: 'Price', description: 'Our markup and final price' },
+                include_discount: { checked: false, title: 'Discount', description: 'Our price with discount' },
                 include_profile: { checked: false, title: 'Profile Info', description: 'Profile name and unit type' },
-                include_fillings: { checked: false, title: 'Fillings', description: 'List of fillings used for unit' },
-                include_options: { checked: false, title: 'Options', description: 'List of options used for unit' }
+                include_options: { checked: false, title: 'Options', description: 'List of options used for unit' },
+                include_sections: { checked: false, title: 'Sections', description: 'Type, area and filling for each section' }
             };
             this.export_quote_mode = {
                 value: 'current',

@@ -20,7 +20,7 @@ var app = app || {};
             app.router.navigate(nav_target, { trigger: true });
         },
         setTitle: function (title_part) {
-            document.title = 'Prossimo App: ' + title_part +
+            document.title = 'Prossimo Quoting App: ' + title_part +
                 ' (current version: ' + $('meta[name="latest-commit-sha"]').attr('value') + ')';
         },
         setActiveNavItem: function (key) {
