@@ -5,10 +5,9 @@ var app = app || {};
 
     var UNSET_VALUE = '--';
 
-    app.ProjectExportView = Marionette.View.extend({
-        tagName: 'div',
-        className: 'project-export',
-        template: app.templates['dashboard/project-export-view'],
+    app.ProjectExportDialogView = app.BaseDialogView.extend({
+        className: 'project-export-modal modal fade',
+        template: app.templates['dialogs/project-export-dialog-view'],
         ui: {
             $export_button: '.js-export-project-data'
         },
@@ -120,7 +119,8 @@ var app = app || {};
                 export_options: this.export_options,
                 export_quote_mode: this.export_quote_mode,
                 filename: this.getFilename(),
-                csv_data: this.getCsvData()
+                csv_data: this.getCsvData(),
+                dialog_title: 'Pricing Data Export'
             };
         },
         initialize: function () {

@@ -158,7 +158,6 @@ module.exports = function (grunt) {
         //  Dashboard screen
         'dashboard/views/project-info-view.js',
         'dashboard/views/project-documents-view.js',
-        'dashboard/views/project-export-view.js',
         'dashboard/views/quote-info-view.js',
         'dashboard/views/quote-totals-view.js',
         'dashboard/views/main-dashboard-view.js',
@@ -171,6 +170,7 @@ module.exports = function (grunt) {
         'dialogs/views/quotes-editor-table-item-view.js',
         'dialogs/views/quotes-editor-table-view.js',
         'dialogs/views/edit-quotes-dialog-view.js',
+        'dialogs/views/project-export-dialog-view.js',
         //  App entry
         'app.js'
     ];
