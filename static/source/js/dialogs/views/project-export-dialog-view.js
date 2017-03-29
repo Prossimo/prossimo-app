@@ -9,17 +9,15 @@ var app = app || {};
         className: 'project-export-modal modal fade',
         template: app.templates['dialogs/project-export-dialog-view'],
         ui: {
+            $copy_to_clipboard_button: '.js-copy-data-to-clipboard',
             $export_button: '.js-export-project-data'
         },
         events: {
             'change input[type="checkbox"]': 'onChangeCheckboxInput',
             'change input[type="radio"]': 'onChangeRadioInput'
         },
-        //  Inspired by https://gist.github.com/adilapapaya/9787842
-        getCsvData: function () {
-            var column_delimiter = '","';
-            var row_delimiter = '"\r\n"';
-
+        getData: function () {
+            var data_array = [];
             var export_options = _.mapObject(this.export_options, function (item) {
                 return item.checked;
             });
@@ -29,7 +27,6 @@ var app = app || {};
                     quote_mode: this.export_quote_mode.value
                 }
             ));
-            var csv_string = '"';
             //  Determine titles by the largest entry array
             var longest_row = source_data.length && _.max(source_data, function (row) {
                 return row.length;
@@ -37,12 +34,11 @@ var app = app || {};
             var titles = longest_row ? _.pluck(longest_row, 'title') : [];
 
             if ( titles.length ) {
-                csv_string += titles.join(column_delimiter);
-                csv_string += row_delimiter;
+                data_array.push(titles);
             }
 
             if ( source_data.length ) {
-                var rows_array = _.map(source_data, function (unit_data) {
+                _.each(source_data, function (unit_data) {
                     var row_data = _.pluck(unit_data, 'value');
                     var length_difference = titles.length - row_data.length;
 
@@ -54,16 +50,43 @@ var app = app || {};
                         }
                     }
 
-                    return row_data.join(column_delimiter);
+                    data_array.push(row_data);
                 });
+            }
 
-                csv_string += rows_array.join(row_delimiter);
+            return data_array;
+        },
+        //  Inspired by https://gist.github.com/adilapapaya/9787842
+        getCsvData: function () {
+            var column_delimiter = '","';
+            var row_delimiter = '"\r\n"';
+            var csv_string = '"';
+            var data_array = this.getData();
+
+            if ( data_array.length ) {
+                csv_string += _.map(data_array, function (data_row) {
+                    return data_row.join(column_delimiter);
+                }).join(row_delimiter);
             }
 
             csv_string += '"';
             csv_string = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv_string);
 
             return csv_string;
+        },
+        getTabularData: function () {
+            var column_delimiter = '\t';
+            var row_delimiter = '\r\n';
+            var tabular_data_string = '';
+            var data_array = this.getData();
+
+            if ( data_array.length ) {
+                tabular_data_string += _.map(data_array, function (data_row) {
+                    return data_row.join(column_delimiter);
+                }).join(row_delimiter);
+            }
+
+            return tabular_data_string;
         },
         getDefaultFilename: function () {
             var start_time = new Date();
@@ -122,6 +145,20 @@ var app = app || {};
                 csv_data: this.getCsvData(),
                 dialog_title: 'Pricing Data Export'
             };
+        },
+        onRender: function () {
+            var self = this;
+
+            this.clipboard = new Clipboard('.js-copy-data-to-clipboard', {
+                text: function () {
+                    return self.getTabularData();
+                }
+            });
+        },
+        onBeforeDestroy: function () {
+            if ( this.clipboard ) {
+                this.clipboard.destroy();
+            }
         },
         initialize: function () {
             this.export_options = {
