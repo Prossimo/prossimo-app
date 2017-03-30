@@ -13,6 +13,7 @@ var app = app || {};
         { name: 'name', title: 'Name', type: 'string' },
         { name: 'rules_and_restrictions', title: 'Rules and Restrictions', type: 'string' },
         { name: 'pricing_scheme', title: 'Pricing Scheme', type: 'string' },
+        { name: 'is_hidden', title: 'Is Hidden', type: 'boolean' },
         { name: 'position', title: 'Position', type: 'number' }
     ];
 
@@ -49,7 +50,8 @@ var app = app || {};
             var default_value = '';
 
             var type_value_hash = {
-                number: 0
+                number: 0,
+                boolean: false
             };
 
             var name_value_hash = {

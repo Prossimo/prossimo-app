@@ -283,6 +283,7 @@ test('Unit getCurrentUnitOptions, getCurrentUnitOptionsByDictionaryId, getUnitOp
     deepEqual(
         first_option.dictionary.toJSON(),
         {
+            is_hidden: false,
             name: 'Interior Handle',
             position: 0,
             pricing_scheme: 'PER_ITEM',

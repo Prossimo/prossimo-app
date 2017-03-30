@@ -257,11 +257,17 @@ var app = app || {};
                     ) : false
             };
 
+            //  Extend unit attributes with options
             params_source = _.extend({}, params_source, _.object(dictionaries, _.map(dictionaries,
                 function (dictionary_name) {
                     var dictionary_id = app.settings.dictionaries.getDictionaryIdByName(dictionary_name);
+                    var is_dictionary_hidden = app.settings.dictionaries.get(dictionary_id).get('is_hidden');
                     var current_options = dictionary_id ?
                         this.model.getCurrentUnitOptionsByDictionaryId(dictionary_id) : [];
+
+                    if ( is_dictionary_hidden ) {
+                        return false;
+                    }
 
                     //  We assume that we have only one option per dictionary,
                     //  although in theory it's possible to have multiple
@@ -277,8 +283,12 @@ var app = app || {};
             ));
 
             var params = _.map(name_title_hash, function (item, key) {
-                return { name: key, title: item, value: params_source[key] !== undefined ?
-                    params_source[key] : this.model.get(key) };
+                return {
+                    name: key,
+                    title: item,
+                    value: params_source[key] !== undefined ?
+                        params_source[key] : this.model.get(key)
+                };
             }, this);
 
             return {

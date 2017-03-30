@@ -174,6 +174,7 @@ var app = app || {};
         },
         getActiveUnitOptions: function () {
             var active_unit_options = [];
+            var has_hidden_options = false;
             var options_list = app.settings.dictionaries.getAvailableDictionaryNames();
             var active_unit;
 
@@ -183,6 +184,7 @@ var app = app || {};
                 active_unit_options = _.map(options_list, function (dictionary_name) {
                     var dictionary_id = app.settings.dictionaries.getDictionaryIdByName(dictionary_name);
                     var rules_and_restrictions;
+                    var is_hidden = false;
                     var value = '(None)';
                     var is_restricted = false;
                     var current_options = [];
@@ -190,6 +192,8 @@ var app = app || {};
                     if ( dictionary_id ) {
                         rules_and_restrictions = app.settings.dictionaries.get(dictionary_id)
                             .get('rules_and_restrictions');
+                        is_hidden = app.settings.dictionaries.get(dictionary_id)
+                            .get('is_hidden');
                     }
 
                     _.each(rules_and_restrictions, function (rule) {
@@ -213,6 +217,11 @@ var app = app || {};
                         value = current_options.length ? current_options[0].entry.get('name') : UNSET_VALUE;
                     }
 
+                    if ( is_hidden ) {
+                        dictionary_name += '*';
+                        has_hidden_options = true;
+                    }
+
                     return {
                         title: dictionary_name,
                         value: value
@@ -220,7 +229,10 @@ var app = app || {};
                 }, this);
             }
 
-            return active_unit_options;
+            return {
+                options_list: active_unit_options,
+                has_hidden_options: has_hidden_options
+            };
         },
         getActiveUnitProfileProperties: function () {
             var active_unit_profile_properties = [];
@@ -482,6 +494,7 @@ var app = app || {};
                             index: 'Option #' + (item_index + 1),
                             dictionary_name: item.dictionary_name,
                             pricing_scheme: item.dictionary_pricing_scheme,
+                            is_hidden: item.is_hidden,
                             option_name: item.option_name,
                             price_increase: f.percent(item.price_increase),
                             cost: f.fixed(item.cost),
@@ -503,6 +516,7 @@ var app = app || {};
                     option_item.option_index = 'Option #' + (index + 1);
                     option_item.option_name = source_item.option_name;
                     option_item.dictionary_name = source_item.dictionary_name;
+                    option_item.is_hidden = source_item.is_hidden;
                     option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
                     option_item.quantity = source_item.quantity;
                     option_item.cost = f.fixed(source_item.pricing_data.cost_per_item * source_item.quantity);

@@ -131,6 +131,7 @@ test('dictionary toJSON function', function () {
     deepEqual(
         dictionary.toJSON(),
         {
+            is_hidden: false,
             name: 'Interior Handle',
             position: 0,
             pricing_scheme: 'PRICING_GRIDS',

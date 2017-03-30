@@ -554,6 +554,7 @@ test('unit getUnitOptionsGroupedByPricingScheme function', function () {
                 cost_per_item: 0
             },
             has_quantity: true,
+            is_hidden: false,
             quantity: 1
         },
         'The option inside PER_ITEM group matches the expected data'
