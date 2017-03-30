@@ -90,13 +90,11 @@ var app = app || {};
             //  This is the list of params that we want to see in the quote. We
             //  throw out attributes that don't apply to the current unit
             var params_list = _.filter(
-                ['rough_opening', 'description', 'opening_direction', 'glazing_bar_width'],
+                ['rough_opening', 'description', 'opening_direction'],
             function (param) {
                 var condition = true;
 
                 if ( this.model.isOperableOnlyAttribute(param) && !this.model.hasOperableSections() ) {
-                    condition = false;
-                } else if ( this.model.isGlazingBarProperty(param) && !this.model.hasGlazingBars() ) {
                     condition = false;
                 }
 
@@ -218,8 +216,6 @@ var app = app || {};
             //  only those unit attributes that apply to the current unit
             //  3. Add list of Unit Options that apply to the current unit
             //  4. Add Threshold and U Value.
-            //  5. Override default titles for some properties but only if they
-            //  were included at steps 1-4
             var name_title_hash = _.extend({
                 size: 'Size <small class="size-label">WxH</small>',
                 rough_opening: 'Rough Opening <small class="size-label">WxH</small>',
@@ -228,11 +224,7 @@ var app = app || {};
             _.object( dictionaries, dictionaries ), {
                 threshold: 'Threshold',
                 u_value: 'U Value'
-            }, _.pick({
-                glazing_bar_width: 'Muntin Width'
-            }, function (new_title, property_to_override) {
-                return _.contains(_.pluck(source_hash, 'name'), property_to_override);
-            }));
+            });
 
             var params_source = {
                 system: this.options.show_supplier_system ?
@@ -249,12 +241,7 @@ var app = app || {};
                     f.dimensions_mm(c.inches_to_mm(this.model.getRoughOpeningWidth()),
                         c.inches_to_mm(this.model.getRoughOpeningHeight())) :
                     f.dimensions(this.model.getRoughOpeningWidth(), this.model.getRoughOpeningHeight(),
-                        null, project_settings.get('inches_display_mode') || null),
-                glazing_bar_width: this.model.hasGlazingBars() ?
-                    (
-                        this.options.show_sizes_in_mm ? f.dimension_mm(this.model.get('glazing_bar_width')) :
-                        f.dimension(c.mm_to_inches(this.model.get('glazing_bar_width')), 'fraction', null, 'remove')
-                    ) : false
+                        null, project_settings.get('inches_display_mode') || null)
             };
 
             params_source = _.extend({}, params_source, _.object(dictionaries, _.map(dictionaries,
