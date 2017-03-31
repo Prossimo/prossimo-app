@@ -285,8 +285,11 @@ export default Backbone.Model.extend({
     },
     getParentDictionary: function () {
         return this.collection && this.collection.options.dictionary;
-    }, initialize: function (attributes, options) {
-        this.options = options || {};//  Any change to `dictionary_entry_profiles` should be persisted
+    },
+    initialize: function (attributes, options) {
+        this.options = options || {};
+
+        //  Any change to `dictionary_entry_profiles` should be persisted
         this.listenTo(this.get('dictionary_entry_profiles'), 'change update', function () {
             this.persist('dictionary_entry_profiles', this.get('dictionary_entry_profiles'));
         });

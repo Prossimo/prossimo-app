@@ -3,7 +3,7 @@ import App from '../../../main';
 import {format} from '../../../utils';
 import QuoteItemView from './quote-item-view';
 import QuoteExtrasTableView from './quote-extras-table-view';
-import template from '../templates/quote/quote-table-view.hbs';
+import template from '../templates/quote-table-view.hbs';
 
 export default Marionette.CompositeView.extend({
     template: template,

@@ -1,7 +1,7 @@
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 import App from '../../../main';
-import {format, convert, math} from '../../../utils';
+import {convert, format, math} from '../../../utils';
 import {preview} from '../../drawing/module/drawing-module';
 import template from '../templates/quote-item-view.hbs';
 
@@ -244,31 +244,35 @@ export default Marionette.View.extend({
                     null, project_settings.get('inches_display_mode') || null)
         };
 
-            //  Extend unit attributes with optionsparams_source = _.extend({}, params_source, _.object(dictionaries, _.map(dictionaries,
-                function (dictionary_name) {
-                    var dictionary_id = App.settings.dictionaries.getDictionaryIdByName(dictionary_name);var is_dictionary_hidden = app.settings.dictionaries.get(dictionary_id).get('is_hidden');
-                    var current_options = dictionary_id ?
-                        this.model.getCurrentUnitOptionsByDictionaryId(dictionary_id) : [];
+        //  Extend unit attributes with options
+        params_source = _.extend({}, params_source, _.object(dictionaries, _.map(dictionaries,
+            function (dictionary_name) {
+                var dictionary_id = App.settings.dictionaries.getDictionaryIdByName(dictionary_name);
+                var is_dictionary_hidden = App.settings.dictionaries.get(dictionary_id).get('is_hidden');
+                var current_options = dictionary_id ?
+                    this.model.getCurrentUnitOptionsByDictionaryId(dictionary_id) : [];
 
-                    if ( is_dictionary_hidden ) {
-                        return false;
-                    }//  We assume that we have only one option per dictionary,
-                    //  although in theory it's possible to have multiple
-                    var option_name = current_options.length ?(
+                if (is_dictionary_hidden) {
+                    return false;
+                }//  We assume that we have only one option per dictionary,
+                //  although in theory it's possible to have multiple
+                var option_name = current_options.length ? (
 
-                            this.options.show_supplier_names && current_options[0].entry.get('supplier_name') ||
-                            current_options[0].entry.get('name')
-                        ) :
-                        false;
+                    this.options.show_supplier_names && current_options[0].entry.get('supplier_name') ||
+                    current_options[0].entry.get('name')
+                ) :
+                    false;
 
-                    return option_name;
-                }, this)
-            ));
+                return option_name;
+            }, this)
+        ));
 
-            var params = _.map(name_title_hash, function (item, key) {
-                return { name: key, title: item, value: params_source[key] !== undefined ?
-                    params_source[key] : this.model.get(key) };
-            }, this);
+        var params = _.map(name_title_hash, function (item, key) {
+            return {
+                name: key, title: item, value: params_source[key] !== undefined ?
+                    params_source[key] : this.model.get(key)
+            };
+        }, this);
 
         return {
             sashes: sashes,

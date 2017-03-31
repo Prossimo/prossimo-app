@@ -2,11 +2,11 @@ import $ from 'jquery';
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 import App from '../../../main';
-import ProfilesTableView from './profiles-table-view';
+import {globalChannel} from '../../../utils/radio';
+import ProfilesView from './profiles-view';
 import FillingTypesView from './filling-types-view';
-import PricingGridsTableView from './pricing-grids-table-view';
 import OptionsView from './options-view';
-import template from '../templates/settings/main-settings-view.hbs';
+import template from '../templates/main-settings-view.hbs';
 
 export default Marionette.View.extend({
     tagName: 'div',
@@ -104,6 +104,6 @@ export default Marionette.View.extend({
             }
         };
         this.active_tab = 'profiles';
-        this.listenTo(App.vent, 'settings:fetch_data:stop', this.render);
+        this.listenTo(globalChannel, 'settings:fetch_data:stop', this.render);
     }
 });

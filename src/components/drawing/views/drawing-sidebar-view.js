@@ -3,11 +3,12 @@ import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 import App from '../../../main';
 import utils from '../../../utils';
+import constants from '../../../constants';
 import template from '../templates/drawing-sidebar-view.hbs';
 
 const UNSET_VALUE = '--';
 
-const PRICING_SCHEME_PRICING_GRIDS = App.constants.PRICING_SCHEME_PRICING_GRIDS;
+const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
 
 export default Marionette.View.extend({
     tagName: 'div',
@@ -178,7 +179,7 @@ export default Marionette.View.extend({
     getActiveUnitOptions: function () {
         var active_unit_options = [];
         var has_hidden_options = false;
-            var options_list = App.settings.dictionaries.getAvailableDictionaryNames();
+        var options_list = App.settings.dictionaries.getAvailableDictionaryNames();
         var active_unit;
 
         if (this.options.parent_view.active_unit) {
@@ -188,15 +189,16 @@ export default Marionette.View.extend({
                 var dictionary_id = App.settings.dictionaries.getDictionaryIdByName(dictionary_name);
                 var rules_and_restrictions;
                 var is_hidden = false;
-                    var value = '(None)';
+                var value = '(None)';
                 var is_restricted = false;
                 var current_options = [];
 
-                    if ( dictionary_id ) {
-                        rules_and_restrictions = App.settings.dictionaries.get(dictionary_id)
-                            .get('rules_and_restrictions');
-                    is_hidden = app.settings.dictionaries.get(dictionary_id)
-                            .get('is_hidden');}
+                if (dictionary_id) {
+                    rules_and_restrictions = App.settings.dictionaries.get(dictionary_id)
+                        .get('rules_and_restrictions');
+                    is_hidden = App.settings.dictionaries.get(dictionary_id)
+                        .get('is_hidden');
+                }
 
                 _.each(rules_and_restrictions, function (rule) {
                     var restriction_applies = active_unit.checkIfRestrictionApplies(rule);
@@ -219,20 +221,21 @@ export default Marionette.View.extend({
                     value = current_options.length ? current_options[0].entry.get('name') : UNSET_VALUE;
                 }
 
-                    if ( is_hidden ) {
-                        dictionary_name += '*';
-                        has_hidden_options = true;
-                    }return {
-                        title: dictionary_name,
-                        value: value
-                    };
-                }, this);
-            }
+                if (is_hidden) {
+                    dictionary_name += '*';
+                    has_hidden_options = true;
+                }
+                return {
+                    title: dictionary_name,
+                    value: value
+                };
+            }, this);
+        }
 
         return {
-                options_list: active_unit_options,
-                has_hidden_options: has_hidden_options
-            };
+            options_list: active_unit_options,
+            has_hidden_options: has_hidden_options
+        };
     },
     getActiveUnitProfileProperties: function () {
         var active_unit_profile_properties = [];
@@ -488,18 +491,19 @@ export default Marionette.View.extend({
                 section_item.show_filling_price_increase =
                     (source_item.filling_pricing_scheme === PRICING_SCHEME_PRICING_GRIDS);
 
-                    //  Add cost for Options
-                    section_item.options = _.map(source_item.options, function (item, item_index) {
-                        return {
-                            index: 'Option #' + (item_index + 1),
-                            dictionary_name: item.dictionary_name,
-                            pricing_scheme: item.dictionary_pricing_scheme,
-                            is_hidden: item.is_hidden,option_name: item.option_name,
-                            price_increase: f.percent(item.price_increase),
-                            cost: f.fixed(item.cost),
-                            show_price_increase: (item.dictionary_pricing_scheme === PRICING_SCHEME_PRICING_GRIDS)
-                        };
-                    }, this);
+                //  Add cost for Options
+                section_item.options = _.map(source_item.options, function (item, item_index) {
+                    return {
+                        index: 'Option #' + (item_index + 1),
+                        dictionary_name: item.dictionary_name,
+                        pricing_scheme: item.dictionary_pricing_scheme,
+                        is_hidden: item.is_hidden,
+                        option_name: item.option_name,
+                        price_increase: f.percent(item.price_increase),
+                        cost: f.fixed(item.cost),
+                        show_price_increase: (item.dictionary_pricing_scheme === PRICING_SCHEME_PRICING_GRIDS)
+                    };
+                }, this);
 
                 section_item.total_cost = f.fixed(source_item.total_cost);
 
@@ -512,12 +516,13 @@ export default Marionette.View.extend({
             _.each(unit_cost.options_list.PER_ITEM, function (source_item, index) {
                 var option_item = {};
 
-                    option_item.option_index = 'Option #' + (index + 1);
-                    option_item.option_name = source_item.option_name;
-                    option_item.dictionary_name = source_item.dictionary_name;
-                    option_item.is_hidden = source_item.is_hidden;option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
-                    option_item.quantity = source_item.quantity;
-                    option_item.cost = f.fixed(source_item.pricing_data.cost_per_item * source_item.quantity);
+                option_item.option_index = 'Option #' + (index + 1);
+                option_item.option_name = source_item.option_name;
+                option_item.dictionary_name = source_item.dictionary_name;
+                option_item.is_hidden = source_item.is_hidden;
+                option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
+                option_item.quantity = source_item.quantity;
+                option_item.cost = f.fixed(source_item.pricing_data.cost_per_item * source_item.quantity);
 
                 per_item_priced_options_total_cost += source_item.pricing_data.cost_per_item * source_item.quantity;
 

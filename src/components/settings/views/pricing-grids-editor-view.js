@@ -3,7 +3,7 @@ import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 import {math} from '../../../utils';
 import Handsontable from 'handsontable/dist/handsontable.full';
-import template from '../templates/settings/pricing-grids-editor-view.hbs';
+import template from '../templates/pricing-grids-editor-view.hbs';
 
 //  See `core/views/units-table-view.js` for reference, it's similar
 //  and better commented, this file borrows a lot from there

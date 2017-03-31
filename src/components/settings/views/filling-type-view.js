@@ -4,8 +4,9 @@ import Marionette from 'backbone.marionette';
 import App from '../../../main';
 import BaseSelectView from '../../../core/views/base/base-select-view';
 import BaseInputView from '../../../core/views/base/base-input-view';
+import ProfileConnectionsTableView from './profile-connections-table-view';
 import Dialogs from '../../../dialogs';
-import template from '../templates/settings/filling-type-view.hbs';
+import template from '../templates/filling-type-view.hbs';
 
 export default Marionette.View.extend({
     tagName: 'div',
@@ -60,7 +61,8 @@ export default Marionette.View.extend({
         }, this);
 
         this.ui.$profiles_container.append(this.profile_connections_table_view.render().el);
-    }, onBeforeDestroy: function () {
+    },
+    onBeforeDestroy: function () {
         _.each(this.attribute_views, function (child_view) {
             child_view.view_instance.destroy();
         }, this);

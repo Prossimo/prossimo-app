@@ -231,32 +231,32 @@ export default Backbone.Model.extend({
 
         return _.pluck(name_title_hash, 'title');
     },
-        preparePricingDataForExport: function (options) {
-            if ( options.quote_mode && !_.contains(['current', 'default', 'all'], options.quote_mode) ) {
-                throw new Error('Unexpected quote_mode: ' + options.quote_mode);
-            }
-
-            var quote_mode = options.quote_mode || 'current';
-            var quotes_units_data = [];
-            var current_quote = app.current_quote;
-            var default_quote = this.quotes.getDefaultQuote();
-
-            if ( quote_mode === 'current' ) {
-                quotes_units_data = current_quote ?
-                    current_quote.preparePricingDataForExport(options) :
-                    [];
-            } else if ( quote_mode === 'default' ) {
-                quotes_units_data = default_quote ?
-                    default_quote.preparePricingDataForExport(options) :
-                    [];
-            } else if ( quote_mode === 'all' ) {
-                quotes_units_data = _.flatten(
-                    this.quotes.invoke('preparePricingDataForExport', options),
-                    true
-                );
-            }
-
-            return quotes_units_data;
+    preparePricingDataForExport: function (options) {
+        if (options.quote_mode && !_.contains(['current', 'default', 'all'], options.quote_mode)) {
+            throw new Error('Unexpected quote_mode: ' + options.quote_mode);
         }
+
+        var quote_mode = options.quote_mode || 'current';
+        var quotes_units_data = [];
+        var current_quote = App.current_quote;
+        var default_quote = this.quotes.getDefaultQuote();
+
+        if (quote_mode === 'current') {
+            quotes_units_data = current_quote ?
+                current_quote.preparePricingDataForExport(options) :
+                [];
+        } else if (quote_mode === 'default') {
+            quotes_units_data = default_quote ?
+                default_quote.preparePricingDataForExport(options) :
+                [];
+        } else if (quote_mode === 'all') {
+            quotes_units_data = _.flatten(
+                this.quotes.invoke('preparePricingDataForExport', options),
+                true
+            );
+        }
+
+        return quotes_units_data;
+    }
 
 });

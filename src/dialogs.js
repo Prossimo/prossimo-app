@@ -4,6 +4,7 @@ import LoginDialogView from './dialogs/views/login-dialog-view';
 import ItemsProfilesTableDialogView from './dialogs/views/items-profiles-table-dialog-view';
 import CreateProjectDialogView from './dialogs/views/create-project-dialog-view';
 import EditQuotesDialogView from './dialogs/views/edit-quotes-dialog-view';
+import ProjectExportDialogView from './dialogs/views/project-export-dialog-view';
 import 'bootstrap/js/modal';
 
 export default Marionette.Region.extend({
@@ -41,26 +42,27 @@ export default Marionette.Region.extend({
         this.registerDialog({
             name: 'edit-quotes',
             getView: function (view_options) {
-
                 return new EditQuotesDialogView(view_options);
-            }});
+            }
+        });
 
         this.registerDialog({
-                name: 'project-export',
-                getView: function (view_options) {
-                    return new app.ProjectExportDialogView(view_options);
-        }
-    });
-    },registerDialog: function (options) {
+            name: 'project-export',
+            getView: function (view_options) {
+                return new ProjectExportDialogView(view_options);
+            }
+        });
+    },
+    registerDialog: function (options) {
         this.registered_dialogs[options.name] = options;
     },
     showDialog: function (dialog_name, dialog_view_options) {
-        if (this.registered_dialogs[dialog_name]) {
+        if ( this.registered_dialogs[dialog_name] ) {
             this.show(this.registered_dialogs[dialog_name].getView(dialog_view_options));
 
             //  FIXME: keyboard option does not work as intended, probably
             //  conflicts with hotkeys plugin we use
-            if (this.currentView) {
+            if ( this.currentView ) {
                 var default_modal_options = {
                     backdrop: true,
                     keyboard: true,

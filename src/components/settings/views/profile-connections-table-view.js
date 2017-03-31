@@ -1,16 +1,15 @@
-var app = app || {};
+import _ from 'underscore';
+import Marionette from 'backbone.marionette';
+import ProfileConnectionsTableItemView from './profile-connections-table-item-view';
+const template = _.template('<p>This item is not currently available for any profile.</p>');
 
-(function () {
-    'use strict';
+const empty_view = Marionette.View.extend({
+    template: template
+});
 
-    var empty_view = Marionette.View.extend({
-        template: _.template('<p>This item is not currently available for any profile.</p>')
-    });
-
-    app.ProfileConnectionsTableView = Marionette.CollectionView.extend({
-        tagName: 'div',
-        className: 'profile-connections-table',
-        childView: app.ProfileConnectionsTableItemView,
-        emptyView: empty_view
-    });
-})();
+export default Marionette.CollectionView.extend({
+    tagName: 'div',
+    className: 'profile-connections-table',
+    childView: ProfileConnectionsTableItemView,
+    emptyView: empty_view
+});

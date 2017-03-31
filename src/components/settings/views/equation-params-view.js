@@ -1,11 +1,8 @@
-var app = app || {};
+import Marionette from 'backbone.marionette';
+import EquationParamsItemView from './equation-params-item-view';
 
-(function () {
-    'use strict';
-
-    app.EquationParamsView = Marionette.CollectionView.extend({
-        className: 'equation-params-container',
-        tagName: 'div',
-        childView: app.EquationParamsItemView
-    });
-})();
+export default Marionette.CollectionView.extend({
+    className: 'equation-params-container',
+    tagName: 'div',
+    childView: EquationParamsItemView
+});

@@ -1,3 +1,4 @@
+import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 import SidebarListItemView from './sidebar-list-item-view';
 import template from '../../../templates/core/base/sidebar-list-view.hbs';

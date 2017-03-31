@@ -4,7 +4,8 @@ import Marionette from 'backbone.marionette';
 import App from '../../../main';
 import Dialogs from '../../../dialogs';
 import BaseInputView from '../../../core/views/base/base-input-view';
-import template from '../templates/settings/options-dictionary-entries-item-view.hbs';
+import ProfileConnectionsTableView from './profile-connections-table-view';
+import template from '../templates/options-dictionary-entries-item-view.hbs';
 
 export default Marionette.View.extend({
     tagName: 'div',
@@ -125,14 +126,14 @@ export default Marionette.View.extend({
             placeholder: 'New Entry'
         });
 
-        this.supplier_name_input_view = new app.BaseInputView({
+        this.supplier_name_input_view = new BaseInputView({
             model: this.model,
             param: 'supplier_name',
             input_type: 'text',
             placeholder: ''
         });
 
-        this.profile_connections_table_view = new app.ProfileConnectionsTableView({
+        this.profile_connections_table_view = new ProfileConnectionsTableView({
             collection: this.model.get('dictionary_entry_profiles')
         });
         this.listenTo(this.model, 'change:dictionary_entry_profiles change:namechange:supplier_name', function () {
