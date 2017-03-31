@@ -1742,6 +1742,7 @@ var app = app || {};
             var type = section.sashType;
             var style = module.getStyle('direction_line');
             var isAmericanHinge = module.getState('hingeIndicatorMode') === 'american';
+            var isEuropeanHinge = module.getState('hingeIndicatorMode') === 'european';
             var isLeft = type.indexOf('left') !== -1;
             var isRight = type.indexOf('right') !== -1;
             var hasHiddenLatch = type.indexOf('_hinge_hidden_latch') !== -1;
@@ -1859,13 +1860,21 @@ var app = app || {};
 
                         ctx.beginPath();
 
-                        if (isLeft) {
+                        if (isAmericanHinge && isLeft) {
                             ctx.moveTo(glassWidth - latchOffset, 0);
                             ctx.lineTo(glassWidth - latchOffset, glassHeight - leftCornerOffsetY);
 
-                        } else if (isRight) {
+                        } else if (isAmericanHinge && isRight) {
                             ctx.moveTo(latchOffset, 0);
                             ctx.lineTo(latchOffset, glassHeight - rightCornerOffsetY);
+
+                        } else if (isEuropeanHinge && isLeft) {
+                            ctx.moveTo(glassWidth - latchOffset, rightCornerOffsetY);
+                            ctx.lineTo(glassWidth - latchOffset, glassHeight);
+
+                        } else if (isEuropeanHinge && isRight) {
+                            ctx.moveTo(latchOffset, leftCornerOffsetY);
+                            ctx.lineTo(latchOffset, glassHeight);
                         }
 
                         ctx.strokeShape(this);
