@@ -586,6 +586,14 @@
     &:extend(.dictionary-restrictions all);
 }
 
+.dictionary-is-hidden {
+    &:extend(.dictionary-restrictions all);
+
+    .description {
+        color: lighten(@black, 40%);
+    }
+}
+
 .dictionary-actions {
     position: absolute;
     top: 3.5rem;
@@ -755,6 +763,10 @@
             display: none;
         }
     }
+}
+
+.options-dictionary-entries-table .btn {
+    border: 1px solid darken(@white, 30%);
 }
 
 .options-dictionary-entries-table tr.sortable-ghost {

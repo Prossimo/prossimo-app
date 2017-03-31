@@ -11,6 +11,7 @@ var app = app || {};
             $name_container: '.dictionary-name',
             $rules_and_restrictions_container: '.dictionary-restrictions',
             $pricing_scheme_container: '.dictionary-pricing-scheme',
+            $is_hidden_switch_container: '.dictionary-is-hidden',
             $entries_container: '.entry-table-container',
             $remove: '.js-remove-dictionary'
         },
@@ -49,6 +50,7 @@ var app = app || {};
             this.ui.$name_container.append(this.name_input_view.render().el);
             this.ui.$rules_and_restrictions_container.append(this.rules_and_restrictions_view.render().el);
             this.ui.$pricing_scheme_container.append(this.pricing_scheme_view.render().el);
+            this.ui.$is_hidden_switch_container.append(this.hidden_switch_view.render().el);
 
             this.renderElements();
         },
@@ -63,6 +65,10 @@ var app = app || {};
 
             if ( this.pricing_scheme_view ) {
                 this.pricing_scheme_view.destroy();
+            }
+
+            if ( this.hidden_switch_view ) {
+                this.hidden_switch_view.destroy();
             }
 
             if ( this.entries_table_view ) {
@@ -91,6 +97,20 @@ var app = app || {};
                 param: 'pricing_scheme',
                 values: this.model.getPossiblePricingSchemes(),
                 multiple: false
+            });
+
+            this.hidden_switch_view = new app.BaseToggleView({
+                model: this.model,
+                property_name: 'is_hidden',
+                current_value: this.model.get('is_hidden'),
+                values_list: _.map([
+                    { value: true, title: 'Yes' },
+                    { value: false, title: 'No' }
+                ], function (item) {
+                    var is_current = item.value === this.model.get('is_hidden');
+
+                    return _.extend({}, item, { is_current: is_current });
+                }, this)
             });
 
             this.entries_table_view = new app.OptionsDictionaryEntriesTableView({

@@ -230,6 +230,11 @@ var app = app || {};
         getName: function () {
             return this.get('is_default') ? 'Default Quote' : this.get('name');
         },
+        preparePricingDataForExport: function (options) {
+            var units_data = this.units.invoke('preparePricingDataForExport', options);
+
+            return units_data;
+        },
         setDependencies: function () {
             var changed_flag = false;
 

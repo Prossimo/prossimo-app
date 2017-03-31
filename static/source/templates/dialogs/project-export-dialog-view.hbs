@@ -1,0 +1,50 @@
+{{> 'dialogs/partials/base-dialog-start-wrapper' }}
+<div class="form-horizontal">
+    <h5>What data to include</h5>
+    <div class="form-group">
+        <div class="col-sm-6">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" checked disabled>
+                    <span>Base info</span>
+                </label>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <small>Unit dimensions, mark and quantity</small>
+        </div>
+    </div>
+    {{#each export_options }}
+    <div class="form-group">
+        <div class="col-sm-6">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="{{ @key }}"{{#if checked }} checked{{/if}}>
+                    <span>{{ title }}</span>
+                </label>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <small>{{ description }}</small>
+        </div>
+    </div>
+    {{/each}}
+    <h5>Which Quote data to use</h5>
+    <div class="form-group">
+        <div class="col-sm-6">
+            {{#each export_quote_mode.possible_values }}
+            <label class="radio-inline">
+                <input type="radio" name="export_quote_mode" value="{{ value }}"{{#if checked }} checked{{/if}}>
+                <span>{{ title }}</span>
+            </label>
+            {{/each}}
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-12 text-right">
+            <button class="btn btn-default js-copy-data-to-clipboard">Copy to clipboard</button>
+            <a href="{{ csv_data }}" download="{{ filename }}" taget="_blank" class="btn btn-primary js-export-project-data">Export as .csv</a>
+        </div>
+    </div>
+</div>
+{{> 'dialogs/partials/base-dialog-end-wrapper' }}

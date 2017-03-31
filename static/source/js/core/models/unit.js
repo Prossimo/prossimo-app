@@ -3,6 +3,8 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var UNSET_VALUE = '--';
+
     var PRICING_SCHEME_NONE = app.constants.PRICING_SCHEME_NONE;
     var PRICING_SCHEME_PRICING_GRIDS = app.constants.PRICING_SCHEME_PRICING_GRIDS;
     var PRICING_SCHEME_PER_ITEM = app.constants.PRICING_SCHEME_PER_ITEM;
@@ -727,6 +729,179 @@ var app = app || {};
         },
         getSquareFeetPriceDiscounted: function () {
             return this.getTotalSquareFeet() ? this.getSubtotalPriceDiscounted() / this.getTotalSquareFeet() : 0;
+        },
+        preparePricingDataForExport: function (options) {
+            var default_options = {
+                include_project: true,
+                include_quote: true,
+                include_dimensions_mm: true,
+                include_supplier_cost_original: true,
+                include_supplier_cost_converted: true,
+                include_supplier_discount: true,
+                include_price: true,
+                include_discount: true,
+                include_profile: true,
+                include_options: true,
+                include_sections: true
+            };
+
+            options = _.extend({}, default_options, options);
+
+            var sections_list = this.getFixedAndOperableSectionsList();
+            var parent_project = this.getParentProject();
+            var parent_quote = this.getParentQuote();
+
+            var pricing_data = {};
+
+            //  Project info
+            if ( options.include_project && parent_project ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    project_id: parent_project.id,
+                    project_name: parent_project.get('project_name')
+                });
+            }
+
+            //  Quote info
+            if ( options.include_quote && parent_quote ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    quote_id: parent_quote.id,
+                    quote_name: parent_quote.getName()
+                });
+            }
+
+            //  Base unit info, always included
+            pricing_data = _.extend({}, pricing_data, {
+                mark: this.get('mark'),
+                quantity: this.get('quantity'),
+                width: this.get('width'),
+                height: this.get('height')
+            });
+
+            //  Dimensions in mm
+            if ( options.include_dimensions_mm ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    width_mm: this.getWidthMM(),
+                    height_mm: this.getHeightMM()
+                });
+            }
+
+            //  Supplier cost part 1
+            if ( options.include_supplier_cost_original ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    original_cost: this.get('original_cost'),
+                    original_currency: this.get('original_currency'),
+                    conversion_rate: this.get('conversion_rate')
+                });
+            }
+
+            //  Supplier cost part 2
+            if ( options.include_supplier_cost_converted ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    unit_cost: this.getUnitCost(),
+                    subtotal_cost: this.getSubtotalCost()
+                });
+            }
+
+            //  Supplier cost with discount
+            if ( options.include_supplier_discount ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    supplier_discount: this.get('supplier_discount'),
+                    unit_cost_with_discount: this.getUnitCostDiscounted(),
+                    subtotal_cost_with_discount: this.getSubtotalCostDiscounted()
+                });
+            }
+
+            //  Our markup and price
+            if ( options.include_price ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    price_markup: this.get('price_markup'),
+                    unit_price: this.getUnitPrice(),
+                    subtotal_price: this.getSubtotalPrice()
+                });
+            }
+
+            //  Our price with discount
+            if ( options.include_discount ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    discount: this.get('discount'),
+                    unit_price_with_discount: this.getUnitPriceDiscounted(),
+                    subtotal_price_with_discount: this.getSubtotalPriceDiscounted()
+                });
+            }
+
+            if ( options.include_profile ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    profile_name: this.profile.get('name'),
+                    unit_type: this.profile.get('unit_type')
+                });
+            }
+
+            var custom_titles = {
+                project_id: 'Project ID',
+                project_name: 'Project Name',
+                quote_id: 'Quote ID',
+                quote_name: 'Quote Name',
+                width_mm: 'Width (mm)',
+                height_mm: 'Height (mm)',
+                unit_cost: 'Unit Cost',
+                subtotal_cost: 'Subtotal Cost',
+                unit_cost_with_discount: 'Unit Cost w/D',
+                subtotal_cost_with_discount: 'Subtotal Cost w/D',
+                unit_price: 'Unit Price',
+                unit_price_with_discount: 'Unit Price w/D',
+                subtotal_price: 'Subtotal Price',
+                subtotal_price_with_discount: 'Subtotal Price w/D',
+                profile_name: 'Profile Name',
+                unit_type: 'Unit Type'
+            };
+
+            pricing_data = _.map(pricing_data, function (value, key) {
+                return { title: this.getTitles([key])[0] || custom_titles[key], value: value };
+            }, this);
+
+            if ( options.include_options ) {
+                var option_dictionaries = app.settings.dictionaries.getAvailableDictionaryNames();
+
+                _.each(option_dictionaries, function (dictionary_name) {
+                    var target_dictionary_id = app.settings.dictionaries.getDictionaryIdByName(dictionary_name);
+                    var target_dictionary = app.settings.dictionaries.get(target_dictionary_id);
+                    var current_options = target_dictionary_id ?
+                        this.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
+                    var is_restricted = false;
+
+                    _.each(target_dictionary.get('rules_and_restrictions'), function (rule) {
+                        if ( this.checkIfRestrictionApplies(rule) ) {
+                            is_restricted = true;
+                        }
+                    }, this);
+
+                    pricing_data.push({
+                        title: dictionary_name,
+                        value: !is_restricted && current_options.length ?
+                            current_options[0].entry.get('name') :
+                            UNSET_VALUE
+                    });
+                }, this);
+            }
+
+            if ( options.include_sections ) {
+                _.each(sections_list, function (section_data, index) {
+                    pricing_data.push({
+                        title: 'Sash ' + (index + 1) + ' Type',
+                        value: section_data.type === 'fixed' ? 'Fixed' : 'Operable'
+                    });
+                    pricing_data.push({
+                        title: 'Sash ' + (index + 1) + ' Area (m2)',
+                        value: section_data.width / 1000 * section_data.height / 1000
+                    });
+                    pricing_data.push({
+                        title: 'Sash ' + (index + 1) + ' Filling',
+                        value: section_data.filling_name
+                    });
+                }, this);
+            }
+
+            return pricing_data;
         },
         getSection: function (sectionId) {
             return app.Unit.findSection(this.generateFullRoot(), sectionId);
@@ -1964,6 +2139,7 @@ var app = app || {};
                 if ( !option.is_restricted && pricing_data && pricing_data.scheme !== PRICING_SCHEME_NONE ) {
                     result[pricing_data.scheme].push({
                         dictionary_name: option.dictionary.get('name'),
+                        is_hidden: option.dictionary.get('is_hidden'),
                         option_name: option.entry.get('name'),
                         pricing_data: pricing_data,
                         has_quantity: option.has_quantity,
@@ -2058,6 +2234,7 @@ var app = app || {};
                     section.options.push({
                         dictionary_name: option_data.dictionary_name,
                         dictionary_pricing_scheme: PRICING_SCHEME_PRICING_GRIDS,
+                        is_hidden: option_data.is_hidden,
                         option_name: option_data.option_name,
                         price_increase: price_increase,
                         cost: option_cost
@@ -2078,6 +2255,7 @@ var app = app || {};
                     section.options.push({
                         dictionary_name: option_data.dictionary_name,
                         dictionary_pricing_scheme: PRICING_SCHEME_LINEAR_EQUATION,
+                        is_hidden: option_data.is_hidden,
                         option_name: option_data.option_name,
                         price_increase: price_increase,
                         cost: option_cost
@@ -2331,6 +2509,12 @@ var app = app || {};
             if ( JSON.stringify(current_unit_options.toJSON()) !== JSON.stringify(new_unit_options.toJSON()) ) {
                 this.get('unit_options').reset(new_unit_options.models);
             }
+        },
+        getParentProject: function () {
+            return this.collection && this.collection.options.project;
+        },
+        getParentQuote: function () {
+            return this.collection && this.collection.options.quote;
         },
         //  Check if this unit belongs to the project which is currently active
         isParentQuoteActive: function () {
