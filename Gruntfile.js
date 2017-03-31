@@ -41,7 +41,8 @@ module.exports = function (grunt) {
         'blueimp-file-upload/js/jquery.fileupload-image.js',
         'blueimp-file-upload/js/jquery.fileupload-audio.js',
         'blueimp-file-upload/js/jquery.fileupload-video.js',
-        'blueimp-file-upload/js/jquery.fileupload-validate.js'
+        'blueimp-file-upload/js/jquery.fileupload-validate.js',
+        'clipboard/dist/clipboard.js'
     ];
 
     var vendor_css_files = [
@@ -170,6 +171,7 @@ module.exports = function (grunt) {
         'dialogs/views/quotes-editor-table-item-view.js',
         'dialogs/views/quotes-editor-table-view.js',
         'dialogs/views/edit-quotes-dialog-view.js',
+        'dialogs/views/project-export-dialog-view.js',
         //  App entry
         'app.js'
     ];
