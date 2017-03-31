@@ -1850,18 +1850,24 @@ var app = app || {};
                 hingeLine = new Konva.Shape({
                     stroke: style.stroke,
                     sceneFunc: function (ctx) {
+                        var isSashFramedTrapezoid = section.trapezoid && section.trapezoid.frame;
+                        var sashFrameWidth = model.profile.get('sash_frame_width');
+                        var leftCornerOffsetY = (isSashFramedTrapezoid) ?
+                            section.trapezoid.frame.inner[0].y - sashFrameWidth : 0;
+                        var rightCornerOffsetY = (isSashFramedTrapezoid) ?
+                            section.trapezoid.frame.inner[1].y - sashFrameWidth : 0;
+
                         ctx.beginPath();
 
                         if (isLeft) {
                             ctx.moveTo(glassWidth - latchOffset, 0);
-                            ctx.lineTo(glassWidth - latchOffset, glassHeight);
+                            ctx.lineTo(glassWidth - latchOffset, glassHeight - leftCornerOffsetY);
 
                         } else if (isRight) {
                             ctx.moveTo(latchOffset, 0);
-                            ctx.lineTo(latchOffset, glassHeight);
+                            ctx.lineTo(latchOffset, glassHeight - rightCornerOffsetY);
                         }
 
-                        ctx.closePath();
                         ctx.strokeShape(this);
                     }
                 });

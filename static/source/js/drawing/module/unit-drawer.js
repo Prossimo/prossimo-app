@@ -1410,7 +1410,6 @@ var app = app || {};
                         ctx.lineTo(glassWidth, 0);
                     }
 
-                    ctx.closePath();
                     ctx.strokeShape(this);
                 }
             });
@@ -1430,7 +1429,6 @@ var app = app || {};
                             ctx.lineTo(latchOffset, glassHeight);
                         }
 
-                        ctx.closePath();
                         ctx.strokeShape(this);
                     }
                 });
