@@ -737,6 +737,7 @@ var app = app || {};
                 include_dimensions_mm: true,
                 include_supplier_cost_original: true,
                 include_supplier_cost_converted: true,
+                include_supplier_discount: true,
                 include_price: true,
                 include_discount: true,
                 include_profile: true,
@@ -797,8 +798,15 @@ var app = app || {};
             if ( options.include_supplier_cost_converted ) {
                 pricing_data = _.extend({}, pricing_data, {
                     unit_cost: this.getUnitCost(),
-                    subtotal_cost: this.getSubtotalCost(),
+                    subtotal_cost: this.getSubtotalCost()
+                });
+            }
+
+            //  Supplier cost with discount
+            if ( options.include_supplier_discount ) {
+                pricing_data = _.extend({}, pricing_data, {
                     supplier_discount: this.get('supplier_discount'),
+                    unit_cost_with_discount: this.getUnitCostDiscounted(),
                     subtotal_cost_with_discount: this.getSubtotalCostDiscounted()
                 });
             }
@@ -837,6 +845,7 @@ var app = app || {};
                 height_mm: 'Height (mm)',
                 unit_cost: 'Unit Cost',
                 subtotal_cost: 'Subtotal Cost',
+                unit_cost_with_discount: 'Unit Cost w/D',
                 subtotal_cost_with_discount: 'Subtotal Cost w/D',
                 unit_price: 'Unit Price',
                 unit_price_with_discount: 'Unit Price w/D',

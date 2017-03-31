@@ -167,6 +167,7 @@ var app = app || {};
                 include_dimensions_mm: { checked: false, title: 'Dimensions, mm', description: 'Width and height in mm' },
                 include_supplier_cost_original: { checked: true, title: 'Supplier Cost, Original', description: 'Costs provided by supplier' },
                 include_supplier_cost_converted: { checked: false, title: 'Supplier Cost, Converted', description: 'Supplier costs converted to USD' },
+                include_supplier_discount: { checked: false, title: 'Supplier Discount', description: 'Discount size and discounted costs' },
                 include_price: { checked: true, title: 'Price', description: 'Our markup and final price' },
                 include_discount: { checked: false, title: 'Discount', description: 'Our price with discount' },
                 include_profile: { checked: false, title: 'Profile Info', description: 'Profile name and unit type' },
