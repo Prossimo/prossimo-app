@@ -1964,6 +1964,7 @@ var app = app || {};
                 if ( !option.is_restricted && pricing_data && pricing_data.scheme !== PRICING_SCHEME_NONE ) {
                     result[pricing_data.scheme].push({
                         dictionary_name: option.dictionary.get('name'),
+                        is_hidden: option.dictionary.get('is_hidden'),
                         option_name: option.entry.get('name'),
                         pricing_data: pricing_data,
                         has_quantity: option.has_quantity,
@@ -2058,6 +2059,7 @@ var app = app || {};
                     section.options.push({
                         dictionary_name: option_data.dictionary_name,
                         dictionary_pricing_scheme: PRICING_SCHEME_PRICING_GRIDS,
+                        is_hidden: option_data.is_hidden,
                         option_name: option_data.option_name,
                         price_increase: price_increase,
                         cost: option_cost
@@ -2078,6 +2080,7 @@ var app = app || {};
                     section.options.push({
                         dictionary_name: option_data.dictionary_name,
                         dictionary_pricing_scheme: PRICING_SCHEME_LINEAR_EQUATION,
+                        is_hidden: option_data.is_hidden,
                         option_name: option_data.option_name,
                         price_increase: price_increase,
                         cost: option_cost

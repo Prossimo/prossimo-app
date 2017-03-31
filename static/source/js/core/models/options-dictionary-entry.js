@@ -283,6 +283,11 @@ var app = app || {};
         getParentDictionary: function () {
             return this.collection && this.collection.options.dictionary;
         },
+        isParentDictionaryHidden: function () {
+            var dictionary = this.getParentDictionary();
+
+            return dictionary && dictionary.get('is_hidden');
+        },
         initialize: function (attributes, options) {
             this.options = options || {};
 

@@ -46,11 +46,11 @@
                 {{/each}}
             </tbody>
         </table>
-        {{#if active_unit_options }}
+        {{#if active_unit_options.options_list }}
             <h4>Unit Options</h4>
             <table>
             <tbody>
-                {{#each active_unit_options }}
+                {{#each active_unit_options.options_list }}
                 <tr>
                     <td class="title">{{ title }}</td>
                     <td class="value">{{ value }}</td>
@@ -58,6 +58,9 @@
                 {{/each}}
             </tbody>
         </table>
+        {{/if}}
+        {{#if active_unit_options.has_hidden_options }}
+        <p class="description">Options marked with * are hidden and won't be displayed in the quote.</p>
         {{/if}}
         {{#if active_unit_sashes }}
             <h4>Sash List</h4>
@@ -285,6 +288,12 @@
                         <td class="title">Option Name</td>
                         <td class="value">{{{ option_name }}}</td>
                     </tr>
+                    {{#if is_hidden }}
+                    <tr>
+                        <td class="title">Is Hidden</td>
+                        <td class="value">Yes</td>
+                    </tr>
+                    {{/if}}
                     <tr>
                         <td class="title">Pricing Scheme</td>
                         <td class="value">{{{ pricing_scheme }}}</td>
@@ -324,6 +333,12 @@
                     <td class="title">Option Name</td>
                     <td class="value">{{{ option_name }}}</td>
                 </tr>
+                {{#if is_hidden }}
+                <tr>
+                    <td class="title">Is Hidden</td>
+                    <td class="value">Yes</td>
+                </tr>
+                {{/if}}
                 <tr>
                     <td class="title">Cost / Item</td>
                     <td class="value">{{{ cost_per_item }}}</td>
