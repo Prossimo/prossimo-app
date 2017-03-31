@@ -68,6 +68,8 @@ var app = app || {};
         },
         events: {
             // Click
+            'click #drawing': 'handleCanvasClick',
+            'contextmenu #drawing': 'handleCanvasClick',
             'click .split-section': 'handleSplitSectionClick',
             'click @ui.$sash_types': 'handleChangeSashTypeClick',
             'click #clear-frame': 'handleClearFrameClick',
@@ -75,6 +77,7 @@ var app = app || {};
             'click .toggle-arched': 'handleArchedClick',
             'click .toggle-circular': 'handleCircularClick',
             'click #glazing-bars-popup': 'handleGlazingBarsPopupClick',
+            'click #sash-clone': 'handleSashCloneClick',
             'click @ui.$undo': 'handleUndoClick',
             'click @ui.$redo': 'handleRedoClick',
             // Tap
@@ -85,6 +88,7 @@ var app = app || {};
             'tap .toggle-arched': 'handleArchedClick',
             'tap .toggle-circular': 'handleCircularClick',
             'tap #glazing-bars-popup': 'handleGlazingBarsPopupClick',
+            'tap #sash-clone': 'handleSashCloneClick',
             'tap @ui.$undo': 'handleUndoClick',
             'tap @ui.$redo': 'handleRedoClick',
             // Others
@@ -122,7 +126,17 @@ var app = app || {};
         handleRedoClick: function () {
             return this.undo_manager.handler.redo();
         },
+        handleCanvasClick: function (e) {
+            if (this.isCloningFilling()) {
+                this.cloneSashDismiss();
+                e.preventDefault();
+            }
+        },
         handleCanvasKeyDown: function (e) {
+            if (e.key === 'Escape' && this.isCloningFilling()) {
+                this.cloneSashDismiss();
+            }
+
             if (this.module && !this.state.inputFocused) {
                 this.module.handleKeyEvents(e);
             }
@@ -165,6 +179,12 @@ var app = app || {};
             this.glazing_view
                 .setSection( this.state.selectedSashId )
                 .showModal();
+        },
+        handleSashCloneClick: function () {
+            if (this.state.selectedSashId) {
+                this.cloneSashStart(this.state.selectedSashId);
+            }
+            // Continues at this.bindModuleEvents()
         },
         handleFillingTypeChange: function () {
             var filling_type;
@@ -328,10 +348,16 @@ var app = app || {};
                 });
             });
             this.listenTo(this.module, 'state:selected:sash', function (data) {
-                this.deselectAll();
-                this.setState({
-                    selectedSashId: data.newValue
-                });
+                var sourceSashId = data.oldValue;
+                var targetSashId = data.newValue;
+                if (!targetSashId || targetSashId === sourceSashId) { this.deselectAll(); return; }
+
+                if (this.isCloningFilling()) {
+                    this.cloneSashFinish(targetSashId);
+                } else {
+                    this.deselectAll();
+                    this.setState({ selectedSashId: data.newValue });
+                }
             });
             this.listenTo(this.module, 'labelClicked', function (data) {
                 this.createInput(data.params, data.pos, data.size);
@@ -567,6 +593,12 @@ var app = app || {};
             var isArched = selectedSash && selectedSash.arched;
             var isCircular = selectedSash && selectedSash.circular;
 
+            if (this.isCloningFilling()) {
+                document.body.style.cursor = 'copy';
+            } else {
+                document.body.style.cursor = 'auto';
+            }
+
             this.ui.$bars_control.toggle(
                 !isArched &&
                 selectedSash &&
@@ -672,6 +704,46 @@ var app = app || {};
                 selectedMullionId: null,
                 selectedSashId: null
             });
+        },
+        cloneSashStart: function (sourceSashId) {
+            var selectedSash = this.model.getSection(this.state.selectedSashId);
+            if (!selectedSash) { return; }
+
+            this.setState({
+                cloneSashSource: {
+                    bars: selectedSash.bars,
+                    sashType: selectedSash.sashType,
+                    fillingType: selectedSash.fillingType,
+                    fillingName: selectedSash.fillingName
+                }
+            });
+        },
+        cloneSashFinish: function (targetSashId) {
+            if (!targetSashId || !this.isCloningFilling()) { return; }
+            var bars = this.state.cloneSashSource.bars;
+            var sashType = this.state.cloneSashSource.sashType;
+            var fillingType = this.state.cloneSashSource.fillingType;
+            var fillingName = this.state.cloneSashSource.fillingName;
+
+            if (bars) {
+                this.model.setSectionBars(targetSashId, bars);
+            }
+            if (sashType) {
+                this.model.setSectionSashType(targetSashId, sashType);
+            }
+            if (fillingType && fillingName) {
+                this.model.setFillingType(targetSashId, fillingType, fillingName);
+            }
+
+            this.cloneSashDismiss();
+        },
+        cloneSashDismiss: function () {
+            this.deselectAll();
+            this.module.deselectAll();
+            this.setState({ cloneSashSource: null });
+        },
+        isCloningFilling: function () {
+            return !!this.state.cloneSashSource;
         }
     });
 })();
