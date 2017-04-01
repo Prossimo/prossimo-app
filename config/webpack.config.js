@@ -35,6 +35,7 @@ module.exports = {
             'load-image': 'blueimp-load-image/js/load-image.js',
             'load-image-meta': 'blueimp-load-image/js/load-image-meta.js',
             'load-image-exif': 'blueimp-load-image/js/load-image-exif.js',
+            'load-image-scale': 'blueimp-load-image/js/load-image-scale',
             'canvas-to-blob': 'blueimp-canvas-to-blob/js/canvas-to-blob.js',
             'jquery-ui/widget': 'jquery-ui/ui/widget'
         }

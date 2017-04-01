@@ -4,7 +4,7 @@ import Marionette from 'backbone.marionette';
 import App from '../../main';
 import ProjectFileCollection from '../../core/collections/project-file-collection';
 import template from './files-uploader-view.hbs';
-import 'blueimp-file-upload/js/jquery.fileupload.js';
+import 'blueimp-file-upload/js/jquery.fileupload';
 import 'blueimp-file-upload/js/jquery.fileupload-process';
 import 'blueimp-file-upload/js/jquery.fileupload-image';
 import 'blueimp-file-upload/js/jquery.fileupload-audio';
