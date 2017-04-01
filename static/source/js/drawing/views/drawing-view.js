@@ -57,6 +57,7 @@ var app = app || {};
             $bars_control: '#bars-control',
             $section_control: '#section_control',
             $filling_select: '#filling-select',
+            $filling_tools: '#filling-tools',
             $undo: '#undo',
             $redo: '#redo',
             $sash_types: '.change-sash-type',
@@ -589,6 +590,7 @@ var app = app || {};
 
             var selectedSashId = this.state.selectedSashId;
             var selectedSash = this.model.getSection(selectedSashId);
+            var isLeafSash = selectedSash && selectedSash.sections.length === 0;
             var hasFrame = selectedSash && selectedSash.sashType !== 'fixed_in_frame';
             var isArched = selectedSash && selectedSash.arched;
             var isCircular = selectedSash && selectedSash.circular;
@@ -598,6 +600,8 @@ var app = app || {};
             } else {
                 document.body.style.cursor = 'auto';
             }
+
+            this.ui.$filling_tools.toggle(selectedSash && isLeafSash);
 
             this.ui.$bars_control.toggle(
                 !isArched &&
