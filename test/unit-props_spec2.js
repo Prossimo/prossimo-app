@@ -8,7 +8,7 @@ App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
 
 describe('Unit model tests: ', function () {
-    describe('project basic tests', function () {
+    describe('unit basic tests', function () {
         let unit = new Unit({
             width: c.mm_to_inches(1000),
             height: c.mm_to_inches(2000)
@@ -503,7 +503,7 @@ describe('Unit model tests: ', function () {
         full_root = unit.generateFullRoot();
         root_id = full_root.id;
         unit.setSectionSashType(root_id, 'tilt_only');
-        estimated_list = unit.getSectionsListWithEstimatedPrices();
+        estimated_list = unit.getSectionsListWithEstimatedCost();
 
         equal(estimated_list[0].height.toFixed(2), '1981.20', 'Section height');
         equal(estimated_list[0].width.toFixed(2), '1041.40', 'Section width');

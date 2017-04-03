@@ -1,14 +1,13 @@
 /* eslint-env mocha */
-import {expect} from 'chai';
 import _ from 'underscore';
-import {format, parseFormat, math, convert, vector2d, angle} from '../src/utils';
+import {angle, convert, format, math, parseFormat, vector2d} from '../src/utils';
 
-describe('Utils.js tests: ', function () {
+test('Utils.js tests: ', function () {
     //  ------------------------------------------------------------------------
     //  Test format functions from utils.js
     //  ------------------------------------------------------------------------
-    describe('format', function () {
-        describe('dimension', function () {
+    test('format', function () {
+        test('dimension', function () {
             let f = format;
 
             equal(f.dimension(20), '1′−8″', 'Expected value is 1′−8″');
@@ -37,37 +36,37 @@ describe('Utils.js tests: ', function () {
             equal(f.dimension(0.472, 'fraction', null, 'remove'), '1/2″', 'Expected value is 1/2″');
             equal(f.dimension(0.472, 'fraction', null, 'show'), '0 1/2″', 'Expected value is 0 1/2″');
         });
-        describe('dimensions', function () {
+        test('dimensions', function () {
             let f = format;
 
-            equal(f.dimensions(20, 30), '1′−8″ x 2′−6″', 'Expected value is 1′−8″ x 2′−6″');
-            equal(f.dimensions(0, 0), '0″ x 0″', 'Expected value is 0′−0″ x 0′−0″');
-            equal(f.dimensions(12, 12), '1′−0″ x 1′−0″', 'Expected value is 1′−0″ x 1′−0″');
-            equal(f.dimensions('12', '12'), '1′−0″ x 1′−0″', 'Expected value is 1′−0″ x 1′−0″');
+            equal(f.dimensions(20, 30), '1′−8″ × 2′−6″', 'Expected value is 1′−8″ × 2′−6″');
+            equal(f.dimensions(0, 0), '0″ × 0″', 'Expected value is 0′−0″ × 0′−0″');
+            equal(f.dimensions(12, 12), '1′−0″ × 1′−0″', 'Expected value is 1′−0″ × 1′−0″');
+            equal(f.dimensions('12', '12'), '1′−0″ × 1′−0″', 'Expected value is 1′−0″ × 1′−0″');
         });
-        describe('dimension_mm', function () {
+        test('dimension_mm', function () {
             let f = format;
 
             equal(f.dimension_mm(2500), '2,500 mm', 'Expected value is 2,500 mm');
             equal(f.dimension_mm(33.3), '33 mm', 'Expected value is 33 mm');
         });
-        describe('dimensions_mm', function () {
+        test('dimensions_mm', function () {
             let f = format;
 
-            equal(f.dimensions_mm(2500, 1300), '2,500 x 1,300', 'Expected value is 2,500 x 1,300');
+            equal(f.dimensions_mm(2500, 1300), '2,500 × 1,300', 'Expected value is 2,500 × 1,300');
         });
-        describe('dimension_in', function () {
+        test('dimension_in', function () {
             let f = format;
 
             equal(f.dimension_in(14), '14″', 'Expected value is 14″');
             equal(f.dimension_in(28.35), '28.35″', 'Expected value is 28.35″');
         });
-        describe('dimensions_in', function () {
+        test('dimensions_in', function () {
             let f = format;
 
-            equal(f.dimensions_in(38.14, 22), '38.14″ x 22″', 'Expected value is 38.14″ x 22″');
+            equal(f.dimensions_in(38.14, 22), '38.14″ × 22″', 'Expected value is 38.14″ × 22″');
         });
-        describe('price_usd', function () {
+        test('price_usd', function () {
             let f = format;
 
             equal(f.price_usd(30), '$30.00', 'Expected value is $30.00');
@@ -76,7 +75,7 @@ describe('Utils.js tests: ', function () {
             equal(f.price_usd(0), '$0.00', 'Expected value is $0.00');
             equal(f.price_usd(-140), '-$140.00', 'Expected value is -$140.00');
         });
-        describe('percent', function () {
+        test('percent', function () {
             let f = format;
 
             equal(f.percent(20), '20%', 'Expected value is 20%');
@@ -86,7 +85,7 @@ describe('Utils.js tests: ', function () {
             equal(f.percent(14.13, 0), '14%', 'Expected value is 14%');
             equal(f.percent(0), '0%', 'Expected value is 0%');
         });
-        describe('fixed', function () {
+        test('fixed', function () {
             let f = format;
 
             equal(f.fixed(0.5, 5), '0.50000', 'Expected value is 0.50000');
@@ -94,7 +93,7 @@ describe('Utils.js tests: ', function () {
             equal(f.fixed(0), '0.00', 'Expected value is 0.00');
             equal(f.fixed(0.5510204081632679, 25), '0.551020408163268', 'Expected not to fail with Decimal error');
         });
-        describe('square_feet', function () {
+        test('square_feet', function () {
             let f = format;
 
             equal(f.square_feet(12), '12 sq.ft', 'Expected value is 12 sq.ft');
@@ -102,41 +101,41 @@ describe('Utils.js tests: ', function () {
 
             equal(f.square_feet(4.55, 2, 'sup'), '4.55 ft<sup>2</sup>', 'Expected value is 4.55 ft<sup>2</sup>');
         });
-        describe('square_meters', function () {
+        test('square_meters', function () {
             let f = format;
 
             equal(f.square_meters(12), '12 m<sup>2</sup>', 'Expected value is 12 m<sup>2</sup>');
             equal(f.square_meters(4.55), '4.55 m<sup>2</sup>', 'Expected value is 4.55 m<sup>2</sup>');
         });
-        describe('dimensions_and_area', function () {
+        test('dimensions_and_area', function () {
             let f = format;
 
             equal(
                 f.dimensions_and_area(26, 32.0625, 'fraction', 'inches_only', 5.78, 2, 'sup'),
-                '26″ x 32 1/16″ (5.78 ft<sup>2</sup>)',
+                '26″ × 32 1/16″ (5.78 ft<sup>2</sup>)',
                 'Test with all values set the same way as defaults'
             );
             equal(
                 f.dimensions_and_area(26, 32.0625, undefined, undefined, 5.78, undefined, undefined),
-                '26″ x 32 1/16″ (5.78 ft<sup>2</sup>)',
+                '26″ × 32 1/16″ (5.78 ft<sup>2</sup>)',
                 'Test with no formatting-related values set, and defaults used instead'
             );
         });
-        describe('dimensions_and_area_mm', function () {
+        test('dimensions_and_area_mm', function () {
             let f = format;
 
             equal(
                 f.dimensions_and_area_mm(722, 417, 0.301, 2, 'sup'),
-                '417 x 722 (0.3 m<sup>2</sup>)',
+                '722 × 417 (0.3 m<sup>2</sup>)',
                 'Test with all values set the same way as defaults'
             );
             equal(
                 f.dimensions_and_area_mm(722, 417, 0.301, undefined, undefined),
-                '417 x 722 (0.3 m<sup>2</sup>)',
+                '722 × 417 (0.3 m<sup>2</sup>)',
                 'Test with no formatting-related values set, and defaults used instead'
             );
         });
-        describe('fileSize', function () {
+        test('fileSize', function () {
             let f = format;
 
             equal(f.fileSize(0), '0 B', 'Expected 0 B');
@@ -149,8 +148,8 @@ describe('Utils.js tests: ', function () {
     //  ------------------------------------------------------------------------
     //  Test parseFormat functions from utils.js
     //  ------------------------------------------------------------------------
-    describe('parseFormat', function () {
-        describe('dimension', function () {
+    test('parseFormat', function () {
+        test('dimension', function () {
             let p = parseFormat;
 
             equal(p.dimension(' 30 '), 30, 'Expected value is 30');
@@ -215,7 +214,7 @@ describe('Utils.js tests: ', function () {
             equal(p.dimension(' 30m ').toFixed(5), 1181.10236, 'Expected value is 1181.1');
             equal(p.dimension('4.5 cm').toFixed(5), 1.77165, 'Expected value is 1.77');
         });
-        describe('dimensions', function () {
+        test('dimensions', function () {
             let p = parseFormat;
 
             deepEqual(p.dimensions('32"X82 1/2"'), { width: 32, height: 82.5 }, 'Expected { width: 32, height: 82.5 }');
@@ -266,7 +265,7 @@ describe('Utils.js tests: ', function () {
             deepEqual(p.dimensions('5’—0” X 2’—8” | 2’—4”'), { width: 60, height: [32, 28] }, 'Expected height to be array');
             deepEqual(p.dimensions('2’—8” | 2’—4” X 5’—0”'), { width: 32, height: 60 }, 'Expected only the first value to be recognized for width');
         });
-        describe('percent', function () {
+        test('percent', function () {
             let p = parseFormat;
 
             equal(p.percent('20%'), 20, 'Expected value is 20');
@@ -278,22 +277,22 @@ describe('Utils.js tests: ', function () {
     //  ------------------------------------------------------------------------
     //  Test math functions from utils.js
     //  ------------------------------------------------------------------------
-    describe('math', function () {
-        describe('square_feet', function () {
+    test('math', function () {
+        test('square_feet', function () {
             let m = math;
 
             equal(m.square_feet(20, 20).toFixed(5), '2.77778', 'Expected value is 2.77778');
             equal(m.square_feet(12, 12), 1, 'Expected value is 1');
             equal(m.square_feet(0, 0), 0, 'Expected value is 0');
         });
-        describe('square_meters', function () {
+        test('square_meters', function () {
             let m = math;
 
             equal(m.square_meters(200, 200), 0.04, 'Expected value is 0.04');
             equal(m.square_meters(1000, 1000), 1, 'Expected value is 1');
             equal(m.square_meters(0, 0), 0, 'Expected value is 0');
         });
-        describe('linear_interpolation', function () {
+        test('linear_interpolation', function () {
             let m = math;
 
             equal(m.linear_interpolation(20, 10, 30, 50, 70), 60, 'Expected value is 60');
@@ -304,15 +303,15 @@ describe('Utils.js tests: ', function () {
     //  ------------------------------------------------------------------------
     //  Test convert functions from utils.js
     //  ------------------------------------------------------------------------
-    describe('convert', function () {
-        describe('inches_to_mm', function () {
+    test('convert', function () {
+        test('inches_to_mm', function () {
             let c = convert;
 
             equal(c.inches_to_mm(20), 508, 'Expected value is 508');
             equal(c.inches_to_mm(1), 25.4, 'Expected value is 25.4');
             equal(c.inches_to_mm(0), 0, 'Expected value is 0');
         });
-        describe('mm_to_inches', function () {
+        test('mm_to_inches', function () {
             let c = convert;
 
             equal(c.mm_to_inches(508), 20, 'Expected value is 20');
@@ -323,8 +322,8 @@ describe('Utils.js tests: ', function () {
     //  ------------------------------------------------------------------------
     //  Test vector2d functions from utils.js
     //  ------------------------------------------------------------------------
-    describe('vector2d', function () {
-        describe('getVector', function () {
+    test('vector2d', function () {
+        test('getVector', function () {
             let v = vector2d;
 
             function func() {
@@ -336,14 +335,14 @@ describe('Utils.js tests: ', function () {
             deepEqual(v.getVector(3), {x: 3, y: 3}, 'Expected value is {x: 3, y: 3}');
             deepEqual(v.getVector(func.bind(3)), {x: 3, y: 9}, 'Expected value is {x: 3, y: 9}');
         });
-        describe('length', function () {
+        test('length', function () {
             let v = vector2d;
 
             equal(v.length({x: 3, y: 4}), 5, 'Expected value is 5');
             equal(v.length({x: 0, y: 10}), 10, 'Expected value is 10');
             equal(v.length({x: 1, y: 9}), 9.055385138137417, 'Expected value is 9.055385138137417');
         });
-        describe('normalize', function () {
+        test('normalize', function () {
             let v = vector2d;
 
             deepEqual(v.normalize([1, 1]), {x: 0.7071067811865475, y: 0.7071067811865475},
@@ -353,42 +352,42 @@ describe('Utils.js tests: ', function () {
             deepEqual(v.normalize({x: 1, y: 9}), {x: 0.11043152607484653, y: 0.9938837346736188},
                 'Expected value is {x: 0.11043152607484653, y: 0.9938837346736188}');
         });
-        describe('add', function () {
+        test('add', function () {
             let v = vector2d;
 
             deepEqual(v.add([1, 1], [2, 4]), {x: 3, y: 5}, 'Expected value is {x: 3, y: 5}');
             deepEqual(v.add([-3, -1], [2, 4]), {x: -1, y: 3}, 'Expected value is {x: -1, y: 3}');
             deepEqual(v.add({x: 3, y: 4}, {x: 0, y: 1}), {x: 3, y: 5}, 'Expected value is {x: 3, y: 5}');
         });
-        describe('substract', function () {
+        test('substract', function () {
             let v = vector2d;
 
             deepEqual(v.substract([1, 1], [2, 4]), {x: -1, y: -3}, 'Expected value is {x: -1, y: -3}');
             deepEqual(v.substract([-3, -1], [2, 4]), {x: -5, y: -5}, 'Expected value is {x: -5, y: -5}');
             deepEqual(v.substract({x: 3, y: 4}, {x: 0, y: 1}), {x: 3, y: 3}, 'Expected value is {x: 3, y: 3}');
         });
-        describe('multiply', function () {
+        test('multiply', function () {
             let v = vector2d;
 
             deepEqual(v.multiply([1, 1], [2, 4]), {x: 2, y: 4}, 'Expected value is {x: 2, y: 4}');
             deepEqual(v.multiply([-3, -1], [2, 4]), {x: -6, y: -4}, 'Expected value is {x: -6, y: -4}');
             deepEqual(v.multiply({x: 3, y: 4}, {x: 0, y: 1}), {x: 0, y: 4}, 'Expected value is {x: 0, y: 4}');
         });
-        describe('divide', function () {
+        test('divide', function () {
             let v = vector2d;
 
             deepEqual(v.divide([1, 1], [2, 4]), {x: 0.5, y: 0.25}, 'Expected value is {x: 0.5, y: 0.25}');
             deepEqual(v.divide([-3, -1], [2, 4]), {x: -1.5, y: -0.25}, 'Expected value is {x: -1.5, y: -0.25}');
             deepEqual(v.divide({x: 3, y: 4}, {x: 0.5, y: 1}), {x: 6, y: 4}, 'Expected value is {x: 6, y: 4}');
         });
-        describe('scalar', function () {
+        test('scalar', function () {
             let v = vector2d;
 
             equal(v.scalar([1, 1], [2, 4]), 6, 'Expected value is 6');
             equal(v.scalar([-3, -1], [2, 4]), -10, 'Expected value is -10');
             equal(v.scalar({x: 3, y: 4}, {x: 0.5, y: 1}), 5.5, 'Expected value is 5.5');
         });
-        describe('angle', function () {
+        test('angle', function () {
             let v = vector2d;
 
             equal(v.angle([1, 0], [0, 1]), 1.5707963267948966, 'Expected value is 1.5707963267948966');
@@ -396,14 +395,14 @@ describe('Utils.js tests: ', function () {
             equal(v.angle([-3, -1], [2, 4]), 2.356194490192345, 'Expected value is 2.356194490192345');
             equal(v.angle({x: 3, y: 4}, {x: 0.5, y: 1}), 0.17985349979247847, 'Expected value is 0.17985349979247847');
         });
-        describe('clockwiseSort', function () {
+        test('clockwiseSort', function () {
             let v = vector2d;
             let toSort = _.shuffle([[0, 1], [1, 0], [0, -1], [-1, 0]]);
             let sorted = [{x: 0, y: 1}, {x: 1, y: 0}, {x: 0, y: -1}, {x: -1, y: 0}];
 
             deepEqual(v.clockwiseSort(toSort), sorted, 'Expected value is (0,1) (1,0) (0, -1) (-1, 0)');
         });
-        describe('points_to_vectors', function () {
+        test('points_to_vectors', function () {
             let v = vector2d;
             let points = [{x: 3, y: 3}, {x: -1, y: -6}, {x: 0, y: 0}];
             let center = {x: 1, y: 1};
@@ -412,7 +411,7 @@ describe('Utils.js tests: ', function () {
 
             deepEqual(v.points_to_vectors(points, center), exp, 'Points to vectors conversion');
         });
-        describe('vectors_to_points', function () {
+        test('vectors_to_points', function () {
             let v = vector2d;
             let points = [{x: 2, y: -2}, {x: -2, y: 7}, {x: -1, y: 1}];
             let center = {x: 1, y: 1};
@@ -425,15 +424,15 @@ describe('Utils.js tests: ', function () {
     //  ------------------------------------------------------------------------
     //  Test angle functions from utils.js
     //  ------------------------------------------------------------------------
-    describe('angle', function () {
-        describe('rad_to_deg', function () {
+    test('angle', function () {
+        test('rad_to_deg', function () {
             let a = angle;
 
             equal(a.rad_to_deg(0.5), 28.64788975654116, 'Expected value is 28.64788975654116');
             equal(a.rad_to_deg(1), 57.29577951308232, 'Expected value is 57.29577951308232');
             equal(a.rad_to_deg(-9.5), -544.309905374282, 'Expected value is -544.309905374282');
         });
-        describe('deg_to_rad', function () {
+        test('deg_to_rad', function () {
             let a = angle;
 
             equal(a.deg_to_rad(90), 1.5707963267948966, 'Expected value is 1.5707963267948966');

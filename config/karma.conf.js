@@ -8,7 +8,7 @@ module.exports = {
     basePath: '',
     files: [
         path.resolve(rootPatch, './test/index.js'),
-        path.resolve(rootPatch, './test/**/*_spec.js')
+        path.resolve(rootPatch, './test/**/*_spec2.js')
     ],
 
     // frameworks to use
@@ -16,7 +16,7 @@ module.exports = {
 
     preprocessors: {
         [path.resolve(rootPatch, './test/index.js')]: ['webpack', 'sourcemap'],
-        [path.resolve(rootPatch, './test/**/*_spec.js')]: ['webpack', 'sourcemap'],
+        [path.resolve(rootPatch, './test/**/*_spec2.js')]: ['webpack', 'sourcemap'],
         [path.resolve(rootPatch, './test/**/*.png')]: ['webpack']
     },
 

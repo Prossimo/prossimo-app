@@ -1,25 +1,25 @@
-import {Model, Collection} from 'backbone';
+import {Collection, Model} from 'backbone';
 import _ from 'underscore';
 import App from '../src/main';
 import Unit from '../src/core/models/unit';
 import UnitCollection from '../src/core/collections/unit-collection';
-import Project from '../src/core/models/project';
+import Quote from '../src/core/models/quote';
 import Profile from '../src/core/models/profile';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
 
-describe('units collection', function () {
+describe('Units collection:', function () {
     describe('instanceOf tests', function () {
         let units_collection = new UnitCollection();
         let UnitModel = units_collection.model;
         let unit_model = new UnitModel();
-        let project = new Project();
+        let quote = new Quote();
 
         instanceOf(units_collection, Collection, 'should belong to Backbone.Collection object');
         instanceOf(unit_model, Model, 'collection model should belong to Backbone.Model object');
         instanceOf(unit_model, Unit, 'collection model should belong to app.Unit object');
-        instanceOf(project.units, UnitCollection, 'app.Project().units should belong to app.UnitCollection object');
+        instanceOf(quote.units, UnitCollection, 'app.Quote().units should belong to app.UnitCollection object');
     });
     describe('basic tests', function () {
         let data = [{
@@ -91,15 +91,15 @@ describe('units collection', function () {
         let profileUnits_collection = units_collection.getUnitsByProfiles();
 
         ok(_.isArray(profileUnits_collection), '#getUnitsByProfiles() should return array');
-        equal(profileUnits_collection.length, 1, '#getUnitsByProfiles() should return array');
+        equal(profileUnits_collection.length, '1', '#getUnitsByProfiles() should return array');
 
         _.map(profileUnits_collection, function (profileUnit) {
             let ProfileUnitModel = profileUnit.model;
             let profileUnitModel = new ProfileUnitModel();
 
-            instanceOf(profileUnit, Backbone.Collection, 'should belong to Backbone.Collection object');
+            instanceOf(profileUnit, Collection, 'should belong to Backbone.Collection object');
             instanceOf(profileUnit, UnitCollection, 'app.Project().units should belong to app.UnitCollection object');
-            instanceOf(profileUnitModel, Backbone.Model, 'collection model should belong to Backbone.Model object');
+            instanceOf(profileUnitModel, Model, 'collection model should belong to Backbone.Model object');
             instanceOf(profileUnitModel, Unit, 'collection model should belong to app.Unit object');
 
             instanceOf(profileUnit.profile, Profile, 'this.profile should belong to app.Profile object');
