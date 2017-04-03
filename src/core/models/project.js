@@ -1,6 +1,7 @@
 import _ from 'underscore';
-import App from '../../main';
 import Backbone from 'backbone';
+
+import App from '../../main';
 import Schema from '../../schema';
 import QuoteCollection from '../collections/quote-collection';
 import ProjectFileCollection from '../collections/project-file-collection';
@@ -41,7 +42,6 @@ export default Backbone.Model.extend({
         var type_value_hash = {
             number: 0
         };
-
 
         if (_.indexOf(_.keys(type_value_hash), type) !== -1) {
             default_value = type_value_hash[type];
@@ -258,5 +258,4 @@ export default Backbone.Model.extend({
 
         return quotes_units_data;
     }
-
 });

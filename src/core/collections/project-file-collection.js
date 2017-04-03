@@ -1,4 +1,5 @@
 import Backbone from 'backbone';
+
 import App from '../../main';
 import ProjectFile from '../models/project-file';
 

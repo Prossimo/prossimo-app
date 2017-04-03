@@ -1,4 +1,6 @@
 import _ from 'underscore';
+import Handsontable from 'handsontable/dist/handsontable.full';
+
 import hotRenderers from '../../hot-renderers';
 import BaseDialogView from './base-dialog-view';
 import template from '../../templates/dialogs/items-profiles-table-dialog-view.hbs';
@@ -37,11 +39,11 @@ export default BaseDialogView.extend({
             }
 
             //  Fix HoT issue with booleans cast to strings on copy/paste
-                if ( new_value === 'true' ) {
-                    new_value = true;
-                } else if ( new_value === 'false' ) {
-                    new_value = false;
-                }
+            if ( new_value === 'true' ) {
+                new_value = true;
+            } else if ( new_value === 'false' ) {
+                new_value = false;
+            }
 
                 //  This means we changed a default value for some profile
             if (column_index === 0) {

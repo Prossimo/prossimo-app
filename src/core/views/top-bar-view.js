@@ -1,5 +1,6 @@
 import Marionette from 'backbone.marionette';
 import $ from 'jquery';
+
 import {globalChannel} from '../../utils/radio';
 import App from '../../main';
 import ProjectSelectorView from './project-selector-view';
@@ -7,7 +8,6 @@ import StatusPanelView from './status-panel-view';
 import ProjectSettingsPanelView from './project-settings-panel-view';
 import QuoteSelectorView from './quote-selector-view';
 import SpinnerView from './spinner-view';
-import Dialogs from '../../dialogs';
 import template from '../../templates/core/top-bar-view.hbs';
 
 export default Marionette.View.extend({
@@ -51,7 +51,7 @@ export default Marionette.View.extend({
     },
     showEditQuotesDialog: function () {
         if (this.isProjectSelected()) {
-            (new Dialogs()).showDialog('edit-quotes', {
+            App.dialogs.showDialog('edit-quotes', {
                 collection: App.current_project.quotes
             });
         }

@@ -1,6 +1,7 @@
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 import $ from 'jquery';
+
 import {globalChannel} from '../../utils/radio';
 import App from '../../main';
 import template from '../../templates/core/project-settings-panel-view.hbs';

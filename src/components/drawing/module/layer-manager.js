@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
+
 import Drawers from './drawers';
 import KonvaClipPatch from './konva-clip-patch';
 

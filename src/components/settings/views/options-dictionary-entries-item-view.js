@@ -1,8 +1,8 @@
 import $ from 'jquery';
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
+
 import App from '../../../main';
-import Dialogs from '../../../dialogs';
 import BaseInputView from '../../../core/views/base/base-input-view';
 import ProfileConnectionsTableView from './profile-connections-table-view';
 import template from '../templates/options-dictionary-entries-item-view.hbs';
@@ -28,7 +28,7 @@ export default Marionette.View.extend({
         'click @ui.$expand': 'expandEntry'
     },
     editProfiles: function () {
-        (new Dialogs()).showDialog('items-profiles-table', {
+        App.dialogs.showDialog('items-profiles-table', {
             collection_title: this.model.collection.options.dictionary.get('name'),
             active_item: this.model,
             collection: this.model.collection,
@@ -62,11 +62,14 @@ export default Marionette.View.extend({
         this.is_expanded = !this.is_expanded;
 
         this.ui.$expand_container.toggleClass('is-shown', this.is_expanded);
-    }, templateContext: function () {
+    },
+    templateContext: function () {
         var profiles = this.getProfilesNamesList();
 
         return {
-            is_expanded: this.is_expanded, name: this.model.get('name'), supplier_name: this.model.get('supplier_name'),
+            is_expanded: this.is_expanded,
+            name: this.model.get('name'),
+            supplier_name: this.model.get('supplier_name'),
             profiles: profiles,
             profiles_string: profiles.length ? profiles.join(', ') : '--'
         };
@@ -102,7 +105,8 @@ export default Marionette.View.extend({
         }
 
         this.ui.$expand_container.append(this.profile_connections_table_view.render().el);
-    }, onBeforeDestroy: function () {
+    },
+    onBeforeDestroy: function () {
         if (this.name_input_view) {
             this.name_input_view.destroy();
         }

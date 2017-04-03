@@ -1,6 +1,12 @@
 import Marionette from 'backbone.marionette';
-import {getGlobalChannelName} from './utils/radio';
 import Backbone from 'backbone';
+import 'bootstrap';
+import 'bootstrap-select';
+import 'bootstrap-toggle';
+import 'bootstrap-datepicker';
+import 'backbone.marionette.keyshortcuts';
+
+import {getGlobalChannelName} from './utils/radio';
 import Settings from './core/models/settings';
 import Session from './core/models/session';
 import Router from './router';
@@ -15,11 +21,6 @@ import MainDrawingView from './components/drawing/views/main-drawing-view';
 import MainQuoteView from './components/quote/views/main-quote-view';
 import MainSettingsView from './components/settings/views/main-settings-view';
 import MainSupplierRequestView from './components/supplier-request/views/main-supplier-request-view';
-import 'bootstrap';
-import 'bootstrap-select';
-import 'bootstrap-toggle';
-import 'bootstrap-datepicker';
-import 'backbone.marionette.keyshortcuts';
 
 class Application extends Marionette.Application {
     constructor(options = {}) {

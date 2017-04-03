@@ -5,7 +5,6 @@ const MAX_DENOMINATOR = 16;
 //  For numbers that are passed to Decimal constructor
 const MAX_SIGNIFICANT_DIGITS = 15;
 
-
 export const format = {
     dimension: function (value, decimal_format, inches_display_mode, zero_inch_display_mode) {
         var value_feet;
@@ -175,12 +174,15 @@ export const format = {
     weight: function (value) {
         return this.fixed_minimal(value, 3) + ' kg';
     },
-    dimensions_and_area: function (width, height,
-                                   decimal_format,
-                                   inches_display_mode,
-                                   area,
-                                   area_num,
-                                   area_format) {
+    dimensions_and_area: function (
+        width,
+        height,
+        decimal_format,
+        inches_display_mode,
+        area,
+        area_num,
+        area_format
+    ) {
         decimal_format = decimal_format &&
         _.indexOf(['floating', 'fraction'], decimal_format) !== -1 ?
             decimal_format : 'fraction';
@@ -195,10 +197,13 @@ export const format = {
         return this.dimensions(width, height, decimal_format, inches_display_mode) +
             ' (' + this.square_feet(area, area_num, area_format) + ')';
     },
-    dimensions_and_area_mm: function (width, height,
-                                      area,
-                                      area_num,
-                                      area_format) {
+    dimensions_and_area_mm: function (
+        width,
+        height,
+        area,
+        area_num,
+        area_format
+    ) {
         return this.dimensions_mm(width, height) +
             ' (' + this.square_meters(area, area_num, area_format) + ')';
     },

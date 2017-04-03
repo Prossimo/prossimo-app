@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
+
 import template from '../../../templates/core/base/base-select-view.hbs';
 
 export default Marionette.View.extend({
@@ -56,7 +57,8 @@ export default Marionette.View.extend({
     },
     onBeforeDestroy: function () {
         this.ui.$select.selectpicker('destroy');
-    }, initialize: function (options) {
+    },
+    initialize: function (options) {
         var default_options = {
             size: 'normal',
             multiple: false,

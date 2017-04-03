@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import Marionette from 'backbone.marionette';
+
 import {globalChannel} from '../utils/radio';
 
 //  This script is heavily based on the following code snippet:

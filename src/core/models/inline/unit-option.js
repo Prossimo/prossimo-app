@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
+
 import Schema from '../../../schema';
 
 var UNIT_OPTION_PROPERTIES = [

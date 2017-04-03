@@ -2,6 +2,7 @@ import $ from 'jquery';
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 import Konva from '../module/konva-clip-patch';
+
 import DrawingModule from '../module/drawing-module';
 import Drawers from '../module/drawers';
 import template from '../templates/drawing-glazing-view.hbs';

@@ -1,9 +1,10 @@
 import Marionette from 'backbone.marionette';
+import Sortable from 'sortablejs';
+
 import UndoManager from '../../../utils/undomanager';
 import OptionsDictionaryEntriesItemView from './options-dictionary-entries-item-view';
 import OptionsDictionaryEntry from '../../../core/models/options-dictionary-entry';
 import template from '../templates/options-dictionary-entries-table-view.hbs';
-import Sortable from 'sortablejs';
 
 export default Marionette.CompositeView.extend({
     tagName: 'div',

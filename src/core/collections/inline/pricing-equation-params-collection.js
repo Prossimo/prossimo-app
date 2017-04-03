@@ -1,4 +1,5 @@
 import Backbone from 'backbone';
+
 import utils from '../../../utils';
 import PricingEquationParams from '../../models/inline/pricing-equation-params';
 

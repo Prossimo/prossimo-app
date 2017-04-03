@@ -1,5 +1,7 @@
-import QuotesEditorTableItemView from './quotes-editor-table-item-view';
 import Marionette from 'backbone.marionette';
+import Sortable from 'sortablejs';
+
+import QuotesEditorTableItemView from './quotes-editor-table-item-view';
 
 export default Marionette.CollectionView.extend({
     tagName: 'tbody',
@@ -10,7 +12,7 @@ export default Marionette.CollectionView.extend({
     onRender: function () {
         var self = this;
 
-        this.$el.sortable({
+        this.sortable = new Sortable(this.$el[0], {
             draggable: '.quotes-editor-table-item',
             handle: 'td.entry-drag',
             onSort: function (event) {
@@ -19,6 +21,6 @@ export default Marionette.CollectionView.extend({
         });
     },
     onBeforeDestroy: function () {
-        this.$el.sortable('destroy');
+        this.sortable.destroy();
     }
 });

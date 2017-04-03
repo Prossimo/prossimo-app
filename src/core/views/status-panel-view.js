@@ -1,4 +1,5 @@
 import Marionette from 'backbone.marionette';
+
 import App from '../../main';
 import {globalChannel} from '../../utils/radio';
 import template from '../../templates/core/status-panel-view.hbs';

@@ -1,10 +1,12 @@
 import _ from 'underscore';
+import $ from 'jquery';
 import Marionette from 'backbone.marionette';
 import Backbone from 'backbone';
+import Konva from 'konva';
+
 import App from '../../../main';
 import LayerManager from './layer-manager';
 import utils from '../../../utils';
-import Konva from 'konva';
 
 // This module starts manually with required parameters:
 // new DrawingModule({

@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
+
 import App from '../../../main';
 import {globalChannel} from '../../../utils/radio';
 import ProfilesView from './profiles-view';
@@ -19,7 +20,6 @@ export default Marionette.View.extend({
     },
     events: {
         'click .nav-tabs a': 'onTabClick'
-
     },
     getActiveTab: function () {
         return this.tabs[this.active_tab];

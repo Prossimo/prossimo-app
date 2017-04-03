@@ -30,13 +30,14 @@ function createBackendProxy(pach, log) {
         log.error('Error in proxy pass: ', err);
         log.error(`${pach}${req.url}: ${inspect(req.body)}`);
 
-        res.end('Something went wrong. Check availability server api.');
+        res.end('Something went wrong. Check availability of the API server.');
     });
 
     proxy.on('proxyReq', function (proxyReq, req) {
         let origin = getPath(req.protocol, req.client.address().address, req.client.address().port, req.originalUrl);
-        // This is necessary for correct delivery body
-        if (/PUT|POST|DELETE|PATCH|OPTIONS/.test(req.method) && req.body) {
+
+        // This is necessary to correctly deliver request body
+        if (req.body && Object.keys(req.body).length !== 0) {
             proxyReq.write(JSON.stringify(req.body));
         }
 
@@ -59,7 +60,7 @@ const apiRouter = function (config, log) {
     let apiPath = getPath(config.get('server:apiProtocol'), config.get('server:apiHost'),
         config.get('server:apiPort'), config.get('server:apiPrefix'));
 
-    log.info(`Api request path: ${apiPath}`);
+    log.info(`REST API path: ${apiPath}`);
 
     let apiProxyBackend = createBackendProxy(apiPath, log);
 
@@ -72,7 +73,7 @@ const printRouter = function (config, log) {
     let apiPath = getPath(config.get('server:printerProtocol'), config.get('server:printerHost'),
         config.get('server:printerPort'), config.get('server:printerPrefix'));
 
-    log.info(`Api print path: ${apiPath}`);
+    log.info(`PDF printer path: ${apiPath}`);
 
     let apiProxyBackend = createBackendProxy(apiPath, log);
 

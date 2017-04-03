@@ -1,4 +1,5 @@
 import Marionette from 'backbone.marionette';
+
 import template from '../../../templates/core/base/sidebar-list-item-view.hbs';
 
 export default Marionette.View.extend({

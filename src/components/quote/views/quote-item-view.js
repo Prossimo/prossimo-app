@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
+
 import App from '../../../main';
 import {convert, format, math} from '../../../utils';
 import {preview} from '../../drawing/module/drawing-module';
@@ -190,22 +191,21 @@ export default Marionette.View.extend({
 
         //  Now get list of Unit Options applicable for this unit
         var dictionaries = _.map(App.settings.dictionaries.filter(function (dictionary) {
-                var rules_and_restrictions = dictionary.get('rules_and_restrictions');
-                var is_restricted = false;
+            var rules_and_restrictions = dictionary.get('rules_and_restrictions');
+            var is_restricted = false;
 
-                _.each(rules_and_restrictions, function (rule) {
-                    var restriction_applies = this.model.checkIfRestrictionApplies(rule);
+            _.each(rules_and_restrictions, function (rule) {
+                var restriction_applies = this.model.checkIfRestrictionApplies(rule);
 
-                    if (restriction_applies) {
-                        is_restricted = true;
-                    }
-                }, this);
-
-                return !is_restricted;
-            }, this),
-            function (filtered_dictionary) {
-                return filtered_dictionary.get('name');
+                if (restriction_applies) {
+                    is_restricted = true;
+                }
             }, this);
+
+            return !is_restricted;
+        }, this), function (filtered_dictionary) {
+            return filtered_dictionary.get('name');
+        }, this);
 
         //  Here we form the final list of properties to be shown in the
         //  Product Description column in the specific order. We do it in
@@ -215,16 +215,15 @@ export default Marionette.View.extend({
         //  only those unit attributes that apply to the current unit
         //  3. Add list of Unit Options that apply to the current unit
         //  4. Add Threshold and U Value.
-
         var name_title_hash = _.extend({
-                size: 'Size <small class="size-label">WxH</small>',
-                rough_opening: 'Rough Opening <small class="size-label">WxH</small>',
-                system: 'System'
-            }, _.object(_.pluck(source_hash, 'name'), _.pluck(source_hash, 'title')),
-            _.object(dictionaries, dictionaries), {
-                threshold: 'Threshold',
-                u_value: 'U Value'
-            });
+            size: 'Size <small class="size-label">WxH</small>',
+            rough_opening: 'Rough Opening <small class="size-label">WxH</small>',
+            system: 'System'
+        }, _.object(_.pluck(source_hash, 'name'), _.pluck(source_hash, 'title')),
+        _.object(dictionaries, dictionaries), {
+            threshold: 'Threshold',
+            u_value: 'U Value'
+        });
 
         var params_source = {
             system: this.options.show_supplier_system ?
@@ -269,7 +268,9 @@ export default Marionette.View.extend({
 
         var params = _.map(name_title_hash, function (item, key) {
             return {
-                name: key, title: item, value: params_source[key] !== undefined ?
+                name: key,
+                title: item,
+                value: params_source[key] !== undefined ?
                     params_source[key] : this.model.get(key)
             };
         }, this);

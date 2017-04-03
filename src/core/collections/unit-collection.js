@@ -1,6 +1,7 @@
 import _ from 'underscore';
-import App from '../../main';
 import Backbone from 'backbone';
+
+import App from '../../main';
 import Unit from '../models/unit';
 
 export default Backbone.Collection.extend({

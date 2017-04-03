@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
+
 import template from '../../../templates/core/base/base-input-view.hbs';
 
 //  ------------------------------------------------------------------------
@@ -143,7 +144,8 @@ export default Marionette.View.extend({
     initialize: function (options) {
         var default_options = {
             input_type: 'text',
-            is_disabled: false, disabled_value: '',
+            is_disabled: false,
+            disabled_value: '',
             placeholder: '',
             formatter: false
         };
@@ -158,5 +160,4 @@ export default Marionette.View.extend({
 
         this.listenTo(this.model, 'change:' + this.options.param, this.render);
     }
-
 });

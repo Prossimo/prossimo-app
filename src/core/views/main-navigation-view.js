@@ -1,8 +1,9 @@
 import Marionette from 'backbone.marionette';
 import $ from 'jquery';
+import _ from 'underscore';
+
 import App from '../../main';
 import {globalChannel} from '../../utils/radio';
-import _ from 'underscore';
 import NoProjectSelectedView from '../../core/views/no-project-selected-view';
 import template from '../../templates/core/main-navigation-view.hbs';
 import templateItem from '../../templates/core/main-navigation-item-view.hbs';

@@ -1,6 +1,7 @@
 import Backbone from 'backbone';
-import Schema from '../../../schema';
 import _ from 'underscore';
+
+import Schema from '../../../schema';
 import constants from '../../../constants';
 import utils from '../../../utils';
 import PricingGridCollection from '../../collections/inline/pricing-grid-collection';
@@ -129,4 +130,3 @@ export default Backbone.Model.extend({
         });
     }
 });
-

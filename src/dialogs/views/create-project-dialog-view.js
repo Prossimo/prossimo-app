@@ -60,7 +60,6 @@ export default BaseDialogView.extend({
         this.file_uploader.render()
             .$el.appendTo(this.ui.$filesRegion);
     },
-
     onBeforeDestroy: function () {
         if (this.file_uploader) {
             this.file_uploader.destroy();

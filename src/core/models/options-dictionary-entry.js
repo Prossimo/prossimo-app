@@ -1,11 +1,11 @@
 import Backbone from 'backbone';
 import _ from 'underscore';
+
 import Schema from '../../schema';
 import utils from '../../utils';
 import DictionaryEntryProfileCollection from '../collections/inline/dictionary-entry-to-profile-collection';
 
 var UNSET_VALUE = '--';
-
 
 var ENTRY_PROPERTIES = [
     {name: 'name', title: 'Name', type: 'string'},
@@ -98,8 +98,8 @@ export default Backbone.Model.extend({
     validate: function (attributes, options) {
         var error_obj = null;
         var collection_names = this.collection && _.map(this.collection.without(this), function (item) {
-                return item.get('name');
-            });
+            return item.get('name');
+        });
 
         //  We want to have unique option names across the collection
         if (options.validate && collection_names &&

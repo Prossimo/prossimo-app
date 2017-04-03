@@ -1,4 +1,5 @@
 import Backbone from 'backbone';
+
 import App from '../../../main';
 import DictionaryEntryProfile from '../../models/inline/dictionary-entry-to-profile';
 

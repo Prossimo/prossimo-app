@@ -1,5 +1,5 @@
 import Marionette from 'backbone.marionette';
-import App from '../../../main';
+
 import {format} from '../../../utils';
 import QuoteExtrasItemView from './quote-extras-item-view';
 import template from '../templates/quote-extras-table-view.hbs';

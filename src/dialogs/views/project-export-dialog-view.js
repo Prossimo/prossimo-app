@@ -1,7 +1,9 @@
 import _ from 'underscore';
+import $ from 'jquery';
+import Clipboard from 'clipboard';
+
 import BaseDialogView from './base-dialog-view';
 import template from '../../templates/dialogs/project-export-dialog-view.hbs';
-import Clipboard from 'clipboard';
 
 const UNSET_VALUE = '--';
 
@@ -29,8 +31,8 @@ export default BaseDialogView.extend({
         ));
         //  Determine titles by the largest entry array
         var longest_row = source_data.length && _.max(source_data, function (row) {
-                return row.length;
-            });
+            return row.length;
+        });
         var titles = longest_row ? _.pluck(longest_row, 'title') : [];
 
         if (titles.length) {

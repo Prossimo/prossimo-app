@@ -1,9 +1,6 @@
 import _ from 'underscore';
 import $ from 'jquery';
 import Marionette from 'backbone.marionette';
-import App from '../../main';
-import ProjectFileCollection from '../../core/collections/project-file-collection';
-import template from './files-uploader-view.hbs';
 import 'blueimp-file-upload/js/jquery.fileupload';
 import 'blueimp-file-upload/js/jquery.fileupload-process';
 import 'blueimp-file-upload/js/jquery.fileupload-image';
@@ -11,9 +8,12 @@ import 'blueimp-file-upload/js/jquery.fileupload-audio';
 import 'blueimp-file-upload/js/jquery.fileupload-video';
 import 'blueimp-file-upload/js/jquery.fileupload-validate';
 
+import App from '../../main';
+import ProjectFileCollection from '../../core/collections/project-file-collection';
+import template from './files-uploader-view.hbs';
+
 const WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">' +
     'Warning: you are not able to attach any files because your browser does not support file upload.</div>';
-
 
 export default Marionette.View.extend({
     className: 'uploader-container',

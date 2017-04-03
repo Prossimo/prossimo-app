@@ -1,4 +1,5 @@
 import Marionette from 'backbone.marionette';
+
 import {format} from '../../utils';
 import templates from '../../templates/core/units-table-total-prices-view.hbs';
 

@@ -1,6 +1,7 @@
 import _ from 'underscore';
 import Konva from '../konva-clip-patch';
 import Backbone from 'backbone';
+
 import utils from '../../../../utils';
 import handle_data from '../../data/handle-data';
 
@@ -848,7 +849,8 @@ export default Backbone.KonvaView.extend({
         var style = module.getStyle('mullions');
         var fillStyle = module.getStyle('fillings');
         var group = new Konva.Group({
-            id: 'mullion-' + section.id, name: 'mullion',
+            id: 'mullion-' + section.id,
+            name: 'mullion',
             sectionId: section.id
         });
         var mullion = new Konva.Rect({
@@ -1273,37 +1275,32 @@ export default Backbone.KonvaView.extend({
             });
         };
         var isLeftHandle = (type === 'tilt_turn_right' || type === 'turn_only_right' ||
-        type === 'slide-right' || type === 'flush-turn-right' ||
-        type === 'slide_left' || type === 'tilt_slide_left');
+            type === 'slide-right' || type === 'flush-turn-right' ||
+            type === 'slide_left' || type === 'tilt_slide_left');
         var isRightHandle = (type === 'tilt_turn_left' || type === 'turn_only_left' ||
-        type === 'slide-left' || type === 'flush-turn-left' ||
-        type === 'slide_right' || type === 'tilt_slide_right');
+            type === 'slide-left' || type === 'flush-turn-left' ||
+            type === 'slide_right' || type === 'tilt_slide_right');
         var isTiltSection = (type === 'tilt_only');
 
         if (isInsideView || (isOutsideView && model.profile.hasOutsideHandle())) {
             if (isLeftHandle) {
                 positionLeft();
                 raiseAboveFrame();
-            }
-            else if (isRightHandle) {
+            } else if (isRightHandle) {
+                positionRight();
+                raiseAboveFrame();
+            } else if (isTiltSection) {
                 positionRight();
                 raiseAboveFrame();
             }
-            else if (isTiltSection) {
-                positionRight();
-                raiseAboveFrame();
-            }
-
         } else if (isOutsideView) {
             if (isLeftHandle) {
                 positionLeft();
                 sinkThroughGlass();
-            }
-            else if (isRightHandle) {
+            } else if (isRightHandle) {
                 positionRight();
                 sinkThroughGlass();
-            }
-            else if (isTiltSection) {
+            } else if (isTiltSection) {
                 positionRight();
                 sinkThroughGlass();
             }
@@ -1378,7 +1375,8 @@ export default Backbone.KonvaView.extend({
                 }
             });
         });
-    }, createDirectionLine: function (section) {
+    },
+    createDirectionLine: function (section) {
         var group = new Konva.Group({
             name: 'direction'
         });
@@ -1446,10 +1444,10 @@ export default Backbone.KonvaView.extend({
         var result = [];
 
         indexes = indexes || {
-                main: 0,
-                add: null,
-                parent: null
-            };
+            main: 0,
+            add: null,
+            parent: null
+        };
 
         i = i || 0;
 
@@ -1468,7 +1466,6 @@ export default Backbone.KonvaView.extend({
 
                 if (!section.sections.length) {
                     indexes.add += 1;
-
                 }
 
                 result = result.concat(view.createSectionIndexes(section, indexes, j));

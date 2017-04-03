@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
+
 import App from '../../main';
 import Schema from '../../schema';
 import constants from '../../constants';
@@ -154,8 +155,8 @@ export default Backbone.Model.extend({
     validate: function (attributes, options) {
         var error_obj = null;
         var collection_names = this.collection && _.map(this.collection.without(this), function (item) {
-                return item.get('name');
-            });
+            return item.get('name');
+        });
 
         //  We want to have unique profile names across the collection
         if (options.validate && collection_names &&
@@ -304,7 +305,8 @@ export default Backbone.Model.extend({
     },
     getPossiblePricingSchemes: function () {
         return POSSIBLE_PRICING_SCHEMES;
-    }, getVisibleFrameWidthFixed: function () {
+    },
+    getVisibleFrameWidthFixed: function () {
         return this.get('frame_width');
     },
     getVisibleFrameWidthOperable: function () {

@@ -1,4 +1,5 @@
 import Marionette from 'backbone.marionette';
+
 import SidebarListView from '../../../core/views/base/sidebar-list-view';
 import OptionsDictionaryView from './options-dictionary-view';
 

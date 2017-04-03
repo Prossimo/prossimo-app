@@ -1,5 +1,7 @@
 import _ from 'underscore';
+import $ from 'jquery';
 import Marionette from 'backbone.marionette';
+
 import App from '../../../main';
 import PricingGridsEditorView from './pricing-grids-editor-view';
 import EquationParamsView from './equation-params-view';

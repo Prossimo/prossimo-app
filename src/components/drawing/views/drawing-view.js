@@ -2,6 +2,7 @@ import $ from 'jquery';
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 import Konva from '../module/konva-clip-patch';
+
 import App from '../../../main';
 import utils from '../../../utils';
 import UndoManager from '../../../utils/undomanager';

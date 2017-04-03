@@ -1,9 +1,9 @@
 import Backbone from 'backbone';
 import _ from 'underscore';
 import $ from 'jquery';
+
 import App from '../../main';
 import {globalChannel} from '../../utils/radio';
-
 import Profile from './profile';
 import ProfileCollection from '../collections/profile-collection';
 import FillingTypeCollection from '../collections/filling-type-collection';
@@ -232,8 +232,8 @@ export default Backbone.Model.extend({
         var profile = this.profiles.get(profile_id);
 
         return profile ? profile : new Profile({
-                is_dummy: true
-            });
+            is_dummy: true
+        });
     },
     getProfileIdByName: function (profile_name) {
         var profile = this.profiles.findWhere({name: profile_name});
@@ -267,5 +267,4 @@ export default Backbone.Model.extend({
     getOpeningDirections: function () {
         return OPENING_DIRECTIONS;
     }
-
 });

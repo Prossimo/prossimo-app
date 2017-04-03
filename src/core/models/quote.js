@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
+
 import Schema from '../../schema';
 import AccessoryCollection from '../collections/accessory-collection';
 import UnitCollection from '../collections/unit-collection';

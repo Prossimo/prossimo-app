@@ -2,6 +2,7 @@ import Marionette from 'backbone.marionette';
 import _ from 'underscore';
 import $ from 'jquery';
 import Handsontable from 'handsontable/dist/handsontable.full';
+
 import {parseFormat, format} from '../../utils';
 import {globalChannel} from '../../utils/radio';
 import hotRenderers from '../../hot-renderers';
@@ -210,7 +211,8 @@ export default Marionette.View.extend({
             this.hot.selectCell(0, 0, 0, 0, false);
             this.hot.deselectCell();
         }
-    }, onRemoveSelected: function () {
+    },
+    onRemoveSelected: function () {
         if (this.selected.length && this.hot) {
             for (var i = this.selected.length - 1; i >= 0; i--) {
                 this.hot.getSourceData().at(this.selected[i]).destroy();
@@ -265,7 +267,8 @@ export default Marionette.View.extend({
     },
     templateContext: function () {
         return {
-            active_tab: this.active_tab, tabs: _.each(this.tabs, function (item, key) {
+            active_tab: this.active_tab,
+            tabs: _.each(this.tabs, function (item, key) {
                 item.is_active = key === this.active_tab;
                 return item;
             }, this),
@@ -1013,7 +1016,9 @@ export default Marionette.View.extend({
             opening_direction: 110,
             glazing: 300,
             glazing_bar_width: 100,
-            original_cost_estimated: 120, original_cost: 100, original_cost_difference: 120,
+            original_cost_estimated: 120,
+            original_cost: 100,
+            original_cost_difference: 120,
             unit_cost: 100,
             subtotal_cost: 100,
             unit_cost_discounted: 100,

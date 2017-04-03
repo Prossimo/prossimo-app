@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
+
 import template from '../templates/quote-header-view.hbs';
 
 export default Marionette.View.extend({

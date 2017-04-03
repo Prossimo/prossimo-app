@@ -1,4 +1,5 @@
 import Marionette from 'backbone.marionette';
+
 import App from '../../../main';
 import DrawingView from './drawing-view';
 import DrawingSidebarView from './drawing-sidebar-view';

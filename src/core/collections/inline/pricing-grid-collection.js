@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
+
 import utils from '../../../utils';
 import PricingGrid from '../../models/inline/pricing-grid';
 

@@ -1,4 +1,5 @@
 import Marionette from 'backbone.marionette';
+
 import App from '../../../main';
 import ProjectInfoView from './project-info-view';
 import ProjectDocumentsView from './project-documents-view';
@@ -14,11 +15,34 @@ export default Marionette.View.extend({
         $totals: '#totals',
         $project_info: '#project-info',
         $documents: '#documents',
-        $quote_info: '#quote-info'
+        $quote_info: '#quote-info',
+        $export_button: '.js-toggle-export-dialog'
+    },
+    events: {
+        'click @ui.$export_button': 'showProjectExportDialog'
+    },
+    showProjectExportDialog: function () {
+        App.dialogs.showDialog('project-export', {
+            model: App.current_project,
+            quote: App.current_quote
+        });
+    },
+    onRender: function () {
+        this.ui.$project_info.append(this.project_info_view.render().el);
+        this.ui.$totals.append(this.totals_view.render().el);
+        this.ui.$quote_info.append(this.quote_info_view.render().el);
+        this.ui.$documents.append(this.documents_view.render().el);
+    },
+    onBeforeDestroy: function () {
+        this.project_info_view.destroy();
+        this.totals_view.destroy();
+        this.quote_info_view.destroy();
+        this.documents_view.destroy();
     },
     initialize: function () {
         let currentProject = App.current_project;
         let currentQuote = App.current_quote;
+
         this.project_info_view = new ProjectInfoView({
             model: currentProject
         });
@@ -34,17 +58,5 @@ export default Marionette.View.extend({
         this.documents_view = new ProjectDocumentsView({
             collection: currentProject.files
         });
-    },
-    onRender: function () {
-        this.ui.$project_info.append(this.project_info_view.render().el);
-        this.ui.$totals.append(this.totals_view.render().el);
-        this.ui.$quote_info.append(this.quote_info_view.render().el);
-        this.ui.$documents.append(this.documents_view.render().el);
-    },
-    onBeforeDestroy: function () {
-        this.project_info_view.destroy();
-        this.totals_view.destroy();
-        this.quote_info_view.destroy();
-        this.documents_view.destroy();
     }
 });

@@ -49,5 +49,5 @@ app.use('/', routers(config, log.api));
 
 // And run the server
 app.listen(port, host, () => {
-    log.info(`Server running. Pleas open http://${host}:${port}/`);
+    log.info(`Server is running. Please open http://${host}:${port}/`);
 });

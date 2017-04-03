@@ -1,6 +1,7 @@
 import _ from 'underscore';
 import Konva from '../konva-clip-patch';
 import Backbone from 'backbone';
+
 import utils from '../../../../utils';
 
 var module;
