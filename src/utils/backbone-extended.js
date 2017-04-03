@@ -1,7 +1,8 @@
 import _ from 'underscore';
 import $ from 'jquery';
-import App from '../main';
 import Backbone from 'backbone';
+
+import App from '../main';
 
 const oldModelSave = Backbone.Model.prototype.save;
 const sync = Backbone.sync;

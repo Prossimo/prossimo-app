@@ -1,6 +1,7 @@
 import Backbone from 'backbone';
-import Schema from '../../../schema';
 import _ from 'underscore';
+
+import Schema from '../../../schema';
 import constants from '../../../constants';
 import utils from '../../../utils';
 import PricingEquationParamsCollection from '../../collections/inline/pricing-equation-params-collection';

@@ -1,6 +1,7 @@
 import _ from 'underscore';
-import App from '../../main';
 import Backbone from 'backbone';
+
+import App from '../../main';
 import Schema from '../../schema';
 import utils from '../../utils';
 import constants from '../../constants';
@@ -13,6 +14,7 @@ const PRICING_SCHEME_NONE = constants.PRICING_SCHEME_NONE;
 const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
 const PRICING_SCHEME_PER_ITEM = constants.PRICING_SCHEME_PER_ITEM;
 const PRICING_SCHEME_LINEAR_EQUATION = constants.PRICING_SCHEME_LINEAR_EQUATION;
+
 const UNIT_PROPERTIES = [
     {name: 'mark', title: 'Mark', type: 'string'},
     {name: 'width', title: 'Width (inches)', type: 'number'},
@@ -113,9 +115,9 @@ function getDefaultFillingType(default_glazing_name, profile_id) {
     }
 
     return default_type ? {
-            fillingType: default_type.get('type'),
-            fillingName: default_type.get('name')
-        } : dummy_type;
+        fillingType: default_type.get('type'),
+        fillingName: default_type.get('name')
+    } : dummy_type;
 }
 
 function getDefaultBars() {
@@ -272,7 +274,6 @@ const Unit = Backbone.Model.extend({
         this.profile = null;
 
         if (!this.options.proxy) {
-
             this.validateOpeningDirection();
             this.validateRootSection();
             this.setProfile();
@@ -686,223 +687,224 @@ const Unit = Backbone.Model.extend({
     getAreaInSquareMeters: function () {
         let c = utils.convert;
 
-            return utils.math.square_meters(c.inches_to_mm(this.get('width')), c.inches_to_mm(this.get('height')));
-        },
-        getUnitCost: function () {
-            return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
-        },
-        getSubtotalCost: function () {
-            return this.getUnitCost() * parseFloat(this.get('quantity'));
-        },
-        getUnitCostDiscounted: function () {
-            return this.getUnitCost() * (100 - parseFloat(this.get('supplier_discount'))) / 100;
-        },
-        getSubtotalCostDiscounted: function () {
-            return this.getUnitCostDiscounted() * parseFloat(this.get('quantity'));
-        },
-        getUnitPrice: function () {
-            return this.getUnitCostDiscounted() * parseFloat(this.get('price_markup'));
-        },
-        getSubtotalPrice: function () {
-            return this.getUnitPrice() * parseFloat(this.get('quantity'));
-        },
-        getUValue: function () {
-            return parseFloat(this.get('uw')) * 0.176;
-        },
-        getUnitPriceDiscounted: function () {
-            return this.getUnitPrice() * (100 - parseFloat(this.get('discount'))) / 100;
-        },
-        getSubtotalPriceDiscounted: function () {
-            return this.getSubtotalPrice() * (100 - parseFloat(this.get('discount'))) / 100;
-        },
-        getSubtotalProfit: function () {
-            return this.getSubtotalPriceDiscounted() - this.getSubtotalCostDiscounted();
-        },
-        getSquareFeetPrice: function () {
-            return this.getTotalSquareFeet() ? this.getSubtotalPrice() / this.getTotalSquareFeet() : 0;
-        },
-        getSquareFeetPriceDiscounted: function () {
-            return this.getTotalSquareFeet() ? this.getSubtotalPriceDiscounted() / this.getTotalSquareFeet() : 0;
-        },
-        preparePricingDataForExport: function (options) {
-            var default_options = {
-                include_project: true,
-                include_quote: true,
-                include_dimensions_mm: true,
-                include_supplier_cost_original: true,
-                include_supplier_cost_converted: true,
-                include_supplier_discount: true,
-                include_price: true,
-                include_discount: true,
-                include_profile: true,
-                include_options: true,
-                include_sections: true
-            };
+        return utils.math.square_meters(c.inches_to_mm(this.get('width')), c.inches_to_mm(this.get('height')));
+    },
+    getUnitCost: function () {
+        return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
+    },
+    getSubtotalCost: function () {
+        return this.getUnitCost() * parseFloat(this.get('quantity'));
+    },
+    getUnitCostDiscounted: function () {
+        return this.getUnitCost() * (100 - parseFloat(this.get('supplier_discount'))) / 100;
+    },
+    getSubtotalCostDiscounted: function () {
+        return this.getUnitCostDiscounted() * parseFloat(this.get('quantity'));
+    },
+    getUnitPrice: function () {
+        return this.getUnitCostDiscounted() * parseFloat(this.get('price_markup'));
+    },
+    getSubtotalPrice: function () {
+        return this.getUnitPrice() * parseFloat(this.get('quantity'));
+    },
+    getUValue: function () {
+        return parseFloat(this.get('uw')) * 0.176;
+    },
+    getUnitPriceDiscounted: function () {
+        return this.getUnitPrice() * (100 - parseFloat(this.get('discount'))) / 100;
+    },
+    getSubtotalPriceDiscounted: function () {
+        return this.getSubtotalPrice() * (100 - parseFloat(this.get('discount'))) / 100;
+    },
+    getSubtotalProfit: function () {
+        return this.getSubtotalPriceDiscounted() - this.getSubtotalCostDiscounted();
+    },
+    getSquareFeetPrice: function () {
+        return this.getTotalSquareFeet() ? this.getSubtotalPrice() / this.getTotalSquareFeet() : 0;
+    },
+    getSquareFeetPriceDiscounted: function () {
+        return this.getTotalSquareFeet() ? this.getSubtotalPriceDiscounted() / this.getTotalSquareFeet() : 0;
+    },
+    preparePricingDataForExport: function (options) {
+        var default_options = {
+            include_project: true,
+            include_quote: true,
+            include_dimensions_mm: true,
+            include_supplier_cost_original: true,
+            include_supplier_cost_converted: true,
+            include_supplier_discount: true,
+            include_price: true,
+            include_discount: true,
+            include_profile: true,
+            include_options: true,
+            include_sections: true
+        };
 
-            options = _.extend({}, default_options, options);
+        options = _.extend({}, default_options, options);
 
-            var sections_list = this.getFixedAndOperableSectionsList();
-            var parent_project = this.getParentProject();
-            var parent_quote = this.getParentQuote();
+        var sections_list = this.getFixedAndOperableSectionsList();
+        var parent_project = this.getParentProject();
+        var parent_quote = this.getParentQuote();
 
-            var pricing_data = {};
+        var pricing_data = {};
 
-            //  Project info
-            if ( options.include_project && parent_project ) {
-                pricing_data = _.extend({}, pricing_data, {
-                    project_id: parent_project.id,
-                    project_name: parent_project.get('project_name')
-                });
-            }
-
-            //  Quote info
-            if ( options.include_quote && parent_quote ) {
-                pricing_data = _.extend({}, pricing_data, {
-                    quote_id: parent_quote.id,
-                    quote_name: parent_quote.getName()
-                });
-            }
-
-            //  Base unit info, always included
+        //  Project info
+        if ( options.include_project && parent_project ) {
             pricing_data = _.extend({}, pricing_data, {
-                mark: this.get('mark'),
-                quantity: this.get('quantity'),
-                width: this.get('width'),
-                height: this.get('height')
+                project_id: parent_project.id,
+                project_name: parent_project.get('project_name')
             });
+        }
 
-            //  Dimensions in mm
-            if ( options.include_dimensions_mm ) {
-                pricing_data = _.extend({}, pricing_data, {
-                    width_mm: this.getWidthMM(),
-                    height_mm: this.getHeightMM()
+        //  Quote info
+        if ( options.include_quote && parent_quote ) {
+            pricing_data = _.extend({}, pricing_data, {
+                quote_id: parent_quote.id,
+                quote_name: parent_quote.getName()
+            });
+        }
+
+        //  Base unit info, always included
+        pricing_data = _.extend({}, pricing_data, {
+            mark: this.get('mark'),
+            quantity: this.get('quantity'),
+            width: this.get('width'),
+            height: this.get('height')
+        });
+
+        //  Dimensions in mm
+        if ( options.include_dimensions_mm ) {
+            pricing_data = _.extend({}, pricing_data, {
+                width_mm: this.getWidthMM(),
+                height_mm: this.getHeightMM()
+            });
+        }
+
+        //  Supplier cost part 1
+        if ( options.include_supplier_cost_original ) {
+            pricing_data = _.extend({}, pricing_data, {
+                original_cost: this.get('original_cost'),
+                original_currency: this.get('original_currency'),
+                conversion_rate: this.get('conversion_rate')
+            });
+        }
+
+        //  Supplier cost part 2
+        if ( options.include_supplier_cost_converted ) {
+            pricing_data = _.extend({}, pricing_data, {
+                unit_cost: this.getUnitCost(),
+                subtotal_cost: this.getSubtotalCost()
+            });
+        }
+
+        //  Supplier cost with discount
+        if ( options.include_supplier_discount ) {
+            pricing_data = _.extend({}, pricing_data, {
+                supplier_discount: this.get('supplier_discount'),
+                unit_cost_with_discount: this.getUnitCostDiscounted(),
+                subtotal_cost_with_discount: this.getSubtotalCostDiscounted()
+            });
+        }
+
+        //  Our markup and price
+        if ( options.include_price ) {
+            pricing_data = _.extend({}, pricing_data, {
+                price_markup: this.get('price_markup'),
+                unit_price: this.getUnitPrice(),
+                subtotal_price: this.getSubtotalPrice()
+            });
+        }
+
+        //  Our price with discount
+        if ( options.include_discount ) {
+            pricing_data = _.extend({}, pricing_data, {
+                discount: this.get('discount'),
+                unit_price_with_discount: this.getUnitPriceDiscounted(),
+                subtotal_price_with_discount: this.getSubtotalPriceDiscounted()
+            });
+        }
+
+        if ( options.include_profile ) {
+            pricing_data = _.extend({}, pricing_data, {
+                profile_name: this.profile.get('name'),
+                unit_type: this.profile.get('unit_type')
+            });
+        }
+
+        var custom_titles = {
+            project_id: 'Project ID',
+            project_name: 'Project Name',
+            quote_id: 'Quote ID',
+            quote_name: 'Quote Name',
+            width_mm: 'Width (mm)',
+            height_mm: 'Height (mm)',
+            unit_cost: 'Unit Cost',
+            subtotal_cost: 'Subtotal Cost',
+            unit_cost_with_discount: 'Unit Cost w/D',
+            subtotal_cost_with_discount: 'Subtotal Cost w/D',
+            unit_price: 'Unit Price',
+            unit_price_with_discount: 'Unit Price w/D',
+            subtotal_price: 'Subtotal Price',
+            subtotal_price_with_discount: 'Subtotal Price w/D',
+            profile_name: 'Profile Name',
+            unit_type: 'Unit Type'
+        };
+
+        pricing_data = _.map(pricing_data, function (value, key) {
+            return { title: this.getTitles([key])[0] || custom_titles[key], value: value };
+        }, this);
+
+        if ( options.include_options ) {
+            var option_dictionaries = App.settings.dictionaries.getAvailableDictionaryNames();
+
+            _.each(option_dictionaries, function (dictionary_name) {
+                var target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(dictionary_name);
+                var target_dictionary = App.settings.dictionaries.get(target_dictionary_id);
+                var current_options = target_dictionary_id ?
+                    this.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
+                var is_restricted = false;
+
+                _.each(target_dictionary.get('rules_and_restrictions'), function (rule) {
+                    if ( this.checkIfRestrictionApplies(rule) ) {
+                        is_restricted = true;
+                    }
+                }, this);
+
+                pricing_data.push({
+                    title: dictionary_name,
+                    value: !is_restricted && current_options.length ?
+                        current_options[0].entry.get('name') :
+                        UNSET_VALUE
                 });
-            }
-
-            //  Supplier cost part 1
-            if ( options.include_supplier_cost_original ) {
-                pricing_data = _.extend({}, pricing_data, {
-                    original_cost: this.get('original_cost'),
-                    original_currency: this.get('original_currency'),
-                    conversion_rate: this.get('conversion_rate')
-                });
-            }
-
-            //  Supplier cost part 2
-            if ( options.include_supplier_cost_converted ) {
-                pricing_data = _.extend({}, pricing_data, {
-                    unit_cost: this.getUnitCost(),
-                    subtotal_cost: this.getSubtotalCost()
-                });
-            }
-
-            //  Supplier cost with discount
-            if ( options.include_supplier_discount ) {
-                pricing_data = _.extend({}, pricing_data, {
-                    supplier_discount: this.get('supplier_discount'),
-                    unit_cost_with_discount: this.getUnitCostDiscounted(),
-                    subtotal_cost_with_discount: this.getSubtotalCostDiscounted()
-                });
-            }
-
-            //  Our markup and price
-            if ( options.include_price ) {
-                pricing_data = _.extend({}, pricing_data, {
-                    price_markup: this.get('price_markup'),
-                    unit_price: this.getUnitPrice(),
-                    subtotal_price: this.getSubtotalPrice()
-                });
-            }
-
-            //  Our price with discount
-            if ( options.include_discount ) {
-                pricing_data = _.extend({}, pricing_data, {
-                    discount: this.get('discount'),
-                    unit_price_with_discount: this.getUnitPriceDiscounted(),
-                    subtotal_price_with_discount: this.getSubtotalPriceDiscounted()
-                });
-            }
-
-            if ( options.include_profile ) {
-                pricing_data = _.extend({}, pricing_data, {
-                    profile_name: this.profile.get('name'),
-                    unit_type: this.profile.get('unit_type')
-                });
-            }
-
-            var custom_titles = {
-                project_id: 'Project ID',
-                project_name: 'Project Name',
-                quote_id: 'Quote ID',
-                quote_name: 'Quote Name',
-                width_mm: 'Width (mm)',
-                height_mm: 'Height (mm)',
-                unit_cost: 'Unit Cost',
-                subtotal_cost: 'Subtotal Cost',
-                unit_cost_with_discount: 'Unit Cost w/D',
-                subtotal_cost_with_discount: 'Subtotal Cost w/D',
-                unit_price: 'Unit Price',
-                unit_price_with_discount: 'Unit Price w/D',
-                subtotal_price: 'Subtotal Price',
-                subtotal_price_with_discount: 'Subtotal Price w/D',
-                profile_name: 'Profile Name',
-                unit_type: 'Unit Type'
-            };
-
-            pricing_data = _.map(pricing_data, function (value, key) {
-                return { title: this.getTitles([key])[0] || custom_titles[key], value: value };
             }, this);
+        }
 
-            if ( options.include_options ) {
-                var option_dictionaries = app.settings.dictionaries.getAvailableDictionaryNames();
+        if ( options.include_sections ) {
+            _.each(sections_list, function (section_data, index) {
+                pricing_data.push({
+                    title: 'Sash ' + (index + 1) + ' Type',
+                    value: section_data.type === 'fixed' ? 'Fixed' : 'Operable'
+                });
+                pricing_data.push({
+                    title: 'Sash ' + (index + 1) + ' Area (m2)',
+                    value: section_data.width / 1000 * section_data.height / 1000
+                });
+                pricing_data.push({
+                    title: 'Sash ' + (index + 1) + ' Filling',
+                    value: section_data.filling_name
+                });
+            }, this);
+        }
 
-                _.each(option_dictionaries, function (dictionary_name) {
-                    var target_dictionary_id = app.settings.dictionaries.getDictionaryIdByName(dictionary_name);
-                    var target_dictionary = app.settings.dictionaries.get(target_dictionary_id);
-                    var current_options = target_dictionary_id ?
-                        this.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
-                    var is_restricted = false;
-
-                    _.each(target_dictionary.get('rules_and_restrictions'), function (rule) {
-                        if ( this.checkIfRestrictionApplies(rule) ) {
-                            is_restricted = true;
-                        }
-                    }, this);
-
-                    pricing_data.push({
-                        title: dictionary_name,
-                        value: !is_restricted && current_options.length ?
-                            current_options[0].entry.get('name') :
-                            UNSET_VALUE
-                    });
-                }, this);
-            }
-
-            if ( options.include_sections ) {
-                _.each(sections_list, function (section_data, index) {
-                    pricing_data.push({
-                        title: 'Sash ' + (index + 1) + ' Type',
-                        value: section_data.type === 'fixed' ? 'Fixed' : 'Operable'
-                    });
-                    pricing_data.push({
-                        title: 'Sash ' + (index + 1) + ' Area (m2)',
-                        value: section_data.width / 1000 * section_data.height / 1000
-                    });
-                    pricing_data.push({
-                        title: 'Sash ' + (index + 1) + ' Filling',
-                        value: section_data.filling_name
-                    });
-                }, this);
-            }
-
-            return pricing_data;
-        },getSection: function (sectionId) {
-            return findSection(this.generateFullRoot(), sectionId);
-        },
-        //  Right now we think that door is something where profile
-        //  returns `true` on `hasOutsideHandle` call
-        isDoorType: function () {
-            let is_door_type = false;
+        return pricing_data;
+    },
+    getSection: function (sectionId) {
+        return findSection(this.generateFullRoot(), sectionId);
+    },
+    //  Right now we think that door is something where profile
+    //  returns `true` on `hasOutsideHandle` call
+    isDoorType: function () {
+        let is_door_type = false;
 
         if (this.profile && this.profile.hasOutsideHandle()) {
             is_door_type = true;
@@ -1493,8 +1495,6 @@ const Unit = Backbone.Model.extend({
                     position - mullionWidth / 2;
                 sectionParams.height = openingParams.height;
                 sectionData.mullionEdges.left = rootSection.divider;
-
-
             } else if (isRight) {
                 sectionParams.width = position - rootSection.openingParams.x - mullionWidth / 2;
                 sectionParams.height = openingParams.height;
@@ -1648,7 +1648,8 @@ const Unit = Backbone.Model.extend({
         return _.find(this.getMullions(), function (mullion) {
             return mullion.id === id;
         });
-    }, getInMetric: function (attr, metric) {
+    },
+    getInMetric: function (attr, metric) {
         if (!metric || (['mm', 'inches'].indexOf(metric) === -1)) {
             throw new Error('Set metric! "mm" or "inches"');
         }
@@ -2107,7 +2108,6 @@ const Unit = Backbone.Model.extend({
                 } else {
                     current_area[measurement] += profile.get('frame_width');
                 }
-
             }, this);
 
             if (current_root.thresholdEdge) {
@@ -2132,16 +2132,17 @@ const Unit = Backbone.Model.extend({
         _.each(connected_options, function (option) {
             let pricing_data = option.entry.getPricingDataForProfile(profile_id);
 
-                if ( !option.is_restricted && pricing_data && pricing_data.scheme !== PRICING_SCHEME_NONE ) {
-                    result[pricing_data.scheme].push({
-                        dictionary_name: option.dictionary.get('name'),
-                        is_hidden: option.dictionary.get('is_hidden'),option_name: option.entry.get('name'),
-                        pricing_data: pricing_data,
-                        has_quantity: option.has_quantity,
-                        quantity: option.quantity
-                    });
-                }
-            }, this);
+            if ( !option.is_restricted && pricing_data && pricing_data.scheme !== PRICING_SCHEME_NONE ) {
+                result[pricing_data.scheme].push({
+                    dictionary_name: option.dictionary.get('name'),
+                    is_hidden: option.dictionary.get('is_hidden'),
+                    option_name: option.entry.get('name'),
+                    pricing_data: pricing_data,
+                    has_quantity: option.has_quantity,
+                    quantity: option.quantity
+                });
+            }
+        }, this);
 
         return result;
     },
@@ -2158,11 +2159,12 @@ const Unit = Backbone.Model.extend({
 
             //  Add base cost for profile
             if (profile_pricing_data && profile_pricing_data.scheme === PRICING_SCHEME_PRICING_GRIDS) {
-                section.price_per_square_meter = profile_pricing_data.pricing_grids.getValueForGrid(section.type,
-                        {
-                            height: section.height,
-                            width: section.width
-                        }) || 0;
+                section.price_per_square_meter = profile_pricing_data.pricing_grids.getValueForGrid(
+                    section.type,
+                    {
+                        height: section.height,
+                        width: section.width
+                    }) || 0;
 
                 section.base_pricing_scheme = PRICING_SCHEME_PRICING_GRIDS;
                 section.base_cost = utils.math.square_meters(section.width, section.height) *
@@ -2189,12 +2191,12 @@ const Unit = Backbone.Model.extend({
                 //  If we have correct pricing scheme and data for filling
                 if (ft_pricing_data && ft_pricing_data.scheme === PRICING_SCHEME_PRICING_GRIDS) {
                     section.filling_price_increase = ft_pricing_data.pricing_grids.getValueForGrid(
-                            section.type,
-                            {
-                                height: section.height,
-                                width: section.width
-                            }
-                        ) || 0;
+                        section.type,
+                        {
+                            height: section.height,
+                            width: section.width
+                        }
+                    ) || 0;
                     section.filling_pricing_scheme = PRICING_SCHEME_PRICING_GRIDS;
                     section.filling_cost = section.base_cost * section.filling_price_increase / 100;
                 } else if (ft_pricing_data && ft_pricing_data.scheme === PRICING_SCHEME_LINEAR_EQUATION) {
@@ -2216,24 +2218,24 @@ const Unit = Backbone.Model.extend({
                 let option_pricing_data = option_data.pricing_data;
                 let option_cost = 0;
                 let price_increase = option_pricing_data.pricing_grids.getValueForGrid(
-                        section.type,
-                        {
-                            height: section.height,
-                            width: section.width
-                        }
-                    ) || 0;
+                    section.type,
+                    {
+                        height: section.height,
+                        width: section.width
+                    }
+                ) || 0;
 
                 option_cost = section.base_cost * price_increase / 100;
                 section.options_cost += option_cost;
-
-                    section.options.push({
-                        dictionary_name: option_data.dictionary_name,
-                        dictionary_pricing_scheme: PRICING_SCHEME_PRICING_GRIDS,
-                        is_hidden: option_data.is_hidden,option_name: option_data.option_name,
-                        price_increase: price_increase,
-                        cost: option_cost
-                    });
-                }, this);
+                section.options.push({
+                    dictionary_name: option_data.dictionary_name,
+                    dictionary_pricing_scheme: PRICING_SCHEME_PRICING_GRIDS,
+                    is_hidden: option_data.is_hidden,
+                    option_name: option_data.option_name,
+                    price_increase: price_increase,
+                    cost: option_cost
+                });
+            }, this);
 
             //  Add costs for options with equation-based pricing
             _.each(options_grouped_by_scheme[PRICING_SCHEME_LINEAR_EQUATION], function (option_data) {
@@ -2246,14 +2248,15 @@ const Unit = Backbone.Model.extend({
                 option_cost = param_a * section.height / 1000 * section.width / 1000 + param_b;
                 section.options_cost += option_cost;
 
-                    section.options.push({
-                        dictionary_name: option_data.dictionary_name,
-                        dictionary_pricing_scheme: PRICING_SCHEME_LINEAR_EQUATION,
-                        is_hidden: option_data.is_hidden,option_name: option_data.option_name,
-                        price_increase: price_increase,
-                        cost: option_cost
-                    });
-                }, this);
+                section.options.push({
+                    dictionary_name: option_data.dictionary_name,
+                    dictionary_pricing_scheme: PRICING_SCHEME_LINEAR_EQUATION,
+                    is_hidden: option_data.is_hidden,
+                    option_name: option_data.option_name,
+                    price_increase: price_increase,
+                    cost: option_cost
+                });
+            }, this);
 
             section.total_cost = section.base_cost + section.filling_cost + section.options_cost;
         }, this);
@@ -2267,7 +2270,8 @@ const Unit = Backbone.Model.extend({
             total: 0,
             base: 0,
             fillings: 0,
-            options: 0, sections_list: sections_list,
+            options: 0,
+            sections_list: sections_list,
             options_list: options_list,
             real_cost: {
                 total: this.get('original_cost'),
@@ -2481,8 +2485,8 @@ const Unit = Backbone.Model.extend({
         //  New collection contains options from all dictionaries except
         //  for the one we're going to update
         let new_unit_options = new UnitOptionCollection(current_unit_options.filter(function (unit_option) {
-                return unit_option.get('dictionary_id') !== dictionary_id;
-            }, this),
+            return unit_option.get('dictionary_id') !== dictionary_id;
+        }, this),
             {parse: true}
         );
 
@@ -2492,22 +2496,22 @@ const Unit = Backbone.Model.extend({
                 dictionary_entry_id: dictionary_entry_id,
                 quantity: quantity || 1
             });
-
         }
 
-            //  When arrays are the same, do nothing, otherwise persist
-            if ( JSON.stringify(current_unit_options.toJSON()) !== JSON.stringify(new_unit_options.toJSON()) ) {
-                this.get('unit_options').reset( new_unit_options.models);
-            }
-        },
-        getParentProject: function () {
-            return this.collection && this.collection.options.project;
-        },
-        getParentQuote: function () {
-            return this.collection && this.collection.options.quote;
-        },//  Check if this unit belongs to the project which is currently active
-        isParentQuoteActive: function () {
-            let is_active = false;
+        //  When arrays are the same, do nothing, otherwise persist
+        if ( JSON.stringify(current_unit_options.toJSON()) !== JSON.stringify(new_unit_options.toJSON()) ) {
+            this.get('unit_options').reset( new_unit_options.models);
+        }
+    },
+    getParentProject: function () {
+        return this.collection && this.collection.options.project;
+    },
+    getParentQuote: function () {
+        return this.collection && this.collection.options.quote;
+    },
+    //  Check if this unit belongs to the project which is currently active
+    isParentQuoteActive: function () {
+        let is_active = false;
 
         if (App.current_quote && this.collection && this.collection.options.quote &&
             this.collection.options.quote === App.current_quote
@@ -2535,7 +2539,6 @@ const Unit = Backbone.Model.extend({
     /* Determines the number of vertical metric columns on the unit drawing's left and right sides
      * Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js */
     leftMetricCount: function (isInsideView) {
-
         // Inside view //
 
         // Trapezoid units have reversed metrics on the inside view, except for arched trapezoids
@@ -2562,7 +2565,6 @@ const Unit = Backbone.Model.extend({
     /* Determines the number of vertical metric columns on the unit drawing's right side
      * Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js */
     rightMetricCount: function (isInsideView) {
-
         // Inside view //
 
         // Trapezoid units have reversed metrics on the inside view, except for arched trapezoids
@@ -2775,4 +2777,5 @@ export const findSection = function (section, sectionId) {
 
     return findNested(section, sectionId);
 };
+
 export default Unit;

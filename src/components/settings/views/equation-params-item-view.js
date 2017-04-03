@@ -1,4 +1,5 @@
 import Marionette from 'backbone.marionette';
+
 import BaseInputView from '../../../core/views/base/base-input-view';
 import template from '../templates/equation-params-item-view.hbs';
 

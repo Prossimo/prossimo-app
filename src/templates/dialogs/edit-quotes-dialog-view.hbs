@@ -1,4 +1,4 @@
-{{> 'dialogs/partials/base-dialog-start-wrapper' }}
+@require('./partials/base-dialog-start-wrapper.hbs')
 <div class="edit-quotes-dialog-container">
     <div class="quotes-actions-container">
         <button class="btn add-new-quote js-add-new-quote">Add empty quote</button>
@@ -16,4 +16,4 @@
     </table>
     <p class="reorder-message">Drag items in the list to reorder. The first Quote in the list will load automatically on Project load.</p>
 </div>
-{{> 'dialogs/partials/base-dialog-end-wrapper' }}
+@require('./partials/base-dialog-end-wrapper.hbs')

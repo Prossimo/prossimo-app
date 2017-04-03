@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
+
 import App from '../../../main';
 import utils from '../../../utils';
 import constants from '../../../constants';

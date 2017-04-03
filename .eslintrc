@@ -77,17 +77,5 @@
         "spaced-comment": "warn",
         "brace-style": "warn",
         "block-scoped-var": "warn"
-    },
-    "globals": {
-        "__DEV__": true,
-        "Konva": false,
-        "Marionette": false,
-        "Backbone": false,
-        "$": false,
-        "_": false,
-        "Handsontable": false,
-        "Decimal": false,
-        "Spinner": false,
-        "App": false
     }
 }

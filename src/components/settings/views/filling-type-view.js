@@ -1,11 +1,11 @@
 import $ from 'jquery';
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
+
 import App from '../../../main';
 import BaseSelectView from '../../../core/views/base/base-select-view';
 import BaseInputView from '../../../core/views/base/base-input-view';
 import ProfileConnectionsTableView from './profile-connections-table-view';
-import Dialogs from '../../../dialogs';
 import template from '../templates/filling-type-view.hbs';
 
 export default Marionette.View.extend({
@@ -25,7 +25,7 @@ export default Marionette.View.extend({
         'click @ui.$remove': 'removeItem'
     },
     editProfiles: function () {
-        (new Dialogs()).showDialog('items-profiles-table', {
+        App.dialogs.showDialog('items-profiles-table', {
             collection_title: 'Filling Types',
             active_item: this.model,
             collection: this.model.collection,

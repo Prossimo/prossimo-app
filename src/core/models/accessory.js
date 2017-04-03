@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
+
 import Schema from '../../schema';
 import App from '../../main';
 
@@ -62,8 +63,6 @@ export default Backbone.Model.extend({
         return default_value;
     },
     sync: function (method, model, options) {
-
-
         if (method === 'create' || method === 'update') {
             options.attrs = {accessory: model.toJSON()};
         }
@@ -75,7 +74,8 @@ export default Backbone.Model.extend({
         var json = Backbone.Model.prototype.toJSON.apply(this, arguments);
 
         return _.omit(json, properties_to_omit);
-    }, parse: function (data) {
+    },
+    parse: function (data) {
         var accessory_data = data && data.accessory ? data.accessory : data;
 
         return Schema.parseAccordingToSchema(accessory_data, this.schema);

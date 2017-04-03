@@ -1,4 +1,5 @@
 import Marionette from 'backbone.marionette';
+
 import App from '../../../main';
 import UnitsTableView from '../../../core/views/units-table-view';
 import QuoteHeaderView from './quote-header-view';

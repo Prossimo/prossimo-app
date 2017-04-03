@@ -1,6 +1,7 @@
 import _ from 'underscore';
 import Konva from '../konva-clip-patch';
 import Backbone from 'backbone';
+
 import utils from '../../../../utils';
 
 var module;
@@ -16,8 +17,7 @@ export default Backbone.KonvaView.extend({
 
         this.layer = params.layer;
         this.stage = params.stage;
-        this.saveBars = (_.isFunction(params.data.saveBars)) ? params.data.saveBars : function () {
-            };
+        this.saveBars = (_.isFunction(params.data.saveBars)) ? params.data.saveBars : function () {};
 
         this.sectionId = params.data.sectionId;
 

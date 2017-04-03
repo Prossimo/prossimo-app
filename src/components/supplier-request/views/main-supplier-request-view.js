@@ -1,4 +1,5 @@
 import Marionette from 'backbone.marionette';
+
 import App from '../../../main';
 import SupplierRequestHeaderView from './supplier-request-header-view';
 import QuoteTableView from '../../quote/views/quote-table-view';

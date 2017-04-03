@@ -1,4 +1,5 @@
 import Marionette from 'backbone.marionette';
+
 import {globalChannel} from '../../utils/radio';
 import App from '../../main';
 import template from '../../templates/core/quote-selector-view.hbs';
@@ -56,12 +57,12 @@ export default Marionette.View.extend({
         return {
             is_disabled: is_disabled,
             quote_list: !is_disabled ? this.collection.map(function (item) {
-                    return {
-                        is_selected: App.current_quote && item.id === App.current_quote.id,
-                        id: item.id,
-                        quote_name: item.getName()
-                    };
-                }) : []
+                return {
+                    is_selected: App.current_quote && item.id === App.current_quote.id,
+                    id: item.id,
+                    quote_name: item.getName()
+                };
+            }) : []
         };
     },
     selectFirstOrDefaultQuote: function () {

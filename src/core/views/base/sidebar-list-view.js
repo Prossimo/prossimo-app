@@ -1,8 +1,9 @@
 import _ from 'underscore';
+import Sortable from 'sortablejs';
+
 import Marionette from 'backbone.marionette';
 import SidebarListItemView from './sidebar-list-item-view';
 import template from '../../../templates/core/base/sidebar-list-view.hbs';
-import Sortable from 'sortablejs';
 
 export default Marionette.CompositeView.extend({
     tagName: 'div',

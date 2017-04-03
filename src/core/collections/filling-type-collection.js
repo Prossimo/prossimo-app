@@ -1,6 +1,6 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
-import App from '../../main';
+
 import FillingType from '../models/filling-type';
 
 export default Backbone.Collection.extend({
@@ -56,7 +56,6 @@ export default Backbone.Collection.extend({
     getTitles: function (names) {
         return this.proxy_type.getTitles(names);
     },
-
     //  TODO: why this works by cid? probably because we have base types
     //  we need to rework this to use ids when we get rid of base types.
     //  Also, there is a get() actually available on collections natively
@@ -125,7 +124,6 @@ export default Backbone.Collection.extend({
             if (default_item && non_default_items) {
                 _.each(non_default_items, function (item) {
                     item.setProfileAvailability(profile_id, true, false);
-
                 }, this);
             }
         }, this);
@@ -151,8 +149,6 @@ export default Backbone.Collection.extend({
             }
 
             //  Set new_itemas available and default for profile_id
-
-
             new_item.setProfileAvailability(profile_id, true, true);
         }
 

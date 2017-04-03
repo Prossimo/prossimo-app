@@ -1,5 +1,6 @@
 import Marionette from 'backbone.marionette';
 import $ from 'jquery';
+
 import {globalChannel} from '../../utils/radio';
 import App from '../../main';
 import template from '../../templates/core/project-selector-view.hbs';
@@ -13,7 +14,6 @@ export default Marionette.View.extend({
     },
     events: {
         'change @ui.$select': 'onChange'
-
     },
     initialize: function () {
         this.listenTo(this.collection, 'all', this.render);
@@ -132,7 +132,6 @@ export default Marionette.View.extend({
     },
     onRender: function () {
         this.ui.$select.selectpicker({
-
             size: 10
         });
     },

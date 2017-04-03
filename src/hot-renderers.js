@@ -1,6 +1,7 @@
 import Handsontable from 'handsontable/dist/handsontable.full';
 import $ from 'jquery';
 import _ from 'underscore';
+
 import Utils from './utils';
 
 //  Custom Handsontable cell content renderers
@@ -59,7 +60,8 @@ export default {
             },
             percent_difference: function () {
                 return f.percent_difference.apply(this, arguments);
-            }, fixed_minimal: function () {
+            },
+            fixed_minimal: function () {
                 return f.fixed_minimal.apply(this, arguments);
             },
             fixed_heights: function () {
@@ -83,7 +85,7 @@ export default {
             Handsontable.renderers.TextRenderer.apply(this, arguments);
 
             if (_.indexOf(['dimension', 'percent', 'percent_difference', 'fixed_minimal', 'fixed',
-                    'fixed_heights', 'dimension_heights', 'price_usd', 'align_right'], attr_name) !== -1
+                'fixed_heights', 'dimension_heights', 'price_usd', 'align_right'], attr_name) !== -1
             ) {
                 $td.addClass('htNumeric');
             }
@@ -95,12 +97,9 @@ export default {
             if (attr_name === 'percent_difference') {
                 if (parseInt(arguments[5].replace(',', ''), 10) === 0) {
                     $td.addClass('is-perfect');
-                }
-
-                else if (Math.abs(parseInt(arguments[5].replace(',', ''), 10)) <= 15) {
+                } else if (Math.abs(parseInt(arguments[5].replace(',', ''), 10)) <= 15) {
                     $td.addClass('is-okay');
                 } else {
-
                     $td.addClass('is-average');
                 }
             }
@@ -113,8 +112,8 @@ export default {
         var $td = $(td);
         var is_first_item = row === 0;
         var is_last_item = row === instance.getSourceData().filter(function (item) {
-                return item.get('is_base_type') !== true;
-            }).length - 1;
+            return item.get('is_base_type') !== true;
+        }).length - 1;
 
         var $button_up = $('<button>', {
             class: 'btn btn-xs btn-move js-move-item-up glyphicon glyphicon-arrow-up',

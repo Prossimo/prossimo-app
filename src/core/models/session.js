@@ -1,7 +1,8 @@
 import Backbone from 'backbone';
 import _ from 'underscore';
-import User from './user';
 import $ from 'jquery';
+
+import User from './user';
 import App from '../../main';
 import {globalChannel} from '../../utils/radio';
 
@@ -109,7 +110,8 @@ export default Backbone.Model.extend({
                 }
 
                 d.resolve(model, response);
-            }, error: function (model, response) {
+            },
+            error: function (model, response) {
                 self.set({is_logged_in: false});
 
                 //  Status === 0 means no connection
@@ -156,7 +158,6 @@ export default Backbone.Model.extend({
                             callback.success(response);
                         }
                     }
-
                 } else {
                     if (callback && 'error' in callback) {
                         callback.error(response, jqXHR, textStatus);

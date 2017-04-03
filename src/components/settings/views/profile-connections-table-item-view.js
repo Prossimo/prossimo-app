@@ -1,4 +1,5 @@
 import Marionette from 'backbone.marionette';
+
 import constants from '../../../constants';
 import App from '../../../main';
 import BaseInputView from '../../../core/views/base/base-input-view';

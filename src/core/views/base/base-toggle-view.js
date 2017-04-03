@@ -1,6 +1,7 @@
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 import $ from 'jquery';
+
 import template from '../../../templates/core/base/base-toggle-view.hbs';
 
 export default Marionette.View.extend({
@@ -31,7 +32,8 @@ export default Marionette.View.extend({
     },
     disable: function () {
         this.ui.$checkbox.bootstrapToggle('disable');
-    }, isChecked: function () {
+    },
+    isChecked: function () {
         return this.options.values_list[0].value === this.model.get(this.options.property_name);
     },
     templateContext: function () {

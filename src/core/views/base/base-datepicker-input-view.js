@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
+
 import template from '../../../templates/core/base/base-datepicker-input-view.hbs';
 
 export default Marionette.View.extend({
@@ -66,12 +67,12 @@ export default Marionette.View.extend({
             todayHighlight: true,
             zIndexOffset: 300
         })
-            .on('changeDate', function () {
-                self.setValue();
-            })
-            .on('hide', function () {
-                self.ui.$input.trigger('blur');
-            });
+        .on('changeDate', function () {
+            self.setValue();
+        })
+        .on('hide', function () {
+            self.ui.$input.trigger('blur');
+        });
     },
     onBeforeDestroy: function () {
         this.ui.$input.datepicker('destroy');

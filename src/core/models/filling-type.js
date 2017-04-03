@@ -1,6 +1,7 @@
 import Backbone from 'backbone';
-import Schema from '../../schema';
 import _ from 'underscore';
+
+import Schema from '../../schema';
 import constants from '../../constants';
 import utils from '../../utils';
 import FillingTypeProfileCollection from '../collections/inline/filling-type-to-profile-collection';
@@ -116,8 +117,8 @@ export default Backbone.Model.extend({
     validate: function (attributes, options) {
         var error_obj = null;
         var collection_names = this.collection && _.map(this.collection.without(this), function (item) {
-                return item.get('name');
-            });
+            return item.get('name');
+        });
 
         //  We want to have unique filling type names across the collection
         if (options.validate && collection_names &&

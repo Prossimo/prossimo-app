@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
+
 import BaseSelectView from '../../../core/views/base/base-select-view';
 import BaseInputView from '../../../core/views/base/base-input-view';
 import BaseToggleView from '../../../core/views/base/base-toggle-view';

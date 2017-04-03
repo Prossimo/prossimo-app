@@ -1,5 +1,6 @@
 import Marionette from 'backbone.marionette';
 import _ from 'underscore';
+
 import {format} from '../../../utils';
 import template from '../templates/quote-totals-view.hbs';
 

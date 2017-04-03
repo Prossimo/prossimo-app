@@ -1,6 +1,6 @@
 import Marionette from 'backbone.marionette';
-import App from '../../../main';
-import {format, convert, math} from '../../../utils';
+
+import {format} from '../../../utils';
 import template from '../templates/quote-extras-item-view.hbs';
 
 export default Marionette.View.extend({
@@ -18,10 +18,10 @@ export default Marionette.View.extend({
     },
     getReferenceId: function () {
         return this.model.collection.filter(function (item) {
-                return this.options.type === 'Optional' ?
-                    item.isOptionalType() :
-                    item.get('extras_type') === this.options.type;
-            }, this).indexOf(this.model) + 1;
+            return this.options.type === 'Optional' ?
+                item.isOptionalType() :
+                item.get('extras_type') === this.options.type;
+        }, this).indexOf(this.model) + 1;
     },
     getDescription: function () {
         var description = this.model.get('description');

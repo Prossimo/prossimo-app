@@ -1,4 +1,5 @@
 import Backbone from 'backbone';
+
 import App from '../../../main';
 import FillingTypeProfile from '../../models/inline/filling-type-to-profile';
 

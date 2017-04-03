@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
+
 import Schema from '../../../schema';
 
 var PROJECT_SETTINGS_PROPERTIES = [
@@ -45,7 +46,6 @@ export default Backbone.Model.extend({
         var name_value_hash = {
             inches_display_mode: INCHES_DISPLAY_MODES[0].value,
             hinge_indicator_mode: HINGE_INDICATOR_MODES[0].value,
-
             show_drawings_in_quote: SHOW_DRAWINGS_IN_QUOTE_OPTIONS[0].value
         };
 
@@ -88,7 +88,6 @@ export default Backbone.Model.extend({
         return {
             inches_display_mode: INCHES_DISPLAY_MODES,
             hinge_indicator_mode: HINGE_INDICATOR_MODES,
-
             show_drawings_in_quote: SHOW_DRAWINGS_IN_QUOTE_OPTIONS
         };
     },

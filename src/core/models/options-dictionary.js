@@ -1,10 +1,10 @@
 import Backbone from 'backbone';
 import _ from 'underscore';
+
 import Schema from '../../schema';
 import utils from '../../utils';
 import constants from '../../constants';
 import OptionsDictionaryEntryCollection from '../collections/options-dictionary-entry-collection';
-
 
 var PRICING_SCHEME_NONE = constants.PRICING_SCHEME_NONE;
 var PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
@@ -51,9 +51,10 @@ export default Backbone.Model.extend({
     getDefaultValue: function (name, type) {
         var default_value = '';
 
-            var type_value_hash = {
-                number: 0,
-            boolean: false};
+        var type_value_hash = {
+            number: 0,
+            boolean: false
+        };
 
         var name_value_hash = {
             rules_and_restrictions: getDefaultRulesAndRestrictions(),
@@ -102,11 +103,12 @@ export default Backbone.Model.extend({
         json.rules_and_restrictions = JSON.stringify(json.rules_and_restrictions);
 
         return _.omit(json, properties_to_omit);
-    }, validate: function (attributes, options) {
+    },
+    validate: function (attributes, options) {
         var error_obj = null;
         var collection_names = this.collection && _.map(this.collection.without(this), function (item) {
-                return item.get('name');
-            });
+            return item.get('name');
+        });
 
         //  We want to have unique dictionary names across the collection
         if (options.validate && collection_names &&

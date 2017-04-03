@@ -1,4 +1,5 @@
 import Backbone from 'backbone';
+
 import Profile from '../models/profile';
 
 export default Backbone.Collection.extend({

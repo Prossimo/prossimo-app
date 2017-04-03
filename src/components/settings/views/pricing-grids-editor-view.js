@@ -1,8 +1,9 @@
 import $ from 'jquery';
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
-import {math} from '../../../utils';
 import Handsontable from 'handsontable/dist/handsontable.full';
+
+import {math} from '../../../utils';
 import template from '../templates/pricing-grids-editor-view.hbs';
 
 //  See `core/views/units-table-view.js` for reference, it's similar
@@ -65,8 +66,6 @@ export default Marionette.View.extend({
         setter = function (model, attr_name, val) {
             //  TODO: parse data on set
             // return model.persist(attr_name, self.getSetterParser(column_name, val));
-
-
             return model.persist(attr_name, val);
         };
 

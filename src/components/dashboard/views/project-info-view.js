@@ -1,5 +1,6 @@
 import Marionette from 'backbone.marionette';
 import _ from 'underscore';
+
 import templateMain from '../templates/project-info/main.hbs';
 import templateView from '../templates/project-info/view.hbs';
 import templateEdit from '../templates/project-info/edit.hbs';
@@ -33,12 +34,10 @@ export default Marionette.View.extend({
         }
     },
     enterViewMode: function () {
-
         this.ui.$content.html(this.viewTemplate(this.model.toJSON()));
     },
     enterEditMode: function () {
         this.ui.$content.html(this.editTemplate(this.model.toJSON()));
-
     },
     templateContext: function () {
         return _.extend({}, this.model.toJSON(), {editMode: this.editMode});
@@ -58,5 +57,4 @@ export default Marionette.View.extend({
     onRender: function () {
         this.enterMode();
     }
-
 });

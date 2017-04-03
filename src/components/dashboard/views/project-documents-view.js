@@ -1,4 +1,5 @@
 import Marionette from 'backbone.marionette';
+
 import template from '../templates/project-documents-view.hbs';
 
 export default Marionette.View.extend({
