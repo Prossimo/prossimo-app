@@ -710,7 +710,7 @@ var app = app || {};
             });
         },
         cloneSashStart: function (sourceSashId) {
-            var selectedSash = this.model.getSection(this.state.selectedSashId);
+            var selectedSash = this.model.getSection(sourceSashId);
             if (!selectedSash) { return; }
 
             this.setState({
