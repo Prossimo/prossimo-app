@@ -116,6 +116,7 @@ export default Marionette.View.extend({
                 return _.extend({}, item, {is_current: is_current});
             }, this)
         });
+
         this.entries_table_view = new OptionsDictionaryEntriesTableView({
             collection: this.model.entries
         });

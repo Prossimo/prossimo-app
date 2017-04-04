@@ -144,7 +144,6 @@ export default Marionette.View.extend({
     },
     getCustomColumnHeader: function (column_name) {
         var custom_column_headers_hash = {
-
             area: 'Area (m<sup>2</sup>)',
             width: 'Width (mm)',
             height: 'Height (mm)',
@@ -174,14 +173,12 @@ export default Marionette.View.extend({
     getDataObject: function () {
         var data_object;
 
-
         data_object = this.options.grids.getByName(this.active_tab).get('data');
 
         return data_object;
     },
     onRender: function () {
         var self = this;
-
 
         //  We use setTimeout because we want to wait until flexbox
         //  sizes are calculated properly
@@ -226,6 +223,7 @@ export default Marionette.View.extend({
             }
         };
         this.active_tab = 'fixed';
+
         this.listenTo(this.options.grids, 'all', this.updateTable);
         this.listenTo(this.options.parent_view, 'attach', this.updateTable);
     }

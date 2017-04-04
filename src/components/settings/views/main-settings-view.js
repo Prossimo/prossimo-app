@@ -104,6 +104,7 @@ export default Marionette.View.extend({
             }
         };
         this.active_tab = 'profiles';
+
         this.listenTo(globalChannel, 'settings:fetch_data:stop', this.render);
     }
 });

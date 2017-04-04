@@ -186,7 +186,7 @@ export default Backbone.Model.extend({
             //  If this is percent-based optional extras, base is Unit Subtotal
             if (this.isPercentBasedType() && this.isOptionalType()) {
                 subtotal_price = this.getMarkupPercent() / 100 * App.current_quote.getSubtotalUnitsPrice();
-                //  If this is tax, base is everything except shipping
+            //  If this is tax, base is everything except shipping
             } else if (this.isPercentBasedType()) {
                 subtotal_price = this.getMarkupPercent() / 100 * App.current_quote.getSubtotalPrice();
             }

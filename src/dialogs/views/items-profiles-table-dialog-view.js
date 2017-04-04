@@ -45,7 +45,7 @@ export default BaseDialogView.extend({
                 new_value = false;
             }
 
-                //  This means we changed a default value for some profile
+            //  This means we changed a default value for some profile
             if (column_index === 0) {
                 //  Set item `new_item` to be default for this profile,
                 //  and make sure item `old_item` is not default anymore
@@ -53,7 +53,7 @@ export default BaseDialogView.extend({
                 var old_item = this.options.collection.findWhere({name: old_value});
 
                 this.options.collection.setItemAsDefaultForProfile(profile.id, new_item, old_item);
-                //  This means we changed availability for some profile/item
+            //  This means we changed availability for some profile/item
             } else {
                 var item_index = column_index - 1;
                 var item = this.options.items_filtered[item_index];

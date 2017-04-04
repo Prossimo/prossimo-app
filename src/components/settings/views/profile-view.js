@@ -214,8 +214,8 @@ export default Marionette.View.extend({
                             this.$el.html(attr_data.value());
                         }
                     });
-                    //  We use text inputs for most attributes except for some
-                    //  where we want a selectbox
+                //  We use text inputs for most attributes except for some
+                //  where we want a selectbox
                 } else if (
                     _.contains(['unit_type', 'sash_corners', 'frame_corners', 'pricing_scheme'], attr_data.name)
                 ) {
@@ -228,7 +228,7 @@ export default Marionette.View.extend({
                         } : false,
                         multiple: false
                     });
-                    //  And for some values where we want a toggle
+                //  And for some values where we want a toggle
                 } else if (attr_data.name === 'low_threshold') {
                     view = new BaseToggleView({
                         model: this.model,
@@ -247,8 +247,8 @@ export default Marionette.View.extend({
                             return !this.model.isThresholdEditable();
                         }.bind(this)
                     });
-                    //  And here we just want to make this attribute disabled
-                    //  under certain conditions
+                //  And here we just want to make this attribute disabled
+                //  under certain conditions
                 } else if (attr_data.name === 'threshold_width') {
                     view = new BaseInputView({
                         model: this.model,
@@ -260,7 +260,7 @@ export default Marionette.View.extend({
                             return !this.model.isThresholdPossible() || !this.model.get('low_threshold');
                         }.bind(this)
                     });
-                    //  Rest attributes use simple input view
+                //  Rest attributes use simple input view
                 } else {
                     view = new BaseInputView({
                         model: this.model,

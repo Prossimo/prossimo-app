@@ -84,8 +84,9 @@ export default {
 
             Handsontable.renderers.TextRenderer.apply(this, arguments);
 
-            if (_.indexOf(['dimension', 'percent', 'percent_difference', 'fixed_minimal', 'fixed',
-                'fixed_heights', 'dimension_heights', 'price_usd', 'align_right'], attr_name) !== -1
+            if (
+                _.indexOf(['dimension', 'percent', 'percent_difference', 'fixed_minimal', 'fixed',
+                    'fixed_heights', 'dimension_heights', 'price_usd', 'align_right'], attr_name) !== -1
             ) {
                 $td.addClass('htNumeric');
             }

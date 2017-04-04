@@ -19,7 +19,6 @@ var HINGE_INDICATOR_MODES = [
     {value: 'european', title: 'European'}
 ];
 
-
 var SHOW_DRAWINGS_IN_QUOTE_OPTIONS = [
     {value: true, title: 'Yes'},
     {value: false, title: 'No'}

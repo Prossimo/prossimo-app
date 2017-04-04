@@ -9,7 +9,6 @@ var UNSET_VALUE = '--';
 
 var ENTRY_PROPERTIES = [
     {name: 'name', title: 'Name', type: 'string'},
-
     {name: 'supplier_name', title: 'Supplier Name', type: 'string'},
     {name: 'data', title: 'Additional Data', type: 'string'},
     {name: 'position', title: 'Position', type: 'number'},
@@ -252,7 +251,7 @@ export default Backbone.Model.extend({
                     profile_id: profile_id,
                     is_default: make_default === true
                 });
-                //  If connection exists and we want to just modify is_default
+            //  If connection exists and we want to just modify is_default
             } else if (make_default === true || make_default === false) {
                 connection.set('is_default', make_default);
             }
@@ -285,6 +284,11 @@ export default Backbone.Model.extend({
     },
     getParentDictionary: function () {
         return this.collection && this.collection.options.dictionary;
+    },
+    isParentDictionaryHidden: function () {
+        var dictionary = this.getParentDictionary();
+
+        return dictionary && dictionary.get('is_hidden');
     },
     initialize: function (attributes, options) {
         this.options = options || {};

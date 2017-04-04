@@ -146,8 +146,7 @@ export default Backbone.Model.extend({
         var properties_to_omit = ['id'];
         var json = Backbone.Model.prototype.toJSON.apply(this, arguments);
 
-        json.pricing_grids = JSON.stringify(
-            this.get('pricing_grids').toJSON());
+        json.pricing_grids = JSON.stringify(this.get('pricing_grids').toJSON());
         json.pricing_equation_params = JSON.stringify(this.get('pricing_equation_params').toJSON());
 
         return _.omit(json, properties_to_omit);
@@ -216,14 +215,11 @@ export default Backbone.Model.extend({
                 var type = property_source ? property_source.type : undefined;
 
                 if (key === 'pricing_grids') {
-                    if (value !== JSON.stringify(this.getDefaultValue('pricing_grids').toJSON())
-                    ) {
+                    if (value !== JSON.stringify(this.getDefaultValue('pricing_grids').toJSON())) {
                         has_only_defaults = false;
                     }
                 } else if (key === 'pricing_equation_params') {
-                    if (value !==
-                        JSON.stringify(this.getDefaultValue('pricing_equation_params').toJSON())
-                    ) {
+                    if (value !== JSON.stringify(this.getDefaultValue('pricing_equation_params').toJSON())) {
                         has_only_defaults = false;
                     }
                 } else if (this.getDefaultValue(key, type) !== value) {
@@ -271,11 +267,13 @@ export default Backbone.Model.extend({
         var data_to_persist = {
             unit_type: new_type
         };
+
         if (!_.contains(TYPES_WITH_POSSIBLE_THRESHOLD, new_type)) {
             data_to_persist.low_threshold = false;
         } else if (_.contains(TYPES_WITH_ALWAYS_LOW_THRESHOLD, new_type)) {
             data_to_persist.low_threshold = true;
         }
+
         this.persist(data_to_persist);
     },
     //  Return { name: 'name', title: 'Title' } pairs for each item in
@@ -325,12 +323,13 @@ export default Backbone.Model.extend({
             pricing_data.scheme = PRICING_SCHEME_LINEAR_EQUATION;
             pricing_data.pricing_equation_params = this.get('pricing_equation_params');
         }
+
         return pricing_data;
     },
     initialize: function (attributes, options) {
         this.options = options || {};
 
-        //  Save pricing grids on griditemchange
+        //  Save pricing grids on grid item change
         this.listenTo(this.get('pricing_grids'), 'change update', function (changed_object) {
             this.trigger('change:pricing_grids change', changed_object);
             this.persist('pricing_grids', this.get('pricing_grids'));

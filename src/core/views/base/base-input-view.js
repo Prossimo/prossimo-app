@@ -18,7 +18,6 @@ export default Marionette.View.extend({
         $edit: '.edit',
         $input: '.edit input',
         $value: '.value'
-
     },
     events: {
         'click @ui.$value': 'makeEditable',
@@ -48,6 +47,7 @@ export default Marionette.View.extend({
             '<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>' +
             '<span>Undo</span>' +
             '</button>';
+
         this.$el.addClass('has-error');
         this.ui.$edit.attr('data-content', html);
         this.ui.$edit.popover('show');
@@ -61,14 +61,16 @@ export default Marionette.View.extend({
         var new_value = this.ui.$input.val().trim();
         var new_value_parsed;
 
-        if (!this.$el.hasClass('is-edited') ||
-            this.$el.hasClass('has-error')) {
+        if (
+            !this.$el.hasClass('is-edited') ||
+            this.$el.hasClass('has-error')
+        ) {
             return;
         }
 
         if (new_value !== this.templateContext().value) {
             new_value_parsed = _.isFunction(this.model.getAttributeType) &&
-            this.model.getAttributeType(this.options.param) === 'number' && !isNaN(new_value) ?
+                this.model.getAttributeType(this.options.param) === 'number' && !isNaN(new_value) ?
                 parseFloat(new_value) : new_value;
 
             var validation_successful = this.model.persist(this.options.param, new_value_parsed, {validate: true});
@@ -77,7 +79,8 @@ export default Marionette.View.extend({
             //  and validationError will contain hash of ivalid attributes.
             //  If it doesn't have current param among invalid attributes,
             //  we suppose that everything's normal
-            if (!validation_successful && this.model.validationError &&
+            if (
+                !validation_successful && this.model.validationError &&
                 this.model.validationError.attribute_name === this.options.param
             ) {
                 this.showErrorMessage(this.model.validationError.error_message);
@@ -152,7 +155,7 @@ export default Marionette.View.extend({
 
         this.options = _.extend({}, default_options, options);
 
-        //  TODO: we could use input type number here,  but the problem is
+        //  TODO: we could use input type number here, but the problem is
         //  it has some serious issues in firefox
         if (this.options.input_type && !_.contains(['text'], this.options.input_type)) {
             throw new Error('Input type ' + this.options.input_type + ' is not allowed');
