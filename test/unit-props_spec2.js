@@ -545,7 +545,7 @@ describe('Unit model tests: ', function () {
     //  https://github.com/prossimo-ben/prossimo-app/issues/181
     //  This was calculated by hand. Unit is similar to #001 from 377 E 10th
     //  ------------------------------------------------------------------------
-    describe.skip('Clear opening size calculations (bugfix test case #2)', function () {
+    describe('Clear opening size calculations (bugfix test case #2)', function () {
         let unit;
         let full_root;
         let root_id;
@@ -616,7 +616,7 @@ describe('Unit model tests: ', function () {
         equal(sash_list[3].filling.height.toFixed(), '455', 'Section 4 glass height');
         equal(sash_list[3].filling.width.toFixed(), '722', 'Section 4 glass width');
     });
-    describe.skip('hasOperableSections function', function () {
+    describe('hasOperableSections function', function () {
         let unit_1;
         let unit_2;
         let full_root;
@@ -671,7 +671,7 @@ describe('Unit model tests: ', function () {
         equal(unit_1.hasOperableSections(), false, 'Unit 1 is not expected to have operable sections');
         equal(unit_2.hasOperableSections(), true, 'Unit 2 is expected to have operable sections');
     });
-    describe.skip('getSashName function', function () {
+    describe('getSashName function', function () {
         let unit = new Unit();
 
         equal(unit.getSashName('tilt_turn_right'), 'Tilt-turn Right Hinge',
@@ -689,7 +689,7 @@ describe('Unit model tests: ', function () {
     //  https://github.com/prossimo-ben/prossimo-app/issues/126
     //  ------------------------------------------------------------------------
 
-    describe.skip('Total daylight calculations for sections of an operable sash', function () {
+    describe('Total daylight calculations for sections of an operable sash', function () {
         let unit;
         let full_root;
         let root_id;
@@ -739,7 +739,7 @@ describe('Unit model tests: ', function () {
         equal(sash_list[0].sections[1].filling.width.toFixed(), 2355, 'Bottom section glazing width');
         equal(sash_list[0].sections[1].filling.height.toFixed(), 852, 'Bottom section glazing height');
     });
-    describe.skip('hasGlazingBars function', function () {
+    describe('hasGlazingBars function', function () {
         let unit_1 = new Unit({
             width: 5 * 12 + 6,
             height: 6 * 12 + 10
@@ -783,7 +783,7 @@ describe('Unit model tests: ', function () {
     //  ------------------------------------------------------------------------
     //  Test sizes for Clear Opening / Egress Clear Opening
     //  ------------------------------------------------------------------------
-    describe.skip('getSashOpeningSize function', function () {
+    describe('getSashOpeningSize function', function () {
         // create default values
         let unitSizes = {
             width: c.mm_to_inches(800),
@@ -873,7 +873,7 @@ describe('Unit model tests: ', function () {
     //  ------------------------------------------------------------------------
     //  Unit weight estimates
     //  ------------------------------------------------------------------------
-    describe.skip('Unit weight calculations function', function () {
+    describe('Unit weight calculations function', function () {
         let createFilling = function (type, name, weight) {
             let attrs = { type: type, name: name, weight_per_area: weight };
 
