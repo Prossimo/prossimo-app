@@ -20,7 +20,7 @@ module.exports = {
         [path.resolve(rootPatch, './test/**/*.png')]: ['webpack']
     },
 
-    reporters: ['spec'],
+    reporters: ['mocha'],
 
     webpack: Object.assign({}, webpackConfig, {entry: '', devtool: false}),
 
@@ -44,6 +44,7 @@ module.exports = {
         require('karma-coverage'),
         require('karma-phantomjs-launcher'),
         require('karma-spec-reporter'),
+        require('karma-mocha-reporter'),
         require('karma-sinon-chai'),
         require('karma-jquery-chai'),
         require('karma-sourcemap-loader'),
