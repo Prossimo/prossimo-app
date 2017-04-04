@@ -15,15 +15,15 @@ export const format = {
         var i;
 
         decimal_format = decimal_format &&
-        _.indexOf(['floating', 'fraction'], decimal_format) !== -1 ?
+            _.indexOf(['floating', 'fraction'], decimal_format) !== -1 ?
             decimal_format : 'floating';
 
         inches_display_mode = inches_display_mode &&
-        _.indexOf(['feet_and_inches', 'inches_only'], inches_display_mode) !== -1 ?
+            _.indexOf(['feet_and_inches', 'inches_only'], inches_display_mode) !== -1 ?
             inches_display_mode : 'feet_and_inches';
 
         zero_inch_display_mode = zero_inch_display_mode &&
-        _.indexOf(['show', 'remove'], zero_inch_display_mode) !== -1 ?
+            _.indexOf(['show', 'remove'], zero_inch_display_mode) !== -1 ?
             zero_inch_display_mode : 'show';
 
         if (inches_display_mode === 'feet_and_inches') {
@@ -75,7 +75,7 @@ export const format = {
                 integer_part = Math.floor(value_inches);
                 fractional_part = closest_possible_fraction.toFixed(MAX_SIGNIFICANT_DIGITS);
                 value_inches = (integer_part || zero_inch_display_mode === 'show' ?
-                        integer_part + ' ' : '') +
+                    integer_part + ' ' : '') +
                     new Decimal(fractional_part).toFraction(MAX_DENOMINATOR).join('/');
             }
         } else {
@@ -157,19 +157,19 @@ export const format = {
             ? this.fixed_minimal(value, num)
             : this.fixed_minimal(value[0], num) + ' | ' + this.fixed_minimal(value[1], num);
     },
-    square_feet: function (value, num, formattor) {
-        formattor = (formattor && _.indexOf(['normal', 'sup'], formattor) !== -1) ?
-            formattor : 'normal';
+    square_feet: function (value, num, suffix_format) {
+        suffix_format = (suffix_format && _.indexOf(['normal', 'sup'], suffix_format) !== -1) ?
+            suffix_format : 'normal';
         return this.fixed_minimal(value, num) +
-            (formattor === 'sup' ? ' ft<sup>2</sup>' :
-                (formattor === 'normal') ? ' sq.ft' :
-                    '');
+            (suffix_format === 'sup' ? ' ft<sup>2</sup>' :
+            (suffix_format === 'normal') ? ' sq.ft' :
+            '');
     },
-    square_meters: function (value, num, formattor) {
-        formattor = (formattor && _.indexOf(['normal', 'sup'], formattor) !== -1) ?
-            formattor : 'sup';
-        return this.fixed_minimal(value, num) + (formattor === 'sup' ?
-                ' m<sup>2</sup>' : ' sq.m');
+    square_meters: function (value, num, suffix_format) {
+        suffix_format = (suffix_format && _.indexOf(['normal', 'sup'], suffix_format) !== -1) ?
+            suffix_format : 'sup';
+        return this.fixed_minimal(value, num) + (suffix_format === 'sup' ?
+            ' m<sup>2</sup>' : ' sq.m');
     },
     weight: function (value) {
         return this.fixed_minimal(value, 3) + ' kg';
@@ -184,11 +184,11 @@ export const format = {
         area_format
     ) {
         decimal_format = decimal_format &&
-        _.indexOf(['floating', 'fraction'], decimal_format) !== -1 ?
+            _.indexOf(['floating', 'fraction'], decimal_format) !== -1 ?
             decimal_format : 'fraction';
 
         inches_display_mode = inches_display_mode &&
-        _.indexOf(['feet_and_inches', 'inches_only'], inches_display_mode) !== -1 ?
+            _.indexOf(['feet_and_inches', 'inches_only'], inches_display_mode) !== -1 ?
             inches_display_mode : 'inches_only';
 
         area_format = (area_format && _.indexOf(['normal', 'sup'], area_format) !== -1) ?
@@ -221,6 +221,7 @@ export const format = {
             'Ovflw.';
     }
 };
+
 export const parseFormat = {
     dimension: function (size_string) {
         var result;
@@ -329,6 +330,7 @@ export const parseFormat = {
         return parseFloat(string);
     }
 };
+
 export const math = {
     square_feet: function (width, height) {
         return parseFloat(width) * parseFloat(height) / 144;
@@ -340,6 +342,7 @@ export const math = {
         return y0 + (y1 - y0) * ((x - x0) / (x1 - x0));
     }
 };
+
 export const convert = {
     inches_to_mm: function (inch_value) {
         return parseFloat(inch_value * 25.4);
@@ -348,6 +351,7 @@ export const convert = {
         return parseFloat(mm_value / 25.4);
     }
 };
+
 export const object = {
     deep_extend: function (a, b) {
         if (_.isObject(a) && _.isObject(b)) {
@@ -373,7 +377,7 @@ export const object = {
             } catch (e) {
                 // Do nothing
             }
-            //  For regular objects and arrays
+        //  For regular objects and arrays
         } else if (typeof data_object === 'object') {
             result = data_object;
         }
@@ -381,6 +385,7 @@ export const object = {
         return result;
     }
 };
+
 export const vector2d = {
     getVector: function (v) {
         if (_.isObject(v) && 'x' in v && 'y' in v) {
@@ -488,6 +493,7 @@ export const vector2d = {
         return result;
     }
 };
+
 export const angle = {
     rad_to_deg: function (rad) {
         return rad * 180 / Math.PI;
@@ -496,6 +502,7 @@ export const angle = {
         return deg * Math.PI / 180;
     }
 };
+
 export const geometry = {
     intersectCircleLine: function (c, r, a1, a2, leave) {
         // From lib: http://www.kevlindev.com/gui/math/intersection/#Anchor-intersectCircleLin-40934
@@ -542,42 +549,43 @@ export const geometry = {
         return result;
     }
 };
+
 export const array = {
-    moveByIndex: function (a, old_index, new_index) {
+    moveByIndex: function (arr, old_index, new_index) {
         while (old_index < 0) {
-            old_index += a.length;
+            old_index += arr.length;
         }
 
         while (new_index < 0) {
-            new_index += a.length;
+            new_index += arr.length;
         }
 
-        if (new_index >= a.length) {
-            var k = new_index - a.length;
+        if (new_index >= arr.length) {
+            var k = new_index - arr.length;
 
             while ((k--) + 1) {
-                a.push(undefined);
+                arr.push(undefined);
             }
         }
 
-        a.splice(new_index, 0, a.splice(old_index, 1)[0]);
-        return a;
+        arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+        return arr;
     },
-    moveByValue: function (a, findVal, targetVal, after) {
+    moveByValue: function (arr, findVal, targetVal, after) {
         after = after || false;
 
-        var fi = a.indexOf(findVal);
-        var ti = a.indexOf(targetVal);
+        var fi = arr.indexOf(findVal);
+        var ti = arr.indexOf(targetVal);
 
         if (fi !== -1 && ti !== -1) {
-            if (after && ti !== a.length) {
+            if (after && ti !== arr.length) {
                 ti++;
             }
 
-            a.splice(ti, 0, a.splice(fi, 1)[0]);
+            arr.splice(ti, 0, arr.splice(fi, 1)[0]);
         }
 
-        return a;
+        return arr;
     }
 };
 

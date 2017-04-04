@@ -67,7 +67,6 @@ export default Marionette.View.extend({
             child_view.view_instance.destroy();
         }, this);
 
-
         if (this.profile_connections_table_view) {
             this.profile_connections_table_view.destroy();
         }

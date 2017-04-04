@@ -118,6 +118,7 @@ export default Marionette.View.extend({
         if (this.supplier_name_input_view) {
             this.supplier_name_input_view.destroy();
         }
+
         this.ui.$profiles_list_container.off();
         this.ui.$profiles_list_container.tooltip('destroy');
     },
@@ -140,6 +141,7 @@ export default Marionette.View.extend({
         this.profile_connections_table_view = new ProfileConnectionsTableView({
             collection: this.model.get('dictionary_entry_profiles')
         });
+
         this.listenTo(this.model, 'change:dictionary_entry_profiles change:namechange:supplier_name', function () {
             this.render();
             this.name_input_view.delegateEvents();

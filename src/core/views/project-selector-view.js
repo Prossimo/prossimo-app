@@ -60,7 +60,6 @@ export default Marionette.View.extend({
         this.setCurrentProject(new_id);
         this.storeLastProject(new_id);
     },
-
     //  On project change we check if project with this id was already
     //  fetched from the server (which means it already has units, files
     //  and accessories, otherwise it only has simple properties like name
@@ -112,7 +111,7 @@ export default Marionette.View.extend({
         });
     },
     storeLastProject: function (new_id) {
-        // Save selected project into a localStorage
+        // Save selected project into localStorage
         if ('localStorage' in window && 'setItem' in window.localStorage) {
             window.localStorage.setItem('app_currentProject', new_id);
         }
@@ -123,7 +122,8 @@ export default Marionette.View.extend({
 
         //  If there is something in hash, load this project
         if (hash_project_id) {
-            this.ui.$select.val(hash_project_id).trigger('change');// Get selected project from a localStorage
+            this.ui.$select.val(hash_project_id).trigger('change');
+        // Get selected project from localStorage
         } else if ('localStorage' in window && 'getItem' in window.localStorage) {
             var last_id = window.localStorage.getItem('app_currentProject');
 

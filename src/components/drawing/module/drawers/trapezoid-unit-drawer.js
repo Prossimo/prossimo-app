@@ -30,7 +30,8 @@ export default Backbone.KonvaView.extend({
         this.layer.destroyChildren();
         // Creating unit and adding it to layer
         this.layer.add(this.createUnit());
-        this.applyHandleFixes();// Draw layer
+        this.applyHandleFixes();
+        // Draw layer
         this.layer.draw();
 
         // Detaching and attching events
@@ -1329,13 +1330,16 @@ export default Backbone.KonvaView.extend({
         var mainFrameWidth = model.profile.get('frame_width') / 2;
         var fill = {};
 
-        if (_.includes(['full-flush-panel', 'exterior-flush-panel'], sectionData.fillingType) && !module.getState('openingView')
+        if (
+            _.includes(['full-flush-panel', 'exterior-flush-panel'], sectionData.fillingType) &&
+            !module.getState('openingView')
         ) {
             fill.x = sectionData.openingParams.x - sectionData.sashParams.x;
             fill.y = sectionData.openingParams.y - sectionData.sashParams.y;
             fill.width = sectionData.openingParams.width;
             fill.height = sectionData.openingParams.height;
-        } else if (_.includes(['full-flush-panel', 'interior-flush-panel'], sectionData.fillingType) &&
+        } else if (
+            _.includes(['full-flush-panel', 'interior-flush-panel'], sectionData.fillingType) &&
             module.getState('openingView')
         ) {
             fill.x = 0;
@@ -1567,10 +1571,8 @@ export default Backbone.KonvaView.extend({
     shouldDrawHandle: function (type) {
         var result = false;
 
-
         if (
             type !== 'fixed_in_frame' &&
-
             (
                 type.indexOf('left') >= 0 ||
                 type.indexOf('right') >= 0 ||
@@ -1581,9 +1583,7 @@ export default Backbone.KonvaView.extend({
             result = true;
         }
 
-        // Draw handle ifthis type of sash has ahandle
-
-
+        // Draw handle if this type of sash has a handle
         return result;
     },
     createHandle: function (section, params) {
@@ -1601,42 +1601,47 @@ export default Backbone.KonvaView.extend({
 
         var positionLeft = function () {
             pos.x = offset - handle_data.base.rotationCenter.x;
+
             if (section.trapezoid && section.trapezoid.frame) {
-                pos.y = section.trapezoid.frame.outer[0].y
-                    + ( section.trapezoid.frame.outer[3].y - section.trapezoid.frame.outer[0].y ) / 2
-                    - handle_data.base.rotationCenter.y;
+                pos.y = section.trapezoid.frame.outer[0].y +
+                    ( section.trapezoid.frame.outer[3].y - section.trapezoid.frame.outer[0].y ) / 2 -
+                    handle_data.base.rotationCenter.y;
             } else {
-                pos.y = section.sashParams.height / 2
-                    - handle_data.base.rotationCenter.y;
+                pos.y = section.sashParams.height / 2 - handle_data.base.rotationCenter.y;
             }
+
             pos.rotation = -90;
         };
         var positionRight = function () {
             pos.x = section.sashParams.width - offset - handle_data.base.rotationCenter.x;
+
             if (section.trapezoid && section.trapezoid.frame) {
-                pos.y = section.trapezoid.frame.outer[1].y
-                    + ( section.trapezoid.frame.outer[2].y - section.trapezoid.frame.outer[1].y ) / 2
-                    - handle_data.base.rotationCenter.y;
+                pos.y = section.trapezoid.frame.outer[1].y +
+                    ( section.trapezoid.frame.outer[2].y - section.trapezoid.frame.outer[1].y ) / 2 -
+                    handle_data.base.rotationCenter.y;
             } else {
-                pos.y = section.sashParams.height / 2
-                    - handle_data.base.rotationCenter.y;
+                pos.y = section.sashParams.height / 2 - handle_data.base.rotationCenter.y;
             }
+
             pos.rotation = 90;
         };
         var positionRightTilt = function () {
             pos.x = section.sashParams.width / 2 - handle_data.base.rotationCenter.x;
+
             if (section.trapezoid && section.trapezoid.frame) {
-                pos.y = Math.abs(section.trapezoid.frame.outer[0].y - section.trapezoid.frame.outer[1].y) / 2
-                    + offset
-                    + (
-                        ( section.trapezoid.frame.outer[0].y > section.trapezoid.frame.outer[1].y )
-                            ? section.trapezoid.frame.outer[1].y
-                            : section.trapezoid.frame.outer[0].y)
-                    - handle_data.base.rotationCenter.y;
+                pos.y = Math.abs(section.trapezoid.frame.outer[0].y -
+                    section.trapezoid.frame.outer[1].y) / 2 +
+                    offset +
+                    (
+                        ( section.trapezoid.frame.outer[0].y > section.trapezoid.frame.outer[1].y ) ?
+                            section.trapezoid.frame.outer[1].y :
+                            section.trapezoid.frame.outer[0].y
+                    ) -
+                    handle_data.base.rotationCenter.y;
             } else {
-                pos.y = offset
-                    - handle_data.base.rotationCenter.y;
+                pos.y = offset - handle_data.base.rotationCenter.y;
             }
+
             pos.rotation = 90;
         };
         var sinkThroughGlass = function () {
@@ -1687,10 +1692,12 @@ export default Backbone.KonvaView.extend({
         }
 
         // Create a group of 2 paths (stroke and backdrop) from SVG path data
+        // If created paths are offset,
+        // use Inkscape's Save as -> Optimized SVG
         handle.setAttrs({
             name: 'handle',
-            x: pos.x,  // If created paths are offset,y: pos.y,  // use Inkscape's Save as -> Optimized SVG
-
+            x: pos.x,
+            y: pos.y,
             scale: {
                 x: 1,
                 y: 1

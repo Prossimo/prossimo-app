@@ -10,12 +10,12 @@ export default Backbone.Collection.extend({
     url: function () {
         return App.settings.get('api_base_path') +
             '/projects/' + this.options.project.get('id') +
-                '/quotes/' + this.options.quote.get('id') + '/units';
+            '/quotes/' + this.options.quote.get('id') + '/units';
     },
     reorder_url: function () {
         return App.settings.get('api_base_path') +
             '/projects/' + this.options.project.get('id') +
-                '/quotes/' + this.options.quote.get('id') + '/reorder_units';
+            '/quotes/' + this.options.quote.get('id') + '/reorder_units';
     },
     initialize: function (models, options) {
         this.options = options || {};

@@ -17,7 +17,7 @@ var DICTIONARY_PROPERTIES = [
     {name: 'rules_and_restrictions', title: 'Rules and Restrictions', type: 'string'},
     {name: 'pricing_scheme', title: 'Pricing Scheme', type: 'string'},
     {name: 'is_hidden', title: 'Is Hidden', type: 'boolean' },
-        { name: 'position', title: 'Position', type: 'number'}
+    { name: 'position', title: 'Position', type: 'number'}
 ];
 
 var POSSIBLE_RULES_AND_RESTRICTIONS = [
@@ -30,6 +30,7 @@ var POSSIBLE_PRICING_SCHEMES = [
     PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_LINEAR_EQUATION
 ];
+
 function getDefaultRulesAndRestrictions() {
     return [];
 }
@@ -221,10 +222,10 @@ export default Backbone.Model.extend({
     initialize: function (attributes, options) {
         this.options = options || {};
 
-
         if (!this.options.proxy) {
             this.entries = new OptionsDictionaryEntryCollection(this.get('entries'), {
-                parse: true, dictionary: this
+                parse: true,
+                dictionary: this
             });
             this.unset('entries', {silent: true});
             this.entries.trigger('fully_loaded');

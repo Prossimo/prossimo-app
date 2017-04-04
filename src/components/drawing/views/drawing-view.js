@@ -441,11 +441,11 @@ export default Marionette.View.extend({
                     var attr = (splitHeightsRequested && isVerticalWholeMetric) ? 'height' : 'width';
                     var inches = utils.parseFormat.dimensions(_value, attr);
 
-                    mm = (_.isArray(inches)) ?
+                    mm = _.isArray(inches) ?
                         inches.map(function (value) {
                             return utils.convert.inches_to_mm(value) * sign;
-                        })
-                        : utils.convert.inches_to_mm(inches) * sign;
+                        }) :
+                        utils.convert.inches_to_mm(inches) * sign;
 
                     params.setter(mm, view);
 
@@ -495,6 +495,7 @@ export default Marionette.View.extend({
             if (self.setState) {
                 self.setState({inputFocused: false});
             }
+
             $wrap.remove();
         };
 
@@ -519,7 +520,7 @@ export default Marionette.View.extend({
                 var input = e.target;
                 var attr = (isVertical) ? 'width' : 'height';
                 var newValue = utils.parseFormat.dimensions(this.value, attr);
-                var newValueMm = (_.isArray(newValue)) ?
+                var newValueMm = _.isArray(newValue) ?
                     newValue.map(function (value) {
                         return utils.convert.inches_to_mm(value);
                     }) :
@@ -534,42 +535,47 @@ export default Marionette.View.extend({
                 // Cancel
                 if (isKeyEscape) {
                     closeWrap();
-
-                    // Set first subsection dimension
-                } else if (isVertical && isInside && isKeyLeft ||
+                // Set first subsection dimension
+                } else if (
+                    isVertical && isInside && isKeyLeft ||
                     isVertical && isOutside && isKeyRight ||
                     isVertical && isInside && isKeyEnter ||
                     isHorizontal && isKeyUp ||
-                    isHorizontal && isKeyEnter) {
+                    isHorizontal && isKeyEnter
+                ) {
                     model.setSectionMullionPosition(mullionId, newValueMm);
                     closeWrap();
-
-                    // Set second subsection dimension
-                } else if (isVertical && isInside && isKeyRight ||
+                // Set second subsection dimension
+                } else if (
+                    isVertical && isInside && isKeyRight ||
                     isVertical && isOutside && isKeyLeft ||
                     isVertical && isOutside && isKeyEnter ||
-                    isHorizontal && isKeyDown) {
-                    var containerDimension = (isVertical) ? model.getSizes().frame.width :
+                    isHorizontal && isKeyDown
+                ) {
+                    var containerDimension = isVertical ?
+                        model.getSizes().frame.width :
                         model.getSizes().frame.height;
+
                     model.setSectionMullionPosition(mullionId, containerDimension - newValueMm);
                     closeWrap();
-
-                    // Move cursor left
-                } else if (isVertical && isKeyUp ||
-                    isHorizontal && isKeyLeft) {
+                // Move cursor left
+                } else if (
+                    isVertical && isKeyUp ||
+                    isHorizontal && isKeyLeft
+                ) {
                     input.selectionStart = input.selectionEnd -= 1;
                     e.preventDefault();
-
-                    // Move cursor right
-                } else if (isVertical && isKeyDown ||
-                    isHorizontal && isKeyRight) {
+                // Move cursor right
+                } else if (
+                    isVertical && isKeyDown ||
+                    isHorizontal && isKeyRight
+                ) {
                     input.selectionStart = input.selectionEnd += 1;
                     e.preventDefault();
                 }
             })
             .on('blur', closeWrap);
     },
-
     updateUI: function () {
         // here we have to hide and should some elements in toolbar
         var buttonText = this.isInsideView() ? 'Show outside view' : 'Show inside view';
@@ -640,7 +646,6 @@ export default Marionette.View.extend({
         if (selectedSash) {
             this.ui.$metrics_glass_input.prop('checked', selectedSash.measurements.glass);
             this.ui.$metrics_opening_input.prop('checked', selectedSash.measurements.opening);
-
             this.ui.$metrics_glass.toggle(selectedSash.sections.length === 0);
             this.ui.$metrics_opening.toggle(hasFrame);
             this.ui.$metrics.toggle(

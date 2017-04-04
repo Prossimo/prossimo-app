@@ -47,7 +47,6 @@ export default Backbone.Collection.extend({
     },
     getDefaultOrFirstAvailableForProfile: function (profile_id) {
         var available_items = this.getAvailableForProfile(profile_id);
-
         var default_item = _.find(available_items, function (item) {
             return item.isDefaultForProfile(profile_id);
         });
@@ -102,20 +101,20 @@ export default Backbone.Collection.extend({
                 );
             }
 
-            //  Set new_itemas available and default for profile_id
+            //  Set new_item as available and default for profile_id
             new_item.setProfileAvailability(profile_id, true, true);
         }
 
         if ( old_item ) {
-            //  Setold_item as available but notdefault for profile_id
-            old_item.setProfileAvailability( profile_id, true, false);
+            //  Set old_item as available but not default for profile_id
+            old_item.setProfileAvailability(profile_id, true, false);
         }
     },
     initialize: function (models, options) {
         this.options = options || {};
         this.proxy_entry = new OptionsDictionaryEntry(null, { proxy: true });
 
-        this.once( 'fully_loaded', function () {
+        this.once('fully_loaded', function () {
             this.validatePositions();
             this.validatePerProfileDefaults();
         }, this);
