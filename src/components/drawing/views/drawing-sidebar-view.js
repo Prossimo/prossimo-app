@@ -226,6 +226,7 @@ export default Marionette.View.extend({
                     dictionary_name += '*';
                     has_hidden_options = true;
                 }
+
                 return {
                     title: dictionary_name,
                     value: value
@@ -318,24 +319,24 @@ export default Marionette.View.extend({
                     source_item.opening
                 );
                 sash_item.opening_size = opening_size_data && f.dimensions_and_area(
-                        opening_size_data.width,
-                        opening_size_data.height,
-                        undefined,
-                        undefined,
-                        opening_size_data.area
-                    );
+                    opening_size_data.width,
+                    opening_size_data.height,
+                    undefined,
+                    undefined,
+                    opening_size_data.area
+                );
                 egress_opening_size_data = this.options.parent_view.active_unit.getSashOpeningSize(
                     source_item.opening,
                     'egress',
                     source_item.original_type
                 );
                 sash_item.egress_opening_size = egress_opening_size_data && f.dimensions_and_area(
-                        egress_opening_size_data.width,
-                        egress_opening_size_data.height,
-                        undefined,
-                        undefined,
-                        egress_opening_size_data.area
-                    );
+                    egress_opening_size_data.width,
+                    egress_opening_size_data.height,
+                    undefined,
+                    undefined,
+                    egress_opening_size_data.area
+                );
 
                 //  Child sections
                 if (source_item.sections.length) {
@@ -547,7 +548,7 @@ export default Marionette.View.extend({
             unit_list: this.collection.map(function (item) {
                 return {
                     is_selected: this.options.parent_view.active_unit &&
-                    item.cid === this.options.parent_view.active_unit.cid,
+                        item.cid === this.options.parent_view.active_unit.cid,
                     reference_id: item.getRefNum(),
                     cid: item.cid,
                     mark: item.get('mark'),

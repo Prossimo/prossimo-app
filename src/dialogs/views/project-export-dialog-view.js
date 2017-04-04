@@ -106,7 +106,7 @@ export default BaseDialogView.extend({
         return year + '-' + month + '-' + date + '_' +
             (this.model.id ? this.model.id + '_' : '') +
             project_name + '_' + quote_name
-            ;
+        ;
     },
     getFilename: function () {
         this.filename = this.getDefaultFilename();

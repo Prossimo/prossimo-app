@@ -477,6 +477,7 @@ const DrawingModule = Marionette.Object.extend({
 });
 
 export default DrawingModule;
+
 export const preview = function (unitModel, options) {
     var result;
     var defaults = {
@@ -505,7 +506,8 @@ export const preview = function (unitModel, options) {
 
     //  If full root changes, preview cache should be erased
     if (
-        !unitModel.preview || !unitModel.preview.result ||
+        !unitModel.preview ||
+        !unitModel.preview.result ||
         full_root_json_string !== unitModel.preview.full_root_json_string
     ) {
         unitModel.preview = {};
@@ -518,7 +520,7 @@ export const preview = function (unitModel, options) {
         module.setState({
             insideView: options.position === 'inside',
             openingView: options.position === 'inside' && !unitModel.isOpeningDirectionOutward() ||
-            options.position === 'outside' && unitModel.isOpeningDirectionOutward(),
+                options.position === 'outside' && unitModel.isOpeningDirectionOutward(),
             inchesDisplayMode: options.inchesDisplayMode,
             hingeIndicatorMode: options.hingeIndicatorMode
         }, false);

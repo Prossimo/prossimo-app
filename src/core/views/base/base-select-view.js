@@ -72,5 +72,4 @@ export default Marionette.View.extend({
             throw new Error('Values should either be array or object');
         }
     }
-
 });

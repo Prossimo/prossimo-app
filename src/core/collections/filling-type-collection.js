@@ -65,13 +65,14 @@ export default Backbone.Collection.extend({
     getByName: function (name) {
         return this.findWhere({name: name});
     },
-    //  TODO:  remove , thisis used only once
+    //  TODO: remove, this is used only once
     getNames: function () {
         return this.models.map(function (item) {
             return item.get('name');
         });
     },
-    //  TODO: weshould add a flag to indicate whetherwe want to// put thedefault item to the topspot in the returned list
+    //  TODO: we should add a flag to indicate whether we want to
+    //  put the default item to the top spot in the returned list
     getAvailableForProfile: function (profile_id) {
         return this.models.filter(function (item) {
             return item.isAvailableForProfile(profile_id);
@@ -130,14 +131,14 @@ export default Backbone.Collection.extend({
     },
     setItemAvailabilityForProfile: function (profile_id, target_item, new_value) {
         if (!this.get(target_item)) {
-            throw new Error('Cannot set item availability: target item does not belong to this collection ');
+            throw new Error('Cannot set item availability: target item does not belong to this collection');
         }
 
         target_item.setProfileAvailability(profile_id, new_value);
     },
     //  new_item could either point to an item within collection, or be an
     //  undefined value, in which case we want to unset the default value
-    //  foragiven profile
+    //  for a given profile
     setItemAsDefaultForProfile: function (profile_id, new_item) {
         var old_item = this.getDefaultForProfile(profile_id);
 
@@ -148,7 +149,7 @@ export default Backbone.Collection.extend({
                 );
             }
 
-            //  Set new_itemas available and default for profile_id
+            //  Set new_item as available and default for profile_id
             new_item.setProfileAvailability(profile_id, true, true);
         }
 

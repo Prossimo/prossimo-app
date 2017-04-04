@@ -89,7 +89,8 @@ export default Marionette.View.extend({
                 title: 'Prices',
                 collection: this.collection,
                 columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing', 'width_mm', 'height_mm',
-                    'original_cost_estimated', 'original_cost', 'original_cost_difference', 'original_currency', 'conversion_rate', 'unit_cost', 'subtotal_cost',
+                    'original_cost_estimated', 'original_cost', 'original_cost_difference', 'original_currency',
+                    'conversion_rate', 'unit_cost', 'subtotal_cost',
                     'supplier_discount', 'unit_cost_discounted', 'subtotal_cost_discounted', 'price_markup',
                     'unit_price', 'subtotal_price', 'discount', 'unit_price_discounted',
                     'subtotal_price_discounted', 'subtotal_profit', 'total_square_feet', 'square_feet_price',
@@ -113,6 +114,7 @@ export default Marionette.View.extend({
                 this.tabs.unit_options.columns,
                 this.tabs.unit_options.unit_options_columns
             );
+
             //  We insert quantity columns at specific positions (after
             //  the corresponding option column)
             if (this.tabs.unit_options.unit_options_quantity_columns.length) {
@@ -218,7 +220,8 @@ export default Marionette.View.extend({
                 this.hot.getSourceData().at(this.selected[i]).destroy();
             }
 
-            //  TODO: do we really need two calls just to unselect?this.selected = [];
+            //  TODO: do we really need two calls just to unselect?
+            this.selected = [];
             this.hot.selectCell(0, 0, 0, 0, false);
             this.hot.deselectCell();
         }
@@ -813,7 +816,7 @@ export default Marionette.View.extend({
                         cell_properties.source = _.map(options, function (option) {
                             return option.get('name');
                         });
-                        //  When we have no options, disable editing
+                    //  When we have no options, disable editing
                     } else {
                         message = profile_id ? '(No Variants)' : '(No Profile)';
 
@@ -866,7 +869,7 @@ export default Marionette.View.extend({
                     if (is_restricted) {
                         cell_properties.readOnly = true;
                         cell_properties.renderer = hotRenderers.getDisabledPropertyRenderer(message);
-                        //  If no restrictions apply, show options
+                    //  If no restrictions apply, show options
                     } else if (options.length) {
                         cell_properties.type = 'dropdown';
                         cell_properties.filter = false;
@@ -879,7 +882,7 @@ export default Marionette.View.extend({
                         if (is_optional) {
                             cell_properties.source.unshift(UNSET_VALUE);
                         }
-                        //  When we have no options, disable editing
+                    //  When we have no options, disable editing
                     } else {
                         message = profile_id ? '(No Variants)' : '(No Profile)';
 
@@ -1094,7 +1097,7 @@ export default Marionette.View.extend({
             //  Ctrl + Y || Ctrl + Shift + Z
             if (isCtrlDown && (event.keyCode === 89 || (event.shiftKey && event.keyCode === 90 ))) {
                 self.onRedo();
-                //  Ctrl + Z
+            //  Ctrl + Z
             } else if (isCtrlDown && event.keyCode === 90) {
                 self.onUndo();
             } else if (!onlyCtrlKeys && !isCtrlDown && event.keyCode === 78) {
@@ -1128,7 +1131,7 @@ export default Marionette.View.extend({
                     rowHeaders: true,
                     rowHeights: function () {
                         return _.contains(self.getActiveTab().columns, 'drawing') ||
-                        _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
+                            _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
                     },
                     colWidths: self.getActiveTabColWidths(),
                     trimDropdown: false,

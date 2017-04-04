@@ -69,7 +69,6 @@ export default Marionette.View.extend({
 
     onRender: function () {
         this.fUplad = this.$el.find('input[type="file"]').fileupload(_.extend({
-            // url: 'http://dev.prossimo.us/api/api' + this.options.apiRouter,
             url: App.settings.get('api_base_path') + this.options.apiRouter,
             beforeSend: function (xhr) {
                 xhr.setRequestHeader('Authorization', 'Bearer ' + window.localStorage.getItem('authToken'));

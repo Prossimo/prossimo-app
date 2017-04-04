@@ -44,13 +44,13 @@ export default Marionette.View.extend({
                 );
         }
 
-        function getFillingArea(width, height, formattor) {
-            formattor = formattor || 'sup';
+        function getFillingArea(width, height, suffix_format) {
+            suffix_format = suffix_format || 'sup';
 
             var result = view.options.show_sizes_in_mm ?
                 format.square_meters(math.square_meters(width, height)) :
                 format.square_feet(math.square_feet(convert.mm_to_inches(width),
-                    convert.mm_to_inches(height)), 2, formattor);
+                    convert.mm_to_inches(height)), 2, suffix_format);
 
             return result;
         }
@@ -253,14 +253,14 @@ export default Marionette.View.extend({
 
                 if (is_dictionary_hidden) {
                     return false;
-                }//  We assume that we have only one option per dictionary,
+                }
+
+                //  We assume that we have only one option per dictionary,
                 //  although in theory it's possible to have multiple
                 var option_name = current_options.length ? (
-
                     this.options.show_supplier_names && current_options[0].entry.get('supplier_name') ||
                     current_options[0].entry.get('name')
-                ) :
-                    false;
+                ) : false;
 
                 return option_name;
             }, this)
@@ -329,7 +329,6 @@ export default Marionette.View.extend({
             product_image: show_drawings ? this.getProductImage() : '',
             show_price: show_price,
             price: show_price ? this.getPrices() : null,
-
             has_dummy_profile: this.model.hasDummyProfile(),
             profile_name: this.model.get('profile_name') || this.model.get('profile_id') || ''
         };
