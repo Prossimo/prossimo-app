@@ -12,7 +12,7 @@ const distPath = config.get('dist:path');
 const isDebug = !config.get('release');
 const isVerbose = config.get('verbose');
 
-const APP_ENTRY = [path.resolve(srcPath, 'main.js'), path.resolve(srcPath, 'less/styles.less')];
+const APP_ENTRY = ['babel-polyfill', path.resolve(srcPath, 'main.js'), path.resolve(srcPath, 'less/styles.less')];
 
 const cssLoader = `css-loader?${JSON.stringify({
     importLoaders: 1,
