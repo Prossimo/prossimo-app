@@ -242,6 +242,7 @@ _.extend(Backbone.Collection.prototype, {
     }
 });
 
+//  Source: https://github.com/amccloud/backbone-safesync
 Backbone.sync = function (method, model, options) {
     let lastXHR = model._lastXHR && model._lastXHR[method];
 
