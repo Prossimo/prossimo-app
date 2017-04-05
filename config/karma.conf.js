@@ -23,7 +23,7 @@ module.exports = {
 
     reporters: ['mocha'],
 
-    webpack: Object.assign({}, webpackConfig, {entry: '', devtool: false}),
+    webpack: Object.assign({}, webpackConfig, {entry: '', devtool: 'eval'}),
 
     webpackMiddleware: {
         noInfo: true
