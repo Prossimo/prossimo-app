@@ -1,4 +1,3 @@
-import Backbone from 'backbone';
 import App from '../src/main';
 import Unit from '../src/core/models/unit';
 import UnitOptionCollection from '../src/core/collections/inline/unit-option-collection';
@@ -6,19 +5,7 @@ import UnitOptionCollection from '../src/core/collections/inline/unit-option-col
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
 
-describe('Unit tests:', function () {
-    it('Mode "no_backend" is true', function () {
-        expect(App.session.get('no_backend')).to.be.true;
-    });
-    it('App.settings.filling_types is ok', function () {
-        expect(App.settings.filling_types.toJSON().length > 0).to.be.true;
-    });
-    it('App.settings.profiles is not empty', function () {
-        expect(App.settings.profiles.toJSON().length > 0).to.be.true;
-    });
-    it('App.settings.dictionaries is not empty', function () {
-        expect(App.settings.dictionaries.toJSON().length > 0).to.be.true;
-    });
+describe('Unit model', function () {
     before(function () {
         //  This is here to avoid creating side effects inside tests.
         //  TODO: we need to get rid of globals eventually
@@ -93,25 +80,35 @@ describe('Unit tests:', function () {
     after(function () {
         delete App.settings;
     });
-    describe('Unit model basic tests', function () {
+
+    it('should have a correctly configured environment', function () {
+        expect(App.session.get('no_backend')).to.be.true;
+        expect(App.settings.filling_types.toJSON().length > 0).to.be.true;
+        expect(App.settings.profiles.toJSON().length > 0).to.be.true;
+        expect(App.settings.dictionaries.toJSON().length > 0).to.be.true;
+    });
+
+    describe('Basic tests', function () {
         let unit = new Unit();
 
-        it('height is 0 upon creation', () => {
+        it('should have default height upon creation', () => {
             expect(unit.get('height')).to.to.equal('0');
         });
-        it('width is 0 upon creation', () => {
+
+        it('should have default width upon creation', () => {
             expect(unit.get('width')).to.to.equal(0);
         });
-        it('quantity is 1 upon creation', () => {
+
+        it('should have default quantity upon creation', () => {
             expect(unit.get('quantity')).to.to.equal(1);
         });
 
-        it('unit_options is a Backbone.Collection instance', () => {
-            expect(new UnitOptionCollection()).to.be.an.instanceof(Backbone.Collection);
+        it('should have unit_options that are an instance of UnitOptionCollection', () => {
+            expect(unit.get('unit_options')).to.be.an.instanceof(UnitOptionCollection);
         });
     });
 
-    describe('Unit parse function', function () {
+    describe('parse function', function () {
         let data_to_set = {
             quantity: 15,
             whatever: true,
@@ -130,20 +127,21 @@ describe('Unit tests:', function () {
 
         let unit = new Unit(data_to_set, {parse: true});
 
-        it('quantity should be correct', () => {
+        it('should have correct quantity', () => {
             expect(unit.get('quantity')).to.to.equal(15);
         });
-        it('whatever should be undefined', () => {
+
+        it('should have undefined "whatever" attribute', () => {
             expect(unit.get('whatever')).to.to.equal(undefined);
         });
 
-        it('unit_options should be a Backbone.Collection instance', () => {
-            expect(unit.get('unit_options') instanceof Backbone.Collection).to.be.ok;
+        it('should have unit_options that are an instance of UnitOptionCollection', () => {
+            expect(unit.get('unit_options')).to.be.an.instanceof(UnitOptionCollection);
         });
     });
 
     //  TODO: this relies on globally available app.settings.profiles
-    describe('Unit toJSON function', function () {
+    describe('toJSON function', function () {
         let data_to_set = {
             quantity: 15,
             whatever: true,
@@ -169,7 +167,7 @@ describe('Unit tests:', function () {
 
         let unit = new Unit(data_to_set, {parse: true});
 
-        it('Unit should be correctly cast to JSON representation', () => {
+        it('should be correctly cast to JSON representation', () => {
             expect(unit.toJSON()).to.contain.any.keys({
                 conversion_rate: 0.9,
                 customer_image: '',
@@ -226,56 +224,54 @@ describe('Unit tests:', function () {
         });
     });
 
-    describe('Unit hasOnlyDefaultAttributes function', function () {
-        let unit_one = new Unit({profile_id: 1});
-        let unit_two = new Unit({profile_id: 1});
-        let unit_three = new Unit({profile_id: 1});
-        let unit_four = new Unit({profile_id: 1});
+    describe('hasOnlyDefaultAttributes function', function () {
+        it('should have only default attributes upon creation', () => {
+            let unit_zero = new Unit({profile_id: 1});
 
-        it('Unit 1 has only default attributes upon creation', () => {
+            expect(unit_zero.hasOnlyDefaultAttributes()).to.be.ok;
+        });
+
+        it('should not have default attributes after setting "mark"', () => {
+            let unit_one = new Unit({profile_id: 1});
+
             expect(unit_one.hasOnlyDefaultAttributes()).to.be.ok;
-        });
-        it('Unit 2 has only default attributes upon creation', () => {
-            expect(unit_two.hasOnlyDefaultAttributes()).to.be.ok;
-        });
-        it('Unit 3 has only default attributes upon creation', () => {
-            expect(unit_three.hasOnlyDefaultAttributes()).to.be.ok;
-        });
-        it('Unit 4 has only default attributes upon creation', () => {
-            expect(unit_four.hasOnlyDefaultAttributes()).to.be.ok;
-        });
-
-        unit_one.set('mark', 'ABCD');
-        unit_two.set('profile_id', 17);
-        unit_three.toggleCircular(unit_three.get('root_section').id, true);
-        unit_four.get('unit_options').reset();
-
-        it('Unit 1 has non-default attributes after calling set', () => {
+            unit_one.set('mark', 'ABCD');
             expect(unit_one.hasOnlyDefaultAttributes()).to.not.be.ok;
         });
-        it('Unit 2 has non-default attributes after changing profile', () => {
+
+        it('should not have default attributes after setting "profile_id"', () => {
+            let unit_two = new Unit({profile_id: 1});
+
+            expect(unit_two.hasOnlyDefaultAttributes()).to.be.ok;
+            unit_two.set('profile_id', 17);
             expect(unit_two.hasOnlyDefaultAttributes()).to.not.be.ok;
         });
-        it('Unit 3 has non-default attributes after making changes to root_section', () => {
+
+        it('should not have default attributes after modifying "root_section"', () => {
+            let unit_three = new Unit({profile_id: 1});
+
+            expect(unit_three.hasOnlyDefaultAttributes()).to.be.ok;
+            unit_three.toggleCircular(unit_three.get('root_section').id, true);
             expect(unit_three.hasOnlyDefaultAttributes()).to.not.be.ok;
         });
-        it('Unit 4 has non-default attributes after making changes to unit_options', () => {
+
+        it('should not have default attributes after resetting unit options', () => {
+            let unit_four = new Unit({profile_id: 1});
+
+            expect(unit_four.hasOnlyDefaultAttributes()).to.be.ok;
+            unit_four.get('unit_options').reset();
             expect(unit_four.hasOnlyDefaultAttributes()).to.not.be.ok;
         });
     });
 
     //  TODO: This relies on globally available app.settings.dictionaries, we need
     //  to get rid of globals eventually
-    describe('Unit getDefaultUnitOptions function', function () {
-        let unit = new Unit({
-            profile_id: 1
-        });
+    describe('getDefaultUnitOptions function', function () {
+        it('should have correct default unit options if created with profile_id=1', () => {
+            let unit = new Unit({
+                profile_id: 1
+            });
 
-        let another_unit = new Unit({
-            profile_id: 17
-        });
-
-        it('getDefaultUnitOptions for unit returns the expected result', () => {
             expect(unit.getDefaultUnitOptions().toJSON()).to.deep.equal([
                 {
                     dictionary_entry_id: 77,
@@ -289,7 +285,12 @@ describe('Unit tests:', function () {
                 }
             ]);
         });
-        it('getDefaultUnitOptions for another unit returns the expected result', () => {
+
+        it('should have correct default unit options if created with profile_id=17', () => {
+            let another_unit = new Unit({
+                profile_id: 17
+            });
+
             expect(another_unit.getDefaultUnitOptions().toJSON()).to.deep.equal([
                 {
                     dictionary_entry_id: 14,
@@ -305,17 +306,24 @@ describe('Unit tests:', function () {
         });
     });
 
-    describe('Unit getCurrentUnitOptions, getCurrentUnitOptionsByDictionaryId, getUnitOptionsGroupedByPricingScheme functions', function () {
-        let unit = new Unit({
-            profile_id: 1
-        });
-        let current_options = unit.getCurrentUnitOptions();
-        let first_option = current_options[0];
+    // describe('getCurrentUnitOptions, getCurrentUnitOptionsByDictionaryId, getUnitOptionsGroupedByPricingScheme functions', function () {
+    describe('getCurrentUnitOptions function', function () {
+        it('should have exactly 2 unit options if created with profile_id=1', () => {
+            let unit = new Unit({
+                profile_id: 1
+            });
+            let current_options = unit.getCurrentUnitOptions();
 
-        it('getCurrentUnitOptions returns array with 2 elements', () => {
             expect(current_options.length).to.to.equal(2);
         });
-        it('First option contains correct dictionary link', () => {
+
+        it('should have unit option (at position 0) that belongs to a correct dictionary', () => {
+            let unit = new Unit({
+                profile_id: 1
+            });
+            let current_options = unit.getCurrentUnitOptions();
+            let first_option = current_options[0];
+
             expect(first_option.dictionary.toJSON()).to.deep.equal({
                 is_hidden: false,
                 name: 'Interior Handle',
@@ -324,7 +332,14 @@ describe('Unit tests:', function () {
                 rules_and_restrictions: '[]'
             });
         });
-        it('First option contains correct entry link', () => {
+
+        it('should have unit option (at position 0) that is serialized to json as expected', () => {
+            let unit = new Unit({
+                profile_id: 1
+            });
+            let current_options = unit.getCurrentUnitOptions();
+            let first_option = current_options[0];
+
             expect(first_option.entry.toJSON()).to.deep.equal({
                 data: '{}',
                 dictionary_entry_profiles: [
@@ -348,88 +363,119 @@ describe('Unit tests:', function () {
                 supplier_name: ''
             });
         });
+    });
 
-        let options_by_dictionary = unit.getCurrentUnitOptionsByDictionaryId(17);
+    describe('getCurrentUnitOptionsByDictionaryId function', function () {
+        it('should have exactly 1 option from dictionary with id=17', () => {
+            let unit = new Unit({
+                profile_id: 1
+            });
+            let options_by_dictionary = unit.getCurrentUnitOptionsByDictionaryId(17);
 
-        it('getCurrentUnitOptionsByDictionaryId returns array with 1 element', () => {
             expect(options_by_dictionary.length).to.to.equal(1);
         });
-        it('getCurrentUnitOptionsByDictionaryId returns the expected entry', () => {
+
+        it('should return the expected entry for dictionary with id=17', () => {
+            let unit = new Unit({
+                profile_id: 1
+            });
+            let current_options = unit.getCurrentUnitOptions();
+            let first_option = current_options[0];
+            let options_by_dictionary = unit.getCurrentUnitOptionsByDictionaryId(17);
+
             expect(JSON.stringify(options_by_dictionary[0].entry.toJSON())).to.to.equal(JSON.stringify(first_option.entry.toJSON()));
         });
+    });
 
-        let grouped_by_scheme = unit.getUnitOptionsGroupedByPricingScheme();
+    describe('getUnitOptionsGroupedByPricingScheme function', function () {
+        it('should have exactly 2 options inside PER_ITEM group', () => {
+            let unit = new Unit({
+                profile_id: 1
+            });
+            let grouped_by_scheme = unit.getUnitOptionsGroupedByPricingScheme();
 
-        it('PER_ITEM group contains 2 elements', () => {
             expect(grouped_by_scheme.PER_ITEM.length).to.to.equal(2);
         });
-        it('PRICING_GRIDS group contains 0 elements', () => {
+
+        it('should not have any options inside PRICING_GRIDS group', () => {
+            let unit = new Unit({
+                profile_id: 1
+            });
+            let grouped_by_scheme = unit.getUnitOptionsGroupedByPricingScheme();
+
             expect(grouped_by_scheme.PRICING_GRIDS.length).to.to.equal(0);
         });
     });
 
-    describe('Unit persistOption function', function () {
-        let unit = new Unit({
-            profile_id: 1
-        });
-        let current_options = unit.getCurrentUnitOptions();
+    describe('persistOption function', function () {
+        it('should have correct options upon creation', () => {
+            let unit = new Unit({
+                profile_id: 1
+            });
+            let current_options = unit.getCurrentUnitOptions();
 
-        it('getCurrentUnitOptions returns array with 2 elements', () => {
+            //  getCurrentUnitOptions returns array with 2 elements
             expect(current_options.length).to.to.equal(2);
-        });
-        it('First option is from Interior Handle dictionary', () => {
+            //  First option is from Interior Handle dictionary
             expect(current_options[0].dictionary.get('name')).to.to.equal('Interior Handle');
-        });
-        it('First option is Red Metal Handle', () => {
+            //  First option is Red Metal Handle
             expect(current_options[0].entry.get('name')).to.to.equal('Red Metal Handle');
         });
 
-        //  Persist the same Red Metal Handle we already have there
-        unit.persistOption(17, 77);
-        current_options = unit.getCurrentUnitOptions();
+        it('should correctly persist same Red Metal Handle we already have', () => {
+            let unit = new Unit({
+                profile_id: 1
+            });
+            unit.persistOption(17, 77);
+            let current_options = unit.getCurrentUnitOptions();
 
-        it('getCurrentUnitOptions still returns array with 2 elements', () => {
+            //  getCurrentUnitOptions still returns array with 2 elements
             expect(current_options.length).to.to.equal(2);
-        });
-        it('First option is still Red Metal Handle', () => {
+            //  First option is still Red Metal Handle
             expect(current_options[0].entry.get('name')).to.to.equal('Red Metal Handle');
         });
 
-        //  Persist some different handle, it should replace the existing one
-        unit.persistOption(17, 14);
-        current_options = unit.getCurrentUnitOptions();
+        it('should correctly persist some different handle, and it should replace the existing one', () => {
+            let unit = new Unit({
+                profile_id: 1
+            });
+            unit.persistOption(17, 14);
+            let current_options = unit.getCurrentUnitOptions();
 
-        it('getCurrentUnitOptions still returns array with 2 elements', () => {
+            //  getCurrentUnitOptions still returns array with 2 elements
             expect(current_options.length).to.to.equal(2);
-        });
-        it('First option is now White Plastic Handle', () => {
+            //  First option is now White Plastic Handle
             expect(current_options[0].entry.get('name')).to.to.equal('White Plastic Handle');
-        });
-        it('First option quantity is 1', () => {
+            //  First option quantity is 1
             expect(current_options[0].quantity).to.to.equal(1);
         });
 
-        //  Don't change the option, but update its quantity
-        unit.persistOption(17, 14, 5);
-        current_options = unit.getCurrentUnitOptions();
+        it('should correctly persist option quantity without modifying the option', () => {
+            let unit = new Unit({
+                profile_id: 1
+            });
+            unit.persistOption(17, 14);
+            unit.persistOption(17, 14, 5);
+            let current_options = unit.getCurrentUnitOptions();
 
-        it('getCurrentUnitOptions still returns array with 2 elements', () => {
+            //  getCurrentUnitOptions still returns array with 2 elements
             expect(current_options.length).to.to.equal(2);
-        });
-        it('First option is still White Plastic Handle', () => {
+            //  First option is still White Plastic Handle
             expect(current_options[0].entry.get('name')).to.to.equal('White Plastic Handle');
-        });
-        it('First option quantity is now 5', () => {
+            //  First option quantity is now 5
             expect(current_options[0].quantity).to.to.equal(5);
         });
-        //  Remove the option
-        unit.persistOption(17, false);
-        current_options = unit.getCurrentUnitOptions();
 
-        it('getCurrentUnitOptions now returns array with only 1 element', () => {
+        it('should correctly remove option', () => {
+            let unit = new Unit({
+                profile_id: 1
+            });
+            unit.persistOption(17, false);
+            let current_options = unit.getCurrentUnitOptions();
+
+            //  getCurrentUnitOptions now returns array with only 1 element
             expect(current_options.length).to.to.equal(1);
-        });
-        it('First option is Blue Metal Hande - External', () => {
+            //  First option is now Blue Metal Hande - External
             expect(current_options[0].entry.get('name')).to.to.equal('Blue Metal Hande - External');
         });
     });
