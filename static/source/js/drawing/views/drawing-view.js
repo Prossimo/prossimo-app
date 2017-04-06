@@ -58,6 +58,8 @@ var app = app || {};
             $section_control: '#section_control',
             $filling_select: '#filling-select',
             $filling_tools: '#filling-tools',
+            $filling_clone: '#filling-clone',
+            $filling_sync: '#filling-sync',
             $undo: '#undo',
             $redo: '#redo',
             $sash_types: '.change-sash-type',
@@ -78,7 +80,8 @@ var app = app || {};
             'click .toggle-arched': 'handleArchedClick',
             'click .toggle-circular': 'handleCircularClick',
             'click #glazing-bars-popup': 'handleGlazingBarsPopupClick',
-            'click #sash-clone': 'handleSashCloneClick',
+            'click @ui.$filling_clone': 'handleFillingCloneClick',
+            'click @ui.$filling_sync': 'handleFillingSyncClick',
             'click @ui.$undo': 'handleUndoClick',
             'click @ui.$redo': 'handleRedoClick',
             // Tap
@@ -89,7 +92,8 @@ var app = app || {};
             'tap .toggle-arched': 'handleArchedClick',
             'tap .toggle-circular': 'handleCircularClick',
             'tap #glazing-bars-popup': 'handleGlazingBarsPopupClick',
-            'tap #sash-clone': 'handleSashCloneClick',
+            'tap @ui.$filling_clone': 'handleFillingCloneClick',
+            'tap @ui.$filling_sync': 'handleFillingSyncClick',
             'tap @ui.$undo': 'handleUndoClick',
             'tap @ui.$redo': 'handleRedoClick',
             // Others
@@ -128,14 +132,21 @@ var app = app || {};
             return this.undo_manager.handler.redo();
         },
         handleCanvasClick: function (e) {
+
             if (this.isCloningFilling()) {
-                this.cloneSashDismiss();
+                this.cloneFillingDismiss();
+                e.preventDefault();
+
+            } else if (this.isSyncingFilling()) {
+                this.syncFillingDismiss();
                 e.preventDefault();
             }
         },
         handleCanvasKeyDown: function (e) {
             if (e.key === 'Escape' && this.isCloningFilling()) {
-                this.cloneSashDismiss();
+                this.cloneFillingDismiss();
+            } else if (e.key === 'Escape' && this.isSyncingFilling()) {
+                this.syncFillingDismiss();
             }
 
             if (this.module && !this.state.inputFocused) {
@@ -181,9 +192,15 @@ var app = app || {};
                 .setSection( this.state.selectedSashId )
                 .showModal();
         },
-        handleSashCloneClick: function () {
+        handleFillingCloneClick: function () {
             if (this.state.selectedSashId) {
-                this.cloneSashStart(this.state.selectedSashId);
+                this.cloneFillingStart(this.state.selectedSashId);
+            }
+            // Continues at this.bindModuleEvents()
+        },
+        handleFillingSyncClick: function () {
+            if (this.state.selectedSashId) {
+                this.syncFillingStart(this.state.selectedSashId);
             }
             // Continues at this.bindModuleEvents()
         },
@@ -354,7 +371,11 @@ var app = app || {};
                 if (!targetSashId || targetSashId === sourceSashId) { this.deselectAll(); return; }
 
                 if (this.isCloningFilling()) {
-                    this.cloneSashFinish(targetSashId);
+                    this.cloneFillingFinish(targetSashId);
+
+                } else if (this.isSyncingFilling()) {
+                    this.syncFillingFinish(targetSashId);
+
                 } else {
                     this.deselectAll();
                     this.setState({ selectedSashId: data.newValue });
@@ -595,7 +616,7 @@ var app = app || {};
             var isArched = selectedSash && selectedSash.arched;
             var isCircular = selectedSash && selectedSash.circular;
 
-            if (this.isCloningFilling()) {
+            if (this.isCloningFilling() || this.isSyncingFilling()) {
                 document.body.style.cursor = 'copy';
             } else {
                 document.body.style.cursor = 'auto';
@@ -709,12 +730,12 @@ var app = app || {};
                 selectedSashId: null
             });
         },
-        cloneSashStart: function (sourceSashId) {
+        cloneFillingStart: function (sourceSashId) {
             var selectedSash = this.model.getSection(sourceSashId);
             if (!selectedSash) { return; }
 
             this.setState({
-                cloneSashSource: {
+                cloneFillingSource: {
                     bars: selectedSash.bars,
                     sashType: selectedSash.sashType,
                     fillingType: selectedSash.fillingType,
@@ -722,32 +743,75 @@ var app = app || {};
                 }
             });
         },
-        cloneSashFinish: function (targetSashId) {
+        cloneFillingFinish: function (targetSashId) {
             if (!targetSashId || !this.isCloningFilling()) { return; }
-            var bars = this.state.cloneSashSource.bars;
-            var sashType = this.state.cloneSashSource.sashType;
-            var fillingType = this.state.cloneSashSource.fillingType;
-            var fillingName = this.state.cloneSashSource.fillingName;
+            var sourceBars = this.state.cloneFillingSource.bars;
+            var sourceSashType = this.state.cloneFillingSource.sashType;
+            var sourceFillingType = this.state.cloneFillingSource.fillingType;
+            var sourceFillingName = this.state.cloneFillingSource.fillingName;
 
-            if (bars) {
-                this.model.setSectionBars(targetSashId, bars);
-            }
-            if (sashType) {
-                this.model.setSectionSashType(targetSashId, sashType);
-            }
-            if (fillingType && fillingName) {
-                this.model.setFillingType(targetSashId, fillingType, fillingName);
+            if (sourceBars) { this.model.setSectionBars(targetSashId, sourceBars); }
+            if (sourceSashType) { this.model.setSectionSashType(targetSashId, sourceSashType); }
+            if (sourceFillingType && sourceFillingName) {
+                this.model.setFillingType(targetSashId, sourceFillingType, sourceFillingName);
             }
 
-            this.cloneSashDismiss();
+            this.cloneFillingDismiss();
         },
-        cloneSashDismiss: function () {
+        cloneFillingDismiss: function () {
             this.deselectAll();
             this.module.deselectAll();
-            this.setState({ cloneSashSource: null });
+            this.setState({ cloneFillingSource: null });
         },
         isCloningFilling: function () {
-            return !!this.state.cloneSashSource;
+            return !!this.state.cloneFillingSource;
+        },
+        syncFillingStart: function (sourceSashId) {
+            var selectedSash = this.model.getSection(sourceSashId);
+            if (!selectedSash) { return; }
+
+            this.setState({
+                syncFillingSource: {
+                    id: sourceSashId,
+                    bars: selectedSash.bars
+                }
+            });
+        },
+        syncFillingFinish: function (targetSashId) {
+            if (!targetSashId || !this.isSyncingFilling()) { return; }
+            var sourceSashId = this.state.syncFillingSource.id;
+            var sourceBars = this.state.syncFillingSource.bars;
+            var emptyBars = { horizontal: [], vertical: [] };
+            var hasSourceBars = this.model.hasSectionBars(sourceSashId);
+            var hasTargetBars = this.model.hasSectionBars(targetSashId);
+
+            // Copy or erase bars as necessary
+            if (hasSourceBars && !hasTargetBars) {
+                this.model.setSectionBars(targetSashId, sourceBars);
+                hasTargetBars = true;
+
+            } else if (!hasSourceBars && hasTargetBars) {
+                this.model.setSectionBars(targetSashId, emptyBars);
+                hasTargetBars = false;
+            }
+
+            // Adjust bar positions
+            if (hasSourceBars && hasTargetBars) {
+                this.model.adjustBars(targetSashId, {
+                    referenceSectionId: sourceSashId,
+                    flipBarsX: !this.isInsideView()
+                });
+            }
+
+            this.syncFillingDismiss();
+        },
+        syncFillingDismiss: function () {
+            this.deselectAll();
+            this.module.deselectAll();
+            this.setState({ syncFillingSource: null });
+        },
+        isSyncingFilling: function () {
+            return !!this.state.syncFillingSource;
         }
     });
 })();
