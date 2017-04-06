@@ -21,26 +21,30 @@ var app = app || {};
         setCurrentQuote: function (new_id) {
             app.current_quote = this.collection.get(new_id);
 
-            if ( !app.current_quote ) {
-                return;
-            }
-
             app.vent.trigger('current_quote_changed');
-            app.current_quote.trigger('set_active');
 
-            this.stopListening(app.current_quote);
+            if ( app.current_quote ) {
+                app.current_quote.trigger('set_active');
 
-            if ( app.current_quote._wasLoaded ) {
-                app.vent.trigger('quote_selector:load_current:stop');
-            } else {
-                this.listenToOnce(app.current_quote, 'fully_loaded', function () {
+                this.stopListening(app.current_quote);
+
+                if ( app.current_quote._wasLoaded ) {
                     app.vent.trigger('quote_selector:load_current:stop');
-                }, this);
-            }
+                } else {
+                    this.listenToOnce(app.current_quote, 'fully_loaded', function () {
+                        app.vent.trigger('quote_selector:load_current:stop');
+                    }, this);
+                }
 
-            this.listenTo(app.current_quote, 'remove', function () {
-                this.selectFirstOrDefaultQuote();
-            });
+                this.listenTo(app.current_quote, 'remove', function () {
+                    this.selectFirstOrDefaultQuote();
+                });
+            } else {
+                //  Even if no quote is selected (like in a case when project
+                //  has no quotes) we still want this event so the current
+                //  screen will reload
+                app.vent.trigger('quote_selector:load_current:stop');
+            }
 
             this.render();
         },
@@ -72,6 +76,8 @@ var app = app || {};
                 this.setCurrentQuote(first_quote.id);
             } else if ( default_quote && default_quote.id ) {
                 this.setCurrentQuote(default_quote.id);
+            } else {
+                this.setCurrentQuote(undefined);
             }
         },
         //  When project was changed, we want to select a default quote
