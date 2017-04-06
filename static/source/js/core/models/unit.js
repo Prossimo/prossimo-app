@@ -1037,9 +1037,7 @@ var app = app || {};
         },
         hasSectionBars: function (sectionId, options) {
             if (!sectionId || (options && !options.types)) { return; }
-            if (!options) {
-                options = { types: 'any' }
-            }
+            if (!options) { options = { types: 'any' }; }
 
             var section = this.getSection(sectionId);
             var types = options.types;
@@ -1058,7 +1056,7 @@ var app = app || {};
             } else if (types === 'vertical') {
                 return section.bars.vertical.length !== 0;
 
-            } else { return; }
+            }
         },
         adjustBars: function (adjustSectionId, options) {
             if (!adjustSectionId || !(options && options.referenceSectionId)) { return; }
@@ -1140,7 +1138,7 @@ var app = app || {};
                     var distance = referenceX - adjustAlignmentBarX;
                     var isMinimal = Math.abs(distance) < Math.abs(minDistance);
                     var isWithinBounds = adjustAlignmentBarX + distance <= adjustSectionRightX;
-                    return (isMinimal && isWithinBounds) ? distance : minDistance
+                    return (isMinimal && isWithinBounds) ? distance : minDistance;
                 }, 999999);
                 if (options.flipBarsX) { adjustmentX *= -1; }
             }
@@ -1150,7 +1148,7 @@ var app = app || {};
                     var distance = referenceY - adjustAlignmentBarY;
                     var isMinimal = Math.abs(distance) < Math.abs(minDistance);
                     var isWithinBounds = adjustAlignmentBarY + distance <= adjustSectionBottomY;
-                    return (isMinimal && isWithinBounds) ? distance : minDistance
+                    return (isMinimal && isWithinBounds) ? distance : minDistance;
                 }, 999999);
             }
 
