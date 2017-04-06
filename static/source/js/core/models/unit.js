@@ -1064,7 +1064,7 @@ var app = app || {};
             if (!adjustSectionId || !(options && options.referenceSectionId)) { return; }
             if (!this.hasSectionBars(adjustSectionId) || !this.hasSectionBars(options.referenceSectionId)) { return; }
 
-            // Algorithm for horizontal bars (same for vertical):
+            // Algorithm for horizontal bars (same for vertical, plus the option to flip the bars):
             // 1. Determine whether the sections are eligible for bar adjustment (have relevant bars, intersect etc.)
             // 2. Determine whether the section being adjusted is above or below the reference section
             //    - If above, align adjusted section so that its last horizontal bar matches up
@@ -1087,9 +1087,11 @@ var app = app || {};
                 return bars;
             };
             var adjustBars = (options.flipBarsX) ?
-                    flipBarsX(adjustSection.bars, adjustGeometry.width) : adjustSection.bars;
+                    flipBarsX(adjustSection.bars, adjustGeometry.width) :
+                    adjustSection.bars;
             var referenceBars = (options.flipBarsX) ?
-                    flipBarsX(referenceSection.bars, referenceGeometry.width) : referenceSection.bars;
+                    flipBarsX(referenceSection.bars, referenceGeometry.width) :
+                    referenceSection.bars;
             var hasAdjustHorizontalBars = this.hasSectionBars(adjustSectionId, { types: 'horizontal' });
             var hasAdjustVerticalBars = this.hasSectionBars(adjustSectionId, { types: 'vertical' });
             var hasReferenceHorizontalBars = this.hasSectionBars(referenceSectionId, { types: 'horizontal' });
