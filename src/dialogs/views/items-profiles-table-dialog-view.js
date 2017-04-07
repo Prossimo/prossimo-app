@@ -14,6 +14,9 @@ export default BaseDialogView.extend({
     ui: {
         $hot_container: '.handsontable-container'
     },
+    events: {
+        'shown.bs.modal': 'onModalShown'
+    },
     //  We have two strategies here.
     //  1. If we set or unset some option as a default for some profile,
     //  we only want to do the corresponding REST API call, and don't want
@@ -250,9 +253,5 @@ export default BaseDialogView.extend({
 
             this.options.items_filtered = this.options.collection.filter(this.options.filter_condition);
         }
-
-        this.$el.on('shown.bs.modal', () => {
-            this.onModalShown();
-        });
     }
 });
