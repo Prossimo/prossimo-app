@@ -217,6 +217,11 @@ export default BaseDialogView.extend({
             });
         }
     },
+    onModalShown: function () {
+        if ( this.hot ) {
+            this.hot.render();
+        }
+    },
     onBeforeDestroy: function () {
         if (this.hot) {
             this.hot.destroy();
@@ -245,5 +250,9 @@ export default BaseDialogView.extend({
 
             this.options.items_filtered = this.options.collection.filter(this.options.filter_condition);
         }
+
+        this.$el.on('shown.bs.modal', () => {
+            this.onModalShown();
+        });
     }
 });

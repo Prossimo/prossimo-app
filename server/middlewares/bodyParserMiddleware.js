@@ -15,7 +15,7 @@ module.exports.bodyParserJsonMiddleware = function () {
         if (isMultipartRequest(req)) {
             return next();
         }
-        return bodyParser.json()(req, res, next);
+        return bodyParser.json({limit: '10mb'})(req, res, next);
     };
 };
 
@@ -24,6 +24,6 @@ module.exports.bodyParserUrlencodedMiddleware = function () {
         if (isMultipartRequest(req)) {
             return next();
         }
-        return bodyParser.urlencoded({extended: true})(req, res, next);
+        return bodyParser.urlencoded({limit: '10mb', extended: true})(req, res, next);
     };
 };
