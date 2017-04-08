@@ -716,28 +716,28 @@ describe('Unit model tests: ', function () {
         sash_list = unit.getSashList();
 
         //  Opening
-        equal(sash_list[0].opening.width.toFixed(), 2451, 'Operable sash opening width');
-        equal(sash_list[0].opening.height.toFixed(), 1892, 'Operable sash opening height');
+        equal(sash_list[0].opening.width.toFixed(), '2451', 'Operable sash opening width');
+        equal(sash_list[0].opening.height.toFixed(), '1892', 'Operable sash opening height');
 
         //  Sash frame
-        equal(sash_list[0].sash_frame.width.toFixed(), 2519, 'Operable sash sash frame width');
-        equal(sash_list[0].sash_frame.height.toFixed(), 1960, 'Operable sash sash frame height');
+        equal(sash_list[0].sash_frame.width.toFixed(), '2519', 'Operable sash sash frame width');
+        equal(sash_list[0].sash_frame.height.toFixed(), '1960', 'Operable sash sash frame height');
 
         //  Glazing
-        equal(sash_list[0].filling.width.toFixed(), 2355, 'Operable sash glazing width');
-        equal(sash_list[0].filling.height.toFixed(), 1796, 'Operable sash glazing height');
+        equal(sash_list[0].filling.width.toFixed(), '2355', 'Operable sash glazing width');
+        equal(sash_list[0].filling.height.toFixed(), '1796', 'Operable sash glazing height');
 
         //  Now we split operable sash with a horizontal mullion
         unit.splitSection(root_id, 'horizontal');
         sash_list = unit.getSashList();
 
         //  Top section
-        equal(sash_list[0].sections[0].filling.width.toFixed(), 2355, 'Top section glazing width');
-        equal(sash_list[0].sections[0].filling.height.toFixed(), 852, 'Top section glazing height');
+        equal(sash_list[0].sections[0].filling.width.toFixed(), '2355', 'Top section glazing width');
+        equal(sash_list[0].sections[0].filling.height.toFixed(), '852', 'Top section glazing height');
 
         //  Bottom section (is identical to the top one)
-        equal(sash_list[0].sections[1].filling.width.toFixed(), 2355, 'Bottom section glazing width');
-        equal(sash_list[0].sections[1].filling.height.toFixed(), 852, 'Bottom section glazing height');
+        equal(sash_list[0].sections[1].filling.width.toFixed(), '2355', 'Bottom section glazing width');
+        equal(sash_list[0].sections[1].filling.height.toFixed(), '852', 'Bottom section glazing height');
     });
     describe('hasGlazingBars function', function () {
         let unit_1 = new Unit({
@@ -961,9 +961,9 @@ describe('Unit model tests: ', function () {
         );
 
         //  Now compare with pre-calculated values
-        equal(stats.profile_total.weight.toFixed(3), 17.370, 'Profile weight matches pre-calculated value');
-        equal(stats.glasses.weight.toFixed(3), 0.182, 'Glasses weight matches pre-calculated value');
-        equal(stats.unit_total.weight.toFixed(3), 0.182 + 17.370, 'Total unit weight matches pre-calculated value');
+        equal(stats.profile_total.weight.toFixed(3), '17.370', 'Profile weight matches pre-calculated value');
+        equal(stats.glasses.weight.toFixed(3), '0.182', 'Glasses weight matches pre-calculated value');
+        equal(stats.unit_total.weight.toFixed(3), `${0.182 + 17.370}`, 'Total unit weight matches pre-calculated value');
 
         delete App.settings;
     });

@@ -1,7 +1,8 @@
 import _ from 'underscore';
-import Backbone from 'backbone';
 import App from '../src/main';
 import Profile from '../src/core/models/profile';
+import PricingGridCollection from '../src/core/collections/inline/pricing-grid-collection';
+import PricingEquationParamsCollection from '../src/core/collections/inline/pricing-equation-params-collection';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
@@ -13,12 +14,12 @@ test('Profile tests', function () {
         equal(profile.get('unit_type'), 'Window', 'unit_type is Window upon creation');
 
         ok(
-            profile.get('pricing_grids') instanceof Backbone.Collection,
-            'pricing_grids is an instance of Backbone.Collection upon profile creation'
+            profile.get('pricing_grids') instanceof PricingGridCollection,
+            'pricing_grids is an instance of PricingGridCollection upon profile creation'
         );
         ok(
-            profile.get('pricing_equation_params') instanceof Backbone.Collection,
-            'pricing_equation_params is an instance of Backbone.Collection upon profile creation'
+            profile.get('pricing_equation_params') instanceof PricingEquationParamsCollection,
+            'pricing_equation_params is an instance of PricingEquationParamsCollection upon profile creation'
         );
     });
 
@@ -60,7 +61,7 @@ test('Profile tests', function () {
         }, {parse: true});
 
         equal(profile.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
-        ok(profile.get('pricing_grids') instanceof Backbone.Collection, 'pricing_grids is a Backbone.Collection object');
+        ok(profile.get('pricing_grids') instanceof PricingGridCollection, 'pricing_grids is a PricingGridCollection object');
         deepEqual(
             profile.get('pricing_grids').toJSON(),
             [
@@ -84,8 +85,8 @@ test('Profile tests', function () {
             'pricing_grids should be parsed properly'
         );
         ok(
-            profile.get('pricing_equation_params') instanceof Backbone.Collection,
-            'pricing_equation_params is a Backbone.Collection object'
+            profile.get('pricing_equation_params') instanceof PricingEquationParamsCollection,
+            'pricing_equation_params is a PricingEquationParamsCollection object'
         );
         deepEqual(
             profile.get('pricing_equation_params').get('param_a'),
@@ -100,7 +101,7 @@ test('Profile tests', function () {
         }, {parse: true});
 
         equal(another_profile.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
-        ok(another_profile.get('pricing_grids') instanceof Backbone.Collection, 'pricing_grids is a Backbone.Collection object');
+        ok(another_profile.get('pricing_grids') instanceof PricingGridCollection, 'pricing_grids is a PricingGridCollection object');
         //  Second is similar, but the first one is not, this is intended
         deepEqual(
             another_profile.get('pricing_grids').at(1).toJSON(),
@@ -108,8 +109,8 @@ test('Profile tests', function () {
             'pricing_grids second entry should be similar to source data first entry'
         );
         ok(
-            another_profile.get('pricing_equation_params') instanceof Backbone.Collection,
-            'pricing_equation_params is a Backbone.Collection object'
+            another_profile.get('pricing_equation_params') instanceof PricingEquationParamsCollection,
+            'pricing_equation_params is a PricingEquationParamsCollection object'
         );
         deepEqual(
             another_profile.get('pricing_equation_params').get('param_a'),
@@ -170,9 +171,8 @@ test('Profile tests', function () {
             {parse: true}
         );
 
-        deepEqual(
-            default_profile.toJSON(),
-            {
+        it('Default profile should be properly cast to JSON', () => {
+            expect(default_profile.toJSON()).to.containSubset({
                 clear_width_deduction: 0,
                 frame_corners: '',
                 frame_u_value: 0,
@@ -222,13 +222,11 @@ test('Profile tests', function () {
                 threshold_width: 20,
                 unit_type: 'Window',
                 weight_per_length: 0
-            },
-            'Default profile should be properly cast to JSON'
-        );
+            });
+        });
 
-        deepEqual(
-            predefined_profile.toJSON(),
-            {
+        it('Predefined profile should be properly cast to JSON', () => {
+            expect(predefined_profile.toJSON()).to.containSubset({
                 clear_width_deduction: 0,
                 frame_corners: '',
                 frame_u_value: 0,
@@ -278,9 +276,8 @@ test('Profile tests', function () {
                 threshold_width: 33,
                 unit_type: 'Window',
                 weight_per_length: 0
-            },
-            'Predefined profile should be properly cast to JSON'
-        );
+            });
+        });
     });
 
 

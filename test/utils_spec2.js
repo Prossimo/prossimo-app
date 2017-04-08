@@ -1,4 +1,3 @@
-/* eslint-env mocha */
 import _ from 'underscore';
 import {angle, convert, format, math, parseFormat, vector2d} from '../src/utils';
 
@@ -47,13 +46,13 @@ test('Utils.js tests: ', function () {
         test('dimension_mm', function () {
             let f = format;
 
-            equal(f.dimension_mm(2500), '2,500 mm', 'Expected value is 2,500 mm');
+            equal(f.dimension_mm(2500), '2500 mm', 'Expected value is 2500 mm');
             equal(f.dimension_mm(33.3), '33 mm', 'Expected value is 33 mm');
         });
         test('dimensions_mm', function () {
             let f = format;
 
-            equal(f.dimensions_mm(2500, 1300), '2,500 × 1,300', 'Expected value is 2,500 × 1,300');
+            equal(f.dimensions_mm(2500, 1300), '2500 × 1300', 'Expected value is 2500 × 1300');
         });
         test('dimension_in', function () {
             let f = format;
@@ -201,18 +200,18 @@ test('Utils.js tests: ', function () {
             equal(p.dimension('4’'), 48, 'Expected value is 48');
 
             //  In metric
-            equal(p.dimension('30.5 mm').toFixed(5), 1.20079, 'Expected value is 1.2');
-            equal(p.dimension('4.5 mm').toFixed(5), 0.17717, 'Expected value is 0.17');
-            equal(p.dimension(' 30mm ').toFixed(5), 1.18110, 'Expected value is 1.18');
-            equal(p.dimension('303.5mm').toFixed(5), 11.94882, 'Expected value is 11.95');
-            equal(p.dimension('303,5mm').toFixed(5), 119.48819, 'Expected value is 119.49');
-            equal(p.dimension('3,303.5mm').toFixed(5), 130.05906, 'Expected value is 130.06');
-            equal(p.dimension('60 - 4 mm').toFixed(5), 0.15748, 'Expected value is 0.15');
-            equal(p.dimension('60  4 mm').toFixed(5), 0.15748, 'Expected value is 0.15');
-            equal(p.dimension('60\'4 mm').toFixed(5), 2.36220, 'Expected value is 2.36');
+            equal(p.dimension('30.5 mm').toFixed(5), '1.20079', 'Expected value is 1.2');
+            equal(p.dimension('4.5 mm').toFixed(5), '0.17717', 'Expected value is 0.17');
+            equal(p.dimension(' 30mm ').toFixed(5), '1.18110', 'Expected value is 1.18');
+            equal(p.dimension('303.5mm').toFixed(5), '11.94882', 'Expected value is 11.95');
+            equal(p.dimension('303,5mm').toFixed(5), '119.48819', 'Expected value is 119.49');
+            equal(p.dimension('3,303.5mm').toFixed(5), '130.05906', 'Expected value is 130.06');
+            equal(p.dimension('60 - 4 mm').toFixed(5), '0.15748', 'Expected value is 0.15');
+            equal(p.dimension('60  4 mm').toFixed(5), '0.15748', 'Expected value is 0.15');
+            equal(p.dimension('60\'4 mm').toFixed(5), '2.36220', 'Expected value is 2.36');
 
-            equal(p.dimension(' 30m ').toFixed(5), 1181.10236, 'Expected value is 1181.1');
-            equal(p.dimension('4.5 cm').toFixed(5), 1.77165, 'Expected value is 1.77');
+            equal(p.dimension(' 30m ').toFixed(5), '1181.10236', 'Expected value is 1181.1');
+            equal(p.dimension('4.5 cm').toFixed(5), '1.77165', 'Expected value is 1.77');
         });
         test('dimensions', function () {
             let p = parseFormat;

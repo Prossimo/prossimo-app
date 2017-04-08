@@ -31,6 +31,12 @@ global.instanceOf = (actual, expected, message = 'no_mess') => {
     });
 };
 
+global.containSubset = (actual, expected, message = 'no_mess') => {
+    it(message, () => {
+        expect(actual).to.containSubset(expected);
+    });
+};
+
 global.test = (message, callback) => {
     describe(message, callback);
 };

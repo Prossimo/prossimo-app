@@ -1,6 +1,7 @@
-import Backbone from 'backbone';
 import App from '../src/main';
 import UnitOptionCollection from '../src/core/collections/inline/unit-option-collection';
+import UnitOption from '../src/core/models/inline/unit-option';
+import {assert} from 'chai';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
@@ -19,7 +20,7 @@ test('Unit option collection test', function () {
     test('UnitOptionCollection basic tests', function () {
         let unit_option_collection = new UnitOptionCollection(null, {parse: true});
 
-        ok(unit_option_collection instanceof Backbone.Collection, 'unit_option_collection is a Backbone.Collection object');
+        ok(unit_option_collection instanceof UnitOptionCollection, 'unit_option_collection is a UnitOptionCollection object');
         equal(unit_option_collection.length, 0, 'unit_option_collection contains 0 entries by default');
 
         let unit_option_collection_with_data = new UnitOptionCollection([
@@ -63,7 +64,7 @@ test('Unit option collection test', function () {
         let second_item = unit_option_collection.getByDictionaryId(4);
         let nonexistent_item = unit_option_collection.getByDictionaryId(999);
 
-        ok(first_item instanceof Backbone.Model, 'first_item is a Backbone.Model object');
+        ok(first_item instanceof UnitOption, 'first_item is a UnitOption object');
         equal(first_item.get('quantity'), 5, 'first_item has quantity set to 5');
 
         equal(second_item.get('quantity'), 1, 'second_item has quantity set to 1');
@@ -88,7 +89,7 @@ test('Unit option collection test', function () {
             }
         ], {parse: true});
 
-        deepEqual(
+        assert.sameMembers(
             unit_option_collection.pluck('dictionary_id'),
             [1, 22, 17],
             'Collection is properly sorted on creation'
@@ -99,7 +100,7 @@ test('Unit option collection test', function () {
             is_default: false
         }, {parse: true});
 
-        deepEqual(
+        assert.sameMembers(
             unit_option_collection.pluck('dictionary_id'),
             [1, 22, 77, 17],
             'Collection is properly sorted after inserting a new item'
@@ -141,7 +142,7 @@ test('Unit option collection test', function () {
             {parse: true}
         );
 
-        deepEqual(
+        containSubset(
             unit_option_collection.toJSON(),
             [
                 {
