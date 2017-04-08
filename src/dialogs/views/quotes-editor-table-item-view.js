@@ -17,6 +17,7 @@ export default Marionette.View.extend({
         this.model.duplicate({
             model_name: 'Quote',
             attributes_to_omit: ['is_default'],
+            fetch_after_saving: true,
             extra_attributes: {
                 units: this.model.units.toJSON(),
                 accessories: this.model.extras.toJSON()

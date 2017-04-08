@@ -22,26 +22,30 @@ export default Marionette.View.extend({
     setCurrentQuote: function (new_id) {
         App.current_quote = this.collection.get(new_id);
 
-        if (!App.current_quote) {
-            return;
-        }
-
         globalChannel.trigger('current_quote_changed');
-        App.current_quote.trigger('set_active');
 
-        this.stopListening(App.current_quote);
+        if (App.current_quote) {
+            App.current_quote.trigger('set_active');
 
-        if (App.current_quote._wasLoaded) {
-            globalChannel.trigger('quote_selector:load_current:stop');
-        } else {
-            this.listenToOnce(App.current_quote, 'fully_loaded', function () {
+            this.stopListening(App.current_quote);
+
+            if (App.current_quote._wasLoaded) {
                 globalChannel.trigger('quote_selector:load_current:stop');
-            }, this);
-        }
+            } else {
+                this.listenToOnce(App.current_quote, 'fully_loaded', function () {
+                    globalChannel.trigger('quote_selector:load_current:stop');
+                }, this);
+            }
 
-        this.listenTo(App.current_quote, 'remove', function () {
-            this.selectFirstOrDefaultQuote();
-        });
+            this.listenTo(App.current_quote, 'remove', function () {
+                this.selectFirstOrDefaultQuote();
+            });
+        } else {
+            //  Even if no quote is selected (like in a case when project
+            //  has no quotes) we still want this event so the current
+            //  screen will reload
+            globalChannel.trigger('quote_selector:load_current:stop');
+        }
 
         this.render();
     },
@@ -73,6 +77,8 @@ export default Marionette.View.extend({
             this.setCurrentQuote(first_quote.id);
         } else if (default_quote && default_quote.id) {
             this.setCurrentQuote(default_quote.id);
+        } else {
+            this.setCurrentQuote(undefined);
         }
     },
     //  When project was changed, we want to select a default quote

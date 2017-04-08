@@ -86,6 +86,7 @@ _.extend(Backbone.Model.prototype, {
         //  attributes, not via options
         var default_options = {
             model_name: '',
+            fetch_after_saving: false,
             attributes_to_omit: [],
             extra_attributes: {}
         };
@@ -128,11 +129,21 @@ _.extend(Backbone.Model.prototype, {
             cloned_attributes = _.extend({}, cloned_attributes, options.extra_attributes);
 
             var new_object = this.collection.add(cloned_attributes, { parse: true });
-
-            new_object.persist({}, {
+            var persist_options = {
                 validate: true,
-                parse: true
-            });
+                parse: true,
+                wait: true
+            };
+
+            if ( options.fetch_after_saving ) {
+                persist_options = _.extend({}, persist_options, {
+                    success: function () {
+                        new_object.fetch();
+                    }
+                });
+            }
+
+            new_object.persist({}, persist_options);
         } else {
             throw new Error('Item could not be cloned: it does not belong to any collection');
         }
@@ -242,6 +253,7 @@ _.extend(Backbone.Collection.prototype, {
     }
 });
 
+//  Source: https://github.com/amccloud/backbone-safesync
 Backbone.sync = function (method, model, options) {
     let lastXHR = model._lastXHR && model._lastXHR[method];
 

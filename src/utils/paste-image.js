@@ -7,9 +7,7 @@ import {globalChannel} from '../utils/radio';
 //  http://joelb.me/blog/2011/code-snippet-accessing-clipboard-images-with-javascript/
 
 //  It works in the following way:
-//  - if we have a native window.Clipboard (in Chrome), we use that
-//  - if we don't (in Firefox), we append an invisible contenteditable div to
-//    catch pasted content
+//  - we append an invisible contenteditable div to catch pasted content
 //  - we piggyback on the existing Handsontable instance. It uses the similar
 //    technique (invisible textarea) to catch pasted content for its table
 //    cells, so we observe `focus` event on that textarea and intercept the
@@ -105,10 +103,7 @@ export default Marionette.Object.extend({
         var self = this;
 
         this.$paste_catcher = null;
-
-        if (!window.Clipboard) {
-            this.appendPasteCatcher();
-        }
+        this.appendPasteCatcher();
 
         //  Intercept focus from Handsontable textarea. We only do this
         //  when we're about to paste something into Customer Image cells
