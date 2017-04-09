@@ -14,41 +14,41 @@ const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
 export default Marionette.View.extend({
     tagName: 'div',
     className: 'drawing-sidebar',
-    template: template,
+    template,
     ui: {
         $select: '.selectpicker',
         $prev: '.js-prev-unit',
         $next: '.js-next-unit',
         $sidebar_toggle: '.js-sidebar-toggle',
-        $tab_container: '.tab-container'
+        $tab_container: '.tab-container',
     },
     events: {
         'change @ui.$select': 'onChange',
         'click @ui.$prev': 'onPrevBtn',
         'click @ui.$next': 'onNextBtn',
         'click .nav-tabs a': 'onTabClick',
-        'click @ui.$sidebar_toggle': 'onSidebarToggle'
+        'click @ui.$sidebar_toggle': 'onSidebarToggle',
     },
     keyShortcuts: {
         left: 'onPrevBtn',
         right: 'onNextBtn',
         pageup: 'goToPrevTab',
-        pagedown: 'goToNextTab'
+        pagedown: 'goToNextTab',
     },
-    initialize: function () {
+    initialize() {
         this.tabs = {
             active_unit_properties: {
-                title: 'Unit'
+                title: 'Unit',
             },
             active_unit_profile_properties: {
-                title: 'Profile'
+                title: 'Profile',
             },
             active_unit_stats: {
-                title: 'Unit Stats'
+                title: 'Unit Stats',
             },
             active_unit_estimated_cost: {
-                title: 'Est. Cost'
-            }
+                title: 'Est. Cost',
+            },
         };
         this.active_tab = 'active_unit_properties';
 
@@ -56,32 +56,32 @@ export default Marionette.View.extend({
         this.listenTo(this.options.parent_view, 'drawing_view:onSetState', this.render);
         this.listenTo(App.current_project.settings, 'change', this.render);
     },
-    setActiveTab: function (tab_name) {
+    setActiveTab(tab_name) {
         if (_.contains(_.keys(this.tabs), tab_name)) {
             this.active_tab = tab_name;
         }
     },
-    onTabClick: function (e) {
-        var target = $(e.target).attr('href').replace('#', '');
+    onTabClick(e) {
+        const target = $(e.target).attr('href').replace('#', '');
 
         e.preventDefault();
         this.setActiveTab(target);
         this.render();
     },
-    selectUnit: function (model) {
+    selectUnit(model) {
         this.$el.trigger({
             type: 'unit-selected',
-            model: model
+            model,
         });
 
         this.render();
     },
-    onChange: function () {
+    onChange() {
         this.selectUnit(this.collection.get(this.ui.$select.val()));
     },
-    onNextBtn: function () {
-        var collection_size = this.templateContext().unit_list.length;
-        var next_index;
+    onNextBtn() {
+        const collection_size = this.templateContext().unit_list.length;
+        let next_index;
 
         if (collection_size > 1 && this.options.parent_view.active_unit) {
             next_index = this.collection.indexOf(this.options.parent_view.active_unit) + 1;
@@ -93,9 +93,9 @@ export default Marionette.View.extend({
             this.selectUnit(this.collection.at(next_index));
         }
     },
-    onPrevBtn: function () {
-        var collection_size = this.templateContext().unit_list.length;
-        var prev_index;
+    onPrevBtn() {
+        const collection_size = this.templateContext().unit_list.length;
+        let prev_index;
 
         if (collection_size > 1 && this.options.parent_view.active_unit) {
             prev_index = this.collection.indexOf(this.options.parent_view.active_unit) - 1;
@@ -109,23 +109,23 @@ export default Marionette.View.extend({
     },
     //  This is not very cool because it breaks "don't store state in html"
     //  rule, but it's better than rewriting everything
-    goToNextTab: function () {
-        var $active_tab = this.ui.$tab_container.find('.active');
-        var $next_tab = $active_tab.next().length ? $active_tab.next() : $active_tab.siblings().first();
+    goToNextTab() {
+        const $active_tab = this.ui.$tab_container.find('.active');
+        const $next_tab = $active_tab.next().length ? $active_tab.next() : $active_tab.siblings().first();
 
         $next_tab.find('a').trigger('click');
     },
-    goToPrevTab: function () {
-        var $active_tab = this.ui.$tab_container.find('.active');
-        var $prev_tab = $active_tab.prev().length ? $active_tab.prev() : $active_tab.siblings().last();
+    goToPrevTab() {
+        const $active_tab = this.ui.$tab_container.find('.active');
+        const $prev_tab = $active_tab.prev().length ? $active_tab.prev() : $active_tab.siblings().last();
 
         $prev_tab.find('a').trigger('click');
     },
-    onSidebarToggle: function () {
-        this.$el.trigger({type: 'sidebar-toggle'});
+    onSidebarToggle() {
+        this.$el.trigger({ type: 'sidebar-toggle' });
     },
-    getActiveUnitImage: function () {
-        var active_unit_image = null;
+    getActiveUnitImage() {
+        let active_unit_image = null;
 
         if (this.options.parent_view.active_unit &&
             this.options.parent_view.active_unit.get('customer_image')
@@ -135,16 +135,16 @@ export default Marionette.View.extend({
 
         return active_unit_image;
     },
-    getActiveUnitProperties: function () {
-        var f = utils.format;
-        var active_unit_properties = [];
-        var params_source = {};
-        var project_settings = App.settings.getProjectSettings();
-        var active_unit;
+    getActiveUnitProperties() {
+        const f = utils.format;
+        let active_unit_properties = [];
+        let params_source = {};
+        const project_settings = App.settings.getProjectSettings();
+        let active_unit;
 
-        var relevant_properties = [
+        const relevant_properties = [
             'mark', 'width', 'height', 'description', 'notes', 'exceptions',
-            'uw', 'glazing', 'opening_direction', 'glazing_bar_width'
+            'uw', 'glazing', 'opening_direction', 'glazing_bar_width',
         ];
 
         if (this.options.parent_view.active_unit) {
@@ -154,45 +154,43 @@ export default Marionette.View.extend({
                 width: f.dimension(active_unit.get('width'), null,
                     project_settings && project_settings.get('inches_display_mode')),
                 height: f.dimension(active_unit.get('height'), null,
-                    project_settings && project_settings.get('inches_display_mode'))
+                    project_settings && project_settings.get('inches_display_mode')),
             };
 
-            active_unit_properties = _.map(relevant_properties, function (prop_name) {
-                return {
-                    title: active_unit.getTitles([prop_name]),
-                    value: function () {
-                        var val = params_source[prop_name] || active_unit.get(prop_name);
+            active_unit_properties = _.map(relevant_properties, prop_name => ({
+                title: active_unit.getTitles([prop_name]),
+                value() {
+                    let val = params_source[prop_name] || active_unit.get(prop_name);
 
-                        if (active_unit.isOperableOnlyAttribute(prop_name) && !active_unit.hasOperableSections()) {
-                            val = '(Operable Only)';
-                        } else if (active_unit.isGlazingBarProperty(prop_name) && !active_unit.hasGlazingBars()) {
-                            val = '(Has no Bars)';
-                        }
-
-                        return val;
+                    if (active_unit.isOperableOnlyAttribute(prop_name) && !active_unit.hasOperableSections()) {
+                        val = '(Operable Only)';
+                    } else if (active_unit.isGlazingBarProperty(prop_name) && !active_unit.hasGlazingBars()) {
+                        val = '(Has no Bars)';
                     }
-                };
-            }, this);
+
+                    return val;
+                },
+            }), this);
         }
 
         return active_unit_properties;
     },
-    getActiveUnitOptions: function () {
-        var active_unit_options = [];
-        var has_hidden_options = false;
-        var options_list = App.settings.dictionaries.getAvailableDictionaryNames();
-        var active_unit;
+    getActiveUnitOptions() {
+        let active_unit_options = [];
+        let has_hidden_options = false;
+        const options_list = App.settings.dictionaries.getAvailableDictionaryNames();
+        let active_unit;
 
         if (this.options.parent_view.active_unit) {
             active_unit = this.options.parent_view.active_unit;
 
             active_unit_options = _.map(options_list, function (dictionary_name) {
-                var dictionary_id = App.settings.dictionaries.getDictionaryIdByName(dictionary_name);
-                var rules_and_restrictions;
-                var is_hidden = false;
-                var value = '(None)';
-                var is_restricted = false;
-                var current_options = [];
+                const dictionary_id = App.settings.dictionaries.getDictionaryIdByName(dictionary_name);
+                let rules_and_restrictions;
+                let is_hidden = false;
+                let value = '(None)';
+                let is_restricted = false;
+                let current_options = [];
 
                 if (dictionary_id) {
                     rules_and_restrictions = App.settings.dictionaries.get(dictionary_id)
@@ -201,8 +199,8 @@ export default Marionette.View.extend({
                         .get('is_hidden');
                 }
 
-                _.each(rules_and_restrictions, function (rule) {
-                    var restriction_applies = active_unit.checkIfRestrictionApplies(rule);
+                _.each(rules_and_restrictions, (rule) => {
+                    const restriction_applies = active_unit.checkIfRestrictionApplies(rule);
 
                     if (restriction_applies && rule === 'DOOR_ONLY') {
                         is_restricted = true;
@@ -229,47 +227,47 @@ export default Marionette.View.extend({
 
                 return {
                     title: dictionary_name,
-                    value: value
+                    value,
                 };
             }, this);
         }
 
         return {
             options_list: active_unit_options,
-            has_hidden_options: has_hidden_options
+            has_hidden_options,
         };
     },
-    getActiveUnitProfileProperties: function () {
-        var active_unit_profile_properties = [];
-        var active_unit_profile;
+    getActiveUnitProfileProperties() {
+        const active_unit_profile_properties = [];
+        let active_unit_profile;
 
-        var relevant_properties = [
+        const relevant_properties = [
             'name', 'unit_type', 'system', 'frame_width', 'mullion_width',
             'sash_frame_width', 'sash_frame_overlap', 'sash_mullion_overlap',
-            'low_threshold', 'threshold_width'
+            'low_threshold', 'threshold_width',
         ];
 
         if (this.options.parent_view.active_unit &&
             this.options.parent_view.active_unit.profile
         ) {
             active_unit_profile = this.options.parent_view.active_unit.profile;
-            _.each(relevant_properties, function (item) {
+            _.each(relevant_properties, (item) => {
                 active_unit_profile_properties.push({
                     title: active_unit_profile.getTitles([item]),
-                    value: active_unit_profile.get(item)
+                    value: active_unit_profile.get(item),
                 });
             });
         }
 
         return active_unit_profile_properties;
     },
-    getActiveUnitSashList: function () {
-        var project_settings = App.settings.getProjectSettings();
-        var f = utils.format;
-        var c = utils.convert;
-        var m = utils.math;
-        var sash_list_source;
-        var sashes = [];
+    getActiveUnitSashList() {
+        const project_settings = App.settings.getProjectSettings();
+        const f = utils.format;
+        const c = utils.convert;
+        const m = utils.math;
+        let sash_list_source;
+        const sashes = [];
 
         function getFillingPerimeter(width, height) {
             return f.dimensions(c.mm_to_inches(width),
@@ -279,21 +277,21 @@ export default Marionette.View.extend({
         function getFillingArea(width, height, format) {
             format = format || 'sup';
 
-            var result = f.square_feet(m.square_feet(c.mm_to_inches(width),
+            const result = f.square_feet(m.square_feet(c.mm_to_inches(width),
                 c.mm_to_inches(height)), 2, format);
 
             return result;
         }
 
         function getFillingSize(width, height) {
-            var filling_size = getFillingPerimeter(width, height);
-            var filling_area = getFillingArea(width, height);
+            const filling_size = getFillingPerimeter(width, height);
+            const filling_area = getFillingArea(width, height);
 
-            return filling_size + ' (' + filling_area + ')';
+            return `${filling_size} (${filling_area})`;
         }
 
         function getSectionInfo(source) {
-            var result = {};
+            const result = {};
 
             result.filling_is_glass = source.filling.type === 'glass';
             result.filling_name = source.filling.name;
@@ -307,47 +305,47 @@ export default Marionette.View.extend({
                 project_settings && project_settings.get('hinge_indicator_mode') === 'american');
 
             _.each(sash_list_source, function (source_item, index) {
-                var sash_item = {};
-                var section_info;
-                var opening_size_data;
-                var egress_opening_size_data;
+                const sash_item = {};
+                let section_info;
+                let opening_size_data;
+                let egress_opening_size_data;
 
-                sash_item.name = 'Sash #' + (index + 1);
+                sash_item.name = `Sash #${index + 1}`;
                 sash_item.type = source_item.type;
 
                 opening_size_data = this.options.parent_view.active_unit.getSashOpeningSize(
-                    source_item.opening
+                    source_item.opening,
                 );
                 sash_item.opening_size = opening_size_data && f.dimensions_and_area(
                     opening_size_data.width,
                     opening_size_data.height,
                     undefined,
                     undefined,
-                    opening_size_data.area
+                    opening_size_data.area,
                 );
                 egress_opening_size_data = this.options.parent_view.active_unit.getSashOpeningSize(
                     source_item.opening,
                     'egress',
-                    source_item.original_type
+                    source_item.original_type,
                 );
                 sash_item.egress_opening_size = egress_opening_size_data && f.dimensions_and_area(
                     egress_opening_size_data.width,
                     egress_opening_size_data.height,
                     undefined,
                     undefined,
-                    egress_opening_size_data.area
+                    egress_opening_size_data.area,
                 );
 
                 //  Child sections
                 if (source_item.sections.length) {
-                    var sum = 0;
+                    let sum = 0;
 
                     sash_item.sections = [];
 
-                    _.each(source_item.sections, function (section, s_index) {
-                        var section_item = {};
+                    _.each(source_item.sections, (section, s_index) => {
+                        const section_item = {};
 
-                        section_item.name = 'Section #' + (index + 1) + '.' + (s_index + 1);
+                        section_item.name = `Section #${index + 1}.${s_index + 1}`;
                         section_info = getSectionInfo(section);
                         _.extend(section_item, section_info);
 
@@ -371,12 +369,12 @@ export default Marionette.View.extend({
 
         return sashes;
     },
-    getActiveUnitStats: function () {
-        var unit_stats;
-        var f = utils.format;
-        var stats_data = [];
+    getActiveUnitStats() {
+        let unit_stats;
+        const f = utils.format;
+        const stats_data = [];
 
-        var titles = {
+        const titles = {
             frame: 'Frame',
             sashes: 'Sash Frames',
             mullions: 'Mullions',
@@ -384,27 +382,27 @@ export default Marionette.View.extend({
             glasses: 'Fillings',
             openings: 'Openings',
             glazing_bars: 'Glazing Bars',
-            unit_total: 'Unit Total'
+            unit_total: 'Unit Total',
         };
 
         if (this.options.parent_view.active_unit) {
-            var group_titles = {
+            const group_titles = {
                 linear: 'Total Linear',
                 linear_without_intersections: 'Total Linear (Without Intersections)',
                 area: 'Total Area',
                 area_both_sides: 'Total Area (Both Sides)',
-                weight: 'Total Weight'
+                weight: 'Total Weight',
             };
-            var data_groups = _.keys(group_titles);
-            var group_data = {};
-            var hasBaseFilling = this.options.parent_view.active_unit.hasBaseFilling();
+            const data_groups = _.keys(group_titles);
+            const group_data = {};
+            const hasBaseFilling = this.options.parent_view.active_unit.hasBaseFilling();
 
             unit_stats = this.options.parent_view.active_unit.getLinearAndAreaStats();
 
             _.each(unit_stats, function (item, key) {
-                _.each(data_groups, function (group_name) {
+                _.each(data_groups, (group_name) => {
                     if (item[group_name]) {
-                        var value;
+                        let value;
 
                         group_data[group_name] = group_data[group_name] || [];
 
@@ -417,43 +415,41 @@ export default Marionette.View.extend({
                         }
 
                         group_data[group_name].push({
-                            key: key,
+                            key,
                             title: titles[key],
-                            value: value,
-                            is_total: key === 'profile_total' && group_name !== 'weight' || key === 'unit_total'
+                            value,
+                            is_total: key === 'profile_total' && group_name !== 'weight' || key === 'unit_total',
                         });
                     }
                 }, this);
             }, this);
 
-            _.each(group_titles, function (title, key) {
-                group_data[key] = _.sortBy(group_data[key], function (param) {
-                    return _.indexOf(['frame', 'sashes', 'mullions', 'profile_total', 'glasses',
-                        'openings', 'glazing_bars', 'unit_total'], param.key);
-                });
+            _.each(group_titles, (title, key) => {
+                group_data[key] = _.sortBy(group_data[key], param => _.indexOf(['frame', 'sashes', 'mullions', 'profile_total', 'glasses',
+                    'openings', 'glazing_bars', 'unit_total'], param.key));
 
                 stats_data.push({
-                    title: title,
+                    title,
                     data: group_data[key],
-                    hasBaseFilling: title.toLowerCase().indexOf('weight') !== -1 && hasBaseFilling
+                    hasBaseFilling: title.toLowerCase().indexOf('weight') !== -1 && hasBaseFilling,
                 });
             }, this);
         }
 
         return stats_data;
     },
-    getActiveUnitEstimatedCost: function () {
-        var f = utils.format;
-        var m = utils.math;
-        var active_unit_profile;
-        var result = {
+    getActiveUnitEstimatedCost() {
+        const f = utils.format;
+        const m = utils.math;
+        let active_unit_profile;
+        const result = {
             sections: [],
-            per_item_priced_options: []
+            per_item_priced_options: [],
         };
 
         if (this.options.parent_view.active_unit) {
             active_unit_profile = this.options.parent_view.active_unit.profile;
-            var unit_cost = this.options.parent_view.active_unit.getEstimatedUnitCost();
+            const unit_cost = this.options.parent_view.active_unit.getEstimatedUnitCost();
 
             result.profile_name = active_unit_profile ? active_unit_profile.get('name') : UNSET_VALUE;
             result.base_cost = f.fixed(unit_cost.base);
@@ -468,9 +464,9 @@ export default Marionette.View.extend({
 
             //  Collect detailed pricing data for sections
             _.each(unit_cost.sections_list, function (source_item, index) {
-                var section_item = {};
+                const section_item = {};
 
-                section_item.name = 'Section #' + (index + 1);
+                section_item.name = `Section #${index + 1}`;
                 section_item.type = source_item.type === 'fixed' ? 'Fixed' : 'Operable';
 
                 section_item.height = f.dimension_mm(source_item.height);
@@ -494,31 +490,29 @@ export default Marionette.View.extend({
                     (source_item.filling_pricing_scheme === PRICING_SCHEME_PRICING_GRIDS);
 
                 //  Add cost for Options
-                section_item.options = _.map(source_item.options, function (item, item_index) {
-                    return {
-                        index: 'Option #' + (item_index + 1),
-                        dictionary_name: item.dictionary_name,
-                        pricing_scheme: item.dictionary_pricing_scheme,
-                        is_hidden: item.is_hidden,
-                        option_name: item.option_name,
-                        price_increase: f.percent(item.price_increase),
-                        cost: f.fixed(item.cost),
-                        show_price_increase: (item.dictionary_pricing_scheme === PRICING_SCHEME_PRICING_GRIDS)
-                    };
-                }, this);
+                section_item.options = _.map(source_item.options, (item, item_index) => ({
+                    index: `Option #${item_index + 1}`,
+                    dictionary_name: item.dictionary_name,
+                    pricing_scheme: item.dictionary_pricing_scheme,
+                    is_hidden: item.is_hidden,
+                    option_name: item.option_name,
+                    price_increase: f.percent(item.price_increase),
+                    cost: f.fixed(item.cost),
+                    show_price_increase: (item.dictionary_pricing_scheme === PRICING_SCHEME_PRICING_GRIDS),
+                }), this);
 
                 section_item.total_cost = f.fixed(source_item.total_cost);
 
                 result.sections.push(section_item);
             }, this);
 
-            var per_item_priced_options_total_cost = 0;
+            let per_item_priced_options_total_cost = 0;
 
             //  Collect detailed pricing data for per-item-priced options
-            _.each(unit_cost.options_list.PER_ITEM, function (source_item, index) {
-                var option_item = {};
+            _.each(unit_cost.options_list.PER_ITEM, (source_item, index) => {
+                const option_item = {};
 
-                option_item.option_index = 'Option #' + (index + 1);
+                option_item.option_index = `Option #${index + 1}`;
                 option_item.option_name = source_item.option_name;
                 option_item.dictionary_name = source_item.dictionary_name;
                 option_item.is_hidden = source_item.is_hidden;
@@ -536,12 +530,12 @@ export default Marionette.View.extend({
 
         return result;
     },
-    templateContext: function () {
-        var tab_contents = {
+    templateContext() {
+        const tab_contents = {
             active_unit_properties: this.getActiveUnitProperties(),
             active_unit_profile_properties: this.getActiveUnitProfileProperties(),
             active_unit_stats: this.getActiveUnitStats(),
-            active_unit_estimated_cost: this.getActiveUnitEstimatedCost()
+            active_unit_estimated_cost: this.getActiveUnitEstimatedCost(),
         };
 
         return {
@@ -552,7 +546,7 @@ export default Marionette.View.extend({
                     reference_id: item.getRefNum(),
                     cid: item.cid,
                     mark: item.get('mark'),
-                    dimensions: utils.format.dimensions(item.get('width'), item.get('height'), 'fraction')
+                    dimensions: utils.format.dimensions(item.get('width'), item.get('height'), 'fraction'),
                 };
             }, this),
             active_unit_image: this.getActiveUnitImage(),
@@ -566,12 +560,12 @@ export default Marionette.View.extend({
                 item.is_active = key === this.active_tab;
 
                 return item;
-            }, this)
+            }, this),
         };
     },
-    onRender: function () {
+    onRender() {
         this.ui.$select.selectpicker({
-            showSubtext: true
+            showSubtext: true,
         });
-    }
+    },
 });

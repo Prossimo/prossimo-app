@@ -46,8 +46,8 @@ test('Utils.js tests: ', function () {
         test('dimension_mm', function () {
             let f = format;
 
-            equal(f.dimension_mm(2500), '2500 mm', 'Expected value is 2500 mm');
-            equal(f.dimension_mm(33.3), '33 mm', 'Expected value is 33 mm');
+            equal(f.dimension_mm(2500), '2500 mm', 'Expected value is 2500 mm');
+            equal(f.dimension_mm(33.3), '33 mm', 'Expected value is 33 mm');
         });
         test('dimensions_mm', function () {
             let f = format;

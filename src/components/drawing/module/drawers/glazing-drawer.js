@@ -4,14 +4,14 @@ import Backbone from 'backbone';
 
 import utils from '../../../../utils';
 
-var module;
-var model;
-var metricSize;
-var ratio;
-var minimalGap = 25; // minimal gap between bars
+let module;
+let model;
+let metricSize;
+let ratio;
+const minimalGap = 25; // minimal gap between bars
 
 export default Backbone.KonvaView.extend({
-    initialize: function (params) {
+    initialize(params) {
         module = params.builder;
         model = module.get('model');
 
@@ -23,12 +23,12 @@ export default Backbone.KonvaView.extend({
 
         metricSize = params.metricSize;
     },
-    el: function () {
-        var group = new Konva.Group();
+    el() {
+        const group = new Konva.Group();
 
         return group;
     },
-    render: function () {
+    render() {
         if (this.sectionId) {
             this.section = model.getSection(this.sectionId);
 
@@ -44,40 +44,40 @@ export default Backbone.KonvaView.extend({
     },
     events: {},
     // handlers
-    handleBarClick: function (data) {
+    handleBarClick(data) {
         module.setState({
             selectedBar: data,
-            selectedEdge: null
+            selectedEdge: null,
         });
     },
-    handleEdgeOver: function (key) {
+    handleEdgeOver(key) {
         module.setState({
-            hoverEdge: key
+            hoverEdge: key,
         });
     },
-    handleEdgeOut: function () {
+    handleEdgeOut() {
         module.setState({
-            hoverEdge: null
+            hoverEdge: null,
         });
     },
-    handleEdgeClick: function (key) {
+    handleEdgeClick(key) {
         module.setState({
-            selectedEdge: key
+            selectedEdge: key,
         });
     },
-    handleControlOver: function (key) {
+    handleControlOver(key) {
         module.setState({
-            hoverControl: key
+            hoverControl: key,
         });
     },
-    handleControlOut: function () {
+    handleControlOut() {
         module.setState({
-            hoverControl: null
+            hoverControl: null,
         });
     },
-    handleControlClick: function (params) {
-        var bar = this.section.bars[params.bar.type][params.bar.index];
-        var id;
+    handleControlClick(params) {
+        const bar = this.section.bars[params.bar.type][params.bar.index];
+        let id;
 
         if (!('id' in bar)) {
             bar.id = _.uniqueId();
@@ -104,66 +104,66 @@ export default Backbone.KonvaView.extend({
 
         this.resetStates();
     },
-    handleBackClick: function () {
+    handleBackClick() {
         this.resetStates();
     },
     // Common methods
-    resetStates: function () {
+    resetStates() {
         module.setState({
             selectedBar: null,
             selectedEdge: null,
             hoverEdge: null,
-            hoverControl: null
+            hoverControl: null,
         });
     },
-    getDefaultMetricStyles: function () {
+    getDefaultMetricStyles() {
         return module.getStyle('measurements');
     },
-    updateLayer: function () {
+    updateLayer() {
         this.layer.draw();
     },
     // Get methods
-    getBarsCount: function () {
+    getBarsCount() {
         return {
             horizontal: (this.section) ? this.section.bars.horizontal.length : 0,
-            vertical: (this.section) ? this.section.bars.vertical.length : 0
+            vertical: (this.section) ? this.section.bars.vertical.length : 0,
         };
     },
-    getBarPosition: function (type, bar) {
-        var position = {
+    getBarPosition(type, bar) {
+        let position = {
             x: 0,
-            y: 0
+            y: 0,
         };
 
         if (typeof bar === 'object' && 'position' in bar && 'space' in bar) {
             if (type === 'horizontal') {
                 position = {
                     x: 0,
-                    y: (bar.position - bar.space) * ratio
+                    y: (bar.position - bar.space) * ratio,
                 };
             }
 
             if (type === 'vertical') {
                 position = {
                     x: metricSize + ((bar.position - bar.space) * ratio),
-                    y: this.getSize().height * ratio
+                    y: this.getSize().height * ratio,
                 };
             }
         }
 
         return position;
     },
-    getBarsWithSpaces: function (section) {
-        var bars;
+    getBarsWithSpaces(section) {
+        let bars;
 
         if (section) {
             bars = JSON.parse(JSON.stringify(section.bars));
         }
 
-        _.each(bars, function (group) {
-            var spaceUsed = 0;
+        _.each(bars, (group) => {
+            let spaceUsed = 0;
 
-            group.forEach(function (bar) {
+            group.forEach((bar) => {
                 bar.space = bar.position - spaceUsed;
                 spaceUsed += bar.space;
             });
@@ -171,75 +171,75 @@ export default Backbone.KonvaView.extend({
 
         return bars;
     },
-    getSize: function () {
+    getSize() {
         return {
             width: (this.section) ? this.section.glassParams.width : 0,
-            height: (this.section) ? this.section.glassParams.height : 0
+            height: (this.section) ? this.section.glassParams.height : 0,
         };
     },
     // Drawer custom methods
-    createView: function () {
-        var group = this.el;
+    createView() {
+        const group = this.el;
 
         // transparent background to detect click on empty space
-        var back = new Konva.Rect({
+        const back = new Konva.Rect({
             id: 'back',
             width: this.stage.width(),
-            height: this.stage.height()
+            height: this.stage.height(),
         });
 
         group.add(back);
 
-        var section = new Konva.Group();
+        const section = new Konva.Group();
 
         section.add(this.createSection());
         group.add(section);
 
         section.setAbsolutePosition({
             x: (this.stage.width() / 2) - (this.getSize().width * ratio / 2) - metricSize,
-            y: 0
+            y: 0,
         });
 
         return group;
     },
-    createSection: function () {
-        var group = new Konva.Group({
+    createSection() {
+        const group = new Konva.Group({
             x: 20,
-            y: 20
+            y: 20,
         });
 
         // calculate width and height
-        var fillWidth = this.getSize().width;
-        var fillHeight = this.getSize().height;
+        const fillWidth = this.getSize().width;
+        const fillHeight = this.getSize().height;
 
         // zero position for children graphics
-        var zeroPos = {
+        const zeroPos = {
             x: (0 + metricSize) / ratio,
-            y: 0
+            y: 0,
         };
 
         // creating graphics
-        var frameGroup = this.createGlass({
+        const frameGroup = this.createGlass({
             x: zeroPos.x,
             y: zeroPos.y,
             width: fillWidth,
-            height: fillHeight
+            height: fillHeight,
         });
-        var bars = this.createBars({
+        const bars = this.createBars({
             x: zeroPos.x,
             y: zeroPos.y,
             width: fillWidth,
-            height: fillHeight
+            height: fillHeight,
         });
-        var metrics = this.createMetrics({
-            metricSize: metricSize,
+        const metrics = this.createMetrics({
+            metricSize,
             width: fillWidth,
-            height: fillHeight
+            height: fillHeight,
         });
 
         // scale with ratio
-        frameGroup.scale({x: ratio, y: ratio});
-        bars.scale({x: ratio, y: ratio});
+        frameGroup.scale({ x: ratio, y: ratio });
+        bars.scale({ x: ratio, y: ratio });
 
         // adding to group
         group.add(frameGroup);
@@ -249,51 +249,51 @@ export default Backbone.KonvaView.extend({
 
         return group;
     },
-    createGlass: function (params) {
-        var group = new Konva.Group();
-        var style = module.getStyle('fillings');
+    createGlass(params) {
+        const group = new Konva.Group();
+        const style = module.getStyle('fillings');
 
-        var glass = new Konva.Rect({
+        const glass = new Konva.Rect({
             x: params.x,
             y: params.y,
             width: params.width,
             height: params.height,
-            fill: style.glass.fill
+            fill: style.glass.fill,
         });
 
         group.add(glass);
 
         return group;
     },
-    createBars: function (params) {
-        var fillX = params.x;
-        var fillY = params.y;
-        var fillOffset;
+    createBars(params) {
+        const fillX = params.x;
+        const fillY = params.y;
+        let fillOffset;
 
-        var fillWidth = params.width;
-        var fillHeight = params.height;
-        var fillSize;
+        const fillWidth = params.width;
+        const fillHeight = params.height;
+        let fillSize;
 
-        var pos_from = 0;
-        var size_to = 0;
+        let pos_from = 0;
+        let size_to = 0;
 
-        var group = new Konva.Group();
+        const group = new Konva.Group();
 
-        var data;
-        var position;
-        var nullPos;
+        let data;
+        let position;
+        let nullPos;
 
-        var bar;
-        var tbar;
-        var controls = new Konva.Group();
+        let bar;
+        let tbar;
+        const controls = new Konva.Group();
 
-        var edges = [0, 0];
-        var isSelected = false;
-        var selectedEdge;
+        const edges = [0, 0];
+        let isSelected = false;
+        let selectedEdge;
 
         // Universal loop
-        _.each(this.getBarsCount(), function (count, type) {
-            for (var i = 0; i < count; i++) {
+        _.each(this.getBarsCount(), (count, type) => {
+            for (let i = 0; i < count; i++) {
                 data = this.section.bars[type][i];
 
                 isSelected = (
@@ -330,35 +330,34 @@ export default Backbone.KonvaView.extend({
                 edges[1] = (type === 'vertical') ? size_to : fillX + size_to;
 
                 bar = this.createBar({
-                    type: type,
-                    isSelected: isSelected,
-                    position: position,
+                    type,
+                    isSelected,
+                    position,
                     from: pos_from,
                     to: size_to,
                     offset: {
-                        fillX: fillX,
-                        fillY: fillY
+                        fillX,
+                        fillY,
                     },
-                    data: data
+                    data,
                 });
 
                 // Draw controls to switch edges
                 if (isSelected && module.getState('selectedEdge') === null) {
                     // 1. Draw controls to select edge
                     controls.add(this.createEdgeControls({
-                        type: type,
-                        position: position,
-                        edges: edges
+                        type,
+                        position,
+                        edges,
                     }));
                 } else if (isSelected && module.getState('selectedEdge') !== null) {
                     // 2. Draw controls to bound selected edge
                     selectedEdge = module.getState('selectedEdge');
 
-                    var invertedType = (type === 'vertical') ? 'horizontal' : 'vertical';
+                    const invertedType = (type === 'vertical') ? 'horizontal' : 'vertical';
 
                     // Draw controls for intersection with horizontal bars
-                    for (var j = 0; j < this.getBarsCount()[invertedType]; j++) {
-
+                    for (let j = 0; j < this.getBarsCount()[invertedType]; j++) {
                         if (
                             _.isArray(data.links) &&
                             data.links.indexOf(this.section.bars[invertedType][j].id) !== -1
@@ -370,19 +369,19 @@ export default Backbone.KonvaView.extend({
                             index: j,
                             edge: selectedEdge,
                             bar: {
-                                type: type,
+                                type,
                                 index: i,
-                                edge: selectedEdge
+                                edge: selectedEdge,
                             },
                             link: this.section.bars[invertedType][j],
                             position: (type === 'vertical') ?
-                                {
-                                    x: position,
-                                    y: fillY + this.section.bars[invertedType][j].position
-                                } : {
-                                    x: fillX + this.section.bars.vertical[j].position,
-                                    y: position
-                                }
+                            {
+                                x: position,
+                                y: fillY + this.section.bars[invertedType][j].position,
+                            } : {
+                                x: fillX + this.section.bars.vertical[j].position,
+                                y: position,
+                            },
                         }));
                     }
                     // Draw controls at section edge:
@@ -393,43 +392,42 @@ export default Backbone.KonvaView.extend({
                     controls.add(this.createBoundControl({
                         index: -1,
                         bar: {
-                            type: type,
+                            type,
                             index: i,
-                            edge: selectedEdge
+                            edge: selectedEdge,
                         },
                         edge: selectedEdge,
                         link: null,
                         position: (type === 'vertical') ?
-                            {
-                                x: position,
-                                y: fillY + nullPos
-                            } :
-                            {
-                                x: fillX + nullPos,
-                                y: position
-                            }
+                        {
+                            x: position,
+                            y: fillY + nullPos,
+                        } :
+                        {
+                            x: fillX + nullPos,
+                            y: position,
+                        },
                     }));
                 }
 
                 group.add(bar);
-
             }
-        }.bind(this));
+        });
 
         group.add(controls);
 
         return group;
     },
-    createBar: function (params) {
-        var selectedColor = 'yellow';
-        var normalColor = 'white';
+    createBar(params) {
+        const selectedColor = 'yellow';
+        const normalColor = 'white';
 
-        var bar = new Konva.Group({
-            name: 'bar'
+        const bar = new Konva.Group({
+            name: 'bar',
         });
-        var opts = {
+        const opts = {
             line: {},
-            area: {}
+            area: {},
         };
 
         // Position & size
@@ -439,13 +437,13 @@ export default Backbone.KonvaView.extend({
                 x: params.position - (model.get('glazing_bar_width') / 2),
                 y: params.offset.fillY + params.from,
                 width: model.get('glazing_bar_width'),
-                height: params.to - params.from
+                height: params.to - params.from,
             };
             opts.area = {
                 x: params.position - (model.get('glazing_bar_width') * 2),
                 y: params.offset.fillY + params.from,
                 width: model.get('glazing_bar_width') * 4,
-                height: params.to - params.from
+                height: params.to - params.from,
             };
         } else {
             // For horizontal bars
@@ -453,20 +451,20 @@ export default Backbone.KonvaView.extend({
                 x: params.offset.fillX + params.from,
                 y: params.position - (model.get('glazing_bar_width') / 2),
                 width: params.to - params.from,
-                height: model.get('glazing_bar_width')
+                height: model.get('glazing_bar_width'),
             };
             opts.area = {
                 x: params.offset.fillY + params.from,
                 y: params.position - (model.get('glazing_bar_width') * 2),
                 width: params.to - params.from,
-                height: model.get('glazing_bar_width') * 4
+                height: model.get('glazing_bar_width') * 4,
             };
         }
         // Colors
         opts.line.fill = (params.isSelected) ? selectedColor : normalColor;
 
-        var line = new Konva.Rect(opts.line);
-        var area = new Konva.Rect(opts.area);
+        const line = new Konva.Rect(opts.line);
+        const area = new Konva.Rect(opts.area);
 
         // Events
         bar.on('click', this.handleBarClick.bind(this, params.data));
@@ -476,15 +474,15 @@ export default Backbone.KonvaView.extend({
 
         return bar;
     },
-    createEdgeControls: function (params) {
-        var controls = new Konva.Group();
-        var circle;
+    createEdgeControls(params) {
+        const controls = new Konva.Group();
+        let circle;
 
-        var opts = {};
-        var isCircleHover;
-        var isCircleSelected;
+        let opts = {};
+        let isCircleHover;
+        let isCircleSelected;
 
-        for (var j = 0; j < 2; j++) {
+        for (let j = 0; j < 2; j++) {
             isCircleSelected = (module.getState('selectedEdge') === j);
             isCircleHover = (module.getState('hoverEdge') === j);
 
@@ -494,13 +492,13 @@ export default Backbone.KonvaView.extend({
                     // Vertical
                     opts = {
                         x: params.position,
-                        y: params.edges[j]
+                        y: params.edges[j],
                     };
                 } else {
                     // Horizontal
                     opts = {
                         x: params.edges[j],
-                        y: params.position
+                        y: params.position,
                     };
                 }
                 // Styles
@@ -522,16 +520,16 @@ export default Backbone.KonvaView.extend({
 
         return controls;
     },
-    createBoundControl: function (params) {
-        var style = module.getStyle('glazing_controls');
-        var circle = new Konva.Circle({
+    createBoundControl(params) {
+        const style = module.getStyle('glazing_controls');
+        const circle = new Konva.Circle({
             name: 'control',
             x: params.position.x,
             y: params.position.y,
             radius: model.get('glazing_bar_width') * style.bound.radius,
             fill: style.bound.fill,
             opacity: (module.getState('hoverControl') === params.index) ?
-                style.bound.hover.opacity : style.bound.normal.opacity
+                style.bound.hover.opacity : style.bound.normal.opacity,
         });
 
         circle
@@ -541,40 +539,40 @@ export default Backbone.KonvaView.extend({
 
         return circle;
     },
-    createMetrics: function (params) {
-        var drawer = this;
-        var metrics = new Konva.Group();
-        var max = {
+    createMetrics(params) {
+        const drawer = this;
+        const metrics = new Konva.Group();
+        const max = {
             vertical: params.width,
-            horizontal: params.height
+            horizontal: params.height,
         };
-        var paramName = {
+        const paramName = {
             vertical: 'width',
-            horizontal: 'height'
+            horizontal: 'height',
         };
-        var groups = {
+        const groups = {
             vertical: new Konva.Group(),
-            horizontal: new Konva.Group()
+            horizontal: new Konva.Group(),
         };
-        var methods = {
+        const methods = {
             vertical: this.createHorizontalMetrics.bind(drawer),
-            horizontal: this.createVerticalMetrics.bind(drawer)
+            horizontal: this.createVerticalMetrics.bind(drawer),
         };
-        var barMetric;
+        let barMetric;
 
-        var bars = this.getBarsWithSpaces(this.section);
+        const bars = this.getBarsWithSpaces(this.section);
 
-        var defaultMethods = {
-            getter: function () {
+        const defaultMethods = {
+            getter() {
                 return this.space;
             },
-            setter: function (type, space, val, view) {
-                var delta = val - space;
-                var mm = utils.parseFormat.dimension(this.position + delta);
+            setter(type, space, val, view) {
+                const delta = val - space;
+                const mm = utils.parseFormat.dimension(this.position + delta);
 
                 if (
                     view &&
-                    (mm >= max[type] - minimalGap || (this.position + delta) < 0 + minimalGap )
+                    (mm >= max[type] - minimalGap || (this.position + delta) < 0 + minimalGap)
                 ) {
                     view.showError();
                     return;
@@ -586,47 +584,45 @@ export default Backbone.KonvaView.extend({
                     view.sortBars();
                     view.saveBars(drawer.section.bars);
                 }
-
             },
-            gap_getter: function () {
+            gap_getter() {
                 return this.space;
             },
-            gap_setter: function (type, val, view) {
-                var mm = utils.parseFormat.dimension(val);
-                var lastBar = drawer.section.bars[type][view.section.bars[type].length - 1];
-                var freeSpace = max[type] - lastBar.position;
-                var delta = freeSpace - val;
+            gap_setter(type, val, view) {
+                const mm = utils.parseFormat.dimension(val);
+                const lastBar = drawer.section.bars[type][view.section.bars[type].length - 1];
+                const freeSpace = max[type] - lastBar.position;
+                const delta = freeSpace - val;
 
                 if (
                     view &&
-                    (mm > max[type] - minimalGap || val < 0 + minimalGap )
+                    (mm > max[type] - minimalGap || val < 0 + minimalGap)
                 ) {
                     view.showError();
                     return;
                 }
 
-                lastBar.position = lastBar.position + delta;
+                lastBar.position += delta;
 
                 if (view) {
                     view.sortBars();
                     view.saveBars(drawer.section.bars);
                 }
-
-            }
+            },
         };
 
-        _.each(bars, function (group, type) {
-            var spaceUsed = 0;
-            var gap;
+        _.each(bars, (group, type) => {
+            let spaceUsed = 0;
+            let gap;
 
-            group.forEach(function (bar, i) {
-                var p = {
+            group.forEach((bar, i) => {
+                const p = {
                     methods: {
                         getter: defaultMethods.getter.bind(bar),
-                        setter: defaultMethods.setter.bind(drawer.section.bars[type][i], type, bar.space)
-                    }
+                        setter: defaultMethods.setter.bind(drawer.section.bars[type][i], type, bar.space),
+                    },
                 };
-                var position = drawer.getBarPosition(type, bar);
+                const position = drawer.getBarPosition(type, bar);
 
                 _.extend(p, params);
                 p[paramName[type]] = bar.space;
@@ -638,16 +634,16 @@ export default Backbone.KonvaView.extend({
                 spaceUsed += bar.space;
             });
             // Add gap
-            var gapObject = {
+            const gapObject = {
                 position: max[type],
-                space: max[type] - spaceUsed
+                space: max[type] - spaceUsed,
             };
-            var p = {
+            const p = {
                 methods: {
-                    getter: defaultMethods.gap_getter.bind(gapObject)
-                }
+                    getter: defaultMethods.gap_getter.bind(gapObject),
+                },
             };
-            var position = drawer.getBarPosition(type, gapObject);
+            const position = drawer.getBarPosition(type, gapObject);
 
             if (group.length > 0) {
                 p.methods.setter = defaultMethods.gap_setter.bind(gapObject, type);
@@ -665,27 +661,27 @@ export default Backbone.KonvaView.extend({
 
         return metrics;
     },
-    createVerticalMetrics: function (params) {
-        var drawerParams = [params.metricSize, params.height * ratio, params.methods];
+    createVerticalMetrics(params) {
+        const drawerParams = [params.metricSize, params.height * ratio, params.methods];
 
         return this.createVerticalMetric.apply(this, drawerParams);
     },
-    createHorizontalMetrics: function (params) {
-        var drawerParams = [params.width * ratio, params.metricSize, params.methods];
+    createHorizontalMetrics(params) {
+        const drawerParams = [params.width * ratio, params.metricSize, params.methods];
 
         return this.createHorizontalMetric.apply(this, drawerParams);
     },
-    createVerticalMetric: function (width, height, params, styles) {
-        var arrowOffset = width / 2;
-        var arrowSize = 5;
-        var group = new Konva.Group();
+    createVerticalMetric(width, height, params, styles) {
+        const arrowOffset = width / 2;
+        const arrowSize = 5;
+        const group = new Konva.Group();
 
         // Define styles
         styles = styles || {};
         styles = _.defaults(styles, this.getDefaultMetricStyles());
 
-        var lines = new Konva.Shape({
-            sceneFunc: function (ctx) {
+        const lines = new Konva.Shape({
+            sceneFunc(ctx) {
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
                 ctx.lineTo(width, 0);
@@ -696,11 +692,11 @@ export default Backbone.KonvaView.extend({
                 ctx.stroke();
             },
             stroke: styles.arrows.stroke,
-            strokeWidth: styles.arrows.strokeWidth
+            strokeWidth: styles.arrows.strokeWidth,
         });
 
-        var arrow = new Konva.Shape({
-            sceneFunc: function (ctx) {
+        const arrow = new Konva.Shape({
+            sceneFunc(ctx) {
                 ctx.translate(arrowOffset, 0);
 
                 ctx.beginPath();
@@ -721,64 +717,64 @@ export default Backbone.KonvaView.extend({
                 ctx.strokeShape(this);
             },
             stroke: styles.arrows.stroke,
-            strokeWidth: styles.arrows.strokeWidth
+            strokeWidth: styles.arrows.strokeWidth,
         });
 
         // left text
-        var labelMM = new Konva.Label();
+        const labelMM = new Konva.Label();
 
         labelMM.add(new Konva.Tag({
             fill: styles.label.fill,
             stroke: styles.label.stroke,
-            strokeWidth: styles.label.strokeWidth
+            strokeWidth: styles.label.strokeWidth,
         }));
-        var textMM = new Konva.Text({
+        const textMM = new Konva.Text({
             text: utils.format.dimension_mm(params.getter()),
             padding: styles.label.padding,
             fontFamily: styles.label.fontFamily,
             fontSize: styles.label.fontSize,
-            fill: styles.label.color
+            fill: styles.label.color,
         });
 
         labelMM.add(textMM);
         labelMM.position({
             x: width / 2 - textMM.width() / 2,
-            y: height / 2 + textMM.height() / 2
+            y: height / 2 + textMM.height() / 2,
         });
 
         // left text
-        var labelInches = new Konva.Label();
+        const labelInches = new Konva.Label();
 
         labelInches.add(new Konva.Tag({
             fill: styles.label.fill,
             stroke: styles.label.stroke,
-            strokeWidth: styles.label.strokeWidth
+            strokeWidth: styles.label.strokeWidth,
         }));
-        var inches = utils.convert.mm_to_inches(params.getter());
-        var val = utils.format.dimension(inches, 'fraction', module.getState('inchesDisplayMode'));
-        var textInches = new Konva.Text({
+        const inches = utils.convert.mm_to_inches(params.getter());
+        const val = utils.format.dimension(inches, 'fraction', module.getState('inchesDisplayMode'));
+        const textInches = new Konva.Text({
             text: val,
             padding: styles.label.padding,
             fill: styles.label.color,
             fontFamily: styles.label.fontFamily,
-            fontSize: styles.label.fontSize_big
+            fontSize: styles.label.fontSize_big,
         });
 
         labelInches.add(textInches);
         labelInches.position({
             x: width / 2 - textInches.width() / 2,
-            y: height / 2 - textInches.height() / 2
+            y: height / 2 - textInches.height() / 2,
         });
 
         if (params.setter) {
             // Only for glazing-bars: position of bar can be defined using negative values
             params.canBeNegative = true;
 
-            labelInches.on('click tap', function () {
+            labelInches.on('click tap', () => {
                 module.trigger('labelClicked', {
-                    params: params,
+                    params,
                     pos: labelInches.getAbsolutePosition(),
-                    size: textInches.size()
+                    size: textInches.size(),
                 });
                 // this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
             });
@@ -787,17 +783,17 @@ export default Backbone.KonvaView.extend({
         group.add(lines, arrow, labelInches, labelMM);
         return group;
     },
-    createHorizontalMetric: function (width, height, params, styles) {
-        var arrowOffset = height / 2;
-        var arrowSize = 5;
-        var group = new Konva.Group();
+    createHorizontalMetric(width, height, params, styles) {
+        const arrowOffset = height / 2;
+        const arrowSize = 5;
+        const group = new Konva.Group();
 
         // Define styles
         styles = styles || {};
         styles = _.defaults(styles, this.getDefaultMetricStyles());
 
-        var lines = new Konva.Shape({
-            sceneFunc: function (ctx) {
+        const lines = new Konva.Shape({
+            sceneFunc(ctx) {
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
                 ctx.lineTo(0, height);
@@ -808,11 +804,11 @@ export default Backbone.KonvaView.extend({
                 ctx.stroke();
             },
             stroke: styles.arrows.stroke,
-            strokeWidth: styles.arrows.strokeWidth
+            strokeWidth: styles.arrows.strokeWidth,
         });
 
-        var arrow = new Konva.Shape({
-            sceneFunc: function (ctx) {
+        const arrow = new Konva.Shape({
+            sceneFunc(ctx) {
                 // top pointer
                 ctx.translate(0, arrowOffset);
 
@@ -833,63 +829,63 @@ export default Backbone.KonvaView.extend({
                 ctx.strokeShape(this);
             },
             stroke: styles.arrows.stroke,
-            strokeWidth: styles.arrows.strokeWidth
+            strokeWidth: styles.arrows.strokeWidth,
         });
 
-        var labelMM = new Konva.Label();
+        const labelMM = new Konva.Label();
 
         labelMM.add(new Konva.Tag({
             fill: styles.label.fill,
             stroke: styles.label.stroke,
-            strokeWidth: styles.label.strokeWidth
+            strokeWidth: styles.label.strokeWidth,
         }));
 
-        var textMM = new Konva.Text({
+        const textMM = new Konva.Text({
             text: utils.format.dimension_mm(params.getter()),
             padding: styles.label.padding,
             fontFamily: styles.label.fontFamily,
             fontSize: styles.label.fontSize,
-            fill: styles.label.color
+            fill: styles.label.color,
         });
 
         labelMM.add(textMM);
         labelMM.position({
             x: width / 2 - textMM.width() / 2,
-            y: arrowOffset + textMM.height() / 2
+            y: arrowOffset + textMM.height() / 2,
         });
 
-        var labelInches = new Konva.Label();
+        const labelInches = new Konva.Label();
 
         labelInches.add(new Konva.Tag({
             fill: styles.label.fill,
             stroke: styles.label.stroke,
-            strokeWidth: styles.label.strokeWidth
+            strokeWidth: styles.label.strokeWidth,
         }));
-        var inches = utils.convert.mm_to_inches(params.getter());
-        var val = utils.format.dimension(inches, 'fraction', module.getState('inchesDisplayMode'));
-        var textInches = new Konva.Text({
+        const inches = utils.convert.mm_to_inches(params.getter());
+        const val = utils.format.dimension(inches, 'fraction', module.getState('inchesDisplayMode'));
+        const textInches = new Konva.Text({
             text: val,
             padding: styles.label.padding,
             fill: styles.label.color,
             fontFamily: styles.label.fontFamily,
-            fontSize: styles.label.fontSize_big
+            fontSize: styles.label.fontSize_big,
         });
 
         labelInches.add(textInches);
         labelInches.position({
             x: width / 2 - textInches.width() / 2,
-            y: arrowOffset - labelInches.height() / 2
+            y: arrowOffset - labelInches.height() / 2,
         });
 
         if (params.setter) {
             // Only for glazing-bars: position of bar can be defined using negative values
             params.canBeNegative = true;
 
-            labelInches.on('click tap', function () {
+            labelInches.on('click tap', () => {
                 module.trigger('labelClicked', {
-                    params: params,
+                    params,
                     pos: labelInches.getAbsolutePosition(),
-                    size: textInches.size()
+                    size: textInches.size(),
                 });
                 // this.createInput(params, labelInches.getAbsolutePosition(), textInches.size());
             });
@@ -897,5 +893,5 @@ export default Backbone.KonvaView.extend({
 
         group.add(lines, arrow, labelInches, labelMM);
         return group;
-    }
+    },
 });

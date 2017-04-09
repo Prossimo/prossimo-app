@@ -5,12 +5,12 @@ import ProfileConnectionsTableItemView from './profile-connections-table-item-vi
 
 const template = _.template('<p>This item is not currently available for any profile.</p>');
 const empty_view = Marionette.View.extend({
-    template: template
+    template,
 });
 
 export default Marionette.CollectionView.extend({
     tagName: 'div',
     className: 'profile-connections-table',
     childView: ProfileConnectionsTableItemView,
-    emptyView: empty_view
+    emptyView: empty_view,
 });

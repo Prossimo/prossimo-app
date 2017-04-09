@@ -10,7 +10,7 @@ import template from '../templates/options-dictionary-entries-item-view.hbs';
 export default Marionette.View.extend({
     tagName: 'div',
     className: 'options-dictionary-entries-item',
-    template: template,
+    template,
     ui: {
         $name_container: '.entry-name',
         $supplier_name_container: '.entry-supplier-name',
@@ -19,28 +19,28 @@ export default Marionette.View.extend({
         $clone: '.js-clone-entry',
         $remove: '.js-remove-entry',
         $expand: '.js-expand-entry',
-        $expand_container: '.profile-availability'
+        $expand_container: '.profile-availability',
     },
     events: {
         'click @ui.$edit_profiles': 'editProfiles',
         'click @ui.$clone': 'cloneEntry',
         'click @ui.$remove': 'removeEntry',
-        'click @ui.$expand': 'expandEntry'
+        'click @ui.$expand': 'expandEntry',
     },
-    editProfiles: function () {
+    editProfiles() {
         App.dialogs.showDialog('items-profiles-table', {
             collection_title: this.model.collection.options.dictionary.get('name'),
             active_item: this.model,
             collection: this.model.collection,
             profiles: App.settings.profiles,
-            filter_condition: function (item) {
+            filter_condition(item) {
                 return item.get('name') && !item.hasOnlyDefaultAttributes();
-            }
+            },
         });
     },
-    getProfilesNamesList: function () {
-        var profiles_ids = this.model.get('dictionary_entry_profiles').pluck('profile_id');
-        var profiles_names_list = [];
+    getProfilesNamesList() {
+        const profiles_ids = this.model.get('dictionary_entry_profiles').pluck('profile_id');
+        let profiles_names_list = [];
 
         if (profiles_ids && profiles_ids.length) {
             if (App.settings) {
@@ -52,44 +52,42 @@ export default Marionette.View.extend({
 
         return profiles_names_list;
     },
-    removeEntry: function () {
+    removeEntry() {
         this.model.destroy();
     },
-    cloneEntry: function () {
+    cloneEntry() {
         this.model.duplicate();
     },
-    expandEntry: function () {
+    expandEntry() {
         this.is_expanded = !this.is_expanded;
 
         this.ui.$expand_container.toggleClass('is-shown', this.is_expanded);
     },
-    templateContext: function () {
-        var profiles = this.getProfilesNamesList();
+    templateContext() {
+        const profiles = this.getProfilesNamesList();
 
         return {
             is_expanded: this.is_expanded,
             name: this.model.get('name'),
             supplier_name: this.model.get('supplier_name'),
-            profiles: profiles,
-            profiles_string: profiles.length ? profiles.join(', ') : '--'
+            profiles,
+            profiles_string: profiles.length ? profiles.join(', ') : '--',
         };
     },
-    onRender: function () {
-        var profiles = this.templateContext().profiles;
+    onRender() {
+        const profiles = this.templateContext().profiles;
 
         this.ui.$name_container.empty().append(this.name_input_view.render().el);
         this.ui.$supplier_name_container.empty().append(this.supplier_name_input_view.render().el);
 
         this.ui.$profiles_list_container.on('mouseenter', function () {
-            var $this = $(this);
+            const $this = $(this);
 
             if (profiles && this.offsetWidth < this.scrollWidth) {
                 $this.tooltip({
-                    title: _.map(profiles, function (item) {
-                        return '<p>' + item + '</p>';
-                    }),
+                    title: _.map(profiles, item => `<p>${item}</p>`),
                     html: true,
-                    trigger: 'manual'
+                    trigger: 'manual',
                 });
                 $this.tooltip('show');
             }
@@ -106,7 +104,7 @@ export default Marionette.View.extend({
 
         this.ui.$expand_container.append(this.profile_connections_table_view.render().el);
     },
-    onBeforeDestroy: function () {
+    onBeforeDestroy() {
         if (this.name_input_view) {
             this.name_input_view.destroy();
         }
@@ -122,24 +120,24 @@ export default Marionette.View.extend({
         this.ui.$profiles_list_container.off();
         this.ui.$profiles_list_container.tooltip('destroy');
     },
-    initialize: function () {
+    initialize() {
         this.is_expanded = false;
         this.name_input_view = new BaseInputView({
             model: this.model,
             param: 'name',
             input_type: 'text',
-            placeholder: 'New Entry'
+            placeholder: 'New Entry',
         });
 
         this.supplier_name_input_view = new BaseInputView({
             model: this.model,
             param: 'supplier_name',
             input_type: 'text',
-            placeholder: ''
+            placeholder: '',
         });
 
         this.profile_connections_table_view = new ProfileConnectionsTableView({
-            collection: this.model.get('dictionary_entry_profiles')
+            collection: this.model.get('dictionary_entry_profiles'),
         });
 
         this.listenTo(this.model, 'change:dictionary_entry_profiles change:namechange:supplier_name', function () {
@@ -147,5 +145,5 @@ export default Marionette.View.extend({
             this.name_input_view.delegateEvents();
             this.supplier_name_input_view.delegateEvents();
         });
-    }
+    },
 });

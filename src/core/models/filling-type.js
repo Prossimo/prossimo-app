@@ -6,41 +6,41 @@ import constants from '../../constants';
 import utils from '../../utils';
 import FillingTypeProfileCollection from '../collections/inline/filling-type-to-profile-collection';
 
-var PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
-var PRICING_SCHEME_LINEAR_EQUATION = constants.PRICING_SCHEME_LINEAR_EQUATION;
+const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
+const PRICING_SCHEME_LINEAR_EQUATION = constants.PRICING_SCHEME_LINEAR_EQUATION;
 
-var POSSIBLE_PRICING_SCHEMES = [
+const POSSIBLE_PRICING_SCHEMES = [
     PRICING_SCHEME_PRICING_GRIDS,
-    PRICING_SCHEME_LINEAR_EQUATION
+    PRICING_SCHEME_LINEAR_EQUATION,
 ];
-var UNSET_VALUE = '--';
+const UNSET_VALUE = '--';
 
-var BASE_TYPES = [
-    {name: 'glass', title: 'Glass'},
-    {name: 'recessed', title: 'Recessed'},
-    {name: 'interior-flush-panel', title: 'Interior Flush Panel'},
-    {name: 'exterior-flush-panel', title: 'Exterior Flush Panel'},
-    {name: 'full-flush-panel', title: 'Full Flush Panel'},
-    {name: 'louver', title: 'Louver'}
+const BASE_TYPES = [
+    { name: 'glass', title: 'Glass' },
+    { name: 'recessed', title: 'Recessed' },
+    { name: 'interior-flush-panel', title: 'Interior Flush Panel' },
+    { name: 'exterior-flush-panel', title: 'Exterior Flush Panel' },
+    { name: 'full-flush-panel', title: 'Full Flush Panel' },
+    { name: 'louver', title: 'Louver' },
 ];
 
 //  TODO: `type` attribute should be actually called `base_type`, makes
 //  more sense that way (but we need to get rid of `is_base_type` concept)
-var FILLING_TYPE_PROPERTIES = [
-    {name: 'name', title: 'Prossimo Name', type: 'string'},
-    {name: 'supplier_name', title: 'Supplier Name', type: 'string'},
-    {name: 'type', title: 'Type', type: 'string'},
-    {name: 'is_base_type', title: 'Is Base Type', type: 'boolean'},
-    {name: 'weight_per_area', title: 'Weight per Area (kg/m2)', type: 'number'},
-    {name: 'position', title: 'Position', type: 'number'},
-    {name: 'pricing_scheme', title: 'Pricing Scheme', type: 'string'},
-    {name: 'filling_type_profiles', title: 'Profiles', type: 'collection:FillingTypeProfileCollection'}
+const FILLING_TYPE_PROPERTIES = [
+    { name: 'name', title: 'Prossimo Name', type: 'string' },
+    { name: 'supplier_name', title: 'Supplier Name', type: 'string' },
+    { name: 'type', title: 'Type', type: 'string' },
+    { name: 'is_base_type', title: 'Is Base Type', type: 'boolean' },
+    { name: 'weight_per_area', title: 'Weight per Area (kg/m2)', type: 'number' },
+    { name: 'position', title: 'Position', type: 'number' },
+    { name: 'pricing_scheme', title: 'Pricing Scheme', type: 'string' },
+    { name: 'filling_type_profiles', title: 'Profiles', type: 'collection:FillingTypeProfileCollection' },
 ];
 
 export default Backbone.Model.extend({
     schema: Schema.createSchema(FILLING_TYPE_PROPERTIES),
-    defaults: function () {
-        var defaults = {};
+    defaults() {
+        const defaults = {};
 
         _.each(FILLING_TYPE_PROPERTIES, function (item) {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
@@ -48,29 +48,29 @@ export default Backbone.Model.extend({
 
         return defaults;
     },
-    getNameAttribute: function () {
+    getNameAttribute() {
         return 'name';
     },
-    getAttributeType: function (attribute_name) {
-        var name_title_hash = this.getNameTitleTypeHash();
-        var target_attribute = _.findWhere(name_title_hash, {name: attribute_name});
+    getAttributeType(attribute_name) {
+        const name_title_hash = this.getNameTitleTypeHash();
+        const target_attribute = _.findWhere(name_title_hash, { name: attribute_name });
 
         return target_attribute ? target_attribute.type : undefined;
     },
-    getDefaultValue: function (name, type) {
-        var default_value = '';
+    getDefaultValue(name, type) {
+        let default_value = '';
 
-        var type_value_hash = {
+        const type_value_hash = {
             number: 0,
-            boolean: false
+            boolean: false,
         };
 
-        var name_value_hash = {
+        const name_value_hash = {
             type: this.getBaseTypes()[0].name,
             pricing_scheme: this.getPossiblePricingSchemes()[0],
             filling_type_profiles: new FillingTypeProfileCollection(null, {
-                parent_filling_type: this
-            })
+                parent_filling_type: this,
+            }),
         };
 
         if (_.indexOf(_.keys(type_value_hash), type) !== -1) {
@@ -83,42 +83,40 @@ export default Backbone.Model.extend({
 
         return default_value;
     },
-    sync: function (method, model, options) {
+    sync(method, model, options) {
         if (method === 'create' || method === 'update') {
-            options.attrs = {filling_type: model.toJSON()};
+            options.attrs = { filling_type: model.toJSON() };
         }
 
         return Backbone.sync.call(this, method, model, options);
     },
-    parse: function (data) {
-        var filling_type_data = data && data.filling_type ? data.filling_type : data;
-        var parsed_data = Schema.parseAccordingToSchema(filling_type_data, this.schema);
+    parse(data) {
+        const filling_type_data = data && data.filling_type ? data.filling_type : data;
+        const parsed_data = Schema.parseAccordingToSchema(filling_type_data, this.schema);
 
         if (parsed_data && parsed_data.filling_type_profiles) {
             parsed_data.filling_type_profiles = new FillingTypeProfileCollection(
                 utils.object.extractObjectOrNull(parsed_data.filling_type_profiles),
                 {
                     parent_filling_type: this,
-                    parse: true
-                }
+                    parse: true,
+                },
             );
         }
 
         return parsed_data;
     },
-    toJSON: function () {
-        var properties_to_omit = ['id', 'is_base_type'];
-        var json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+    toJSON() {
+        const properties_to_omit = ['id', 'is_base_type'];
+        const json = Backbone.Model.prototype.toJSON.apply(this, arguments);
 
         json.filling_type_profiles = this.get('filling_type_profiles').toJSON();
 
         return _.omit(json, properties_to_omit);
     },
-    validate: function (attributes, options) {
-        var error_obj = null;
-        var collection_names = this.collection && _.map(this.collection.without(this), function (item) {
-            return item.get('name');
-        });
+    validate(attributes, options) {
+        let error_obj = null;
+        const collection_names = this.collection && _.map(this.collection.without(this), item => item.get('name'));
 
         //  We want to have unique filling type names across the collection
         if (options.validate && collection_names &&
@@ -126,7 +124,7 @@ export default Backbone.Model.extend({
         ) {
             return {
                 attribute_name: 'name',
-                error_message: 'Filling type name "' + attributes.name + '" is already used in this collection'
+                error_message: `Filling type name "${attributes.name}" is already used in this collection`,
             };
         }
 
@@ -134,13 +132,13 @@ export default Backbone.Model.extend({
         if (options.validate && attributes.name && UNSET_VALUE === attributes.name) {
             return {
                 attribute_name: 'name',
-                error_message: 'Filling type name can\'t be set to ' + UNSET_VALUE
+                error_message: `Filling type name can't be set to ${UNSET_VALUE}`,
             };
         }
 
         //  Simple type validation for numbers and booleans
         _.find(attributes, function (value, key) {
-            var attribute_obj = this.getNameTitleTypeHash([key]);
+            let attribute_obj = this.getNameTitleTypeHash([key]);
 
             attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
 
@@ -149,14 +147,14 @@ export default Backbone.Model.extend({
             ) {
                 error_obj = {
                     attribute_name: key,
-                    error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a number'
+                    error_message: `${attribute_obj.title} can't be set to "${value}", it should be a number`,
                 };
 
                 return false;
             } else if (attribute_obj && attribute_obj.type === 'boolean' && !_.isBoolean(value)) {
                 error_obj = {
                     attribute_name: key,
-                    error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a boolean'
+                    error_message: `${attribute_obj.title} can't be set to "${value}", it should be a boolean`,
                 };
 
                 return false;
@@ -167,13 +165,13 @@ export default Backbone.Model.extend({
             return error_obj;
         }
     },
-    hasOnlyDefaultAttributes: function () {
-        var has_only_defaults = true;
+    hasOnlyDefaultAttributes() {
+        let has_only_defaults = true;
 
         _.each(this.toJSON(), function (value, key) {
             if (key !== 'position' && has_only_defaults) {
-                var property_source = _.findWhere(FILLING_TYPE_PROPERTIES, {name: key});
-                var type = property_source ? property_source.type : undefined;
+                const property_source = _.findWhere(FILLING_TYPE_PROPERTIES, { name: key });
+                const type = property_source ? property_source.type : undefined;
 
                 //  This might not be super accurate, but should work
                 if (key === 'filling_type_profiles') {
@@ -190,45 +188,45 @@ export default Backbone.Model.extend({
     },
     //  Return { name: 'name', title: 'Title', type: 'type' } objects for
     //  each item in `names`. If `names` is empty, return everything
-    getNameTitleTypeHash: function (names) {
-        var name_title_hash = [];
+    getNameTitleTypeHash(names) {
+        const name_title_hash = [];
 
         if (!names) {
             names = _.pluck(FILLING_TYPE_PROPERTIES, 'name');
         }
 
-        _.each(FILLING_TYPE_PROPERTIES, function (item) {
+        _.each(FILLING_TYPE_PROPERTIES, (item) => {
             if (_.indexOf(names, item.name) !== -1) {
-                name_title_hash.push({name: item.name, title: item.title, type: item.type});
+                name_title_hash.push({ name: item.name, title: item.title, type: item.type });
             }
         });
 
         return name_title_hash;
     },
-    getTitles: function (names) {
-        var name_title_hash = this.getNameTitleTypeHash(names);
+    getTitles(names) {
+        const name_title_hash = this.getNameTitleTypeHash(names);
 
         return _.pluck(name_title_hash, 'title');
     },
-    getBaseTypes: function () {
+    getBaseTypes() {
         return BASE_TYPES;
     },
-    getBaseTypeTitle: function () {
-        return _.findWhere(this.getBaseTypes(), {name: this.get('type')}).title || '';
+    getBaseTypeTitle() {
+        return _.findWhere(this.getBaseTypes(), { name: this.get('type') }).title || '';
     },
-    getPossiblePricingSchemes: function () {
+    getPossiblePricingSchemes() {
         return POSSIBLE_PRICING_SCHEMES;
     },
-    isAvailableForProfile: function (profile_id) {
+    isAvailableForProfile(profile_id) {
         return this.get('is_base_type') === true ||
             this.get('filling_type_profiles') &&
             _.contains(this.get('filling_type_profiles').pluck('profile_id'), profile_id);
     },
-    isDefaultForProfile: function (profile_id) {
-        var is_default = false;
+    isDefaultForProfile(profile_id) {
+        let is_default = false;
 
         if (!this.get('is_base_type') && this.isAvailableForProfile(profile_id)) {
-            var connection = this.get('filling_type_profiles').getByProfileId(profile_id);
+            const connection = this.get('filling_type_profiles').getByProfileId(profile_id);
 
             is_default = connection.get('is_default') || false;
         }
@@ -248,9 +246,9 @@ export default Backbone.Model.extend({
      * @param {boolean} make_default - true to set as default, false
      * to unset. You can't make item default when it's not available
      */
-    setProfileAvailability: function (profile_id, make_available, make_default) {
-        var profiles_list = this.get('filling_type_profiles');
-        var connection = profiles_list.getByProfileId(profile_id);
+    setProfileAvailability(profile_id, make_available, make_default) {
+        const profiles_list = this.get('filling_type_profiles');
+        const connection = profiles_list.getByProfileId(profile_id);
 
         //  If there is an existing connection that we want to unset
         if (make_available === false && connection) {
@@ -259,8 +257,8 @@ export default Backbone.Model.extend({
             //  If connection doesn't exist and we want to add it
             if (!connection) {
                 profiles_list.add({
-                    profile_id: profile_id,
-                    is_default: make_default === true
+                    profile_id,
+                    is_default: make_default === true,
                 });
                 //  If connection exists and we want to just modify is_default
             } else if (make_default === true || make_default === false) {
@@ -269,36 +267,34 @@ export default Backbone.Model.extend({
         }
     },
     //  We assume that profiles list is sorted and deduplicated
-    getIdsOfProfilesWhereIsAvailable: function () {
+    getIdsOfProfilesWhereIsAvailable() {
         return this.get('filling_type_profiles').pluck('profile_id');
     },
     //  We assume that profiles list is sorted and deduplicated
-    getIdsOfProfilesWhereIsDefault: function () {
+    getIdsOfProfilesWhereIsDefault() {
         return _.map(
-            this.get('filling_type_profiles').where({is_default: true}),
-            function (item) {
-                return item.get('profile_id');
-            }
+            this.get('filling_type_profiles').where({ is_default: true }),
+            item => item.get('profile_id'),
         );
     },
     //  It returns a combination of scheme and data to calculate price
-    getPricingDataForProfile: function (profile_id) {
-        var pricing_data = null;
+    getPricingDataForProfile(profile_id) {
+        let pricing_data = null;
 
         if (this.isAvailableForProfile(profile_id)) {
-            var connection = this.get('filling_type_profiles').getByProfileId(profile_id);
+            const connection = this.get('filling_type_profiles').getByProfileId(profile_id);
 
             pricing_data = (connection && connection.getPricingData()) || null;
         }
 
         return pricing_data;
     },
-    initialize: function (attributes, options) {
+    initialize(attributes, options) {
         this.options = options || {};
 
         //  Any change to `filling_type_profiles` should be persisted
         this.listenTo(this.get('filling_type_profiles'), 'change update', function () {
             this.persist('filling_type_profiles', this.get('filling_type_profiles'));
         });
-    }
+    },
 });

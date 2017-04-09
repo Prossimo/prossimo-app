@@ -10,12 +10,12 @@ const UNSET_VALUE = '--';
 
 export default BaseDialogView.extend({
     className: 'items-profiles-table-modal modal fade',
-    template: template,
+    template,
     ui: {
-        $hot_container: '.handsontable-container'
+        $hot_container: '.handsontable-container',
     },
     events: {
-        'shown.bs.modal': 'onModalShown'
+        'shown.bs.modal': 'onModalShown',
     },
     //  We have two strategies here.
     //  1. If we set or unset some option as a default for some profile,
@@ -29,22 +29,22 @@ export default BaseDialogView.extend({
     //  so there's no default option for this profile
     //  - make the corresponding REST API call to update option to profile
     //  availability
-    onDataChange: function (changes_array) {
+    onDataChange(changes_array) {
         _.each(changes_array, function (change) {
-            var profile_index = change[0];
-            var column_index = change[1];
-            var old_value = change[2];
-            var new_value = change[3];
-            var profile = this.options.profiles.at(profile_index);
+            const profile_index = change[0];
+            const column_index = change[1];
+            const old_value = change[2];
+            let new_value = change[3];
+            const profile = this.options.profiles.at(profile_index);
 
             if (old_value === new_value) {
                 return;
             }
 
             //  Fix HoT issue with booleans cast to strings on copy/paste
-            if ( new_value === 'true' ) {
+            if (new_value === 'true') {
                 new_value = true;
-            } else if ( new_value === 'false' ) {
+            } else if (new_value === 'false') {
                 new_value = false;
             }
 
@@ -52,14 +52,14 @@ export default BaseDialogView.extend({
             if (column_index === 0) {
                 //  Set item `new_item` to be default for this profile,
                 //  and make sure item `old_item` is not default anymore
-                var new_item = this.options.collection.findWhere({name: new_value});
-                var old_item = this.options.collection.findWhere({name: old_value});
+                const new_item = this.options.collection.findWhere({ name: new_value });
+                const old_item = this.options.collection.findWhere({ name: old_value });
 
                 this.options.collection.setItemAsDefaultForProfile(profile.id, new_item, old_item);
             //  This means we changed availability for some profile/item
             } else {
-                var item_index = column_index - 1;
-                var item = this.options.items_filtered[item_index];
+                const item_index = column_index - 1;
+                const item = this.options.items_filtered[item_index];
 
                 this.options.collection.setItemAvailabilityForProfile(profile.id, item, new_value);
                 this.updateDefaultVariantsForProfile(profile_index);
@@ -68,12 +68,12 @@ export default BaseDialogView.extend({
     },
     //  This function only updates the list of default variants here, it
     //  doesn't do any changes to models
-    updateDefaultVariantsForProfile: function (profile_index) {
-        var old_possible_defaults = this.hot.getCellMeta(profile_index, 0).source || [];
-        var new_possible_defaults = this.getAvailableItemNames(
-            this.options.profiles.at(profile_index).id
+    updateDefaultVariantsForProfile(profile_index) {
+        const old_possible_defaults = this.hot.getCellMeta(profile_index, 0).source || [];
+        const new_possible_defaults = this.getAvailableItemNames(
+            this.options.profiles.at(profile_index).id,
         );
-        var old_value = this.hot.getDataAtCell(profile_index, 0);
+        const old_value = this.hot.getDataAtCell(profile_index, 0);
 
         if (old_possible_defaults !== new_possible_defaults) {
             this.hot.setCellMeta(profile_index, 0, 'source', new_possible_defaults);
@@ -89,20 +89,20 @@ export default BaseDialogView.extend({
             if (new_possible_defaults.length === 1) {
                 this.hot.setCellMetaObject(profile_index, 0, {
                     readOnly: true,
-                    renderer: hotRenderers.getDisabledPropertyRenderer('(No Variants)')
+                    renderer: hotRenderers.getDisabledPropertyRenderer('(No Variants)'),
                 });
             } else if (old_possible_defaults.length === 1 && new_possible_defaults.length > 1) {
                 this.hot.setCellMetaObject(profile_index, 0, {
                     readOnly: false,
-                    renderer: Handsontable.renderers.AutocompleteRenderer
+                    renderer: Handsontable.renderers.AutocompleteRenderer,
                 });
             }
 
             this.hot.render();
         }
     },
-    getDefaultItemName: function (profile_id) {
-        var default_item = this.options.collection.getDefaultForProfile(profile_id);
+    getDefaultItemName(profile_id) {
+        const default_item = this.options.collection.getDefaultForProfile(profile_id);
 
         return default_item ? default_item.get('name') : UNSET_VALUE;
     },
@@ -110,9 +110,9 @@ export default BaseDialogView.extend({
     //  out some item that is set as default for this profile. We want to
     //  offer this item in selection nevertheless. Also, we put default
     //  item to the top spot in the dropdown
-    getAvailableItemNames: function (profile_id) {
-        var possible_items = this.options.collection.getAvailableForProfile(profile_id);
-        var default_item = this.options.collection.getDefaultForProfile(profile_id);
+    getAvailableItemNames(profile_id) {
+        let possible_items = this.options.collection.getAvailableForProfile(profile_id);
+        const default_item = this.options.collection.getDefaultForProfile(profile_id);
 
         if (this.options.filter_condition !== false) {
             possible_items = _.filter(possible_items, this.options.filter_condition);
@@ -122,40 +122,32 @@ export default BaseDialogView.extend({
             possible_items = _.union([default_item], possible_items);
         }
 
-        return [UNSET_VALUE].concat(_.map(possible_items, function (available_item) {
-            return available_item.get('name');
-        }));
+        return [UNSET_VALUE].concat(_.map(possible_items, available_item => available_item.get('name')));
     },
-    getData: function () {
+    getData() {
         return this.options.profiles.map(function (profile) {
             return [this.getDefaultItemName(profile.id)].concat(
-                _.map(this.options.items_filtered, function (item) {
-                    return _.contains(item.getIdsOfProfilesWhereIsAvailable() || [], profile.id);
-                })
+                _.map(this.options.items_filtered, item => _.contains(item.getIdsOfProfilesWhereIsAvailable() || [], profile.id)),
             );
         }, this);
     },
-    getHeaders: function () {
+    getHeaders() {
         return {
-            rowHeaders: this.options.profiles.map(function (profile) {
-                return profile.get('name');
-            }),
+            rowHeaders: this.options.profiles.map(profile => profile.get('name')),
             colHeaders: [DEFAULT_COLUMN_TITLE].concat(
-                _.map(this.options.items_filtered, function (item) {
-                    return item.get('name');
-                })
-            )
+                _.map(this.options.items_filtered, item => item.get('name')),
+            ),
         };
     },
-    getColumnOptions: function () {
-        var column_options = [];
+    getColumnOptions() {
+        const column_options = [];
 
-        _.each(this.getHeaders().colHeaders, function (column_title, index) {
-            var is_default_column = column_title === DEFAULT_COLUMN_TITLE;
+        _.each(this.getHeaders().colHeaders, (column_title, index) => {
+            const is_default_column = column_title === DEFAULT_COLUMN_TITLE;
 
-            var column_obj = _.extend({}, {
+            const column_obj = _.extend({}, {
                 data: index,
-                type: is_default_column ? 'dropdown' : 'checkbox'
+                type: is_default_column ? 'dropdown' : 'checkbox',
             });
 
             column_options.push(column_obj);
@@ -163,16 +155,16 @@ export default BaseDialogView.extend({
 
         return column_options;
     },
-    getCellOptions: function () {
-        var self = this;
+    getCellOptions() {
+        const self = this;
 
         return function (row, col) {
-            var cell_properties = {};
+            const cell_properties = {};
 
             //  If it's the left ('Default Value') column
             if (col === 0) {
-                var available_names = self.getAvailableItemNames(
-                    self.options.profiles.at(row).id
+                const available_names = self.getAvailableItemNames(
+                    self.options.profiles.at(row).id,
                 );
 
                 //  If there are some available options (we compare to 1
@@ -190,54 +182,54 @@ export default BaseDialogView.extend({
             return cell_properties;
         };
     },
-    templateContext: function () {
+    templateContext() {
         return {
             item_name: this.options.active_item.get('name'),
-            collection_title: this.options.collection_title
+            collection_title: this.options.collection_title,
         };
     },
-    onRender: function () {
-        var self = this;
-        var headers = this.getHeaders();
+    onRender() {
+        const self = this;
+        const headers = this.getHeaders();
 
         if (!self.hot) {
-            _.defer(function () {
+            _.defer(() => {
                 self.hot = new Handsontable(self.ui.$hot_container[0], {
                     data: self.getData(),
                     colHeaders: headers.colHeaders,
                     rowHeaders: headers.rowHeaders,
                     rowHeaderWidth: 200,
                     rowHeights: 25,
-                    maxRows: function () {
+                    maxRows() {
                         return self.options.profiles.length;
                     },
-                    afterChange: function (change) {
+                    afterChange(change) {
                         self.onDataChange(change);
                     },
                     columns: self.getColumnOptions(),
-                    cells: self.getCellOptions()
+                    cells: self.getCellOptions(),
                 });
             });
         }
     },
-    onModalShown: function () {
-        if ( this.hot ) {
+    onModalShown() {
+        if (this.hot) {
             this.hot.render();
         }
     },
-    onBeforeDestroy: function () {
+    onBeforeDestroy() {
         if (this.hot) {
             this.hot.destroy();
         }
     },
-    initialize: function (options) {
-        var default_options = {
+    initialize(options) {
+        const default_options = {
             active_item: undefined,
             collection: undefined,
             profiles: undefined,
             items_filtered: [],
             filter_condition: false,
-            collection_title: ''
+            collection_title: '',
         };
 
         this.options = _.extend(default_options, options);
@@ -253,5 +245,5 @@ export default BaseDialogView.extend({
 
             this.options.items_filtered = this.options.collection.filter(this.options.filter_condition);
         }
-    }
+    },
 });

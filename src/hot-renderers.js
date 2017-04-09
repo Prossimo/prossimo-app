@@ -7,10 +7,10 @@ import Utils from './utils';
 //  Custom Handsontable cell content renderers
 export default {
     //  Render base64-encoded string as an image
-    customerImageRenderer: function (instance, td, row, col, prop, value) {
-        var escaped = Handsontable.helper.stringify(value);
-        var $img;
-        var $td = $(td);
+    customerImageRenderer(instance, td, row, col, prop, value) {
+        const escaped = Handsontable.helper.stringify(value);
+        let $img;
+        const $td = $(td);
 
         if (escaped.indexOf('data:image/png') === 0) {
             $img = $('<img class="customer-image" />');
@@ -25,10 +25,10 @@ export default {
 
         return td;
     },
-    drawingPreviewRenderer: function (instance, td, row, col, prop, value) {
-        var escaped = Handsontable.helper.stringify(value);
-        var $img;
-        var $td = $(td);
+    drawingPreviewRenderer(instance, td, row, col, prop, value) {
+        const escaped = Handsontable.helper.stringify(value);
+        let $img;
+        const $td = $(td);
 
         if (escaped.indexOf('data:image/png') === 0) {
             $img = $('<img class="drawing-preview" />');
@@ -44,39 +44,39 @@ export default {
         return td;
     },
     //  Format value with the help of formatters from `utils.js`
-    getFormattedRenderer: function (attr_name, is_highlighted) {
-        var args = _.toArray(arguments).slice(1);
+    getFormattedRenderer(attr_name, is_highlighted) {
+        const args = _.toArray(arguments).slice(1);
 
-        var f = Utils.format;
-        var formatters_hash = {
-            dimension: function () {
+        const f = Utils.format;
+        const formatters_hash = {
+            dimension() {
                 return f.dimension.apply(this, arguments);
             },
-            dimension_heights: function () {
+            dimension_heights() {
                 return f.dimension_heights.apply(this, arguments);
             },
-            percent: function () {
+            percent() {
                 return f.percent.apply(this, arguments);
             },
-            percent_difference: function () {
+            percent_difference() {
                 return f.percent_difference.apply(this, arguments);
             },
-            fixed_minimal: function () {
+            fixed_minimal() {
                 return f.fixed_minimal.apply(this, arguments);
             },
-            fixed_heights: function () {
+            fixed_heights() {
                 return f.fixed_heights.apply(this, arguments);
             },
-            fixed: function () {
+            fixed() {
                 return f.fixed.apply(this, arguments);
             },
-            price_usd: function () {
+            price_usd() {
                 return f.price_usd.apply(this, arguments);
-            }
+            },
         };
 
         return function (instance, td, row, col, prop, value) {
-            var $td = $(td);
+            const $td = $(td);
 
             if (formatters_hash[attr_name]) {
                 arguments[5] = formatters_hash[attr_name](value, args[0], args[1]);
@@ -109,22 +109,20 @@ export default {
         };
     },
     //  Add move up / down buttons to move item within collection
-    moveItemRenderer: function (instance, td, row) {
-        var $td = $(td);
-        var is_first_item = row === 0;
-        var is_last_item = row === instance.getSourceData().filter(function (item) {
-            return item.get('is_base_type') !== true;
-        }).length - 1;
+    moveItemRenderer(instance, td, row) {
+        const $td = $(td);
+        const is_first_item = row === 0;
+        const is_last_item = row === instance.getSourceData().filter(item => item.get('is_base_type') !== true).length - 1;
 
-        var $button_up = $('<button>', {
+        const $button_up = $('<button>', {
             class: 'btn btn-xs btn-move js-move-item-up glyphicon glyphicon-arrow-up',
             'data-row': row,
-            title: 'Move Item Up'
+            title: 'Move Item Up',
         });
-        var $button_down = $('<button>', {
+        const $button_down = $('<button>', {
             class: 'btn btn-xs btn-move js-move-item-down glyphicon glyphicon-arrow-down',
             'data-row': row,
-            title: 'Move Item Down'
+            title: 'Move Item Down',
         });
 
         if (is_first_item) {
@@ -140,7 +138,7 @@ export default {
         return td;
     },
     //  Just replace visible cell value with "--" or another message
-    getDisabledPropertyRenderer: function (message) {
+    getDisabledPropertyRenderer(message) {
         message = message || '--';
 
         return function (instance, td) {
@@ -148,10 +146,10 @@ export default {
             return td;
         };
     },
-    unitProfileRenderer: function (instance, td, row) {
-        var current_unit = instance.getSourceData().at(row) &&
+    unitProfileRenderer(instance, td, row) {
+        const current_unit = instance.getSourceData().at(row) &&
             instance.getSourceData().at(row);
-        var current_profile = current_unit && current_unit.profile;
+        const current_profile = current_unit && current_unit.profile;
 
         if (current_profile && current_profile.get('name')) {
             arguments[5] = current_profile.get('name');
@@ -166,5 +164,5 @@ export default {
         }
 
         return td;
-    }
+    },
 };

@@ -13,21 +13,21 @@ const ESC_KEY = 27;
 
 export default Marionette.View.extend({
     className: 'input-container',
-    template: template,
+    template,
     ui: {
         $edit: '.edit',
         $input: '.edit input',
-        $value: '.value'
+        $value: '.value',
     },
     events: {
         'click @ui.$value': 'makeEditable',
         'blur @ui.$input': 'stopEditing',
         'keypress @ui.$input': 'confirmOnEnter',
         'keydown @ui.$input': 'cancelOnEscape',
-        'click .js-revert-editable': 'revertEditable'
+        'click .js-revert-editable': 'revertEditable',
     },
-    makeEditable: function () {
-        var is_disabled = this.options.is_disabled && _.isFunction(this.options.is_disabled) ?
+    makeEditable() {
+        const is_disabled = this.options.is_disabled && _.isFunction(this.options.is_disabled) ?
             this.options.is_disabled() :
             this.options.is_disabled;
 
@@ -36,13 +36,13 @@ export default Marionette.View.extend({
             this.ui.$input.trigger('focus').trigger('select');
         }
     },
-    revertEditable: function () {
+    revertEditable() {
         this.$el.removeClass('is-edited').removeClass('has-error');
         this.ui.$input.val(this.templateContext().value);
         this.hideErrorMessage();
     },
-    showErrorMessage: function (message) {
-        var html = '<p>' + message + '</p>' +
+    showErrorMessage(message) {
+        const html = `<p>${message}</p>` +
             '<button class="btn btn-xs btn-primary js-revert-editable">' +
             '<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>' +
             '<span>Undo</span>' +
@@ -52,14 +52,14 @@ export default Marionette.View.extend({
         this.ui.$edit.attr('data-content', html);
         this.ui.$edit.popover('show');
     },
-    hideErrorMessage: function () {
+    hideErrorMessage() {
         this.$el.removeClass('has-error');
         this.ui.$edit.attr('data-content', '');
         this.ui.$edit.popover('hide');
     },
-    stopEditing: function () {
-        var new_value = this.ui.$input.val().trim();
-        var new_value_parsed;
+    stopEditing() {
+        const new_value = this.ui.$input.val().trim();
+        let new_value_parsed;
 
         if (
             !this.$el.hasClass('is-edited') ||
@@ -73,7 +73,7 @@ export default Marionette.View.extend({
                 this.model.getAttributeType(this.options.param) === 'number' && !isNaN(new_value) ?
                 parseFloat(new_value) : new_value;
 
-            var validation_successful = this.model.persist(this.options.param, new_value_parsed, {validate: true});
+            const validation_successful = this.model.persist(this.options.param, new_value_parsed, { validate: true });
 
             //  If validation failed, `validation_successful` will be false
             //  and validationError will contain hash of ivalid attributes.
@@ -91,66 +91,66 @@ export default Marionette.View.extend({
             this.revertEditable();
         }
     },
-    confirmOnEnter: function (e) {
+    confirmOnEnter(e) {
         if (e.which === ENTER_KEY) {
             this.stopEditing();
         }
     },
-    cancelOnEscape: function (e) {
+    cancelOnEscape(e) {
         if (e.which === ESC_KEY) {
             this.revertEditable();
         }
     },
-    appendPopover: function () {
+    appendPopover() {
         this.ui.$edit.popover('destroy');
 
         this.ui.$edit.popover({
             trigger: 'manual',
             title: 'Validation Error',
-            html: true
+            html: true,
         });
     },
     //  TODO: we need to handle a case where is_disabled is a function
-    enable: function () {
+    enable() {
         this.options.is_disabled = false;
         this.render();
     },
-    disable: function () {
+    disable() {
         this.options.is_disabled = true;
         this.render();
     },
-    templateContext: function () {
-        var value = this.model.get(this.options.param);
-        var placeholder = this.options.placeholder || '&nbsp;';
-        var is_disabled = this.options.is_disabled && _.isFunction(this.options.is_disabled) ?
+    templateContext() {
+        const value = this.model.get(this.options.param);
+        const placeholder = this.options.placeholder || '&nbsp;';
+        const is_disabled = this.options.is_disabled && _.isFunction(this.options.is_disabled) ?
             this.options.is_disabled() :
             this.options.is_disabled;
 
         return {
             input_type: this.options.input_type || 'text',
-            value: value,
+            value,
             readable_value: (is_disabled && this.options.disabled_value) ?
                 this.options.disabled_value :
                 (value !== '' ? value : placeholder),
             show_placeholder: !value && placeholder,
-            is_disabled: is_disabled
+            is_disabled,
         };
     },
-    onRender: function () {
+    onRender() {
         this.appendPopover();
     },
-    onBeforeDestroy: function () {
+    onBeforeDestroy() {
         this.ui.$edit.popover('destroy');
     },
     //  TODO: we could pass a formatter function to format readable value,
     //  see getFormattedRenderer from hot-renderers for example
-    initialize: function (options) {
-        var default_options = {
+    initialize(options) {
+        const default_options = {
             input_type: 'text',
             is_disabled: false,
             disabled_value: '',
             placeholder: '',
-            formatter: false
+            formatter: false,
         };
 
         this.options = _.extend({}, default_options, options);
@@ -158,9 +158,9 @@ export default Marionette.View.extend({
         //  TODO: we could use input type number here, but the problem is
         //  it has some serious issues in firefox
         if (this.options.input_type && !_.contains(['text'], this.options.input_type)) {
-            throw new Error('Input type ' + this.options.input_type + ' is not allowed');
+            throw new Error(`Input type ${this.options.input_type} is not allowed`);
         }
 
-        this.listenTo(this.model, 'change:' + this.options.param, this.render);
-    }
+        this.listenTo(this.model, `change:${this.options.param}`, this.render);
+    },
 });

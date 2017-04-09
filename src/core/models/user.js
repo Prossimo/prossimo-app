@@ -4,13 +4,13 @@ function getUserDefaults() {
     return {
         email: '',
         username: '',
-        roles: []
+        roles: [],
     };
 }
 
 export default Backbone.Model.extend({
     defaults: getUserDefaults(),
-    reset: function () {
+    reset() {
         this.set(getUserDefaults());
-    }
+    },
 });

@@ -9,7 +9,7 @@ import KonvaClipPatch from './konva-clip-patch';
 // And transfer keyboard events from view to drawers
 
 export default Marionette.Object.extend({
-    initialize: function (opts) {
+    initialize(opts) {
         this.layers = {};
 
         this.trapezoid = opts.builder.get('model').isTrapezoid();
@@ -19,31 +19,31 @@ export default Marionette.Object.extend({
         this.listenTo(this.getOption('builder'), 'update', this.update);
     },
     // Create layers on init
-    createLayers: function (layerOpts) {
-        var defaultLayer = {
+    createLayers(layerOpts) {
+        const defaultLayer = {
             zIndex: 0,
             visible: true,
-            active: true
+            active: true,
         };
 
-        var defaultLayers = {
+        const defaultLayers = {
             unit: {
                 DrawerClass: (this.trapezoid) ? Drawers.TrapezoidUnitDrawer : Drawers.UnitDrawer,
                 zIndex: 0,
                 visible: true,
-                active: true
+                active: true,
             },
             metrics: {
                 DrawerClass: Drawers.MetricsDrawer,
                 zIndex: 1,
                 visible: true,
-                active: true
-            }
+                active: true,
+            },
         };
 
-        var layers = _.defaults(layerOpts, defaultLayers);
+        const layers = _.defaults(layerOpts, defaultLayers);
 
-        _.each(layerOpts, function (layer, key) {
+        _.each(layerOpts, (layer, key) => {
             if (key in layers && layer.active === false) {
                 delete layers[key];
             } else if (defaultLayers.hasOwnProperty(key)) {
@@ -56,8 +56,8 @@ export default Marionette.Object.extend({
         this.addLayers(layers, this.getOption('stage'));
     },
     // Add/Remove/Get layers
-    addLayer: function (name, opts, stage) {
-        var data = opts;
+    addLayer(name, opts, stage) {
+        const data = opts;
 
         if (data.DrawerClass !== null) {
             data.layer = new KonvaClipPatch.Layer();
@@ -69,31 +69,31 @@ export default Marionette.Object.extend({
                 stage: this.getOption('stage'),
                 builder: this.getOption('builder'),
                 metricSize: this.getOption('metricSize'),
-                data: data.data
+                data: data.data,
             });
             this.layers[name] = data;
         } else {
-            throw new Error('You must specify DrawerClass for a new layer (layer name: ' + name + ')');
+            throw new Error(`You must specify DrawerClass for a new layer (layer name: ${name})`);
         }
 
         return data;
     },
-    addLayers: function (layers, stage) {
-        _.each(layers, function (value, key) {
+    addLayers(layers, stage) {
+        _.each(layers, (value, key) => {
             this.addLayer(key, value, stage);
-        }.bind(this));
+        });
 
         return this.getLayers();
     },
-    removeLayer: function (name) {
+    removeLayer(name) {
         if (name in this.layers) {
             delete this.layers[name];
         }
 
         return true;
     },
-    getLayer: function (name) {
-        var result = null;
+    getLayer(name) {
+        let result = null;
 
         if (name in this.layers) {
             result = this.layers[name];
@@ -101,15 +101,13 @@ export default Marionette.Object.extend({
 
         return result;
     },
-    getLayers: function (asArray) {
-        var result;
+    getLayers(asArray) {
+        let result;
 
         if (asArray) {
             result = Array.from(this.layers);
 
-            result.sort(function (a, b) {
-                return a.zIndex > b.zIndex;
-            });
+            result.sort((a, b) => a.zIndex > b.zIndex);
         } else {
             result = this.layers;
         }
@@ -117,20 +115,19 @@ export default Marionette.Object.extend({
         return result;
     },
     // Iterate each layer
-    each: function (callback) {
+    each(callback) {
         _.each(this.layers, callback);
     },
-    update: function () {
-        var self = this;
-        var isTrapezoidDrawer =
+    update() {
+        const self = this;
+        const isTrapezoidDrawer =
             this.getLayer('unit') &&
             this.getLayer('unit').drawer.constructor === Drawers.TrapezoidUnitDrawer;
-        var isTrapezoid = this.getOption('builder').get('model').isTrapezoid();
+        const isTrapezoid = this.getOption('builder').get('model').isTrapezoid();
 
         this.trapezoid = isTrapezoid;
 
-        this.each(function (layer) {
-
+        this.each((layer) => {
             if (layer.name === 'unit' && isTrapezoid && !isTrapezoidDrawer) {
                 self.toTrapezoidDrawer();
             } else if (layer.name === 'unit' && !isTrapezoid && isTrapezoidDrawer) {
@@ -143,37 +140,37 @@ export default Marionette.Object.extend({
         });
     },
     // Switch unit DrawerClass
-    toDrawer: function (drawerType) {
-        var unitLayer = this.getOption('layers').unit;
-        var DrawerClass = (drawerType === 'trapezoid') ? Drawers.TrapezoidUnitDrawer : Drawers.UnitDrawer;
+    toDrawer(drawerType) {
+        const unitLayer = this.getOption('layers').unit;
+        const DrawerClass = (drawerType === 'trapezoid') ? Drawers.TrapezoidUnitDrawer : Drawers.UnitDrawer;
 
         unitLayer.drawer = new DrawerClass({
             layer: unitLayer.layer,
             stage: this.getOption('stage'),
             builder: this.getOption('builder'),
             metricSize: this.getOption('metricSize'),
-            data: unitLayer
+            data: unitLayer,
         });
     },
-    toTrapezoidDrawer: function () {
+    toTrapezoidDrawer() {
         this.toDrawer('trapezoid');
     },
-    toRegularDrawer: function () {
+    toRegularDrawer() {
         this.toDrawer('regular');
     },
     // Handler
-    handleKeyEvents: function (event) {
-        var eventHandler = (event.type === 'keydown') ? 'onKeyDown' :
+    handleKeyEvents(event) {
+        const eventHandler = (event.type === 'keydown') ? 'onKeyDown' :
             (event.type === 'keyup') ? 'onKeyUp' :
                 (event.type === 'keypress') ? 'onKeyPress' :
                     null;
 
         if (eventHandler !== null) {
-            this.each(function (layer) {
+            this.each((layer) => {
                 if (typeof layer.drawer[eventHandler] === 'function') {
                     layer.drawer[eventHandler](event);
                 }
             });
         }
-    }
+    },
 });

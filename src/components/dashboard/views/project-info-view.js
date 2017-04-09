@@ -13,12 +13,12 @@ export default Marionette.View.extend({
     editTemplate: templateEdit,
     ui: {
         $content: '#project-info-content',
-        $edit_button: '.toggle-edit-mode'
+        $edit_button: '.toggle-edit-mode',
     },
     events: {
-        'click @ui.$edit_button': 'toggleEditMode'
+        'click @ui.$edit_button': 'toggleEditMode',
     },
-    toggleEditMode: function () {
+    toggleEditMode() {
         if (this.editMode) {
             this.saveFormData();
         }
@@ -26,35 +26,35 @@ export default Marionette.View.extend({
         this.editMode = !this.editMode;
         this.render();
     },
-    enterMode: function () {
+    enterMode() {
         if (this.editMode) {
             this.enterEditMode();
         } else {
             this.enterViewMode();
         }
     },
-    enterViewMode: function () {
+    enterViewMode() {
         this.ui.$content.html(this.viewTemplate(this.model.toJSON()));
     },
-    enterEditMode: function () {
+    enterEditMode() {
         this.ui.$content.html(this.editTemplate(this.model.toJSON()));
     },
-    templateContext: function () {
-        return _.extend({}, this.model.toJSON(), {editMode: this.editMode});
+    templateContext() {
+        return _.extend({}, this.model.toJSON(), { editMode: this.editMode });
     },
-    saveFormData: function () {
-        var modelData = {};
+    saveFormData() {
+        const modelData = {};
 
-        _.map(this.$el.find('.form-horizontal').serializeArray(), function (item) {
+        _.map(this.$el.find('.form-horizontal').serializeArray(), (item) => {
             modelData[item.name] = item.value;
         });
 
-        this.model.persist(modelData, {wait: true, success: this.enterViewMode.bind(this)});
+        this.model.persist(modelData, { wait: true, success: this.enterViewMode.bind(this) });
     },
-    initialize: function () {
+    initialize() {
         this.editMode = false;
     },
-    onRender: function () {
+    onRender() {
         this.enterMode();
-    }
+    },
 });

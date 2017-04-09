@@ -9,27 +9,27 @@ import template from '../templates/main-quote-view.hbs';
 export default Marionette.View.extend({
     tagName: 'div',
     className: 'screen quote-screen',
-    template: template,
+    template,
     ui: {
         $header_container: '.quote-header-container',
-        $table_container: '.quote-table-container'
+        $table_container: '.quote-table-container',
     },
-    templateContext: function () {
+    templateContext() {
         return {
             urlToDownloadPdf: App.settings.getPdfDownloadUrl('quote'),
-            lead_time: App.current_project.get('lead_time')
+            lead_time: App.current_project.get('lead_time'),
         };
     },
-    onRender: function () {
+    onRender() {
         this.units_table_view = new UnitsTableView({
             collection: App.current_quote.units,
             extras: App.current_quote.extras,
-            parent_view: this
+            parent_view: this,
         });
 
         this.quote_header_view = new QuoteHeaderView({
             model: App.current_project,
-            quote: App.current_quote
+            quote: App.current_quote,
         });
 
         this.quote_table_view = new QuoteTableView({
@@ -37,16 +37,16 @@ export default Marionette.View.extend({
             quote: App.current_quote,
             collection: App.current_quote.units,
             extras: App.current_quote.extras,
-            show_outside_units_view: true
+            show_outside_units_view: true,
         });
 
         this.$el.append(this.units_table_view.render().el);
         this.ui.$header_container.append(this.quote_header_view.render().el);
         this.ui.$table_container.append(this.quote_table_view.render().el);
     },
-    onBeforeDestroy: function () {
+    onBeforeDestroy() {
         this.units_table_view.destroy();
         this.quote_header_view.destroy();
         this.quote_table_view.destroy();
-    }
+    },
 });

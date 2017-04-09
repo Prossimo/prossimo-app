@@ -6,7 +6,7 @@ import Schema from '../../schema';
 import utils from '../../utils';
 import constants from '../../constants';
 import UnitOptionCollection from '../collections/inline/unit-option-collection';
-import {globalChannel} from '../../utils/radio';
+import { globalChannel } from '../../utils/radio';
 
 const UNSET_VALUE = '--';
 
@@ -16,29 +16,29 @@ const PRICING_SCHEME_PER_ITEM = constants.PRICING_SCHEME_PER_ITEM;
 const PRICING_SCHEME_LINEAR_EQUATION = constants.PRICING_SCHEME_LINEAR_EQUATION;
 
 const UNIT_PROPERTIES = [
-    {name: 'mark', title: 'Mark', type: 'string'},
-    {name: 'width', title: 'Width (inches)', type: 'number'},
-    {name: 'height', title: 'Height (inches)', type: 'string'},
-    {name: 'quantity', title: 'Quantity', type: 'number'},
-    {name: 'description', title: 'Customer Description', type: 'string'},
-    {name: 'notes', title: 'Notes', type: 'string'},
-    {name: 'exceptions', title: 'Exceptions', type: 'string'},
-    {name: 'glazing_bar_width', title: 'Glazing Bar Width (mm)', type: 'number'},
-    {name: 'profile_name', title: 'Profile', type: 'string'},
-    {name: 'profile_id', title: 'Profile', type: 'string'},
-    {name: 'customer_image', title: 'Customer Image', type: 'string'},
-    {name: 'opening_direction', title: 'Opening Direction', type: 'string'},
-    {name: 'glazing', title: 'Glass Packet / Panel Type', type: 'string'},
-    {name: 'uw', title: 'Uw', type: 'number'},
-    {name: 'original_cost', title: 'Original Cost', type: 'number'},
-    {name: 'original_currency', title: 'Original Currency', type: 'string'},
-    {name: 'conversion_rate', title: 'Conversion Rate', type: 'number'},
-    {name: 'supplier_discount', title: 'Supplier Discount', type: 'number'},
-    {name: 'price_markup', title: 'Markup', type: 'number'},
-    {name: 'discount', title: 'Discount', type: 'number'},
-    {name: 'position', title: 'Position', type: 'number'},
-    {name: 'unit_options', title: 'Unit Options', type: 'collection:UnitOptionCollection'},
-    {name: 'root_section', title: 'Root Section', type: 'object'}
+    { name: 'mark', title: 'Mark', type: 'string' },
+    { name: 'width', title: 'Width (inches)', type: 'number' },
+    { name: 'height', title: 'Height (inches)', type: 'string' },
+    { name: 'quantity', title: 'Quantity', type: 'number' },
+    { name: 'description', title: 'Customer Description', type: 'string' },
+    { name: 'notes', title: 'Notes', type: 'string' },
+    { name: 'exceptions', title: 'Exceptions', type: 'string' },
+    { name: 'glazing_bar_width', title: 'Glazing Bar Width (mm)', type: 'number' },
+    { name: 'profile_name', title: 'Profile', type: 'string' },
+    { name: 'profile_id', title: 'Profile', type: 'string' },
+    { name: 'customer_image', title: 'Customer Image', type: 'string' },
+    { name: 'opening_direction', title: 'Opening Direction', type: 'string' },
+    { name: 'glazing', title: 'Glass Packet / Panel Type', type: 'string' },
+    { name: 'uw', title: 'Uw', type: 'number' },
+    { name: 'original_cost', title: 'Original Cost', type: 'number' },
+    { name: 'original_currency', title: 'Original Currency', type: 'string' },
+    { name: 'conversion_rate', title: 'Conversion Rate', type: 'number' },
+    { name: 'supplier_discount', title: 'Supplier Discount', type: 'number' },
+    { name: 'price_markup', title: 'Markup', type: 'number' },
+    { name: 'discount', title: 'Discount', type: 'number' },
+    { name: 'position', title: 'Position', type: 'number' },
+    { name: 'unit_options', title: 'Unit Options', type: 'collection:UnitOptionCollection' },
+    { name: 'root_section', title: 'Root Section', type: 'object' },
 ];
 
 //  We only allow editing these attributes for units where
@@ -54,14 +54,14 @@ const SASH_TYPES = [
     'tilt_slide_left', 'tilt_slide_right',
     // additional types for solid doors
     'flush-turn-right', 'flush-turn-left', 'tilt_only_top_hung',
-    'turn_only_right_hinge_hidden_latch', 'turn_only_left_hinge_hidden_latch'
+    'turn_only_right_hinge_hidden_latch', 'turn_only_left_hinge_hidden_latch',
 ];
 
 const SASH_TYPES_WITH_OPENING = _.without(SASH_TYPES, 'fixed_in_frame');
 const OPERABLE_SASH_TYPES = _.without(SASH_TYPES, 'fixed_in_frame', 'fixed_in_sash');
 const EGRESS_ENABLED_TYPES = [
     'tilt_turn_right', 'tilt_turn_left', 'turn_only_right', 'turn_only_left',
-    'turn_only_right_hinge_hidden_latch', 'turn_only_left_hinge_hidden_latch'
+    'turn_only_right_hinge_hidden_latch', 'turn_only_left_hinge_hidden_latch',
 ];
 
 const SASH_TYPE_NAME_MAP = {
@@ -83,26 +83,26 @@ const SASH_TYPE_NAME_MAP = {
     'slide-right': 'Lift Slide Right',
     'slide-left': 'Lift Slide Left',
     turn_only_right_hinge_hidden_latch: 'Turn Only Right Hinge Hidden Latch',
-    turn_only_left_hinge_hidden_latch: 'Turn Only Left Hinge Hidden Latch'
+    turn_only_left_hinge_hidden_latch: 'Turn Only Left Hinge Hidden Latch',
 };
 
 const FILLING_TYPES = [
     'glass', 'recessed',
     'interior-flush-panel', 'exterior-flush-panel',
-    'full-flush-panel', 'louver'
+    'full-flush-panel', 'louver',
 ];
 
 const MULLION_TYPES = [
     'vertical', 'horizontal',
-    'vertical_invisible', 'horizontal_invisible'
+    'vertical_invisible', 'horizontal_invisible',
 ];
 
 //  TODO: this could return dummy type object or something like that, so we
 //  could know when we don't get the right thing, and try to fix that
 function getDefaultFillingType(default_glazing_name, profile_id) {
-    let dummy_type = {
+    const dummy_type = {
         fillingType: 'glass',
-        fillingName: 'Glass'
+        fillingName: 'Glass',
     };
     let default_type;
 
@@ -116,14 +116,14 @@ function getDefaultFillingType(default_glazing_name, profile_id) {
 
     return default_type ? {
         fillingType: default_type.get('type'),
-        fillingName: default_type.get('name')
+        fillingName: default_type.get('name'),
     } : dummy_type;
 }
 
 function getDefaultBars() {
     return {
         vertical: [],
-        horizontal: []
+        horizontal: [],
     };
 }
 
@@ -132,19 +132,19 @@ function validateBar(opts, type) {
         id: opts.id || _.uniqueId(),
         type: opts.type || type,
         position: opts.position,
-        links: opts.links || [null, null]
+        links: opts.links || [null, null],
     };
 }
 
 function getDefaultMeasurements(hasFrame) {
-    let result = {};
+    const result = {};
 
     hasFrame = hasFrame || false;
 
     if (hasFrame) {
         result.frame = {
             vertical: ['max', 'max'],
-            horizontal: ['max', 'max']
+            horizontal: ['max', 'max'],
         };
     }
 
@@ -155,8 +155,8 @@ function getDefaultMeasurements(hasFrame) {
 }
 
 function getSectionDefaults(section_type, default_glazing_name, profile_id) {
-    let isRootSection = ( section_type === 'root_section' );
-    let defaultFilling = getDefaultFillingType(default_glazing_name, profile_id);
+    const isRootSection = (section_type === 'root_section');
+    const defaultFilling = getDefaultFillingType(default_glazing_name, profile_id);
 
     return {
         id: _.uniqueId(),
@@ -164,7 +164,7 @@ function getSectionDefaults(section_type, default_glazing_name, profile_id) {
         fillingType: defaultFilling.fillingType,
         fillingName: defaultFilling.fillingName,
         bars: getDefaultBars(),
-        measurements: getDefaultMeasurements(isRootSection)
+        measurements: getDefaultMeasurements(isRootSection),
     };
 }
 
@@ -192,8 +192,8 @@ function findParent(root, childId) {
 
 const Unit = Backbone.Model.extend({
     schema: Schema.createSchema(UNIT_PROPERTIES),
-    defaults: function () {
-        let defaults = {};
+    defaults() {
+        const defaults = {};
 
         _.each(UNIT_PROPERTIES, function (item) {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
@@ -201,27 +201,27 @@ const Unit = Backbone.Model.extend({
 
         return defaults;
     },
-    getNameAttribute: function () {
+    getNameAttribute() {
         return 'mark';
     },
     //  TODO: stuff inside name_value_hash gets evaluated for each
     //  attribute, but we actually want it to be evaluated only for the
     //  corresponding attribute (see example for root_section)
-    getDefaultValue: function (name, type) {
+    getDefaultValue(name, type) {
         let default_value = '';
 
-        let type_value_hash = {
-            number: 0
+        const type_value_hash = {
+            number: 0,
         };
 
-        let name_value_hash = {
+        const name_value_hash = {
             height: '0',
             original_currency: 'EUR',
             conversion_rate: 0.9,
             price_markup: 2.3,
             quantity: 1,
             root_section: name === 'root_section' ? getSectionDefaults(name) : '',
-            unit_options: name === 'unit_options' ? this.getDefaultUnitOptions() : []
+            unit_options: name === 'unit_options' ? this.getDefaultUnitOptions() : [],
         };
 
         if (App.settings) {
@@ -240,36 +240,36 @@ const Unit = Backbone.Model.extend({
 
         return default_value;
     },
-    sync: function (method, model, options) {
+    sync(method, model, options) {
         if (method === 'create' || method === 'update') {
-            options.attrs = {unit: model.toJSON()};
+            options.attrs = { unit: model.toJSON() };
         }
 
         return Backbone.sync.call(this, method, model, options);
     },
-    toJSON: function () {
-        let properties_to_omit = ['id'];
-        let json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+    toJSON() {
+        const properties_to_omit = ['id'];
+        const json = Backbone.Model.prototype.toJSON.apply(this, arguments);
 
         json.root_section = JSON.stringify(this.get('root_section'));
         json.unit_options = this.get('unit_options').toJSON();
 
         return _.omit(json, properties_to_omit);
     },
-    parse: function (data) {
-        let unit_data = data && data.unit ? data.unit : data;
-        let parsed_data = Schema.parseAccordingToSchema(unit_data, this.schema);
+    parse(data) {
+        const unit_data = data && data.unit ? data.unit : data;
+        const parsed_data = Schema.parseAccordingToSchema(unit_data, this.schema);
 
         if (parsed_data && parsed_data.unit_options) {
             parsed_data.unit_options = new UnitOptionCollection(
                 utils.object.extractObjectOrNull(parsed_data.unit_options),
-                {parse: true}
+                { parse: true },
             );
         }
 
         return parsed_data;
     },
-    initialize: function (attributes, options) {
+    initialize(attributes, options) {
         this.options = options || {};
         this.profile = null;
 
@@ -279,7 +279,7 @@ const Unit = Backbone.Model.extend({
             this.setProfile();
 
             this.on('change:profile_id', function () {
-                this.setProfile({validate_filling_types: true});
+                this.setProfile({ validate_filling_types: true });
             }, this);
             this.on('change:glazing', this.onGlazingUpdate, this);
 
@@ -305,8 +305,8 @@ const Unit = Backbone.Model.extend({
             //  it doesn't work for fixtures and might not work in some
             //  other conditions
             if (this.isNew() && App.session && App.session.get('no_backend') !== true) {
-                let profile_id = this.profile && this.profile.id;
-                let glazing_name = this.get('glazing');
+                const profile_id = this.profile && this.profile.id;
+                const glazing_name = this.get('glazing');
 
                 if (
                     JSON.stringify(_.omit(this.getDefaultValue('root_section'), 'id')) ===
@@ -323,7 +323,7 @@ const Unit = Backbone.Model.extend({
     },
     //  TODO: this should happen on parse. Also, why only this property is
     //  validated?
-    validateOpeningDirection: function () {
+    validateOpeningDirection() {
         if (!App.settings) {
             return;
         }
@@ -337,8 +337,8 @@ const Unit = Backbone.Model.extend({
     //  and check whether root section could be used by our drawing code or
     //  should it be reset to defaults.
     //  TODO: this should be done at parse step
-    validateRootSection: function () {
-        let root_section = this.get('root_section');
+    validateRootSection() {
+        const root_section = this.get('root_section');
         let root_section_parsed;
 
         if (_.isString(root_section)) {
@@ -359,7 +359,7 @@ const Unit = Backbone.Model.extend({
         }
     },
     //  Check if some of the section values aren't valid and try to fix that
-    validateSection: function (current_section, is_root) {
+    validateSection(current_section, is_root) {
         //  Replace deprecated sash types with more adequate values
         if (current_section.sashType === 'flush-turn-left') {
             current_section.sashType = 'turn_only_left';
@@ -372,8 +372,8 @@ const Unit = Backbone.Model.extend({
         if (!current_section.bars) {
             current_section.bars = getDefaultBars();
         } else {
-            _.each(current_section.bars, function (barType, type) {
-                _.each(barType, function (bar, index) {
+            _.each(current_section.bars, (barType, type) => {
+                _.each(barType, (bar, index) => {
                     current_section.bars[type][index] = validateBar(bar, type);
                 });
             });
@@ -386,7 +386,7 @@ const Unit = Backbone.Model.extend({
         //  TODO: this duplicates code from splitSection, so ideally
         //  it should be moved to a new helper function
         if (current_section.measurements && !current_section.measurements.mullion && current_section.divider) {
-            let measurementType = getInvertedDivider(current_section.divider).replace(/_invisible/, '');
+            const measurementType = getInvertedDivider(current_section.divider).replace(/_invisible/, '');
 
             current_section.measurements.mullion = {};
             current_section.measurements.mullion[measurementType] = ['center', 'center'];
@@ -398,24 +398,24 @@ const Unit = Backbone.Model.extend({
 
         return current_section;
     },
-    getDefaultUnitOptions: function () {
-        let default_options = new UnitOptionCollection();
+    getDefaultUnitOptions() {
+        const default_options = new UnitOptionCollection();
 
         if (App.settings) {
             App.settings.dictionaries.each(function (dictionary) {
-                let dictionary_id = dictionary.id;
-                let profile_id = this.profile && this.profile.id;
-                let rules = dictionary.get('rules_and_restrictions');
-                let is_optional = _.contains(rules, 'IS_OPTIONAL');
+                const dictionary_id = dictionary.id;
+                const profile_id = this.profile && this.profile.id;
+                const rules = dictionary.get('rules_and_restrictions');
+                const is_optional = _.contains(rules, 'IS_OPTIONAL');
 
                 if (!is_optional && dictionary_id && profile_id) {
                     //  TODO: we need to call this directly on `dictionary` iterable
-                    let option = App.settings.dictionaries.getDefaultOrFirstAvailableOption(dictionary_id, profile_id);
+                    const option = App.settings.dictionaries.getDefaultOrFirstAvailableOption(dictionary_id, profile_id);
 
                     if (option && option.id && dictionary.id) {
                         default_options.add({
                             dictionary_id: dictionary.id,
-                            dictionary_entry_id: option.id
+                            dictionary_entry_id: option.id,
                         });
                     }
                 }
@@ -424,28 +424,28 @@ const Unit = Backbone.Model.extend({
 
         return default_options;
     },
-    resetUnitOptionsToDefaults: function () {
-        let current_options = this.get('unit_options');
-        let default_options = this.getDefaultUnitOptions();
+    resetUnitOptionsToDefaults() {
+        const current_options = this.get('unit_options');
+        const default_options = this.getDefaultUnitOptions();
 
         if (JSON.stringify(current_options.toJSON()) !== JSON.stringify(default_options.toJSON())) {
             this.get('unit_options').reset(default_options.models);
         }
     },
-    validateUnitOptions: function () {
-        let default_options = this.getDefaultUnitOptions();
-        let current_options = this.get('unit_options');
-        let options_to_set = new UnitOptionCollection();
+    validateUnitOptions() {
+        const default_options = this.getDefaultUnitOptions();
+        const current_options = this.get('unit_options');
+        const options_to_set = new UnitOptionCollection();
 
         if (App.settings) {
             App.settings.dictionaries.each(function (dictionary) {
-                let dictionary_id = dictionary.id;
-                let profile_id = this.profile && this.profile.id;
+                const dictionary_id = dictionary.id;
+                const profile_id = this.profile && this.profile.id;
 
                 if (dictionary_id && profile_id) {
-                    let current_option = current_options.findWhere({dictionary_id: dictionary_id});
-                    let default_option = default_options.findWhere({dictionary_id: dictionary_id});
-                    let target_entry = current_option &&
+                    const current_option = current_options.findWhere({ dictionary_id });
+                    const default_option = default_options.findWhere({ dictionary_id });
+                    const target_entry = current_option &&
                         dictionary.entries.get(current_option.get('dictionary_entry_id'));
 
                     if (current_option && target_entry) {
@@ -459,7 +459,7 @@ const Unit = Backbone.Model.extend({
 
         this.get('unit_options').set(options_to_set.models);
     },
-    getCurrentFillingsList: function (current_root) {
+    getCurrentFillingsList(current_root) {
         let section_result;
         let result = [];
 
@@ -478,7 +478,7 @@ const Unit = Backbone.Model.extend({
         if (current_root.sections.length === 0) {
             result.unshift({
                 name: current_root.fillingName,
-                type: current_root.fillingType
+                type: current_root.fillingType,
             });
         }
 
@@ -492,25 +492,23 @@ const Unit = Backbone.Model.extend({
     //  TODO: it's not a proper name, but it's the same as
     //  validateUnitOptions we have above
     //  TODO: this needs tests
-    validateFillingTypes: function () {
+    validateFillingTypes() {
         //  Do nothing in case of dummy profile or no profile
         if (this.isNew() || !this.profile || this.hasDummyProfile() || !App.settings) {
             return;
         }
 
-        let glazing = this.get('glazing');
-        let current_fillings_list = _.pluck(this.getCurrentFillingsList(), 'name');
-        let complete_fillings_list = _.union(current_fillings_list, [glazing]);
+        const glazing = this.get('glazing');
+        const current_fillings_list = _.pluck(this.getCurrentFillingsList(), 'name');
+        const complete_fillings_list = _.union(current_fillings_list, [glazing]);
 
-        let available_for_profile_list = _.difference(
-            _.map(App.settings.filling_types.getAvailableForProfile(this.profile.id), function (item) {
-                return item.get('name');
-            }),
-            _.pluck(App.settings.filling_types.getBaseTypes(), 'title')
+        const available_for_profile_list = _.difference(
+            _.map(App.settings.filling_types.getAvailableForProfile(this.profile.id), item => item.get('name')),
+            _.pluck(App.settings.filling_types.getBaseTypes(), 'title'),
         );
         let invalid_flag = false;
 
-        _.find(complete_fillings_list, function (filling_name) {
+        _.find(complete_fillings_list, (filling_name) => {
             if (_.contains(available_for_profile_list, filling_name) === false) {
                 invalid_flag = true;
                 return true;
@@ -523,7 +521,7 @@ const Unit = Backbone.Model.extend({
             this.onGlazingUpdate();
         }
     },
-    validate: function (attributes, options) {
+    validate(attributes, options) {
         let error_obj = null;
 
         //  Simple type validation for numbers and booleans
@@ -537,14 +535,14 @@ const Unit = Backbone.Model.extend({
             ) {
                 error_obj = {
                     attribute_name: key,
-                    error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a number'
+                    error_message: `${attribute_obj.title} can't be set to "${value}", it should be a number`,
                 };
 
                 return false;
             } else if (attribute_obj && attribute_obj.type === 'boolean' && !_.isBoolean(value)) {
                 error_obj = {
                     attribute_name: key,
-                    error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a boolean'
+                    error_message: `${attribute_obj.title} can't be set to "${value}", it should be a boolean`,
                 };
 
                 return false;
@@ -555,9 +553,9 @@ const Unit = Backbone.Model.extend({
             return error_obj;
         }
     },
-    setProfile: function (options) {
-        let default_options = {
-            validate_filling_types: false
+    setProfile(options) {
+        const default_options = {
+            validate_filling_types: false,
         };
 
         options = _.defaults({}, options, default_options);
@@ -585,23 +583,23 @@ const Unit = Backbone.Model.extend({
             this.validateFillingTypes();
         }
     },
-    hasDummyProfile: function () {
+    hasDummyProfile() {
         return this.profile && this.profile.get('is_dummy');
     },
-    hasOnlyDefaultAttributes: function () {
+    hasOnlyDefaultAttributes() {
         let has_only_defaults = true;
 
         _.each(this.toJSON(), function (value, key) {
             if (key !== 'position' && has_only_defaults) {
-                let property_source = _.findWhere(UNIT_PROPERTIES, {name: key});
-                let type = property_source ? property_source.type : undefined;
+                const property_source = _.findWhere(UNIT_PROPERTIES, { name: key });
+                const type = property_source ? property_source.type : undefined;
 
                 if (key === 'profile_id') {
                     if (App.settings && App.settings.getDefaultProfileId() !== value) {
                         has_only_defaults = false;
                     }
                 } else if (key === 'profile_name') {
-                    let profile = App.settings && App.settings.getProfileByIdOrDummy(this.get('profile_id'));
+                    const profile = App.settings && App.settings.getProfileByIdOrDummy(this.get('profile_id'));
 
                     if (profile && profile.get('name') !== value) {
                         has_only_defaults = false;
@@ -625,9 +623,9 @@ const Unit = Backbone.Model.extend({
 
         return has_only_defaults;
     },
-    onGlazingUpdate: function () {
+    onGlazingUpdate() {
         let filling_type;
-        let glazing = this.get('glazing');
+        const glazing = this.get('glazing');
 
         if (glazing && App.settings) {
             filling_type = App.settings.filling_types.getByName(glazing);
@@ -636,100 +634,100 @@ const Unit = Backbone.Model.extend({
                 this.setFillingType(
                     this.get('root_section').id,
                     filling_type.get('type'),
-                    filling_type.get('name')
+                    filling_type.get('name'),
                 );
             }
         }
     },
     //  Return { name: 'name', title: 'Title' } pairs for each item in
     //  `names` array. If the array is empty, return all possible pairs
-    getNameTitleTypeHash: function (names) {
-        let name_title_hash = [];
+    getNameTitleTypeHash(names) {
+        const name_title_hash = [];
 
         if (!names) {
             names = _.pluck(UNIT_PROPERTIES, 'name');
         }
 
-        _.each(UNIT_PROPERTIES, function (item) {
+        _.each(UNIT_PROPERTIES, (item) => {
             if (_.indexOf(names, item.name) !== -1) {
-                name_title_hash.push({name: item.name, title: item.title, type: item.type});
+                name_title_hash.push({ name: item.name, title: item.title, type: item.type });
             }
         });
 
         return name_title_hash;
     },
-    getTitles: function (names) {
-        let name_title_hash = this.getNameTitleTypeHash(names);
+    getTitles(names) {
+        const name_title_hash = this.getNameTitleTypeHash(names);
 
         return _.pluck(name_title_hash, 'title');
     },
-    getProfileProperties: function () {
+    getProfileProperties() {
         return App.settings ? App.settings.getProfileProperties(this.get('profile')) : {};
     },
-    getRefNum: function () {
+    getRefNum() {
         return this.collection ? this.collection.indexOf(this) + 1 : -1;
     },
-    getWidthMM: function () {
+    getWidthMM() {
         return utils.convert.inches_to_mm(this.get('width'));
     },
-    getHeightMM: function () {
+    getHeightMM() {
         return utils.convert.inches_to_mm(this.get('height'));
     },
-    getRoughOpeningWidth: function () {
+    getRoughOpeningWidth() {
         return parseFloat(this.get('width')) + 1;
     },
-    getRoughOpeningHeight: function () {
+    getRoughOpeningHeight() {
         return parseFloat(this.get('height')) + 1;
     },
-    getAreaInSquareFeet: function () {
+    getAreaInSquareFeet() {
         return utils.math.square_feet(this.get('width'), this.get('height'));
     },
-    getTotalSquareFeet: function () {
+    getTotalSquareFeet() {
         return this.getAreaInSquareFeet() * parseFloat(this.get('quantity'));
     },
-    getAreaInSquareMeters: function () {
-        let c = utils.convert;
+    getAreaInSquareMeters() {
+        const c = utils.convert;
 
         return utils.math.square_meters(c.inches_to_mm(this.get('width')), c.inches_to_mm(this.get('height')));
     },
-    getUnitCost: function () {
+    getUnitCost() {
         return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
     },
-    getSubtotalCost: function () {
+    getSubtotalCost() {
         return this.getUnitCost() * parseFloat(this.get('quantity'));
     },
-    getUnitCostDiscounted: function () {
+    getUnitCostDiscounted() {
         return this.getUnitCost() * (100 - parseFloat(this.get('supplier_discount'))) / 100;
     },
-    getSubtotalCostDiscounted: function () {
+    getSubtotalCostDiscounted() {
         return this.getUnitCostDiscounted() * parseFloat(this.get('quantity'));
     },
-    getUnitPrice: function () {
+    getUnitPrice() {
         return this.getUnitCostDiscounted() * parseFloat(this.get('price_markup'));
     },
-    getSubtotalPrice: function () {
+    getSubtotalPrice() {
         return this.getUnitPrice() * parseFloat(this.get('quantity'));
     },
-    getUValue: function () {
+    getUValue() {
         return parseFloat(this.get('uw')) * 0.176;
     },
-    getUnitPriceDiscounted: function () {
+    getUnitPriceDiscounted() {
         return this.getUnitPrice() * (100 - parseFloat(this.get('discount'))) / 100;
     },
-    getSubtotalPriceDiscounted: function () {
+    getSubtotalPriceDiscounted() {
         return this.getSubtotalPrice() * (100 - parseFloat(this.get('discount'))) / 100;
     },
-    getSubtotalProfit: function () {
+    getSubtotalProfit() {
         return this.getSubtotalPriceDiscounted() - this.getSubtotalCostDiscounted();
     },
-    getSquareFeetPrice: function () {
+    getSquareFeetPrice() {
         return this.getTotalSquareFeet() ? this.getSubtotalPrice() / this.getTotalSquareFeet() : 0;
     },
-    getSquareFeetPriceDiscounted: function () {
+    getSquareFeetPriceDiscounted() {
         return this.getTotalSquareFeet() ? this.getSubtotalPriceDiscounted() / this.getTotalSquareFeet() : 0;
     },
-    preparePricingDataForExport: function (options) {
-        var default_options = {
+    preparePricingDataForExport(options) {
+        const default_options = {
             include_project: true,
             include_quote: true,
             include_dimensions_mm: true,
@@ -740,30 +738,30 @@ const Unit = Backbone.Model.extend({
             include_discount: true,
             include_profile: true,
             include_options: true,
-            include_sections: true
+            include_sections: true,
         };
 
         options = _.extend({}, default_options, options);
 
-        var sections_list = this.getFixedAndOperableSectionsList();
-        var parent_project = this.getParentProject();
-        var parent_quote = this.getParentQuote();
+        const sections_list = this.getFixedAndOperableSectionsList();
+        const parent_project = this.getParentProject();
+        const parent_quote = this.getParentQuote();
 
-        var pricing_data = {};
+        let pricing_data = {};
 
         //  Project info
-        if ( options.include_project && parent_project ) {
+        if (options.include_project && parent_project) {
             pricing_data = _.extend({}, pricing_data, {
                 project_id: parent_project.id,
-                project_name: parent_project.get('project_name')
+                project_name: parent_project.get('project_name'),
             });
         }
 
         //  Quote info
-        if ( options.include_quote && parent_quote ) {
+        if (options.include_quote && parent_quote) {
             pricing_data = _.extend({}, pricing_data, {
                 quote_id: parent_quote.id,
-                quote_name: parent_quote.getName()
+                quote_name: parent_quote.getName(),
             });
         }
 
@@ -772,69 +770,69 @@ const Unit = Backbone.Model.extend({
             mark: this.get('mark'),
             quantity: this.get('quantity'),
             width: this.get('width'),
-            height: this.get('height')
+            height: this.get('height'),
         });
 
         //  Dimensions in mm
-        if ( options.include_dimensions_mm ) {
+        if (options.include_dimensions_mm) {
             pricing_data = _.extend({}, pricing_data, {
                 width_mm: this.getWidthMM(),
-                height_mm: this.getHeightMM()
+                height_mm: this.getHeightMM(),
             });
         }
 
         //  Supplier cost part 1
-        if ( options.include_supplier_cost_original ) {
+        if (options.include_supplier_cost_original) {
             pricing_data = _.extend({}, pricing_data, {
                 original_cost: this.get('original_cost'),
                 original_currency: this.get('original_currency'),
-                conversion_rate: this.get('conversion_rate')
+                conversion_rate: this.get('conversion_rate'),
             });
         }
 
         //  Supplier cost part 2
-        if ( options.include_supplier_cost_converted ) {
+        if (options.include_supplier_cost_converted) {
             pricing_data = _.extend({}, pricing_data, {
                 unit_cost: this.getUnitCost(),
-                subtotal_cost: this.getSubtotalCost()
+                subtotal_cost: this.getSubtotalCost(),
             });
         }
 
         //  Supplier cost with discount
-        if ( options.include_supplier_discount ) {
+        if (options.include_supplier_discount) {
             pricing_data = _.extend({}, pricing_data, {
                 supplier_discount: this.get('supplier_discount'),
                 unit_cost_with_discount: this.getUnitCostDiscounted(),
-                subtotal_cost_with_discount: this.getSubtotalCostDiscounted()
+                subtotal_cost_with_discount: this.getSubtotalCostDiscounted(),
             });
         }
 
         //  Our markup and price
-        if ( options.include_price ) {
+        if (options.include_price) {
             pricing_data = _.extend({}, pricing_data, {
                 price_markup: this.get('price_markup'),
                 unit_price: this.getUnitPrice(),
-                subtotal_price: this.getSubtotalPrice()
+                subtotal_price: this.getSubtotalPrice(),
             });
         }
 
         //  Our price with discount
-        if ( options.include_discount ) {
+        if (options.include_discount) {
             pricing_data = _.extend({}, pricing_data, {
                 discount: this.get('discount'),
                 unit_price_with_discount: this.getUnitPriceDiscounted(),
-                subtotal_price_with_discount: this.getSubtotalPriceDiscounted()
+                subtotal_price_with_discount: this.getSubtotalPriceDiscounted(),
             });
         }
 
-        if ( options.include_profile ) {
+        if (options.include_profile) {
             pricing_data = _.extend({}, pricing_data, {
                 profile_name: this.profile.get('name'),
-                unit_type: this.profile.get('unit_type')
+                unit_type: this.profile.get('unit_type'),
             });
         }
 
-        var custom_titles = {
+        const custom_titles = {
             project_id: 'Project ID',
             project_name: 'Project Name',
             quote_id: 'Quote ID',
@@ -850,25 +848,25 @@ const Unit = Backbone.Model.extend({
             subtotal_price: 'Subtotal Price',
             subtotal_price_with_discount: 'Subtotal Price w/D',
             profile_name: 'Profile Name',
-            unit_type: 'Unit Type'
+            unit_type: 'Unit Type',
         };
 
         pricing_data = _.map(pricing_data, function (value, key) {
-            return { title: this.getTitles([key])[0] || custom_titles[key], value: value };
+            return { title: this.getTitles([key])[0] || custom_titles[key], value };
         }, this);
 
-        if ( options.include_options ) {
-            var option_dictionaries = App.settings.dictionaries.getAvailableDictionaryNames();
+        if (options.include_options) {
+            const option_dictionaries = App.settings.dictionaries.getAvailableDictionaryNames();
 
             _.each(option_dictionaries, function (dictionary_name) {
-                var target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(dictionary_name);
-                var target_dictionary = App.settings.dictionaries.get(target_dictionary_id);
-                var current_options = target_dictionary_id ?
+                const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(dictionary_name);
+                const target_dictionary = App.settings.dictionaries.get(target_dictionary_id);
+                const current_options = target_dictionary_id ?
                     this.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
-                var is_restricted = false;
+                let is_restricted = false;
 
                 _.each(target_dictionary.get('rules_and_restrictions'), function (rule) {
-                    if ( this.checkIfRestrictionApplies(rule) ) {
+                    if (this.checkIfRestrictionApplies(rule)) {
                         is_restricted = true;
                     }
                 }, this);
@@ -877,36 +875,36 @@ const Unit = Backbone.Model.extend({
                     title: dictionary_name,
                     value: !is_restricted && current_options.length ?
                         current_options[0].entry.get('name') :
-                        UNSET_VALUE
+                        UNSET_VALUE,
                 });
             }, this);
         }
 
-        if ( options.include_sections ) {
-            _.each(sections_list, function (section_data, index) {
+        if (options.include_sections) {
+            _.each(sections_list, (section_data, index) => {
                 pricing_data.push({
-                    title: 'Sash ' + (index + 1) + ' Type',
-                    value: section_data.type === 'fixed' ? 'Fixed' : 'Operable'
+                    title: `Sash ${index + 1} Type`,
+                    value: section_data.type === 'fixed' ? 'Fixed' : 'Operable',
                 });
                 pricing_data.push({
-                    title: 'Sash ' + (index + 1) + ' Area (m2)',
-                    value: section_data.width / 1000 * section_data.height / 1000
+                    title: `Sash ${index + 1} Area (m2)`,
+                    value: section_data.width / 1000 * section_data.height / 1000,
                 });
                 pricing_data.push({
-                    title: 'Sash ' + (index + 1) + ' Filling',
-                    value: section_data.filling_name
+                    title: `Sash ${index + 1} Filling`,
+                    value: section_data.filling_name,
                 });
             }, this);
         }
 
         return pricing_data;
     },
-    getSection: function (sectionId) {
+    getSection(sectionId) {
         return findSection(this.generateFullRoot(), sectionId);
     },
     //  Right now we think that door is something where profile
     //  returns `true` on `hasOutsideHandle` call
-    isDoorType: function () {
+    isDoorType() {
         let is_door_type = false;
 
         if (this.profile && this.profile.hasOutsideHandle()) {
@@ -915,16 +913,16 @@ const Unit = Backbone.Model.extend({
 
         return is_door_type;
     },
-    isOpeningDirectionOutward: function () {
+    isOpeningDirectionOutward() {
         return this.get('opening_direction') === 'Outward';
     },
-    isCircularPossible: function (sashId) {
-        let root = this.generateFullRoot();
+    isCircularPossible(sashId) {
+        const root = this.generateFullRoot();
 
         return !findParent(root, sashId) && !root.trapezoidHeights;
     },
-    getCircleRadius: function () {
-        let root = this.generateFullRoot();
+    getCircleRadius() {
+        const root = this.generateFullRoot();
 
         if (root.circular) {
             return root.radius;
@@ -932,8 +930,8 @@ const Unit = Backbone.Model.extend({
 
         return null;
     },
-    isArchedPossible: function (sashId) {
-        let root = this.generateFullRoot();
+    isArchedPossible(sashId) {
+        const root = this.generateFullRoot();
 
         if (root.trapezoidHeights) {
             return false;
@@ -976,7 +974,7 @@ const Unit = Backbone.Model.extend({
         return true;
     },
     //  FIXME: this uses while true
-    getArchedPosition: function () {
+    getArchedPosition() {
         let root = this.get('root_section');
 
         if (root.arched) {
@@ -984,7 +982,7 @@ const Unit = Backbone.Model.extend({
         }
 
         while (true) {
-            let topSection = root.sections && root.sections[0] && root.sections[0];
+            const topSection = root.sections && root.sections[0] && root.sections[0];
 
             if (topSection && topSection.arched) {
                 return root.position;
@@ -999,16 +997,16 @@ const Unit = Backbone.Model.extend({
 
         return null;
     },
-    isRootSection: function (sectionId) {
+    isRootSection(sectionId) {
         return this.get('root_section').id === sectionId;
     },
     //  If reverse_hinges is true, we replace "Left" with "Right" and
     //  "Right" with "Left" in sash name
-    getSashName: function (type, reverse_hinges) {
+    getSashName(type, reverse_hinges) {
         reverse_hinges = reverse_hinges || false;
 
         if (_.indexOf(_.keys(SASH_TYPE_NAME_MAP), type) === -1) {
-            throw new Error('Unrecognized sash type: ' + type);
+            throw new Error(`Unrecognized sash type: ${type}`);
         }
 
         let string = SASH_TYPE_NAME_MAP[type];
@@ -1023,21 +1021,21 @@ const Unit = Backbone.Model.extend({
 
         return string;
     },
-    _updateSection: function (sectionId, func) {
+    _updateSection(sectionId, func) {
         // HAH, dirty deep clone, rewrite when you have good mood for it
         // we have to make deep clone and backbone will trigger change event
-        let rootSection = JSON.parse(JSON.stringify(this.get('root_section')));
-        let sectionToUpdate = findSection(rootSection, sectionId);
+        const rootSection = JSON.parse(JSON.stringify(this.get('root_section')));
+        const sectionToUpdate = findSection(rootSection, sectionId);
 
         func(sectionToUpdate);
 
         this.persist('root_section', rootSection);
     },
-    setCircular: function (sectionId, opts) {
+    setCircular(sectionId, opts) {
         //  Deep clone, same as above
-        let root_section = JSON.parse(JSON.stringify(this.get('root_section')));
-        let section = findSection(root_section, sectionId);
-        let update_data = {};
+        const root_section = JSON.parse(JSON.stringify(this.get('root_section')));
+        const section = findSection(root_section, sectionId);
+        const update_data = {};
 
         if (opts.radius) {
             update_data.width = opts.radius * 2;
@@ -1060,28 +1058,28 @@ const Unit = Backbone.Model.extend({
         update_data.root_section = root_section;
         this.persist(update_data);
     },
-    toggleCircular: function (sectionId, val) {
+    toggleCircular(sectionId, val) {
         if (this.isRootSection(sectionId)) {
-            let section = this.getSection(sectionId);
-            let radius = Math.min(this.get('width'), this.get('height')) / 2;
+            const section = this.getSection(sectionId);
+            const radius = Math.min(this.get('width'), this.get('height')) / 2;
 
             this.setCircular(sectionId, {
                 circular: val || !section.circular,
-                radius: radius
+                radius,
             });
         }
     },
-    getCircleSashData: function (sectionId) {
+    getCircleSashData(sectionId) {
         let root;
-        let section = this.getSection(sectionId);
-        let result = {};
+        const section = this.getSection(sectionId);
+        const result = {};
 
         result.sashParams = section.sashParams;
         result.edges = {
             top: !!section.mullionEdges.top || false,
             right: !!section.mullionEdges.right || false,
             bottom: !!section.mullionEdges.bottom || false,
-            left: !!section.mullionEdges.left || false
+            left: !!section.mullionEdges.left || false,
         };
 
         // If we have a mullions all around the sash — it's rectangle!
@@ -1104,24 +1102,24 @@ const Unit = Backbone.Model.extend({
 
             result.circle = {
                 x: root.sashParams.x,
-                y: root.sashParams.y
+                y: root.sashParams.y,
             };
             result.radius = Math.min(root.sashParams.width, root.sashParams.height) / 2;
         }
 
         return result;
     },
-    setSectionSashType: function (sectionId, type) {
+    setSectionSashType(sectionId, type) {
         if (!_.includes(SASH_TYPES, type)) {
-            console.error('Unrecognized sash type: ' + type);
+            console.error(`Unrecognized sash type: ${type}`);
             return;
         }
 
-        let full = this.generateFullRoot();
-        let fullSection = findSection(full, sectionId);
+        const full = this.generateFullRoot();
+        const fullSection = findSection(full, sectionId);
 
         // Update section
-        this._updateSection(sectionId, function (section) {
+        this._updateSection(sectionId, (section) => {
             section.sashType = type;
             section.measurements.opening = false;
             section.measurements.glass = false;
@@ -1132,46 +1130,46 @@ const Unit = Backbone.Model.extend({
             this.setSectionSashType(childSection.id, 'fixed_in_frame');
         }, this);
     },
-    setSectionBars: function (sectionId, bars) {
-        this._updateSection(sectionId, function (section) {
+    setSectionBars(sectionId, bars) {
+        this._updateSection(sectionId, (section) => {
             section.bars = bars;
         });
     },
-    setSectionMeasurements: function (sectionId, measurements) {
-        this._updateSection(sectionId, function (section) {
+    setSectionMeasurements(sectionId, measurements) {
+        this._updateSection(sectionId, (section) => {
             section.measurements = measurements;
         });
     },
-    getMeasurementStates: function (type) {
-        let defaults = {
+    getMeasurementStates(type) {
+        const defaults = {
             mullion: [{
                 value: 'min',
-                viewname: 'Without mullion'
+                viewname: 'Without mullion',
             }, {
                 value: 'center',
                 viewname: 'Center of mullion',
-                default: true
+                default: true,
             }, {
                 value: 'max',
-                viewname: 'With mullion'
+                viewname: 'With mullion',
             }],
             frame: [{
                 value: 'max',
                 viewname: 'With frame',
-                default: true
+                default: true,
             }, {
                 value: 'min',
-                viewname: 'Without frame'
-            }]
+                viewname: 'Without frame',
+            }],
         };
 
         return defaults[type];
     },
-    getMeasurementEdges: function (section_id, type) {
-        let section_data = this.getSection(section_id);
-        let edges = {top: 'frame', right: 'frame', bottom: 'frame', left: 'frame'};
+    getMeasurementEdges(section_id, type) {
+        const section_data = this.getSection(section_id);
+        const edges = { top: 'frame', right: 'frame', bottom: 'frame', left: 'frame' };
 
-        _.each(section_data.mullionEdges, function (edge, key) {
+        _.each(section_data.mullionEdges, (edge, key) => {
             edges[key] = 'mullion';
         });
 
@@ -1187,21 +1185,20 @@ const Unit = Backbone.Model.extend({
 
         return edges;
     },
-    getInvertedMeasurementVal: function (val) {
+    getInvertedMeasurementVal(val) {
         return (val === 'min') ? 'max' :
             (val === 'max') ? 'min' :
                 (val === 'center') ? 'center' :
                     val;
     },
-    getBar: function (sectionId, id) {
+    getBar(sectionId, id) {
         let found = null;
-        let section = this.getSection(sectionId);
+        const section = this.getSection(sectionId);
 
-        _.each(section.bars, function (arr) {
-            _.each(arr, function (bar) {
+        _.each(section.bars, (arr) => {
+            _.each(arr, (bar) => {
                 if (bar.id === id) {
                     found = bar;
-                    return;
                 }
             });
         });
@@ -1210,27 +1207,27 @@ const Unit = Backbone.Model.extend({
     },
     // @TODO: Add method, that checks for correct values of measurement data
     // @TODO: Add method, that drops measurement data to default
-    setFillingType: function (sectionId, type, name) {
+    setFillingType(sectionId, type, name) {
         if (!_.includes(FILLING_TYPES, type)) {
-            console.error('Unknow filling type: ' + type);
+            console.error(`Unknow filling type: ${type}`);
             return;
         }
 
-        this._updateSection(sectionId, function (section) {
+        this._updateSection(sectionId, (section) => {
             section.fillingType = type;
             section.fillingName = name;
         });
 
         //  We also change all nested sections recursively
-        let full = this.generateFullRoot();
-        let fullSection = findSection(full, sectionId);
+        const full = this.generateFullRoot();
+        const fullSection = findSection(full, sectionId);
 
         _.each(fullSection.sections, function (childSection) {
             this.setFillingType(childSection.id, type, name);
         }, this);
     },
-    setSectionMullionPosition: function (id, pos) {
-        this._updateSection(id, function (section) {
+    setSectionMullionPosition(id, pos) {
+        this._updateSection(id, (section) => {
             if (section.minPosition && section.minPosition > pos) {
                 pos = section.minPosition;
             }
@@ -1238,18 +1235,18 @@ const Unit = Backbone.Model.extend({
             section.position = parseFloat(pos);
         });
     },
-    removeMullion: function (sectionId) {
-        this._updateSection(sectionId, function (section) {
+    removeMullion(sectionId) {
+        this._updateSection(sectionId, (section) => {
             section.divider = null;
             section.sections = [];
             section.position = null;
         });
     },
-    removeSash: function (sectionId) {
-        let glazing_name = this.get('glazing');
-        let profile_id = this.profile && this.profile.id;
+    removeSash(sectionId) {
+        const glazing_name = this.get('glazing');
+        const profile_id = this.profile && this.profile.id;
 
-        this._updateSection(sectionId, function (section) {
+        this._updateSection(sectionId, (section) => {
             section.sashType = 'fixed_in_frame';
             _.assign(section, getDefaultFillingType(glazing_name, profile_id));
             section.divider = null;
@@ -1257,29 +1254,28 @@ const Unit = Backbone.Model.extend({
             section.position = null;
         });
     },
-    splitSection: function (sectionId, type) {
+    splitSection(sectionId, type) {
         if (!_.includes(MULLION_TYPES, type)) {
             console.error('Unknow mullion type', type);
             return;
         }
 
-        this._updateSection(sectionId, function (section) {
-
-            let full = this.generateFullRoot();
-            let fullSection = findSection(full, sectionId);
-            let measurementType = getInvertedDivider(type).replace(/_invisible/, '');
+        this._updateSection(sectionId, (section) => {
+            const full = this.generateFullRoot();
+            const fullSection = findSection(full, sectionId);
+            const measurementType = getInvertedDivider(type).replace(/_invisible/, '');
             let position;
 
             if (type === 'horizontal' || type === 'horizontal_invisible') {
                 position = fullSection.openingParams.y + fullSection.openingParams.height / 2;
 
                 if (this.isTrapezoid()) {
-                    let corners = this.getMainTrapezoidInnerCorners();
-                    let crossing = this.getLineCrossingY(position, corners.left, corners.right);
-                    let heights = this.getTrapezoidHeights();
-                    let width = this.getInMetric('width', 'mm');
-                    let minHeight = (heights.left > heights.right) ? heights.right : heights.left;
-                    let maxHeight = (heights.left < heights.right) ? heights.right : heights.left;
+                    const corners = this.getMainTrapezoidInnerCorners();
+                    const crossing = this.getLineCrossingY(position, corners.left, corners.right);
+                    const heights = this.getTrapezoidHeights();
+                    const width = this.getInMetric('width', 'mm');
+                    const minHeight = (heights.left > heights.right) ? heights.right : heights.left;
+                    const maxHeight = (heights.left < heights.right) ? heights.right : heights.left;
 
                     if (crossing >= -100 && crossing <= width + 100) {
                         position = maxHeight - minHeight + 200;
@@ -1312,8 +1308,7 @@ const Unit = Backbone.Model.extend({
             }
 
             section.position = position;
-
-        }.bind(this));
+        });
     },
     // after full calulcalation section will be something like:
     // {
@@ -1333,13 +1328,13 @@ const Unit = Backbone.Model.extend({
     //         openingParams: {}
     //     }]
     // }
-    generateFullRoot: function (rootSection, openingParams) {
+    generateFullRoot(rootSection, openingParams) {
         rootSection = rootSection || JSON.parse(JSON.stringify(this.get('root_section')));
         let defaultParams = {
             x: 0,
             y: 0,
             width: this.getInMetric('width', 'mm'),
-            height: this.getInMetric('height', 'mm')
+            height: this.getInMetric('height', 'mm'),
         };
 
         if (rootSection.id === this.get('root_section').id) {
@@ -1347,7 +1342,7 @@ const Unit = Backbone.Model.extend({
                 x: this.profile.get('frame_width'),
                 y: this.profile.get('frame_width'),
                 width: this.getInMetric('width', 'mm') - this.profile.get('frame_width') * 2,
-                height: this.getInMetric('height', 'mm') - this.profile.get('frame_width') * 2
+                height: this.getInMetric('height', 'mm') - this.profile.get('frame_width') * 2,
             };
         }
 
@@ -1361,7 +1356,7 @@ const Unit = Backbone.Model.extend({
                 y: this.profile.get('frame_width'),
                 width: this.getInMetric('width', 'mm') - this.profile.get('frame_width') * 2,
                 height: this.getInMetric('height', 'mm') -
-                    this.profile.get('frame_width') - this.profile.get('threshold_width')
+                    this.profile.get('frame_width') - this.profile.get('threshold_width'),
             };
             rootSection.thresholdEdge = true;
         }
@@ -1372,14 +1367,14 @@ const Unit = Backbone.Model.extend({
         rootSection.glassParams = {};
         rootSection.sashParams = {};
 
-        let hasFrame = (rootSection.sashType !== 'fixed_in_frame');
+        const hasFrame = (rootSection.sashType !== 'fixed_in_frame');
         let topOverlap = 0;
         let bottomOverlap = 0;
         let leftOverlap = 0;
         let rightOverlap = 0;
-        let frameOverlap = this.profile.get('sash_frame_overlap');
-        let mullionOverlap = this.profile.get('sash_mullion_overlap');
-        let thresholdOverlap = mullionOverlap;
+        const frameOverlap = this.profile.get('sash_frame_overlap');
+        const mullionOverlap = this.profile.get('sash_mullion_overlap');
+        const thresholdOverlap = mullionOverlap;
 
         if (hasFrame) {
             topOverlap = rootSection.mullionEdges.top ? mullionOverlap : frameOverlap;
@@ -1411,18 +1406,18 @@ const Unit = Backbone.Model.extend({
         rootSection.sashParams.x = rootSection.openingParams.x - leftOverlap;
         rootSection.sashParams.y = rootSection.openingParams.y - topOverlap;
 
-        let frameWidth = hasFrame ? this.profile.get('sash_frame_width') : 0;
+        const frameWidth = hasFrame ? this.profile.get('sash_frame_width') : 0;
 
         rootSection.glassParams.x = rootSection.sashParams.x + frameWidth;
         rootSection.glassParams.y = rootSection.sashParams.y + frameWidth;
         rootSection.glassParams.width = rootSection.sashParams.width - frameWidth * 2;
         rootSection.glassParams.height = rootSection.sashParams.height - frameWidth * 2;
 
-        let position = rootSection.position;
+        const position = rootSection.position;
 
         if (rootSection.sections && rootSection.sections.length) {
-            let mullionAttrs = {
-                x: null, y: null, width: null, height: null
+            const mullionAttrs = {
+                x: null, y: null, width: null, height: null,
             };
 
             if (rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible') {
@@ -1441,31 +1436,31 @@ const Unit = Backbone.Model.extend({
         }
 
         // Vars for use in the following map callback
-        let parentHasFrame = hasFrame;
-        let isParentLeft = openingParams.isLeft;
-        let isParentRight = openingParams.isRight;
-        let isParentTop = openingParams.isTop;
-        let isParentBottom = openingParams.isBottom;
+        const parentHasFrame = hasFrame;
+        const isParentLeft = openingParams.isLeft;
+        const isParentRight = openingParams.isRight;
+        const isParentTop = openingParams.isTop;
+        const isParentBottom = openingParams.isBottom;
 
-        rootSection.sections = _.map(rootSection.sections, function (sectionData, i) {
-            let sectionParams = {
-                x: null, y: null, width: null, height: null
+        rootSection.sections = _.map(rootSection.sections, (sectionData, i) => {
+            const sectionParams = {
+                x: null, y: null, width: null, height: null,
             };
-            let isVertical = rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible';
-            let isHorizontal = rootSection.divider === 'horizontal' || rootSection.divider === 'horizontal_invisible';
-            let isFirst = i === 0;
-            let isLeft = isVertical && !isFirst;  // Is this left section when looking from outside?
-            let isRight = isVertical && isFirst;
-            let isTop = isHorizontal && isFirst;
-            let isBottom = isHorizontal && !isFirst;
-            let isDoorProfile = this.isDoorType();
-            let sashFrameWidth = this.profile.get('sash_frame_width');
-            let sashFrameOverlap = this.profile.get('sash_frame_overlap');
-            let sashMullionOverlap = this.profile.get('sash_mullion_overlap');
-            let mullionWidth = this.profile.get('mullion_width');
-            let sashFrameGlassOverlap = sashFrameWidth - sashFrameOverlap;
-            let overlapDifference = sashFrameOverlap - sashMullionOverlap;
-            let trim = function (amount, sides) {
+            const isVertical = rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible';
+            const isHorizontal = rootSection.divider === 'horizontal' || rootSection.divider === 'horizontal_invisible';
+            const isFirst = i === 0;
+            const isLeft = isVertical && !isFirst;  // Is this left section when looking from outside?
+            const isRight = isVertical && isFirst;
+            const isTop = isHorizontal && isFirst;
+            const isBottom = isHorizontal && !isFirst;
+            const isDoorProfile = this.isDoorType();
+            const sashFrameWidth = this.profile.get('sash_frame_width');
+            const sashFrameOverlap = this.profile.get('sash_frame_overlap');
+            const sashMullionOverlap = this.profile.get('sash_mullion_overlap');
+            const mullionWidth = this.profile.get('mullion_width');
+            const sashFrameGlassOverlap = sashFrameWidth - sashFrameOverlap;
+            const overlapDifference = sashFrameOverlap - sashMullionOverlap;
+            const trim = function (amount, sides) {
                 if (sides === 'all') {
                     sides = ['top', 'right', 'bottom', 'left'];
                 }
@@ -1474,7 +1469,7 @@ const Unit = Backbone.Model.extend({
                     sides = [sides];
                 }
 
-                sides.forEach(function (side) {
+                sides.forEach((side) => {
                     if (side === 'top') {
                         sectionParams.y += amount;
                         sectionParams.height -= amount;
@@ -1553,13 +1548,13 @@ const Unit = Backbone.Model.extend({
             sectionParams.isBottom = isBottom;
 
             return this.generateFullRoot(sectionData, sectionParams);
-        }.bind(this));
+        });
 
         return rootSection;
     },
-    generateFullReversedRoot: function (rootSection) {
+    generateFullReversedRoot(rootSection) {
         rootSection = rootSection || this.generateFullRoot();
-        let width = this.getInMetric('width', 'mm');
+        const width = this.getInMetric('width', 'mm');
 
         rootSection.openingParams.x = width - rootSection.openingParams.x - rootSection.openingParams.width;
         rootSection.glassParams.x = width - rootSection.glassParams.x - rootSection.glassParams.width;
@@ -1584,26 +1579,26 @@ const Unit = Backbone.Model.extend({
         }
 
         rootSection.sashType = type;
-        rootSection.sections = _.map(rootSection.sections, function (sectionData) {
-            let temp = sectionData.mullionEdges.left;
+        rootSection.sections = _.map(rootSection.sections, (sectionData) => {
+            const temp = sectionData.mullionEdges.left;
 
             sectionData.mullionEdges.left = sectionData.mullionEdges.right;
             sectionData.mullionEdges.right = temp;
             return this.generateFullReversedRoot(sectionData);
-        }.bind(this));
+        });
         return rootSection;
     },
     // it is not possible to add sash inside another sash
     // so this function check all parent
-    canAddSashToSection: function (sectionId) {
-        let fullRoot = this.generateFullRoot();
-        let section = findSection(fullRoot, sectionId);
+    canAddSashToSection(sectionId) {
+        const fullRoot = this.generateFullRoot();
+        const section = findSection(fullRoot, sectionId);
 
         if (section.parentId === undefined) {
             return true;
         }
 
-        let parentSection = findSection(fullRoot, section.parentId);
+        const parentSection = findSection(fullRoot, section.parentId);
 
         if (parentSection.sashType !== 'fixed_in_frame') {
             return false;
@@ -1611,7 +1606,7 @@ const Unit = Backbone.Model.extend({
 
         return this.canAddSashToSection(section.parentId);
     },
-    flatterSections: function (rootSection) {
+    flatterSections(rootSection) {
         rootSection = rootSection || this.get('root_section');
         let sections = [];
 
@@ -1625,7 +1620,7 @@ const Unit = Backbone.Model.extend({
 
         return sections;
     },
-    getMullions: function (rootSection) {
+    getMullions(rootSection) {
         rootSection = rootSection || this.get('root_section');
         let mullions = [];
 
@@ -1634,12 +1629,10 @@ const Unit = Backbone.Model.extend({
                 type: rootSection.divider,
                 position: rootSection.position,
                 id: rootSection.id,
-                sections: [rootSection.sections[0], rootSection.sections[1]]
+                sections: [rootSection.sections[0], rootSection.sections[1]],
             });
 
-            let submullions = _.map(rootSection.sections, function (s) {
-                return this.getMullions(s);
-            }.bind(this));
+            const submullions = _.map(rootSection.sections, s => this.getMullions(s));
 
             mullions = mullions.concat(submullions);
         } else {
@@ -1648,15 +1641,13 @@ const Unit = Backbone.Model.extend({
 
         return _.flatten(mullions);
     },
-    getRevertedMullions: function () {
+    getRevertedMullions() {
         return this.getMullions(this.generateFullReversedRoot());
     },
-    getMullion: function (id) {
-        return _.find(this.getMullions(), function (mullion) {
-            return mullion.id === id;
-        });
+    getMullion(id) {
+        return _.find(this.getMullions(), mullion => mullion.id === id);
     },
-    getInMetric: function (attr, metric) {
+    getInMetric(attr, metric) {
         if (!metric || (['mm', 'inches'].indexOf(metric) === -1)) {
             throw new Error('Set metric! "mm" or "inches"');
         }
@@ -1668,17 +1659,17 @@ const Unit = Backbone.Model.extend({
         return utils.convert.inches_to_mm(this.get(attr));
     },
     //  Inches by default, mm optional
-    updateDimension: function (attr, val, metric) {
-        let rootSection = this.get('root_section');
-        let possible_metrics = ['mm', 'inches'];
-        let possible_dimensions = ['width', 'height', 'height_max', 'height_min'];
+    updateDimension(attr, val, metric) {
+        const rootSection = this.get('root_section');
+        const possible_metrics = ['mm', 'inches'];
+        const possible_dimensions = ['width', 'height', 'height_max', 'height_min'];
 
         if (!attr || possible_dimensions.indexOf(attr) === -1) {
-            throw new Error('Wrong dimension. Possible values: ' + possible_dimensions.join(', '));
+            throw new Error(`Wrong dimension. Possible values: ${possible_dimensions.join(', ')}`);
         }
 
         if (metric && possible_metrics.indexOf(metric) === -1) {
-            throw new Error('Wrong metric. Possible values: ' + possible_metrics.join(', '));
+            throw new Error(`Wrong metric. Possible values: ${possible_metrics.join(', ')}`);
         }
 
         // Convert to inches if metric is present and it isn't inches. No metric means inches
@@ -1689,19 +1680,19 @@ const Unit = Backbone.Model.extend({
         }
 
         if (this.getCircleRadius() !== null) {
-            let full_root = this.generateFullRoot();
+            const full_root = this.generateFullRoot();
 
             this.setCircular(full_root.id, {
-                radius: val / 2
+                radius: val / 2,
             });
         } else if (attr === 'height' && _.isArray(val) && val.length > 1) {
             rootSection.trapezoidHeights = [val[0], val[1]];
             rootSection.circular = false;
             rootSection.arched = false;
-            let params = {
+            const params = {
                 corners: this.getMainTrapezoidInnerCorners(),
                 minHeight: (val[0] > val[1]) ? val[1] : val[0],
-                maxHeight: (val[0] < val[1]) ? val[1] : val[0]
+                maxHeight: (val[0] < val[1]) ? val[1] : val[0],
             };
 
             this.checkHorizontalSplit(rootSection, params);
@@ -1721,13 +1712,13 @@ const Unit = Backbone.Model.extend({
             this.persist(attr, val);
         }
     },
-    clearFrame: function () {
-        let rootId = this.get('root_section').id;
-        let profile_id = this.profile && this.profile.id;
-        let glazing_name = this.get('glazing');
+    clearFrame() {
+        const rootId = this.get('root_section').id;
+        const profile_id = this.profile && this.profile.id;
+        const glazing_name = this.get('glazing');
 
         //  Similar to removeMullion but affects more properties
-        this._updateSection(rootId, function (section) {
+        this._updateSection(rootId, (section) => {
             section.divider = null;
             section.sections = [];
             section.position = null;
@@ -1738,27 +1729,27 @@ const Unit = Backbone.Model.extend({
     //  Here we get a list with basic sizes for each piece of the unit:
     //  frame, sashes, mullions, openings, glasses. Each piece got width,
     //  height, and some also got frame_width
-    getSizes: function (current_root) {
+    getSizes(current_root) {
         current_root = current_root || this.generateFullRoot();
 
-        let result = {
+        const result = {
             sashes: [],
             glasses: [],
             openings: [],
             mullions: [],
-            glazing_bars: []
+            glazing_bars: [],
         };
 
         if (!result.frame) {
             result.frame = {
                 width: utils.convert.inches_to_mm(this.get('width')),
                 height: utils.convert.inches_to_mm(this.get('height')),
-                frame_width: this.profile.get('frame_width')
+                frame_width: this.profile.get('frame_width'),
             };
         }
 
         _.each(current_root.sections, function (sec) {
-            let subSizes = this.getSizes(sec);
+            const subSizes = this.getSizes(sec);
 
             result.sashes = result.sashes.concat(subSizes.sashes);
             result.glasses = result.glasses.concat(subSizes.glasses);
@@ -1772,7 +1763,7 @@ const Unit = Backbone.Model.extend({
                 name: current_root.fillingName,
                 type: current_root.fillingType,
                 width: current_root.glassParams.width,
-                height: current_root.glassParams.height
+                height: current_root.glassParams.height,
             });
         }
 
@@ -1780,7 +1771,7 @@ const Unit = Backbone.Model.extend({
             result.mullions.push({
                 type: current_root.divider,
                 width: current_root.mullionParams.width,
-                height: current_root.mullionParams.height
+                height: current_root.mullionParams.height,
             });
         }
 
@@ -1790,7 +1781,7 @@ const Unit = Backbone.Model.extend({
                     type: 'horizontal',
                     width: current_root.glassParams.width,
                     height: this.get('glazing_bar_width'),
-                    intersections: current_root.bars.vertical.length
+                    intersections: current_root.bars.vertical.length,
                 });
             }, this);
         }
@@ -1801,7 +1792,7 @@ const Unit = Backbone.Model.extend({
                     type: 'vertical',
                     width: this.get('glazing_bar_width'),
                     height: current_root.glassParams.height,
-                    intersections: current_root.bars.horizontal.length
+                    intersections: current_root.bars.horizontal.length,
                 });
             }, this);
         }
@@ -1810,26 +1801,24 @@ const Unit = Backbone.Model.extend({
             result.sashes.push({
                 width: current_root.sashParams.width,
                 height: current_root.sashParams.height,
-                frame_width: this.profile.get('sash_frame_width')
+                frame_width: this.profile.get('sash_frame_width'),
             });
 
             result.openings.push({
                 width: current_root.openingParams.width,
-                height: current_root.openingParams.height
+                height: current_root.openingParams.height,
             });
         }
 
         return result;
     },
-    hasBaseFilling: function () {
+    hasBaseFilling() {
         let has_base_filling = false;
-        let sizes = this.getSizes();
+        const sizes = this.getSizes();
 
         if (App.settings && App.settings.filling_types) {
-            _.find(sizes.glasses, function (glass) {
-                let is_base = App.settings.filling_types.find(function (filling) {
-                    return filling.get('name') === glass.name && filling.get('is_base_type') === true;
-                });
+            _.find(sizes.glasses, (glass) => {
+                const is_base = App.settings.filling_types.find(filling => filling.get('name') === glass.name && filling.get('is_base_type') === true);
 
                 if (is_base) {
                     has_base_filling = true;
@@ -1843,59 +1832,59 @@ const Unit = Backbone.Model.extend({
     //  Get linear and area size stats for various parts of the window.
     //  These values could be used as a base to calculate estimated
     //  cost of options for the unit
-    getLinearAndAreaStats: function () {
-        let profileWeight = this.profile.get('weight_per_length');
-        let fillingWeight = {};
+    getLinearAndAreaStats() {
+        const profileWeight = this.profile.get('weight_per_length');
+        const fillingWeight = {};
 
         if (App.settings && App.settings.filling_types) {
-            App.settings.filling_types.each(function (filling) {
+            App.settings.filling_types.each((filling) => {
                 fillingWeight[filling.get('name')] = filling.get('weight_per_area');
             });
         }
 
-        let sizes = this.getSizes();
-        let result = {
+        const sizes = this.getSizes();
+        const result = {
             frame: {
                 linear: 0,
                 linear_without_intersections: 0,
                 area: 0,
-                area_both_sides: 0
+                area_both_sides: 0,
             },
             sashes: {
                 linear: 0,
                 linear_without_intersections: 0,
                 area: 0,
-                area_both_sides: 0
+                area_both_sides: 0,
             },
             glasses: {
                 area: 0,
                 area_both_sides: 0,
-                weight: 0
+                weight: 0,
             },
             openings: {
-                area: 0
+                area: 0,
             },
             mullions: {
                 linear: 0,
                 area: 0,
-                area_both_sides: 0
+                area_both_sides: 0,
             },
             glazing_bars: {
                 linear: 0,
                 linear_without_intersections: 0,
                 area: 0,
-                area_both_sides: 0
+                area_both_sides: 0,
             },
             profile_total: {
                 linear: 0,
                 linear_without_intersections: 0,
                 area: 0,
                 area_both_sides: 0,
-                weight: 0
+                weight: 0,
             },
             unit_total: {
-                weight: 0
-            }
+                weight: 0,
+            },
         };
 
         function getProfilePerimeter(width, height) {
@@ -1920,9 +1909,9 @@ const Unit = Backbone.Model.extend({
         result.frame.area = getArea(result.frame.linear_without_intersections, sizes.frame.frame_width);
         result.frame.area_both_sides = result.frame.area * 2;
 
-        _.each(sizes.sashes, function (sash) {
-            let sash_perimeter = getProfilePerimeter(sash.width, sash.height);
-            let sash_perimeter_without_intersections =
+        _.each(sizes.sashes, (sash) => {
+            const sash_perimeter = getProfilePerimeter(sash.width, sash.height);
+            const sash_perimeter_without_intersections =
                 getProfilePerimeterWithoutIntersections(sash.width, sash.height, sash.frame_width);
 
             result.sashes.linear += sash_perimeter;
@@ -1931,7 +1920,7 @@ const Unit = Backbone.Model.extend({
             result.sashes.area_both_sides += getArea(sash_perimeter_without_intersections, sash.frame_width) * 2;
         });
 
-        _.each(sizes.mullions, function (mullion) {
+        _.each(sizes.mullions, (mullion) => {
             if (mullion.type === 'vertical') {
                 result.mullions.linear += mullion.height;
                 result.mullions.area += getArea(mullion.height, mullion.width);
@@ -1943,7 +1932,7 @@ const Unit = Backbone.Model.extend({
             }
         });
 
-        _.each(sizes.glazing_bars, function (bar) {
+        _.each(sizes.glazing_bars, (bar) => {
             if (bar.type === 'vertical') {
                 result.glazing_bars.linear += bar.height;
                 result.glazing_bars.linear_without_intersections += bar.height;
@@ -1958,14 +1947,14 @@ const Unit = Backbone.Model.extend({
             }
         });
 
-        _.each(sizes.openings, function (opening) {
+        _.each(sizes.openings, (opening) => {
             result.openings.area += getArea(opening.width, opening.height);
         });
 
-        let hasBaseFilling = this.hasBaseFilling();
+        const hasBaseFilling = this.hasBaseFilling();
 
-        _.each(sizes.glasses, function (glass) {
-            let area = getArea(glass.width, glass.height);
+        _.each(sizes.glasses, (glass) => {
+            const area = getArea(glass.width, glass.height);
 
             result.glasses.area += area;
             result.glasses.area_both_sides += getArea(glass.width, glass.height) * 2;
@@ -1992,18 +1981,18 @@ const Unit = Backbone.Model.extend({
         return result;
     },
     //  Returns sizes in mms
-    getSashList: function (current_root, parent_root, reverse_hinges) {
-        let current_sash = {
+    getSashList(current_root, parent_root, reverse_hinges) {
+        const current_sash = {
             opening: {},
             sash_frame: {},
             filling: {},
-            sections: []
+            sections: [],
         };
         let section_result;
         let filling_type;
-        let result = {
+        const result = {
             sashes: [],
-            sections: []
+            sections: [],
         };
         let type = 'sashes';
 
@@ -2051,8 +2040,8 @@ const Unit = Backbone.Model.extend({
             //  If there is no filling data provided for this section,
             //  we just show default filling info
             } else {
-                let profile_id = this.profile && this.profile.id;
-                let glazing_name = this.get('glazing');
+                const profile_id = this.profile && this.profile.id;
+                const glazing_name = this.get('glazing');
 
                 filling_type = getDefaultFillingType(glazing_name, profile_id);
                 current_sash.filling.type = filling_type.fillingType;
@@ -2077,9 +2066,9 @@ const Unit = Backbone.Model.extend({
     //  this list of sections as a source for cost estimation
     //
     //  Returns sizes in mms
-    getFixedAndOperableSectionsList: function (current_root) {
-        let profile = this.profile;
-        let current_area = {};
+    getFixedAndOperableSectionsList(current_root) {
+        const profile = this.profile;
+        const current_area = {};
         let section_result;
         let result = [];
 
@@ -2106,8 +2095,8 @@ const Unit = Backbone.Model.extend({
             current_area.height = current_root.openingParams.height;
             current_area.filling_name = current_root.fillingName;
 
-            _.each(['top', 'right', 'bottom', 'left'], function (position) {
-                let measurement = position === 'top' || position === 'bottom' ?
+            _.each(['top', 'right', 'bottom', 'left'], (position) => {
+                const measurement = position === 'top' || position === 'bottom' ?
                     'height' : 'width';
 
                 if (current_root.mullionEdges[position]) {
@@ -2127,36 +2116,36 @@ const Unit = Backbone.Model.extend({
 
         return result;
     },
-    getUnitOptionsGroupedByPricingScheme: function () {
-        let connected_options = this.getCurrentUnitOptions();
-        let profile_id = this.profile.id;
-        let result = {};
+    getUnitOptionsGroupedByPricingScheme() {
+        const connected_options = this.getCurrentUnitOptions();
+        const profile_id = this.profile.id;
+        const result = {};
 
         result[PRICING_SCHEME_PRICING_GRIDS] = [];
         result[PRICING_SCHEME_PER_ITEM] = [];
         result[PRICING_SCHEME_LINEAR_EQUATION] = [];
 
-        _.each(connected_options, function (option) {
-            let pricing_data = option.entry.getPricingDataForProfile(profile_id);
+        _.each(connected_options, (option) => {
+            const pricing_data = option.entry.getPricingDataForProfile(profile_id);
 
-            if ( !option.is_restricted && pricing_data && pricing_data.scheme !== PRICING_SCHEME_NONE ) {
+            if (!option.is_restricted && pricing_data && pricing_data.scheme !== PRICING_SCHEME_NONE) {
                 result[pricing_data.scheme].push({
                     dictionary_name: option.dictionary.get('name'),
                     is_hidden: option.dictionary.get('is_hidden'),
                     option_name: option.entry.get('name'),
-                    pricing_data: pricing_data,
+                    pricing_data,
                     has_quantity: option.has_quantity,
-                    quantity: option.quantity
+                    quantity: option.quantity,
                 });
             }
         }, this);
 
         return result;
     },
-    getSectionsListWithEstimatedCost: function () {
-        let profile_pricing_data = this.profile.getPricingData();
-        let sections_list = this.getFixedAndOperableSectionsList();
-        let options_grouped_by_scheme = this.getUnitOptionsGroupedByPricingScheme();
+    getSectionsListWithEstimatedCost() {
+        const profile_pricing_data = this.profile.getPricingData();
+        const sections_list = this.getFixedAndOperableSectionsList();
+        const options_grouped_by_scheme = this.getUnitOptionsGroupedByPricingScheme();
 
         _.each(sections_list, function (section) {
             section.price_per_square_meter = 0;
@@ -2168,17 +2157,17 @@ const Unit = Backbone.Model.extend({
                     section.type,
                     {
                         height: section.height,
-                        width: section.width
-                    }
+                        width: section.width,
+                    },
                 ) || 0;
 
                 section.base_pricing_scheme = PRICING_SCHEME_PRICING_GRIDS;
                 section.base_cost = utils.math.square_meters(section.width, section.height) *
                     section.price_per_square_meter;
             } else if (profile_pricing_data && profile_pricing_data.scheme === PRICING_SCHEME_LINEAR_EQUATION) {
-                let params_source = profile_pricing_data.pricing_equation_params.getByName(section.type);
-                let profile_param_a = params_source.get('param_a') || 0;
-                let profile_param_b = params_source.get('param_b') || 0;
+                const params_source = profile_pricing_data.pricing_equation_params.getByName(section.type);
+                const profile_param_a = params_source.get('param_a') || 0;
+                const profile_param_b = params_source.get('param_b') || 0;
 
                 section.base_pricing_scheme = PRICING_SCHEME_LINEAR_EQUATION;
                 section.base_cost =
@@ -2190,8 +2179,8 @@ const Unit = Backbone.Model.extend({
 
             //  Add cost increase for fillings
             if (App.settings && App.settings.filling_types) {
-                let filling_type = App.settings.filling_types.getByName(section.filling_name);
-                let ft_pricing_data = filling_type &&
+                const filling_type = App.settings.filling_types.getByName(section.filling_name);
+                const ft_pricing_data = filling_type &&
                     filling_type.getPricingDataForProfile(this.profile.id);
 
                 //  If we have correct pricing scheme and data for filling
@@ -2200,15 +2189,15 @@ const Unit = Backbone.Model.extend({
                         section.type,
                         {
                             height: section.height,
-                            width: section.width
-                        }
+                            width: section.width,
+                        },
                     ) || 0;
                     section.filling_pricing_scheme = PRICING_SCHEME_PRICING_GRIDS;
                     section.filling_cost = section.base_cost * section.filling_price_increase / 100;
                 } else if (ft_pricing_data && ft_pricing_data.scheme === PRICING_SCHEME_LINEAR_EQUATION) {
-                    let ft_params_source = ft_pricing_data.pricing_equation_params.getByName(section.type);
-                    let ft_param_a = ft_params_source.get('param_a') || 0;
-                    let ft_param_b = ft_params_source.get('param_b') || 0;
+                    const ft_params_source = ft_pricing_data.pricing_equation_params.getByName(section.type);
+                    const ft_param_a = ft_params_source.get('param_a') || 0;
+                    const ft_param_b = ft_params_source.get('param_b') || 0;
 
                     section.filling_pricing_scheme = PRICING_SCHEME_LINEAR_EQUATION;
                     section.filling_cost =
@@ -2220,15 +2209,15 @@ const Unit = Backbone.Model.extend({
             section.options = [];
 
             //  Now add costs for all grid-based options
-            _.each(options_grouped_by_scheme[PRICING_SCHEME_PRICING_GRIDS], function (option_data) {
-                let option_pricing_data = option_data.pricing_data;
+            _.each(options_grouped_by_scheme[PRICING_SCHEME_PRICING_GRIDS], (option_data) => {
+                const option_pricing_data = option_data.pricing_data;
                 let option_cost = 0;
-                let price_increase = option_pricing_data.pricing_grids.getValueForGrid(
+                const price_increase = option_pricing_data.pricing_grids.getValueForGrid(
                     section.type,
                     {
                         height: section.height,
-                        width: section.width
-                    }
+                        width: section.width,
+                    },
                 ) || 0;
 
                 option_cost = section.base_cost * price_increase / 100;
@@ -2239,18 +2228,18 @@ const Unit = Backbone.Model.extend({
                     dictionary_pricing_scheme: PRICING_SCHEME_PRICING_GRIDS,
                     is_hidden: option_data.is_hidden,
                     option_name: option_data.option_name,
-                    price_increase: price_increase,
-                    cost: option_cost
+                    price_increase,
+                    cost: option_cost,
                 });
             }, this);
 
             //  Add costs for options with equation-based pricing
-            _.each(options_grouped_by_scheme[PRICING_SCHEME_LINEAR_EQUATION], function (option_data) {
-                let option_pricing_data = option_data.pricing_data.pricing_equation_params.getByName(section.type);
+            _.each(options_grouped_by_scheme[PRICING_SCHEME_LINEAR_EQUATION], (option_data) => {
+                const option_pricing_data = option_data.pricing_data.pricing_equation_params.getByName(section.type);
                 let option_cost = 0;
-                let param_a = option_pricing_data.get('param_a') || 0;
-                let param_b = option_pricing_data.get('param_b') || 0;
-                let price_increase = 0;
+                const param_a = option_pricing_data.get('param_a') || 0;
+                const param_b = option_pricing_data.get('param_b') || 0;
+                const price_increase = 0;
 
                 option_cost = param_a * section.height / 1000 * section.width / 1000 + param_b;
                 section.options_cost += option_cost;
@@ -2260,8 +2249,8 @@ const Unit = Backbone.Model.extend({
                     dictionary_pricing_scheme: PRICING_SCHEME_LINEAR_EQUATION,
                     is_hidden: option_data.is_hidden,
                     option_name: option_data.option_name,
-                    price_increase: price_increase,
-                    cost: option_cost
+                    price_increase,
+                    cost: option_cost,
                 });
             }, this);
 
@@ -2270,23 +2259,23 @@ const Unit = Backbone.Model.extend({
 
         return sections_list;
     },
-    getEstimatedUnitCost: function () {
-        let sections_list = this.getSectionsListWithEstimatedCost();
-        let options_list = this.getUnitOptionsGroupedByPricingScheme();
-        let unit_cost = {
+    getEstimatedUnitCost() {
+        const sections_list = this.getSectionsListWithEstimatedCost();
+        const options_list = this.getUnitOptionsGroupedByPricingScheme();
+        const unit_cost = {
             total: 0,
             base: 0,
             fillings: 0,
             options: 0,
-            sections_list: sections_list,
-            options_list: options_list,
+            sections_list,
+            options_list,
             real_cost: {
                 total: this.get('original_cost'),
-                difference: 0
-            }
+                difference: 0,
+            },
         };
 
-        _.each(sections_list, function (section) {
+        _.each(sections_list, (section) => {
             unit_cost.total += section.total_cost;
             unit_cost.base += section.base_cost;
             unit_cost.fillings += section.filling_cost;
@@ -2294,7 +2283,7 @@ const Unit = Backbone.Model.extend({
         }, this);
 
         //  Now add cost for all per-item priced options
-        _.each(options_list[PRICING_SCHEME_PER_ITEM], function (option) {
+        _.each(options_list[PRICING_SCHEME_PER_ITEM], (option) => {
             unit_cost.total += option.pricing_data.cost_per_item * option.quantity;
             unit_cost.options += option.pricing_data.cost_per_item * option.quantity;
         }, this);
@@ -2307,7 +2296,7 @@ const Unit = Backbone.Model.extend({
     },
     //  Check if unit has at least one operable section. This could be used
     //  to determine whether we should allow editing handles and such stuff
-    hasOperableSections: function (current_root) {
+    hasOperableSections(current_root) {
         let has_operable_sections = false;
 
         current_root = current_root || this.generateFullRoot();
@@ -2316,7 +2305,7 @@ const Unit = Backbone.Model.extend({
             has_operable_sections = true;
         } else {
             _.each(current_root.sections, function (section) {
-                let section_is_operable = has_operable_sections || this.hasOperableSections(section);
+                const section_is_operable = has_operable_sections || this.hasOperableSections(section);
 
                 if (section_is_operable) {
                     has_operable_sections = true;
@@ -2326,12 +2315,12 @@ const Unit = Backbone.Model.extend({
 
         return has_operable_sections;
     },
-    isOperableOnlyAttribute: function (attribute_name) {
+    isOperableOnlyAttribute(attribute_name) {
         return _.indexOf(OPERABLE_ONLY_PROPERTIES, attribute_name) !== -1;
     },
     //  Check if any of unit sections has glazing bars. This could be used
     //  to determine whether we should allow editing related properties
-    hasGlazingBars: function (current_root) {
+    hasGlazingBars(current_root) {
         let has_glazing_bars = false;
 
         current_root = current_root || this.generateFullRoot();
@@ -2340,7 +2329,7 @@ const Unit = Backbone.Model.extend({
             has_glazing_bars = true;
         } else {
             _.each(current_root.sections, function (section) {
-                let section_has_glazing_bars = has_glazing_bars || this.hasGlazingBars(section);
+                const section_has_glazing_bars = has_glazing_bars || this.hasGlazingBars(section);
 
                 if (section_has_glazing_bars) {
                     has_glazing_bars = true;
@@ -2350,30 +2339,30 @@ const Unit = Backbone.Model.extend({
 
         return has_glazing_bars;
     },
-    isGlazingBarProperty: function (attribute_name) {
+    isGlazingBarProperty(attribute_name) {
         return _.indexOf(GLAZING_BAR_PROPERTIES, attribute_name) !== -1;
     },
-    getInvertedDivider: function (type) {
+    getInvertedDivider(type) {
         return getInvertedDivider(type);
     },
-    isCircleWindow: function () {
+    isCircleWindow() {
         return (this.getCircleRadius() !== null);
     },
-    isArchedWindow: function () {
+    isArchedWindow() {
         return (this.getArchedPosition() !== null);
     },
-    isEgressEnabledType: function (sash_type) {
+    isEgressEnabledType(sash_type) {
         return _.indexOf(EGRESS_ENABLED_TYPES, sash_type) !== -1;
     },
     //  Source is in mms. Result is in inches by default, millimeters optional
-    getSashOpeningSize: function (openingSizes_mm, sizeType, sashType, result_metric) {
-        let possible_metrics = ['mm', 'inches'];
-        let c = utils.convert;
-        let m = utils.math;
+    getSashOpeningSize(openingSizes_mm, sizeType, sashType, result_metric) {
+        const possible_metrics = ['mm', 'inches'];
+        const c = utils.convert;
+        const m = utils.math;
         let result;
 
         if (result_metric && possible_metrics.indexOf(result_metric) === -1) {
-            throw new Error('Wrong metric. Possible values: ' + possible_metrics.join(', '));
+            throw new Error(`Wrong metric. Possible values: ${possible_metrics.join(', ')}`);
         }
 
         //  Set inches by default
@@ -2382,7 +2371,7 @@ const Unit = Backbone.Model.extend({
         }
 
         if (sizeType === 'egress') {
-            let clear_width_deduction = this.profile.get('clear_width_deduction');
+            const clear_width_deduction = this.profile.get('clear_width_deduction');
 
             if (clear_width_deduction && this.isEgressEnabledType(sashType)) {
                 openingSizes_mm.width -= clear_width_deduction;
@@ -2392,10 +2381,10 @@ const Unit = Backbone.Model.extend({
         }
 
         if (openingSizes_mm && openingSizes_mm.height && openingSizes_mm.width) {
-            let opening_area = (result_metric === 'inches') ?
+            const opening_area = (result_metric === 'inches') ?
                 m.square_feet(
                     c.mm_to_inches(openingSizes_mm.width),
-                    c.mm_to_inches(openingSizes_mm.height)
+                    c.mm_to_inches(openingSizes_mm.height),
                 ) :
                 m.square_meters(openingSizes_mm.width, openingSizes_mm.height);
 
@@ -2406,29 +2395,29 @@ const Unit = Backbone.Model.extend({
                 width: (result_metric === 'inches') ?
                     c.mm_to_inches(openingSizes_mm.width) :
                     openingSizes_mm.width,
-                area: opening_area
+                area: opening_area,
             };
         }
 
         return result;
     },
     //  Get list of options that are currently selected for this unit
-    getCurrentUnitOptions: function () {
-        let options_list = this.get('unit_options');
-        let result = [];
+    getCurrentUnitOptions() {
+        const options_list = this.get('unit_options');
+        const result = [];
 
         if (App.settings) {
             options_list.each(function (list_item) {
-                let option_data = {
+                const option_data = {
                     is_restricted: false,
                     restrictions: [],
                     has_quantity: false,
-                    quantity: undefined
+                    quantity: undefined,
                 };
-                let target_dictionary = App.settings.dictionaries.get(list_item.get('dictionary_id'));
+                const target_dictionary = App.settings.dictionaries.get(list_item.get('dictionary_id'));
 
                 if (target_dictionary) {
-                    let target_entry = target_dictionary.entries.get(list_item.get('dictionary_entry_id'));
+                    const target_entry = target_dictionary.entries.get(list_item.get('dictionary_entry_id'));
 
                     if (target_entry) {
                         option_data.dictionary = target_dictionary;
@@ -2457,18 +2446,16 @@ const Unit = Backbone.Model.extend({
     },
     //  Get list of options that are currently selected for this unit,
     //  filtered by certain dictionary, e.g. "Interior Handle"
-    getCurrentUnitOptionsByDictionaryId: function (dictionary_id) {
-        return _.filter(this.getCurrentUnitOptions(), function (unit_option) {
-            return unit_option.dictionary.id === dictionary_id;
-        }, this);
+    getCurrentUnitOptionsByDictionaryId(dictionary_id) {
+        return _.filter(this.getCurrentUnitOptions(), unit_option => unit_option.dictionary.id === dictionary_id, this);
     },
     //  Get list of all possible variants from a certain dictionary that
     //  could be selected for this unit
     //  TODO: why do we need this function in unit.js if we could call it
     //  on dictionary collection?
-    getAvailableOptionsByDictionaryId: function (dictionary_id) {
+    getAvailableOptionsByDictionaryId(dictionary_id) {
         let result = [];
-        let profile_id = this.profile && this.profile.id;
+        const profile_id = this.profile && this.profile.id;
 
         if (App.settings && profile_id) {
             result = App.settings.dictionaries.getAvailableOptions(dictionary_id, profile_id, true);
@@ -2476,7 +2463,7 @@ const Unit = Backbone.Model.extend({
 
         return result;
     },
-    checkIfRestrictionApplies: function (restriction) {
+    checkIfRestrictionApplies(restriction) {
         let restriction_applies = false;
 
         if (restriction === 'DOOR_ONLY' && !this.isDoorType()) {
@@ -2489,38 +2476,36 @@ const Unit = Backbone.Model.extend({
 
         return restriction_applies;
     },
-    persistOption: function (dictionary_id, dictionary_entry_id, quantity) {
-        let current_unit_options = this.get('unit_options');
+    persistOption(dictionary_id, dictionary_entry_id, quantity) {
+        const current_unit_options = this.get('unit_options');
         //  New collection contains options from all dictionaries except
         //  for the one we're going to update
-        let new_unit_options = new UnitOptionCollection(
-            current_unit_options.filter(function (unit_option) {
-                return unit_option.get('dictionary_id') !== dictionary_id;
-            }, this),
-            {parse: true}
+        const new_unit_options = new UnitOptionCollection(
+            current_unit_options.filter(unit_option => unit_option.get('dictionary_id') !== dictionary_id, this),
+            { parse: true },
         );
 
         if (dictionary_entry_id) {
             new_unit_options.add({
-                dictionary_id: dictionary_id,
-                dictionary_entry_id: dictionary_entry_id,
-                quantity: quantity || 1
+                dictionary_id,
+                dictionary_entry_id,
+                quantity: quantity || 1,
             });
         }
 
         //  When arrays are the same, do nothing, otherwise persist
-        if ( JSON.stringify(current_unit_options.toJSON()) !== JSON.stringify(new_unit_options.toJSON()) ) {
-            this.get('unit_options').reset( new_unit_options.models);
+        if (JSON.stringify(current_unit_options.toJSON()) !== JSON.stringify(new_unit_options.toJSON())) {
+            this.get('unit_options').reset(new_unit_options.models);
         }
     },
-    getParentProject: function () {
+    getParentProject() {
         return this.collection && this.collection.options.project;
     },
-    getParentQuote: function () {
+    getParentQuote() {
         return this.collection && this.collection.options.quote;
     },
     //  Check if this unit belongs to the project which is currently active
-    isParentQuoteActive: function () {
+    isParentQuoteActive() {
         let is_active = false;
 
         if (App.current_quote && this.collection && this.collection.options.quote &&
@@ -2532,23 +2517,21 @@ const Unit = Backbone.Model.extend({
         return is_active;
     },
     /* trapezoid start */
-    isTrapezoid: function () {
-        let root = this.generateFullRoot();
+    isTrapezoid() {
+        const root = this.generateFullRoot();
 
         return root.trapezoidHeights;
     },
 
     /* Determines if the unit has at least one horizontal mullion */
-    hasHorizontalMullion: function () {
-        return this.getMullions().reduce(function (previous, current) {
-            return previous || (current.type === 'horizontal' || current.type === 'horizontal_invisible');
-        }, false);
+    hasHorizontalMullion() {
+        return this.getMullions().reduce((previous, current) => previous || (current.type === 'horizontal' || current.type === 'horizontal_invisible'), false);
     },
     /* eslint-disable no-else-return */
 
     /* Determines the number of vertical metric columns on the unit drawing's left and right sides
      * Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js */
-    leftMetricCount: function (isInsideView) {
+    leftMetricCount(isInsideView) {
         // Inside view //
 
         // Trapezoid units have reversed metrics on the inside view, except for arched trapezoids
@@ -2572,7 +2555,7 @@ const Unit = Backbone.Model.extend({
 
     /* Determines the number of vertical metric columns on the unit drawing's right side
      * Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js */
-    rightMetricCount: function (isInsideView) {
+    rightMetricCount(isInsideView) {
         // Inside view //
 
         // Trapezoid units have reversed metrics on the inside view, except for arched trapezoids
@@ -2594,93 +2577,92 @@ const Unit = Backbone.Model.extend({
         }
     },
     /* eslint-enable no-else-return */
-    getTrapezoidHeights: function (inside) {
+    getTrapezoidHeights(inside) {
         if (typeof inside !== 'undefined') {
             this.inside = inside;
         }
 
-        let heights = this.get('root_section').trapezoidHeights;
-        let left = utils.convert.inches_to_mm(heights[0]);
-        let right = utils.convert.inches_to_mm(heights[1]);
+        const heights = this.get('root_section').trapezoidHeights;
+        const left = utils.convert.inches_to_mm(heights[0]);
+        const right = utils.convert.inches_to_mm(heights[1]);
 
-        return (this.inside) ? {left: right, right: left} : {left: left, right: right};
+        return (this.inside) ? { left: right, right: left } : { left, right };
     },
-    getTrapezoidMaxHeight: function () {
-        let heights = this.getTrapezoidHeights();
+    getTrapezoidMaxHeight() {
+        const heights = this.getTrapezoidHeights();
 
-        return ( heights.left > heights.right ) ? heights.left : heights.right;
+        return (heights.left > heights.right) ? heights.left : heights.right;
     },
-    getTrapezoidInnerCorners: function (params) {
-        let heights = params.heights;
-        let width = params.width;
-        let frameWidth = params.frameWidth;
-        let maxHeight = params.maxHeight;
+    getTrapezoidInnerCorners(params) {
+        const heights = params.heights;
+        const width = params.width;
+        const frameWidth = params.frameWidth;
+        const maxHeight = params.maxHeight;
         let corners = {};
 
         if (typeof heights === 'object') {
-            let cornerLeft = Math.abs(
-                ( Math.atan(( ( maxHeight - heights.right ) - ( maxHeight - heights.left ) ) / ( width - 0 )) -
-                Math.atan(( maxHeight - ( maxHeight - heights.left ) ) / ( 0 - 0 )) ) / Math.PI * 180
+            const cornerLeft = Math.abs(
+                (Math.atan(((maxHeight - heights.right) - (maxHeight - heights.left)) / (width - 0)) -
+                Math.atan((maxHeight - (maxHeight - heights.left)) / (0 - 0))) / Math.PI * 180,
             ) / 2;
-            let cornerRight = Math.abs(90 - cornerLeft);
+            const cornerRight = Math.abs(90 - cornerLeft);
 
             corners = {
                 left: {
                     x: frameWidth,
-                    y: maxHeight - heights.left + ( Math.tan(( 90 - cornerLeft ) / 180 * Math.PI) * frameWidth )
+                    y: maxHeight - heights.left + (Math.tan((90 - cornerLeft) / 180 * Math.PI) * frameWidth),
                 },
                 right: {
                     x: width - frameWidth,
-                    y: maxHeight - heights.right + ( Math.tan(( 90 - cornerRight ) / 180 * Math.PI) * frameWidth )
-                }
+                    y: maxHeight - heights.right + (Math.tan((90 - cornerRight) / 180 * Math.PI) * frameWidth),
+                },
             };
         }
 
         return corners;
     },
-    getMainTrapezoidInnerCorners: function () {
+    getMainTrapezoidInnerCorners() {
         return this.getTrapezoidInnerCorners({
             heights: this.getTrapezoidHeights(),
             width: this.getInMetric('width', 'mm'),
             frameWidth: this.profile.get('frame_width'),
-            maxHeight: this.getTrapezoidMaxHeight()
+            maxHeight: this.getTrapezoidMaxHeight(),
         });
     },
-    getTrapezoidCrossing: function (start, finish) {
-        let corners = this.getMainTrapezoidInnerCorners();
-        let x1 = start.x;
-        let y1 = start.y;
-        let x2 = finish.x;
-        let y2 = finish.y;
-        let x3 = corners.left.x;
-        let y3 = corners.left.y;
-        let x4 = corners.right.x;
-        let y4 = corners.right.y;
-        let diff = ( ( ( y4 - y3 ) * ( x2 - x1 ) ) - ( ( x4 - x3 ) * ( y2 - y1 ) ) );
-        let Ua = ( ( ( x4 - x3 ) * ( y1 - y3 ) ) - ( ( y4 - y3 ) * ( x1 - x3 ) ) ) / diff;
-        let Ub = ( ( ( x2 - x1 ) * ( y1 - y3 ) ) - ( ( y2 - y1 ) * ( x1 - x3 ) ) ) / diff;
+    getTrapezoidCrossing(start, finish) {
+        const corners = this.getMainTrapezoidInnerCorners();
+        const x1 = start.x;
+        const y1 = start.y;
+        const x2 = finish.x;
+        const y2 = finish.y;
+        const x3 = corners.left.x;
+        const y3 = corners.left.y;
+        const x4 = corners.right.x;
+        const y4 = corners.right.y;
+        const diff = (((y4 - y3) * (x2 - x1)) - ((x4 - x3) * (y2 - y1)));
+        const Ua = (((x4 - x3) * (y1 - y3)) - ((y4 - y3) * (x1 - x3))) / diff;
+        const Ub = (((x2 - x1) * (y1 - y3)) - ((y2 - y1) * (x1 - x3))) / diff;
 
-        return ( Ua >= 0 && Ua <= 1 && Ub >= 0 && Ub <= 1 ) ?
-            {x: x1 + ( Ua * (x2 - x1) ), y: y1 + ( Ua * (y2 - y1) )} :
+        return (Ua >= 0 && Ua <= 1 && Ub >= 0 && Ub <= 1) ?
+            { x: x1 + (Ua * (x2 - x1)), y: y1 + (Ua * (y2 - y1)) } :
             false;
     },
-    getLineCrossingX: function (x, start, finish) {
-        return ( 0 - ( ( start.y - finish.y ) * x ) - ( ( start.x * finish.y ) - ( finish.x * start.y ) ) ) /
-            ( finish.x - start.x );
+    getLineCrossingX(x, start, finish) {
+        return (0 - ((start.y - finish.y) * x) - ((start.x * finish.y) - (finish.x * start.y))) /
+            (finish.x - start.x);
     },
-    getLineCrossingY: function (y, start, finish) {
-        return ( 0 - ( ( finish.x - start.x ) * y ) - ( ( start.x * finish.y ) - ( finish.x * start.y ) ) ) /
-            ( start.y - finish.y );
+    getLineCrossingY(y, start, finish) {
+        return (0 - ((finish.x - start.x) * y) - ((start.x * finish.y) - (finish.x * start.y))) /
+            (start.y - finish.y);
     },
-    getFrameOffset: function () {
+    getFrameOffset() {
         return 34;
     },
-    updateTrapezoidHeight: function (type, val) {
-
+    updateTrapezoidHeight(type, val) {
         if (this.isTrapezoid()) {
             let height;
-            let rootSection = this.get('root_section');
-            let heights = rootSection.trapezoidHeights;
+            const rootSection = this.get('root_section');
+            const heights = rootSection.trapezoidHeights;
 
             if (type === 'min') {
                 if (heights[0] > heights[1]) {
@@ -2688,22 +2670,20 @@ const Unit = Backbone.Model.extend({
                 } else {
                     heights[0] = val;
                 }
+            } else if (heights[0] > heights[1]) {
+                heights[0] = val;
             } else {
-                if (heights[0] > heights[1]) {
-                    heights[0] = val;
-                } else {
-                    heights[1] = val;
-                }
+                heights[1] = val;
             }
 
             if (heights[0] === heights[1]) {
                 rootSection.trapezoidHeights = false;
                 height = heights[0];
             } else {
-                let params = {
+                const params = {
                     corners: this.getMainTrapezoidInnerCorners(),
                     minHeight: (heights[0] > heights[1]) ? heights[1] : heights[0],
-                    maxHeight: (heights[0] < heights[1]) ? heights[1] : heights[0]
+                    maxHeight: (heights[0] < heights[1]) ? heights[1] : heights[0],
                 };
 
                 height = params.maxHeight;
@@ -2717,10 +2697,9 @@ const Unit = Backbone.Model.extend({
             } else {
                 this.updateDimension('height', height);
             }
-
         }
     },
-    checkHorizontalSplit: function (rootSection, params) {
+    checkHorizontalSplit(rootSection, params) {
         if (rootSection.sections && rootSection.sections.length) {
             for (let i = 0; i < rootSection.sections.length; i++) {
                 this.checkHorizontalSplit(rootSection.sections[i], params);
@@ -2728,34 +2707,34 @@ const Unit = Backbone.Model.extend({
         }
 
         if (rootSection.divider && rootSection.divider === 'horizontal' && rootSection.position) {
-            let crossing = this.getLineCrossingY(rootSection.position, params.corners.left, params.corners.right);
+            const crossing = this.getLineCrossingY(rootSection.position, params.corners.left, params.corners.right);
 
             if (crossing >= -100) {
-                let maxHeight = utils.convert.inches_to_mm(params.maxHeight);
-                let minHeight = utils.convert.inches_to_mm(params.minHeight);
-                let position = maxHeight - minHeight + 250;
+                const maxHeight = utils.convert.inches_to_mm(params.maxHeight);
+                const minHeight = utils.convert.inches_to_mm(params.minHeight);
+                const position = maxHeight - minHeight + 250;
 
                 rootSection.minPosition = rootSection.position = position;
             }
         }
     },
-    getTrapezoidHeight: function () {
-        let trapezoidHeights = this.get('root_section').trapezoidHeights;
+    getTrapezoidHeight() {
+        const trapezoidHeights = this.get('root_section').trapezoidHeights;
 
-        return (trapezoidHeights) ? trapezoidHeights[0] + ' | ' + trapezoidHeights[1] : this.get('height');
+        return (trapezoidHeights) ? `${trapezoidHeights[0]} | ${trapezoidHeights[1]}` : this.get('height');
     },
-    getTrapezoidHeightMM: function () {
+    getTrapezoidHeightMM() {
         let trapezoidHeights = this.get('root_section').trapezoidHeights;
 
         if (trapezoidHeights) {
             trapezoidHeights = [
                 utils.convert.inches_to_mm(trapezoidHeights[0]),
-                utils.convert.inches_to_mm(trapezoidHeights[1])
+                utils.convert.inches_to_mm(trapezoidHeights[1]),
             ];
         }
 
         return trapezoidHeights || utils.convert.inches_to_mm(this.get('height'));
-    }
+    },
     /* trapezoid end */
 });
 
@@ -2773,7 +2752,7 @@ export const findSection = function (section, sectionId) {
         }
 
         for (let i = 0; i < sec.sections.length; i++) {
-            let founded = findNested(sec.sections[i], sectionId);
+            const founded = findNested(sec.sections[i], sectionId);
 
             if (founded) {
                 return founded;

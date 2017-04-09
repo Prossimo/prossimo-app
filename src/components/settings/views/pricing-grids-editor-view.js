@@ -3,7 +3,7 @@ import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 import Handsontable from 'handsontable/dist/handsontable.full';
 
-import {math} from '../../../utils';
+import { math } from '../../../utils';
 import template from '../templates/pricing-grids-editor-view.hbs';
 
 //  See `core/views/units-table-view.js` for reference, it's similar
@@ -11,42 +11,42 @@ import template from '../templates/pricing-grids-editor-view.hbs';
 export default Marionette.View.extend({
     tagName: 'div',
     className: 'pricing-grids-table',
-    template: template,
+    template,
     ui: {
         $hot_container: '.pricing-grids-handsontable-container',
-        $tab_button: '.nav-tabs a'
+        $tab_button: '.nav-tabs a',
     },
     events: {
-        'click @ui.$tab_button': 'onTabClick'
+        'click @ui.$tab_button': 'onTabClick',
     },
-    templateContext: function () {
+    templateContext() {
         return {
             show_notice: this.options.show_notice,
             tabs: _.each(this.tabs, function (item, key) {
                 item.is_active = key === this.active_tab;
                 return item;
-            }, this)
+            }, this),
         };
     },
-    setActiveTab: function (tab_name) {
+    setActiveTab(tab_name) {
         if (_.contains(_.keys(this.tabs), tab_name)) {
             this.active_tab = tab_name;
         }
     },
-    onTabClick: function (e) {
-        var target = $(e.target).attr('href').replace('#', '');
+    onTabClick(e) {
+        const target = $(e.target).attr('href').replace('#', '');
 
         e.preventDefault();
         this.setActiveTab(target);
         this.render();
     },
-    getGetterFunction: function (grid_entry_model, column_name) {
-        var getter;
+    getGetterFunction(grid_entry_model, column_name) {
+        let getter;
 
-        var getters_hash = {
-            area: function (model) {
+        const getters_hash = {
+            area(model) {
                 return math.square_meters(model.get('width'), model.get('height'));
-            }
+            },
         };
 
         if (getters_hash[column_name]) {
@@ -59,9 +59,9 @@ export default Marionette.View.extend({
 
         return getter.apply(this, arguments);
     },
-    getColumnData: function (column_name) {
-        var self = this;
-        var setter;
+    getColumnData(column_name) {
+        const self = this;
+        let setter;
 
         setter = function (model, attr_name, val) {
             //  TODO: parse data on set
@@ -79,30 +79,30 @@ export default Marionette.View.extend({
             }
         };
     },
-    getColumnExtraProperties: function (column_name) {
-        var properties_obj = {};
+    getColumnExtraProperties(column_name) {
+        let properties_obj = {};
 
-        var properties_hash = {
+        const properties_hash = {
             title: {
-                readOnly: true
+                readOnly: true,
             },
             area: {
                 readOnly: true,
                 type: 'numeric',
-                format: '0[.]00'
+                format: '0[.]00',
             },
             height: {
                 type: 'numeric',
-                format: '0[.]00'
+                format: '0[.]00',
             },
             width: {
                 type: 'numeric',
-                format: '0[.]00'
+                format: '0[.]00',
             },
             value: {
                 type: 'numeric',
-                format: '0[.]00'
-            }
+                format: '0[.]00',
+            },
         };
 
         if (properties_hash[column_name]) {
@@ -111,12 +111,12 @@ export default Marionette.View.extend({
 
         return properties_obj;
     },
-    getColumnOptions: function () {
-        var columns = [];
+    getColumnOptions() {
+        const columns = [];
 
         _.each(this.columns, function (column_name) {
-            var column_obj = _.extend({}, {
-                data: this.getColumnData(column_name)
+            const column_obj = _.extend({}, {
+                data: this.getColumnData(column_name),
             }, this.getColumnExtraProperties(column_name));
 
             columns.push(column_obj);
@@ -124,12 +124,12 @@ export default Marionette.View.extend({
 
         return columns;
     },
-    getColumnHeaders: function () {
-        var headers = [];
+    getColumnHeaders() {
+        const headers = [];
 
         _.each(this.columns, function (column_name) {
-            var custom_header = this.getCustomColumnHeader(column_name);
-            var title = '';
+            const custom_header = this.getCustomColumnHeader(column_name);
+            let title = '';
 
             if (custom_header) {
                 title = custom_header;
@@ -142,18 +142,18 @@ export default Marionette.View.extend({
 
         return headers;
     },
-    getCustomColumnHeader: function (column_name) {
-        var custom_column_headers_hash = {
+    getCustomColumnHeader(column_name) {
+        const custom_column_headers_hash = {
             area: 'Area (m<sup>2</sup>)',
             width: 'Width (mm)',
             height: 'Height (mm)',
-            value: this.options.value_column_title || 'Price Increase (percents)'
+            value: this.options.value_column_title || 'Price Increase (percents)',
         };
 
         return custom_column_headers_hash[column_name];
     },
-    updateTable: function (e) {
-        var self = this;
+    updateTable(e) {
+        const self = this;
 
         //  We don't want to update table on validation errors, we have
         //  a special function for that
@@ -163,68 +163,68 @@ export default Marionette.View.extend({
 
         if (this.hot) {
             clearTimeout(this.table_update_timeout);
-            this.table_update_timeout = setTimeout(function () {
+            this.table_update_timeout = setTimeout(() => {
                 self.hot.loadData(self.getDataObject());
             }, 20);
         } else {
             this.render();
         }
     },
-    getDataObject: function () {
-        var data_object;
+    getDataObject() {
+        let data_object;
 
         data_object = this.options.grids.getByName(this.active_tab).get('data');
 
         return data_object;
     },
-    onRender: function () {
-        var self = this;
+    onRender() {
+        const self = this;
 
         //  We use setTimeout because we want to wait until flexbox
         //  sizes are calculated properly
-        setTimeout(function () {
+        setTimeout(() => {
             self.hot = new Handsontable(self.ui.$hot_container[0], {
                 columns: self.getColumnOptions(),
                 colHeaders: self.getColumnHeaders(),
                 data: self.getDataObject(),
                 rowHeights: 25,
-                enterMoves: {row: 1, col: 0},
-                stretchH: 'all'
+                enterMoves: { row: 1, col: 0 },
+                stretchH: 'all',
             });
         }, 5);
     },
-    onBeforeDestroy: function () {
+    onBeforeDestroy() {
         if (this.hot) {
             this.hot.destroy();
         }
     },
-    initialize: function (options) {
-        var default_options = {
+    initialize(options) {
+        const default_options = {
             grids: undefined,
             parent_view: undefined,
             show_notice: false,
-            value_column_title: ''
+            value_column_title: '',
         };
 
         this.options = _.extend(default_options, options);
 
         this.table_update_timeout = null;
         this.columns = [
-            'area', 'width', 'height', 'value'
+            'area', 'width', 'height', 'value',
         ];
 
         //  TODO: should tabs be autogenerated from the list of grids?
         this.tabs = {
             fixed: {
-                title: 'Fixed'
+                title: 'Fixed',
             },
             operable: {
-                title: 'Operable'
-            }
+                title: 'Operable',
+            },
         };
         this.active_tab = 'fixed';
 
         this.listenTo(this.options.grids, 'all', this.updateTable);
         this.listenTo(this.options.parent_view, 'attach', this.updateTable);
-    }
+    },
 });

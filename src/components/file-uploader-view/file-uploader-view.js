@@ -17,7 +17,7 @@ const WARNING_ALERTS_TEMPLATE = '<div class="alert alert-warning" role="alert">'
 
 export default Marionette.View.extend({
     className: 'uploader-container',
-    template: template,
+    template,
 
     options: {
         previewOpts: {
@@ -36,26 +36,26 @@ export default Marionette.View.extend({
             deleteBtnText: 'delete',
             deleteBtnClass: 'uploader-file__preview-delete',
             deleteBtnNoPreviewClass: 'uploader-file__preview-delete glyphicon glyphicon-remove',
-            errorLoadText: 'error loading'
+            errorLoadText: 'error loading',
         },
         fileUpload: {
             dataType: 'json',
             acceptFileTypes: /(\.|\/)(gif|jpe?g|png|pdf|docx?|rtf|xlsx?)$/i,
             maxFileSize: 99999000,
             minFileSize: 100,
-            disableImageResize: /Android(?!.*Chrome)|Opera/.test(window.navigator.userAgent)
+            disableImageResize: /Android(?!.*Chrome)|Opera/.test(window.navigator.userAgent),
         },
         showPreview: true,
         apiRouter: '/files/handlers',
-        maxLength: false
+        maxLength: false,
     },
 
     ui: {
         previewContainer: '.uploader-file__preview-container',
-        addBtn: '.add'
+        addBtn: '.add',
     },
 
-    initialize: function () {
+    initialize() {
         if (!$.support.fileInput) {
             this.template = _.template(WARNING_ALERTS_TEMPLATE);
         }
@@ -67,11 +67,11 @@ export default Marionette.View.extend({
         });
     },
 
-    onRender: function () {
+    onRender() {
         this.fUplad = this.$el.find('input[type="file"]').fileupload(_.extend({
             url: App.settings.get('api_base_path') + this.options.apiRouter,
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'Bearer ' + window.localStorage.getItem('authToken'));
+            beforeSend(xhr) {
+                xhr.setRequestHeader('Authorization', `Bearer ${window.localStorage.getItem('authToken')}`);
             },
             previewCrop: true,
             autoUpload: true,
@@ -82,31 +82,31 @@ export default Marionette.View.extend({
             progress: this.progress.bind(this),
             done: this.done.bind(this),
             fail: this.fail.bind(this),
-            always: this.always.bind(this)
+            always: this.always.bind(this),
         }, this.options.fileUpload || {}));
 
         this.fUplad.on('fileuploadadd', this.abortUpload.bind(this));
     },
-    templateContext: function () {
-        var isMultiple = true;
+    templateContext() {
+        let isMultiple = true;
 
         if (this.options.maxLength === 1) {
             isMultiple = false;
         }
 
         return {
-            isMultiple: isMultiple,
-            isShowPreview: this.options.showPreview
+            isMultiple,
+            isShowPreview: this.options.showPreview,
         };
     },
-    onBeforeDestroy: function () {
+    onBeforeDestroy() {
         this.fUplad.fileupload('xd');
     },
-    getUuidForAllFiles: function () {
+    getUuidForAllFiles() {
         return this.collection.pluck('uuid') || [];
     },
-    send: function (e, data) {
-        _.each(data.files, function (file) {
+    send(e, data) {
+        _.each(data.files, (file) => {
             if (this.options.previewOpts.prevClassUpload) {
                 file.previewContainer.addClass(this.options.previewOpts.prevClassUpload);
             }
@@ -115,10 +115,10 @@ export default Marionette.View.extend({
                 file.previewContainer
                     .addClass(this.options.previewOpts.progressClass);
             }
-        }.bind(this));
+        });
     },
-    processAlways: function (e, data) {
-        _.each(data.files, function (file) {
+    processAlways(e, data) {
+        _.each(data.files, (file) => {
             file.previewContainer = this.createEmptyPreview();
 
             if (file.preview && !file.error && this.options.showPreview) {
@@ -132,30 +132,30 @@ export default Marionette.View.extend({
             file.previewContainer
                 .prepend($('<span/>', {
                     class: this.options.previewOpts.prevTitleClass,
-                    html: file.name
+                    html: file.name,
                 }))
                 .fadeIn();
-        }.bind(this));
+        });
     },
-    progress: function (e, data) {
-        var progress = parseInt(data.loaded / data.total * 100, 10);
+    progress(e, data) {
+        const progress = parseInt(data.loaded / data.total * 100, 10);
 
-        _.each(data.files, function (file) {
-            var $previewProgress = file.previewContainer.previewProgress;
+        _.each(data.files, (file) => {
+            const $previewProgress = file.previewContainer.previewProgress;
 
             if ($previewProgress) {
-                $previewProgress.animate({width: progress + 'px'});
+                $previewProgress.animate({ width: `${progress}px` });
             }
         });
     },
-    done: function (e, data) {
+    done(e, data) {
         //  The endpoint we use only accepts and returns a single file
-        var responseFiles = [data.jqXHR.responseJSON.file] || [];
+        const responseFiles = [data.jqXHR.responseJSON.file] || [];
 
         //  So when we iterate over files here we actually assume there is
         //  only one file for each request
-        _.each(data.files, function (file, index) {
-            var fileModel = this.collection.add(responseFiles[index]);
+        _.each(data.files, (file, index) => {
+            const fileModel = this.collection.add(responseFiles[index]);
 
             if (!(fileModel || fileModel.cid)) {
                 return;
@@ -163,39 +163,39 @@ export default Marionette.View.extend({
 
             file.previewContainer.data('cid', fileModel.cid);
 
-            var delBtnOptions = function () {
+            const delBtnOptions = function () {
                 if (this.options.showPreview) {
                     return {
                         class: this.options.previewOpts.deleteBtnClass,
-                        html: this.options.previewOpts.deleteBtnText
+                        html: this.options.previewOpts.deleteBtnText,
                     };
                 }
 
                 return {
-                    class: this.options.previewOpts.deleteBtnNoPreviewClass
+                    class: this.options.previewOpts.deleteBtnNoPreviewClass,
                 };
             }.bind(this);
 
-            var delBtn = $('<span>', delBtnOptions());
+            const delBtn = $('<span>', delBtnOptions());
 
             delBtn
-                .on('click', function () {
+                .on('click', () => {
                     this.deletePreview(file.previewContainer);
                     fileModel.destroy();
-                }.bind(this))
+                })
                 .appendTo(file.previewContainer);
-        }.bind(this));
+        });
     },
-    fail: function (e, data) {
-        _.each(data.files, function (file) {
+    fail(e, data) {
+        _.each(data.files, (file) => {
             if (file.previewContainer) {
                 this.fileUploadedError(file.previewContainer, file.error);
             }
-        }.bind(this));
+        });
     },
-    always: function (e, data) {
-        _.each(data.files, function (file) {
-            var $previewProgress = file.previewContainer.previewProgress;
+    always(e, data) {
+        _.each(data.files, (file) => {
+            const $previewProgress = file.previewContainer.previewProgress;
 
             if (this.options.previewOpts.prevClassUpload) {
                 file.previewContainer.removeClass(this.options.previewOpts.prevClassUpload);
@@ -206,33 +206,33 @@ export default Marionette.View.extend({
                     .removeClass(this.options.previewOpts.progressClass);
 
                 $previewProgress
-                    .closest('.' + this.options.previewOpts.progressWrapper)
+                    .closest(`.${this.options.previewOpts.progressWrapper}`)
                     .remove();
             }
-        }.bind(this));
+        });
     },
-    createEmptyPreview: function () {
-        var options = this.options.previewOpts;
+    createEmptyPreview() {
+        const options = this.options.previewOpts;
 
-        var el = $('<' + options.typeEl + '/>', {
+        const el = $(`<${options.typeEl}/>`, {
             class: options.prevClass,
-            css: {display: 'none'},
-            html: '<span class="' + options.progressWrapper + '"><span></span></span>'
+            css: { display: 'none' },
+            html: `<span class="${options.progressWrapper}"><span></span></span>`,
         });
 
         el.appendTo(this.ui.previewContainer);
 
         if (options.showProgress) {
-            var progressEL = $('<i>', {
+            const progressEL = $('<i>', {
                 class: 'ico-progress',
-                css: {width: '0px'}
+                css: { width: '0px' },
             });
 
-            progressEL.appendTo(el.find('.' + options.progressWrapper));
+            progressEL.appendTo(el.find(`.${options.progressWrapper}`));
 
             if (options.progressLabelText && !this.options.showPreview) {
                 progressEL
-                    .closest('.' + options.progressWrapper)
+                    .closest(`.${options.progressWrapper}`)
                     .find('span')
                     .text(options.progressLabelText);
             }
@@ -242,43 +242,43 @@ export default Marionette.View.extend({
 
         return el;
     },
-    abortUpload: function (e, data) {
-        _.each(data.files, function (file) {
+    abortUpload(e, data) {
+        _.each(data.files, (file) => {
             if (this.options.maxLength) {
-                var indexInQueue = _.indexOf(data.originalFiles, file) + 1;
+                const indexInQueue = _.indexOf(data.originalFiles, file) + 1;
 
                 if (indexInQueue) {
-                    var expectedCollectionLength = this.collection.length + indexInQueue;
+                    const expectedCollectionLength = this.collection.length + indexInQueue;
 
                     if (expectedCollectionLength > this.options.maxLength) {
                         data.abort();
                     }
                 }
             }
-        }.bind(this));
+        });
     },
-    fileUploadedError: function (preview, error) {
+    fileUploadedError(preview, error) {
         if (this.options.previewOpts.prevClassError) {
             preview.addClass(this.options.previewOpts.prevClassError);
         }
 
         preview.append($('<span/>', {
             class: this.options.previewOpts.errorWrapper,
-            html: error || this.options.previewOpts.errorLoadText
+            html: error || this.options.previewOpts.errorLoadText,
         }));
 
         _.delay(this.deletePreview, 5000, preview);
     },
-    toggleAddBtn: function () {
+    toggleAddBtn() {
         if (this.options.maxLength && this.collection.length >= this.options.maxLength) {
             this.ui.addBtn.fadeOut(200);
         } else {
             this.ui.addBtn.fadeIn(200);
         }
     },
-    deletePreview: function (preview) {
+    deletePreview(preview) {
         preview.fadeOut(function () {
             $(this).remove();
         });
-    }
+    },
 });

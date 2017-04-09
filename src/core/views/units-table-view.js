@@ -3,15 +3,15 @@ import _ from 'underscore';
 import $ from 'jquery';
 import Handsontable from 'handsontable/dist/handsontable.full';
 
-import {parseFormat, format} from '../../utils';
-import {globalChannel} from '../../utils/radio';
+import { parseFormat, format } from '../../utils';
+import { globalChannel } from '../../utils/radio';
 import hotRenderers from '../../hot-renderers';
 import App from '../../main';
 import UndoManager from '../../utils/undomanager';
 import Unit from '../models/unit';
 import Accessory from '../models/accessory';
 import UnitsTableTotalPricesView from '../../core/views/units-table-total-prices-view';
-import {preview} from '../../components/drawing/module/drawing-module';
+import { preview } from '../../components/drawing/module/drawing-module';
 import templates from '../../templates/core/units-table-view.hbs';
 
 const UNSET_VALUE = '--';
@@ -29,7 +29,7 @@ export default Marionette.View.extend({
         $redo: '.js-redo',
         $reset_unit_options: '.js-reset-unit-options',
         $remove: '.js-remove-selected-items',
-        $clone: '.js-clone-selected-items'
+        $clone: '.js-clone-selected-items',
     },
     events: {
         'click .units-table-title': 'toggleTableVisibility',
@@ -42,7 +42,7 @@ export default Marionette.View.extend({
         'click @ui.$redo': 'onRedo',
         'click @ui.$reset_unit_options': 'onResetUnitOptionsForSelected',
         'click @ui.$remove': 'onRemoveSelected',
-        'click @ui.$clone': 'onCloneSelected'
+        'click @ui.$clone': 'onCloneSelected',
     },
     keyShortcuts: {
         n: 'onNewUnitOrAccessory',
@@ -51,9 +51,9 @@ export default Marionette.View.extend({
         'ctrl+shift+z': 'onRedo',
         'command+shift+z': 'onRedo',
         'ctrl+y': 'onRedo',
-        'command+y': 'onRedo'
+        'command+y': 'onRedo',
     },
-    initialize: function () {
+    initialize() {
         this.table_update_timeout = null;
         this.dropdown_scroll_timer = null;
         this.table_visibility = this.options.is_always_visible ? 'visible' :
@@ -66,7 +66,7 @@ export default Marionette.View.extend({
                 columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing',
                     'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'profile_id', 'description',
                     'notes', 'exceptions', 'system', 'opening_direction',
-                    'threshold', 'glazing', 'glazing_bar_width', 'uw', 'u_value']
+                    'threshold', 'glazing', 'glazing_bar_width', 'uw', 'u_value'],
             },
             unit_options: {
                 title: 'Unit Options',
@@ -74,16 +74,16 @@ export default Marionette.View.extend({
                 columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing'],
                 unit_options_columns: App.settings.dictionaries.getAvailableDictionaryNames(),
                 unit_options_quantity_columns: (function () {
-                    var columns = [];
+                    const columns = [];
 
-                    App.settings.dictionaries.each(function (dictionary) {
+                    App.settings.dictionaries.each((dictionary) => {
                         if (dictionary.hasQuantity()) {
-                            columns.push(dictionary.get('name') + ' Quantity');
+                            columns.push(`${dictionary.get('name')} Quantity`);
                         }
                     });
 
                     return columns;
-                })()
+                }()),
             },
             prices: {
                 title: 'Prices',
@@ -94,15 +94,15 @@ export default Marionette.View.extend({
                     'supplier_discount', 'unit_cost_discounted', 'subtotal_cost_discounted', 'price_markup',
                     'unit_price', 'subtotal_price', 'discount', 'unit_price_discounted',
                     'subtotal_price_discounted', 'subtotal_profit', 'total_square_feet', 'square_feet_price',
-                    'square_feet_price_discounted']
+                    'square_feet_price_discounted'],
             },
             extras: {
                 title: 'Extras',
                 collection: this.options.extras,
                 columns: ['move_item', 'description', 'quantity', 'extras_type', 'original_cost',
                     'original_currency', 'conversion_rate', 'unit_cost', 'price_markup',
-                    'unit_price', 'subtotal_cost', 'subtotal_price', 'subtotal_profit']
-            }
+                    'unit_price', 'subtotal_cost', 'subtotal_price', 'subtotal_profit'],
+            },
         };
         this.active_tab = 'specs';
 
@@ -112,15 +112,15 @@ export default Marionette.View.extend({
         } else {
             this.tabs.unit_options.columns = _.union(
                 this.tabs.unit_options.columns,
-                this.tabs.unit_options.unit_options_columns
+                this.tabs.unit_options.unit_options_columns,
             );
 
             //  We insert quantity columns at specific positions (after
             //  the corresponding option column)
             if (this.tabs.unit_options.unit_options_quantity_columns.length) {
                 _.each(this.tabs.unit_options.unit_options_quantity_columns, function (qty_column_name) {
-                    var target_option_name = qty_column_name.replace(/ Quantity$/, '');
-                    var target_position = _.indexOf(this.tabs.unit_options.columns, target_option_name);
+                    const target_option_name = qty_column_name.replace(/ Quantity$/, '');
+                    const target_position = _.indexOf(this.tabs.unit_options.columns, target_option_name);
 
                     if (target_position !== -1) {
                         this.tabs.unit_options.columns.splice(target_position + 1, 0, qty_column_name);
@@ -131,7 +131,7 @@ export default Marionette.View.extend({
 
         this.undo_manager = new UndoManager({
             register: this.collection,
-            track: true
+            track: true,
         });
 
         this.selected = [];
@@ -147,7 +147,7 @@ export default Marionette.View.extend({
 
         this.listenTo(globalChannel, 'paste_image', this.onPasteImage);
     },
-    appendPopovers: function () {
+    appendPopovers() {
         this.$el.popover('destroy');
         $('.popover').remove();
 
@@ -155,25 +155,25 @@ export default Marionette.View.extend({
             container: 'body',
             html: true,
             selector: '.customer-image, .drawing-preview',
-            content: function () {
+            content() {
                 return $(this).clone();
             },
             trigger: 'hover',
             delay: {
-                show: 300
-            }
+                show: 300,
+            },
         });
 
-        this.$el.off('show.bs.popover').on('show.bs.popover', function () {
+        this.$el.off('show.bs.popover').on('show.bs.popover', () => {
             $('.popover').remove();
         });
     },
-    getActiveTab: function () {
+    getActiveTab() {
         return this.tabs[this.active_tab];
     },
-    setActiveTab: function (tab_name) {
-        var previous_collection;
-        var active_collection;
+    setActiveTab(tab_name) {
+        let previous_collection;
+        let active_collection;
 
         if (_.contains(_.keys(this.tabs), tab_name)) {
             previous_collection = this.getActiveTab().collection;
@@ -187,24 +187,24 @@ export default Marionette.View.extend({
             }
         }
     },
-    onTabClick: function (e) {
-        var target = $(e.target).attr('href').replace('#', '');
+    onTabClick(e) {
+        const target = $(e.target).attr('href').replace('#', '');
 
         e.preventDefault();
         this.setActiveTab(target);
         this.render();
     },
-    onUndo: function () {
+    onUndo() {
         this.undo_manager.handler.undo();
         this.ui.$undo.blur();
     },
-    onRedo: function () {
+    onRedo() {
         this.undo_manager.handler.redo();
         this.ui.$redo.blur();
     },
-    onResetUnitOptionsForSelected: function () {
+    onResetUnitOptionsForSelected() {
         if (this.selected.length && this.hot) {
-            for (var i = this.selected.length - 1; i >= 0; i--) {
+            for (let i = this.selected.length - 1; i >= 0; i--) {
                 this.hot.getSourceData().at(this.selected[i]).resetUnitOptionsToDefaults();
             }
 
@@ -214,9 +214,9 @@ export default Marionette.View.extend({
             this.hot.deselectCell();
         }
     },
-    onRemoveSelected: function () {
+    onRemoveSelected() {
         if (this.selected.length && this.hot) {
-            for (var i = this.selected.length - 1; i >= 0; i--) {
+            for (let i = this.selected.length - 1; i >= 0; i--) {
                 this.hot.getSourceData().at(this.selected[i]).destroy();
             }
 
@@ -226,41 +226,41 @@ export default Marionette.View.extend({
             this.hot.deselectCell();
         }
     },
-    onCloneSelected: function () {
+    onCloneSelected() {
         if (this.selected.length === 1 && this.hot) {
-            var selectedData = this.hot.getSourceData().at(this.selected[0]);
+            const selectedData = this.hot.getSourceData().at(this.selected[0]);
 
             if (!selectedData.hasOnlyDefaultAttributes()) {
                 selectedData.duplicate();
             }
         }
     },
-    toggleTableVisibility: function () {
+    toggleTableVisibility() {
         if (!this.options.is_always_visible) {
             this.table_visibility = this.table_visibility === 'hidden' ? 'visible' : 'hidden';
             this.render();
         }
     },
-    addNewUnit: function () {
-        var new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
-        var new_unit = new Unit({
-            position: new_position
+    addNewUnit() {
+        const new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
+        const new_unit = new Unit({
+            position: new_position,
         });
 
         this.collection.add(new_unit);
         this.ui.$add_new_unit.blur();
     },
-    addNewAccessory: function () {
-        var new_position = this.options.extras.length ? this.options.extras.getMaxPosition() + 1 : 0;
-        var new_accessory = new Accessory({
-            position: new_position
+    addNewAccessory() {
+        const new_position = this.options.extras.length ? this.options.extras.getMaxPosition() + 1 : 0;
+        const new_accessory = new Accessory({
+            position: new_position,
         });
 
         this.options.extras.add(new_accessory);
         this.ui.$add_new_accessory.blur();
     },
-    onNewUnitOrAccessory: function (e) {
-        var active_tab = this.getActiveTab();
+    onNewUnitOrAccessory(e) {
+        const active_tab = this.getActiveTab();
 
         if (this.table_visibility === 'visible' && active_tab.collection === this.collection) {
             this.addNewUnit(e);
@@ -268,7 +268,7 @@ export default Marionette.View.extend({
             this.addNewAccessory(e);
         }
     },
-    templateContext: function () {
+    templateContext() {
         return {
             active_tab: this.active_tab,
             tabs: _.each(this.tabs, function (item, key) {
@@ -277,126 +277,126 @@ export default Marionette.View.extend({
             }, this),
             mode: this.getActiveTab().title === 'Extras' ? 'extras' : 'units',
             table_visibility: this.table_visibility,
-            is_always_visible: this.options.is_always_visible
+            is_always_visible: this.options.is_always_visible,
         };
     },
-    onMoveItemUp: function (e) {
-        var target_row = $(e.target).data('row');
-        var target_object;
+    onMoveItemUp(e) {
+        const target_row = $(e.target).data('row');
+        let target_object;
 
         if (this.hot && $(e.target).hasClass('disabled') === false) {
             target_object = this.hot.getSourceData().at(target_row);
             this.hot.getSourceData().moveItemUp(target_object);
         }
     },
-    onMoveItemDown: function (e) {
-        var target_row = $(e.target).data('row');
-        var target_object;
+    onMoveItemDown(e) {
+        const target_row = $(e.target).data('row');
+        let target_object;
 
         if (this.hot && $(e.target).hasClass('disabled') === false) {
             target_object = this.hot.getSourceData().at(target_row);
             this.hot.getSourceData().moveItemDown(target_object);
         }
     },
-    onPasteImage: function (data) {
+    onPasteImage(data) {
         if (this.hot) {
             //  Selected cells are returned in the format:
             //  [starting_cell_column_num, starting_cell_row_num,
             //   ending_cell_column_num, ending_cell_row_num]
-            var selected_cells = this.hot.getSelected();
+            const selected_cells = this.hot.getSelected();
 
             //  Paste to each selected sell.
             if (selected_cells && selected_cells.length) {
-                for (var x = selected_cells[0]; x <= selected_cells[2]; x++) {
-                    for (var y = selected_cells[1]; y <= selected_cells[3]; y++) {
+                for (let x = selected_cells[0]; x <= selected_cells[2]; x++) {
+                    for (let y = selected_cells[1]; y <= selected_cells[3]; y++) {
                         this.hot.setDataAtCell(x, y, data);
                     }
                 }
             }
         }
     },
-    getGetterFunction: function (unit_model, column_name) {
-        var project_settings = App.settings.getProjectSettings();
-        var getter;
+    getGetterFunction(unit_model, column_name) {
+        const project_settings = App.settings.getProjectSettings();
+        let getter;
 
-        var getters_hash = {
-            height: function (model) {
+        const getters_hash = {
+            height(model) {
                 return model.getTrapezoidHeight();
             },
-            width_mm: function (model) {
+            width_mm(model) {
                 return model.getWidthMM();
             },
-            height_mm: function (model) {
+            height_mm(model) {
                 return model.getTrapezoidHeightMM();
             },
-            dimensions: function (model) {
+            dimensions(model) {
                 return format.dimensions(model.get('width'), model.get('height'), null,
                     project_settings.get('inches_display_mode') || null);
             },
-            unit_cost: function (model) {
+            unit_cost(model) {
                 return model.getUnitCost();
             },
-            unit_cost_discounted: function (model) {
+            unit_cost_discounted(model) {
                 return model.getUnitCostDiscounted();
             },
-            drawing: function (model) {
+            drawing(model) {
                 return preview(model, {
                     width: 600,
                     height: 600,
                     mode: 'base64',
                     position: 'outside',
-                    hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode')
+                    hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode'),
                 });
             },
-            subtotal_cost: function (model) {
+            subtotal_cost(model) {
                 return model.getSubtotalCost();
             },
-            unit_price: function (model) {
+            unit_price(model) {
                 return model.getUnitPrice();
             },
-            subtotal_price: function (model) {
+            subtotal_price(model) {
                 return model.getSubtotalPrice();
             },
-            u_value: function (model) {
+            u_value(model) {
                 return model.getUValue();
             },
-            unit_price_discounted: function (model) {
+            unit_price_discounted(model) {
                 return model.getUnitPriceDiscounted();
             },
-            subtotal_price_discounted: function (model) {
+            subtotal_price_discounted(model) {
                 return model.getSubtotalPriceDiscounted();
             },
-            subtotal_cost_discounted: function (model) {
+            subtotal_cost_discounted(model) {
                 return model.getSubtotalCostDiscounted();
             },
-            subtotal_profit: function (model) {
+            subtotal_profit(model) {
                 return model.getSubtotalProfit();
             },
-            system: function (model) {
+            system(model) {
                 return model.profile.get('system');
             },
-            threshold: function (model) {
+            threshold(model) {
                 return model.profile.getThresholdType();
             },
-            total_square_feet: function (model) {
+            total_square_feet(model) {
                 return model.getTotalSquareFeet();
             },
-            square_feet_price: function (model) {
+            square_feet_price(model) {
                 return model.getSquareFeetPrice();
             },
-            square_feet_price_discounted: function (model) {
+            square_feet_price_discounted(model) {
                 return model.getSquareFeetPriceDiscounted();
             },
-            original_cost_estimated: function (model) {
+            original_cost_estimated(model) {
                 return model.getEstimatedUnitCost().total;
             },
-            original_cost_difference: function (model) {
+            original_cost_difference(model) {
                 return model.getEstimatedUnitCost().real_cost.difference;
             },
-            rough_opening: function (model) {
+            rough_opening(model) {
                 return format.dimensions(model.getRoughOpeningWidth(), model.getRoughOpeningHeight(), null,
                     project_settings.get('inches_display_mode') || null);
-            }
+            },
         };
 
         if (getters_hash[column_name]) {
@@ -407,8 +407,8 @@ export default Marionette.View.extend({
         ) {
             //  TODO: deal with multiple values per dictionary somehow
             getter = function (model, attr_name) {
-                var target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(attr_name);
-                var current_options = target_dictionary_id ?
+                const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(attr_name);
+                const current_options = target_dictionary_id ?
                     model.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
 
                 return current_options.length ? current_options[0].entry.get('name') : UNSET_VALUE;
@@ -418,9 +418,9 @@ export default Marionette.View.extend({
             _.contains(this.getActiveTab().unit_options_quantity_columns, column_name)
         ) {
             getter = function (model, attr_name) {
-                var target_dictionary_name = attr_name.replace(/ Quantity$/, '');
-                var target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
-                var current_options = target_dictionary_id ?
+                const target_dictionary_name = attr_name.replace(/ Quantity$/, '');
+                const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
+                const current_options = target_dictionary_id ?
                     model.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
 
                 return current_options.length ? current_options[0].quantity : UNSET_VALUE;
@@ -433,32 +433,32 @@ export default Marionette.View.extend({
 
         return getter.apply(this, arguments);
     },
-    getSetterParser: function (column_name) {
-        var parser;
+    getSetterParser(column_name) {
+        let parser;
 
-        var parsers_hash = {
-            discount: function (attr_name, val) {
+        const parsers_hash = {
+            discount(attr_name, val) {
                 return parseFormat.percent(val);
             },
-            supplier_discount: function (attr_name, val) {
+            supplier_discount(attr_name, val) {
                 return parseFormat.percent(val);
             },
-            width: function (attr_name, val) {
+            width(attr_name, val) {
                 return parseFormat.dimensions(val, 'width');
             },
-            height: function (attr_name, val) {
+            height(attr_name, val) {
                 return parseFormat.dimensions(val, 'height');
             },
-            glazing_bar_width: function (attr_name, val) {
+            glazing_bar_width(attr_name, val) {
                 return parseFloat(val);
             },
             //  Try to find profile by id first, then try by name
-            profile_id: function (attr_name, val) {
-                var profile_id = null;
-                var profile_by_id =
-                    ( parseInt(val).toString() === val || parseInt(val) === val ) &&
+            profile_id(attr_name, val) {
+                let profile_id = null;
+                const profile_by_id =
+                    (parseInt(val).toString() === val || parseInt(val) === val) &&
                     App.settings && App.settings.getProfileByIdOrDummy(parseInt(val));
-                var profile_id_by_name = App.settings && App.settings.getProfileIdByName(val);
+                const profile_id_by_name = App.settings && App.settings.getProfileIdByName(val);
 
                 if (profile_by_id && profile_by_id.get('is_dummy') !== true) {
                     profile_id = profile_by_id.get('id');
@@ -467,7 +467,7 @@ export default Marionette.View.extend({
                 }
 
                 return profile_id;
-            }
+            },
         };
 
         if (parsers_hash[column_name]) {
@@ -480,17 +480,17 @@ export default Marionette.View.extend({
 
         return parser.apply(this, arguments);
     },
-    getSetterFunction: function (unit_model, column_name) {
-        var self = this;
-        var setter;
+    getSetterFunction(unit_model, column_name) {
+        const self = this;
+        let setter;
 
-        var setters_hash = {
-            width: function (model, attr_name, val) {
+        const setters_hash = {
+            width(model, attr_name, val) {
                 return model.updateDimension(attr_name, self.getSetterParser(column_name, val));
             },
-            height: function (model, attr_name, val) {
+            height(model, attr_name, val) {
                 return model.updateDimension(attr_name, self.getSetterParser(column_name, val));
-            }
+            },
         };
 
         if (setters_hash[column_name]) {
@@ -500,12 +500,12 @@ export default Marionette.View.extend({
             _.contains(this.getActiveTab().unit_options_columns, column_name)
         ) {
             setter = function (model, attr_name, val) {
-                var target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(attr_name);
+                const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(attr_name);
 
                 if (target_dictionary_id) {
-                    var target_entry_id = App.settings.dictionaries.getDictionaryEntryIdByName(
+                    const target_entry_id = App.settings.dictionaries.getDictionaryEntryIdByName(
                         target_dictionary_id,
-                        val
+                        val,
                     );
 
                     if (target_entry_id) {
@@ -520,12 +520,12 @@ export default Marionette.View.extend({
             _.contains(this.getActiveTab().unit_options_quantity_columns, column_name)
         ) {
             setter = function (model, attr_name, val) {
-                var target_dictionary_name = attr_name.replace(/ Quantity$/, '');
-                var target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
+                const target_dictionary_name = attr_name.replace(/ Quantity$/, '');
+                const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
 
                 if (target_dictionary_id) {
-                    var target_option = model.get('unit_options').getByDictionaryId(target_dictionary_id);
-                    var target_entry_id = target_option && target_option.get('dictionary_entry_id');
+                    const target_option = model.get('unit_options').getByDictionaryId(target_dictionary_id);
+                    const target_entry_id = target_option && target_option.get('dictionary_entry_id');
 
                     if (target_entry_id) {
                         return model.persistOption(target_dictionary_id, target_entry_id, parseInt(val, 10));
@@ -540,8 +540,8 @@ export default Marionette.View.extend({
 
         return setter.apply(this, arguments);
     },
-    getColumnData: function (column_name) {
-        var self = this;
+    getColumnData(column_name) {
+        const self = this;
 
         return function (unit_model, value) {
             if (unit_model) {
@@ -553,43 +553,43 @@ export default Marionette.View.extend({
             }
         };
     },
-    showValidationError: function (model, error) {
+    showValidationError(model, error) {
         if (this.hot && model.collection === this.getActiveTab().collection) {
-            var hot = this.hot;
-            var self = this;
+            const hot = this.hot;
+            const self = this;
 
-            var row_index = model.collection.indexOf(model);
-            var col_index = _.indexOf(this.getActiveTab().columns, error.attribute_name);
-            var target_cell = hot.getCell(row_index, col_index);
-            var $target_cell = $(target_cell);
+            const row_index = model.collection.indexOf(model);
+            const col_index = _.indexOf(this.getActiveTab().columns, error.attribute_name);
+            const target_cell = hot.getCell(row_index, col_index);
+            const $target_cell = $(target_cell);
 
             $target_cell.popover({
                 container: 'body',
                 title: 'Validation Error',
                 content: error.error_message,
-                trigger: 'manual'
+                trigger: 'manual',
             });
 
             $target_cell.popover('show');
 
-            setTimeout(function () {
+            setTimeout(() => {
                 $target_cell.popover('destroy');
                 hot.setCellMeta(row_index, col_index, 'valid', true);
                 self.updateTable();
             }, 5000);
         }
     },
-    getColumnValidator: function (column_name) {
-        var self = this;
-        var validator;
+    getColumnValidator(column_name) {
+        const self = this;
+        let validator;
 
         validator = function (value, callback) {
-            var attributes_object = {};
-            var model = this.instance.getSourceData().at(this.row);
+            const attributes_object = {};
+            const model = this.instance.getSourceData().at(this.row);
 
             attributes_object[column_name] = self.getSetterParser(column_name, value, model);
 
-            if (!model.validate || !model.validate(attributes_object, {validate: true})) {
+            if (!model.validate || !model.validate(attributes_object, { validate: true })) {
                 callback(true);
             } else {
                 callback(false);
@@ -598,13 +598,13 @@ export default Marionette.View.extend({
 
         return validator;
     },
-    getColumnExtraProperties: function (column_name) {
-        var project_settings = App.settings.getProjectSettings();
-        var properties_obj = {};
+    getColumnExtraProperties(column_name) {
+        const project_settings = App.settings.getProjectSettings();
+        let properties_obj = {};
 
-        var names_title_type_hash = this.getActiveTab()
+        const names_title_type_hash = this.getActiveTab()
             .collection.getNameTitleTypeHash([column_name]);
-        var original_type = names_title_type_hash.length &&
+        const original_type = names_title_type_hash.length &&
             names_title_type_hash[0].type || undefined;
 
         if (original_type) {
@@ -613,140 +613,138 @@ export default Marionette.View.extend({
             }
         }
 
-        var format_hash = {
-            quantity: {format: '0,0[.]00'},
-            original_cost: {format: '0,0[.]00'},
-            conversion_rate: {format: '0[.]00000'},
-            price_markup: {format: '0,0[.]00'},
-            uw: {format: '0[.]00'}
+        const format_hash = {
+            quantity: { format: '0,0[.]00' },
+            original_cost: { format: '0,0[.]00' },
+            conversion_rate: { format: '0[.]00000' },
+            price_markup: { format: '0,0[.]00' },
+            uw: { format: '0[.]00' },
         };
 
-        var properties_hash = {
+        const properties_hash = {
             width: {
                 renderer: hotRenderers.getFormattedRenderer('dimension', null,
-                    project_settings.get('inches_display_mode') || null)
+                    project_settings.get('inches_display_mode') || null),
             },
             height: {
                 renderer: hotRenderers.getFormattedRenderer('dimension_heights', null,
-                    project_settings.get('inches_display_mode') || null)
+                    project_settings.get('inches_display_mode') || null),
             },
             width_mm: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('fixed_minimal')
+                renderer: hotRenderers.getFormattedRenderer('fixed_minimal'),
             },
             height_mm: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('fixed_heights')
+                renderer: hotRenderers.getFormattedRenderer('fixed_heights'),
             },
             dimensions: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('align_right')
+                renderer: hotRenderers.getFormattedRenderer('align_right'),
             },
             unit_cost: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('price_usd')
+                renderer: hotRenderers.getFormattedRenderer('price_usd'),
             },
             unit_cost_discounted: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('price_usd')
+                renderer: hotRenderers.getFormattedRenderer('price_usd'),
             },
             subtotal_cost: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('price_usd')
+                renderer: hotRenderers.getFormattedRenderer('price_usd'),
             },
             unit_price: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('price_usd')
+                renderer: hotRenderers.getFormattedRenderer('price_usd'),
             },
             subtotal_price: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('price_usd')
+                renderer: hotRenderers.getFormattedRenderer('price_usd'),
             },
             unit_price_discounted: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('price_usd')
+                renderer: hotRenderers.getFormattedRenderer('price_usd'),
             },
             subtotal_price_discounted: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('price_usd')
+                renderer: hotRenderers.getFormattedRenderer('price_usd'),
             },
             drawing: {
                 readOnly: true,
-                renderer: hotRenderers.drawingPreviewRenderer
+                renderer: hotRenderers.drawingPreviewRenderer,
             },
             u_value: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('fixed', 3)
+                renderer: hotRenderers.getFormattedRenderer('fixed', 3),
             },
-            system: {readOnly: true},
-            threshold: {readOnly: true},
+            system: { readOnly: true },
+            threshold: { readOnly: true },
             mark: {
-                width: 100
+                width: 100,
             },
             customer_image: {
-                renderer: hotRenderers.customerImageRenderer
+                renderer: hotRenderers.customerImageRenderer,
             },
             extras_type: {
                 type: 'dropdown',
-                source: this.options.extras.getExtrasTypes()
+                source: this.options.extras.getExtrasTypes(),
             },
             discount: {
-                renderer: hotRenderers.getFormattedRenderer('percent')
+                renderer: hotRenderers.getFormattedRenderer('percent'),
             },
             supplier_discount: {
-                renderer: hotRenderers.getFormattedRenderer('percent')
+                renderer: hotRenderers.getFormattedRenderer('percent'),
             },
             profile_id: {
                 type: 'dropdown',
                 source: App.settings.getAvailableProfileNames(),
-                renderer: hotRenderers.unitProfileRenderer
+                renderer: hotRenderers.unitProfileRenderer,
             },
             total_square_feet: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('fixed_minimal')
+                renderer: hotRenderers.getFormattedRenderer('fixed_minimal'),
             },
             square_feet_price: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('price_usd')
+                renderer: hotRenderers.getFormattedRenderer('price_usd'),
             },
             square_feet_price_discounted: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('price_usd')
+                renderer: hotRenderers.getFormattedRenderer('price_usd'),
             },
             move_item: {
                 readOnly: true,
-                renderer: hotRenderers.moveItemRenderer
+                renderer: hotRenderers.moveItemRenderer,
             },
             glazing_bar_width: {
                 type: 'dropdown',
-                source: App.settings.getGlazingBarWidths().map(function (item) {
-                    return item.toString();
-                })
+                source: App.settings.getGlazingBarWidths().map(item => item.toString()),
             },
             opening_direction: {
                 type: 'dropdown',
-                source: App.settings.getOpeningDirections()
+                source: App.settings.getOpeningDirections(),
             },
             subtotal_profit: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('price_usd', true)
+                renderer: hotRenderers.getFormattedRenderer('price_usd', true),
             },
             subtotal_cost_discounted: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('price_usd')
+                renderer: hotRenderers.getFormattedRenderer('price_usd'),
             },
             original_cost_estimated: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('fixed_minimal')
+                renderer: hotRenderers.getFormattedRenderer('fixed_minimal'),
             },
             original_cost_difference: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('percent_difference', 0)
+                renderer: hotRenderers.getFormattedRenderer('percent_difference', 0),
             },
             rough_opening: {
                 readOnly: true,
-                renderer: hotRenderers.getFormattedRenderer('align_right')
-            }
+                renderer: hotRenderers.getFormattedRenderer('align_right'),
+            },
         };
 
         if (format_hash[column_name]) {
@@ -764,13 +762,13 @@ export default Marionette.View.extend({
     //  - data function, a combination of getter and setter
     //  - validation function (wrapper around model validation)
     //  - various extra properties, depending on colulmn name or type
-    getActiveTabColumnOptions: function () {
-        var columns = [];
+    getActiveTabColumnOptions() {
+        const columns = [];
 
         _.each(this.getActiveTab().columns, function (column_name) {
-            var column_obj = _.extend({}, {
+            const column_obj = _.extend({}, {
                 data: this.getColumnData(column_name),
-                validator: this.getColumnValidator(column_name)
+                validator: this.getColumnValidator(column_name),
             }, this.getColumnExtraProperties(column_name));
 
             columns.push(column_obj);
@@ -781,16 +779,16 @@ export default Marionette.View.extend({
     //  Redefine some cell-specific properties. This is mostly used to
     //  prevent editing of some attributes that shouldn't be editable for
     //  a certain unit / accessory
-    getActiveTabCellsSpecificOptions: function () {
-        var self = this;
+    getActiveTabCellsSpecificOptions() {
+        const self = this;
 
         return function (row, col) {
-            var cell_properties = {};
-            var item = this.instance.getSourceData().at(row);
-            var property = self.getActiveTab().columns[col];
-            var profile_id;
-            var options;
-            var message;
+            const cell_properties = {};
+            const item = this.instance.getSourceData().at(row);
+            const property = self.getActiveTab().columns[col];
+            let profile_id;
+            let options;
+            let message;
 
             if (item && item instanceof Unit) {
                 if (item.isOperableOnlyAttribute(property) && !item.hasOperableSections()) {
@@ -813,9 +811,7 @@ export default Marionette.View.extend({
                         cell_properties.filter = false;
                         cell_properties.strict = true;
 
-                        cell_properties.source = _.map(options, function (option) {
-                            return option.get('name');
-                        });
+                        cell_properties.source = _.map(options, option => option.get('name'));
                     //  When we have no options, disable editing
                     } else {
                         message = profile_id ? '(No Variants)' : '(No Profile)';
@@ -827,10 +823,10 @@ export default Marionette.View.extend({
                     self.active_tab === 'unit_options' &&
                     _.contains(self.getActiveTab().unit_options_columns, property)
                 ) {
-                    var dictionary_id = App.settings.dictionaries.getDictionaryIdByName(property);
-                    var rules_and_restrictions = [];
-                    var is_restricted = false;
-                    var is_optional = false;
+                    const dictionary_id = App.settings.dictionaries.getDictionaryIdByName(property);
+                    let rules_and_restrictions = [];
+                    let is_restricted = false;
+                    let is_optional = false;
 
                     profile_id = item.profile && item.profile.id;
                     options = [];
@@ -848,8 +844,8 @@ export default Marionette.View.extend({
                     //  We don't necessarily have something to do for each
                     //  rule in the list, we're only interested in those
                     //  where we have to disable cell editing
-                    _.each(rules_and_restrictions, function (rule) {
-                        var restriction_applies = item.checkIfRestrictionApplies(rule);
+                    _.each(rules_and_restrictions, (rule) => {
+                        const restriction_applies = item.checkIfRestrictionApplies(rule);
 
                         if (rule === 'IS_OPTIONAL') {
                             is_optional = true;
@@ -875,9 +871,7 @@ export default Marionette.View.extend({
                         cell_properties.filter = false;
                         cell_properties.strict = true;
 
-                        cell_properties.source = _.map(options, function (option) {
-                            return option.get('name');
-                        });
+                        cell_properties.source = _.map(options, option => option.get('name'));
 
                         if (is_optional) {
                             cell_properties.source.unshift(UNSET_VALUE);
@@ -896,9 +890,9 @@ export default Marionette.View.extend({
                     //  We want to know what properties the column to the
                     //  left has. And if it's set read-only for whatever
                     //  reasons, we want this column to also be read-only
-                    var left_column_properties =
+                    const left_column_properties =
                         self.getActiveTabCellsSpecificOptions().bind(this)(row, col - 1);
-                    var cell_value = this.instance.getDataAtCell(row, col);
+                    const cell_value = this.instance.getDataAtCell(row, col);
 
                     cell_properties.type = 'numeric';
 
@@ -919,14 +913,14 @@ export default Marionette.View.extend({
     //    redefine titles from original Unit object or add new columns)
     //  - then we check if original Unit object has title for that column
     //  - if both fail, we show just a system name of a column
-    getActiveTabHeaders: function () {
-        var headers = [];
-        var active_tab = this.getActiveTab();
+    getActiveTabHeaders() {
+        const headers = [];
+        const active_tab = this.getActiveTab();
 
         _.each(active_tab.columns, function (column_name) {
-            var custom_header = this.getCustomColumnHeader(column_name);
-            var original_header = active_tab.collection.getTitles([column_name]);
-            var title = '';
+            const custom_header = this.getCustomColumnHeader(column_name);
+            const original_header = active_tab.collection.getTitles([column_name]);
+            let title = '';
 
             if (custom_header) {
                 title = custom_header;
@@ -946,8 +940,8 @@ export default Marionette.View.extend({
 
         return headers;
     },
-    getCustomColumnHeader: function (column_name) {
-        var custom_column_headers_hash = {
+    getCustomColumnHeader(column_name) {
+        const custom_column_headers_hash = {
             width: 'Width, in',
             height: 'Height, in',
             drawing: 'Drawing',
@@ -979,13 +973,13 @@ export default Marionette.View.extend({
             total_square_feet: 'Total ft<sup>2</sup>',
             square_feet_price: 'Price / ft<sup>2</sup>',
             square_feet_price_discounted: 'Price / ft<sup>2</sup> w/D',
-            subtotal_profit: 'Subt. Profit'
+            subtotal_profit: 'Subt. Profit',
         };
 
         return custom_column_headers_hash[column_name];
     },
-    updateTable: function (e) {
-        var self = this;
+    updateTable(e) {
+        const self = this;
 
         //  We don't want to update table on validation errors, we have
         //  a special function for that
@@ -995,7 +989,7 @@ export default Marionette.View.extend({
 
         if (this.hot) {
             clearTimeout(this.table_update_timeout);
-            this.table_update_timeout = setTimeout(function () {
+            this.table_update_timeout = setTimeout(() => {
                 if (!self.isDestroyed()) {
                     self.hot.loadData(self.getActiveTab().collection);
                 }
@@ -1004,8 +998,8 @@ export default Marionette.View.extend({
 
         this.appendPopovers();
     },
-    getActiveTabColWidths: function () {
-        var col_widths = {
+    getActiveTabColWidths() {
+        let col_widths = {
             move_item: 55,
             mark: 60,
             customer_image: 100,
@@ -1033,11 +1027,11 @@ export default Marionette.View.extend({
             subtotal_price_discounted: 100,
             subtotal_profit: 100,
             square_feet_price_discounted: 100,
-            extras_type: 100
+            extras_type: 100,
         };
 
         //  Custom widths for some Unit Options columns
-        var unit_options_col_widths = {
+        let unit_options_col_widths = {
             'Interior Handle': 160,
             'Exterior Handle': 200,
             'Internal Sill': 100,
@@ -1050,14 +1044,14 @@ export default Marionette.View.extend({
             'Gasket Color': 100,
             'Hinge Style': 280,
             Hinges: 280,
-            Hardware: 100
+            Hardware: 100,
         };
 
         //  Calculate optimal width for Unit Options columns
         unit_options_col_widths = _.object(
             App.settings.dictionaries.getAvailableDictionaryNames(),
-            _.map(App.settings.dictionaries.getAvailableDictionaryNames(), function (dictionary_name) {
-                var calculated_length = 30 + dictionary_name.length * 7;
+            _.map(App.settings.dictionaries.getAvailableDictionaryNames(), (dictionary_name) => {
+                const calculated_length = 30 + dictionary_name.length * 7;
 
                 return unit_options_col_widths[dictionary_name] ?
                     unit_options_col_widths[dictionary_name] : calculated_length;
@@ -1065,25 +1059,23 @@ export default Marionette.View.extend({
 
         col_widths = _.extend({}, col_widths, unit_options_col_widths);
 
-        var widths_table = _.map(this.getActiveTab().columns, function (item) {
-            return col_widths[item] ? col_widths[item] : 90;
-        }, this);
+        const widths_table = _.map(this.getActiveTab().columns, item => col_widths[item] ? col_widths[item] : 90, this);
 
         return widths_table;
     },
-    onRender: function () {
-        var is_visible = this.options.is_always_visible ||
+    onRender() {
+        const is_visible = this.options.is_always_visible ||
             this.table_visibility === 'visible';
-        var self = this;
+        const self = this;
 
         //  We have to duplicate keydown event handling here because of the
         //  way copyPaste plugin for HoT works. It intercepts focus once
         //  you press ctrl key (meta key), so keydown handler in our view
         //  (via backbone.marionette.keyshortcuts plugin) does not fire
         function onBeforeKeyDown(event, onlyCtrlKeys) {
-            var isCtrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
-            var selection = (self.hot && self.hot.getSelected()) || false;
-            var isFullRowSelected = false;
+            const isCtrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
+            const selection = (self.hot && self.hot.getSelected()) || false;
+            let isFullRowSelected = false;
 
             if (selection.length) {
                 isFullRowSelected = selection[3] === selection[3] - selection[1];
@@ -1095,7 +1087,7 @@ export default Marionette.View.extend({
             }
 
             //  Ctrl + Y || Ctrl + Shift + Z
-            if (isCtrlDown && (event.keyCode === 89 || (event.shiftKey && event.keyCode === 90 ))) {
+            if (isCtrlDown && (event.keyCode === 89 || (event.shiftKey && event.keyCode === 90))) {
                 self.onRedo();
             //  Ctrl + Z
             } else if (isCtrlDown && event.keyCode === 90) {
@@ -1108,13 +1100,13 @@ export default Marionette.View.extend({
         }
 
         if (is_visible) {
-            var dropdown_scroll_reset = false;
+            let dropdown_scroll_reset = false;
 
-            var fixed_columns = ['mark', 'quantity', 'width', 'height', 'drawing'];
-            var active_tab_columns = self.getActiveTab().columns;
-            var fixed_columns_count = 0;
+            const fixed_columns = ['mark', 'quantity', 'width', 'height', 'drawing'];
+            const active_tab_columns = self.getActiveTab().columns;
+            let fixed_columns_count = 0;
 
-            _.each(fixed_columns, function (column) {
+            _.each(fixed_columns, (column) => {
                 if (_.indexOf(active_tab_columns, column) !== -1) {
                     fixed_columns_count += 1;
                 }
@@ -1122,31 +1114,31 @@ export default Marionette.View.extend({
 
             //  We use defer because we want to wait until flexbox
             //  sizes are calculated properly
-            _.defer(function () {
+            _.defer(() => {
                 self.hot = new Handsontable(self.ui.$hot_container[0], {
                     data: self.getActiveTab().collection,
                     columns: self.getActiveTabColumnOptions(),
                     cells: self.getActiveTabCellsSpecificOptions(),
                     colHeaders: self.getActiveTabHeaders(),
                     rowHeaders: true,
-                    rowHeights: function () {
+                    rowHeights() {
                         return _.contains(self.getActiveTab().columns, 'drawing') ||
                             _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
                     },
                     colWidths: self.getActiveTabColWidths(),
                     trimDropdown: false,
-                    maxRows: function () {
+                    maxRows() {
                         return self.getActiveTab().collection.length;
                     },
                     fixedColumnsLeft: fixed_columns_count,
                     stretchH: 'all',
                     viewportRowRenderingOffset: 300,
                     viewportColumnRenderingOffset: 50,
-                    enterMoves: {row: 1, col: 0},
-                    beforeKeyDown: function (e) {
+                    enterMoves: { row: 1, col: 0 },
+                    beforeKeyDown(e) {
                         onBeforeKeyDown(e, true);
                     },
-                    afterSelection: function (startRow, startColumn, endRow, endColumn) {
+                    afterSelection(startRow, startColumn, endRow, endColumn) {
                         self.selected = [];
 
                         if (startColumn === 0 && endColumn === this.countCols() - 1) {
@@ -1155,7 +1147,7 @@ export default Marionette.View.extend({
 
                             if (startRow === endRow) {
                                 self.selected = [startRow];
-                                var selectedData = self.hot.getSourceData().at(startRow);
+                                const selectedData = self.hot.getSourceData().at(startRow);
 
                                 if (selectedData.hasOnlyDefaultAttributes()) {
                                     self.ui.$clone.addClass('disabled');
@@ -1163,15 +1155,15 @@ export default Marionette.View.extend({
                                     self.ui.$clone.removeClass('disabled');
                                 }
                             } else {
-                                var start = startRow;
-                                var end = endRow;
+                                let start = startRow;
+                                let end = endRow;
 
                                 if (startRow > endRow) {
                                     start = endRow;
                                     end = startRow;
                                 }
 
-                                for (var i = start; i <= end; i++) {
+                                for (let i = start; i <= end; i++) {
                                     self.selected.push(i);
                                 }
 
@@ -1183,24 +1175,24 @@ export default Marionette.View.extend({
                             self.ui.$clone.addClass('disabled');
                         }
                     },
-                    afterDeselect: function () {
+                    afterDeselect() {
                         if (self.selected.length) {
                             this.selectCell(
                                 self.selected[0],
                                 0,
                                 self.selected[self.selected.length - 1],
-                                this.countCols() - 1, false
+                                this.countCols() - 1, false,
                             );
                         }
-                    }
+                    },
                 });
             });
 
             this.appendPopovers();
 
             clearInterval(this.dropdown_scroll_timer);
-            this.dropdown_scroll_timer = setInterval(function () {
-                var editor = self.hot && self.hot.getActiveEditor();
+            this.dropdown_scroll_timer = setInterval(() => {
+                const editor = self.hot && self.hot.getActiveEditor();
 
                 if (editor && editor.htContainer && !dropdown_scroll_reset) {
                     dropdown_scroll_reset = true;
@@ -1217,7 +1209,7 @@ export default Marionette.View.extend({
             this.total_prices_view = new UnitsTableTotalPricesView({
                 model: App.current_quote,
                 units: this.collection,
-                extras: this.options.extras
+                extras: this.options.extras,
             });
 
             this.ui.$total_prices_container.append(this.total_prices_view.render().el);
@@ -1225,14 +1217,14 @@ export default Marionette.View.extend({
             this.undo_manager.registerButton('undo', this.ui.$undo);
             this.undo_manager.registerButton('redo', this.ui.$redo);
 
-            $(window).off('keydown').on('keydown', function (e) {
+            $(window).off('keydown').on('keydown', (e) => {
                 if (!e.isDuplicate && $(e.target).hasClass('copyPaste')) {
                     onBeforeKeyDown(e);
                 }
             });
         }
     },
-    onBeforeDestroy: function () {
+    onBeforeDestroy() {
         clearInterval(this.dropdown_scroll_timer);
         this.$el.off('show.bs.popover');
         this.$el.popover('destroy');
@@ -1246,5 +1238,5 @@ export default Marionette.View.extend({
         }
 
         $(window).off('keydown');
-    }
+    },
 });

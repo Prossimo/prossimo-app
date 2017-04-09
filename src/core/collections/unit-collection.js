@@ -7,19 +7,19 @@ import Unit from '../models/unit';
 export default Backbone.Collection.extend({
     model: Unit,
     reorder_property_name: 'units',
-    url: function () {
-        return App.settings.get('api_base_path') +
-            '/projects/' + this.options.project.get('id') +
-            '/quotes/' + this.options.quote.get('id') + '/units';
+    url() {
+        return `${App.settings.get('api_base_path')
+            }/projects/${this.options.project.get('id')
+            }/quotes/${this.options.quote.get('id')}/units`;
     },
-    reorder_url: function () {
-        return App.settings.get('api_base_path') +
-            '/projects/' + this.options.project.get('id') +
-            '/quotes/' + this.options.quote.get('id') + '/reorder_units';
+    reorder_url() {
+        return `${App.settings.get('api_base_path')
+            }/projects/${this.options.project.get('id')
+            }/quotes/${this.options.quote.get('id')}/reorder_units`;
     },
-    initialize: function (models, options) {
+    initialize(models, options) {
         this.options = options || {};
-        this.proxy_unit = new Unit(null, {proxy: true});
+        this.proxy_unit = new Unit(null, { proxy: true });
 
         if (this.options.profile) {
             this.profile = this.options.profile;
@@ -28,68 +28,66 @@ export default Backbone.Collection.extend({
         //  When parent quote is fully loaded, we validate unit positions
         this.listenTo(this.options.quote, 'fully_loaded', this.validatePositions);
     },
-    getNameTitleTypeHash: function (names) {
+    getNameTitleTypeHash(names) {
         return this.proxy_unit.getNameTitleTypeHash(names);
     },
-    getTitles: function (names) {
+    getTitles(names) {
         return this.proxy_unit.getTitles(names);
     },
-    getSubtotalPrice: function () {
-        var total_price = 0;
+    getSubtotalPrice() {
+        let total_price = 0;
 
-        this.each(function (item) {
+        this.each((item) => {
             total_price += item.getSubtotalPrice();
         });
 
         return total_price;
     },
-    getSubtotalPriceDiscounted: function () {
-        var total_price = 0;
+    getSubtotalPriceDiscounted() {
+        let total_price = 0;
 
-        this.each(function (item) {
+        this.each((item) => {
             total_price += item.getSubtotalPriceDiscounted();
         });
 
         return total_price;
     },
-    getSubtotalCost: function () {
-        var total_cost = 0;
+    getSubtotalCost() {
+        let total_cost = 0;
 
-        this.each(function (item) {
+        this.each((item) => {
             total_cost += item.getSubtotalCost();
         });
 
         return total_cost;
     },
-    getSubtotalCostDiscounted: function () {
-        var total_cost = 0;
+    getSubtotalCostDiscounted() {
+        let total_cost = 0;
 
-        this.each(function (item) {
+        this.each((item) => {
             total_cost += item.getSubtotalCostDiscounted();
         });
 
         return total_cost;
     },
-    hasAtLeastOneCustomerImage: function () {
-        return this.any(function (item) {
-            return item.get('customer_image') !== '';
-        });
+    hasAtLeastOneCustomerImage() {
+        return this.any(item => item.get('customer_image') !== '');
     },
     /**
      * Return length of the collection
      * @return {Number} length of the collection or 0
      */
-    getTotalUnitTypes: function () {
+    getTotalUnitTypes() {
         return this.length;
     },
     /**
      * Return sum all "quantity" of the collection
      * @returns {Number} sum all "quantity" of the collection or 0
      */
-    getTotalUnitQuantity: function () {
-        var total_quantity = 0;
+    getTotalUnitQuantity() {
+        let total_quantity = 0;
 
-        this.each(function (item) {
+        this.each((item) => {
             if (item.get('quantity')) {
                 total_quantity += parseFloat(item.get('quantity'));
             }
@@ -101,32 +99,30 @@ export default Backbone.Collection.extend({
      * Return units by profiles
      * @returns {Array.<Backbone.Collection>} аn array of collections with units or empty array
      */
-    getUnitsByProfiles: function () {
-        return _.map(this.groupBy('profile_id'), function (units, profile_id) {
-            return new this.constructor(units, {
-                model: this.model,
-                comparator: this.comparator,
-                profile: App.settings.getProfileByIdOrDummy(profile_id)
-            });
-        }.bind(this));
+    getUnitsByProfiles() {
+        return _.map(this.groupBy('profile_id'), (units, profile_id) => new this.constructor(units, {
+            model: this.model,
+            comparator: this.comparator,
+            profile: App.settings.getProfileByIdOrDummy(profile_id),
+        }));
     },
     /**
      * Return sum all squares of the models
      * @returns {Number} sum all squares of the models or 0
      */
-    getTotalSquareFeet: function () {
-        var total_area = 0;
+    getTotalSquareFeet() {
+        let total_area = 0;
 
-        this.each(function (item) {
+        this.each((item) => {
             total_area += item.getTotalSquareFeet();
         });
 
         return total_area;
     },
-    getAveragePricePerSquareFoot: function () {
-        var total_area = this.getTotalSquareFeet();
-        var total_price = this.getSubtotalPriceDiscounted();
+    getAveragePricePerSquareFoot() {
+        const total_area = this.getTotalSquareFeet();
+        const total_price = this.getSubtotalPriceDiscounted();
 
         return total_area ? total_price / total_area : 0;
-    }
+    },
 });

@@ -8,57 +8,57 @@ import template from '../../templates/dialogs/quotes-editor-table-item-view.hbs'
 export default Marionette.View.extend({
     tagName: 'tr',
     className: 'quotes-editor-table-item',
-    template: template,
+    template,
     events: {
         'click .js-clone-quote': 'cloneQuote',
-        'click .js-remove-quote': 'removeQuote'
+        'click .js-remove-quote': 'removeQuote',
     },
-    cloneQuote: function () {
+    cloneQuote() {
         this.model.duplicate({
             model_name: 'Quote',
             attributes_to_omit: ['is_default'],
             fetch_after_saving: true,
             extra_attributes: {
                 units: this.model.units.toJSON(),
-                accessories: this.model.extras.toJSON()
-            }
+                accessories: this.model.extras.toJSON(),
+            },
         });
     },
-    removeQuote: function () {
+    removeQuote() {
         this.model.destroy();
     },
-    templateContext: function () {
+    templateContext() {
         return {
             name: this.model.getName(),
             date: this.model.get('date'),
             is_removable: this.model.get('is_default') !== true,
-            units: this.model.units.getTotalUnitTypes() + ' / ' +
-                this.model.units.getTotalUnitQuantity(),
-            grand_total: utils.format.price_usd(this.model.getTotalPrices().grand_total)
+            units: `${this.model.units.getTotalUnitTypes()} / ${
+                this.model.units.getTotalUnitQuantity()}`,
+            grand_total: utils.format.price_usd(this.model.getTotalPrices().grand_total),
         };
     },
     regions: {
         name: {
-            el: 'td.name'
+            el: 'td.name',
         },
         date: {
-            el: 'td.date'
-        }
+            el: 'td.date',
+        },
     },
-    onRender: function () {
+    onRender() {
         if (this.model.get('is_default') !== true) {
             this.showChildView('name', new BaseInputView({
                 model: this.model,
-                param: 'name'
+                param: 'name',
             }));
         }
 
         this.showChildView('date', new BaseDatepickerInputView({
             model: this.model,
-            param: 'date'
+            param: 'date',
         }));
     },
-    initialize: function () {
+    initialize() {
         this.listenTo(this.model, 'fully_loaded', this.render);
-    }
+    },
 });

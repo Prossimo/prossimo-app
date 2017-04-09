@@ -2,7 +2,7 @@ import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 import $ from 'jquery';
 
-import {globalChannel} from '../../utils/radio';
+import { globalChannel } from '../../utils/radio';
 import App from '../../main';
 import template from '../../templates/core/project-settings-panel-view.hbs';
 import BaseToggleView from './base/base-toggle-view';
@@ -10,33 +10,33 @@ import BaseToggleView from './base/base-toggle-view';
 export default Marionette.View.extend({
     tagName: 'div',
     className: 'project-settings-panel',
-    template: template,
+    template,
     ui: {
-        $container: '.project-settings-container'
+        $container: '.project-settings-container',
     },
     events: {
-        'click .js-change-value': 'onChangeValueClick'
+        'click .js-change-value': 'onChangeValueClick',
     },
-    initialize: function () {
+    initialize() {
         this.setToggles();
 
         this.listenTo(globalChannel, 'project_selector:fetch_current:stop', this.onProjectLoaded);
     },
-    onProjectLoaded: function () {
+    onProjectLoaded() {
         this.model = App.settings.getProjectSettings();
         this.setToggles();
         this.render();
     },
-    onChangeValueClick: function (e) {
-        var $button = $(e.target);
-        var target_param = $button.closest('li').data('param');
-        var target_value = $button.data('value');
+    onChangeValueClick(e) {
+        const $button = $(e.target);
+        const target_param = $button.closest('li').data('param');
+        const target_value = $button.data('value');
 
         this.model.set(target_param, target_value);
         this.render();
     },
-    setToggles: function () {
-        var data = this.templateContext();
+    setToggles() {
+        const data = this.templateContext();
 
         if (data.is_model_set) {
             this.toggles = {};
@@ -49,48 +49,48 @@ export default Marionette.View.extend({
             }, this);
         }
     },
-    getParamsSourceData: function () {
-        var params_obj = {};
+    getParamsSourceData() {
+        const params_obj = {};
 
         if (this.model) {
-            var name_title_type_hash = this.model.getNameTitleTypeHash();
-            var possible_values_hash = this.model.getPossibleValuesHash();
+            const name_title_type_hash = this.model.getNameTitleTypeHash();
+            const possible_values_hash = this.model.getPossibleValuesHash();
 
             _.each(possible_values_hash, function (item, key) {
                 params_obj[key] = {
                     model: this.model,
-                    title: _.findWhere(name_title_type_hash, {name: key}).title,
+                    title: _.findWhere(name_title_type_hash, { name: key }).title,
                     property_name: key,
                     current_value: this.model.get(key),
                     values_list: _.map(item, function (list_item) {
                         return {
                             is_current: this.model.get(key) === list_item.value,
                             value: list_item.value,
-                            title: list_item.title
+                            title: list_item.title,
                         };
                     }, this),
-                    possible_values_number: item.length
+                    possible_values_number: item.length,
                 };
             }, this);
         }
 
         return params_obj;
     },
-    templateContext: function () {
+    templateContext() {
         return {
             is_model_set: this.model,
-            params: this.getParamsSourceData()
+            params: this.getParamsSourceData(),
         };
     },
-    onRender: function () {
-        var data = this.templateContext();
+    onRender() {
+        const data = this.templateContext();
 
         if (data.is_model_set) {
             _.each(data.params, function (param_options, key) {
                 if (param_options.possible_values_number === 2) {
-                    this.$el.find('li[data-param="' + key + '"] .value').append(this.toggles[key].render().el);
+                    this.$el.find(`li[data-param="${key}"] .value`).append(this.toggles[key].render().el);
                 }
             }, this);
         }
-    }
+    },
 });

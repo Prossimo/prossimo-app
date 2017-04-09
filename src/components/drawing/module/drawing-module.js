@@ -36,9 +36,9 @@ import utils from '../../../utils';
 // });
 
 const DrawingModule = Marionette.Object.extend({
-    initialize: function (opts) {
-        var builder = this;
-        var chain = Backbone.$.Deferred();
+    initialize(opts) {
+        const builder = this;
+        const chain = Backbone.$.Deferred();
 
         this.data = {};
         this.state = {};
@@ -76,47 +76,47 @@ const DrawingModule = Marionette.Object.extend({
             } else {
                 setTimeout(start, 1);
             }
-        })();
+        }());
     },
 
     // Define setter/getter for data
-    set: function (name, val) {
+    set(name, val) {
         this.data[name] = val;
     },
-    get: function (name) {
+    get(name) {
         return (name in this.data) ? this.data[name] : null;
     },
     // Define setter/getter for state
-    setState: function (name, val, preventUpdate) {
-        var eventData = [];
+    setState(name, val, preventUpdate) {
+        const eventData = [];
 
         if (typeof name === 'object') {
             preventUpdate = val;
 
-            _.each(name, function (value, key) {
+            _.each(name, (value, key) => {
                 eventData.push({
                     name: key,
                     oldValue: this.getState(key),
-                    newValue: value
+                    newValue: value,
                 });
-            }.bind(this));
+            });
         } else if (typeof name === 'string') {
             eventData.push({
-                name: name,
+                name,
                 oldValue: this.getState(name),
-                newValue: val
+                newValue: val,
             });
         }
 
-        _.each(eventData, function (data) {
+        _.each(eventData, (data) => {
             if (data.oldValue !== data.newValue) {
                 this.state[data.name] = data.newValue;
 
                 if (!preventUpdate) {
-                    this.trigger('state:' + data.name, data);
+                    this.trigger(`state:${data.name}`, data);
                 }
             }
-        }.bind(this));
+        });
 
         if (!preventUpdate) {
             this.trigger('state:any', eventData);
@@ -124,14 +124,14 @@ const DrawingModule = Marionette.Object.extend({
 
         return eventData;
     },
-    getState: function (name) {
+    getState(name) {
         return (name in this.state) ? this.state[name] : null;
     },
 
     // Apply options to the object & initialize the object
-    assignStage: function (opts) {
-        var stage;
-        var is_stage_predefined = false;
+    assignStage(opts) {
+        let stage;
+        let is_stage_predefined = false;
 
         // Check for defined stage in opts
         if ('stage' in opts && 'nodeType' in opts.stage && opts.stage.nodeType === 'Stage') {
@@ -148,73 +148,73 @@ const DrawingModule = Marionette.Object.extend({
 
         return opts;
     },
-    assignDefaultStates: function (opts) {
-        var project_settings = App.settings && App.settings.getProjectSettings();
+    assignDefaultStates(opts) {
+        const project_settings = App.settings && App.settings.getProjectSettings();
 
         this.setState({
             type: ('type' in opts && opts.type) ? opts.type : 'unit',
             hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode'),
             inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
-            isPreview: ('preview' in opts && opts.preview) ? opts.preview : false
+            isPreview: ('preview' in opts && opts.preview) ? opts.preview : false,
         }, false);
 
         return opts;
     },
-    updateSize: function (width, height) {
-        var stage = this.get('stage');
+    updateSize(width, height) {
+        const stage = this.get('stage');
 
         stage.width(width);
         stage.height(height);
     },
     // Calculate ratio, screen size and left-top point for position a unit to the center of stage
-    assignSizes: function (opts) {
-        var stage = this.get('stage');
-        var model = this.get('model');
+    assignSizes(opts) {
+        const stage = this.get('stage');
+        const model = this.get('model');
 
         if (opts && opts.width && opts.height) {
             this.updateSize(opts.width, opts.height);
         }
 
-        var metricSize = ( opts && 'metricSize' in opts) ? opts.metricSize :
-            ( this.get('metricSize') ) ? this.get('metricSize') :
+        const metricSize = (opts && 'metricSize' in opts) ? opts.metricSize :
+            (this.get('metricSize')) ? this.get('metricSize') :
                 50;
 
-        var frameWidth = model.getInMetric('width', 'mm');
-        var frameHeight = model.getInMetric('height', 'mm');
+        const frameWidth = model.getInMetric('width', 'mm');
+        const frameHeight = model.getInMetric('height', 'mm');
 
-        var isTrapezoid = model.isTrapezoid();
-        var isInsideView = this.state.insideView;
-        var topOffset = 10 + 0.5; // we will add 0.5 pixel offset for better strokes
-        var wr = (stage.width() - metricSize * 2) / frameWidth;
-        var hr = (stage.height() - metricSize * ((isTrapezoid) ? 3 : 2) - topOffset) / frameHeight;
+        const isTrapezoid = model.isTrapezoid();
+        const isInsideView = this.state.insideView;
+        const topOffset = 10 + 0.5; // we will add 0.5 pixel offset for better strokes
+        const wr = (stage.width() - metricSize * 2) / frameWidth;
+        const hr = (stage.height() - metricSize * ((isTrapezoid) ? 3 : 2) - topOffset) / frameHeight;
 
-        var ratio = (Math.min(wr, hr) * 0.95);
+        const ratio = (Math.min(wr, hr) * 0.95);
 
-        var frameOnScreenWidth = frameWidth * ratio;
-        var frameOnScreenHeight = frameHeight * ratio;
+        const frameOnScreenWidth = frameWidth * ratio;
+        const frameOnScreenHeight = frameHeight * ratio;
 
         // Shift drawing right or left depending on metrics displayed
         // Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js
-        var metricShiftX = 0 - (2 - model.leftMetricCount(isInsideView)) * metricSize / 2;
+        let metricShiftX = 0 - (2 - model.leftMetricCount(isInsideView)) * metricSize / 2;
 
         if (model.rightMetricCount() > 1) {
             metricShiftX -= (model.rightMetricCount(isInsideView) - 1) * metricSize / 2;
         }
 
-        var sizes = {
-            ratio: ratio,
+        const sizes = {
+            ratio,
             screen: {
                 width: frameOnScreenWidth,
-                height: frameOnScreenHeight
+                height: frameOnScreenHeight,
             },
             center: {
                 x: Math.round(
                     stage.width() / 2 - frameOnScreenWidth / 2
                     + ((isTrapezoid) ? metricSize / 2 : metricSize)
-                    + metricShiftX
+                    + metricShiftX,
                 ) + 0.5,
-                y: topOffset
-            }
+                y: topOffset,
+            },
         };
 
         this.set('metricSize', metricSize);
@@ -224,73 +224,73 @@ const DrawingModule = Marionette.Object.extend({
 
         return opts;
     },
-    assignDefaultStyles: function (opts) {
+    assignDefaultStyles(opts) {
         // Default styles
-        var styles = {
+        let styles = {
             flush_frame: {
                 fill: 'lightgrey',
                 stroke: 'black',
-                strokeWidth: 1
+                strokeWidth: 1,
             },
             frame: {
                 fill: 'white',
                 stroke: 'black',
-                strokeWidth: 1
+                strokeWidth: 1,
             },
             door_bottom: {
                 fill: 'grey',
                 stroke: 'black',
-                strokeWidth: 1
+                strokeWidth: 1,
             },
             mullions: {
                 default: {
                     fill: 'white',
                     stroke: 'black',
-                    strokeWidth: 1
+                    strokeWidth: 1,
                 },
                 default_selected: {
-                    fill: 'lightgrey'
+                    fill: 'lightgrey',
                 },
                 hidden: {
                     fill: 'lightgreen',
-                    opacity: 0.5
+                    opacity: 0.5,
                 },
                 hidden_selected: {
                     fill: '#4E993F',
-                    opacity: 0.7
-                }
+                    opacity: 0.7,
+                },
             },
             selection: {
-                fill: 'rgba(0,0,0,0.2)'
+                fill: 'rgba(0,0,0,0.2)',
             },
             fillings: {
                 glass: {
-                    fill: 'lightblue'
+                    fill: 'lightblue',
                 },
                 louver: {
-                    stroke: 'black'
+                    stroke: 'black',
                 },
                 others: {
-                    fill: 'lightgrey'
-                }
+                    fill: 'lightgrey',
+                },
             },
             bars: {
                 normal: {
-                    fill: 'white'
+                    fill: 'white',
                 },
                 selected: {
-                    fill: 'yellow'
-                }
+                    fill: 'yellow',
+                },
             },
             handle: {
                 fill: 'white',
                 stroke: 'black',
                 sunk: {
-                    opacity: 0.75
-                }
+                    opacity: 0.75,
+                },
             },
             direction_line: {
-                stroke: 'black'
+                stroke: 'black',
             },
             measurements: {
                 label: {
@@ -301,30 +301,30 @@ const DrawingModule = Marionette.Object.extend({
                     color: 'black',
                     fontSize: 11,
                     fontSize_big: 12,
-                    fontFamily: 'pt-sans'
+                    fontFamily: 'pt-sans',
                 },
                 arrows: {
                     stroke: 'grey',
-                    strokeWidth: 0.5
+                    strokeWidth: 0.5,
                 },
                 controls: {
                     normal: {
                         fill: '#66B6E3',
-                        opacity: 0.5
+                        opacity: 0.5,
                     },
                     hover: {
-                        fill: '#1A8BEF'
-                    }
+                        fill: '#1A8BEF',
+                    },
                 },
                 select: {
                     normal: {
                         fill: '#33CE10',
-                        opacity: 0.5
+                        opacity: 0.5,
                     },
                     hover: {
-                        opacity: 0.75
-                    }
-                }
+                        opacity: 0.75,
+                    },
+                },
             },
             overlay_measurements: {
                 label: {
@@ -334,49 +334,49 @@ const DrawingModule = Marionette.Object.extend({
                     strokeWidth: 0.5,
                     padding: 3,
                     fontSize: 9,
-                    fontSize_big: 10
-                }
+                    fontSize_big: 10,
+                },
             },
             mullion_input: {
                 width: 48,
                 height: 20,
                 padding: 3,
-                fontSize: 12
+                fontSize: 12,
             },
             indexes: {
                 align: 'center',
                 fontFamily: 'pt-sans',
-                fontSize: 15
+                fontSize: 15,
             },
             glazing_controls: {
                 bound: {
                     fill: 'green',
                     radius: 3,
                     normal: {
-                        opacity: 0.7
+                        opacity: 0.7,
                     },
                     hover: {
-                        opacity: 0.3
-                    }
-                }
-            }
+                        opacity: 0.3,
+                    },
+                },
+            },
         };
 
         styles = utils.object.deep_extend(styles, opts.styles);
 
         // Assign styles
-        _.each(styles, function (style, name) {
-            this.set('style:' + name, style);
-        }.bind(this));
+        _.each(styles, (style, name) => {
+            this.set(`style:${name}`, style);
+        });
 
         return opts;
     },
-    createLayerManager: function (opts) {
-        var params = {
+    createLayerManager(opts) {
+        const params = {
             stage: this.get('stage'),
             metricSize: this.get('metricSize'),
             builder: this,
-            layers: {}
+            layers: {},
         };
 
         _.extend(params.layers, opts.layers);
@@ -386,8 +386,8 @@ const DrawingModule = Marionette.Object.extend({
         return opts;
     },
     // Get style
-    getStyle: function (name) {
-        var style = this.get('style:' + name);
+    getStyle(name) {
+        let style = this.get(`style:${name}`);
 
         if (!style) {
             style = {};
@@ -396,54 +396,54 @@ const DrawingModule = Marionette.Object.extend({
         return style;
     },
     // Assign/bind/unbind model
-    assignModel: function (model) {
+    assignModel(model) {
         this.unbindModel();
         this.bindModel(model);
     },
-    unbindModel: function () {
+    unbindModel() {
         if (this.get('model') !== null) {
             this.stopListening(this.get('model'));
         }
 
         this.set('model', null);
     },
-    bindModel: function (model) {
+    bindModel(model) {
         this.set('model', model);
         this.listenTo(model, 'change', this.update);
     },
     // Handler
-    handleKeyEvents: function (event) {
+    handleKeyEvents(event) {
         if (this.getState('isPreview') === false && this.layerManager) {
             this.layerManager.handleKeyEvents(event);
         }
     },
     // Create private Konva.Stage (if it wasn't defined in options)
-    createStage: function () {
-        var container = $('<div>', {
-            id: 'drawing-module-container'
+    createStage() {
+        const container = $('<div>', {
+            id: 'drawing-module-container',
         });
 
-        var stage = new Konva.Stage({
+        const stage = new Konva.Stage({
             width: window.screen.width,
             height: window.screen.height,
-            container: container[0]
+            container: container[0],
         });
 
         return stage;
     },
 
     // Events
-    update: function (opts) {
+    update(opts) {
         this.assignSizes(opts);
         this.trigger('update');
     },
     // Actions
-    deselectAll: function (preventUpdate) {
+    deselectAll(preventUpdate) {
         this.setState('selected:mullion', null, preventUpdate);
         this.setState('selected:sash', null, preventUpdate);
     },
     // Get layer to work directly with drawer, for example
-    getLayer: function (name) {
+    getLayer(name) {
         if (this.layerManager) {
             return this.layerManager.getLayer(name);
         }
@@ -451,48 +451,48 @@ const DrawingModule = Marionette.Object.extend({
         return false;
     },
     // Get result for preview method: canvas / base64 / image
-    getCanvas: function () {
+    getCanvas() {
         return this.get('stage').container();
     },
-    getBase64: function () {
+    getBase64() {
         return this.get('stage').toDataURL();
     },
-    getImage: function () {
-        var img = new Image();
+    getImage() {
+        const img = new Image();
 
         img.src = this.get('stage').toDataURL();
 
         return img;
     },
-    onBeforeDestroy: function () {
-        var stage = this.get('stage');
-        var is_predefined = this.get('is_stage_predefined');
+    onBeforeDestroy() {
+        const stage = this.get('stage');
+        const is_predefined = this.get('is_stage_predefined');
 
         if (stage && is_predefined === false) {
             stage.destroy();
         }
 
         this.stopListening();
-    }
+    },
 });
 
 export default DrawingModule;
 
 export const preview = function (unitModel, options) {
-    var result;
-    var defaults = {
+    let result;
+    const defaults = {
         width: 300,
         height: 300,
         mode: 'base64',
         position: 'inside',
         metricSize: 50,
-        preview: true
+        preview: true,
     };
 
-    options = _.defaults({}, options, defaults, {model: unitModel});
+    options = _.defaults({}, options, defaults, { model: unitModel });
 
-    var full_root_json_string = JSON.stringify(unitModel.generateFullRoot());
-    var options_json_string = JSON.stringify(options);
+    const full_root_json_string = JSON.stringify(unitModel.generateFullRoot());
+    const options_json_string = JSON.stringify(options);
 
     //  If we already got an image for the same full_root and same options,
     //  just return it from our preview cache
@@ -514,7 +514,7 @@ export const preview = function (unitModel, options) {
         unitModel.preview.result = {};
     }
 
-    var module = new DrawingModule(options);
+    const module = new DrawingModule(options);
 
     if (_.indexOf(['inside', 'outside'], options.position) !== -1) {
         module.setState({
@@ -522,7 +522,7 @@ export const preview = function (unitModel, options) {
             openingView: options.position === 'inside' && !unitModel.isOpeningDirectionOutward() ||
                 options.position === 'outside' && unitModel.isOpeningDirectionOutward(),
             inchesDisplayMode: options.inchesDisplayMode,
-            hingeIndicatorMode: options.hingeIndicatorMode
+            hingeIndicatorMode: options.hingeIndicatorMode,
         }, false);
     }
 

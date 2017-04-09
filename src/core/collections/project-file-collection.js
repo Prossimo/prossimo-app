@@ -5,13 +5,13 @@ import ProjectFile from '../models/project-file';
 
 export default Backbone.Collection.extend({
     model: ProjectFile,
-    url: function () {
-        return App.settings.get('api_base_path') + '/files';
+    url() {
+        return `${App.settings.get('api_base_path')}/files`;
     },
-    getUuids: function () {
+    getUuids() {
         return this.pluck('uuid');
     },
-    initialize: function (models, options) {
+    initialize(models, options) {
         this.options = options || {};
-    }
+    },
 });

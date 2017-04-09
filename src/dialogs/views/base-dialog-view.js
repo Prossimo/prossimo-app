@@ -4,16 +4,16 @@ import template from '../../templates/dialogs/base-dialog-view.hbs';
 
 export default Marionette.View.extend({
     className: 'modal fade',
-    template: template,
+    template,
     events: {
-        'submit form': 'returnFalse'
+        'submit form': 'returnFalse',
     },
-    close: function () {
+    close() {
         if (this.$el.modal) {
             this.$el.modal('hide');
         }
     },
-    returnFalse: function () {
+    returnFalse() {
         return false;
-    }
+    },
 });

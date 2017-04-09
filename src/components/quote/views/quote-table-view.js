@@ -1,26 +1,26 @@
 import Marionette from 'backbone.marionette';
 
 import App from '../../../main';
-import {format} from '../../../utils';
+import { format } from '../../../utils';
 import QuoteItemView from './quote-item-view';
 import QuoteExtrasTableView from './quote-extras-table-view';
 import template from '../templates/quote-table-view.hbs';
 
 export default Marionette.CompositeView.extend({
-    template: template,
+    template,
     childView: QuoteItemView,
     childViewContainer: '.quote-table-body',
     reorderOnSort: true,
     ui: {
         $extras_table_container: '.quote-extras-table-container',
-        $optional_extras_table_container: '.quote-optional-extras-table-container'
+        $optional_extras_table_container: '.quote-optional-extras-table-container',
     },
-    initialize: function () {
+    initialize() {
         this.listenTo(App.current_project.settings, 'change', this.render);
         this.listenTo(this.collection, 'change', this.render);
         this.listenTo(this.options.extras, 'change', this.render);
     },
-    childViewOptions: function () {
+    childViewOptions() {
         return {
             extras: this.options.extras,
             project: this.options.project,
@@ -31,11 +31,11 @@ export default Marionette.CompositeView.extend({
             show_sizes_in_mm: this.options.show_sizes_in_mm,
             show_supplier_system: this.options.show_supplier_system,
             show_supplier_names: this.options.show_supplier_names,
-            force_european_hinge_indicators: this.options.force_european_hinge_indicators
+            force_european_hinge_indicators: this.options.force_european_hinge_indicators,
         };
     },
-    getTotalPrices: function () {
-        var total_prices = this.options.quote.getTotalPrices();
+    getTotalPrices() {
+        const total_prices = this.options.quote.getTotalPrices();
 
         return {
             subtotal_units: format.price_usd(total_prices.subtotal_units),
@@ -50,10 +50,10 @@ export default Marionette.CompositeView.extend({
             deposit_percent: total_prices.deposit_percent ?
                 format.percent(total_prices.deposit_percent) : false,
             deposit_on_contract: format.price_usd(total_prices.deposit_on_contract),
-            balance_due_at_delivery: format.price_usd(total_prices.balance_due_at_delivery)
+            balance_due_at_delivery: format.price_usd(total_prices.balance_due_at_delivery),
         };
     },
-    templateContext: function () {
+    templateContext() {
         return {
             total_unit_types: this.collection.getTotalUnitTypes(),
             total_unit_quantity: this.collection.getTotalUnitQuantity(),
@@ -61,28 +61,28 @@ export default Marionette.CompositeView.extend({
                 this.options.extras.getRegularItems().length ||
                 this.options.extras.getOptionalItems().length,
             total_prices: this.getTotalPrices(),
-            show_price: this.options.show_price !== false
+            show_price: this.options.show_price !== false,
         };
     },
-    onRender: function () {
+    onRender() {
         if (this.templateContext().has_extras) {
             this.quote_extras_table_view = new QuoteExtrasTableView({
                 collection: this.options.extras,
                 show_price: this.options.show_price,
-                type: 'Regular'
+                type: 'Regular',
             });
 
             this.quote_optional_extras_table_view = new QuoteExtrasTableView({
                 collection: this.options.extras,
                 show_price: this.options.show_price,
-                type: 'Optional'
+                type: 'Optional',
             });
 
             this.ui.$extras_table_container.append(this.quote_extras_table_view.render().el);
             this.ui.$optional_extras_table_container.append(this.quote_optional_extras_table_view.render().el);
         }
     },
-    onBeforeDestroy: function () {
+    onBeforeDestroy() {
         if (this.quote_extras_table_view) {
             this.quote_extras_table_view.destroy();
         }
@@ -90,5 +90,5 @@ export default Marionette.CompositeView.extend({
         if (this.quote_optional_extras_table_view) {
             this.quote_optional_extras_table_view.destroy();
         }
-    }
+    },
 });
