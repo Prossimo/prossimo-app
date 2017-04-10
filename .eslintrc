@@ -65,6 +65,7 @@
         "Handsontable": false,
         "Decimal": false,
         "Spinner": false,
-        "Clipboard": false
+        "Clipboard": false,
+        "moment": false
     }
 }
