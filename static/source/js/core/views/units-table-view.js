@@ -612,7 +612,7 @@ var app = app || {};
                 quantity: { format: '0,0[.]00' },
                 original_cost: { format: '0,0[.]00' },
                 conversion_rate: { format: '0[.]00000' },
-                price_markup: { format: '0,0[.]00' },
+                price_markup: { format: '0,0[.]00[0]00' },
                 uw: { format: '0[.]00' }
             };
 
@@ -1021,7 +1021,7 @@ var app = app || {};
                 subtotal_cost: 100,
                 unit_cost_discounted: 100,
                 subtotal_cost_discounted: 100,
-                price_markup: 60,
+                price_markup: 80,
                 unit_price: 100,
                 subtotal_price: 100,
                 unit_price_discounted: 100,
