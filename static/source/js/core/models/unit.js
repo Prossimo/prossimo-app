@@ -1213,6 +1213,146 @@ var app = app || {};
 
             return found;
         },
+        hasSectionBars: function (sectionId, options) {
+            if (!sectionId || (options && !options.types)) { return; }
+            if (!options) { options = { types: 'any' }; }
+
+            var section = this.getSection(sectionId);
+            var types = options.types;
+            if (!section) { return; }
+            if (!section.bars) { return false; }
+
+            if (types === 'any') {
+                return section.bars.horizontal.length !== 0 || section.bars.vertical.length !== 0;
+
+            } else if (types === 'both' || types === 'all') {
+                return section.bars.horizontal.length !== 0 && section.bars.vertical.length !== 0;
+
+            } else if (types === 'horizontal') {
+                return section.bars.horizontal.length !== 0;
+
+            } else if (types === 'vertical') {
+                return section.bars.vertical.length !== 0;
+
+            }
+        },
+        adjustBars: function (adjustSectionId, options) {
+            if (!adjustSectionId || !(options && options.referenceSectionId)) { return; }
+            if (!this.hasSectionBars(adjustSectionId) || !this.hasSectionBars(options.referenceSectionId)) { return; }
+
+            // Algorithm for horizontal bars (same for vertical, plus the option to flip the bars):
+            // 1. Determine whether the sections are eligible for bar adjustment (have relevant bars, intersect etc.)
+            // 2. Determine whether the section being adjusted is above or below the reference section
+            //    - If above, align adjusted section so that its last horizontal bar matches up
+            //      with the reference section's horizontal bar that is closest to it
+            //    - If below, same but use first horizontal bar for alignment, instead of last
+
+            var adjustmentX = 0;
+            var adjustmentY = 0;
+            var referenceSectionId = options.referenceSectionId;
+            var adjustSection = this.getSection(adjustSectionId);
+            var referenceSection = this.getSection(referenceSectionId);
+            var adjustGeometry = adjustSection.glassParams;
+            var referenceGeometry = referenceSection.glassParams;
+            var flipBarsX = function (bars, sectionWidth) {
+                bars = _.clone(bars);
+                bars.vertical.reverse();
+                bars.vertical.forEach(function (bar) {
+                    bar.position = sectionWidth - bar.position;
+                });
+                return bars;
+            };
+            var adjustBars = (options.flipBarsX) ?
+                    flipBarsX(adjustSection.bars, adjustGeometry.width) :
+                    adjustSection.bars;
+            var referenceBars = (options.flipBarsX) ?
+                    flipBarsX(referenceSection.bars, referenceGeometry.width) :
+                    referenceSection.bars;
+            var hasAdjustHorizontalBars = this.hasSectionBars(adjustSectionId, { types: 'horizontal' });
+            var hasAdjustVerticalBars = this.hasSectionBars(adjustSectionId, { types: 'vertical' });
+            var hasReferenceHorizontalBars = this.hasSectionBars(referenceSectionId, { types: 'horizontal' });
+            var hasReferenceVerticalBars = this.hasSectionBars(referenceSectionId, { types: 'vertical' });
+            var adjustFirstXBarAbsoluteX = (hasAdjustVerticalBars) ?
+                    adjustBars.vertical[0].position + adjustGeometry.x : 0;
+            var adjustFirstYBarAbsoluteY = (hasAdjustHorizontalBars) ?
+                    adjustBars.horizontal[0].position + adjustGeometry.y : 0;
+            var adjustLastXBarAbsoluteX = (hasAdjustVerticalBars) ?
+                    adjustBars.vertical[adjustBars.vertical.length - 1].position + adjustGeometry.x : 0;
+            var adjustLastYBarAbsoluteY = (hasAdjustHorizontalBars) ?
+                    adjustBars.horizontal[adjustBars.horizontal.length - 1].position + adjustGeometry.y : 0;
+            var referenceXBarAbsoluteXList = referenceBars.vertical.map(function (bar) {
+                return bar.position + referenceGeometry.x;
+            });
+            var referenceYBarAbsoluteYList = referenceBars.horizontal.map(function (bar) {
+                return bar.position + referenceGeometry.y;
+            });
+            var adjustSectionLeftX = adjustGeometry.x;
+            var adjustSectionRightX = adjustGeometry.x + adjustGeometry.width;
+            var referenceSectionLeftX = referenceGeometry.x;
+            var referenceSectionRightX = referenceGeometry.x + referenceGeometry.width;
+            var adjustSectionTopY = adjustGeometry.y;
+            var adjustSectionBottomY = adjustGeometry.y + adjustGeometry.height;
+            var referenceSectionTopY = referenceGeometry.y;
+            var referenceSectionBottomY = referenceGeometry.y + referenceGeometry.height;
+            var leftEdgeX = Math.min(adjustSectionLeftX, referenceSectionLeftX);
+            var rightEdgeX = Math.max(adjustSectionRightX, referenceSectionRightX);
+            var topEdgeY = Math.min(adjustSectionTopY, referenceSectionTopY);
+            var bottomEdgeY = Math.max(adjustSectionBottomY, referenceSectionBottomY);
+            var isSectionsIntersectX = rightEdgeX - leftEdgeX <= adjustGeometry.width + referenceGeometry.width;
+            var isSectionsIntersectY = bottomEdgeY - topEdgeY <= adjustGeometry.height + referenceGeometry.height;
+            var isXAdjustmentPossible = hasAdjustVerticalBars && hasReferenceVerticalBars && isSectionsIntersectX;
+            var isYAdjustmentPossible = hasAdjustHorizontalBars && hasReferenceHorizontalBars && isSectionsIntersectY;
+            var adjustCenterX = adjustGeometry.x + adjustGeometry.width / 2;
+            var adjustCenterY = adjustGeometry.y + adjustGeometry.height / 2;
+            var referenceCenterX = referenceGeometry.x + referenceGeometry.width / 2;
+            var referenceCenterY = referenceGeometry.y + referenceGeometry.height / 2;
+            var isAdjustToLeft = adjustCenterX <= referenceCenterX;
+            var isAdjustAbove = adjustCenterY <= referenceCenterY;
+            var adjustAlignmentBarX = (isAdjustToLeft) ? adjustLastXBarAbsoluteX : adjustFirstXBarAbsoluteX;
+            var adjustAlignmentBarY = (isAdjustAbove) ? adjustLastYBarAbsoluteY : adjustFirstYBarAbsoluteY;
+
+            if (isXAdjustmentPossible) {
+                adjustmentX = referenceXBarAbsoluteXList.reduce(function (minDistance, referenceX) {
+                    var distance = referenceX - adjustAlignmentBarX;
+                    var isMinimal = Math.abs(distance) < Math.abs(minDistance);
+                    var isWithinBounds = adjustAlignmentBarX + distance <= adjustSectionRightX;
+                    return (isMinimal && isWithinBounds) ? distance : minDistance;
+                }, 999999);
+                if (options.flipBarsX) { adjustmentX *= -1; }
+            }
+
+            if (isYAdjustmentPossible) {
+                adjustmentY = referenceYBarAbsoluteYList.reduce(function (minDistance, referenceY) {
+                    var distance = referenceY - adjustAlignmentBarY;
+                    var isMinimal = Math.abs(distance) < Math.abs(minDistance);
+                    var isWithinBounds = adjustAlignmentBarY + distance <= adjustSectionBottomY;
+                    return (isMinimal && isWithinBounds) ? distance : minDistance;
+                }, 999999);
+            }
+
+            this.shiftBars(adjustSectionId, { x: adjustmentX, y: adjustmentY });
+        },
+        shiftBars: function (sectionId, options) {
+            if (!sectionId || !options) { return; }
+
+            var section = this.getSection(sectionId);
+            var bars = (section) ? this.getSection(sectionId).bars : undefined;
+            var hasBars = bars && (bars.horizontal.length !== 0 || bars.vertical.length !== 0);
+
+            if (hasBars && options.x) {
+                bars.vertical.forEach(function (bar) {
+                    bar.position += options.x;
+                });
+            }
+
+            if (hasBars && options.y) {
+                bars.horizontal.forEach(function (bar) {
+                    bar.position += options.y;
+                });
+            }
+
+            this.setSectionBars(sectionId, bars);
+        },
         // @TODO: Add method, that checks for correct values of measurement data
         // @TODO: Add method, that drops measurement data to default
         setFillingType: function (sectionId, type, name) {

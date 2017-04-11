@@ -57,6 +57,9 @@ var app = app || {};
             $bars_control: '#bars-control',
             $section_control: '#section_control',
             $filling_select: '#filling-select',
+            $filling_tools: '#filling-tools',
+            $filling_clone: '#filling-clone',
+            $filling_sync: '#filling-sync',
             $undo: '#undo',
             $redo: '#redo',
             $sash_types: '.change-sash-type',
@@ -68,6 +71,8 @@ var app = app || {};
         },
         events: {
             // Click
+            'click #drawing': 'handleCanvasClick',
+            'contextmenu #drawing': 'handleCanvasClick',
             'click .split-section': 'handleSplitSectionClick',
             'click @ui.$sash_types': 'handleChangeSashTypeClick',
             'click #clear-frame': 'handleClearFrameClick',
@@ -75,6 +80,8 @@ var app = app || {};
             'click .toggle-arched': 'handleArchedClick',
             'click .toggle-circular': 'handleCircularClick',
             'click #glazing-bars-popup': 'handleGlazingBarsPopupClick',
+            'click @ui.$filling_clone': 'handleFillingCloneClick',
+            'click @ui.$filling_sync': 'handleFillingSyncClick',
             'click @ui.$undo': 'handleUndoClick',
             'click @ui.$redo': 'handleRedoClick',
             // Tap
@@ -85,6 +92,8 @@ var app = app || {};
             'tap .toggle-arched': 'handleArchedClick',
             'tap .toggle-circular': 'handleCircularClick',
             'tap #glazing-bars-popup': 'handleGlazingBarsPopupClick',
+            'tap @ui.$filling_clone': 'handleFillingCloneClick',
+            'tap @ui.$filling_sync': 'handleFillingSyncClick',
             'tap @ui.$undo': 'handleUndoClick',
             'tap @ui.$redo': 'handleRedoClick',
             // Others
@@ -122,7 +131,24 @@ var app = app || {};
         handleRedoClick: function () {
             return this.undo_manager.handler.redo();
         },
+        handleCanvasClick: function (e) {
+
+            if (this.isCloningFilling()) {
+                this.cloneFillingDismiss();
+                e.preventDefault();
+
+            } else if (this.isSyncingFilling()) {
+                this.syncFillingDismiss();
+                e.preventDefault();
+            }
+        },
         handleCanvasKeyDown: function (e) {
+            if (e.key === 'Escape' && this.isCloningFilling()) {
+                this.cloneFillingDismiss();
+            } else if (e.key === 'Escape' && this.isSyncingFilling()) {
+                this.syncFillingDismiss();
+            }
+
             if (this.module && !this.state.inputFocused) {
                 this.module.handleKeyEvents(e);
             }
@@ -165,6 +191,18 @@ var app = app || {};
             this.glazing_view
                 .setSection( this.state.selectedSashId )
                 .showModal();
+        },
+        handleFillingCloneClick: function () {
+            if (this.state.selectedSashId) {
+                this.cloneFillingStart(this.state.selectedSashId);
+            }
+            // Continues at this.bindModuleEvents()
+        },
+        handleFillingSyncClick: function () {
+            if (this.state.selectedSashId) {
+                this.syncFillingStart(this.state.selectedSashId);
+            }
+            // Continues at this.bindModuleEvents()
         },
         handleFillingTypeChange: function () {
             var filling_type;
@@ -328,10 +366,20 @@ var app = app || {};
                 });
             });
             this.listenTo(this.module, 'state:selected:sash', function (data) {
-                this.deselectAll();
-                this.setState({
-                    selectedSashId: data.newValue
-                });
+                var sourceSashId = data.oldValue;
+                var targetSashId = data.newValue;
+                if (!targetSashId || targetSashId === sourceSashId) { this.deselectAll(); return; }
+
+                if (this.isCloningFilling()) {
+                    this.cloneFillingFinish(targetSashId);
+
+                } else if (this.isSyncingFilling()) {
+                    this.syncFillingFinish(targetSashId);
+
+                } else {
+                    this.deselectAll();
+                    this.setState({ selectedSashId: data.newValue });
+                }
             });
             this.listenTo(this.module, 'labelClicked', function (data) {
                 this.createInput(data.params, data.pos, data.size);
@@ -563,9 +611,18 @@ var app = app || {};
 
             var selectedSashId = this.state.selectedSashId;
             var selectedSash = this.model.getSection(selectedSashId);
+            var isLeafSash = selectedSash && selectedSash.sections.length === 0;
             var hasFrame = selectedSash && selectedSash.sashType !== 'fixed_in_frame';
             var isArched = selectedSash && selectedSash.arched;
             var isCircular = selectedSash && selectedSash.circular;
+
+            if (this.isCloningFilling() || this.isSyncingFilling()) {
+                document.body.style.cursor = 'copy';
+            } else {
+                document.body.style.cursor = 'auto';
+            }
+
+            this.ui.$filling_tools.toggle(selectedSash && isLeafSash);
 
             this.ui.$bars_control.toggle(
                 !isArched &&
@@ -672,6 +729,89 @@ var app = app || {};
                 selectedMullionId: null,
                 selectedSashId: null
             });
+        },
+        cloneFillingStart: function (sourceSashId) {
+            var selectedSash = this.model.getSection(sourceSashId);
+            if (!selectedSash) { return; }
+
+            this.setState({
+                cloneFillingSource: {
+                    bars: selectedSash.bars,
+                    sashType: selectedSash.sashType,
+                    fillingType: selectedSash.fillingType,
+                    fillingName: selectedSash.fillingName
+                }
+            });
+        },
+        cloneFillingFinish: function (targetSashId) {
+            if (!targetSashId || !this.isCloningFilling()) { return; }
+            var sourceBars = this.state.cloneFillingSource.bars;
+            var sourceSashType = this.state.cloneFillingSource.sashType;
+            var sourceFillingType = this.state.cloneFillingSource.fillingType;
+            var sourceFillingName = this.state.cloneFillingSource.fillingName;
+
+            if (sourceBars) { this.model.setSectionBars(targetSashId, sourceBars); }
+            if (sourceSashType) { this.model.setSectionSashType(targetSashId, sourceSashType); }
+            if (sourceFillingType && sourceFillingName) {
+                this.model.setFillingType(targetSashId, sourceFillingType, sourceFillingName);
+            }
+
+            this.cloneFillingDismiss();
+        },
+        cloneFillingDismiss: function () {
+            this.deselectAll();
+            this.module.deselectAll();
+            this.setState({ cloneFillingSource: null });
+        },
+        isCloningFilling: function () {
+            return !!this.state.cloneFillingSource;
+        },
+        syncFillingStart: function (sourceSashId) {
+            var selectedSash = this.model.getSection(sourceSashId);
+            if (!selectedSash) { return; }
+
+            this.setState({
+                syncFillingSource: {
+                    id: sourceSashId,
+                    bars: selectedSash.bars
+                }
+            });
+        },
+        syncFillingFinish: function (targetSashId) {
+            if (!targetSashId || !this.isSyncingFilling()) { return; }
+            var sourceSashId = this.state.syncFillingSource.id;
+            var sourceBars = this.state.syncFillingSource.bars;
+            var emptyBars = { horizontal: [], vertical: [] };
+            var hasSourceBars = this.model.hasSectionBars(sourceSashId);
+            var hasTargetBars = this.model.hasSectionBars(targetSashId);
+
+            // Copy or erase bars as necessary
+            if (hasSourceBars && !hasTargetBars) {
+                this.model.setSectionBars(targetSashId, sourceBars);
+                hasTargetBars = true;
+
+            } else if (!hasSourceBars && hasTargetBars) {
+                this.model.setSectionBars(targetSashId, emptyBars);
+                hasTargetBars = false;
+            }
+
+            // Adjust bar positions
+            if (hasSourceBars && hasTargetBars) {
+                this.model.adjustBars(targetSashId, {
+                    referenceSectionId: sourceSashId,
+                    flipBarsX: !this.isInsideView()
+                });
+            }
+
+            this.syncFillingDismiss();
+        },
+        syncFillingDismiss: function () {
+            this.deselectAll();
+            this.module.deselectAll();
+            this.setState({ syncFillingSource: null });
+        },
+        isSyncingFilling: function () {
+            return !!this.state.syncFillingSource;
         }
     });
 })();
