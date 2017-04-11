@@ -1369,9 +1369,11 @@ var app = app || {};
             var isRight = type.indexOf('right') !== -1;
             var hasHiddenLatch = type.indexOf('_hinge_hidden_latch') !== -1;
             var isOpeningInward = model.isOpeningDirectionInward() && model.hasOperableSections();
+            var isPhantomJS = !!window._phantom;
+            var dashCorrection = (isPhantomJS) ? ratio : 1;
             var dashStyle = [
-                style.dashLength / ratio,
-                style.dashGap / ratio
+                dashCorrection * style.dashLength / ratio,
+                dashCorrection * style.dashGap / ratio
             ];
             var latchOffset = style.latchOffset / ratio;
             var glassWidth = section.glassParams.width;
