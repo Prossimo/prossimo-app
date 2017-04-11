@@ -1,6 +1,6 @@
-import App from '../src/main';
-import PricingGridCollection from '../src/core/collections/inline/pricing-grid-collection';
-import PricingGrid from '../src/core/models/inline/pricing-grid';
+import App from 'src/main';
+import PricingGridCollection from 'src/core/collections/inline/pricing-grid-collection';
+import PricingGrid from 'src/core/models/inline/pricing-grid';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
@@ -41,14 +41,15 @@ test('Pricing grid collection', function () {
 
         deepEqual(
             grids.toJSON(),
-            [{
-                name: 'fixed',
-                data: [
-                    {height: 500, width: 500, value: 0},
-                    {height: 914, width: 1514, value: 0},
-                    {height: 2400, width: 3000, value: 0}
-                ]
-            },
+            [
+                {
+                    name: 'fixed',
+                    data: [
+                        {height: 500, width: 500, value: 0},
+                        {height: 914, width: 1514, value: 0},
+                        {height: 2400, width: 3000, value: 0}
+                    ]
+                },
                 {
                     name: 'operable',
                     data: [
@@ -56,7 +57,8 @@ test('Pricing grid collection', function () {
                         {height: 914, width: 1514, value: 0},
                         {height: 1200, width: 2400, value: 0}
                     ]
-                }],
+                }
+            ],
             'Grids data should match the expected'
         );
     });

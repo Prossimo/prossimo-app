@@ -1,5 +1,6 @@
 import _ from 'underscore';
-import App from '../../src/main';
+
+import App from 'src/main';
 import cases from './visual-test-data';
 import runVisualTest from './visual-test-runner';
 

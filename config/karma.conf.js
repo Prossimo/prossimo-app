@@ -1,24 +1,37 @@
 /* eslint-disable global-require*/
 process.env.NODE_ENV = 'test';
 
+const doVisualTests = process.env.DO_VISUAL_TESTS;
 const path = require('path');
 const webpackConfig = require('./webpack.config');
-const rootPatch = path.join(__dirname, '../');
+const rootPath = path.join(__dirname, '../');
+
+let files = [];
+
+if (doVisualTests) {
+    files = [
+        path.resolve(rootPath, './test/index.js'),
+        path.resolve(rootPath, './test/**/test-visual.js')
+    ];
+} else {
+    files = [
+        path.resolve(rootPath, './test/index.js'),
+        path.resolve(rootPath, './test/**/*.spec.js')
+    ];
+}
 
 module.exports = {
     basePath: '',
-    files: [
-        path.resolve(rootPatch, './test/index.js'),
-        path.resolve(rootPatch, './test/**/*_spec.js')
-    ],
+    files: files,
 
     // frameworks to use
     frameworks: ['mocha', 'sinon-chai', 'jquery-chai'],
 
     preprocessors: {
-        [path.resolve(rootPatch, './test/index.js')]: ['webpack', 'sourcemap'],
-        [path.resolve(rootPatch, './test/**/*_spec.js')]: ['webpack', 'sourcemap'],
-        [path.resolve(rootPatch, './test/**/*.png')]: ['webpack']
+        [path.resolve(rootPath, './test/index.js')]: ['webpack', 'sourcemap'],
+        [path.resolve(rootPath, './test/**/*.spec.js')]: ['webpack', 'sourcemap'],
+        [path.resolve(rootPath, './test/**/test-visual.js')]: ['webpack', 'sourcemap'],
+        [path.resolve(rootPath, './test/**/*.png')]: ['webpack']
     },
 
     reporters: ['mocha'],

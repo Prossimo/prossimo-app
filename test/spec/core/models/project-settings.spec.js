@@ -1,6 +1,7 @@
 import _ from 'underscore';
-import App from '../src/main';
-import ProjectSettings from '../src/core/models/inline/project-settings';
+
+import App from 'src/main';
+import ProjectSettings from 'src/core/models/inline/project-settings';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');

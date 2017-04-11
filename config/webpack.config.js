@@ -32,6 +32,7 @@ module.exports = {
             'node_modules'
         ],
         alias: {
+            src: srcPath,
             'load-image': 'blueimp-load-image/js/load-image.js',
             'load-image-meta': 'blueimp-load-image/js/load-image-meta.js',
             'load-image-exif': 'blueimp-load-image/js/load-image-exif.js',

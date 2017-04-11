@@ -1,7 +1,8 @@
 import _ from 'underscore';
-import App from '../src/main';
-import OptionsDictionaryEntry from '../src/core/models/options-dictionary-entry';
 import {assert} from 'chai';
+
+import App from 'src/main';
+import OptionsDictionaryEntry from 'src/core/models/options-dictionary-entry';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');

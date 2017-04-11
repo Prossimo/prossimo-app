@@ -1,9 +1,10 @@
 import _ from 'underscore';
-import App from '../src/main';
-import Unit from '../src/core/models/unit';
-import UnitCollection from '../src/core/collections/unit-collection';
-import Quote from '../src/core/models/quote';
-import Profile from '../src/core/models/profile';
+
+import App from 'src/main';
+import Unit from 'src/core/models/unit';
+import UnitCollection from 'src/core/collections/unit-collection';
+import Quote from 'src/core/models/quote';
+import Profile from 'src/core/models/profile';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');

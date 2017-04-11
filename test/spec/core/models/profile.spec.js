@@ -1,8 +1,9 @@
 import _ from 'underscore';
-import App from '../src/main';
-import Profile from '../src/core/models/profile';
-import PricingGridCollection from '../src/core/collections/inline/pricing-grid-collection';
-import PricingEquationParamsCollection from '../src/core/collections/inline/pricing-equation-params-collection';
+
+import App from 'src/main';
+import Profile from 'src/core/models/profile';
+import PricingGridCollection from 'src/core/collections/inline/pricing-grid-collection';
+import PricingEquationParamsCollection from 'src/core/collections/inline/pricing-equation-params-collection';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
@@ -174,7 +175,7 @@ test('Profile tests', function () {
         it('Default profile should be properly cast to JSON', () => {
             expect(default_profile.toJSON()).to.containSubset({
                 clear_width_deduction: 0,
-                frame_corners: '',
+                frame_corners: 'Mitered',
                 frame_u_value: 0,
                 frame_width: 0,
                 low_threshold: false,
@@ -212,13 +213,13 @@ test('Profile tests', function () {
                     }
                 ]),
                 pricing_scheme: 'PRICING_GRIDS',
-                sash_corners: '',
+                sash_corners: 'Mitered',
                 sash_frame_overlap: 0,
                 sash_frame_width: 0,
                 sash_mullion_overlap: 0,
                 spacer_thermal_bridge_value: 0,
-                supplier_system: '',
-                system: '',
+                supplier_system: 'Gaelan S8000',
+                system: 'Workhorse uPVC',
                 threshold_width: 20,
                 unit_type: 'Window',
                 weight_per_length: 0
@@ -228,7 +229,7 @@ test('Profile tests', function () {
         it('Predefined profile should be properly cast to JSON', () => {
             expect(predefined_profile.toJSON()).to.containSubset({
                 clear_width_deduction: 0,
-                frame_corners: '',
+                frame_corners: 'Mitered',
                 frame_u_value: 0,
                 frame_width: 0,
                 low_threshold: false,
@@ -266,13 +267,13 @@ test('Profile tests', function () {
                     }
                 ]),
                 pricing_scheme: 'PRICING_GRIDS',
-                sash_corners: '',
+                sash_corners: 'Mitered',
                 sash_frame_overlap: 0,
                 sash_frame_width: 0,
                 sash_mullion_overlap: 0,
                 spacer_thermal_bridge_value: 0,
-                supplier_system: '',
-                system: '',
+                supplier_system: 'Gaelan S8000',
+                system: 'Workhorse uPVC',
                 threshold_width: 33,
                 unit_type: 'Window',
                 weight_per_length: 0

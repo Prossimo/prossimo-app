@@ -1,7 +1,8 @@
-import App from '../src/main';
-import UnitOptionCollection from '../src/core/collections/inline/unit-option-collection';
-import UnitOption from '../src/core/models/inline/unit-option';
 import {assert} from 'chai';
+
+import App from 'src/main';
+import UnitOptionCollection from 'src/core/collections/inline/unit-option-collection';
+import UnitOption from 'src/core/models/inline/unit-option';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');

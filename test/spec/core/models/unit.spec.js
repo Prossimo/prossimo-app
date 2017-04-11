@@ -1,6 +1,6 @@
-import App from '../src/main';
-import Unit from '../src/core/models/unit';
-import UnitOptionCollection from '../src/core/collections/inline/unit-option-collection';
+import App from 'src/main';
+import Unit from 'src/core/models/unit';
+import UnitOptionCollection from 'src/core/collections/inline/unit-option-collection';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
