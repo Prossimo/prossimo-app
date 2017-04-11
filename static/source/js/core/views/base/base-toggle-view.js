@@ -71,7 +71,7 @@ var app = app || {};
             this.ui.$checkbox.bootstrapToggle('destroy');
         },
         //  TODO: we have `property_name` here, but for other base views we
-        //  call it `param`. Better make it same everywhere
+        //  call it `param`. Better make it same everywhere (attribute_name?)
         initialize: function (options) {
             var default_options = {
                 is_disabled: false,

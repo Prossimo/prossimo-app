@@ -9,8 +9,8 @@ var app = app || {};
         template: app.templates['dashboard/project-documents-view'],
         templateContext: function () {
             return {
-                has_documents: app.current_project.files.length,
-                document_list: app.current_project.files.map(function (item) {
+                has_documents: this.collection.length,
+                document_list: this.collection.map(function (item) {
                     return {
                         name: item.get('original_name'),
                         url: item.getDownloadUrl(),

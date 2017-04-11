@@ -10,7 +10,7 @@ var app = app || {};
             $list: 'ul'
         },
         events: {
-            'click .sidebar-nav a': 'onNavigationClick'
+            'click .main-nav a': 'onNavigationClick'
         },
         onNavigationClick: function (e) {
             var $event_target = $(e.currentTarget);
@@ -20,7 +20,7 @@ var app = app || {};
             app.router.navigate(nav_target, { trigger: true });
         },
         setTitle: function (title_part) {
-            document.title = 'Prossimo App: ' + title_part +
+            document.title = 'Prossimo Quoting App: ' + title_part +
                 ' (current version: ' + $('meta[name="latest-commit-sha"]').attr('value') + ')';
         },
         setActiveNavItem: function (key) {
@@ -43,7 +43,7 @@ var app = app || {};
                         var self = this;
 
                         this.router_callbacks[item.path] = function () {
-                            if ( app.current_project || item.path === 'settings' ) {
+                            if ( app.current_quote || item.path === 'settings' ) {
                                 item.onAttach.call();
                             } else {
                                 app.main_region.show(new app.NoProjectSelectedView());
@@ -64,9 +64,9 @@ var app = app || {};
                 }, this);
             }
 
-            $('#sidebar').append( this.render().el );
+            $('#main-nav-container').append( this.render().el );
 
-            this.listenTo(app.vent, 'project_selector:fetch_current:stop', this.reloadActiveScreen);
+            this.listenTo(app.vent, 'quote_selector:load_current:stop', this.reloadActiveScreen);
         },
         onRender: function () {
             //  Append each navigation item

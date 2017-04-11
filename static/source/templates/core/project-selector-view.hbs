@@ -1,9 +1,5 @@
-<h3>Project</h3>
 <select name="project-selector-dropdown" id="project-selector-dropdown" class="selectpicker show-tick" title="Choose a project" data-live-search="true">
     {{#each project_list}}
         <option {{#if is_selected }}selected{{/if}} value="{{ id }}">{{ project_name }}</option>
     {{/each}}
 </select>
-{{#if no_backend }}
-<button class="btn btn-xs js-add-new-local-project">Add new local project</button>
-{{/if}}

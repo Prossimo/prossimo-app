@@ -3,6 +3,8 @@ var app = app || {};
 (function () {
     'use strict';
 
+    var UNSET_VALUE = '--';
+
     var PRICING_SCHEME_NONE = app.constants.PRICING_SCHEME_NONE;
     var PRICING_SCHEME_PRICING_GRIDS = app.constants.PRICING_SCHEME_PRICING_GRIDS;
     var PRICING_SCHEME_PER_ITEM = app.constants.PRICING_SCHEME_PER_ITEM;
@@ -239,7 +241,7 @@ var app = app || {};
         },
         sync: function (method, model, options) {
             if ( method === 'create' || method === 'update' ) {
-                options.attrs = { project_unit: model.toJSON() };
+                options.attrs = { unit: model.toJSON() };
             }
 
             return Backbone.sync.call(this, method, model, options);
@@ -284,14 +286,14 @@ var app = app || {};
                 //  we have to re-validate our unit options
                 //  TODO: we want to do the same thing for filling types
                 this.listenTo(app.vent, 'validate_units:dictionaries', function () {
-                    if ( this.isParentProjectActive() ) {
+                    if ( this.isParentQuoteActive() ) {
                         this.validateUnitOptions();
                     }
                 });
 
-                //  Same as above, but when this unit's project becomes active
-                this.listenTo(app.vent, 'current_project_changed', function () {
-                    if ( this.isParentProjectActive() ) {
+                //  Same as above, but when this unit's quote becomes active
+                this.listenTo(app.vent, 'current_quote_changed', function () {
+                    if ( this.isParentQuoteActive() ) {
                         this.validateUnitOptions();
                     }
                 });
@@ -305,7 +307,12 @@ var app = app || {};
                     var profile_id = this.profile && this.profile.id;
                     var glazing_name = this.get('glazing');
 
-                    this.set('root_section', getSectionDefaults('root_section', glazing_name, profile_id));
+                    if (
+                        JSON.stringify(_.omit(this.getDefaultValue('root_section'), 'id')) ===
+                        JSON.stringify(_.omit(this.get('root_section'), 'id'))
+                    ) {
+                        this.set('root_section', getSectionDefaults('root_section', glazing_name, profile_id));
+                    }
                 }
 
                 this.listenTo(this.get('unit_options'), 'change update reset', function () {
@@ -722,6 +729,179 @@ var app = app || {};
         },
         getSquareFeetPriceDiscounted: function () {
             return this.getTotalSquareFeet() ? this.getSubtotalPriceDiscounted() / this.getTotalSquareFeet() : 0;
+        },
+        preparePricingDataForExport: function (options) {
+            var default_options = {
+                include_project: true,
+                include_quote: true,
+                include_dimensions_mm: true,
+                include_supplier_cost_original: true,
+                include_supplier_cost_converted: true,
+                include_supplier_discount: true,
+                include_price: true,
+                include_discount: true,
+                include_profile: true,
+                include_options: true,
+                include_sections: true
+            };
+
+            options = _.extend({}, default_options, options);
+
+            var sections_list = this.getFixedAndOperableSectionsList();
+            var parent_project = this.getParentProject();
+            var parent_quote = this.getParentQuote();
+
+            var pricing_data = {};
+
+            //  Project info
+            if ( options.include_project && parent_project ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    project_id: parent_project.id,
+                    project_name: parent_project.get('project_name')
+                });
+            }
+
+            //  Quote info
+            if ( options.include_quote && parent_quote ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    quote_id: parent_quote.id,
+                    quote_name: parent_quote.getName()
+                });
+            }
+
+            //  Base unit info, always included
+            pricing_data = _.extend({}, pricing_data, {
+                mark: this.get('mark'),
+                quantity: this.get('quantity'),
+                width: this.get('width'),
+                height: this.get('height')
+            });
+
+            //  Dimensions in mm
+            if ( options.include_dimensions_mm ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    width_mm: this.getWidthMM(),
+                    height_mm: this.getHeightMM()
+                });
+            }
+
+            //  Supplier cost part 1
+            if ( options.include_supplier_cost_original ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    original_cost: this.get('original_cost'),
+                    original_currency: this.get('original_currency'),
+                    conversion_rate: this.get('conversion_rate')
+                });
+            }
+
+            //  Supplier cost part 2
+            if ( options.include_supplier_cost_converted ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    unit_cost: this.getUnitCost(),
+                    subtotal_cost: this.getSubtotalCost()
+                });
+            }
+
+            //  Supplier cost with discount
+            if ( options.include_supplier_discount ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    supplier_discount: this.get('supplier_discount'),
+                    unit_cost_with_discount: this.getUnitCostDiscounted(),
+                    subtotal_cost_with_discount: this.getSubtotalCostDiscounted()
+                });
+            }
+
+            //  Our markup and price
+            if ( options.include_price ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    price_markup: this.get('price_markup'),
+                    unit_price: this.getUnitPrice(),
+                    subtotal_price: this.getSubtotalPrice()
+                });
+            }
+
+            //  Our price with discount
+            if ( options.include_discount ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    discount: this.get('discount'),
+                    unit_price_with_discount: this.getUnitPriceDiscounted(),
+                    subtotal_price_with_discount: this.getSubtotalPriceDiscounted()
+                });
+            }
+
+            if ( options.include_profile ) {
+                pricing_data = _.extend({}, pricing_data, {
+                    profile_name: this.profile.get('name'),
+                    unit_type: this.profile.get('unit_type')
+                });
+            }
+
+            var custom_titles = {
+                project_id: 'Project ID',
+                project_name: 'Project Name',
+                quote_id: 'Quote ID',
+                quote_name: 'Quote Name',
+                width_mm: 'Width (mm)',
+                height_mm: 'Height (mm)',
+                unit_cost: 'Unit Cost',
+                subtotal_cost: 'Subtotal Cost',
+                unit_cost_with_discount: 'Unit Cost w/D',
+                subtotal_cost_with_discount: 'Subtotal Cost w/D',
+                unit_price: 'Unit Price',
+                unit_price_with_discount: 'Unit Price w/D',
+                subtotal_price: 'Subtotal Price',
+                subtotal_price_with_discount: 'Subtotal Price w/D',
+                profile_name: 'Profile Name',
+                unit_type: 'Unit Type'
+            };
+
+            pricing_data = _.map(pricing_data, function (value, key) {
+                return { title: this.getTitles([key])[0] || custom_titles[key], value: value };
+            }, this);
+
+            if ( options.include_options ) {
+                var option_dictionaries = app.settings.dictionaries.getAvailableDictionaryNames();
+
+                _.each(option_dictionaries, function (dictionary_name) {
+                    var target_dictionary_id = app.settings.dictionaries.getDictionaryIdByName(dictionary_name);
+                    var target_dictionary = app.settings.dictionaries.get(target_dictionary_id);
+                    var current_options = target_dictionary_id ?
+                        this.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
+                    var is_restricted = false;
+
+                    _.each(target_dictionary.get('rules_and_restrictions'), function (rule) {
+                        if ( this.checkIfRestrictionApplies(rule) ) {
+                            is_restricted = true;
+                        }
+                    }, this);
+
+                    pricing_data.push({
+                        title: dictionary_name,
+                        value: !is_restricted && current_options.length ?
+                            current_options[0].entry.get('name') :
+                            UNSET_VALUE
+                    });
+                }, this);
+            }
+
+            if ( options.include_sections ) {
+                _.each(sections_list, function (section_data, index) {
+                    pricing_data.push({
+                        title: 'Sash ' + (index + 1) + ' Type',
+                        value: section_data.type === 'fixed' ? 'Fixed' : 'Operable'
+                    });
+                    pricing_data.push({
+                        title: 'Sash ' + (index + 1) + ' Area (m2)',
+                        value: section_data.width / 1000 * section_data.height / 1000
+                    });
+                    pricing_data.push({
+                        title: 'Sash ' + (index + 1) + ' Filling',
+                        value: section_data.filling_name
+                    });
+                }, this);
+            }
+
+            return pricing_data;
         },
         getSection: function (sectionId) {
             return app.Unit.findSection(this.generateFullRoot(), sectionId);
@@ -1264,86 +1444,114 @@ var app = app || {};
                 rootSection.mullionParams = mullionAttrs;
             }
 
+            // Vars for use in the following map callback
+            var parentHasFrame = hasFrame;
+            var isParentLeft = openingParams.isLeft;
+            var isParentRight = openingParams.isRight;
+            var isParentTop = openingParams.isTop;
+            var isParentBottom = openingParams.isBottom;
+
             rootSection.sections = _.map(rootSection.sections, function (sectionData, i) {
-                var sectionParams = {
-                    x: null, y: null, width: null, height: null
+
+                var sectionParams = { x: null, y: null, width: null, height: null };
+                var isVertical = rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible';
+                var isHorizontal = rootSection.divider === 'horizontal' || rootSection.divider === 'horizontal_invisible';
+                var isFirst = i === 0;
+                var isLeft = isVertical && !isFirst;  // Is this left section when looking from outside?
+                var isRight = isVertical && isFirst;
+                var isTop = isHorizontal && isFirst;
+                var isBottom = isHorizontal && !isFirst;
+                var isDoorProfile = this.isDoorType();
+                var sashFrameWidth = this.profile.get('sash_frame_width');
+                var sashFrameOverlap = this.profile.get('sash_frame_overlap');
+                var sashMullionOverlap = this.profile.get('sash_mullion_overlap');
+                var mullionWidth = this.profile.get('mullion_width');
+                var sashFrameGlassOverlap = sashFrameWidth - sashFrameOverlap;
+                var overlapDifference = sashFrameOverlap - sashMullionOverlap;
+                var trim = function (amount, sides) {
+                    if (sides === 'all') { sides = ['top', 'right', 'bottom', 'left']; }
+                    if (_.isString(sides)) { sides = [sides]; }
+
+                    sides.forEach(function (side) {
+                        if (side === 'top') {
+                            sectionParams.y += amount;
+                            sectionParams.height -= amount;
+                        } else if (side === 'right') {
+                            sectionParams.x += amount;
+                            sectionParams.width -= amount;
+                        } else if (side === 'bottom') {
+                            sectionParams.height -= amount;
+                        } else if (side === 'left') {
+                            sectionParams.width -= amount;
+                        }
+                    });
                 };
 
+                // Set section data & glass sizes
                 sectionData.mullionEdges = _.clone(rootSection.mullionEdges);
                 sectionData.thresholdEdge = rootSection.thresholdEdge;
                 sectionData.parentId = rootSection.id;
+                sectionParams.x = openingParams.x;
+                sectionParams.y = openingParams.y;
 
-                // Correction params. Needed for sections in operable sash
-                var corr = -1 * (this.profile.get('sash_frame_width') - this.profile.get('sash_frame_overlap'));
-                var correction = {
-                    x: 0,
-                    y: 0,
-                    width: 0,
-                    height: 0
-                };
-
-                // Calculate correction params
-                if (rootSection.sashType !== 'fixed_in_frame') {
-                    if (rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible') {
-                        // correction for vertical sections
-                        if (i === 0) {
-                            correction.x = -1 * corr;
-                        }
-
-                        correction.y = -1 * corr;
-                        correction.width = corr;
-                        correction.height = corr * 2;
-                    } else {
-                        // correction for horizontal sections
-                        if (i === 0) {
-                            correction.y = -1 * corr;
-                        }
-
-                        correction.x = -1 * corr;
-                        correction.width = corr * 2;
-                        correction.height = corr;
-                    }
-                }
-
-                if (rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible') {
-                    sectionParams.x = openingParams.x;
-                    sectionParams.y = openingParams.y;
-
-                    if (i === 0) {
-                        sectionParams.width = position - rootSection.openingParams.x -
-                            this.profile.get('mullion_width') / 2;
-                        sectionData.mullionEdges.right = rootSection.divider;
-                    } else {
-                        sectionParams.x = position + this.profile.get('mullion_width') / 2;
-                        sectionParams.width = openingParams.width + openingParams.x -
-                            position - this.profile.get('mullion_width') / 2;
-                        sectionData.mullionEdges.left = rootSection.divider;
-                    }
-
+                if (isLeft) {
+                    sectionParams.x = position + mullionWidth / 2;
+                    sectionParams.width = openingParams.width + openingParams.x - position - mullionWidth / 2;
                     sectionParams.height = openingParams.height;
-                } else {
-                    sectionParams.x = openingParams.x;
-                    sectionParams.y = openingParams.y;
-                    sectionParams.width = openingParams.width;
+                    sectionData.mullionEdges.left = rootSection.divider;
 
-                    if (i === 0) {
-                        sectionData.mullionEdges.bottom = rootSection.divider;
-                        sectionParams.height = position - rootSection.openingParams.y -
-                            this.profile.get('mullion_width') / 2;
-                        sectionData.thresholdEdge = false;
-                    } else {
-                        sectionParams.y = position + this.profile.get('mullion_width') / 2;
-                        sectionParams.height = openingParams.height + openingParams.y - position -
-                            this.profile.get('mullion_width') / 2;
-                        sectionData.mullionEdges.top = rootSection.divider;
-                    }
+                } else if (isRight) {
+                    sectionParams.width = position - rootSection.openingParams.x - mullionWidth / 2;
+                    sectionParams.height = openingParams.height;
+                    sectionData.mullionEdges.right = rootSection.divider;
+
+                } else if (isTop) {
+                    sectionParams.width = openingParams.width;
+                    sectionParams.height = position - rootSection.openingParams.y - mullionWidth / 2;
+                    sectionData.mullionEdges.bottom = rootSection.divider;
+                    sectionData.thresholdEdge = false;
+
+                } else if (isBottom) {
+                    sectionParams.y = position + mullionWidth / 2;
+                    sectionParams.width = openingParams.width;
+                    sectionParams.height = openingParams.height + openingParams.y - position - mullionWidth / 2;
+                    sectionData.mullionEdges.top = rootSection.divider;
                 }
 
-                // Apply corrections
-                sectionParams.x += correction.x;
-                sectionParams.y += correction.y;
-                sectionParams.width += correction.width;
-                sectionParams.height += correction.height;
+                // Trim glasses inside subdivided framed sashes
+                if (isLeft && parentHasFrame) {
+                    trim(sashFrameGlassOverlap, ['bottom', 'left', 'top']);
+                } else if (isRight && parentHasFrame) {
+                    trim(sashFrameGlassOverlap, ['top', 'right', 'bottom']);
+                } else if (isTop && parentHasFrame) {
+                    trim(sashFrameGlassOverlap, ['left', 'top', 'right']);
+                } else if (isBottom && parentHasFrame) {
+                    trim(sashFrameGlassOverlap, ['right', 'bottom', 'left']);
+                }
+
+                // Trim glasses inside subdivided framed sashes in door profiles
+                if (isDoorProfile && parentHasFrame && (isLeft || isRight)) {
+                    trim(overlapDifference, 'bottom');
+                } else if (isDoorProfile && parentHasFrame && isBottom) {
+                    trim(overlapDifference, 'bottom');
+                }
+
+                // Trim glasses inside subdivided framed sashes overlapping a parent mullion on one side
+                if (parentHasFrame && isParentLeft && (isTop || isBottom || isRight)) {
+                    trim(overlapDifference, 'right');
+                } else if (parentHasFrame && isParentRight && (isTop || isBottom || isLeft)) {
+                    trim(overlapDifference, 'left');
+                } else if (parentHasFrame && isParentTop && (isLeft || isRight || isBottom)) {
+                    trim(overlapDifference, 'bottom');
+                } else if (parentHasFrame && isParentBottom && (isLeft || isRight || isTop)) {
+                    trim(overlapDifference, 'top');
+                }
+
+                // Save data to be referred as parent data in child sections
+                sectionParams.isLeft = isLeft;
+                sectionParams.isRight = isRight;
+                sectionParams.isTop = isTop;
+                sectionParams.isBottom = isBottom;
 
                 return this.generateFullRoot(sectionData, sectionParams);
             }.bind(this));
@@ -1934,6 +2142,7 @@ var app = app || {};
                 if ( !option.is_restricted && pricing_data && pricing_data.scheme !== PRICING_SCHEME_NONE ) {
                     result[pricing_data.scheme].push({
                         dictionary_name: option.dictionary.get('name'),
+                        is_hidden: option.dictionary.get('is_hidden'),
                         option_name: option.entry.get('name'),
                         pricing_data: pricing_data,
                         has_quantity: option.has_quantity,
@@ -2028,6 +2237,7 @@ var app = app || {};
                     section.options.push({
                         dictionary_name: option_data.dictionary_name,
                         dictionary_pricing_scheme: PRICING_SCHEME_PRICING_GRIDS,
+                        is_hidden: option_data.is_hidden,
                         option_name: option_data.option_name,
                         price_increase: price_increase,
                         cost: option_cost
@@ -2048,6 +2258,7 @@ var app = app || {};
                     section.options.push({
                         dictionary_name: option_data.dictionary_name,
                         dictionary_pricing_scheme: PRICING_SCHEME_LINEAR_EQUATION,
+                        is_hidden: option_data.is_hidden,
                         option_name: option_data.option_name,
                         price_increase: price_increase,
                         cost: option_cost
@@ -2302,12 +2513,18 @@ var app = app || {};
                 this.get('unit_options').reset(new_unit_options.models);
             }
         },
+        getParentProject: function () {
+            return this.collection && this.collection.options.project;
+        },
+        getParentQuote: function () {
+            return this.collection && this.collection.options.quote;
+        },
         //  Check if this unit belongs to the project which is currently active
-        isParentProjectActive: function () {
+        isParentQuoteActive: function () {
             var is_active = false;
 
-            if ( app.current_project && this.collection && this.collection.options.project &&
-                this.collection.options.project === app.current_project
+            if ( app.current_quote && this.collection && this.collection.options.quote &&
+                this.collection.options.quote === app.current_quote
             ) {
                 is_active = true;
             }

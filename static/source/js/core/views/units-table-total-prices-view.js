@@ -7,12 +7,6 @@ var app = app || {};
         tagName: 'div',
         className: 'units-table-total-prices',
         template: app.templates['core/units-table-total-prices-view'],
-        initialize: function () {
-            this.listenTo(this.options.units, 'change', this.render);
-            this.listenTo(this.options.units, 'remove', this.render);
-            this.listenTo(this.options.extras, 'change', this.render);
-            this.listenTo(this.options.extras, 'remove', this.render);
-        },
         templateContext: function () {
             var total_prices = this.model ? this.model.getTotalPrices() : undefined;
             var total_area = this.model ? this.model.units.getTotalSquareFeet() : undefined;
@@ -30,6 +24,12 @@ var app = app || {};
                 total_area: total_area ? f.square_feet(total_area, 2, 'sup') : '--',
                 price_per_square_foot: price_per_square_foot ? f.price_usd(price_per_square_foot) : '--'
             };
+        },
+        initialize: function () {
+            this.listenTo(this.options.units, 'change', this.render);
+            this.listenTo(this.options.units, 'remove', this.render);
+            this.listenTo(this.options.extras, 'change', this.render);
+            this.listenTo(this.options.extras, 'remove', this.render);
         }
     });
 })();

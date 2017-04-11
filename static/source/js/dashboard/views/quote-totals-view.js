@@ -3,13 +3,10 @@ var app = app || {};
 (function () {
     'use strict';
 
-    app.ProjectTotalsView = Marionette.View.extend({
+    app.QuoteTotalsView = Marionette.View.extend({
         tagName: 'div',
-        className: 'project-total-prices',
-        template: app.templates['dashboard/project-totals-view'],
-        initialize: function () {
-            this.listenTo(app.current_project.settings, 'change', this.render);
-        },
+        className: 'quote-total-prices',
+        template: app.templates['dashboard/quote-totals-view'],
         templateContext: function () {
             var total_prices = this.model ? this.model.getTotalPrices() : undefined;
             var total_area = this.model ? this.model.units.getTotalSquareFeet() : undefined;

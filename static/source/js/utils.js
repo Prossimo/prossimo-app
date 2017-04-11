@@ -156,9 +156,9 @@ var app = app || {};
                 return result;
             },
             fixed_heights: function (value, num) {
-                return (typeof value === 'number')
-                    ? this.fixed_minimal(value, num)
-                    : this.fixed_minimal(value[0], num) + ' | ' + this.fixed_minimal(value[1], num);
+                return _.isArray(value) ?
+                    this.fixed_minimal(value[0], num) + ' | ' + this.fixed_minimal(value[1], num) :
+                    this.fixed_minimal(value, num);
             },
             square_feet: function (value, num, format) {
                 format = (format && _.indexOf(['normal', 'sup'], format) !== -1) ?

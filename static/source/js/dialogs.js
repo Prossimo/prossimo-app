@@ -34,6 +34,20 @@ var app = app || {};
                     return new app.CreateProjectDialogView(view_options);
                 }
             });
+
+            this.registerDialog({
+                name: 'edit-quotes',
+                getView: function (view_options) {
+                    return new app.EditQuotesDialogView(view_options);
+                }
+            });
+
+            this.registerDialog({
+                name: 'project-export',
+                getView: function (view_options) {
+                    return new app.ProjectExportDialogView(view_options);
+                }
+            });
         },
         registerDialog: function (options) {
             this.registered_dialogs[options.name] = options;
