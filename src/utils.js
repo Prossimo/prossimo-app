@@ -1,5 +1,8 @@
 import _ from 'underscore';
 import Decimal from 'decimal.js';
+import toFormat from 'toformat';
+
+toFormat(Decimal);
 
 const MAX_DENOMINATOR = 16;
 //  For numbers that are passed to Decimal constructor
@@ -119,11 +122,11 @@ export const format = {
     },
     price_usd: function (price) {
         return (parseFloat(price) < 0 ? '-' : '') + '$' +
-            new Decimal(Math.abs(parseFloat(price)).toFixed(2)).toFixed(2);
+            new Decimal(Math.abs(parseFloat(price)).toFixed(2)).toFormat(2);
     },
     percent: function (value, num) {
         num = _.isNumber(num) ? (num < MAX_SIGNIFICANT_DIGITS ? num : MAX_SIGNIFICANT_DIGITS) : 2;
-        return new Decimal(parseFloat(value).toFixed(num)).toFixed() + '%';
+        return new Decimal(parseFloat(value).toFixed(num)).toFormat() + '%';
     },
     percent_difference: function (value, num) {
         var result = this.percent(value, num);
@@ -132,7 +135,7 @@ export const format = {
     },
     fixed: function (value, num) {
         num = _.isNumber(num) ? (num < MAX_SIGNIFICANT_DIGITS ? num : MAX_SIGNIFICANT_DIGITS) : 2;
-        return new Decimal(parseFloat(value).toFixed(num)).toFixed(num);
+        return new Decimal(parseFloat(value).toFixed(num)).toFormat(num);
     },
     fixed_minimal: function (value, num) {
         var result;

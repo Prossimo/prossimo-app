@@ -15,7 +15,7 @@ test('Visual tests', function () {
                 test_case: test_case,
                 diff_threshold: 0,
                 callback: function (result) {
-                    expect(result.diff_output.mismatch_percentage).to.to.equal(0);
+                    expect(result.diff_output.mismatch_percentage).to.equal(0);
                     done();
                 }
             });

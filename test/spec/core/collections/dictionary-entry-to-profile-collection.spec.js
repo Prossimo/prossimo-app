@@ -23,7 +23,6 @@ test('DictionaryEntryProfileCollection tests', function () {
     test('DictionaryEntryProfileCollection basic tests', function () {
         let dep_collection = new DictionaryEntryProfileCollection(null, {parse: true});
 
-        ok(dep_collection instanceof DictionaryEntryProfileCollection, 'dep_collection is a Backbone.Collection object');
         equal(dep_collection.length, 0, 'dep_collection contains 0 entries by default');
 
         let deps_collection_with_data = new DictionaryEntryProfileCollection([
@@ -40,7 +39,7 @@ test('DictionaryEntryProfileCollection tests', function () {
         equal(deps_collection_with_data.length, 2, 'deps_collection_with_data should contain 2 entries');
         ok(
             deps_collection_with_data.at(0).get('pricing_grids') instanceof PricingGridCollection,
-            'Collection item `pricing_grids` attribure is instantiated with a Backbone.Collection object'
+            'Collection item `pricing_grids` attribute is instantiated with a PricingGridCollection object'
         );
     });
 
@@ -64,7 +63,7 @@ test('DictionaryEntryProfileCollection tests', function () {
         let nondefault_item = dep_collection.getByProfileId(1);
         let nonexistent_item = dep_collection.getByProfileId(999);
 
-        ok(default_item instanceof DictionaryEntryProfile, 'default_item is a Backbone.Model object');
+        ok(default_item instanceof DictionaryEntryProfile, 'default_item is a DictionaryEntryProfile object');
         equal(default_item.get('is_default'), true, 'default_item has is_default set to true');
 
         equal(nondefault_item.get('is_default'), false, 'nondefault_item has is_default set to false');

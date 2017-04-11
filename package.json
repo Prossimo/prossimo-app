@@ -109,6 +109,7 @@
     "konva": "~0.10.0",
     "sortablejs": "^1.5.1",
     "spin.js": "^2.3.2",
+    "toformat": "^1.0.0",
     "underscore": "^1.8.3"
   }
 }

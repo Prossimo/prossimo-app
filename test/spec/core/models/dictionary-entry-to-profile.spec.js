@@ -80,7 +80,7 @@ test('DictionaryEntryProfile tests', function () {
         }, {parse: true});
 
         equal(another_dep.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
-        ok(another_dep.get('pricing_grids') instanceof PricingGridCollection, 'pricing_grids is a Backbone.Collection object');
+        ok(another_dep.get('pricing_grids') instanceof PricingGridCollection, 'pricing_grids is a PricingGridCollection object');
         deepEqual(
             another_dep.get('pricing_grids').at(0).toJSON(),
             grids_data_to_set[0],
@@ -88,7 +88,7 @@ test('DictionaryEntryProfile tests', function () {
         );
         ok(
             another_dep.get('pricing_equation_params') instanceof PricingEquationParamsCollection,
-            'pricing_equation_params is a Backbone.Collection object'
+            'pricing_equation_params is a PricingEquationParamsCollection object'
         );
         deepEqual(
             another_dep.get('pricing_equation_params').get('param_a'),

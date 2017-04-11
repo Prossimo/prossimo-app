@@ -23,7 +23,6 @@ test('FillingTypeProfileCollection tests', function () {
     test('FillingTypeProfileCollection basic tests', function () {
         let ftp_collection = new FillingTypeProfileCollection(null, {parse: true});
 
-        ok(ftp_collection instanceof FillingTypeProfileCollection, 'ftp_collection is a FillingTypeProfileCollection object');
         equal(ftp_collection.length, 0, 'ftp_collection contains 0 entries by default');
 
         let ftps_collection_with_data = new FillingTypeProfileCollection([
@@ -40,7 +39,7 @@ test('FillingTypeProfileCollection tests', function () {
         equal(ftps_collection_with_data.length, 2, 'ftps_collection_with_data should contain 2 entries');
         ok(
             ftps_collection_with_data.at(0).get('pricing_grids') instanceof PricingGridCollection,
-            'Collection item `pricing_grids` attribure is instantiated with a PricingGridCollection object'
+            'Collection item `pricing_grids` attribute is instantiated with a PricingGridCollection object'
         );
     });
 

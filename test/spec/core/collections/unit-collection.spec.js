@@ -16,10 +16,10 @@ describe('Units collection:', function () {
         let unit_model = new UnitModel();
         let quote = new Quote();
 
-        instanceOf(units_collection, UnitCollection, 'should belong to UnitCollection object');
         instanceOf(unit_model, Unit, 'collection model should belong to Unit object');
         instanceOf(quote.units, UnitCollection, 'app.Quote().units should belong to app.UnitCollection object');
     });
+
     describe('basic tests', function () {
         let data = [{
             mark: 'A',
@@ -56,6 +56,7 @@ describe('Units collection:', function () {
         equal(units_collection.getTotalUnitQuantity(), 3, '#getTotalUnitQuantity() should return sum all "quantity"');
         equal(units_collection.getTotalSquareFeet(), 21, '#getTotalSquareFeet() should return sum all squares');
     });
+
     describe('by profiles', function () {
         let data = [{
             mark: 'A',

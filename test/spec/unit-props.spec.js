@@ -18,6 +18,7 @@ describe('Unit model tests: ', function () {
         ok(unit.get('width'), 'width should be defined');
         ok(unit.get('height'), 'height should be defined');
     });
+
     describe('default attributes', function () {
         let unit = new Unit();
 
@@ -26,6 +27,7 @@ describe('Unit model tests: ', function () {
         unit.set('width', 100);
         notOk(unit.hasOnlyDefaultAttributes(), 'Unit has non-default attributes after calling set()');
     });
+
     describe('split by two parts', function () {
         let unit = new Unit({
             width: c.mm_to_inches(1000),
@@ -47,6 +49,7 @@ describe('Unit model tests: ', function () {
         equal(leftSection.width, 500 - 10 - 20 / 2);
         equal(leftSection.height, 2000 - 10 * 2);
     });
+
     describe('split by 3 parts', function () {
         let unit = new Unit({
             width: c.mm_to_inches(1000),
@@ -71,6 +74,7 @@ describe('Unit model tests: ', function () {
         equal(leftSection.width, (500 - 10 - 20 / 2) / 2 - 20 / 2);
         equal(leftSection.height, 2000 - 10 * 2);
     });
+
     describe('find sash border offsets', function () {
         let unit = new Unit({
             width: c.mm_to_inches(1000),
@@ -111,6 +115,7 @@ describe('Unit model tests: ', function () {
         equal(bottomSection.mullionEdges.top, 'horizontal');
         equal(bottomSection.mullionEdges.bottom, undefined);
     });
+
     describe('Size calculations for Unit #010 from 377 E 10th project', function () {
         //  We use values in mms because that's what was used in the reference project.
         //  If we use values in inches, there's a noticeable margin of error
@@ -155,6 +160,7 @@ describe('Unit model tests: ', function () {
         equal(sash_list[0].filling.width, target_sizes.glasses[0].width, 'Sash filling width equals Glass 1 width');
         equal(sash_list[0].filling.height, target_sizes.glasses[0].height, 'Sash filling height equals Glass 1 height');
     });
+
     describe('Size calculations for Unit #001 from 377 E 10th project', function () {
         //  We use values in mms because that's what was used in the reference project.
         //  1 millimeter difference is possible
@@ -354,6 +360,7 @@ describe('Unit model tests: ', function () {
         equal(unit_size_stats.glazing_bars.area, 0.0236568, 'Unit glazing bar area');
         equal(unit_size_stats.glazing_bars.area_both_sides, 0.0236568 * 2, 'Unit glazing bar area for both sides');
     });
+
     describe('Size calculations for Unit #013 from 377 E 10th project', function () {
         //  We use values in mms because that's what was used in the reference project.
         //  1 millimeter difference is possible
@@ -477,6 +484,7 @@ describe('Unit model tests: ', function () {
         equal(sash_list[0].filling.type, 'recessed', 'Sash filling type is expected to be recessed');
         equal(sash_list[1].filling.type, 'recessed', 'Sash filling type is expected to be recessed');
     });
+
     //  ------------------------------------------------------------------------
     //  Size calculations for unit with threshold (bugfix test case)
     //  ------------------------------------------------------------------------
@@ -509,6 +517,7 @@ describe('Unit model tests: ', function () {
         equal(estimated_list[0].height.toFixed(2), '1981.20', 'Section height');
         equal(estimated_list[0].width.toFixed(2), '1041.40', 'Section width');
     });
+
     //  ------------------------------------------------------------------------
     //  Clear opening size calculations - bugfix test case for
     //  https://github.com/prossimo-ben/prossimo-app/issues/181
@@ -541,6 +550,7 @@ describe('Unit model tests: ', function () {
         equal(sash_list[0].opening.height.toFixed(), (1829 - 70 * 2).toFixed(), 'Section height');
         equal(sash_list[0].opening.width.toFixed(), (864 - 70 * 2).toFixed(), 'Section width');
     });
+
     //  ------------------------------------------------------------------------
     //  Clear opening size calculations - more complex bugfix test case for
     //  https://github.com/prossimo-ben/prossimo-app/issues/181
@@ -617,6 +627,7 @@ describe('Unit model tests: ', function () {
         equal(sash_list[3].filling.height.toFixed(), '455', 'Section 4 glass height');
         equal(sash_list[3].filling.width.toFixed(), '722', 'Section 4 glass width');
     });
+
     describe('hasOperableSections function', function () {
         let unit_1;
         let unit_2;
@@ -672,6 +683,7 @@ describe('Unit model tests: ', function () {
         equal(unit_1.hasOperableSections(), false, 'Unit 1 is not expected to have operable sections');
         equal(unit_2.hasOperableSections(), true, 'Unit 2 is expected to have operable sections');
     });
+
     describe('getSashName function', function () {
         let unit = new Unit();
 
@@ -685,11 +697,11 @@ describe('Unit model tests: ', function () {
         equal(unit.getSashName('tilt_turn_left', true), 'Tilt-turn Right Hinge',
             'Name for tilt_turn_left type in reversed hinges mode');
     });
+
     //  ------------------------------------------------------------------------
     //  Total daylight calculations for sections of an operable sash:
     //  https://github.com/prossimo-ben/prossimo-app/issues/126
     //  ------------------------------------------------------------------------
-
     describe('Total daylight calculations for sections of an operable sash', function () {
         let unit;
         let full_root;
@@ -740,6 +752,7 @@ describe('Unit model tests: ', function () {
         equal(sash_list[0].sections[1].filling.width.toFixed(), '2355', 'Bottom section glazing width');
         equal(sash_list[0].sections[1].filling.height.toFixed(), '852', 'Bottom section glazing height');
     });
+
     describe('hasGlazingBars function', function () {
         let unit_1 = new Unit({
             width: 5 * 12 + 6,
@@ -781,6 +794,7 @@ describe('Unit model tests: ', function () {
         equal(unit_1.hasGlazingBars(), false, 'Unit 1 is not expected to have bars');
         equal(unit_2.hasGlazingBars(), true, 'Unit 2 is expected to have bars');
     });
+
     //  ------------------------------------------------------------------------
     //  Test sizes for Clear Opening / Egress Clear Opening
     //  ------------------------------------------------------------------------
@@ -871,6 +885,7 @@ describe('Unit model tests: ', function () {
             'Bottom sash (Tilt-turn Left Hinge), egress size (24″ x 23 3/4″ (3.97 ft<sup>2</sup>))'
         );
     });
+
     //  ------------------------------------------------------------------------
     //  Unit weight estimates
     //  ------------------------------------------------------------------------

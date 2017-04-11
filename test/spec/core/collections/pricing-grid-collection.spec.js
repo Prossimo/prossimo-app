@@ -9,7 +9,6 @@ test('Pricing grid collection', function () {
     test('basic tests', function () {
         let grids = new PricingGridCollection(null, {parse: true});
 
-        ok(grids instanceof PricingGridCollection, 'Grids are a Backbone.Collection object');
         equal(grids.length, 0, 'Grids contain 0 entries by default');
 
         let full_grids = new PricingGridCollection([
@@ -86,7 +85,7 @@ test('Pricing grid collection', function () {
         let fixed_grid = grids.getByName('fixed');
         let nonexistent_grid = grids.getByName('whatever');
 
-        ok(fixed_grid instanceof PricingGrid, 'Fixed Grid is a Backbone.Model object');
+        ok(fixed_grid instanceof PricingGrid, 'Fixed Grid is a PricingGrid object');
         equal(fixed_grid.get('data').length, 3, 'Fixed Grid has 3 grid items');
 
         equal(nonexistent_grid, undefined, 'getByName returns undefined if there is no such grid');

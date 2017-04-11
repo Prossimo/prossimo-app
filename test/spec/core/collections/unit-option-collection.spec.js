@@ -21,7 +21,6 @@ test('Unit option collection test', function () {
     test('UnitOptionCollection basic tests', function () {
         let unit_option_collection = new UnitOptionCollection(null, {parse: true});
 
-        ok(unit_option_collection instanceof UnitOptionCollection, 'unit_option_collection is a UnitOptionCollection object');
         equal(unit_option_collection.length, 0, 'unit_option_collection contains 0 entries by default');
 
         let unit_option_collection_with_data = new UnitOptionCollection([
