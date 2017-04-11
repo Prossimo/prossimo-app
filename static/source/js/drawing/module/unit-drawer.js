@@ -1361,65 +1361,90 @@ var app = app || {};
             });
         },
         createDirectionLine: function (section) {
-            var group = new Konva.Group({
-                name: 'direction'
-            });
+            var group = new Konva.Group({ name: 'direction' });
             var type = section.sashType;
             var style = module.getStyle('direction_line');
+            var isAmericanHinge = module.getState('hingeIndicatorMode') === 'american';
+            var isLeft = type.indexOf('left') !== -1;
+            var isRight = type.indexOf('right') !== -1;
+            var hasHiddenLatch = type.indexOf('_hinge_hidden_latch') !== -1;
+            var isOpeningInward = model.isOpeningDirectionInward() && model.hasOperableSections();
+            var isPhantomJS = !!window._phantom;
+            var dashCorrection = (isPhantomJS) ? ratio : 1;
+            var dashStyle = [
+                dashCorrection * style.dashLength / ratio,
+                dashCorrection * style.dashGap / ratio
+            ];
+            var latchOffset = style.latchOffset / ratio;
+            var glassWidth = section.glassParams.width;
+            var glassHeight = section.glassParams.height;
+            var groupX = section.glassParams.x - section.sashParams.x;
+            var groupY = section.glassParams.y - section.sashParams.y;
+            var hingeLine;
+
+            // Set group content
             var directionLine = new Konva.Shape({
                 stroke: style.stroke,
-                x: section.glassParams.x - section.sashParams.x,
-                y: section.glassParams.y - section.sashParams.y,
                 sceneFunc: function (ctx) {
                     ctx.beginPath();
-                    var width = section.glassParams.width;
-                    var height = section.glassParams.height;
 
                     if (type.indexOf('right') >= 0 && (type.indexOf('slide') === -1)) {
-                        ctx.moveTo(width, height);
-                        ctx.lineTo(0, height / 2);
-                        ctx.lineTo(width, 0);
+                        ctx.moveTo(glassWidth, glassHeight);
+                        ctx.lineTo(0, glassHeight / 2);
+                        ctx.lineTo(glassWidth, 0);
                     }
 
                     if (type.indexOf('left') >= 0 && (type.indexOf('slide') === -1)) {
                         ctx.moveTo(0, 0);
-                        ctx.lineTo(width, height / 2);
-                        ctx.lineTo(0, height);
+                        ctx.lineTo(glassWidth, glassHeight / 2);
+                        ctx.lineTo(0, glassHeight);
                     }
 
                     if (type.indexOf('tilt_turn_') >= 0 || type.indexOf('slide') >= 0 || type === 'tilt_only') {
-                        ctx.moveTo(0, height);
-                        ctx.lineTo(width / 2, 0);
-                        ctx.lineTo(width, height);
+                        ctx.moveTo(0, glassHeight);
+                        ctx.lineTo(glassWidth / 2, 0);
+                        ctx.lineTo(glassWidth, glassHeight);
                     }
 
                     if (type === 'tilt_only_top_hung') {
                         ctx.moveTo(0, 0);
-                        ctx.lineTo(width / 2, height);
-                        ctx.lineTo(width, 0);
+                        ctx.lineTo(glassWidth / 2, glassHeight);
+                        ctx.lineTo(glassWidth, 0);
                     }
 
                     ctx.strokeShape(this);
                 }
             });
+            if (isOpeningInward) { directionLine.dash(dashStyle); }
+            if (hasHiddenLatch) {
+                hingeLine = new Konva.Shape({
+                    stroke: style.stroke,
+                    sceneFunc: function (ctx) {
+                        ctx.beginPath();
 
-            if ((type.indexOf('_hinge_hidden_latch') !== -1)) {
-                directionLine.dash([10 / ratio, 10 / ratio]);
+                        if (isLeft) {
+                            ctx.moveTo(glassWidth - latchOffset, 0);
+                            ctx.lineTo(glassWidth - latchOffset, glassHeight);
+
+                        } else if (isRight) {
+                            ctx.moveTo(latchOffset, 0);
+                            ctx.lineTo(latchOffset, glassHeight);
+                        }
+
+                        ctx.strokeShape(this);
+                    }
+                });
+                hingeLine.dash(dashStyle);
             }
 
-            // #192: Reverse hinge indicator for outside view
-            if ( module.getState('hingeIndicatorMode') === 'american' ) {
-                directionLine.scale({
-                    x: -1,
-                    y: -1
-                });
-                directionLine.move({
-                    x: section.glassParams.width,
-                    y: section.glassParams.height
-                });
+            // Set group attrs
+            if (directionLine) { group.add(directionLine); }
+            if (hingeLine) { group.add(hingeLine); }
+            group.setAttrs({ x: groupX, y: groupY });
+            if (isAmericanHinge) {  // #192: Reverse hinge indicator for outside view
+                group.scale({ x: -1, y: -1 });
+                group.move({ x: glassWidth, y: glassHeight });
             }
-
-            group.add( directionLine );
 
             return group;
         },

@@ -1,0 +1,21 @@
+<div class="download-button">
+    <a href="{{ urlToDownloadPdf }}" target="_blank" class="btn btn-success js-download-pdf">Download PDF</a>
+</div>
+<div class="export-options">
+    {{#if increase_revision_enabled }}
+    <div class="checkbox">
+        <label>
+            <input type="checkbox" name="increase_revision"{{#if increase_revision }} checked{{/if}}>
+            <span>Increase Revision <em>(new revision: {{ new_revision }})</em></span>
+        </label>
+    </div>
+    {{/if}}
+    {{#if set_current_date_enabled }}
+    <div class="checkbox">
+        <label>
+            <input type="checkbox" name="set_current_date"{{#if set_current_date }} checked{{/if}}>
+            <span>Set Current Date <em>(new date: {{ new_date }})</em></span>
+        </label>
+    </div>
+    {{/if}}
+</div>

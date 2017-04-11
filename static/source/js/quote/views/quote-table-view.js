@@ -41,7 +41,7 @@ var app = app || {};
                 subtotal_optional_extras: f.price_usd(total_prices.subtotal_optional_extras),
                 subtotal: f.price_usd(total_prices.subtotal),
                 tax_percent: total_prices.tax_percent ?
-                    f.percent(total_prices.tax_percent) : false,
+                    f.percent(total_prices.tax_percent, 3) : false,
                 tax: f.price_usd(total_prices.tax),
                 shipping: f.price_usd(total_prices.shipping),
                 grand_total: f.price_usd(total_prices.grand_total),

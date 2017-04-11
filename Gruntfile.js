@@ -42,7 +42,8 @@ module.exports = function (grunt) {
         'blueimp-file-upload/js/jquery.fileupload-audio.js',
         'blueimp-file-upload/js/jquery.fileupload-video.js',
         'blueimp-file-upload/js/jquery.fileupload-validate.js',
-        'clipboard/dist/clipboard.js'
+        'clipboard/dist/clipboard.js',
+        'moment/moment.js'
     ];
 
     var vendor_css_files = [
@@ -132,6 +133,7 @@ module.exports = function (grunt) {
         'drawing/module/glazing-drawer.js',
         'drawing/views/drawing-glazing-view.js',
         //  Quote screen
+        'quote/views/quote-controls-view.js',
         'quote/views/main-quote-view.js',
         'quote/views/quote-item-view.js',
         'quote/views/quote-extras-item-view.js',

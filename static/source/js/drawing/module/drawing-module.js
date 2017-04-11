@@ -288,7 +288,10 @@ var app = app || {};
                     }
                 },
                 direction_line: {
-                    stroke: 'black'
+                    stroke: 'black',
+                    latchOffset: 10,
+                    dashLength: 10,
+                    dashGap: 10
                 },
                 measurements: {
                     label: {
