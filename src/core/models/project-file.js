@@ -1,7 +1,7 @@
 import Backbone from 'backbone';
 
 import Schema from '../../schema';
-import utils from '../../utils';
+import { format } from '../../utils';
 
 //  We just keep this as a reference, we don't really use it for this model
 const FILE_PROPERTIES = [
@@ -47,7 +47,7 @@ export default Backbone.Model.extend({
         return prefix + this.getDownloadUrl(true);
     },
     getFileSize() {
-        return utils.format.fileSize(this.get('size'));
+        return format.fileSize(this.get('size'));
     },
     initialize(attributes, options) {
         this.options = options || {};

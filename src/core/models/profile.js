@@ -4,7 +4,7 @@ import Backbone from 'backbone';
 import App from '../../main';
 import Schema from '../../schema';
 import constants from '../../constants';
-import utils from '../../utils';
+import { object } from '../../utils';
 import PricingGridCollection from '../collections/inline/pricing-grid-collection';
 import PricingEquationParamsCollection from '../collections/inline/pricing-equation-params-collection';
 
@@ -122,7 +122,7 @@ export default Backbone.Model.extend({
         //  source string as object
         if (parsed_data && parsed_data.pricing_grids) {
             parsed_data.pricing_grids = new PricingGridCollection(
-                utils.object.extractObjectOrNull(parsed_data.pricing_grids),
+                object.extractObjectOrNull(parsed_data.pricing_grids),
                 {
                     parse: true,
                     append_default_grids: true,
@@ -132,7 +132,7 @@ export default Backbone.Model.extend({
 
         if (parsed_data && parsed_data.pricing_equation_params) {
             parsed_data.pricing_equation_params = new PricingEquationParamsCollection(
-                utils.object.extractObjectOrNull(parsed_data.pricing_equation_params),
+                object.extractObjectOrNull(parsed_data.pricing_equation_params),
                 {
                     parse: true,
                     append_default_sets: true,
@@ -306,7 +306,7 @@ export default Backbone.Model.extend({
         return this.get('frame_width');
     },
     getVisibleFrameWidthOperable() {
-        return parseFloat(this.get('frame_width')) + parseFloat(this.get('sash_frame_width')) -
+        return (parseFloat(this.get('frame_width')) + parseFloat(this.get('sash_frame_width'))) -
             parseFloat(this.get('sash_frame_overlap'));
     },
     getPricingData() {

@@ -2,7 +2,7 @@ import Backbone from 'backbone';
 import _ from 'underscore';
 
 import Schema from '../../schema';
-import utils from '../../utils';
+import { object } from '../../utils';
 import constants from '../../constants';
 import OptionsDictionaryEntryCollection from '../collections/options-dictionary-entry-collection';
 
@@ -84,7 +84,7 @@ export default Backbone.Model.extend({
 
         if (filtered_data && filtered_data.rules_and_restrictions) {
             filtered_data.rules_and_restrictions =
-                utils.object.extractObjectOrNull(filtered_data.rules_and_restrictions) ||
+                object.extractObjectOrNull(filtered_data.rules_and_restrictions) ||
                 this.getDefaultValue('rules_and_restrictions');
         }
 

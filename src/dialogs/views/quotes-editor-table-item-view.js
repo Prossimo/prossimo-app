@@ -1,6 +1,6 @@
 import Marionette from 'backbone.marionette';
 
-import utils from '../../utils';
+import { format } from '../../utils';
 import BaseDatepickerInputView from '../../core/views/base/base-datepicker-input-view';
 import BaseInputView from '../../core/views/base/base-input-view';
 import template from '../../templates/dialogs/quotes-editor-table-item-view.hbs';
@@ -34,7 +34,7 @@ export default Marionette.View.extend({
             is_removable: this.model.get('is_default') !== true,
             units: `${this.model.units.getTotalUnitTypes()} / ${
                 this.model.units.getTotalUnitQuantity()}`,
-            grand_total: utils.format.price_usd(this.model.getTotalPrices().grand_total),
+            grand_total: format.price_usd(this.model.getTotalPrices().grand_total),
         };
     },
     regions: {

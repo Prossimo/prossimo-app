@@ -2,7 +2,7 @@ import Backbone from 'backbone';
 import _ from 'underscore';
 
 import Schema from '../../schema';
-import utils from '../../utils';
+import { object } from '../../utils';
 import DictionaryEntryProfileCollection from '../collections/inline/dictionary-entry-to-profile-collection';
 
 const UNSET_VALUE = '--';
@@ -70,7 +70,7 @@ export default Backbone.Model.extend({
 
         if (parsed_data && parsed_data.dictionary_entry_profiles) {
             parsed_data.dictionary_entry_profiles = new DictionaryEntryProfileCollection(
-                utils.object.extractObjectOrNull(parsed_data.dictionary_entry_profiles),
+                object.extractObjectOrNull(parsed_data.dictionary_entry_profiles),
                 {
                     parent_entry: this,
                     parse: true,
@@ -79,8 +79,7 @@ export default Backbone.Model.extend({
         }
 
         if (parsed_data && parsed_data.data) {
-            parsed_data.data =
-                utils.object.extractObjectOrNull(parsed_data.data) || this.getDefaultValue('data');
+            parsed_data.data = object.extractObjectOrNull(parsed_data.data) || this.getDefaultValue('data');
         }
 
         return parsed_data;

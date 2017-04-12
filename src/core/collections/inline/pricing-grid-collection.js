@@ -1,7 +1,7 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
 
-import utils from '../../../utils';
+import { object } from '../../../utils';
 import PricingGrid from '../../models/inline/pricing-grid';
 
 function getDefaultGridCollection() {
@@ -28,7 +28,7 @@ function getDefaultGridCollection() {
 export default Backbone.Collection.extend({
     model: PricingGrid,
     parse(data) {
-        let data_object = utils.object.extractObjectOrNull(data);
+        let data_object = object.extractObjectOrNull(data);
 
         //  This is to deal with the old grids format
         if (data_object && !_.isArray(data_object) && _.isObject(data_object)) {

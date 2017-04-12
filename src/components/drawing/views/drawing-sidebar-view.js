@@ -3,7 +3,7 @@ import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 
 import App from '../../../main';
-import utils from '../../../utils';
+import { math, format, convert } from '../../../utils';
 import constants from '../../../constants';
 import template from '../templates/drawing-sidebar-view.hbs';
 
@@ -136,7 +136,7 @@ export default Marionette.View.extend({
         return active_unit_image;
     },
     getActiveUnitProperties() {
-        const f = utils.format;
+        const f = format;
         let active_unit_properties = [];
         let params_source = {};
         const project_settings = App.settings.getProjectSettings();
@@ -263,9 +263,9 @@ export default Marionette.View.extend({
     },
     getActiveUnitSashList() {
         const project_settings = App.settings.getProjectSettings();
-        const f = utils.format;
-        const c = utils.convert;
-        const m = utils.math;
+        const f = format;
+        const c = convert;
+        const m = math;
         let sash_list_source;
         const sashes = [];
 
@@ -307,15 +307,11 @@ export default Marionette.View.extend({
             _.each(sash_list_source, function (source_item, index) {
                 const sash_item = {};
                 let section_info;
-                let opening_size_data;
-                let egress_opening_size_data;
 
                 sash_item.name = `Sash #${index + 1}`;
                 sash_item.type = source_item.type;
 
-                opening_size_data = this.options.parent_view.active_unit.getSashOpeningSize(
-                    source_item.opening,
-                );
+                const opening_size_data = this.options.parent_view.active_unit.getSashOpeningSize(source_item.opening);
                 sash_item.opening_size = opening_size_data && f.dimensions_and_area(
                     opening_size_data.width,
                     opening_size_data.height,
@@ -323,7 +319,8 @@ export default Marionette.View.extend({
                     undefined,
                     opening_size_data.area,
                 );
-                egress_opening_size_data = this.options.parent_view.active_unit.getSashOpeningSize(
+
+                const egress_opening_size_data = this.options.parent_view.active_unit.getSashOpeningSize(
                     source_item.opening,
                     'egress',
                     source_item.original_type,
@@ -371,7 +368,7 @@ export default Marionette.View.extend({
     },
     getActiveUnitStats() {
         let unit_stats;
-        const f = utils.format;
+        const f = format;
         const stats_data = [];
 
         const titles = {
@@ -418,7 +415,7 @@ export default Marionette.View.extend({
                             key,
                             title: titles[key],
                             value,
-                            is_total: key === 'profile_total' && group_name !== 'weight' || key === 'unit_total',
+                            is_total: (key === 'profile_total' && group_name !== 'weight') || key === 'unit_total',
                         });
                     }
                 }, this);
@@ -439,8 +436,8 @@ export default Marionette.View.extend({
         return stats_data;
     },
     getActiveUnitEstimatedCost() {
-        const f = utils.format;
-        const m = utils.math;
+        const f = format;
+        const m = math;
         let active_unit_profile;
         const result = {
             sections: [],
@@ -546,7 +543,7 @@ export default Marionette.View.extend({
                     reference_id: item.getRefNum(),
                     cid: item.cid,
                     mark: item.get('mark'),
-                    dimensions: utils.format.dimensions(item.get('width'), item.get('height'), 'fraction'),
+                    dimensions: format.dimensions(item.get('width'), item.get('height'), 'fraction'),
                 };
             }, this),
             active_unit_image: this.getActiveUnitImage(),

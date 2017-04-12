@@ -3,7 +3,7 @@ import _ from 'underscore';
 
 import Schema from '../../schema';
 import constants from '../../constants';
-import utils from '../../utils';
+import { object } from '../../utils';
 import FillingTypeProfileCollection from '../collections/inline/filling-type-to-profile-collection';
 
 const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
@@ -96,7 +96,7 @@ export default Backbone.Model.extend({
 
         if (parsed_data && parsed_data.filling_type_profiles) {
             parsed_data.filling_type_profiles = new FillingTypeProfileCollection(
-                utils.object.extractObjectOrNull(parsed_data.filling_type_profiles),
+                object.extractObjectOrNull(parsed_data.filling_type_profiles),
                 {
                     parent_filling_type: this,
                     parse: true,
@@ -219,8 +219,7 @@ export default Backbone.Model.extend({
     },
     isAvailableForProfile(profile_id) {
         return this.get('is_base_type') === true ||
-            this.get('filling_type_profiles') &&
-            _.contains(this.get('filling_type_profiles').pluck('profile_id'), profile_id);
+            (this.get('filling_type_profiles') && _.contains(this.get('filling_type_profiles').pluck('profile_id'), profile_id));
     },
     isDefaultForProfile(profile_id) {
         let is_default = false;

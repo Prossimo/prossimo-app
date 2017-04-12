@@ -1,8 +1,8 @@
 import _ from 'underscore';
-import Konva from '../konva-clip-patch';
 import Backbone from 'backbone';
+import Konva from '../konva-clip-patch';
 
-import utils from '../../../../utils';
+import { geometry, vector2d, array } from '../../../../utils';
 import handle_data from '../../data/handle-data';
 
 let module;
@@ -289,8 +289,8 @@ export default Backbone.KonvaView.extend({
                         { x: opts.x + opts.width, y: opts.y },
                         { x: opts.x + opts.width, y: opts.y + opts.height },
                         // frame
-                        { x: opts.x + opts.width - opts.frameWidth, y: opts.y + opts.height },
-                        { x: opts.x + opts.width - opts.frameWidth, y: opts.y },
+                        { x: opts.x + (opts.width - opts.frameWidth), y: opts.y + opts.height },
+                        { x: opts.x + (opts.width - opts.frameWidth), y: opts.y },
                     ];
                     frameConnection.y = opts.frameWidth;
                 } else if (edge === 'bottom') {
@@ -299,8 +299,8 @@ export default Backbone.KonvaView.extend({
                         { x: opts.x, y: opts.y + opts.height },
                         { x: opts.x + opts.width, y: opts.y + opts.height },
                         // frame
-                        { x: opts.x + opts.width, y: opts.y + opts.height - opts.frameWidth },
-                        { x: opts.x, y: opts.y + opts.height - opts.frameWidth },
+                        { x: opts.x + opts.width, y: opts.y + (opts.height - opts.frameWidth) },
+                        { x: opts.x, y: opts.y + (opts.height - opts.frameWidth) },
                     ];
                     frameConnection.x = opts.frameWidth;
                 } else if (edge === 'left') {
@@ -329,7 +329,7 @@ export default Backbone.KonvaView.extend({
                 absArcCenter.y = opts.arcCenter.y + opts.absY;
 
                 // Find which of points lies at the arched frame
-                intersects = utils.geometry.intersectCircleLine(
+                intersects = geometry.intersectCircleLine(
                     absArcCenter,
                     opts.outerRadius - 1,
                     absPoints[0],
@@ -337,7 +337,7 @@ export default Backbone.KonvaView.extend({
                     true,
                 );
                 intersects = intersects.concat(
-                    utils.geometry.intersectCircleLine(
+                    geometry.intersectCircleLine(
                         absArcCenter,
                         opts.innerRadius,
                         absPoints[2],
@@ -407,7 +407,7 @@ export default Backbone.KonvaView.extend({
             point.y += opts.absY;
         });
         // Convert points to vectors relative to the center point of unit
-        uPoints = utils.vector2d.points_to_vectors(uPoints, opts.center);
+        uPoints = vector2d.points_to_vectors(uPoints, opts.center);
 
         arcEdge.add(
             new Konva.Arc({
@@ -621,7 +621,7 @@ export default Backbone.KonvaView.extend({
                 ctx.restore();
                 ctx.translate(width / 2, archHeight);
                 ctx.scale(
-                    (width / 2 - frameWidth) / archHeight,
+                    ((width / 2) - frameWidth) / archHeight,
                     (archHeight - frameWidth) / archHeight,
                 );
                 ctx._context.arc(
@@ -794,12 +794,12 @@ export default Backbone.KonvaView.extend({
             const section = model.getSection(group.attrs.sectionId);
             // Make some correction in sorting order if section has...
             if (
-                section.fillingType === 'interior-flush-panel' && module.getState('openingView') ||
-                section.fillingType === 'exterior-flush-panel' && !module.getState('openingView') ||
+                (section.fillingType === 'interior-flush-panel' && module.getState('openingView')) ||
+                (section.fillingType === 'exterior-flush-panel' && !module.getState('openingView')) ||
                 section.fillingType === 'full-flush-panel'
             ) {
                 // Move frame before filling
-                sortingOrder = utils.array.moveByValue(sortingOrder, 'frame', 'filling');
+                sortingOrder = array.moveByValue(sortingOrder, 'frame', 'filling');
             }
 
             _.each(sortingOrder, (name) => {
@@ -922,19 +922,19 @@ export default Backbone.KonvaView.extend({
                 directionSign: -1,
             },
         };
-        const initialX = sectionData.sashParams.width / 2 + (15 / ratio) * factors[direction].initialOffsetSign;
-        const initialY = sectionData.sashParams.height / 2 + (10 / ratio);
+        const initialX = (sectionData.sashParams.width / 2) + ((15 / ratio) * factors[direction].initialOffsetSign);
+        const initialY = (sectionData.sashParams.height / 2) + (10 / ratio);
         const arrowParams = {
             points: [
                 initialX,
                 initialY,
                 initialX,
                 initialY - factors.stepY,
-                initialX + factors.stepX * factors[direction].directionSign,
+                initialX + (factors.stepX * factors[direction].directionSign),
                 initialY - factors.stepY,
             ],
-            pointerLength: 1 / ratio * 2,
-            pointerWidth: 1 / ratio * 2,
+            pointerLength: (1 / ratio) * 2,
+            pointerWidth: (1 / ratio) * 2,
             fill: 'black',
             stroke: 'black',
             strokeWidth: 1 / ratio,
@@ -965,21 +965,21 @@ export default Backbone.KonvaView.extend({
         };
         const centerX = sectionData.sashParams.width / 2;
         const centerY = sectionData.sashParams.height / 2;
-        const initialX = centerX + (factors.stepX / 2 * factors[direction].initialOffsetSign);
-        const initialY = centerY + 10 / ratio;
+        const initialX = centerX + ((factors.stepX / 2) * factors[direction].initialOffsetSign);
+        const initialY = centerY + (10 / ratio);
         const arrowParams = {
             points: [
                 initialX,
                 initialY,
-                initialX + factors.stepX / 2 * factors[direction].directionSign,
+                initialX + ((factors.stepX / 2) * factors[direction].directionSign),
                 initialY - factors.stepY,
-                initialX + factors.stepX * factors[direction].directionSign,
+                initialX + (factors.stepX * factors[direction].directionSign),
                 initialY,
-                initialX + factors.stepX * 2 * factors[direction].directionSign,
+                initialX + ((factors.stepX * 2) * factors[direction].directionSign),
                 initialY,
             ],
-            pointerLength: 1 / ratio * 2,
-            pointerWidth: 1 / ratio * 2,
+            pointerLength: (1 / ratio) * 2,
+            pointerWidth: (1 / ratio) * 2,
             fill: 'black',
             stroke: 'black',
             strokeWidth: 1 / ratio,
@@ -1034,10 +1034,10 @@ export default Backbone.KonvaView.extend({
             sectionData.fillingType.indexOf('flush') >= 0;
 
         const shouldDrawFilling =
-            !hasSubSections && !isFlushType ||
-            !hasSubSections && model.isRootSection(sectionData.id) && isFlushType;
+            (!hasSubSections && !isFlushType) ||
+            (!hasSubSections && model.isRootSection(sectionData.id) && isFlushType);
 
-        const shouldDrawBars = shouldDrawFilling && !sectionData.fillingType || sectionData.fillingType === 'glass';
+        const shouldDrawBars = (shouldDrawFilling && !sectionData.fillingType) || sectionData.fillingType === 'glass';
 
         const shouldDrawDirectionLine = ([
             'fixed_in_frame',
@@ -1146,9 +1146,9 @@ export default Backbone.KonvaView.extend({
 
                 if (circleData.type === 'arc') {
                     this.clipCircle(directionLine, {
-                        x: 2 - sectionData.sashParams.x + mainFrameWidth,
-                        y: 2 - sectionData.sashParams.y + mainFrameWidth,
-                        radius: circleData.radius + mainFrameWidth - 4,
+                        x: 2 - (sectionData.sashParams.x + mainFrameWidth),
+                        y: 2 - (sectionData.sashParams.y + mainFrameWidth),
+                        radius: (circleData.radius + mainFrameWidth) - 4,
                     });
                 }
             }
@@ -1245,12 +1245,12 @@ export default Backbone.KonvaView.extend({
         };
         const positionLeft = function () {
             pos.x = offset - handle_data.base.rotationCenter.x;
-            pos.y = section.sashParams.height / 2 - handle_data.base.rotationCenter.y;
+            pos.y = (section.sashParams.height / 2) - handle_data.base.rotationCenter.y;
             pos.rotation = -90;
         };
         const positionRight = function () {
             pos.x = section.sashParams.width - offset - handle_data.base.rotationCenter.x;
-            pos.y = section.sashParams.height / 2 - handle_data.base.rotationCenter.y;
+            pos.y = (section.sashParams.height / 2) - handle_data.base.rotationCenter.y;
             pos.rotation = 90;
         };
         const sinkThroughGlass = function () {
@@ -1529,7 +1529,7 @@ export default Backbone.KonvaView.extend({
             number = new Konva.Text(opts);
 
             number.position(section.position);
-            number.y(number.y() + section.size.height / 2 - number.height() / 2);
+            number.y(number.y() + ((section.size.height / 2) - (number.height() / 2)));
 
             group.add(number);
         });
@@ -1603,7 +1603,7 @@ export default Backbone.KonvaView.extend({
                     if (section.fillingType === 'louver') {
                         const offset = 40;
 
-                        for (let i = 0; i < this.height() / offset; i++) {
+                        for (let i = 0; i < this.height() / offset; i += 1) {
                             ctx.moveTo(0, i * offset);
                             ctx.lineTo(this.width(), i * offset);
                         }
@@ -1653,7 +1653,7 @@ export default Backbone.KonvaView.extend({
         let _to;
         let tbar;
 
-        for (var i = 0; i < vBarCount; i++) {
+        for (let i = 0; i < vBarCount; i += 1) {
             data = section.bars.vertical[i];
             space = data.position;
 
@@ -1675,7 +1675,7 @@ export default Backbone.KonvaView.extend({
             _to += fillY;
 
             bar = new Konva.Rect({
-                x: fillX + space - (glazing_bar_width / 2),
+                x: (fillX + space) - (glazing_bar_width / 2),
                 y: _from,
                 width: glazing_bar_width,
                 height: _to - _from,
@@ -1685,7 +1685,7 @@ export default Backbone.KonvaView.extend({
             group.add(bar);
         }
 
-        for (i = 0; i < hBarCount; i++) {
+        for (let i = 0; i < hBarCount; i += 1) {
             data = section.bars.horizontal[i];
             space = data.position;
 
@@ -1708,7 +1708,7 @@ export default Backbone.KonvaView.extend({
 
             bar = new Konva.Rect({
                 x: _from,
-                y: fillY + space - (glazing_bar_width / 2),
+                y: (fillY + space) - (glazing_bar_width / 2),
                 width: _to - _from,
                 height: glazing_bar_width,
                 fill: style.normal.fill,
@@ -1798,9 +1798,9 @@ export default Backbone.KonvaView.extend({
             y: opts.radius - opts.mainFrameWidth,
         };
         // Search relative center point for drawing arc
-        opts.arcCenter = utils.vector2d.vectors_to_points([{ x: 0, y: 0 }], opts.center)[0];
-        opts.arcCenter.x = opts.arcCenter.x - params.section.sashParams.x + opts.mainFrameWidth;
-        opts.arcCenter.y = opts.arcCenter.y - params.section.sashParams.y + opts.mainFrameWidth;
+        opts.arcCenter = vector2d.vectors_to_points([{ x: 0, y: 0 }], opts.center)[0];
+        opts.arcCenter.x = (opts.arcCenter.x - params.section.sashParams.x) + opts.mainFrameWidth;
+        opts.arcCenter.y = (opts.arcCenter.y - params.section.sashParams.y) + opts.mainFrameWidth;
         // Search inner and outer radius for sash
         opts.innerRadius = opts.radius - opts.mainFrameWidth - params.frameWidth;
         opts.outerRadius = opts.radius - opts.mainFrameWidth;

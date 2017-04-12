@@ -39,6 +39,7 @@
     //  we need to make updates to our code first
     "camelcase": "off",
     "no-param-reassign": "warn",
-    "no-console": "warn"
+    "no-console": "warn",
+    "no-underscore-dangle": "warn"
   }
 }

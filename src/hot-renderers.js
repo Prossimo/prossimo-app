@@ -2,7 +2,7 @@ import Handsontable from 'handsontable/dist/handsontable.full';
 import $ from 'jquery';
 import _ from 'underscore';
 
-import Utils from './utils';
+import { format } from './utils';
 
 //  Custom Handsontable cell content renderers
 export default {
@@ -43,11 +43,11 @@ export default {
 
         return td;
     },
-    //  Format value with the help of formatters from `utils.js`
+    //  Format value with the help of formatters from `utils`
     getFormattedRenderer(attr_name, is_highlighted) {
         const args = _.toArray(arguments).slice(1);
 
-        const f = Utils.format;
+        const f = format;
         const formatters_hash = {
             dimension() {
                 return f.dimension.apply(this, arguments);

@@ -7,7 +7,7 @@
     "bundle": "./node_modules/babel-cli/bin/babel-node.js tools/run bundle",
     "build": "./node_modules/babel-cli/bin/babel-node.js tools/run build",
     "clean": "./node_modules/babel-cli/bin/babel-node.js tools/run clean",
-    "lint": "./node_modules/eslint-cli/bin/eslint.js src tools server",
+    "lint": "./node_modules/eslint/bin/eslint.js src tools server",
     "karma": "./node_modules/karma/bin/karma start"
   },
   "engines": {

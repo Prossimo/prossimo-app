@@ -1,8 +1,8 @@
 import _ from 'underscore';
-import Konva from '../konva-clip-patch';
 import Backbone from 'backbone';
+import Konva from '../konva-clip-patch';
 
-import utils from '../../../../utils';
+import { parseFormat, format, convert } from '../../../../utils';
 
 let module;
 let model;
@@ -196,7 +196,7 @@ export default Backbone.KonvaView.extend({
         group.add(section);
 
         section.setAbsolutePosition({
-            x: (this.stage.width() / 2) - (this.getSize().width * ratio / 2) - metricSize,
+            x: (this.stage.width() / 2) - ((this.getSize().width * ratio) / 2) - metricSize,
             y: 0,
         });
 
@@ -293,7 +293,7 @@ export default Backbone.KonvaView.extend({
 
         // Universal loop
         _.each(this.getBarsCount(), (count, type) => {
-            for (let i = 0; i < count; i++) {
+            for (let i = 0; i < count; i += 1) {
                 data = this.section.bars[type][i];
 
                 isSelected = (
@@ -357,7 +357,7 @@ export default Backbone.KonvaView.extend({
                     const invertedType = (type === 'vertical') ? 'horizontal' : 'vertical';
 
                     // Draw controls for intersection with horizontal bars
-                    for (let j = 0; j < this.getBarsCount()[invertedType]; j++) {
+                    for (let j = 0; j < this.getBarsCount()[invertedType]; j += 1) {
                         if (
                             _.isArray(data.links) &&
                             data.links.indexOf(this.section.bars[invertedType][j].id) !== -1
@@ -482,7 +482,7 @@ export default Backbone.KonvaView.extend({
         let isCircleHover;
         let isCircleSelected;
 
-        for (let j = 0; j < 2; j++) {
+        for (let j = 0; j < 2; j += 1) {
             isCircleSelected = (module.getState('selectedEdge') === j);
             isCircleHover = (module.getState('hoverEdge') === j);
 
@@ -568,7 +568,7 @@ export default Backbone.KonvaView.extend({
             },
             setter(type, space, val, view) {
                 const delta = val - space;
-                const mm = utils.parseFormat.dimension(this.position + delta);
+                const mm = parseFormat.dimension(this.position + delta);
 
                 if (
                     view &&
@@ -589,7 +589,7 @@ export default Backbone.KonvaView.extend({
                 return this.space;
             },
             gap_setter(type, val, view) {
-                const mm = utils.parseFormat.dimension(val);
+                const mm = parseFormat.dimension(val);
                 const lastBar = drawer.section.bars[type][view.section.bars[type].length - 1];
                 const freeSpace = max[type] - lastBar.position;
                 const delta = freeSpace - val;
@@ -613,7 +613,7 @@ export default Backbone.KonvaView.extend({
 
         _.each(bars, (group, type) => {
             let spaceUsed = 0;
-            let gap;
+            let gap = 0;
 
             group.forEach((bar, i) => {
                 const p = {
@@ -729,7 +729,7 @@ export default Backbone.KonvaView.extend({
             strokeWidth: styles.label.strokeWidth,
         }));
         const textMM = new Konva.Text({
-            text: utils.format.dimension_mm(params.getter()),
+            text: format.dimension_mm(params.getter()),
             padding: styles.label.padding,
             fontFamily: styles.label.fontFamily,
             fontSize: styles.label.fontSize,
@@ -738,8 +738,8 @@ export default Backbone.KonvaView.extend({
 
         labelMM.add(textMM);
         labelMM.position({
-            x: width / 2 - textMM.width() / 2,
-            y: height / 2 + textMM.height() / 2,
+            x: (width / 2) - (textMM.width() / 2),
+            y: (height / 2) + (textMM.height() / 2),
         });
 
         // left text
@@ -750,8 +750,8 @@ export default Backbone.KonvaView.extend({
             stroke: styles.label.stroke,
             strokeWidth: styles.label.strokeWidth,
         }));
-        const inches = utils.convert.mm_to_inches(params.getter());
-        const val = utils.format.dimension(inches, 'fraction', module.getState('inchesDisplayMode'));
+        const inches = convert.mm_to_inches(params.getter());
+        const val = format.dimension(inches, 'fraction', module.getState('inchesDisplayMode'));
         const textInches = new Konva.Text({
             text: val,
             padding: styles.label.padding,
@@ -762,8 +762,8 @@ export default Backbone.KonvaView.extend({
 
         labelInches.add(textInches);
         labelInches.position({
-            x: width / 2 - textInches.width() / 2,
-            y: height / 2 - textInches.height() / 2,
+            x: (width / 2) - (textInches.width() / 2),
+            y: (height / 2) - (textInches.height() / 2),
         });
 
         if (params.setter) {
@@ -841,7 +841,7 @@ export default Backbone.KonvaView.extend({
         }));
 
         const textMM = new Konva.Text({
-            text: utils.format.dimension_mm(params.getter()),
+            text: format.dimension_mm(params.getter()),
             padding: styles.label.padding,
             fontFamily: styles.label.fontFamily,
             fontSize: styles.label.fontSize,
@@ -850,8 +850,8 @@ export default Backbone.KonvaView.extend({
 
         labelMM.add(textMM);
         labelMM.position({
-            x: width / 2 - textMM.width() / 2,
-            y: arrowOffset + textMM.height() / 2,
+            x: (width / 2) - (textMM.width() / 2),
+            y: arrowOffset + (textMM.height() / 2),
         });
 
         const labelInches = new Konva.Label();
@@ -861,8 +861,8 @@ export default Backbone.KonvaView.extend({
             stroke: styles.label.stroke,
             strokeWidth: styles.label.strokeWidth,
         }));
-        const inches = utils.convert.mm_to_inches(params.getter());
-        const val = utils.format.dimension(inches, 'fraction', module.getState('inchesDisplayMode'));
+        const inches = convert.mm_to_inches(params.getter());
+        const val = format.dimension(inches, 'fraction', module.getState('inchesDisplayMode'));
         const textInches = new Konva.Text({
             text: val,
             padding: styles.label.padding,
@@ -873,8 +873,8 @@ export default Backbone.KonvaView.extend({
 
         labelInches.add(textInches);
         labelInches.position({
-            x: width / 2 - textInches.width() / 2,
-            y: arrowOffset - labelInches.height() / 2,
+            x: (width / 2) - (textInches.width() / 2),
+            y: arrowOffset - (labelInches.height() / 2),
         });
 
         if (params.setter) {

@@ -25,7 +25,7 @@ _.extend(Backbone.Model.prototype, {
     //  created DB entity and assign this ID to our model
     save(key, val, options) {
         //  Mostly to play nice with undo manager
-        if (key === null || typeof key === 'object' && val) {
+        if (key === null || (typeof key === 'object' && val)) {
             options = val;
         }
 
@@ -69,7 +69,10 @@ _.extend(Backbone.Model.prototype, {
     },
     //  Don't save anything if we have special flag on `app` or an attribute
     persist() {
-        if (App && App.session && App.session.get('no_backend') === true || this.get('no_backend') === true) {
+        if (
+            (App && App.session && App.session.get('no_backend') === true) ||
+            this.get('no_backend') === true
+        ) {
             return this.set.apply(this, arguments);
         }
 
@@ -198,7 +201,7 @@ _.extend(Backbone.Collection.prototype, {
         let invalid_flag = false;
         const proper_order = [];
 
-        for (let i = 0; i < this.length; i++) {
+        for (let i = 0; i < this.length; i += 1) {
             const current_model = this.models[i];
 
             if (current_model.id && current_model.get('position') !== i) {

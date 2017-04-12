@@ -57,8 +57,7 @@ export default Marionette.CompositeView.extend({
         return {
             total_unit_types: this.collection.getTotalUnitTypes(),
             total_unit_quantity: this.collection.getTotalUnitQuantity(),
-            has_extras: this.options.extras &&
-                this.options.extras.getRegularItems().length ||
+            has_extras: (this.options.extras && this.options.extras.getRegularItems().length) ||
                 this.options.extras.getOptionalItems().length,
             total_prices: this.getTotalPrices(),
             show_price: this.options.show_price !== false,

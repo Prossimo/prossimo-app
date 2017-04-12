@@ -1,6 +1,6 @@
 import Backbone from 'backbone';
 
-import utils from '../../../utils';
+import { object } from '../../../utils';
 import PricingEquationParams from '../../models/inline/pricing-equation-params';
 
 function getDefaultEquationCollection() {
@@ -21,7 +21,7 @@ function getDefaultEquationCollection() {
 export default Backbone.Collection.extend({
     model: PricingEquationParams,
     parse(data) {
-        const data_object = utils.object.extractObjectOrNull(data);
+        const data_object = object.extractObjectOrNull(data);
 
         return data_object;
     },
