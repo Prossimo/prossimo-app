@@ -2,10 +2,10 @@ import UndoManager from 'backbone-undo';
 import _ from 'underscore';
 
 export default function (opts) {
-    var undo_manager = new UndoManager(opts);
-    var buttons = {
+    const undo_manager = new UndoManager(opts);
+    const buttons = {
         undo: null,
-        redo: null
+        redo: null,
     };
 
     function checkButtons() {
@@ -34,10 +34,10 @@ export default function (opts) {
     //  Add custom processing for Undo/Redo events to persist them
     //  correctly to our backend.
     undo_manager.changeUndoType('add', {
-        undo: function (collection, ignore, model) {
+        undo(collection, ignore, model) {
             model.destroy();
         },
-        redo: function (collection, ignore, model, options) {
+        redo(collection, ignore, model, options) {
             // Redo add = add
             if (options.index) {
                 options.at = options.index;
@@ -51,33 +51,33 @@ export default function (opts) {
                 delete model.attributes.id;
             }
 
-            var new_object = collection.add(model, options);
+            const new_object = collection.add(model, options);
 
             if (new_object.hasOnlyDefaultAttributes() === false) {
                 model.persist({}, {
                     validate: true,
-                    parse: true
+                    parse: true,
                 });
             }
         },
-        on: function (model, collection, options) {
+        on(model, collection, options) {
             return {
                 object: collection,
                 before: undefined,
                 after: model,
-                options: _.clone(options)
+                options: _.clone(options),
             };
-        }
+        },
     });
 
     undo_manager.changeUndoType('change', {
-        undo: function (model, before, after, options) {
+        undo(model, before, after, options) {
             if (_.isEmpty(before)) {
                 _.each(_.keys(after), model.unset, model);
             } else {
                 model.persist(before, {
                     validate: true,
-                    parse: true
+                    parse: true,
                 });
 
                 if (options && options.unsetData && options.unsetData.before && options.unsetData.before.length) {
@@ -85,13 +85,13 @@ export default function (opts) {
                 }
             }
         },
-        redo: function (model, before, after, options) {
+        redo(model, before, after, options) {
             if (_.isEmpty(after)) {
                 _.each(_.keys(before), model.unset, model);
             } else {
                 model.persist(after, {
                     validate: true,
-                    parse: true
+                    parse: true,
                 });
 
                 if (options && options.unsetData && options.unsetData.after && options.unsetData.after.length) {
@@ -99,28 +99,32 @@ export default function (opts) {
                 }
             }
         },
-        on: function (model, options) {
-            var afterAttributes = model.changedAttributes();
-            var keysAfter = _.keys(afterAttributes);
-            var previousAttributes = _.pick(model.previousAttributes(), keysAfter);
-            var keysPrevious = _.keys(previousAttributes);
-            var unsetData = (options || (options = {})).unsetData = {
+        on(model, options) {
+            options = options || {};
+
+            const afterAttributes = model.changedAttributes();
+            const keysAfter = _.keys(afterAttributes);
+            const previousAttributes = _.pick(model.previousAttributes(), keysAfter);
+            const keysPrevious = _.keys(previousAttributes);
+            const unsetData = {
                 after: [],
-                before: []
+                before: [],
             };
+
+            options.unsetData = unsetData;
 
             if (keysAfter.length !== keysPrevious.length) {
                 // There are new attributes or old attributes have been unset
                 if (keysAfter.length > keysPrevious.length) {
                     // New attributes have been added
-                    _.each(keysAfter, function (val) {
+                    _.each(keysAfter, (val) => {
                         if (!(val in previousAttributes)) {
                             unsetData.before.push(val);
                         }
                     }, this);
                 } else {
                     // Old attributes have been unset
-                    _.each(keysPrevious, function (val) {
+                    _.each(keysPrevious, (val) => {
                         if (!(val in afterAttributes)) {
                             unsetData.after.push(val);
                         }
@@ -133,14 +137,14 @@ export default function (opts) {
                     object: model,
                     before: previousAttributes,
                     after: afterAttributes,
-                    options: _.clone(options)
+                    options: _.clone(options),
                 };
             }
-        }
+        },
     });
 
     undo_manager.changeUndoType('remove', {
-        undo: function (collection, model, ignore, options) {
+        undo(collection, model, ignore, options) {
             if ('index' in options) {
                 options.at = options.index;
             }
@@ -156,45 +160,45 @@ export default function (opts) {
             collection.add(model, options);
             model.persist({}, {
                 validate: true,
-                parse: true
+                parse: true,
             });
         },
-        redo: function (collection, model) {
+        redo(collection, model) {
             model.destroy();
         },
-        on: function (model, collection, options) {
+        on(model, collection, options) {
             return {
                 object: collection,
                 before: model,
                 after: undefined,
-                options: _.clone(options)
+                options: _.clone(options),
             };
-        }
+        },
     });
 
     undo_manager.on('all', checkButtons);
-    undo_manager.stack.on('add', function () {
+    undo_manager.stack.on('add', () => {
         checkButtons();
     });
 
     return {
         manager: undo_manager,
         handler: {
-            undo: function () {
+            undo() {
                 undo_manager.undo();
             },
-            redo: function () {
+            redo() {
                 undo_manager.redo();
-            }
+            },
         },
         isAvailable: {
-            undo: function () {
+            undo() {
                 return undo_manager.isAvailable('undo');
             },
-            redo: function () {
+            redo() {
                 return undo_manager.isAvailable('redo');
-            }
+            },
         },
-        registerButton: registerButton
+        registerButton,
     };
 }

@@ -8,19 +8,19 @@ import template from '../templates/main-supplier-request-view.hbs';
 export default Marionette.View.extend({
     tagName: 'div',
     className: 'screen supplier-request-screen',
-    template: template,
+    template,
     ui: {
         $header_container: '.supplier-request-header-container',
-        $table_container: '.supplier-request-table-container'
+        $table_container: '.supplier-request-table-container',
     },
-    templateContext: function () {
+    templateContext() {
         return {
-            urlToDownloadPdf: App.settings.getPdfDownloadUrl('supplier')
+            urlToDownloadPdf: App.settings.getPdfDownloadUrl('supplier'),
         };
     },
-    onRender: function () {
+    onRender() {
         this.request_header_view = new SupplierRequestHeaderView({
-            model: App.current_project
+            model: App.current_project,
         });
 
         this.request_table_view = new QuoteTableView({
@@ -33,14 +33,14 @@ export default Marionette.View.extend({
             show_sizes_in_mm: true,
             show_supplier_system: true,
             show_supplier_names: true,
-            force_european_hinge_indicators: true
+            force_european_hinge_indicators: true,
         });
 
         this.ui.$header_container.append(this.request_header_view.render().el);
         this.ui.$table_container.append(this.request_table_view.render().el);
     },
-    onBeforeDestroy: function () {
+    onBeforeDestroy() {
         this.request_header_view.destroy();
         this.request_table_view.destroy();
-    }
+    },
 });

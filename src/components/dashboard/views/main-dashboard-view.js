@@ -10,53 +10,53 @@ import template from '../templates/main-dashboard-view.hbs';
 export default Marionette.View.extend({
     tagName: 'div',
     className: 'screen dashboard-screen',
-    template: template,
+    template,
     ui: {
         $totals: '#totals',
         $project_info: '#project-info',
         $documents: '#documents',
         $quote_info: '#quote-info',
-        $export_button: '.js-toggle-export-dialog'
+        $export_button: '.js-toggle-export-dialog',
     },
     events: {
-        'click @ui.$export_button': 'showProjectExportDialog'
+        'click @ui.$export_button': 'showProjectExportDialog',
     },
-    showProjectExportDialog: function () {
+    showProjectExportDialog() {
         App.dialogs.showDialog('project-export', {
             model: App.current_project,
-            quote: App.current_quote
+            quote: App.current_quote,
         });
     },
-    onRender: function () {
+    onRender() {
         this.ui.$project_info.append(this.project_info_view.render().el);
         this.ui.$totals.append(this.totals_view.render().el);
         this.ui.$quote_info.append(this.quote_info_view.render().el);
         this.ui.$documents.append(this.documents_view.render().el);
     },
-    onBeforeDestroy: function () {
+    onBeforeDestroy() {
         this.project_info_view.destroy();
         this.totals_view.destroy();
         this.quote_info_view.destroy();
         this.documents_view.destroy();
     },
-    initialize: function () {
-        let currentProject = App.current_project;
-        let currentQuote = App.current_quote;
+    initialize() {
+        const currentProject = App.current_project;
+        const currentQuote = App.current_quote;
 
         this.project_info_view = new ProjectInfoView({
-            model: currentProject
+            model: currentProject,
         });
 
         this.totals_view = new QuoteTotalsView({
-            model: currentQuote
+            model: currentQuote,
         });
 
         this.quote_info_view = new QuoteInfoView({
-            model: currentQuote
+            model: currentQuote,
         });
 
         this.documents_view = new ProjectDocumentsView({
-            collection: currentProject.files
+            collection: currentProject.files,
         });
-    }
+    },
 });

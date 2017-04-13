@@ -6,7 +6,7 @@ import 'bootstrap-toggle';
 import 'bootstrap-datepicker';
 import 'backbone.marionette.keyshortcuts';
 
-import {getGlobalChannelName} from './utils/radio';
+import { getGlobalChannelName } from './utils/radio';
 import Settings from './core/models/settings';
 import Session from './core/models/session';
 import Router from './router';
@@ -24,9 +24,10 @@ import MainSupplierRequestView from './components/supplier-request/views/main-su
 
 class Application extends Marionette.Application {
     constructor(options = {}) {
-        //  Register a communication channel for all events in the app
-        options.channelName = getGlobalChannelName();
-        super(options);
+        super(Object.assign({
+            //  Register a communication channel for all events in the app
+            channelName: getGlobalChannelName(),
+        }, options));
     }
 
     initialize() {
@@ -40,7 +41,7 @@ class Application extends Marionette.Application {
 
         this.router = new Router();
         this.projects = new ProjectCollection();
-        this.main_region = new Marionette.Region({el: '#main'});
+        this.main_region = new Marionette.Region({ el: '#main' });
         this.dialogs = new Dialogs();
 
         this.top_bar_view = new TopBarView({
@@ -52,7 +53,7 @@ class Application extends Marionette.Application {
                     icon_name: 'dashboard',
                     onAttach: () => {
                         this.main_region.show(new MainDashboardView());
-                    }
+                    },
                 },
                 units_table: {
                     title: 'Units',
@@ -60,7 +61,7 @@ class Application extends Marionette.Application {
                     icon_name: 'th',
                     onAttach: () => {
                         this.main_region.show(new MainUnitsTableView());
-                    }
+                    },
                 },
                 drawing: {
                     title: 'Drawing',
@@ -68,7 +69,7 @@ class Application extends Marionette.Application {
                     icon_name: 'pencil',
                     onAttach: () => {
                         this.main_region.show(new MainDrawingView());
-                    }
+                    },
                 },
                 quote: {
                     title: 'Quote',
@@ -76,7 +77,7 @@ class Application extends Marionette.Application {
                     icon_name: 'shopping-cart',
                     onAttach: () => {
                         this.main_region.show(new MainQuoteView());
-                    }
+                    },
                 },
                 supplier_request: {
                     title: 'Supplier',
@@ -84,7 +85,7 @@ class Application extends Marionette.Application {
                     icon_name: 'send',
                     onAttach: () => {
                         this.main_region.show(new MainSupplierRequestView());
-                    }
+                    },
                 },
                 settings: {
                     title: 'Settings',
@@ -92,19 +93,19 @@ class Application extends Marionette.Application {
                     icon_name: 'wrench',
                     onAttach: () => {
                         this.main_region.show(new MainSettingsView());
-                    }
-                }
-            })
+                    },
+                },
+            }),
         });
 
         this.paste_image_helper = new PasteImageHelper();
         this.session.checkAuth();
 
         this.getChannel().on('auth:initial_login auth:no_backend', () => {
-            Backbone.history.start({pushState: true});
+            Backbone.history.start({ pushState: true });
 
             if (Backbone.history.fragment === '') {
-                this.router.navigate('/dashboard/', {trigger: true});
+                this.router.navigate('/dashboard/', { trigger: true });
             }
         });
     }

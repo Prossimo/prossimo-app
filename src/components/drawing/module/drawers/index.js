@@ -3,4 +3,4 @@ import MetricsDrawer from './metrics-drawer';
 import TrapezoidUnitDrawer from './trapezoid-unit-drawer';
 import UnitDrawer from './unit-drawer';
 
-export default {GlazingBarDrawer, MetricsDrawer, TrapezoidUnitDrawer, UnitDrawer};
+export default { GlazingBarDrawer, MetricsDrawer, TrapezoidUnitDrawer, UnitDrawer };

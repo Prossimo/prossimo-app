@@ -10,47 +10,47 @@ import template from '../templates/options-dictionary-view.hbs';
 export default Marionette.View.extend({
     tagName: 'div',
     className: 'options-dictionary',
-    template: template,
+    template,
     ui: {
         $name_container: '.dictionary-name',
         $rules_and_restrictions_container: '.dictionary-restrictions',
         $pricing_scheme_container: '.dictionary-pricing-scheme',
         $is_hidden_switch_container: '.dictionary-is-hidden',
         $entries_container: '.entry-table-container',
-        $remove: '.js-remove-dictionary'
+        $remove: '.js-remove-dictionary',
     },
     events: {
-        'click @ui.$remove': 'onRemove'
+        'click @ui.$remove': 'onRemove',
     },
-    onRemove: function () {
+    onRemove() {
         this.model.destroy();
     },
-    onChangeName: function () {
+    onChangeName() {
         if (this.should_make_everything_editable !== this.shouldMakeEverythingEditable()) {
             this.should_make_everything_editable = this.shouldMakeEverythingEditable();
             this.renderElements();
         }
     },
-    onChangePricingScheme: function () {
+    onChangePricingScheme() {
         if (this.entries_table_view) {
             this.entries_table_view.render();
         }
     },
-    shouldMakeEverythingEditable: function () {
+    shouldMakeEverythingEditable() {
         return !this.model.hasOnlyDefaultAttributes();
     },
-    renderElements: function () {
+    renderElements() {
         if (this.should_make_everything_editable) {
             this.ui.$entries_container.empty().append(this.entries_table_view.render().el);
             this.rules_and_restrictions_view.enable();
         } else {
             this.ui.$entries_container.empty().append(
-                '<p>Please set dictionary name before adding option variants.</p>'
+                '<p>Please set dictionary name before adding option variants.</p>',
             );
             this.rules_and_restrictions_view.disable();
         }
     },
-    onRender: function () {
+    onRender() {
         this.ui.$name_container.append(this.name_input_view.render().el);
         this.ui.$rules_and_restrictions_container.append(this.rules_and_restrictions_view.render().el);
         this.ui.$pricing_scheme_container.append(this.pricing_scheme_view.render().el);
@@ -58,7 +58,7 @@ export default Marionette.View.extend({
 
         this.renderElements();
     },
-    onBeforeDestroy: function () {
+    onBeforeDestroy() {
         if (this.name_input_view) {
             this.name_input_view.destroy();
         }
@@ -79,28 +79,28 @@ export default Marionette.View.extend({
             this.entries_table_view.destroy();
         }
     },
-    initialize: function () {
+    initialize() {
         this.should_make_everything_editable = this.shouldMakeEverythingEditable();
 
         this.name_input_view = new BaseInputView({
             model: this.model,
             param: 'name',
             input_type: 'text',
-            placeholder: 'New Dictionary'
+            placeholder: 'New Dictionary',
         });
 
         this.rules_and_restrictions_view = new BaseSelectView({
             model: this.model,
             param: 'rules_and_restrictions',
             values: this.model.getPossibleRulesAndRestrictions(),
-            multiple: true
+            multiple: true,
         });
 
         this.pricing_scheme_view = new BaseSelectView({
             model: this.model,
             param: 'pricing_scheme',
             values: this.model.getPossiblePricingSchemes(),
-            multiple: false
+            multiple: false,
         });
 
         this.hidden_switch_view = new BaseToggleView({
@@ -108,20 +108,20 @@ export default Marionette.View.extend({
             property_name: 'is_hidden',
             current_value: this.model.get('is_hidden'),
             values_list: _.map([
-                {value: true, title: 'Yes'},
-                {value: false, title: 'No'}
+                { value: true, title: 'Yes' },
+                { value: false, title: 'No' },
             ], function (item) {
-                var is_current = item.value === this.model.get('is_hidden');
+                const is_current = item.value === this.model.get('is_hidden');
 
-                return _.extend({}, item, {is_current: is_current});
-            }, this)
+                return _.extend({}, item, { is_current });
+            }, this),
         });
 
         this.entries_table_view = new OptionsDictionaryEntriesTableView({
-            collection: this.model.entries
+            collection: this.model.entries,
         });
 
         this.listenTo(this.model, 'change:name', this.onChangeName);
         this.listenTo(this.model, 'change:pricing_scheme', this.onChangePricingScheme);
-    }
+    },
 });

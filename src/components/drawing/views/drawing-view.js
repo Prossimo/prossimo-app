@@ -4,7 +4,7 @@ import Marionette from 'backbone.marionette';
 import Konva from '../module/konva-clip-patch';
 
 import App from '../../../main';
-import utils from '../../../utils';
+import { parseFormat, format, convert } from '../../../utils';
 import UndoManager from '../../../utils/undomanager';
 import DrawingModule from '../module/drawing-module';
 import DrawingGlazingPopup from './drawing-glazing-view';
@@ -29,9 +29,9 @@ import template from '../templates/drawing-view.hbs';
 
 export default Marionette.View.extend({
     tagName: 'div',
-    template: template,
-    initialize: function (opts) {
-        var project_settings = App.settings.getProjectSettings();
+    template,
+    initialize(opts) {
+        const project_settings = App.settings.getProjectSettings();
 
         this.listenTo(this.model, 'all', this.updateRenderedScene);
         this.on('update_rendered', this.updateRenderedScene, this);
@@ -48,14 +48,14 @@ export default Marionette.View.extend({
             selectedMullionId: null,
             inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
             hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode'),
-            inputFocused: false
+            inputFocused: false,
         };
 
         this.groups = {};
 
         this.undo_manager = new UndoManager({
             register: this.model,
-            track: true
+            track: true,
         });
     },
     ui: {
@@ -71,7 +71,7 @@ export default Marionette.View.extend({
         $metrics_glass: '[for="additional-metrics-glass"]',
         $metrics_glass_input: '#additional-metrics-glass',
         $metrics_opening: '[for="additional-metrics-opening"]',
-        $metrics_opening_input: '#additional-metrics-opening'
+        $metrics_opening_input: '#additional-metrics-opening',
     },
     events: {
         // Click
@@ -102,7 +102,7 @@ export default Marionette.View.extend({
         'input #horizontal-bars-number': 'handleBarNumberChange',
         'change #filling-select': 'handleFillingTypeChange',
         'change @ui.$metrics_glass_input': 'handleAdditionalMetricsChange',
-        'change @ui.$metrics_opening_input': 'handleAdditionalMetricsChange'
+        'change @ui.$metrics_opening_input': 'handleAdditionalMetricsChange',
     },
     keyShortcuts: {
         'ctrl+z': 'handleUndoClick',
@@ -110,40 +110,40 @@ export default Marionette.View.extend({
         'ctrl+shift+z': 'handleRedoClick',
         'command+shift+z': 'handleRedoClick',
         'ctrl+y': 'handleRedoClick',
-        'command+y': 'handleRedoClick'
+        'command+y': 'handleRedoClick',
     },
-    setGlobalInsideView: function (value) {
+    setGlobalInsideView(value) {
         this.options.parent_view.setGlobalInsideView(value);
     },
-    isInsideView: function () {
+    isInsideView() {
         return this.options.parent_view.getGlobalInsideView();
     },
     // Are we looking at unit from the opening side?
-    isOpeningView: function () {
-        return !this.isInsideView() && this.model.isOpeningDirectionOutward() ||
-            this.isInsideView() && !this.model.isOpeningDirectionOutward();
+    isOpeningView() {
+        return (!this.isInsideView() && this.model.isOpeningDirectionOutward()) ||
+            (this.isInsideView() && !this.model.isOpeningDirectionOutward());
     },
-    handleUndoClick: function () {
+    handleUndoClick() {
         return this.undo_manager.handler.undo();
     },
-    handleRedoClick: function () {
+    handleRedoClick() {
         return this.undo_manager.handler.redo();
     },
-    handleCanvasKeyDown: function (e) {
+    handleCanvasKeyDown(e) {
         if (this.module && !this.state.inputFocused) {
             this.module.handleKeyEvents(e);
         }
     },
-    handleAdditionalMetricsChange: function (evt) {
+    handleAdditionalMetricsChange(evt) {
         if (!this.state.selectedSashId) {
             return;
         }
 
-        var type = (evt.target.id === 'additional-metrics-glass') ? 'glass' : 'opening';
-        var reversedType = (type === 'glass') ? 'opening' : 'glass';
-        var value = (evt.target.checked);
-        var section = this.model.getSection(this.state.selectedSashId);
-        var measurements = section.measurements;
+        const type = (evt.target.id === 'additional-metrics-glass') ? 'glass' : 'opening';
+        const reversedType = (type === 'glass') ? 'opening' : 'glass';
+        const value = (evt.target.checked);
+        const section = this.model.getSection(this.state.selectedSashId);
+        const measurements = section.measurements;
 
         measurements[type] = value;
 
@@ -153,20 +153,20 @@ export default Marionette.View.extend({
 
         this.model.setSectionMeasurements(this.state.selectedSashId, measurements);
     },
-    handleChangeView: function () {
+    handleChangeView() {
         this.setGlobalInsideView(!this.isInsideView());
 
         this.setState({
             insideView: this.isInsideView(),
-            openingView: this.isOpeningView()
+            openingView: this.isOpeningView(),
         });
 
         this.module.setState({
             insideView: this.isInsideView(),
-            openingView: this.isOpeningView()
+            openingView: this.isOpeningView(),
         });
     },
-    handleGlazingBarsPopupClick: function () {
+    handleGlazingBarsPopupClick() {
         if (!this.glazing_view) {
             this.createGlazingPopup();
         }
@@ -175,8 +175,8 @@ export default Marionette.View.extend({
             .setSection(this.state.selectedSashId)
             .showModal();
     },
-    handleFillingTypeChange: function () {
-        var filling_type;
+    handleFillingTypeChange() {
+        let filling_type;
 
         if (App.settings) {
             filling_type = App.settings.filling_types.getById(this.ui.$filling_select.val());
@@ -184,24 +184,24 @@ export default Marionette.View.extend({
                 filling_type.get('type'), filling_type.get('name'));
         }
     },
-    handleArchedClick: function () {
+    handleArchedClick() {
         if (!this.state.selectedSashId) {
             console.warn('no sash selected');
             return;
         }
 
-        this.model._updateSection(this.state.selectedSashId, function (section) {
+        this.model._updateSection(this.state.selectedSashId, (section) => {
             section.arched = !section.arched;
 
             if (this.model.isRootSection(section.id)) {
-                var width = this.model.getInMetric('width', 'mm');
-                var height = this.model.getInMetric('height', 'mm');
+                const width = this.model.getInMetric('width', 'mm');
+                const height = this.model.getInMetric('height', 'mm');
 
                 section.archPosition = Math.min(width / 2, height);
             }
-        }.bind(this));
+        });
     },
-    handleCircularClick: function () {
+    handleCircularClick() {
         if (!this.state.selectedSashId) {
             console.warn('no sash selected');
             return;
@@ -209,26 +209,27 @@ export default Marionette.View.extend({
 
         this.model.toggleCircular(this.state.selectedSashId);
     },
-    handleClearFrameClick: function () {
+    handleClearFrameClick() {
         this.deselectAll();
         this.model.clearFrame();
     },
-    handleSplitSectionClick: function (e) {
+    handleSplitSectionClick(e) {
         this.$('.popup-wrap').hide();
-        var divider = $(e.target).data('type');
+        const divider = $(e.target).data('type');
 
         this.model.splitSection(this.state.selectedSashId, divider);
         this.deselectAll();
         this.module.deselectAll();
     },
-    handleChangeSashTypeClick: function (e) {
+    handleChangeSashTypeClick(e) {
         this.$('.popup-wrap').hide();
-        var type = $(e.target).data('type');
+        let type = $(e.target).data('type');
 
         // if Unit is Outward opening, reverse sash type
         // from right to left or from left to right
-        if (this.state.hingeIndicatorMode === 'european' && !this.state.openingView ||
-            this.state.hingeIndicatorMode === 'american' && this.state.openingView
+        if (
+            (this.state.hingeIndicatorMode === 'european' && !this.state.openingView) ||
+            (this.state.hingeIndicatorMode === 'american' && this.state.openingView)
         ) {
             if (type.indexOf('left') >= 0) {
                 type = type.replace('left', 'right');
@@ -241,7 +242,7 @@ export default Marionette.View.extend({
 
         this.updateSection(this.state.selectedSashId, 'both');
     },
-    handleObjectClick: function (id, e) {
+    handleObjectClick(id, e) {
         // select on left click only
         if (e.evt.button !== 0) {
             return;
@@ -249,16 +250,16 @@ export default Marionette.View.extend({
 
         this.deselectAll();
         this.setState({
-            selectedSashId: id
+            selectedSashId: id,
         });
     },
 
     // Marrionente lifecycle method
-    onRender: function () {
+    onRender() {
         this.changeIcons();
 
         this.stage = new Konva.Stage({
-            container: this.$('#drawing').get(0)
+            container: this.$('#drawing').get(0),
         });
 
         this.layer = new Konva.Layer();
@@ -268,19 +269,19 @@ export default Marionette.View.extend({
         this.ui.$filling_select.selectpicker({
             style: 'btn-xs',
             showSubtext: true,
-            size: 10
+            size: 10,
         });
 
         this.module = new DrawingModule({
             model: this.model,
             stage: this.stage,
             layers: {},
-            metricSize: this.metric_size
+            metricSize: this.metric_size,
         });
 
         this.module.setState({
             insideView: this.isInsideView(),
-            openingView: this.isOpeningView()
+            openingView: this.isOpeningView(),
         });
 
         // To show debug info, just uncomment it:
@@ -289,7 +290,7 @@ export default Marionette.View.extend({
         this.bindModuleEvents();
     },
     // Marrionente lifecycle method
-    onBeforeDestroy: function () {
+    onBeforeDestroy() {
         this.stage.destroy();
         this.unbindModuleEvents();
 
@@ -303,10 +304,10 @@ export default Marionette.View.extend({
     },
 
     // Change icons for american / european style
-    changeIcons: function () {
-        var tilt_turn_left = this.ui.$sash_types.filter('[data-type=tilt_turn_left]');
-        var tilt_turn_right = this.ui.$sash_types.filter('[data-type=tilt_turn_right]');
-        var tilt_only = this.ui.$sash_types.filter('[data-type=tilt_only]');
+    changeIcons() {
+        const tilt_turn_left = this.ui.$sash_types.filter('[data-type=tilt_turn_left]');
+        const tilt_turn_right = this.ui.$sash_types.filter('[data-type=tilt_turn_right]');
+        const tilt_only = this.ui.$sash_types.filter('[data-type=tilt_only]');
 
         function toAmerican($el) {
             $el.attr('src', $el.attr('src').replace('.png', '_american.png'));
@@ -329,17 +330,17 @@ export default Marionette.View.extend({
         return true;
     },
 
-    bindModuleEvents: function () {
+    bindModuleEvents() {
         this.listenTo(this.module, 'state:selected:mullion', function (data) {
             this.deselectAll();
             this.setState({
-                selectedMullionId: data.newValue
+                selectedMullionId: data.newValue,
             });
         });
         this.listenTo(this.module, 'state:selected:sash', function (data) {
             this.deselectAll();
             this.setState({
-                selectedSashId: data.newValue
+                selectedSashId: data.newValue,
             });
         });
         this.listenTo(this.module, 'labelClicked', function (data) {
@@ -349,58 +350,56 @@ export default Marionette.View.extend({
             this.createMullionInput(data.mullionId);
         });
     },
-    unbindModuleEvents: function () {
+    unbindModuleEvents() {
         this.stopListening(this.module);
     },
 
-    templateContext: function () {
-        var available_filling_types = [];
-        var profile_id = this.model.profile && this.model.profile.id;
+    templateContext() {
+        let available_filling_types = [];
+        const profile_id = this.model.profile && this.model.profile.id;
 
         if (App.settings && profile_id) {
             available_filling_types = App.settings.filling_types.getAvailableForProfile(profile_id);
         }
 
         return {
-            filling_types: _.map(available_filling_types, function (item) {
-                return {
-                    cid: item.cid,
-                    name: item.get('name'),
-                    type: item.getBaseTypeTitle()
-                };
-            })
+            filling_types: _.map(available_filling_types, item => ({
+                cid: item.cid,
+                name: item.get('name'),
+                type: item.getBaseTypeTitle(),
+            })),
         };
     },
-    createGlazingPopup: function () {
+    createGlazingPopup() {
         this.glazing_view = new DrawingGlazingPopup({
             model: this.model,
-            parent: this
+            parent: this,
         });
     },
 
-    createInput: function (params, pos, size) {
-        var view = this;
-        var module = this.module;
-        var container = $(module.get('stage').container());
-        var $wrap = $('<div>')
+    createInput(params, pos, size) {
+        const view = this;
+        const module = this.module;
+        const container = $(module.get('stage').container());
+        const $wrap = $('<div>')
             .addClass('popup-wrap')
             .appendTo(container)
-            .on('click', function (e) {
+            .on('click', (e) => {
                 if (e.target === $wrap.get(0)) {
                     $wrap.remove();
                 }
             });
 
-        var padding = 3;
-        var valInInches = utils.convert.mm_to_inches(params.getter());
-        var val = utils.format.dimension(valInInches, 'fraction');
+        const padding = 3;
+        const valInInches = convert.mm_to_inches(params.getter());
+        const val = format.dimension(valInInches, 'fraction');
 
-        var containerPos = (container.css('position') === 'relative') ? {top: 0, left: 0} : container.position();
+        const containerPos = (container.css('position') === 'relative') ? { top: 0, left: 0 } : container.position();
 
         function closeWrap() {
             if (view.setState) {
                 view.setState({
-                    inputFocused: false
+                    inputFocused: false,
                 });
             }
 
@@ -411,14 +410,14 @@ export default Marionette.View.extend({
             .val(val)
             .css({
                 position: 'absolute',
-                top: (pos.y - padding + containerPos.top) + 'px',
-                left: (pos.x - padding + containerPos.left) + 'px',
-                height: (size.height + padding * 2) + 'px',
-                width: (size.width + 20 + padding * 2) + 'px',
-                fontSize: '12px'
+                top: `${pos.y - (padding + containerPos.top)}px`,
+                left: `${pos.x - (padding + containerPos.left)}px`,
+                height: `${size.height + (padding * 2)}px`,
+                width: `${size.width + 20 + (padding * 2)}px`,
+                fontSize: '12px',
             })
             .appendTo($wrap)
-            .on('focus', function () {
+            .on('focus', () => {
                 if (view.state) {
                     view.state.inputFocused = true;
                 }
@@ -427,25 +426,22 @@ export default Marionette.View.extend({
             .select()
             .on('keyup', function (e) {
                 if (e.keyCode === 13) {  // enter
-                    var _value = this.value;
-                    var sign = 1;
-                    var mm;
+                    let _value = this.value;
+                    let sign = 1;
 
                     if (_value[0] === '-') {
                         sign = (params.canBeNegative) ? -1 : 1;
                         _value = _value.slice(1);
                     }
 
-                    var splitHeightsRequested = _value.indexOf('|') !== -1;
-                    var isVerticalWholeMetric = params.name === 'vertical_whole_metric';
-                    var attr = (splitHeightsRequested && isVerticalWholeMetric) ? 'height' : 'width';
-                    var inches = utils.parseFormat.dimensions(_value, attr);
+                    const splitHeightsRequested = _value.indexOf('|') !== -1;
+                    const isVerticalWholeMetric = params.name === 'vertical_whole_metric';
+                    const attr = (splitHeightsRequested && isVerticalWholeMetric) ? 'height' : 'width';
+                    const inches = parseFormat.dimensions(_value, attr);
 
-                    mm = _.isArray(inches) ?
-                        inches.map(function (value) {
-                            return utils.convert.inches_to_mm(value) * sign;
-                        }) :
-                        utils.convert.inches_to_mm(inches) * sign;
+                    const mm = _.isArray(inches) ?
+                        inches.map(value => convert.inches_to_mm(value) * sign) :
+                        convert.inches_to_mm(inches) * sign;
 
                     params.setter(mm, view);
 
@@ -458,42 +454,42 @@ export default Marionette.View.extend({
             })
             .on('blur', closeWrap);
     },
-    createMullionInput: function (mullionId) {
+    createMullionInput(mullionId) {
         if (!mullionId) {
             return;
         }
 
-        var self = this;
-        var module = this.module;
-        var model = this.model;
-        var ratio = module.get('ratio');
-        var style = module.getStyle('mullion_input');
-        var isInside = this.isInsideView();
-        var isOutside = !isInside;
-        var unitLayer = module.getLayer('unit').layer;
-        var mullion = model.getMullion(mullionId);
-        var mullionRect = unitLayer.findOne('#mullion-' + mullionId).getClientRect();
-        var mullionX = mullionRect.x * ratio + unitLayer.getClientRect().x;
-        var mullionY = mullionRect.y * ratio + unitLayer.getClientRect().y;
-        var mullionCenterX = mullionX + mullionRect.width * ratio / 2;
-        var mullionCenterY = mullionY + mullionRect.height * ratio / 2;
-        var inputX = mullionCenterX - style.width / 2;
-        var inputY = mullionCenterY - style.height / 2;
-        var isVertical = mullion.type === 'vertical' || mullion.type === 'vertical_invisible';
-        var isHorizontal = mullion.type === 'horizontal' || mullion.type === 'horizontal_invisible';
-        var container = $(module.get('stage').container());
-        var containerPosition = (container.css('position') === 'relative') ? {top: 0, left: 0} : container.position();
-        var $wrap = $('<div>')
+        const self = this;
+        const module = this.module;
+        const model = this.model;
+        const ratio = module.get('ratio');
+        const style = module.getStyle('mullion_input');
+        const isInside = this.isInsideView();
+        const isOutside = !isInside;
+        const unitLayer = module.getLayer('unit').layer;
+        const mullion = model.getMullion(mullionId);
+        const mullionRect = unitLayer.findOne(`#mullion-${mullionId}`).getClientRect();
+        const mullionX = (mullionRect.x * ratio) + unitLayer.getClientRect().x;
+        const mullionY = (mullionRect.y * ratio) + unitLayer.getClientRect().y;
+        const mullionCenterX = mullionX + ((mullionRect.width * ratio) / 2);
+        const mullionCenterY = mullionY + ((mullionRect.height * ratio) / 2);
+        const inputX = mullionCenterX - (style.width / 2);
+        const inputY = mullionCenterY - (style.height / 2);
+        const isVertical = mullion.type === 'vertical' || mullion.type === 'vertical_invisible';
+        const isHorizontal = mullion.type === 'horizontal' || mullion.type === 'horizontal_invisible';
+        const container = $(module.get('stage').container());
+        const containerPosition = (container.css('position') === 'relative') ? { top: 0, left: 0 } : container.position();
+        const $wrap = $('<div>')
             .addClass('popup-wrap')
             .appendTo(container)
-            .on('click', function (e) {
+            .on('click', (e) => {
                 if (e.target === $wrap.get(0)) {
                     $wrap.remove();
                 }
             });
-        var closeWrap = function () {
+        const closeWrap = function () {
             if (self.setState) {
-                self.setState({inputFocused: false});
+                self.setState({ inputFocused: false });
             }
 
             $wrap.remove();
@@ -502,14 +498,14 @@ export default Marionette.View.extend({
         $('<input>')
             .css({
                 position: 'absolute',
-                top: (inputY - style.padding + containerPosition.top) + 'px',
-                left: (inputX - style.padding + containerPosition.left) + 'px',
-                height: (style.height + style.padding * 2) + 'px',
-                width: (style.width + style.padding * 2) + 'px',
-                fontSize: style.fontSize + 'px'
+                top: `${inputY - (style.padding + containerPosition.top)}px`,
+                left: `${inputX - (style.padding + containerPosition.left)}px`,
+                height: `${style.height + (style.padding * 2)}px`,
+                width: `${style.width + (style.padding * 2)}px`,
+                fontSize: `${style.fontSize}px`,
             })
             .appendTo($wrap)
-            .on('focus', function () {
+            .on('focus', () => {
                 if (self.state) {
                     self.state.inputFocused = true;
                 }
@@ -517,42 +513,40 @@ export default Marionette.View.extend({
             .focus()
             .select()
             .on('keydown', function (e) {
-                var input = e.target;
-                var attr = (isVertical) ? 'width' : 'height';
-                var newValue = utils.parseFormat.dimensions(this.value, attr);
-                var newValueMm = _.isArray(newValue) ?
-                    newValue.map(function (value) {
-                        return utils.convert.inches_to_mm(value);
-                    }) :
-                    utils.convert.inches_to_mm(newValue);
-                var isKeyUp = e.key === 'ArrowUp' || e.key === 'w';
-                var isKeyRight = e.key === 'ArrowRight' || e.key === 'd';
-                var isKeyDown = e.key === 'ArrowDown' || e.key === 's';
-                var isKeyLeft = e.key === 'ArrowLeft' || e.key === 'a';
-                var isKeyEscape = e.key === 'Escape';
-                var isKeyEnter = e.key === 'Enter';
+                const input = e.target;
+                const attr = (isVertical) ? 'width' : 'height';
+                const newValue = parseFormat.dimensions(this.value, attr);
+                const newValueMm = _.isArray(newValue) ?
+                    newValue.map(value => convert.inches_to_mm(value)) :
+                    convert.inches_to_mm(newValue);
+                const isKeyUp = e.key === 'ArrowUp' || e.key === 'w';
+                const isKeyRight = e.key === 'ArrowRight' || e.key === 'd';
+                const isKeyDown = e.key === 'ArrowDown' || e.key === 's';
+                const isKeyLeft = e.key === 'ArrowLeft' || e.key === 'a';
+                const isKeyEscape = e.key === 'Escape';
+                const isKeyEnter = e.key === 'Enter';
 
                 // Cancel
                 if (isKeyEscape) {
                     closeWrap();
                 // Set first subsection dimension
                 } else if (
-                    isVertical && isInside && isKeyLeft ||
-                    isVertical && isOutside && isKeyRight ||
-                    isVertical && isInside && isKeyEnter ||
-                    isHorizontal && isKeyUp ||
-                    isHorizontal && isKeyEnter
+                    (isVertical && isInside && isKeyLeft) ||
+                    (isVertical && isOutside && isKeyRight) ||
+                    (isVertical && isInside && isKeyEnter) ||
+                    (isHorizontal && isKeyUp) ||
+                    (isHorizontal && isKeyEnter)
                 ) {
                     model.setSectionMullionPosition(mullionId, newValueMm);
                     closeWrap();
                 // Set second subsection dimension
                 } else if (
-                    isVertical && isInside && isKeyRight ||
-                    isVertical && isOutside && isKeyLeft ||
-                    isVertical && isOutside && isKeyEnter ||
-                    isHorizontal && isKeyDown
+                    (isVertical && isInside && isKeyRight) ||
+                    (isVertical && isOutside && isKeyLeft) ||
+                    (isVertical && isOutside && isKeyEnter) ||
+                    (isHorizontal && isKeyDown)
                 ) {
-                    var containerDimension = isVertical ?
+                    const containerDimension = isVertical ?
                         model.getSizes().frame.width :
                         model.getSizes().frame.height;
 
@@ -560,40 +554,42 @@ export default Marionette.View.extend({
                     closeWrap();
                 // Move cursor left
                 } else if (
-                    isVertical && isKeyUp ||
-                    isHorizontal && isKeyLeft
+                    (isVertical && isKeyUp) ||
+                    (isHorizontal && isKeyLeft)
                 ) {
-                    input.selectionStart = input.selectionEnd -= 1;
+                    input.selectionStart -= 1;
+                    input.selectionEnd -= 1;
                     e.preventDefault();
                 // Move cursor right
                 } else if (
-                    isVertical && isKeyDown ||
-                    isHorizontal && isKeyRight
+                    (isVertical && isKeyDown) ||
+                    (isHorizontal && isKeyRight)
                 ) {
-                    input.selectionStart = input.selectionEnd += 1;
+                    input.selectionStart += 1;
+                    input.selectionEnd += 1;
                     e.preventDefault();
                 }
             })
             .on('blur', closeWrap);
     },
-    updateUI: function () {
+    updateUI() {
         // here we have to hide and should some elements in toolbar
-        var buttonText = this.isInsideView() ? 'Show outside view' : 'Show inside view';
-        var titleText = this.isInsideView() ? 'Inside view' : 'Outside view';
+        const buttonText = this.isInsideView() ? 'Show outside view' : 'Show inside view';
+        const titleText = this.isInsideView() ? 'Inside view' : 'Outside view';
 
         this.$('#change-view-button').text(buttonText);
         this.ui.$title.text(titleText);
 
-        var selectedSashId = this.state.selectedSashId;
-        var selectedSash = this.model.getSection(selectedSashId);
-        var hasFrame = selectedSash && selectedSash.sashType !== 'fixed_in_frame';
-        var isArched = selectedSash && selectedSash.arched;
-        var isCircular = selectedSash && selectedSash.circular;
+        const selectedSashId = this.state.selectedSashId;
+        const selectedSash = this.model.getSection(selectedSashId);
+        const hasFrame = selectedSash && selectedSash.sashType !== 'fixed_in_frame';
+        const isArched = selectedSash && selectedSash.arched;
+        const isCircular = selectedSash && selectedSash.circular;
 
         this.ui.$bars_control.toggle(
             !isArched &&
             selectedSash &&
-            selectedSash.fillingType === 'glass'
+            selectedSash.fillingType === 'glass',
         );
 
         this.ui.$section_control.toggle(!!selectedSash);
@@ -601,14 +597,14 @@ export default Marionette.View.extend({
         this.$('.sash-types').toggle(
             !isArched &&
             selectedSash &&
-            this.model.canAddSashToSection(selectedSashId)
+            this.model.canAddSashToSection(selectedSashId),
         );
 
         this.$('.split').toggle(
-            !isArched
+            !isArched,
         );
 
-        var selectedFillingType = selectedSash && selectedSash.fillingName &&
+        const selectedFillingType = selectedSash && selectedSash.fillingName &&
             App.settings && App.settings.filling_types.getByName(selectedSash.fillingName);
 
         if (selectedFillingType) {
@@ -622,7 +618,7 @@ export default Marionette.View.extend({
         // Toggle arched controls
         this.$('.toggle-arched').toggle(
             selectedSash &&
-            this.model.isArchedPossible(selectedSashId)
+            this.model.isArchedPossible(selectedSashId),
         );
         this.$('.remove-arched').toggle(!!isArched && !isCircular);
         this.$('.add-arched').toggle(!isArched && !isCircular);
@@ -630,7 +626,7 @@ export default Marionette.View.extend({
         // Toggle circular controls
         this.$('.toggle-circular').toggle(
             selectedSash &&
-            this.model.isCircularPossible(selectedSashId)
+            this.model.isCircularPossible(selectedSashId),
         );
         this.$('.remove-circular').toggle(!!isCircular && !isArched);
         this.$('.add-circular').toggle(!isCircular && !isArched);
@@ -650,24 +646,24 @@ export default Marionette.View.extend({
             this.ui.$metrics_opening.toggle(hasFrame);
             this.ui.$metrics.toggle(
                 this.ui.$metrics_glass.is('[style!="display: none;"]') ||
-                this.ui.$metrics_opening.is('[style!="display: none;"]')
+                this.ui.$metrics_opening.is('[style!="display: none;"]'),
             );
         }
     },
 
-    updateSize: function (width, height) {
+    updateSize(width, height) {
         this.stage.width(width || this.$('#drawing').get(0).offsetWidth);
         this.stage.height(height || this.$('#drawing').get(0).offsetHeight);
     },
 
-    updateRenderedScene: function () {
+    updateRenderedScene() {
         this.updateUI();
         this.updateSize();
         this.$('#drawing').focus();
     },
-    updateSection: function (sectionId, type) {
-        var view = this;
-        var section = this.model.getSection(sectionId);
+    updateSection(sectionId, type) {
+        const view = this;
+        const section = this.model.getSection(sectionId);
 
         type = type || section.divider;
 
@@ -678,22 +674,22 @@ export default Marionette.View.extend({
 
         // If section has children — update them recursively
         if (section.sections && section.sections.length) {
-            section.sections.forEach(function (child) {
+            section.sections.forEach((child) => {
                 view.updateSection(child.id, type);
             });
         }
     },
 
-    setState: function (state) {
+    setState(state) {
         this.state = _.assign(this.state, state);
         this.updateUI();
         this.$('#drawing').focus();
         this.trigger('onSetState');
     },
-    deselectAll: function () {
+    deselectAll() {
         this.setState({
             selectedMullionId: null,
-            selectedSashId: null
+            selectedSashId: null,
         });
-    }
+    },
 });

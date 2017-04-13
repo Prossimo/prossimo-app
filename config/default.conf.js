@@ -9,7 +9,7 @@ module.exports = {
         assetsPath: path.resolve(__dirname, '../assets'),
         srcPath: path.resolve(__dirname, '../src'),
         webLoaders: path.resolve(__dirname, '../web_loaders'),
-        devtool: 'source-map',
+        devtool: 'cheap-module-eval-source-map',
         apiPrefix: '/api',
         printerPrefix: '/print'
     },

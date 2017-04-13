@@ -7,21 +7,21 @@ import template from '../templates/main-units-table-view.hbs';
 export default Marionette.View.extend({
     tagName: 'div',
     className: 'screen units-table-screen',
-    template: template,
+    template,
     ui: {
-        $wrapper: '.units-table-wrapper'
+        $wrapper: '.units-table-wrapper',
     },
-    onRender: function () {
+    onRender() {
         this.units_table_view = new UnitsTableView({
             collection: App.current_quote.units,
             extras: App.current_quote.extras,
             parent_view: this,
-            is_always_visible: true
+            is_always_visible: true,
         });
 
         this.ui.$wrapper.append(this.units_table_view.render().el);
     },
-    onBeforeDestroy: function () {
+    onBeforeDestroy() {
         this.units_table_view.destroy();
-    }
+    },
 });

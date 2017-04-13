@@ -9,20 +9,20 @@ import template from '../templates/drawing-glazing-view.hbs';
 
 export default Marionette.View.extend({
     className: 'drawing-glazing-popup',
-    template: template,
+    template,
     ui: {
         $modal: '#glazingPopup',
         $body: '.modal-body',
         $drawing: '.modal-drawing',
         $bar_controlls: '.glazing-bars-controlls',
         $bar_vertical: '#vertical-bars-number',
-        $bar_horizontal: '#horizontal-bars-number'
+        $bar_horizontal: '#horizontal-bars-number',
     },
     events: {
         'change @ui.$bar_vertical': 'handleVBarsNumberChange',
-        'change @ui.$bar_horizontal': 'handleHBarsNumberChange'
+        'change @ui.$bar_horizontal': 'handleHBarsNumberChange',
     },
-    initialize: function (opts) {
+    initialize(opts) {
         $('body').append(this.render().el);
 
         this.parent = opts.parent || null;
@@ -30,18 +30,18 @@ export default Marionette.View.extend({
 
         this.ui.$modal.modal({
             keyboard: false,
-            show: false
+            show: false,
         });
     },
-    handleVBarsNumberChange: function () {
+    handleVBarsNumberChange() {
         this.handleBarsNumberChange('vertical');
     },
-    handleHBarsNumberChange: function () {
+    handleHBarsNumberChange() {
         this.handleBarsNumberChange('horizontal');
     },
-    handleBarsNumberChange: function (type) {
-        if (this.ui['$bar_' + type].val() < 0 || this.ui['$bar_' + type].val() > 100) {
-            this.ui['$bar_' + type].val(0);
+    handleBarsNumberChange(type) {
+        if (this.ui[`$bar_${type}`].val() < 0 || this.ui[`$bar_${type}`].val() > 100) {
+            this.ui[`$bar_${type}`].val(0);
             this.showError();
 
             return;
@@ -50,14 +50,14 @@ export default Marionette.View.extend({
         this.section.bars = this.changeBarsNumber(type);
         this.saveBars();
     },
-    onRender: function () {
+    onRender() {
         this.stage = new Konva.Stage({
-            container: this.ui.$drawing.get(0)
+            container: this.ui.$drawing.get(0),
         });
 
         this.updateSize(570, (window.innerHeight - 200));
     },
-    onBeforeDestroy: function () {
+    onBeforeDestroy() {
         this.ui.$modal.remove();
         this.stage.destroy();
 
@@ -67,16 +67,16 @@ export default Marionette.View.extend({
         }
     },
 
-    bindModuleEvents: function () {
+    bindModuleEvents() {
         this.listenTo(this.module, 'labelClicked', function (data) {
             this.parent.createInput.call(this, data.params, data.pos, data.size);
         });
     },
-    unbindModuleEvents: function () {
+    unbindModuleEvents() {
         this.stopListening(this.module);
     },
 
-    setSection: function (section_id) {
+    setSection(section_id) {
         this.section = this.model.getSection(section_id);
 
         this.ui.$bar_vertical.val(this.getBarsCount().vertical);
@@ -94,98 +94,97 @@ export default Marionette.View.extend({
             stage: this.stage,
             layers: {
                 unit: {
-                    active: false
+                    active: false,
                 },
                 metrics: {
-                    active: false
+                    active: false,
                 },
                 glazing: {
                     DrawerClass: Drawers.GlazingBarDrawer,
                     zIndex: 1,
                     data: {
                         sectionId: section_id,
-                        saveBars: this.saveBars.bind(this)
-                    }
-                }
+                        saveBars: this.saveBars.bind(this),
+                    },
+                },
             },
-            metricSize: this.metric_size
+            metricSize: this.metric_size,
         });
 
         this.bindModuleEvents();
 
         return this;
     },
-    showModal: function () {
+    showModal() {
         this.ui.$modal.modal('show');
         return this;
     },
-    hideModal: function () {
+    hideModal() {
         this.ui.$modal.modal('hide');
         return this;
     },
-    getBarsCount: function () {
+    getBarsCount() {
         return {
             horizontal: this.section.bars.horizontal.length,
-            vertical: this.section.bars.vertical.length
+            vertical: this.section.bars.vertical.length,
         };
     },
-    showError: function () {
-        var intShakes = 2;
-        var intDistance = 40;
-        var intDuration = 300;
+    showError() {
+        const intShakes = 2;
+        const intDistance = 40;
+        const intDuration = 300;
 
-        for (var x = 1; x <= intShakes; x++) {
+        for (let x = 1; x <= intShakes; x += 1) {
             this.ui.$modal
-                .animate({left: (intDistance * -1)}, (intDuration / intShakes) / 4)
-                .animate({left: intDistance}, (intDuration / intShakes) / 2)
-                .animate({left: 0}, (intDuration / intShakes) / 4);
+                .animate({ left: (intDistance * -1) }, (intDuration / intShakes) / 4)
+                .animate({ left: intDistance }, (intDuration / intShakes) / 2)
+                .animate({ left: 0 }, (intDuration / intShakes) / 4);
         }
     },
-    updateSize: function (width, height) {
+    updateSize(width, height) {
         width = width || this.ui.$drawing.get(0).offsetWidth;
         height = height || this.ui.$drawing.get(0).offsetHeight;
         this.stage.width(width);
         this.stage.height(height);
     },
-    changeBarsNumber: function (type) {
-        var vertical = [];
-        var horizontal = [];
+    changeBarsNumber(type) {
+        let vertical = [];
+        let horizontal = [];
 
         // section params
         // needed to calculate spaces between bars
-        var section = {
+        const section = {
             width: this.getSize().width,
             height: this.getSize().height,
-            bars: this.section.bars
+            bars: this.section.bars,
         };
 
         if (type === 'vertical' || type === 'both') {
-            var vertical_count = parseInt(this.ui.$bar_vertical.val());
-            var vSpace = section.width / (vertical_count + 1);
+            const vertical_count = parseInt(this.ui.$bar_vertical.val(), 10);
+            const vSpace = section.width / (vertical_count + 1);
 
-            for (var i = 0; i < vertical_count; i++) {
-                var vbar = {
+            for (let i = 0; i < vertical_count; i += 1) {
+                const vbar = {
                     id: _.uniqueId(),
                     position: vSpace * (i + 1),
-                    links: [null, null]
+                    links: [null, null],
                 };
 
                 vertical.push(vbar);
             }
-
         } else {
             vertical = this.section.bars.vertical;
         }
 
         if (type === 'horizontal' || type === 'both') {
-            var horizontal_count = parseInt(this.ui.$bar_horizontal.val());
-            var hSpace = section.height / (horizontal_count + 1);
+            const horizontal_count = parseInt(this.ui.$bar_horizontal.val(), 10);
+            const hSpace = section.height / (horizontal_count + 1);
 
-            for (var j = 0; j < horizontal_count; j++) {
-                var hbar = {
+            for (let j = 0; j < horizontal_count; j += 1) {
+                const hbar = {
                     id: _.uniqueId(),
                     position: hSpace * (j + 1),
-                    links: [null, null]
+                    links: [null, null],
                 };
 
                 horizontal.push(hbar);
@@ -194,27 +193,27 @@ export default Marionette.View.extend({
             horizontal = this.section.bars.horizontal;
         }
 
-        var bars = {
-            vertical: vertical,
-            horizontal: horizontal
+        const bars = {
+            vertical,
+            horizontal,
         };
 
         return bars;
     },
-    getSize: function () {
+    getSize() {
         return {
             width: this.section.glassParams.width,
-            height: this.section.glassParams.height
+            height: this.section.glassParams.height,
         };
     },
     /* eslint-disable max-nested-callbacks */
-    checkLinks: function (bars) {
-        var view = this;
-        var linked = null;
+    checkLinks(bars) {
+        const view = this;
+        let linked = null;
 
-        _.each(bars, function (arr, type) {
-            _.each(arr, function (bar, index) {
-                _.each(bar.links, function (link, edge) {
+        _.each(bars, (arr, type) => {
+            _.each(arr, (bar, index) => {
+                _.each(bar.links, (link, edge) => {
                     if (link !== null) {
                         linked = view.model.getBar(view.section.id, link);
 
@@ -229,17 +228,15 @@ export default Marionette.View.extend({
         return bars;
     },
     /* eslint-enable max-nested-callbacks */
-    sortBars: function () {
-        _.each(this.section.bars, function (group) {
-            group.sort(function (a, b) {
-                return a.position > b.position;
-            });
+    sortBars() {
+        _.each(this.section.bars, (group) => {
+            group.sort((a, b) => a.position > b.position);
         });
     },
-    saveBars: function (newBars) {
-        var bars = (newBars) ? newBars : this.section.bars;
+    saveBars(newBars) {
+        let bars = (newBars) || this.section.bars;
 
         bars = this.checkLinks(bars);
         this.model.setSectionBars(this.section.id, bars);
-    }
+    },
 });

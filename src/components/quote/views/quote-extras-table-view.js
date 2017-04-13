@@ -1,49 +1,49 @@
 import Marionette from 'backbone.marionette';
 
-import {format} from '../../../utils';
+import { format } from '../../../utils';
 import QuoteExtrasItemView from './quote-extras-item-view';
 import template from '../templates/quote-extras-table-view.hbs';
 
 export default Marionette.CompositeView.extend({
-    template: template,
+    template,
     childView: QuoteExtrasItemView,
     childViewContainer: '.quote-extras-table-body',
-    childViewOptions: function () {
+    childViewOptions() {
         return {
             type: this.options.type,
-            show_price: this.options.show_price
+            show_price: this.options.show_price,
         };
     },
-    filter: function (child) {
+    filter(child) {
         return this.options.type === 'Optional' ?
             child.isOptionalType() :
             child.get('extras_type') === this.options.type;
     },
-    initialize: function () {
+    initialize() {
         this.listenTo(this.collection, 'all', this.render);
     },
-    getPriceColspan: function () {
+    getPriceColspan() {
         return this.options.show_price !== false ? 3 : 2;
     },
-    getTotalPrices: function () {
-        var total_price = this.options.type === 'Regular' ?
+    getTotalPrices() {
+        const total_price = this.options.type === 'Regular' ?
             this.collection.getRegularItemsPrice() :
             this.collection.getOptionalItemsPrice();
 
         return {
-            total: format.price_usd(total_price)
+            total: format.price_usd(total_price),
         };
     },
-    getItemsCount: function () {
+    getItemsCount() {
         return this.options.type === 'Regular' ?
             this.collection.getRegularItems().length :
             this.collection.getOptionalItems().length;
     },
-    hasAtLeastOneOptionalPercentBased: function () {
-        var has_one = false;
+    hasAtLeastOneOptionalPercentBased() {
+        let has_one = false;
 
         if (this.options.type === 'Optional') {
-            this.collection.each(function (item) {
+            this.collection.each((item) => {
                 if (item.isOptionalType() && item.isPercentBasedType()) {
                     has_one = true;
                 }
@@ -52,14 +52,14 @@ export default Marionette.CompositeView.extend({
 
         return has_one;
     },
-    templateContext: function () {
+    templateContext() {
         return {
             items_count: this.getItemsCount(),
             price_colspan: this.getPriceColspan(),
             total_prices: this.getTotalPrices(),
             heading: this.options.type === 'Regular' ? 'Extras' : 'Optional Extras',
             is_optional: this.options.type === 'Optional',
-            show_price: this.options.show_price !== false
+            show_price: this.options.show_price !== false,
         };
-    }
+    },
 });

@@ -1,30 +1,31 @@
 const express = require('express');
-const router = express.Router();
 const httpProxy = require('http-proxy');
 const url = require('url');
 const util = require('util');
 
+const router = express.Router();
+
 function inspect(object) {
-    return util.inspect(object, {showHidden: false, depth: 5, colors: false});
+    return util.inspect(object, { showHidden: false, depth: 5, colors: false });
 }
 
 function getPath(protocol, hostname, port, pathname) {
-    return url.format({protocol, hostname, port, pathname});
+    return url.format({ protocol, hostname, port, pathname });
 }
 
 function createBackendProxy(pach, log) {
-    let proxy = httpProxy.createProxyServer({
+    const proxy = httpProxy.createProxyServer({
         target: pach,
         xfwd: false,
         changeOrigin: true,
         cookieDomainRewrite: {
-            '*': ''
-        }
+            '*': '',
+        },
     });
 
-    proxy.on('error', function (err, req, res) {
+    proxy.on('error', (err, req, res) => {
         res.writeHead(500, {
-            'Content-Type': 'text/plain'
+            'Content-Type': 'text/plain',
         });
 
         log.error('Error in proxy pass: ', err);
@@ -33,8 +34,8 @@ function createBackendProxy(pach, log) {
         res.end('Something went wrong. Check availability of the API server.');
     });
 
-    proxy.on('proxyReq', function (proxyReq, req) {
-        let origin = getPath(req.protocol, req.client.address().address, req.client.address().port, req.originalUrl);
+    proxy.on('proxyReq', (proxyReq, req) => {
+        const origin = getPath(req.protocol, req.client.address().address, req.client.address().port, req.originalUrl);
 
         // This is necessary to correctly deliver request body
         if (req.body && Object.keys(req.body).length !== 0) {
@@ -45,11 +46,11 @@ function createBackendProxy(pach, log) {
             method: req.method,
             origin,
             referer: `${pach}${req.path}`,
-            body: req.body
+            body: req.body,
         })}`);
     });
 
-    proxy.on('proxyRes', function (proxyRes, req) {
+    proxy.on('proxyRes', (proxyRes, req) => {
         log.debug(`Proxy ${pach}${req.path} response:\n ${inspect(proxyRes.headers)}`);
     });
 
@@ -57,12 +58,12 @@ function createBackendProxy(pach, log) {
 }
 
 const apiRouter = function (config, log) {
-    let apiPath = getPath(config.get('server:apiProtocol'), config.get('server:apiHost'),
+    const apiPath = getPath(config.get('server:apiProtocol'), config.get('server:apiHost'),
         config.get('server:apiPort'), config.get('server:apiPrefix'));
 
     log.info(`REST API path: ${apiPath}`);
 
-    let apiProxyBackend = createBackendProxy(apiPath, log);
+    const apiProxyBackend = createBackendProxy(apiPath, log);
 
     return (req, res) => {
         apiProxyBackend.web(req, res);
@@ -70,12 +71,12 @@ const apiRouter = function (config, log) {
 };
 
 const printRouter = function (config, log) {
-    let apiPath = getPath(config.get('server:printerProtocol'), config.get('server:printerHost'),
+    const apiPath = getPath(config.get('server:printerProtocol'), config.get('server:printerHost'),
         config.get('server:printerPort'), config.get('server:printerPrefix'));
 
     log.info(`PDF printer path: ${apiPath}`);
 
-    let apiProxyBackend = createBackendProxy(apiPath, log);
+    const apiProxyBackend = createBackendProxy(apiPath, log);
 
     return (req, res) => {
         apiProxyBackend.web(req, res);

@@ -11,6 +11,7 @@
     "equal": true,
     "deepEqual": true,
     "instanceOf": true,
+    "containSubset": true,
     "test": true
   },
   "rules": {

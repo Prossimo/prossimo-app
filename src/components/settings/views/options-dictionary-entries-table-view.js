@@ -9,24 +9,24 @@ import template from '../templates/options-dictionary-entries-table-view.hbs';
 export default Marionette.CompositeView.extend({
     tagName: 'div',
     className: 'options-dictionary-entries-table',
-    template: template,
+    template,
     childView: OptionsDictionaryEntriesItemView,
     childViewContainer: '.entries-container',
-    childViewOptions: function () {
+    childViewOptions() {
         return {
-            parent_view: this
+            parent_view: this,
         };
     },
     ui: {
         $container: '.entries-container',
         $add_new_entry: '.js-add-new-entry',
         $undo: '.js-undo',
-        $redo: '.js-redo'
+        $redo: '.js-redo',
     },
     events: {
         'click @ui.$add_new_entry': 'addNewEntry',
         'click @ui.$undo': 'onUndo',
-        'click @ui.$redo': 'onRedo'
+        'click @ui.$redo': 'onRedo',
     },
     keyShortcuts: {
         n: 'addNewEntry',
@@ -35,12 +35,12 @@ export default Marionette.CompositeView.extend({
         'ctrl+shift+z': 'onRedo',
         'command+shift+z': 'onRedo',
         'ctrl+y': 'onRedo',
-        'command+y': 'onRedo'
+        'command+y': 'onRedo',
     },
-    addNewEntry: function (e) {
-        var new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
-        var new_entry = new OptionsDictionaryEntry({
-            position: new_position
+    addNewEntry(e) {
+        const new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
+        const new_entry = new OptionsDictionaryEntry({
+            position: new_position,
         });
 
         e.stopPropagation();
@@ -48,52 +48,52 @@ export default Marionette.CompositeView.extend({
         this.ui.$add_new_entry.blur();
         this.render();
     },
-    onUndo: function () {
+    onUndo() {
         this.undo_manager.handler.undo();
         this.ui.$undo.blur();
     },
-    onRedo: function () {
+    onRedo() {
         this.undo_manager.handler.redo();
         this.ui.$redo.blur();
     },
-    onSort: function (event) {
+    onSort(event) {
         this.collection.setItemPosition(event.oldIndex, event.newIndex);
     },
-    onRemoveEntry: function () {
+    onRemoveEntry() {
         if (!this.collection.length) {
             this.render();
         }
     },
-    templateContext: function () {
+    templateContext() {
         return {
-            entries_length: this.collection.length
+            entries_length: this.collection.length,
         };
     },
-    initialize: function () {
+    initialize() {
         this.undo_manager = new UndoManager({
             register: this.collection,
-            track: true
+            track: true,
         });
 
         this.listenTo(this.collection, 'remove', this.onRemoveEntry);
     },
-    onRender: function () {
-        var self = this;
+    onRender() {
+        const self = this;
 
         this.sortable = new Sortable(this.ui.$container[0], {
             handle: 'td.entry-drag',
             draggable: '.options-dictionary-entries-item',
-            onSort: function (event) {
+            onSort(event) {
                 self.onSort(event);
-            }
+            },
         });
 
         this.undo_manager.registerButton('undo', this.ui.$undo);
         this.undo_manager.registerButton('redo', this.ui.$redo);
     },
-    onBeforeDestroy: function () {
+    onBeforeDestroy() {
         if (this.isRendered() && this.sortable) {
             this.sortable.destroy();
         }
-    }
+    },
 });

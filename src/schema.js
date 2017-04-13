@@ -5,13 +5,13 @@ export default {
     //  { name: 'attr_name', title: 'Attr Title', type: 'attrtype' }
     //  TODO: make sure all names have correct format and all types are
     //  among the list of allowed types (and have correct format as well)
-    createSchema: function (properties_array) {
-        var schema = {};
+    createSchema(properties_array) {
+        const schema = {};
 
-        _.each(properties_array, function (property) {
+        _.each(properties_array, (property) => {
             schema[property.name] = {
                 type: property.type,
-                title: property.title
+                title: property.title,
             };
         });
 
@@ -19,21 +19,21 @@ export default {
     },
     //  TODO: get rid of id in the list of attributes, replace
     //  item.get('id') with item.id everywhere in the app
-    parseAccordingToSchema: function (model_data, schema, options) {
-        var defaults = {
-            allow_id: true
+    parseAccordingToSchema(model_data, schema, options) {
+        const defaults = {
+            allow_id: true,
         };
 
         options = _.defaults({}, options, defaults);
 
-        var allowed_properties = options.allow_id ?
+        const allowed_properties = options.allow_id ?
             _.union(_.keys(schema), ['id']) :
             _.keys(schema);
-        var parsed_data = {};
+        const parsed_data = {};
 
-        _.each(model_data, function (value, key) {
+        _.each(model_data, (value, key) => {
             if (!_.isNull(value) && _.contains(allowed_properties, key)) {
-                var parsed_value = value;
+                let parsed_value = value;
 
                 if (schema[key] && schema[key].type === 'number') {
                     parsed_value = parseFloat(value);
@@ -44,5 +44,5 @@ export default {
         });
 
         return parsed_data;
-    }
+    },
 };

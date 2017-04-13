@@ -11,46 +11,46 @@ import template from '../templates/filling-type-view.hbs';
 export default Marionette.View.extend({
     tagName: 'div',
     className: 'filling-type',
-    template: template,
+    template,
     ui: {
         $table: '.filling-type-attributes',
         $edit_profiles: '.js-edit-fillingtype-profiles',
         $clone: '.js-clone-filling-type',
         $remove: '.js-remove-filling-type',
-        $profiles_container: '.profile-availability'
+        $profiles_container: '.profile-availability',
     },
     events: {
         'click @ui.$edit_profiles': 'editProfiles',
         'click @ui.$clone': 'cloneItem',
-        'click @ui.$remove': 'removeItem'
+        'click @ui.$remove': 'removeItem',
     },
-    editProfiles: function () {
+    editProfiles() {
         App.dialogs.showDialog('items-profiles-table', {
             collection_title: 'Filling Types',
             active_item: this.model,
             collection: this.model.collection,
             profiles: App.settings.profiles,
-            filter_condition: function (item) {
+            filter_condition(item) {
                 return item.get('name') && !item.hasOnlyDefaultAttributes() && item.get('is_base_type') !== true;
-            }
+            },
         });
     },
-    removeItem: function () {
+    removeItem() {
         this.model.destroy();
     },
-    cloneItem: function () {
+    cloneItem() {
         this.model.duplicate();
     },
-    onChangePricingScheme: function () {
+    onChangePricingScheme() {
         if (this.profile_connections_table_view) {
             this.profile_connections_table_view.render();
         }
     },
-    onRender: function () {
+    onRender() {
         _.each(this.attribute_views, function (child_view) {
-            var $row = $('<tr class="filling-type-attribute-container" />');
+            const $row = $('<tr class="filling-type-attribute-container" />');
 
-            $row.append('<td><h4 class="title">' + child_view.title + '</h4></td>');
+            $row.append(`<td><h4 class="title">${child_view.title}</h4></td>`);
             $('<td />').appendTo($row).append(child_view.view_instance.render().el);
             this.ui.$table.append($row);
 
@@ -62,8 +62,8 @@ export default Marionette.View.extend({
 
         this.ui.$profiles_container.append(this.profile_connections_table_view.render().el);
     },
-    onBeforeDestroy: function () {
-        _.each(this.attribute_views, function (child_view) {
+    onBeforeDestroy() {
+        _.each(this.attribute_views, (child_view) => {
             child_view.view_instance.destroy();
         }, this);
 
@@ -71,16 +71,16 @@ export default Marionette.View.extend({
             this.profile_connections_table_view.destroy();
         }
     },
-    initialize: function () {
+    initialize() {
         this.attributes_to_render = this.model.getNameTitleTypeHash([
-            'name', 'supplier_name', 'type', 'weight_per_area', 'pricing_scheme'
+            'name', 'supplier_name', 'type', 'weight_per_area', 'pricing_scheme',
         ]);
         //  For base types we want to disable editing at all
         this.is_disabled = this.model.get('is_base_type') === true;
 
         //  TODO: maybe we should have something generic at the model level
         function getAttributeSourceData(model, attribute_name) {
-            var data_array = [];
+            let data_array = [];
 
             if (attribute_name === 'type') {
                 data_array = model.getBaseTypes();
@@ -88,42 +88,40 @@ export default Marionette.View.extend({
                 data_array = model.getPossiblePricingSchemes();
             }
 
-            return _.map(data_array, function (item) {
-                return {
-                    value: item.name || item,
-                    title: item.title || item
-                };
-            });
+            return _.map(data_array, item => ({
+                value: item.name || item,
+                title: item.title || item,
+            }));
         }
 
         this.attribute_views = _.map(this.attributes_to_render, function (attribute) {
             //  We use text inputs for most attributes except for "type"
             //  attribute where we want a selectbox
-            var view = _.contains(['type', 'pricing_scheme'], attribute.name) ?
+            const view = _.contains(['type', 'pricing_scheme'], attribute.name) ?
                 new BaseSelectView({
                     model: this.model,
                     param: attribute.name,
                     values: getAttributeSourceData(this.model, attribute.name),
-                    multiple: false
+                    multiple: false,
                 }) :
                 new BaseInputView({
                     model: this.model,
                     param: attribute.name,
                     input_type: 'text',
-                    placeholder: attribute.name === 'name' ? 'New Filling Type' : ''
+                    placeholder: attribute.name === 'name' ? 'New Filling Type' : '',
                 });
 
             return {
                 name: attribute.name,
                 title: attribute.title,
-                view_instance: view
+                view_instance: view,
             };
         }, this);
 
         this.profile_connections_table_view = new ProfileConnectionsTableView({
-            collection: this.model.get('filling_type_profiles')
+            collection: this.model.get('filling_type_profiles'),
         });
 
         this.listenTo(this.model, 'change:pricing_scheme', this.onChangePricingScheme);
-    }
+    },
 });

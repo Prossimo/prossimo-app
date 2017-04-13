@@ -4,33 +4,33 @@ import template from '../../templates/dialogs/edit-quotes-dialog-view.hbs';
 
 export default BaseDialogView.extend({
     className: 'edit-quotes-modal modal fade',
-    template: template,
+    template,
     events: {
-        'click .js-add-new-quote': 'addNewQuote'
+        'click .js-add-new-quote': 'addNewQuote',
     },
-    addNewQuote: function () {
-        var make_default = this.collection.length === 0;
-        var new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
+    addNewQuote() {
+        const make_default = this.collection.length === 0;
+        const new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
 
         this.collection.create({
             is_default: make_default,
-            position: new_position
+            position: new_position,
         });
     },
-    templateContext: function () {
+    templateContext() {
         return {
-            dialog_title: 'Edit Quotes'
+            dialog_title: 'Edit Quotes',
         };
     },
     regions: {
         tbody: {
             el: 'tbody',
-            replaceElement: true
-        }
+            replaceElement: true,
+        },
     },
-    onRender: function () {
+    onRender() {
         this.showChildView('tbody', new QuotesEditorTableView({
-            collection: this.collection
+            collection: this.collection,
         }));
-    }
+    },
 });

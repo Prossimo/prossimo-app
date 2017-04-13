@@ -8,15 +8,15 @@ Konva.Factory.addGetterSetter(Konva.Container, 'clipType');
 Konva.Factory.addGetterSetter(Konva.Container, 'clipRadius');
 
 Konva.Container.prototype._drawChildren = function (canvas, drawMethod, top, caching, skipBuffer) {
-    var layer = this.getLayer();
-    var context = canvas && canvas.getContext();
-    var clipWidth = this.getClipWidth();
-    var clipHeight = this.getClipHeight();
-    var clipType = this.getClipType() || 'rect';
-    var clipRadius = this.getClipRadius();
-    var hasClip = (clipWidth && clipHeight) || clipRadius;
-    var clipX;
-    var clipY;
+    const layer = this.getLayer();
+    const context = canvas && canvas.getContext();
+    const clipWidth = this.getClipWidth();
+    const clipHeight = this.getClipHeight();
+    const clipType = this.getClipType() || 'rect';
+    const clipRadius = this.getClipRadius();
+    const hasClip = (clipWidth && clipHeight) || clipRadius;
+    let clipX;
+    let clipY;
 
     if (hasClip && layer) {
         clipX = this.getClipX();
@@ -36,7 +36,7 @@ Konva.Container.prototype._drawChildren = function (canvas, drawMethod, top, cac
         context.reset();
     }
 
-    this.children.each(function (child) {
+    this.children.each((child) => {
         child[drawMethod](canvas, top, caching, skipBuffer);
     });
 

@@ -5,25 +5,25 @@ import template from '../../../templates/core/base/sidebar-list-item-view.hbs';
 export default Marionette.View.extend({
     tagName: 'li',
     className: 'sidebar-list-item',
-    template: template,
+    template,
     events: {
-        'click a': 'onItemClick'
+        'click a': 'onItemClick',
     },
-    initialize: function () {
+    initialize() {
         this.listenTo(this.model, 'change:name', this.render);
     },
-    onItemClick: function () {
+    onItemClick() {
         this.options.parent_view.setActiveItem(this.model);
     },
-    templateContext: function () {
-        var active_item = this.options.parent_view.getActiveItem();
-        var placeholder = this.options.placeholder || 'New Item';
-        var name = this.model.get('name') || '';
+    templateContext() {
+        const active_item = this.options.parent_view.getActiveItem();
+        const placeholder = this.options.placeholder || 'New Item';
+        const name = this.model.get('name') || '';
 
         return {
             is_active: active_item && active_item === this.model,
             readable_name: name || placeholder,
-            show_placeholder: !name && placeholder
+            show_placeholder: !name && placeholder,
         };
-    }
+    },
 });

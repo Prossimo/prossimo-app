@@ -4,16 +4,16 @@ import $ from 'jquery';
 
 import User from './user';
 import App from '../../main';
-import {globalChannel} from '../../utils/radio';
+import { globalChannel } from '../../utils/radio';
 
 //  Monkey-patch Backbone.Sync to include auth token with every request
 //  TODO: is this a good place to store this function? What if we move it
 //  to a separate file or something
-var backboneSync = Backbone.sync;
+const backboneSync = Backbone.sync;
 
 Backbone.sync = function (method, model, options) {
-    var token = window.localStorage.getItem('authToken');
-    var errorCallback = options.error;
+    const token = window.localStorage.getItem('authToken');
+    const errorCallback = options.error;
 
     options.error = function (xhr, textStatus, errorThrown) {
         //  We just received an 401 Unauthorized response. This means our
@@ -32,7 +32,7 @@ Backbone.sync = function (method, model, options) {
 
     if (token) {
         options.headers = {
-            Authorization: 'Bearer ' + token
+            Authorization: `Bearer ${token}`,
         };
     }
 
@@ -45,10 +45,10 @@ export default Backbone.Model.extend({
         no_backend: false,
         is_initial: true,
         is_logged_in: false,
-        token_expired: false
+        token_expired: false,
     },
-    initialize: function () {
-        var self = this;
+    initialize() {
+        const self = this;
 
         this.user = new User();
 
@@ -56,19 +56,19 @@ export default Backbone.Model.extend({
         this.listenTo(globalChannel, 'auth:logout', this.onAuthLogout);
 
         //  Check auth status each 15 minutes
-        setInterval(function () {
+        setInterval(() => {
             if (self.get('is_logged_in') === true && self.get('no_backend') === false) {
                 self.checkAuth();
             }
         }, 1000 * 60 * 15);
     },
-    updateSessionUser: function (user_data) {
+    updateSessionUser(user_data) {
         this.user.set(_.pick(user_data, _.keys(this.user.defaults)));
     },
-    resetSessionUser: function () {
+    resetSessionUser() {
         this.user.reset();
     },
-    onAuthError: function () {
+    onAuthError() {
         window.localStorage.removeItem('authToken');
 
         if (this.get('is_initial') === false) {
@@ -77,22 +77,22 @@ export default Backbone.Model.extend({
 
         App.dialogs.showDialog('login');
     },
-    onAuthLogout: function () {
+    onAuthLogout() {
         App.dialogs.showDialog('login');
     },
     // Contact server to see if it thinks that user is logged in
-    checkAuth: function (callback) {
-        var self = this;
-        var d = $.Deferred();
+    checkAuth(callback) {
+        const self = this;
+        const d = $.Deferred();
 
         this.fetch({
-            url: App.settings.get('api_base_path') + '/users/current',
-            success: function (model, response) {
+            url: `${App.settings.get('api_base_path')}/users/current`,
+            success(model, response) {
                 if (!response.error && response.user) {
                     self.updateSessionUser(response.user);
                     self.set({
                         is_logged_in: true,
-                        token_expired: false
+                        token_expired: false,
                     });
 
                     if (self.get('is_initial') === true) {
@@ -102,7 +102,7 @@ export default Backbone.Model.extend({
                         globalChannel.trigger('auth:login');
                     }
                 } else {
-                    self.set({is_logged_in: false});
+                    self.set({ is_logged_in: false });
                 }
 
                 if (callback && 'success' in callback) {
@@ -111,8 +111,8 @@ export default Backbone.Model.extend({
 
                 d.resolve(model, response);
             },
-            error: function (model, response) {
-                self.set({is_logged_in: false});
+            error(model, response) {
+                self.set({ is_logged_in: false });
 
                 //  Status === 0 means no connection
                 if (response.status === 0 && self.get('is_initial') === true) {
@@ -125,63 +125,61 @@ export default Backbone.Model.extend({
                 }
 
                 d.resolve(model, response);
-            }
+            },
         });
 
-        d.done(function (model, response) {
+        d.done((model, response) => {
             if (callback && 'complete' in callback) {
                 callback.complete(response);
             }
         });
     },
-    postAuth: function (opts, callback) {
-        var self = this;
+    postAuth(opts, callback) {
+        const self = this;
 
         $.ajax({
-            url: App.settings.get('api_base_path') + '/login_check',
+            url: `${App.settings.get('api_base_path')}/login_check`,
             contentType: 'application/json',
             dataType: 'json',
             type: 'POST',
             data: JSON.stringify({
                 _username: opts.username,
-                _password: opts.password
+                _password: opts.password,
             }),
-            success: function (response, textStatus, jqXHR) {
+            success(response, textStatus, jqXHR) {
                 if (!response.error && 'token' in response) {
                     if (opts.method === 'login') {
                         window.localStorage.setItem('authToken', response.token);
                         self.checkAuth(callback);
                     } else {
-                        self.set({is_logged_in: false});
+                        self.set({ is_logged_in: false });
 
                         if (callback && 'success' in callback) {
                             callback.success(response);
                         }
                     }
-                } else {
-                    if (callback && 'error' in callback) {
-                        callback.error(response, jqXHR, textStatus);
-                    }
+                } else if (callback && 'error' in callback) {
+                    callback.error(response, jqXHR, textStatus);
                 }
             },
-            error: function (jqXHR, textStatus) {
+            error(jqXHR, textStatus) {
                 if (callback && 'error' in callback) {
                     callback.error(undefined, jqXHR, textStatus);
                 }
-            }
-        }).complete(function (jqXHR, textStatus) {
+            },
+        }).complete((jqXHR, textStatus) => {
             if (callback && 'complete' in callback) {
                 callback.complete(jqXHR, textStatus);
             }
         });
     },
-    login: function (opts, callback) {
-        this.postAuth(_.extend(opts, {method: 'login'}), callback);
+    login(opts, callback) {
+        this.postAuth(_.extend(opts, { method: 'login' }), callback);
     },
-    logout: function () {
+    logout() {
         window.localStorage.removeItem('authToken');
-        this.set({is_logged_in: false});
+        this.set({ is_logged_in: false });
         this.resetSessionUser();
         globalChannel.trigger('auth:logout');
-    }
+    },
 });

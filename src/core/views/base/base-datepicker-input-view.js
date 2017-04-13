@@ -5,18 +5,18 @@ import template from '../../../templates/core/base/base-datepicker-input-view.hb
 
 export default Marionette.View.extend({
     className: 'input-container',
-    template: template,
+    template,
     ui: {
         $edit: '.edit',
         $input: '.edit input',
-        $value: '.value'
+        $value: '.value',
     },
     events: {
         'click @ui.$value': 'makeEditable',
-        'blur @ui.$input': 'revertEditable'
+        'blur @ui.$input': 'revertEditable',
     },
-    makeEditable: function () {
-        var is_disabled = this.options.is_disabled && _.isFunction(this.options.is_disabled) ?
+    makeEditable() {
+        const is_disabled = this.options.is_disabled && _.isFunction(this.options.is_disabled) ?
             this.options.is_disabled() :
             this.options.is_disabled;
 
@@ -25,67 +25,67 @@ export default Marionette.View.extend({
             this.ui.$input.trigger('focus').trigger('select');
         }
     },
-    revertEditable: function () {
+    revertEditable() {
         this.$el.removeClass('is-edited').removeClass('has-error');
     },
-    setValue: function () {
-        var new_value = this.ui.$input.val().trim();
+    setValue() {
+        const new_value = this.ui.$input.val().trim();
 
         this.model.persist(this.options.param, new_value);
     },
     //  TODO: we need to handle a case where is_disabled is a function
-    enable: function () {
+    enable() {
         this.options.is_disabled = false;
         this.render();
     },
-    disable: function () {
+    disable() {
         this.options.is_disabled = true;
         this.render();
     },
-    templateContext: function () {
-        var value = this.model.get(this.options.param);
-        var placeholder = this.options.placeholder || '&nbsp;';
-        var is_disabled = this.options.is_disabled && _.isFunction(this.options.is_disabled) ?
+    templateContext() {
+        const value = this.model.get(this.options.param);
+        const placeholder = this.options.placeholder || '&nbsp;';
+        const is_disabled = this.options.is_disabled && _.isFunction(this.options.is_disabled) ?
             this.options.is_disabled() :
             this.options.is_disabled;
 
         return {
-            value: value,
+            value,
             readable_value: (is_disabled && this.options.disabled_value) ?
                 this.options.disabled_value :
                 (value !== '' ? value : placeholder),
             show_placeholder: !value && placeholder,
-            is_disabled: is_disabled
+            is_disabled,
         };
     },
-    onRender: function () {
-        var self = this;
+    onRender() {
+        const self = this;
 
         this.ui.$input.datepicker({
             autoclose: true,
             format: 'd MM, yyyy',
             todayHighlight: true,
-            zIndexOffset: 300
+            zIndexOffset: 300,
         })
-        .on('changeDate', function () {
+        .on('changeDate', () => {
             self.setValue();
         })
-        .on('hide', function () {
+        .on('hide', () => {
             self.ui.$input.trigger('blur');
         });
     },
-    onBeforeDestroy: function () {
+    onBeforeDestroy() {
         this.ui.$input.datepicker('destroy');
     },
-    initialize: function (options) {
-        var default_options = {
+    initialize(options) {
+        const default_options = {
             is_disabled: false,
             disabled_value: '',
-            placeholder: ''
+            placeholder: '',
         };
 
         this.options = _.extend({}, default_options, options);
 
-        this.listenTo(this.model, 'change:' + this.options.param, this.render);
-    }
+        this.listenTo(this.model, `change:${this.options.param}`, this.render);
+    },
 });

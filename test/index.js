@@ -1,39 +1,52 @@
-window.ok = (actual, message) => {
+import chaiSubset from 'chai-subset';
+global.chai.use(chaiSubset);
+
+global.ok = (actual, message) => {
     it(message, () => {
         expect(actual).to.be.ok;
     });
 };
 
-window.notOk = (actual, message) => {
+global.notOk = (actual, message) => {
     it(message, () => {
         expect(actual).to.not.be.ok;
     });
 };
 
-window.equal = (actual, expected, message = 'no_mess') => {
+global.equal = (actual, expected, message = 'no_mess') => {
     it(message, () => {
-        expect(actual).to.to.equal(expected);
+        expect(actual).to.equal(expected);
     });
 };
 
-window.deepEqual = (actual, expected, message = 'no_mess') => {
+global.deepEqual = (actual, expected, message = 'no_mess') => {
     it(message, () => {
         expect(actual).to.deep.equal(expected);
     });
 };
 
-window.instanceOf = (actual, expected, message = 'no_mess') => {
+global.instanceOf = (actual, expected, message = 'no_mess') => {
     it(message, () => {
         expect(actual).to.be.instanceof(expected);
     });
 };
 
-window.test = (message, callback) => {
+global.containSubset = (actual, expected, message = 'no_mess') => {
+    it(message, () => {
+        expect(actual).to.containSubset(expected);
+    });
+};
+
+global.test = (message, callback) => {
     describe(message, callback);
 };
 
-window.test.only = (message, callback) => {
+global.test.only = (message, callback) => {
     describe.only(message, callback);
+};
+
+global.test.skip = (message, callback) => {
+    describe.skip(message, callback);
 };
 
 before(function () {

@@ -7,17 +7,17 @@ import template from '../../../templates/core/base/base-toggle-view.hbs';
 export default Marionette.View.extend({
     tagName: 'label',
     className: 'toggle-container',
-    template: template,
+    template,
     events: {
-        'change @ui.$checkbox': 'onChange'
+        'change @ui.$checkbox': 'onChange',
     },
     ui: {
-        $checkbox: 'input[type="checkbox"]'
+        $checkbox: 'input[type="checkbox"]',
     },
-    onChange: function (e) {
-        var is_checked = $(e.currentTarget).is(':checked');
-        var equal_choices = this.options.values_list.length === 2;
-        var new_value;
+    onChange(e) {
+        const is_checked = $(e.currentTarget).is(':checked');
+        const equal_choices = this.options.values_list.length === 2;
+        let new_value;
 
         if (is_checked) {
             new_value = equal_choices ? this.options.values_list[0].value : true;
@@ -27,20 +27,20 @@ export default Marionette.View.extend({
 
         this.model.persist(this.options.property_name, new_value);
     },
-    enable: function () {
+    enable() {
         this.ui.$checkbox.bootstrapToggle('enable');
     },
-    disable: function () {
+    disable() {
         this.ui.$checkbox.bootstrapToggle('disable');
     },
-    isChecked: function () {
+    isChecked() {
         return this.options.values_list[0].value === this.model.get(this.options.property_name);
     },
-    templateContext: function () {
-        var equal_choices = this.options.values_list.length === 2;
+    templateContext() {
+        const equal_choices = this.options.values_list.length === 2;
 
         return {
-            equal_choices: equal_choices,
+            equal_choices,
             is_checked: this.isChecked(),
             on_text: equal_choices ? this.options.values_list[0].title : 'On',
             off_text: equal_choices ? this.options.values_list[1].title : 'Off',
@@ -48,39 +48,39 @@ export default Marionette.View.extend({
             size: this.options.size,
             is_disabled: this.options.is_disabled && _.isFunction(this.options.is_disabled) ?
                 this.options.is_disabled() :
-                this.options.is_disabled
+                this.options.is_disabled,
         };
     },
-    isToggleAttached: function () {
+    isToggleAttached() {
         return this.is_toggle_attached || false;
     },
     //  The timeout here is to fight the issue with toggle width not being
     //  correctly calculated. On subsequent re-rendering there's no timeout
-    onRender: function () {
-        var self = this;
+    onRender() {
+        const self = this;
 
         if (this.isToggleAttached()) {
             this.ui.$checkbox.bootstrapToggle();
         } else {
-            setTimeout(function () {
+            setTimeout(() => {
                 self.ui.$checkbox.bootstrapToggle();
                 self.is_toggle_attached = true;
             }, 5);
         }
     },
-    onBeforeDestroy: function () {
+    onBeforeDestroy() {
         this.ui.$checkbox.bootstrapToggle('destroy');
     },
     //  TODO: we have `property_name` here, but for other base views we
     //  call it `param`. Better make it same everywhere (attribute_name?)
-    initialize: function (options) {
-        var default_options = {
+    initialize(options) {
+        const default_options = {
             is_disabled: false,
             placeholder: '',
             size: 'small',
-            label_text: ''
+            label_text: '',
         };
 
         this.options = _.extend({}, default_options, options);
-    }
+    },
 });

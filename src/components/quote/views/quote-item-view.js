@@ -2,35 +2,35 @@ import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 
 import App from '../../../main';
-import {convert, format, math} from '../../../utils';
-import {preview} from '../../drawing/module/drawing-module';
+import { convert, format, math } from '../../../utils';
+import { preview } from '../../drawing/module/drawing-module';
 import template from '../templates/quote-item-view.hbs';
 
 export default Marionette.View.extend({
     tagName: 'div',
     className: 'quote-item',
-    template: template,
-    initialize: function () {
+    template,
+    initialize() {
         this.listenTo(this.model, 'change', this.render);
     },
-    getPrices: function () {
-        var unit_price = this.model.getUnitPrice();
-        var subtotal_price = this.model.getSubtotalPrice();
-        var discount = this.model.get('discount');
-        var unit_price_discounted = this.model.getUnitPriceDiscounted();
-        var subtotal_price_discounted = this.model.getSubtotalPriceDiscounted();
+    getPrices() {
+        const unit_price = this.model.getUnitPrice();
+        const subtotal_price = this.model.getSubtotalPrice();
+        const discount = this.model.get('discount');
+        const unit_price_discounted = this.model.getUnitPriceDiscounted();
+        const subtotal_price_discounted = this.model.getSubtotalPriceDiscounted();
 
         return {
             unit: format.price_usd(unit_price),
             subtotal: format.price_usd(subtotal_price),
             discount: discount ? format.percent(discount) : null,
             unit_discounted: discount ? format.price_usd(unit_price_discounted) : null,
-            subtotal_discounted: discount ? format.price_usd(subtotal_price_discounted) : null
+            subtotal_discounted: discount ? format.price_usd(subtotal_price_discounted) : null,
         };
     },
-    getDescription: function () {
-        var view = this;
-        var project_settings = App.settings.getProjectSettings();
+    getDescription() {
+        const view = this;
+        const project_settings = App.settings.getProjectSettings();
 
         //  TODO: this name is a bit misleading
         function getFillingPerimeter(width, height) {
@@ -40,14 +40,14 @@ export default Marionette.View.extend({
                     convert.mm_to_inches(width),
                     convert.mm_to_inches(height),
                     'fraction',
-                    'inches_only'
+                    'inches_only',
                 );
         }
 
         function getFillingArea(width, height, suffix_format) {
             suffix_format = suffix_format || 'sup';
 
-            var result = view.options.show_sizes_in_mm ?
+            const result = view.options.show_sizes_in_mm ?
                 format.square_meters(math.square_meters(width, height)) :
                 format.square_feet(math.square_feet(convert.mm_to_inches(width),
                     convert.mm_to_inches(height)), 2, suffix_format);
@@ -56,15 +56,15 @@ export default Marionette.View.extend({
         }
 
         function getFillingSize(width, height) {
-            var filling_size = getFillingPerimeter(width, height);
-            var filling_area = getFillingArea(width, height);
+            const filling_size = getFillingPerimeter(width, height);
+            const filling_area = getFillingArea(width, height);
 
-            return filling_size + ' (' + filling_area + ')';
+            return `${filling_size} (${filling_area})`;
         }
 
         function getSectionInfo(source, options) {
             options = options || {};
-            var result = {};
+            const result = {};
 
             result.filling_is_glass = source.filling.type === 'glass';
             result.filling_name = source.filling.name;
@@ -72,7 +72,7 @@ export default Marionette.View.extend({
 
             //  Show supplier name for filling if it exists
             if (options.show_supplier_names && App.settings && source.filling && source.filling.name) {
-                var filling_type = App.settings.filling_types.getByName(source.filling.name);
+                const filling_type = App.settings.filling_types.getByName(source.filling.name);
 
                 if (filling_type && filling_type.get('supplier_name')) {
                     result.filling_name = filling_type.get('supplier_name');
@@ -82,16 +82,16 @@ export default Marionette.View.extend({
             return result;
         }
 
-        var sash_list_source = this.model.getSashList(null, null, this.options.show_outside_units_view &&
+        const sash_list_source = this.model.getSashList(null, null, this.options.show_outside_units_view &&
             project_settings && project_settings.get('hinge_indicator_mode') === 'american');
-        var sashes = [];
+        const sashes = [];
 
         //  This is the list of params that we want to see in the quote. We
         //  throw out attributes that don't apply to the current unit
-        var params_list = _.filter(
+        const params_list = _.filter(
             ['rough_opening', 'description', 'opening_direction'],
             function (param) {
-                var condition = true;
+                let condition = true;
 
                 if (this.model.isOperableOnlyAttribute(param) && !this.model.hasOperableSections()) {
                     condition = false;
@@ -99,16 +99,16 @@ export default Marionette.View.extend({
 
                 return condition;
             }, this);
-        var source_hash = this.model.getNameTitleTypeHash(params_list);
+        const source_hash = this.model.getNameTitleTypeHash(params_list);
 
         //  Add section for each sash (Sash #N title + sash properties)
         _.each(sash_list_source, function (source_item, index) {
-            var sash_item = {};
-            var opening_size_data;
-            var egress_opening_size_data;
-            var section_info;
+            const sash_item = {};
+            let opening_size_data;
+            let egress_opening_size_data;
+            let section_info;
 
-            sash_item.name = 'Sash #' + (index + 1);
+            sash_item.name = `Sash #${index + 1}`;
             sash_item.type = source_item.type;
 
             if (source_item.opening.height && source_item.opening.width) {
@@ -116,7 +116,7 @@ export default Marionette.View.extend({
                     source_item.opening,
                     undefined,
                     undefined,
-                    this.options.show_sizes_in_mm ? 'mm' : 'inches'
+                    this.options.show_sizes_in_mm ? 'mm' : 'inches',
                 );
 
                 if (opening_size_data) {
@@ -124,14 +124,14 @@ export default Marionette.View.extend({
                         format.dimensions_and_area_mm(
                             opening_size_data.width,
                             opening_size_data.height,
-                            opening_size_data.area
+                            opening_size_data.area,
                         ) :
                         format.dimensions_and_area(
                             opening_size_data.width,
                             opening_size_data.height,
                             undefined,
                             undefined,
-                            opening_size_data.area
+                            opening_size_data.area,
                         );
                 }
 
@@ -139,7 +139,7 @@ export default Marionette.View.extend({
                     source_item.opening,
                     'egress',
                     source_item.original_type,
-                    this.options.show_sizes_in_mm ? 'mm' : 'inches'
+                    this.options.show_sizes_in_mm ? 'mm' : 'inches',
                 );
 
                 if (egress_opening_size_data) {
@@ -147,28 +147,28 @@ export default Marionette.View.extend({
                         format.dimensions_and_area_mm(
                             egress_opening_size_data.width,
                             egress_opening_size_data.height,
-                            egress_opening_size_data.area
+                            egress_opening_size_data.area,
                         ) :
                         format.dimensions_and_area(
                             egress_opening_size_data.width,
                             egress_opening_size_data.height,
                             undefined,
                             undefined,
-                            egress_opening_size_data.area
+                            egress_opening_size_data.area,
                         );
                 }
             }
 
             //  Child sections
             if (source_item.sections.length) {
-                var sum = 0;
+                let sum = 0;
 
                 sash_item.sections = [];
 
                 _.each(source_item.sections, function (section, s_index) {
-                    var section_item = {};
+                    const section_item = {};
 
-                    section_item.name = 'Section #' + (index + 1) + '.' + (s_index + 1);
+                    section_item.name = `Section #${index + 1}.${s_index + 1}`;
                     section_info = getSectionInfo(section, this.options);
                     _.extend(section_item, section_info);
 
@@ -190,12 +190,12 @@ export default Marionette.View.extend({
         }, this);
 
         //  Now get list of Unit Options applicable for this unit
-        var dictionaries = _.map(App.settings.dictionaries.filter(function (dictionary) {
-            var rules_and_restrictions = dictionary.get('rules_and_restrictions');
-            var is_restricted = false;
+        const dictionaries = _.map(App.settings.dictionaries.filter(function (dictionary) {
+            const rules_and_restrictions = dictionary.get('rules_and_restrictions');
+            let is_restricted = false;
 
             _.each(rules_and_restrictions, function (rule) {
-                var restriction_applies = this.model.checkIfRestrictionApplies(rule);
+                const restriction_applies = this.model.checkIfRestrictionApplies(rule);
 
                 if (restriction_applies) {
                     is_restricted = true;
@@ -203,9 +203,7 @@ export default Marionette.View.extend({
             }, this);
 
             return !is_restricted;
-        }, this), function (filtered_dictionary) {
-            return filtered_dictionary.get('name');
-        }, this);
+        }, this), filtered_dictionary => filtered_dictionary.get('name'), this);
 
         //  Here we form the final list of properties to be shown in the
         //  Product Description column in the specific order. We do it in
@@ -215,17 +213,17 @@ export default Marionette.View.extend({
         //  only those unit attributes that apply to the current unit
         //  3. Add list of Unit Options that apply to the current unit
         //  4. Add Threshold and U Value.
-        var name_title_hash = _.extend({
+        const name_title_hash = _.extend({
             size: 'Size <small class="size-label">WxH</small>',
             rough_opening: 'Rough Opening <small class="size-label">WxH</small>',
-            system: 'System'
+            system: 'System',
         }, _.object(_.pluck(source_hash, 'name'), _.pluck(source_hash, 'title')),
         _.object(dictionaries, dictionaries), {
             threshold: 'Threshold',
-            u_value: 'U Value'
+            u_value: 'U Value',
         });
 
-        var params_source = {
+        let params_source = {
             system: this.options.show_supplier_system ?
                 this.model.profile.get('supplier_system') :
                 this.model.profile.get('system'),
@@ -240,15 +238,15 @@ export default Marionette.View.extend({
                 format.dimensions_mm(convert.inches_to_mm(this.model.getRoughOpeningWidth()),
                     convert.inches_to_mm(this.model.getRoughOpeningHeight())) :
                 format.dimensions(this.model.getRoughOpeningWidth(), this.model.getRoughOpeningHeight(),
-                    null, project_settings.get('inches_display_mode') || null)
+                    null, project_settings.get('inches_display_mode') || null),
         };
 
         //  Extend unit attributes with options
         params_source = _.extend({}, params_source, _.object(dictionaries, _.map(dictionaries,
             function (dictionary_name) {
-                var dictionary_id = App.settings.dictionaries.getDictionaryIdByName(dictionary_name);
-                var is_dictionary_hidden = App.settings.dictionaries.get(dictionary_id).get('is_hidden');
-                var current_options = dictionary_id ?
+                const dictionary_id = App.settings.dictionaries.getDictionaryIdByName(dictionary_name);
+                const is_dictionary_hidden = App.settings.dictionaries.get(dictionary_id).get('is_hidden');
+                const current_options = dictionary_id ?
                     this.model.getCurrentUnitOptionsByDictionaryId(dictionary_id) : [];
 
                 if (is_dictionary_hidden) {
@@ -257,66 +255,66 @@ export default Marionette.View.extend({
 
                 //  We assume that we have only one option per dictionary,
                 //  although in theory it's possible to have multiple
-                var option_name = current_options.length ? (
-                    this.options.show_supplier_names && current_options[0].entry.get('supplier_name') ||
+                const option_name = current_options.length ? (
+                    (this.options.show_supplier_names && current_options[0].entry.get('supplier_name')) ||
                     current_options[0].entry.get('name')
                 ) : false;
 
                 return option_name;
-            }, this)
+            }, this),
         ));
 
-        var params = _.map(name_title_hash, function (item, key) {
+        const params = _.map(name_title_hash, function (item, key) {
             return {
                 name: key,
                 title: item,
                 value: params_source[key] !== undefined ?
-                    params_source[key] : this.model.get(key)
+                    params_source[key] : this.model.get(key),
             };
         }, this);
 
         return {
-            sashes: sashes,
-            params: params
+            sashes,
+            params,
         };
     },
-    getCustomerImage: function () {
+    getCustomerImage() {
         return this.model.get('customer_image');
     },
-    getProductImage: function (is_alternative) {
-        var project_settings = App.settings && App.settings.getProjectSettings();
-        var position = this.options.show_outside_units_view ?
-            ( !is_alternative ? 'outside' : 'inside' ) :
-            ( !is_alternative ? 'inside' : 'outside' );
-        var preview_size = 600;
-        var title = position === 'inside' ? 'View from Interior' : 'View from Exterior';
+    getProductImage(is_alternative) {
+        const project_settings = App.settings && App.settings.getProjectSettings();
+        const position = this.options.show_outside_units_view ?
+            (!is_alternative ? 'outside' : 'inside') :
+            (!is_alternative ? 'inside' : 'outside');
+        const preview_size = 600;
+        const title = position === 'inside' ? 'View from Interior' : 'View from Exterior';
 
         return {
             img: preview(this.model, {
                 width: preview_size,
                 height: preview_size,
                 mode: 'base64',
-                position: position,
+                position,
                 hingeIndicatorMode: this.options.force_european_hinge_indicators ? 'european' :
-                    project_settings && project_settings.get('hinge_indicator_mode')
+                    project_settings && project_settings.get('hinge_indicator_mode'),
             }),
-            title: title
+            title,
         };
     },
-    shouldShowCustomerImage: function () {
+    shouldShowCustomerImage() {
         return this.options.show_customer_image !== false &&
             this.model.collection && this.model.collection.hasAtLeastOneCustomerImage();
     },
-    shouldShowDrawings: function () {
-        var project_settings = App.settings && App.settings.getProjectSettings();
-        var show_drawings = !project_settings || project_settings.get('show_drawings_in_quote');
+    shouldShowDrawings() {
+        const project_settings = App.settings && App.settings.getProjectSettings();
+        const show_drawings = !project_settings || project_settings.get('show_drawings_in_quote');
 
         return show_drawings;
     },
-    templateContext: function () {
-        var show_customer_image = this.shouldShowCustomerImage();
-        var show_drawings = this.shouldShowDrawings();
-        var show_price = this.options.show_price !== false;
+    templateContext() {
+        const show_customer_image = this.shouldShowCustomerImage();
+        const show_drawings = this.shouldShowDrawings();
+        const show_price = this.options.show_price !== false;
 
         return {
             position: parseFloat(this.model.get('position')) + 1,
@@ -327,10 +325,10 @@ export default Marionette.View.extend({
             quantity: this.model.get('quantity'),
             customer_image: show_customer_image ? this.getCustomerImage() : '',
             product_image: show_drawings ? this.getProductImage() : '',
-            show_price: show_price,
+            show_price,
             price: show_price ? this.getPrices() : null,
             has_dummy_profile: this.model.hasDummyProfile(),
-            profile_name: this.model.get('profile_name') || this.model.get('profile_id') || ''
+            profile_name: this.model.get('profile_name') || this.model.get('profile_id') || '',
         };
-    }
+    },
 });

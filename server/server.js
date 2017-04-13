@@ -12,6 +12,7 @@ const bodyParserMiddleware = require('./middlewares/bodyParserMiddleware');
 const routers = require('./routers');
 const config = require('../config/config');
 const log = require('../config/log');
+
 const port = config.get('server:port');
 const host = config.get('server:host');
 const assetsPath = config.get('app:assetsPath');
@@ -40,7 +41,7 @@ if (isDebug) {
     log.info('Enable webpack dev and HMR middleware');
     app.use(require('webpack-dev-middleware')(compiler, {
         publicPath: webpackConfig.output.publicPath,
-        stats: webpackConfig.stats
+        stats: webpackConfig.stats,
     }));
     // app.use(require('webpack-hot-middleware')(compiler));
 } else {

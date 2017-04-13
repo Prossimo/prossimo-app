@@ -4,32 +4,32 @@ import template from '../../templates/dialogs/login-dialog-view.hbs';
 
 export default BaseDialogView.extend({
     className: 'login-modal modal fade',
-    template: template,
+    template,
     ui: {
         $username_input: '#pa_username',
         $password_input: '#pa_password',
         $error_container: '.error-container',
-        $button: 'button'
+        $button: 'button',
     },
     events: {
         'keypress input': 'confirmOnEnter',
-        'submit form': 'onSubmit'
+        'submit form': 'onSubmit',
     },
-    freezeUI: function () {
+    freezeUI() {
         this.$el.addClass('request-active');
         this.ui.$button.addClass('disabled').attr('disabled', true);
     },
-    unfreezeUI: function () {
+    unfreezeUI() {
         this.$el.removeClass('request-active');
         this.ui.$button.removeClass('disabled').attr('disabled', false);
     },
-    onSubmit: function (e) {
+    onSubmit(e) {
         e.preventDefault();
         this.attemptToLogin();
     },
-    attemptToLogin: function () {
-        var username = this.ui.$username_input.val().trim();
-        var password = this.ui.$password_input.val();
+    attemptToLogin() {
+        const username = this.ui.$username_input.val().trim();
+        const password = this.ui.$password_input.val();
 
         if (username && password) {
             this.startRequest(username, password);
@@ -37,25 +37,25 @@ export default BaseDialogView.extend({
             this.toggleError('Username and password shouldn\'t be empty.');
         }
     },
-    startRequest: function (username, password) {
-        var self = this;
+    startRequest(username, password) {
+        const self = this;
 
         this.freezeUI();
 
         App.session.login({
-            username: username,
-            password: password
+            username,
+            password,
         }, {
-            success: function (response) {
+            success(response) {
                 self.processResponse(response);
             },
-            error: function (response, jqXHR, textStatus) {
+            error(response, jqXHR, textStatus) {
                 self.processResponse(response, jqXHR, textStatus);
-            }
+            },
         });
     },
-    processResponse: function (response, jqXHR) {
-        var error_message = 'Server error. Please try again or contact support';
+    processResponse(response, jqXHR) {
+        let error_message = 'Server error. Please try again or contact support';
 
         this.unfreezeUI();
 
@@ -77,22 +77,22 @@ export default BaseDialogView.extend({
 
         this.toggleError(error_message);
     },
-    toggleError: function (message) {
+    toggleError(message) {
         if (!message) {
             this.$el.removeClass('has-error');
             this.ui.$error_container.empty();
         } else {
             this.$el.addClass('has-error');
-            this.ui.$error_container.html('<p>' + message + '</p>');
+            this.ui.$error_container.html(`<p>${message}</p>`);
         }
     },
-    templateContext: function () {
+    templateContext() {
         return {
-            token_expired: App.session.get('token_expired')
+            token_expired: App.session.get('token_expired'),
         };
     },
-    onRender: function () {
+    onRender() {
         this.$el.find('.modal-header').remove();
         this.toggleError();
-    }
+    },
 });

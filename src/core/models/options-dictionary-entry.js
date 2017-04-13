@@ -2,17 +2,17 @@ import Backbone from 'backbone';
 import _ from 'underscore';
 
 import Schema from '../../schema';
-import utils from '../../utils';
+import { object } from '../../utils';
 import DictionaryEntryProfileCollection from '../collections/inline/dictionary-entry-to-profile-collection';
 
-var UNSET_VALUE = '--';
+const UNSET_VALUE = '--';
 
-var ENTRY_PROPERTIES = [
-    {name: 'name', title: 'Name', type: 'string'},
-    {name: 'supplier_name', title: 'Supplier Name', type: 'string'},
-    {name: 'data', title: 'Additional Data', type: 'string'},
-    {name: 'position', title: 'Position', type: 'number'},
-    {name: 'dictionary_entry_profiles', title: 'Profiles', type: 'collection:DictionaryEntryProfileCollection'}
+const ENTRY_PROPERTIES = [
+    { name: 'name', title: 'Name', type: 'string' },
+    { name: 'supplier_name', title: 'Supplier Name', type: 'string' },
+    { name: 'data', title: 'Additional Data', type: 'string' },
+    { name: 'position', title: 'Position', type: 'number' },
+    { name: 'dictionary_entry_profiles', title: 'Profiles', type: 'collection:DictionaryEntryProfileCollection' },
 ];
 
 function getDefaultEntryData() {
@@ -21,8 +21,8 @@ function getDefaultEntryData() {
 
 export default Backbone.Model.extend({
     schema: Schema.createSchema(ENTRY_PROPERTIES),
-    defaults: function () {
-        var defaults = {};
+    defaults() {
+        const defaults = {};
 
         _.each(ENTRY_PROPERTIES, function (item) {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
@@ -30,21 +30,21 @@ export default Backbone.Model.extend({
 
         return defaults;
     },
-    getNameAttribute: function () {
+    getNameAttribute() {
         return 'name';
     },
-    getDefaultValue: function (name, type) {
-        var default_value = '';
+    getDefaultValue(name, type) {
+        let default_value = '';
 
-        var type_value_hash = {
-            number: 0
+        const type_value_hash = {
+            number: 0,
         };
 
-        var name_value_hash = {
+        const name_value_hash = {
             data: getDefaultEntryData(),
             dictionary_entry_profiles: new DictionaryEntryProfileCollection(null, {
-                parent_entry: this
-            })
+                parent_entry: this,
+            }),
         };
 
         if (_.indexOf(_.keys(type_value_hash), type) !== -1) {
@@ -57,48 +57,45 @@ export default Backbone.Model.extend({
 
         return default_value;
     },
-    sync: function (method, model, options) {
+    sync(method, model, options) {
         if (method === 'create' || method === 'update') {
-            options.attrs = {entry: model.toJSON()};
+            options.attrs = { entry: model.toJSON() };
         }
 
         return Backbone.sync.call(this, method, model, options);
     },
-    parse: function (data) {
-        var entry_data = data && data.entry ? data.entry : data;
-        var parsed_data = Schema.parseAccordingToSchema(entry_data, this.schema);
+    parse(data) {
+        const entry_data = data && data.entry ? data.entry : data;
+        const parsed_data = Schema.parseAccordingToSchema(entry_data, this.schema);
 
         if (parsed_data && parsed_data.dictionary_entry_profiles) {
             parsed_data.dictionary_entry_profiles = new DictionaryEntryProfileCollection(
-                utils.object.extractObjectOrNull(parsed_data.dictionary_entry_profiles),
+                object.extractObjectOrNull(parsed_data.dictionary_entry_profiles),
                 {
                     parent_entry: this,
-                    parse: true
-                }
+                    parse: true,
+                },
             );
         }
 
         if (parsed_data && parsed_data.data) {
-            parsed_data.data =
-                utils.object.extractObjectOrNull(parsed_data.data) || this.getDefaultValue('data');
+            parsed_data.data = object.extractObjectOrNull(parsed_data.data) || this.getDefaultValue('data');
         }
 
         return parsed_data;
     },
-    toJSON: function () {
-        var properties_to_omit = ['id'];
-        var json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+    toJSON(...args) {
+        const properties_to_omit = ['id'];
+        const json = Backbone.Model.prototype.toJSON.apply(this, args);
 
         json.dictionary_entry_profiles = this.get('dictionary_entry_profiles').toJSON();
         json.data = _.isString(json.data) ? json.data : JSON.stringify(json.data);
 
         return _.omit(json, properties_to_omit);
     },
-    validate: function (attributes, options) {
-        var error_obj = null;
-        var collection_names = this.collection && _.map(this.collection.without(this), function (item) {
-            return item.get('name');
-        });
+    validate(attributes, options) {
+        let error_obj = null;
+        const collection_names = this.collection && _.map(this.collection.without(this), item => item.get('name'));
 
         //  We want to have unique option names across the collection
         if (options.validate && collection_names &&
@@ -106,7 +103,7 @@ export default Backbone.Model.extend({
         ) {
             return {
                 attribute_name: 'name',
-                error_message: 'Entry name "' + attributes.name + '" is already used in this collection'
+                error_message: `Entry name "${attributes.name}" is already used in this collection`,
             };
         }
 
@@ -116,7 +113,7 @@ export default Backbone.Model.extend({
         ) {
             return {
                 attribute_name: 'name',
-                error_message: 'Entry name can\'t consist of only numbers'
+                error_message: 'Entry name can\'t consist of only numbers',
             };
         }
 
@@ -124,13 +121,13 @@ export default Backbone.Model.extend({
         if (options.validate && attributes.name && UNSET_VALUE === attributes.name) {
             return {
                 attribute_name: 'name',
-                error_message: 'Entry name can\'t be set to ' + UNSET_VALUE
+                error_message: `Entry name can't be set to ${UNSET_VALUE}`,
             };
         }
 
         //  Simple type validation for numbers and booleans
         _.find(attributes, function (value, key) {
-            var attribute_obj = this.getNameTitleTypeHash([key]);
+            let attribute_obj = this.getNameTitleTypeHash([key]);
 
             attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
 
@@ -139,14 +136,14 @@ export default Backbone.Model.extend({
             ) {
                 error_obj = {
                     attribute_name: key,
-                    error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a number'
+                    error_message: `${attribute_obj.title} can't be set to "${value}", it should be a number`,
                 };
 
                 return false;
             } else if (attribute_obj && attribute_obj.type === 'boolean' && !_.isBoolean(value)) {
                 error_obj = {
                     attribute_name: key,
-                    error_message: attribute_obj.title + ' can\'t be set to "' + value + '", it should be a boolean'
+                    error_message: `${attribute_obj.title} can't be set to "${value}", it should be a boolean`,
                 };
 
                 return false;
@@ -157,13 +154,13 @@ export default Backbone.Model.extend({
             return error_obj;
         }
     },
-    hasOnlyDefaultAttributes: function () {
-        var has_only_defaults = true;
+    hasOnlyDefaultAttributes() {
+        let has_only_defaults = true;
 
         _.each(this.toJSON(), function (value, key) {
             if (key !== 'position' && has_only_defaults) {
-                var property_source = _.findWhere(ENTRY_PROPERTIES, {name: key});
-                var type = property_source ? property_source.type : undefined;
+                const property_source = _.findWhere(ENTRY_PROPERTIES, { name: key });
+                const type = property_source ? property_source.type : undefined;
 
                 if (key === 'data') {
                     if (value !== JSON.stringify(this.getDefaultValue('data'))) {
@@ -183,41 +180,41 @@ export default Backbone.Model.extend({
     },
     //  Return { name: 'name', title: 'Title' } pairs for each item in
     //  `names` array. If the array is empty, return all possible pairs
-    getNameTitleTypeHash: function (names) {
-        var name_title_hash = [];
+    getNameTitleTypeHash(names) {
+        const name_title_hash = [];
 
         if (!names) {
             names = _.pluck(ENTRY_PROPERTIES, 'name');
         }
 
-        _.each(ENTRY_PROPERTIES, function (item) {
+        _.each(ENTRY_PROPERTIES, (item) => {
             if (_.indexOf(names, item.name) !== -1) {
-                name_title_hash.push({name: item.name, title: item.title, type: item.type});
+                name_title_hash.push({ name: item.name, title: item.title, type: item.type });
             }
         });
 
         return name_title_hash;
     },
-    getAttributeType: function (attribute_name) {
-        var name_title_hash = this.getNameTitleTypeHash();
-        var target_attribute = _.findWhere(name_title_hash, {name: attribute_name});
+    getAttributeType(attribute_name) {
+        const name_title_hash = this.getNameTitleTypeHash();
+        const target_attribute = _.findWhere(name_title_hash, { name: attribute_name });
 
         return target_attribute ? target_attribute.type : undefined;
     },
-    getTitles: function (names) {
-        var name_title_hash = this.getNameTitleTypeHash(names);
+    getTitles(names) {
+        const name_title_hash = this.getNameTitleTypeHash(names);
 
         return _.pluck(name_title_hash, 'title');
     },
-    isAvailableForProfile: function (profile_id) {
+    isAvailableForProfile(profile_id) {
         return this.get('dictionary_entry_profiles') &&
             _.contains(this.get('dictionary_entry_profiles').pluck('profile_id'), profile_id);
     },
-    isDefaultForProfile: function (profile_id) {
-        var is_default = false;
+    isDefaultForProfile(profile_id) {
+        let is_default = false;
 
         if (this.isAvailableForProfile(profile_id)) {
-            var connection = this.get('dictionary_entry_profiles').getByProfileId(profile_id);
+            const connection = this.get('dictionary_entry_profiles').getByProfileId(profile_id);
 
             is_default = connection.get('is_default') || false;
         }
@@ -237,9 +234,9 @@ export default Backbone.Model.extend({
      * @param {boolean} make_default - true to set as default, false
      * to unset. You can't make item default when it's not available
      */
-    setProfileAvailability: function (profile_id, make_available, make_default) {
-        var profiles_list = this.get('dictionary_entry_profiles');
-        var connection = profiles_list.getByProfileId(profile_id);
+    setProfileAvailability(profile_id, make_available, make_default) {
+        const profiles_list = this.get('dictionary_entry_profiles');
+        const connection = profiles_list.getByProfileId(profile_id);
 
         //  If there is an existing connection that we want to unset
         if (make_available === false && connection) {
@@ -248,8 +245,8 @@ export default Backbone.Model.extend({
             //  If connection doesn't exist and we want to add it
             if (!connection) {
                 profiles_list.add({
-                    profile_id: profile_id,
-                    is_default: make_default === true
+                    profile_id,
+                    is_default: make_default === true,
                 });
             //  If connection exists and we want to just modify is_default
             } else if (make_default === true || make_default === false) {
@@ -258,44 +255,42 @@ export default Backbone.Model.extend({
         }
     },
     //  We assume that profiles list is sorted and deduplicated
-    getIdsOfProfilesWhereIsAvailable: function () {
+    getIdsOfProfilesWhereIsAvailable() {
         return this.get('dictionary_entry_profiles').pluck('profile_id');
     },
     //  We assume that profiles list is sorted and deduplicated
-    getIdsOfProfilesWhereIsDefault: function () {
+    getIdsOfProfilesWhereIsDefault() {
         return _.map(
-            this.get('dictionary_entry_profiles').where({is_default: true}),
-            function (item) {
-                return item.get('profile_id');
-            }
+            this.get('dictionary_entry_profiles').where({ is_default: true }),
+            item => item.get('profile_id'),
         );
     },
     //  It returns a combination of scheme and data to calculate cost
-    getPricingDataForProfile: function (profile_id) {
-        var pricing_data = null;
+    getPricingDataForProfile(profile_id) {
+        let pricing_data = null;
 
         if (this.isAvailableForProfile(profile_id)) {
-            var connection = this.get('dictionary_entry_profiles').getByProfileId(profile_id);
+            const connection = this.get('dictionary_entry_profiles').getByProfileId(profile_id);
 
             pricing_data = connection.getPricingData();
         }
 
         return pricing_data;
     },
-    getParentDictionary: function () {
+    getParentDictionary() {
         return this.collection && this.collection.options.dictionary;
     },
-    isParentDictionaryHidden: function () {
-        var dictionary = this.getParentDictionary();
+    isParentDictionaryHidden() {
+        const dictionary = this.getParentDictionary();
 
         return dictionary && dictionary.get('is_hidden');
     },
-    initialize: function (attributes, options) {
+    initialize(attributes, options) {
         this.options = options || {};
 
         //  Any change to `dictionary_entry_profiles` should be persisted
         this.listenTo(this.get('dictionary_entry_profiles'), 'change update', function () {
             this.persist('dictionary_entry_profiles', this.get('dictionary_entry_profiles'));
         });
-    }
+    },
 });
