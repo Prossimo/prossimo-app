@@ -1,10 +1,10 @@
 import _ from 'underscore';
 
-import App from 'src/main';
-import FillingTypeProfile from 'src/core/models/inline/filling-type-to-profile';
-import FillingType from 'src/core/models/filling-type';
-import PricingGridCollection from 'src/core/collections/inline/pricing-grid-collection';
-import PricingEquationParamsCollection from 'src/core/collections/inline/pricing-equation-params-collection';
+import App from '../../../../src/main';
+import FillingTypeProfile from '../../../../src/core/models/inline/filling-type-to-profile';
+import FillingType from '../../../../src/core/models/filling-type';
+import PricingGridCollection from '../../../../src/core/collections/inline/pricing-grid-collection';
+import PricingEquationParamsCollection from '../../../../src/core/collections/inline/pricing-equation-params-collection';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');

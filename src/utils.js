@@ -1,8 +1,5 @@
 import _ from 'underscore';
 import Decimal from 'decimal.js';
-import toFormat from 'toformat';
-
-toFormat(Decimal);
 
 const MAX_DENOMINATOR = 16;
 //  For numbers that are passed to Decimal constructor

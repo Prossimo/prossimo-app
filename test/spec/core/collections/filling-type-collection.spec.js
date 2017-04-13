@@ -1,7 +1,7 @@
 import _ from 'underscore';
 
-import App from 'src/main';
-import FillingTypeCollection from 'src/core/collections/filling-type-collection';
+import App from '../../../../src/main';
+import FillingTypeCollection from '../../../../src/core/collections/filling-type-collection';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');

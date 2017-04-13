@@ -1,9 +1,9 @@
 import _ from 'underscore';
 import {assert} from 'chai';
 
-import App from 'src/main';
-import FillingType from 'src/core/models/filling-type';
-import FillingTypeProfileCollection from 'src/core/collections/inline/filling-type-to-profile-collection';
+import App from '../../../../src/main';
+import FillingType from '../../../../src/core/models/filling-type';
+import FillingTypeProfileCollection from '../../../../src/core/collections/inline/filling-type-to-profile-collection';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');

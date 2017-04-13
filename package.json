@@ -10,8 +10,8 @@
     "lint": "./node_modules/eslint-cli/bin/eslint.js src tools server",
     "karma": "./node_modules/karma/bin/karma start",
     "test": "./node_modules/karma/bin/karma start --single-run",
-    "test_visual": "DO_VISUAL_TESTS=true ./node_modules/karma/bin/karma start --single-run",
-    "check": "npm run lint && npm run test && npm run test_visual"
+    "test:visual": "./node_modules/karma/bin/karma start --single-run --onlyVisualTests",
+    "check": "npm run lint && npm run test && npm run test:visual"
   },
   "engines": {
     "node": ">=6.9.5"

@@ -32,7 +32,6 @@ module.exports = {
             'node_modules'
         ],
         alias: {
-            src: srcPath,
             'load-image': 'blueimp-load-image/js/load-image.js',
             'load-image-meta': 'blueimp-load-image/js/load-image-meta.js',
             'load-image-exif': 'blueimp-load-image/js/load-image-exif.js',
@@ -56,6 +55,7 @@ module.exports = {
                 exclude: /(node_modules)/
             },
             {test: /backbone\.js$/, use: [path.resolve(webLoaders, 'backbone-extended-loader')]},
+            {test: /decimal\.es6\.js$/, use: [path.resolve(webLoaders, 'decimal-loader')]},
             {test: /\.hbs$/, use: ['handlebars-template-loader']},
             {
                 test: /\.less$/,

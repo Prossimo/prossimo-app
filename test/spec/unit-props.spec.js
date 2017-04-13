@@ -1,9 +1,9 @@
 import _ from 'underscore';
 
-import App from 'src/main';
-import {convert as c} from 'src/utils';
-import Unit from 'src/core/models/unit';
-import Profile from 'src/core/models/profile';
+import App from '../../src/main';
+import {convert as c} from '../../src/utils';
+import Unit from '../../src/core/models/unit';
+import Profile from '../../src/core/models/profile';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');

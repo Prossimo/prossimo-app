@@ -1,11 +1,11 @@
 import _ from 'underscore';
 
-import {math as m} from 'src/utils';
-import App from 'src/main';
-import Profile from 'src/core/models/profile';
-import Unit from 'src/core/models/unit';
-import Project from 'src/core/models/project';
-import Quote from 'src/core/models/quote';
+import {math as m} from '../../src/utils';
+import App from '../../src/main';
+import Profile from '../../src/core/models/profile';
+import Unit from '../../src/core/models/unit';
+import Project from '../../src/core/models/project';
+import Quote from '../../src/core/models/quote';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');

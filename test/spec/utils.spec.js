@@ -1,6 +1,6 @@
 import _ from 'underscore';
 
-import {angle, convert, format, math, parseFormat, vector2d} from 'src/utils';
+import {angle, convert, format, math, parseFormat, vector2d} from '../../src/utils';
 
 test('Utils.js tests: ', function () {
     //  ------------------------------------------------------------------------

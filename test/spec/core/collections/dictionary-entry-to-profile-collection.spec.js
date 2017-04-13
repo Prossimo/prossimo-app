@@ -1,9 +1,9 @@
 import {assert} from 'chai';
 
-import App from 'src/main';
-import DictionaryEntryProfile from 'src/core/models/inline/dictionary-entry-to-profile';
-import PricingGridCollection from 'src/core/collections/inline/pricing-grid-collection';
-import DictionaryEntryProfileCollection from 'src/core/collections/inline/dictionary-entry-to-profile-collection';
+import App from '../../../../src/main';
+import DictionaryEntryProfile from '../../../../src/core/models/inline/dictionary-entry-to-profile';
+import PricingGridCollection from '../../../../src/core/collections/inline/pricing-grid-collection';
+import DictionaryEntryProfileCollection from '../../../../src/core/collections/inline/dictionary-entry-to-profile-collection';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');

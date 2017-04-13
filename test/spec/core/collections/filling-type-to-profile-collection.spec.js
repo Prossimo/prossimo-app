@@ -1,9 +1,9 @@
 import {assert} from 'chai';
 
-import App from 'src/main';
-import FillingTypeProfileCollection from 'src/core/collections/inline/filling-type-to-profile-collection';
-import FillingTypeProfile from 'src/core/models/inline/filling-type-to-profile';
-import PricingGridCollection from 'src/core/collections/inline/pricing-grid-collection';
+import App from '../../../../src/main';
+import FillingTypeProfileCollection from '../../../../src/core/collections/inline/filling-type-to-profile-collection';
+import FillingTypeProfile from '../../../../src/core/models/inline/filling-type-to-profile';
+import PricingGridCollection from '../../../../src/core/collections/inline/pricing-grid-collection';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
