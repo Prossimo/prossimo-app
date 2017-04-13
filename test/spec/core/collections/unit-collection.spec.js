@@ -1,9 +1,10 @@
 import _ from 'underscore';
-import App from '../src/main';
-import Unit from '../src/core/models/unit';
-import UnitCollection from '../src/core/collections/unit-collection';
-import Quote from '../src/core/models/quote';
-import Profile from '../src/core/models/profile';
+
+import App from '../../../../src/main';
+import Unit from '../../../../src/core/models/unit';
+import UnitCollection from '../../../../src/core/collections/unit-collection';
+import Quote from '../../../../src/core/models/quote';
+import Profile from '../../../../src/core/models/profile';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
@@ -15,10 +16,10 @@ describe('Units collection:', function () {
         let unit_model = new UnitModel();
         let quote = new Quote();
 
-        instanceOf(units_collection, UnitCollection, 'should belong to UnitCollection object');
         instanceOf(unit_model, Unit, 'collection model should belong to Unit object');
         instanceOf(quote.units, UnitCollection, 'app.Quote().units should belong to app.UnitCollection object');
     });
+
     describe('basic tests', function () {
         let data = [{
             mark: 'A',
@@ -55,6 +56,7 @@ describe('Units collection:', function () {
         equal(units_collection.getTotalUnitQuantity(), 3, '#getTotalUnitQuantity() should return sum all "quantity"');
         equal(units_collection.getTotalSquareFeet(), 21, '#getTotalSquareFeet() should return sum all squares');
     });
+
     describe('by profiles', function () {
         let data = [{
             mark: 'A',

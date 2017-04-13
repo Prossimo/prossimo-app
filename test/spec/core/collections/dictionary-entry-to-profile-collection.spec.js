@@ -1,13 +1,14 @@
-import App from '../src/main';
-import FillingTypeProfileCollection from '../src/core/collections/inline/filling-type-to-profile-collection';
-import FillingTypeProfile from '../src/core/models/inline/filling-type-to-profile';
-import PricingGridCollection from '../src/core/collections/inline/pricing-grid-collection';
 import {assert} from 'chai';
+
+import App from '../../../../src/main';
+import DictionaryEntryProfile from '../../../../src/core/models/inline/dictionary-entry-to-profile';
+import PricingGridCollection from '../../../../src/core/collections/inline/pricing-grid-collection';
+import DictionaryEntryProfileCollection from '../../../../src/core/collections/inline/dictionary-entry-to-profile-collection';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
 
-test('FillingTypeProfileCollection tests', function () {
+test('DictionaryEntryProfileCollection tests', function () {
     before(function () {
         //  This is here to avoid creating side effects inside tests.
         //  TODO: we need to get rid of globals eventually
@@ -19,13 +20,12 @@ test('FillingTypeProfileCollection tests', function () {
         ], {parse: true});
     });
 
-    test('FillingTypeProfileCollection basic tests', function () {
-        let ftp_collection = new FillingTypeProfileCollection(null, {parse: true});
+    test('DictionaryEntryProfileCollection basic tests', function () {
+        let dep_collection = new DictionaryEntryProfileCollection(null, {parse: true});
 
-        ok(ftp_collection instanceof FillingTypeProfileCollection, 'ftp_collection is a FillingTypeProfileCollection object');
-        equal(ftp_collection.length, 0, 'ftp_collection contains 0 entries by default');
+        equal(dep_collection.length, 0, 'dep_collection contains 0 entries by default');
 
-        let ftps_collection_with_data = new FillingTypeProfileCollection([
+        let deps_collection_with_data = new DictionaryEntryProfileCollection([
             {
                 profile_id: 17,
                 is_default: false
@@ -36,15 +36,15 @@ test('FillingTypeProfileCollection tests', function () {
             }
         ], {parse: true});
 
-        equal(ftps_collection_with_data.length, 2, 'ftps_collection_with_data should contain 2 entries');
+        equal(deps_collection_with_data.length, 2, 'deps_collection_with_data should contain 2 entries');
         ok(
-            ftps_collection_with_data.at(0).get('pricing_grids') instanceof PricingGridCollection,
-            'Collection item `pricing_grids` attribure is instantiated with a PricingGridCollection object'
+            deps_collection_with_data.at(0).get('pricing_grids') instanceof PricingGridCollection,
+            'Collection item `pricing_grids` attribute is instantiated with a PricingGridCollection object'
         );
     });
 
-    test('FillingTypeProfileCollection getByProfileId function', function () {
-        let ftp_collection = new FillingTypeProfileCollection([
+    test('DictionaryEntryProfileCollection getByProfileId function', function () {
+        let dep_collection = new DictionaryEntryProfileCollection([
             {
                 profile_id: 17,
                 is_default: false
@@ -59,11 +59,11 @@ test('FillingTypeProfileCollection tests', function () {
             }
         ], {parse: true});
 
-        let default_item = ftp_collection.getByProfileId(22);
-        let nondefault_item = ftp_collection.getByProfileId(1);
-        let nonexistent_item = ftp_collection.getByProfileId(999);
+        let default_item = dep_collection.getByProfileId(22);
+        let nondefault_item = dep_collection.getByProfileId(1);
+        let nonexistent_item = dep_collection.getByProfileId(999);
 
-        ok(default_item instanceof FillingTypeProfile, 'default_item is a FillingTypeProfile object');
+        ok(default_item instanceof DictionaryEntryProfile, 'default_item is a DictionaryEntryProfile object');
         equal(default_item.get('is_default'), true, 'default_item has is_default set to true');
 
         equal(nondefault_item.get('is_default'), false, 'nondefault_item has is_default set to false');
@@ -72,8 +72,8 @@ test('FillingTypeProfileCollection tests', function () {
 
     //  See global app.settings.profiles at the beginning if this file,
     //  it includes specific order of profiles which we check here
-    test('FillingTypeProfileCollection sorting', function () {
-        let ftp_collection = new FillingTypeProfileCollection([
+    test('DictionaryEntryProfileCollection sorting', function () {
+        let dep_collection = new DictionaryEntryProfileCollection([
             {
                 profile_id: 17,
                 is_default: false
@@ -88,23 +88,25 @@ test('FillingTypeProfileCollection tests', function () {
             }
         ], {parse: true});
 
-        assert.sameMembers(ftp_collection.pluck('profile_id'),
+        assert.sameMembers(
+            dep_collection.pluck('profile_id'),
             [1, 22, 17],
             'Collection is properly sorted on creation'
         );
 
-        ftp_collection.add({
+        dep_collection.add({
             profile_id: 77,
             is_default: false
         }, {parse: true});
 
-        assert.sameMembers(ftp_collection.pluck('profile_id'),
+        assert.sameMembers(
+            dep_collection.pluck('profile_id'),
             [1, 22, 77, 17],
             'Collection is properly sorted after inserting a new item'
         );
     });
 
-    test('FillingTypeProfileCollection parse function', function () {
+    test('DictionaryEntryProfileCollection parse function', function () {
         let collection_data = [
             {
                 profile_id: 17,
@@ -130,11 +132,11 @@ test('FillingTypeProfileCollection tests', function () {
             }
         ];
 
-        let ftp_collection = new FillingTypeProfileCollection(
+        let dep_collection = new DictionaryEntryProfileCollection(
             collection_data,
             {parse: true}
         );
-        let first_item = ftp_collection.at(0);
+        let first_item = dep_collection.at(0);
         let fixed_grid_data = first_item.get('pricing_grids').getByName('fixed').get('data');
 
         equal(fixed_grid_data.length, 3, 'Fixed Grid has 3 grid items');
@@ -151,8 +153,8 @@ test('FillingTypeProfileCollection tests', function () {
         );
     });
 
-    test('FillingTypeProfileCollection toJSON function', function () {
-        let ftp_collection = new FillingTypeProfileCollection(
+    test('DictionaryEntryProfileCollection toJSON function', function () {
+        let dep_collection = new DictionaryEntryProfileCollection(
             [
                 {
                     profile_id: 17,
@@ -166,23 +168,12 @@ test('FillingTypeProfileCollection tests', function () {
             {parse: true}
         );
 
-        it('FillingTypeProfileCollection toJSON representation should match the expected data', () => {
-            expect(ftp_collection.toJSON()).to.containSubset([
+        it('DictionaryEntryProfileCollection toJSON representation should match the expected data', () => {
+            expect(dep_collection.toJSON()).to.containSubset([
                 {
                     profile_id: 1,
                     is_default: false,
-                    pricing_equation_params: JSON.stringify([
-                        {
-                            name: 'fixed',
-                            param_a: 0,
-                            param_b: 0
-                        },
-                        {
-                            name: 'operable',
-                            param_a: 0,
-                            param_b: 0
-                        }
-                    ]),
+                    cost_per_item: 0,
                     pricing_grids: JSON.stringify([
                         {
                             name: 'fixed',
@@ -199,24 +190,25 @@ test('FillingTypeProfileCollection tests', function () {
                                 {height: 914, width: 1514, value: 0},
                                 {height: 1200, width: 2400, value: 0}
                             ]
+                        }
+                    ]),
+                    pricing_equation_params: JSON.stringify([
+                        {
+                            name: 'fixed',
+                            param_a: 0,
+                            param_b: 0
+                        },
+                        {
+                            name: 'operable',
+                            param_a: 0,
+                            param_b: 0
                         }
                     ])
                 },
                 {
                     profile_id: 17,
                     is_default: false,
-                    pricing_equation_params: JSON.stringify([
-                        {
-                            name: 'fixed',
-                            param_a: 0,
-                            param_b: 0
-                        },
-                        {
-                            name: 'operable',
-                            param_a: 0,
-                            param_b: 0
-                        }
-                    ]),
+                    cost_per_item: 0,
                     pricing_grids: JSON.stringify([
                         {
                             name: 'fixed',
@@ -233,6 +225,18 @@ test('FillingTypeProfileCollection tests', function () {
                                 {height: 914, width: 1514, value: 0},
                                 {height: 1200, width: 2400, value: 0}
                             ]
+                        }
+                    ]),
+                    pricing_equation_params: JSON.stringify([
+                        {
+                            name: 'fixed',
+                            param_a: 0,
+                            param_b: 0
+                        },
+                        {
+                            name: 'operable',
+                            param_a: 0,
+                            param_b: 0
                         }
                     ])
                 }
@@ -240,7 +244,7 @@ test('FillingTypeProfileCollection tests', function () {
         });
     });
 
-    test('FillingTypeProfileCollection event propagation', function () {
+    test('DictionaryEntryProfileCollection event propagation', function () {
         let collection_data = [
             {
                 profile_id: 17,
@@ -266,24 +270,24 @@ test('FillingTypeProfileCollection tests', function () {
             }
         ];
 
-        let ftp_collection = new FillingTypeProfileCollection(
+        let dep_collection = new DictionaryEntryProfileCollection(
             collection_data,
             {parse: true}
         );
 
-        let ftp = ftp_collection.at(0);
-        let fixed_grid_first_item = ftp.get('pricing_grids').getByName('fixed').get('data').at(0);
+        let dep = dep_collection.at(0);
+        let fixed_grid_first_item = dep.get('pricing_grids').getByName('fixed').get('data').at(0);
 
-        let ftp_collection_event_counter = 0;
-        let ftp_event_counter = 0;
+        let dep_collection_event_counter = 0;
+        let dep_event_counter = 0;
         let item_event_counter = 0;
 
-        ftp_collection.on('change', function () {
-            ftp_collection_event_counter += 1;
+        dep_collection.on('change', function () {
+            dep_collection_event_counter += 1;
         });
 
-        ftp.on('change update', function () {
-            ftp_event_counter += 1;
+        dep.on('change update', function () {
+            dep_event_counter += 1;
         });
 
         fixed_grid_first_item.on('change destroy', function () {
@@ -293,19 +297,18 @@ test('FillingTypeProfileCollection tests', function () {
         fixed_grid_first_item.persist('value', 20);
 
         equal(
-            ftp_collection_event_counter,
-            ftp_event_counter,
-            'Number of change events on the collection should match the number of events on the single FillingTypeProfile'
+            dep_collection_event_counter,
+            dep_event_counter,
+            'Number of change events on the collection should match the number of events on the single DictionaryEntryProfile'
         );
         equal(
-            ftp_collection_event_counter,
+            dep_collection_event_counter,
             item_event_counter,
             'Number of change events on the collection should match the number of events on the grid item'
         );
 
-        ftp_collection.off();
-        ftp.off();
+        dep_collection.off();
+        dep.off();
         fixed_grid_first_item.off();
     });
 });
-

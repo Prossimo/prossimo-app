@@ -1,6 +1,7 @@
 import _ from 'underscore';
-import App from '../src/main';
-import PricingGrid, {Grid} from '../src/core/models/inline/pricing-grid';
+
+import App from '../../../../src/main';
+import PricingGrid, {Grid} from '../../../../src/core/models/inline/pricing-grid';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');

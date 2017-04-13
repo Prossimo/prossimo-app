@@ -1,6 +1,6 @@
-import App from '../src/main';
-import Unit from '../src/core/models/unit';
-import UnitOptionCollection from '../src/core/collections/inline/unit-option-collection';
+import App from '../../../../src/main';
+import Unit from '../../../../src/core/models/unit';
+import UnitOptionCollection from '../../../../src/core/collections/inline/unit-option-collection';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
@@ -92,15 +92,15 @@ describe('Unit model', function () {
         let unit = new Unit();
 
         it('should have default height upon creation', () => {
-            expect(unit.get('height')).to.to.equal('0');
+            expect(unit.get('height')).to.equal('0');
         });
 
         it('should have default width upon creation', () => {
-            expect(unit.get('width')).to.to.equal(0);
+            expect(unit.get('width')).to.equal(0);
         });
 
         it('should have default quantity upon creation', () => {
-            expect(unit.get('quantity')).to.to.equal(1);
+            expect(unit.get('quantity')).to.equal(1);
         });
 
         it('should have unit_options that are an instance of UnitOptionCollection', () => {
@@ -128,11 +128,11 @@ describe('Unit model', function () {
         let unit = new Unit(data_to_set, {parse: true});
 
         it('should have correct quantity', () => {
-            expect(unit.get('quantity')).to.to.equal(15);
+            expect(unit.get('quantity')).to.equal(15);
         });
 
         it('should have undefined "whatever" attribute', () => {
-            expect(unit.get('whatever')).to.to.equal(undefined);
+            expect(unit.get('whatever')).to.equal(undefined);
         });
 
         it('should have unit_options that are an instance of UnitOptionCollection', () => {
@@ -314,7 +314,7 @@ describe('Unit model', function () {
             });
             let current_options = unit.getCurrentUnitOptions();
 
-            expect(current_options.length).to.to.equal(2);
+            expect(current_options.length).to.equal(2);
         });
 
         it('should have unit option (at position 0) that belongs to a correct dictionary', () => {
@@ -372,7 +372,7 @@ describe('Unit model', function () {
             });
             let options_by_dictionary = unit.getCurrentUnitOptionsByDictionaryId(17);
 
-            expect(options_by_dictionary.length).to.to.equal(1);
+            expect(options_by_dictionary.length).to.equal(1);
         });
 
         it('should return the expected entry for dictionary with id=17', () => {
@@ -383,7 +383,7 @@ describe('Unit model', function () {
             let first_option = current_options[0];
             let options_by_dictionary = unit.getCurrentUnitOptionsByDictionaryId(17);
 
-            expect(JSON.stringify(options_by_dictionary[0].entry.toJSON())).to.to.equal(JSON.stringify(first_option.entry.toJSON()));
+            expect(JSON.stringify(options_by_dictionary[0].entry.toJSON())).to.equal(JSON.stringify(first_option.entry.toJSON()));
         });
     });
 
@@ -394,7 +394,7 @@ describe('Unit model', function () {
             });
             let grouped_by_scheme = unit.getUnitOptionsGroupedByPricingScheme();
 
-            expect(grouped_by_scheme.PER_ITEM.length).to.to.equal(2);
+            expect(grouped_by_scheme.PER_ITEM.length).to.equal(2);
         });
 
         it('should not have any options inside PRICING_GRIDS group', () => {
@@ -403,7 +403,7 @@ describe('Unit model', function () {
             });
             let grouped_by_scheme = unit.getUnitOptionsGroupedByPricingScheme();
 
-            expect(grouped_by_scheme.PRICING_GRIDS.length).to.to.equal(0);
+            expect(grouped_by_scheme.PRICING_GRIDS.length).to.equal(0);
         });
     });
 
@@ -415,11 +415,11 @@ describe('Unit model', function () {
             let current_options = unit.getCurrentUnitOptions();
 
             //  getCurrentUnitOptions returns array with 2 elements
-            expect(current_options.length).to.to.equal(2);
+            expect(current_options.length).to.equal(2);
             //  First option is from Interior Handle dictionary
-            expect(current_options[0].dictionary.get('name')).to.to.equal('Interior Handle');
+            expect(current_options[0].dictionary.get('name')).to.equal('Interior Handle');
             //  First option is Red Metal Handle
-            expect(current_options[0].entry.get('name')).to.to.equal('Red Metal Handle');
+            expect(current_options[0].entry.get('name')).to.equal('Red Metal Handle');
         });
 
         it('should correctly persist same Red Metal Handle we already have', () => {
@@ -430,9 +430,9 @@ describe('Unit model', function () {
             let current_options = unit.getCurrentUnitOptions();
 
             //  getCurrentUnitOptions still returns array with 2 elements
-            expect(current_options.length).to.to.equal(2);
+            expect(current_options.length).to.equal(2);
             //  First option is still Red Metal Handle
-            expect(current_options[0].entry.get('name')).to.to.equal('Red Metal Handle');
+            expect(current_options[0].entry.get('name')).to.equal('Red Metal Handle');
         });
 
         it('should correctly persist some different handle, and it should replace the existing one', () => {
@@ -443,11 +443,11 @@ describe('Unit model', function () {
             let current_options = unit.getCurrentUnitOptions();
 
             //  getCurrentUnitOptions still returns array with 2 elements
-            expect(current_options.length).to.to.equal(2);
+            expect(current_options.length).to.equal(2);
             //  First option is now White Plastic Handle
-            expect(current_options[0].entry.get('name')).to.to.equal('White Plastic Handle');
+            expect(current_options[0].entry.get('name')).to.equal('White Plastic Handle');
             //  First option quantity is 1
-            expect(current_options[0].quantity).to.to.equal(1);
+            expect(current_options[0].quantity).to.equal(1);
         });
 
         it('should correctly persist option quantity without modifying the option', () => {
@@ -459,11 +459,11 @@ describe('Unit model', function () {
             let current_options = unit.getCurrentUnitOptions();
 
             //  getCurrentUnitOptions still returns array with 2 elements
-            expect(current_options.length).to.to.equal(2);
+            expect(current_options.length).to.equal(2);
             //  First option is still White Plastic Handle
-            expect(current_options[0].entry.get('name')).to.to.equal('White Plastic Handle');
+            expect(current_options[0].entry.get('name')).to.equal('White Plastic Handle');
             //  First option quantity is now 5
-            expect(current_options[0].quantity).to.to.equal(5);
+            expect(current_options[0].quantity).to.equal(5);
         });
 
         it('should correctly remove option', () => {
@@ -474,9 +474,9 @@ describe('Unit model', function () {
             let current_options = unit.getCurrentUnitOptions();
 
             //  getCurrentUnitOptions now returns array with only 1 element
-            expect(current_options.length).to.to.equal(1);
+            expect(current_options.length).to.equal(1);
             //  First option is now Blue Metal Hande - External
-            expect(current_options[0].entry.get('name')).to.to.equal('Blue Metal Hande - External');
+            expect(current_options[0].entry.get('name')).to.equal('Blue Metal Hande - External');
         });
     });
 });

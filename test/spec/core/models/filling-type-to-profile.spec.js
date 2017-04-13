@@ -1,9 +1,10 @@
 import _ from 'underscore';
-import App from '../src/main';
-import FillingTypeProfile from '../src/core/models/inline/filling-type-to-profile';
-import FillingType from '../src/core/models/filling-type';
-import PricingGridCollection from '../src/core/collections/inline/pricing-grid-collection';
-import PricingEquationParamsCollection from '../src/core/collections/inline/pricing-equation-params-collection';
+
+import App from '../../../../src/main';
+import FillingTypeProfile from '../../../../src/core/models/inline/filling-type-to-profile';
+import FillingType from '../../../../src/core/models/filling-type';
+import PricingGridCollection from '../../../../src/core/collections/inline/pricing-grid-collection';
+import PricingEquationParamsCollection from '../../../../src/core/collections/inline/pricing-equation-params-collection';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
@@ -14,7 +15,7 @@ test('FillingTypeProfile model tests', function () {
 
         equal(ftp.get('profile_id'), 0, 'profile_id is 0 upon creation');
         equal(ftp.get('is_default'), false, 'is_default is false upon creation');
-        ok(ftp.get('pricing_grids') instanceof PricingGridCollection, 'pricing_grids is a Backbone.Collection object');
+        ok(ftp.get('pricing_grids') instanceof PricingGridCollection, 'pricing_grids is a PricingGridCollection object');
 
         equal(ftp.get('pricing_grids').length, 2, 'Grids should contain 2 entries by default');
     });
@@ -56,7 +57,7 @@ test('FillingTypeProfile model tests', function () {
         }, {parse: true});
 
         equal(ftp.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
-        ok(ftp.get('pricing_grids') instanceof PricingGridCollection, 'pricing_grids is a Backbone.Collection object');
+        ok(ftp.get('pricing_grids') instanceof PricingGridCollection, 'pricing_grids is a PricingGridCollection object');
         deepEqual(
             ftp.get('pricing_grids').at(0).toJSON(),
             data_to_set[0],
@@ -64,7 +65,7 @@ test('FillingTypeProfile model tests', function () {
         );
         ok(
             ftp.get('pricing_equation_params') instanceof PricingEquationParamsCollection,
-            'pricing_equation_params is a Backbone.Collection object'
+            'pricing_equation_params is a PricingEquationParamsCollection object'
         );
         deepEqual(
             ftp.get('pricing_equation_params').get('param_a'),
@@ -79,7 +80,7 @@ test('FillingTypeProfile model tests', function () {
         }, {parse: true});
 
         equal(another_ftp.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
-        ok(another_ftp.get('pricing_grids') instanceof PricingGridCollection, 'pricing_grids is a Backbone.Collection object');
+        ok(another_ftp.get('pricing_grids') instanceof PricingGridCollection, 'pricing_grids is a PricingGridCollection object');
         deepEqual(
             another_ftp.get('pricing_grids').at(0).toJSON(),
             data_to_set[0],
@@ -87,7 +88,7 @@ test('FillingTypeProfile model tests', function () {
         );
         ok(
             another_ftp.get('pricing_equation_params') instanceof PricingEquationParamsCollection,
-            'pricing_equation_params is a Backbone.Collection object'
+            'pricing_equation_params is a PricingEquationParamsCollection object'
         );
         deepEqual(
             another_ftp.get('pricing_equation_params').get('param_a'),

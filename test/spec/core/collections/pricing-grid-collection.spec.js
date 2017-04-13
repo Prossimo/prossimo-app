@@ -1,6 +1,6 @@
-import App from '../src/main';
-import PricingGridCollection from '../src/core/collections/inline/pricing-grid-collection';
-import PricingGrid from '../src/core/models/inline/pricing-grid';
+import App from '../../../../src/main';
+import PricingGridCollection from '../../../../src/core/collections/inline/pricing-grid-collection';
+import PricingGrid from '../../../../src/core/models/inline/pricing-grid';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
@@ -9,7 +9,6 @@ test('Pricing grid collection', function () {
     test('basic tests', function () {
         let grids = new PricingGridCollection(null, {parse: true});
 
-        ok(grids instanceof PricingGridCollection, 'Grids are a Backbone.Collection object');
         equal(grids.length, 0, 'Grids contain 0 entries by default');
 
         let full_grids = new PricingGridCollection([
@@ -41,14 +40,15 @@ test('Pricing grid collection', function () {
 
         deepEqual(
             grids.toJSON(),
-            [{
-                name: 'fixed',
-                data: [
-                    {height: 500, width: 500, value: 0},
-                    {height: 914, width: 1514, value: 0},
-                    {height: 2400, width: 3000, value: 0}
-                ]
-            },
+            [
+                {
+                    name: 'fixed',
+                    data: [
+                        {height: 500, width: 500, value: 0},
+                        {height: 914, width: 1514, value: 0},
+                        {height: 2400, width: 3000, value: 0}
+                    ]
+                },
                 {
                     name: 'operable',
                     data: [
@@ -56,7 +56,8 @@ test('Pricing grid collection', function () {
                         {height: 914, width: 1514, value: 0},
                         {height: 1200, width: 2400, value: 0}
                     ]
-                }],
+                }
+            ],
             'Grids data should match the expected'
         );
     });
@@ -84,7 +85,7 @@ test('Pricing grid collection', function () {
         let fixed_grid = grids.getByName('fixed');
         let nonexistent_grid = grids.getByName('whatever');
 
-        ok(fixed_grid instanceof PricingGrid, 'Fixed Grid is a Backbone.Model object');
+        ok(fixed_grid instanceof PricingGrid, 'Fixed Grid is a PricingGrid object');
         equal(fixed_grid.get('data').length, 3, 'Fixed Grid has 3 grid items');
 
         equal(nonexistent_grid, undefined, 'getByName returns undefined if there is no such grid');
