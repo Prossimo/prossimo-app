@@ -48,8 +48,8 @@ export default Backbone.Model.extend({
 
         return parsed_data;
     },
-    persist() {
-        return this.set.apply(this, arguments);
+    persist(...args) {
+        return this.set(...args);
     },
     //  Return { name: 'name', title: 'Title' } pairs for each item in
     //  `names` array. If the array is empty, return all possible pairs

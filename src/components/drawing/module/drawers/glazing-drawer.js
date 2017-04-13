@@ -664,12 +664,12 @@ export default Backbone.KonvaView.extend({
     createVerticalMetrics(params) {
         const drawerParams = [params.metricSize, params.height * ratio, params.methods];
 
-        return this.createVerticalMetric.apply(this, drawerParams);
+        return this.createVerticalMetric(...drawerParams);
     },
     createHorizontalMetrics(params) {
         const drawerParams = [params.width * ratio, params.metricSize, params.methods];
 
-        return this.createHorizontalMetric.apply(this, drawerParams);
+        return this.createHorizontalMetric(...drawerParams);
     },
     createVerticalMetric(width, height, params, styles) {
         const arrowOffset = width / 2;

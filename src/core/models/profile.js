@@ -142,9 +142,9 @@ export default Backbone.Model.extend({
 
         return parsed_data;
     },
-    toJSON() {
+    toJSON(...args) {
         const properties_to_omit = ['id'];
-        const json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+        const json = Backbone.Model.prototype.toJSON.apply(this, args);
 
         json.pricing_grids = JSON.stringify(this.get('pricing_grids').toJSON());
         json.pricing_equation_params = JSON.stringify(this.get('pricing_equation_params').toJSON());

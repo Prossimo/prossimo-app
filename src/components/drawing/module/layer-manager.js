@@ -4,9 +4,9 @@ import Marionette from 'backbone.marionette';
 import Drawers from './drawers';
 import KonvaClipPatch from './konva-clip-patch';
 
-// LayerManager is a important and required part for DrawingModule
-// It creates, stores and working with layers into stage
-// And transfer keyboard events from view to drawers
+// LayerManager is an important and required part of the DrawingModule,
+// it's used for creating, storing and working with stage layers. Also, it
+// tranfers keyboard events from view to drawers
 
 export default Marionette.Object.extend({
     initialize(opts) {
@@ -46,7 +46,7 @@ export default Marionette.Object.extend({
         _.each(layerOpts, (layer, key) => {
             if (key in layers && layer.active === false) {
                 delete layers[key];
-            } else if (defaultLayers.hasOwnProperty(key)) {
+            } else if (Object.prototype.hasOwnProperty.call(defaultLayers, key)) {
                 _.defaults(layer, defaultLayers[key]);
             } else {
                 _.defaults(layer, defaultLayer);

@@ -84,9 +84,9 @@ export default Backbone.Model.extend({
 
         return parsed_data;
     },
-    toJSON() {
+    toJSON(...args) {
         const properties_to_omit = ['id'];
-        const json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+        const json = Backbone.Model.prototype.toJSON.apply(this, args);
 
         json.dictionary_entry_profiles = this.get('dictionary_entry_profiles').toJSON();
         json.data = _.isString(json.data) ? json.data : JSON.stringify(json.data);

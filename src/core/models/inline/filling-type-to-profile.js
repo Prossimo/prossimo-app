@@ -87,17 +87,17 @@ export default Backbone.Model.extend({
         return parsed_data;
     },
     //  We want `pricing_grids` to be serialized and stored as string
-    toJSON() {
+    toJSON(...args) {
         const properties_to_omit = ['id'];
-        const json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+        const json = Backbone.Model.prototype.toJSON.apply(this, args);
 
         json.pricing_grids = JSON.stringify(this.get('pricing_grids').toJSON());
         json.pricing_equation_params = JSON.stringify(this.get('pricing_equation_params').toJSON());
 
         return _.omit(json, properties_to_omit);
     },
-    persist() {
-        return this.set.apply(this, arguments);
+    persist(...args) {
+        return this.set(...args);
     },
     getPricingData() {
         const pricing_data = {

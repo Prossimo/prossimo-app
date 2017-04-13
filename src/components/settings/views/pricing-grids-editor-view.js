@@ -57,7 +57,7 @@ export default Marionette.View.extend({
             };
         }
 
-        return getter.apply(this, arguments);
+        return getter(grid_entry_model, column_name);
     },
     getColumnData(column_name) {
         const self = this;

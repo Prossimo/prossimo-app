@@ -274,11 +274,11 @@ export default Marionette.View.extend({
                 c.mm_to_inches(height), 'fraction', 'inches_only');
         }
 
-        function getFillingArea(width, height, format) {
-            format = format || 'sup';
+        function getFillingArea(width, height, suffix_format) {
+            suffix_format = suffix_format || 'sup';
 
             const result = f.square_feet(m.square_feet(c.mm_to_inches(width),
-                c.mm_to_inches(height)), 2, format);
+                c.mm_to_inches(height)), 2, suffix_format);
 
             return result;
         }

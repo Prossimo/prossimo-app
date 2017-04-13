@@ -19,8 +19,8 @@ export const GridItem = Backbone.Model.extend({
             value: 0,
         };
     },
-    persist() {
-        return this.set.apply(this, arguments);
+    persist(...args) {
+        return this.set(...args);
     },
     parse(data) {
         //  This is for compatibility reasons with the old format
@@ -129,18 +129,18 @@ export default Backbone.Model.extend({
 
         return default_value;
     },
-    getValue() {
-        return this.get('data').getValue.apply(this.get('data'), arguments);
+    getValue(...args) {
+        return this.get('data').getValue(...args);
     },
-    toJSON() {
-        const json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+    toJSON(...args) {
+        const json = Backbone.Model.prototype.toJSON.apply(this, args);
 
         json.data = this.get('data').toJSON();
 
         return json;
     },
-    persist() {
-        return this.set.apply(this, arguments);
+    persist(...args) {
+        return this.set(...args);
     },
     //  TODO: we need to have some common behavior for inlined models like
     //  try to parse as json if it's a string, then try to check if it's a

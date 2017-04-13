@@ -106,9 +106,9 @@ export default Backbone.Model.extend({
 
         return parsed_data;
     },
-    toJSON() {
+    toJSON(...args) {
         const properties_to_omit = ['id', 'is_base_type'];
-        const json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+        const json = Backbone.Model.prototype.toJSON.apply(this, args);
 
         json.filling_type_profiles = this.get('filling_type_profiles').toJSON();
 

@@ -40,7 +40,7 @@ export default Backbone.Model.extend({
     parse(data) {
         return Schema.parseAccordingToSchema(data, this.schema);
     },
-    persist() {
-        return this.set.apply(this, arguments);
+    persist(...args) {
+        return this.set(...args);
     },
 });

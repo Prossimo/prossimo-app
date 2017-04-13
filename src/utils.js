@@ -5,6 +5,15 @@ const MAX_DENOMINATOR = 16;
 //  For numbers that are passed to Decimal constructor
 const MAX_SIGNIFICANT_DIGITS = 15;
 
+export const convert = {
+    inches_to_mm(inch_value) {
+        return parseFloat(inch_value * 25.4);
+    },
+    mm_to_inches(mm_value) {
+        return parseFloat(mm_value / 25.4);
+    },
+};
+
 export const format = {
     dimension(value, decimal_format, inches_display_mode, zero_inch_display_mode) {
         let value_feet;
@@ -227,15 +236,15 @@ export const parseFormat = {
         //  Captures everything with mm, cm, m: |500 mm|, |6-3 m|
         const pattern_0 = /(\S*\d+)\s*(mm|cm|m)/i;
         //  Captures |6'-2 1/2"|, |6 - 2 1/2|
-        const pattern_1 = /(\d+)\s*(\'|’|′)*\s*(-|–|—|‒|―|‐|−)\s*(\d+)\s(\d+)\s*\/\s*(\d+)\s*("|”|″)*/i;
+        const pattern_1 = /(\d+)\s*('|’|′)*\s*(-|–|—|‒|―|‐|−)\s*(\d+)\s(\d+)\s*\/\s*(\d+)\s*("|”|″)*/i;
         //  Captures |5-2|, |8'-0|, |9-10"|, |2’–8”|, |2’–8.5”|, |2.5’−8.5”|
-        const pattern_2 = /(\d+(?:\.\d+)*)\s*(\'|’|′)*\s*(-|–|—|‒|―|‐|−)\s*(\d+(?:\.\d+)*)\s*("|”|″)*/i;
+        const pattern_2 = /(\d+(?:\.\d+)*)\s*('|’|′)*\s*(-|–|—|‒|―|‐|−)\s*(\d+(?:\.\d+)*)\s*("|”|″)*/i;
         //  Captures |33 3/8|, |82 1/2"|, |4'6 1/2|
-        const pattern_3 = /(?:(\d+)\s*(?:\'|’|′)\s*)*(\d+)\s(\d+)\s*\/\s*(\d+)/i;
+        const pattern_3 = /(?:(\d+)\s*(?:'|’|′)\s*)*(\d+)\s(\d+)\s*\/\s*(\d+)/i;
         //  Captures |30 '|, |30'|, |30’|, |30.5 ’|, |4'6|
-        const pattern_4 = /(\d+(?:\.\d+)*)\s*(?:\'|’|′)\s*(\d+(?:\.\d+)*)*/i;
+        const pattern_4 = /(\d+(?:\.\d+)*)\s*(?:'|’|′)\s*(\d+(?:\.\d+)*)*/i;
         //  Captures |2 3|, |2.5 8.5|, |2 8.5|, |2' 3|, |2' 3"|
-        const pattern_5 = /(\d+(?:\.\d+)*\s*(?:\'|’|′)*)\s+(\d+(?:\.\d+)*\s*("|”|″)*)/i;
+        const pattern_5 = /(\d+(?:\.\d+)*\s*(?:'|’|′)*)\s+(\d+(?:\.\d+)*\s*("|”|″)*)/i;
         //  Captures |30|, |30 "|, |30"|, |30 ”|, |30.5 ”|
         const pattern_6 = /(\d+(?:\.\d+)*)\s*("|”|″)*/i;
 
@@ -338,15 +347,6 @@ export const math = {
     },
 };
 
-export const convert = {
-    inches_to_mm(inch_value) {
-        return parseFloat(inch_value * 25.4);
-    },
-    mm_to_inches(mm_value) {
-        return parseFloat(mm_value / 25.4);
-    },
-};
-
 export const object = {
     deep_extend(a, b) {
         if (_.isObject(a) && _.isObject(b)) {
@@ -398,7 +398,7 @@ export const vector2d = {
     length(v) {
         v = vector2d.getVector(v);
 
-        return Math.sqrt(Math.pow(v.x, 2) + Math.pow(v.y, 2));
+        return Math.sqrt((v.x ** 2) + (v.y ** 2));
     },
     normalize(v) {
         v = vector2d.getVector(v);

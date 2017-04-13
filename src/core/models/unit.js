@@ -190,6 +190,31 @@ function findParent(root, childId) {
     return findParent(root.sections[0], childId) || findParent(root.sections[1], childId);
 }
 
+// static function
+// it will find section with passed id from passed section and all its children
+// via nested search
+export const findSection = function (section, sectionId) {
+    function findNested(sec, id) {
+        if (sec.id === id) {
+            return sec;
+        }
+
+        if (!sec.sections) {
+            return null;
+        }
+
+        for (let i = 0; i < sec.sections.length; i += 1) {
+            const founded = findNested(sec.sections[i], sectionId);
+
+            if (founded) {
+                return founded;
+            }
+        }
+    }
+
+    return findNested(section, sectionId);
+};
+
 const Unit = Backbone.Model.extend({
     schema: Schema.createSchema(UNIT_PROPERTIES),
     defaults() {
@@ -247,9 +272,9 @@ const Unit = Backbone.Model.extend({
 
         return Backbone.sync.call(this, method, model, options);
     },
-    toJSON() {
+    toJSON(...args) {
         const properties_to_omit = ['id'];
-        const json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+        const json = Backbone.Model.prototype.toJSON.apply(this, args);
 
         json.root_section = JSON.stringify(this.get('root_section'));
         json.unit_options = this.get('unit_options').toJSON();
@@ -1816,7 +1841,8 @@ const Unit = Backbone.Model.extend({
 
         if (App.settings && App.settings.filling_types) {
             _.find(sizes.glasses, (glass) => {
-                const is_base = App.settings.filling_types.find(filling => filling.get('name') === glass.name && filling.get('is_base_type') === true);
+                const is_base = App.settings.filling_types.find(
+                    filling => filling.get('name') === glass.name && filling.get('is_base_type') === true);
 
                 if (is_base) {
                     has_base_filling = true;
@@ -2516,7 +2542,8 @@ const Unit = Backbone.Model.extend({
     },
     /* Determines if the unit has at least one horizontal mullion */
     hasHorizontalMullion() {
-        return this.getMullions().reduce((previous, current) => previous || (current.type === 'horizontal' || current.type === 'horizontal_invisible'), false);
+        return this.getMullions().reduce(
+            (previous, current) => previous || (current.type === 'horizontal' || current.type === 'horizontal_invisible'), false);
     },
     /* eslint-disable no-else-return */
 
@@ -2726,30 +2753,5 @@ const Unit = Backbone.Model.extend({
     },
     /* trapezoid end */
 });
-
-// static function
-// it will find section with passed id from passed section and all its children
-// via nested search
-export const findSection = function (section, sectionId) {
-    function findNested(sec, id) {
-        if (sec.id === id) {
-            return sec;
-        }
-
-        if (!sec.sections) {
-            return null;
-        }
-
-        for (let i = 0; i < sec.sections.length; i += 1) {
-            const founded = findNested(sec.sections[i], sectionId);
-
-            if (founded) {
-                return founded;
-            }
-        }
-    }
-
-    return findNested(section, sectionId);
-};
 
 export default Unit;

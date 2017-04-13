@@ -1434,7 +1434,7 @@ export default Backbone.KonvaView.extend({
 
         return group;
     },
-    createSectionIndexes(mainSection, indexes, i) {
+    createSectionIndexes(mainSection, indexes) {
         const view = this;
         let result = [];
 
@@ -1444,15 +1444,13 @@ export default Backbone.KonvaView.extend({
             parent: null,
         };
 
-        i = i || 0;
-
         // If section have a children — create Indexes for them recursively
         if (mainSection.sections.length) {
             if (module.getState('insideView') && mainSection.divider === 'vertical') {
                 mainSection.sections.reverse();
             }
 
-            mainSection.sections.forEach((section, j) => {
+            mainSection.sections.forEach((section) => {
                 if (mainSection.sashType !== 'fixed_in_frame') {
                     indexes.parent = mainSection;
                 }
@@ -1461,7 +1459,7 @@ export default Backbone.KonvaView.extend({
                     indexes.add += 1;
                 }
 
-                result = result.concat(view.createSectionIndexes(section, indexes, j));
+                result = result.concat(view.createSectionIndexes(section, indexes));
             });
 
         // If section haven't a children sections — create Index for it

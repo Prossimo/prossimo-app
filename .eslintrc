@@ -38,8 +38,11 @@
     //  TODO: We actually want to enable many of the following rules, but
     //  we need to make updates to our code first
     "camelcase": "off",
+    "no-underscore-dangle": "off",
+    "no-nested-ternary": "warn",
+    "no-continue": "warn",
+    "consistent-return": "warn",
     "no-param-reassign": "warn",
-    "no-console": "warn",
-    "no-underscore-dangle": "warn"
+    "no-console": "warn"
   }
 }

@@ -431,9 +431,9 @@ export default Marionette.View.extend({
             };
         }
 
-        return getter.apply(this, arguments);
+        return getter(unit_model, column_name);
     },
-    getSetterParser(column_name) {
+    getSetterParser(column_name, ...args) {
         let parser;
 
         const parsers_hash = {
@@ -478,9 +478,9 @@ export default Marionette.View.extend({
             };
         }
 
-        return parser.apply(this, arguments);
+        return parser(column_name, ...args);
     },
-    getSetterFunction(unit_model, column_name) {
+    getSetterFunction(unit_model, column_name, ...args) {
         const self = this;
         let setter;
 
@@ -538,7 +538,7 @@ export default Marionette.View.extend({
             };
         }
 
-        return setter.apply(this, arguments);
+        return setter(unit_model, column_name, ...args);
     },
     getColumnData(column_name) {
         const self = this;
@@ -1056,7 +1056,7 @@ export default Marionette.View.extend({
 
         col_widths = _.extend({}, col_widths, unit_options_col_widths);
 
-        const widths_table = _.map(this.getActiveTab().columns, item => col_widths[item] ? col_widths[item] : 90, this);
+        const widths_table = _.map(this.getActiveTab().columns, item => (col_widths[item] ? col_widths[item] : 90), this);
 
         return widths_table;
     },

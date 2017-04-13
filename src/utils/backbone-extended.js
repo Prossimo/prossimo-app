@@ -68,15 +68,12 @@ _.extend(Backbone.Model.prototype, {
         return oldModelSave.call(this, key, val, options);
     },
     //  Don't save anything if we have special flag on `app` or an attribute
-    persist() {
-        if (
-            (App && App.session && App.session.get('no_backend') === true) ||
-            this.get('no_backend') === true
-        ) {
-            return this.set.apply(this, arguments);
+    persist(...args) {
+        if ((App && App.session && App.session.get('no_backend') === true) || this.get('no_backend') === true) {
+            return this.set(...args);
         }
 
-        return this.save.apply(this, arguments);
+        return this.save(...args);
     },
     //  TODO: test that cloned item doesn't share any objects with the
     //  source item by reference
@@ -153,12 +150,11 @@ _.extend(Backbone.Model.prototype, {
 
 _.extend(Backbone.Collection.prototype, {
     //  This emulates Array.splice. From Handsontable docs example
-    splice(index, how_many /* new_item_1, new_item_2, ... */) {
-        const args = _.toArray(arguments).slice(2).concat({ at: index });
+    splice(index, how_many, ...new_items) {
         const removed = this.models.slice(index, index + how_many);
 
         this.remove(removed);
-        this.add.apply(this, args);
+        this.add(...new_items);
 
         return removed;
     },
@@ -266,7 +262,7 @@ Backbone.sync = function (method, model, options) {
         model._lastXHR = {};
     }
 
-    const resp = sync.apply(this, arguments);
+    const resp = sync(method, model, options);
     model._lastXHR[method] = resp;
 
     return resp;

@@ -97,9 +97,9 @@ export default Backbone.Model.extend({
 
         return Backbone.sync.call(this, method, model, options);
     },
-    toJSON() {
+    toJSON(...args) {
         const properties_to_omit = ['id', 'entries'];
-        const json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+        const json = Backbone.Model.prototype.toJSON.apply(this, args);
 
         json.rules_and_restrictions = JSON.stringify(json.rules_and_restrictions);
 
