@@ -35,12 +35,12 @@ export default Backbone.Model.extend({
     },
     //  TODO: this is probably how it should be implemented everywhere
     getAttributeType(attribute_name) {
-        return this.schema && this.schema[attribute_name].type || undefined;
+        return (this.schema && this.schema[attribute_name].type) || undefined;
     },
     parse(data) {
         return Schema.parseAccordingToSchema(data, this.schema);
     },
-    persist() {
-        return this.set.apply(this, arguments);
+    persist(...args) {
+        return this.set(...args);
     },
 });

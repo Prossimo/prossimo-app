@@ -1,8 +1,8 @@
 import _ from 'underscore';
-import Konva from '../konva-clip-patch';
 import Backbone from 'backbone';
+import Konva from '../konva-clip-patch';
 
-import utils from '../../../../utils';
+import { format, convert } from '../../../../utils';
 
 let module;
 let model;
@@ -75,13 +75,12 @@ export default Backbone.KonvaView.extend({
     },
     createInfo(mullions, width, height) {
         const group = new Konva.Group();
-        let measurements;
-        let controls;
 
         // Get data for info layer
         mullions = this.sortMullions(mullions);
-        measurements = this.getMeasurements(mullions);
-        controls = this.getControls(mullions);
+
+        const measurements = this.getMeasurements(mullions);
+        const controls = this.getControls(mullions);
 
         // Draw mullion metrics
         group.add(this.createMullionMetrics(measurements, width, height));
@@ -520,12 +519,10 @@ export default Backbone.KonvaView.extend({
                     };
 
                     result[type].push(data);
-                } else {
-                    // Store mullion id into siblings array and skip them
-                    // If it has an unique id
-                    if (siblings[mullion.position].indexOf(mullion.id) === -1) {
-                        siblings[mullion.position].push(mullion.id);
-                    }
+                // Store mullion id into siblings array and skip them
+                // If it has an unique id
+                } else if (siblings[mullion.position].indexOf(mullion.id) === -1) {
+                    siblings[mullion.position].push(mullion.id);
                 }
             });
 
@@ -650,7 +647,7 @@ export default Backbone.KonvaView.extend({
         }
 
         // Make both controls recursively
-        for (let i = 0; i < 2; i++) {
+        for (let i = 0; i < 2; i += 1) {
             // Create control
             const control = this.createControl(size_1, size_2);
             const index = (!module.getState('openingView')) ? i : (i + 1) % 2;
@@ -686,10 +683,7 @@ export default Backbone.KonvaView.extend({
                 }
 
                 if (type === 'horizontal') {
-                    position.y = 0 +
-                        controlData.position * ratio +
-                        correction.size * ratio -
-                        controlSize / 2;
+                    position.y = 0 + (controlData.position * ratio) + ((correction.size * ratio) - (controlSize / 2));
                     position.x = -metricSize;
 
                     if (model.isTrapezoid()) {
@@ -703,10 +697,7 @@ export default Backbone.KonvaView.extend({
                     width_ = metricSize;
                     height_ = controlSize;
                 } else {
-                    position.x += 0 +
-                        controlData.position * ratio +
-                        correction.size * ratio -
-                        controlSize / 2;
+                    position.x += 0 + (controlData.position * ratio) + ((correction.size * ratio) - (controlSize / 2));
                     position.y = height;
 
                     width_ = controlSize;
@@ -846,7 +837,7 @@ export default Backbone.KonvaView.extend({
             if (opts.kind === 'frame') {
                 correction = (opt.value === min) ? offset * sign : 0;
             } else if (opts.kind === 'mullion') {
-                controlPosition[posParam] += (opt.value === min) ? -1 * posCorrection / 2 :
+                controlPosition[posParam] += (opt.value === min) ? (-1 * posCorrection) / 2 :
                     (opt.value === max) ? posCorrection / 2 :
                         0;
 
@@ -974,7 +965,7 @@ export default Backbone.KonvaView.extend({
             const maxHeight = (heights.right < heights.left) ? heights.left : heights.right;
 
             if (heights.right > heights.left) {
-                vPosition.x = metricSize * rows.horizontal + width;
+                vPosition.x = (metricSize * rows.horizontal) + width;
             }
 
             // Second vertical whole metric for trapezoid
@@ -996,7 +987,7 @@ export default Backbone.KonvaView.extend({
             });
             const secondVerticalPosition = {
                 x: (heights.right > heights.left) ? -metricSize : width,
-                y: (vCorrection.pos + maxHeight - minHeight) * ratio,
+                y: (vCorrection.pos + (maxHeight - minHeight)) * ratio,
             };
 
             secondVerticalWholeMertic.position(secondVerticalPosition);
@@ -1016,7 +1007,7 @@ export default Backbone.KonvaView.extend({
                     }
                 },
                 getter() {
-                    return maxHeight - minHeight + vCorrection.size;
+                    return (maxHeight - minHeight) + vCorrection.size;
                 },
             });
 
@@ -1042,7 +1033,7 @@ export default Backbone.KonvaView.extend({
 
         const hPosition = {
             x: 0 + (hCorrection.pos * ratio),
-            y: height + rows.vertical * metricSize,
+            y: height + (rows.vertical * metricSize),
         };
 
         horizontalWholeMertic.position(hPosition);
@@ -1080,7 +1071,7 @@ export default Backbone.KonvaView.extend({
 
             if (
                 section.measurements.glass ||
-                section.sashType !== 'fixed_in_frame' && section.measurements.opening
+                (section.sashType !== 'fixed_in_frame' && section.measurements.opening)
             ) {
                 const type = (section.measurements.glass) ? 'glass' : 'opening';
 
@@ -1092,7 +1083,7 @@ export default Backbone.KonvaView.extend({
                 });
             } else if (section.sections.length) {
                 section.sections.forEach((child) => {
-                    level++;
+                    level += 1;
                     findOverlay(child, results, level);
                 });
             }
@@ -1188,8 +1179,7 @@ export default Backbone.KonvaView.extend({
         vControls.position(vPosition);
         group.add(metric, vControls);
 
-        const nonArchHeight = model.getInMetric('height', 'mm') - archHeight +
-            vCorrection[1].size;
+        const nonArchHeight = (model.getInMetric('height', 'mm') - archHeight) + vCorrection[1].size;
 
         params = {
             getter() {
@@ -1337,7 +1327,7 @@ export default Backbone.KonvaView.extend({
             strokeWidth: styles.label.strokeWidth,
         }));
         const textMM = new Konva.Text({
-            text: utils.format.dimension_mm(params.getter()),
+            text: format.dimension_mm(params.getter()),
             padding: styles.label.padding,
             fontFamily: styles.label.fontFamily,
             fontSize: styles.label.fontSize,
@@ -1346,8 +1336,8 @@ export default Backbone.KonvaView.extend({
 
         labelMM.add(textMM);
         labelMM.position({
-            x: width / 2 - textMM.width() / 2,
-            y: height / 2 + textMM.height() / 2,
+            x: (width / 2) - (textMM.width() / 2),
+            y: (height / 2) + (textMM.height() / 2),
         });
 
         // left text
@@ -1358,8 +1348,8 @@ export default Backbone.KonvaView.extend({
             stroke: styles.label.stroke,
             strokeWidth: styles.label.strokeWidth,
         }));
-        const inches = utils.convert.mm_to_inches(params.getter());
-        const val = utils.format.dimension(inches, 'fraction', module.getState('inchesDisplayMode'));
+        const inches = convert.mm_to_inches(params.getter());
+        const val = format.dimension(inches, 'fraction', module.getState('inchesDisplayMode'));
         const textInches = new Konva.Text({
             text: val,
             padding: styles.label.padding,
@@ -1370,8 +1360,8 @@ export default Backbone.KonvaView.extend({
 
         labelInches.add(textInches);
         labelInches.position({
-            x: width / 2 - textInches.width() / 2,
-            y: height / 2 - textInches.height() / 2,
+            x: (width / 2) - (textInches.width() / 2),
+            y: (height / 2) - (textInches.height() / 2),
         });
 
         if (params.setter) {
@@ -1445,7 +1435,7 @@ export default Backbone.KonvaView.extend({
             strokeWidth: styles.label.strokeWidth,
         }));
         const textMM = new Konva.Text({
-            text: utils.format.dimension_mm(params.getter()),
+            text: format.dimension_mm(params.getter()),
             padding: styles.label.padding,
             fontFamily: styles.label.fontFamily,
             fontSize: styles.label.fontSize,
@@ -1454,8 +1444,8 @@ export default Backbone.KonvaView.extend({
 
         labelMM.add(textMM);
         labelMM.position({
-            x: width / 2 - textMM.width() / 2,
-            y: arrowOffset + textMM.height() / 2,
+            x: (width / 2) - (textMM.width() / 2),
+            y: arrowOffset + (textMM.height() / 2),
         });
 
         const labelInches = new Konva.Label();
@@ -1465,8 +1455,8 @@ export default Backbone.KonvaView.extend({
             stroke: styles.label.stroke,
             strokeWidth: styles.label.strokeWidth,
         }));
-        const inches = utils.convert.mm_to_inches(params.getter());
-        const val = utils.format.dimension(inches, 'fraction', module.getState('inchesDisplayMode'));
+        const inches = convert.mm_to_inches(params.getter());
+        const val = format.dimension(inches, 'fraction', module.getState('inchesDisplayMode'));
         const textInches = new Konva.Text({
             text: val,
             padding: styles.label.padding,
@@ -1477,8 +1467,8 @@ export default Backbone.KonvaView.extend({
 
         labelInches.add(textInches);
         labelInches.position({
-            x: width / 2 - textInches.width() / 2,
-            y: arrowOffset - labelInches.height() / 2,
+            x: (width / 2) - (textInches.width() / 2),
+            y: arrowOffset - (labelInches.height() / 2),
         });
 
         if (params.setter) {

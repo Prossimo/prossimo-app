@@ -62,7 +62,7 @@ export default Marionette.Object.extend({
 
         if (items) {
             // Loop through all items, looking for any kind of image
-            for (let i = 0; i < items.length; i++) {
+            for (let i = 0; i < items.length; i += 1) {
                 if (items[i].type.indexOf('image') !== -1) {
                     // We need to represent the image as a file
                     const blob = items[i].getAsFile();

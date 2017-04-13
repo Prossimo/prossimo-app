@@ -4,7 +4,7 @@ import glob from 'glob';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 
-export const readFile = (file) => new Promise((resolve, reject) => {
+export const readFile = file => new Promise((resolve, reject) => {
     fs.readFile(file, 'utf8', (err, data) => (err ? reject(err) : resolve(data)));
 });
 
@@ -37,7 +37,7 @@ export const readDir = (pattern, options) => new Promise((resolve, reject) =>
     glob(pattern, options, (err, result) => (err ? reject(err) : resolve(result))),
 );
 
-export const makeDir = (name) => new Promise((resolve, reject) => {
+export const makeDir = name => new Promise((resolve, reject) => {
     mkdirp(name, err => (err ? reject(err) : resolve()));
 });
 
@@ -45,9 +45,10 @@ export const copyDir = async (source, target) => {
     const dirs = await readDir('**/*.*', {
         cwd: source,
         nosort: true,
-        dot: true
+        dot: true,
     });
-    await Promise.all(dirs.map(async dir => {
+
+    await Promise.all(dirs.map(async (dir) => {
         const from = path.resolve(source, dir);
         const to = path.resolve(target, dir);
         await makeDir(path.dirname(to));

@@ -12,14 +12,14 @@ import Unit from '../models/unit';
 import Accessory from '../models/accessory';
 import UnitsTableTotalPricesView from '../../core/views/units-table-total-prices-view';
 import { preview } from '../../components/drawing/module/drawing-module';
-import templates from '../../templates/core/units-table-view.hbs';
+import template from '../../templates/core/units-table-view.hbs';
 
 const UNSET_VALUE = '--';
 
 export default Marionette.View.extend({
     tagName: 'div',
     className: 'units-table-container',
-    template: templates,
+    template,
     ui: {
         $total_prices_container: '.units-table-total-prices-container',
         $hot_container: '.handsontable-container',
@@ -204,7 +204,7 @@ export default Marionette.View.extend({
     },
     onResetUnitOptionsForSelected() {
         if (this.selected.length && this.hot) {
-            for (let i = this.selected.length - 1; i >= 0; i--) {
+            for (let i = this.selected.length - 1; i >= 0; i -= 1) {
                 this.hot.getSourceData().at(this.selected[i]).resetUnitOptionsToDefaults();
             }
 
@@ -216,7 +216,7 @@ export default Marionette.View.extend({
     },
     onRemoveSelected() {
         if (this.selected.length && this.hot) {
-            for (let i = this.selected.length - 1; i >= 0; i--) {
+            for (let i = this.selected.length - 1; i >= 0; i -= 1) {
                 this.hot.getSourceData().at(this.selected[i]).destroy();
             }
 
@@ -307,8 +307,8 @@ export default Marionette.View.extend({
 
             //  Paste to each selected sell.
             if (selected_cells && selected_cells.length) {
-                for (let x = selected_cells[0]; x <= selected_cells[2]; x++) {
-                    for (let y = selected_cells[1]; y <= selected_cells[3]; y++) {
+                for (let x = selected_cells[0]; x <= selected_cells[2]; x += 1) {
+                    for (let y = selected_cells[1]; y <= selected_cells[3]; y += 1) {
                         this.hot.setDataAtCell(x, y, data);
                     }
                 }
@@ -431,9 +431,9 @@ export default Marionette.View.extend({
             };
         }
 
-        return getter.apply(this, arguments);
+        return getter(unit_model, column_name);
     },
-    getSetterParser(column_name) {
+    getSetterParser(column_name, ...args) {
         let parser;
 
         const parsers_hash = {
@@ -456,8 +456,8 @@ export default Marionette.View.extend({
             profile_id(attr_name, val) {
                 let profile_id = null;
                 const profile_by_id =
-                    (parseInt(val).toString() === val || parseInt(val) === val) &&
-                    App.settings && App.settings.getProfileByIdOrDummy(parseInt(val));
+                    (parseInt(val, 10).toString() === val || parseInt(val, 10) === val) &&
+                    App.settings && App.settings.getProfileByIdOrDummy(parseInt(val, 10));
                 const profile_id_by_name = App.settings && App.settings.getProfileIdByName(val);
 
                 if (profile_by_id && profile_by_id.get('is_dummy') !== true) {
@@ -478,9 +478,9 @@ export default Marionette.View.extend({
             };
         }
 
-        return parser.apply(this, arguments);
+        return parser(column_name, ...args);
     },
-    getSetterFunction(unit_model, column_name) {
+    getSetterFunction(unit_model, column_name, ...args) {
         const self = this;
         let setter;
 
@@ -538,7 +538,7 @@ export default Marionette.View.extend({
             };
         }
 
-        return setter.apply(this, arguments);
+        return setter(unit_model, column_name, ...args);
     },
     getColumnData(column_name) {
         const self = this;
@@ -581,9 +581,7 @@ export default Marionette.View.extend({
     },
     getColumnValidator(column_name) {
         const self = this;
-        let validator;
-
-        validator = function (value, callback) {
+        const validator = function (value, callback) {
             const attributes_object = {};
             const model = this.instance.getSourceData().at(this.row);
 
@@ -600,12 +598,10 @@ export default Marionette.View.extend({
     },
     getColumnExtraProperties(column_name) {
         const project_settings = App.settings.getProjectSettings();
-        let properties_obj = {};
+        const names_title_type_hash = this.getActiveTab().collection.getNameTitleTypeHash([column_name]);
+        const original_type = (names_title_type_hash.length && names_title_type_hash[0].type) || undefined;
 
-        const names_title_type_hash = this.getActiveTab()
-            .collection.getNameTitleTypeHash([column_name]);
-        const original_type = names_title_type_hash.length &&
-            names_title_type_hash[0].type || undefined;
+        let properties_obj = {};
 
         if (original_type) {
             if (original_type === 'number') {
@@ -1051,15 +1047,16 @@ export default Marionette.View.extend({
         unit_options_col_widths = _.object(
             App.settings.dictionaries.getAvailableDictionaryNames(),
             _.map(App.settings.dictionaries.getAvailableDictionaryNames(), (dictionary_name) => {
-                const calculated_length = 30 + dictionary_name.length * 7;
+                const calculated_length = 30 + (dictionary_name.length * 7);
 
                 return unit_options_col_widths[dictionary_name] ?
                     unit_options_col_widths[dictionary_name] : calculated_length;
-            }, this));
+            }, this),
+        );
 
         col_widths = _.extend({}, col_widths, unit_options_col_widths);
 
-        const widths_table = _.map(this.getActiveTab().columns, item => col_widths[item] ? col_widths[item] : 90, this);
+        const widths_table = _.map(this.getActiveTab().columns, item => (col_widths[item] ? col_widths[item] : 90), this);
 
         return widths_table;
     },
@@ -1163,7 +1160,7 @@ export default Marionette.View.extend({
                                     end = startRow;
                                 }
 
-                                for (let i = start; i <= end; i++) {
+                                for (let i = start; i <= end; i += 1) {
                                     self.selected.push(i);
                                 }
 

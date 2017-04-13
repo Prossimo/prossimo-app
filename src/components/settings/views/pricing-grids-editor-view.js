@@ -57,13 +57,11 @@ export default Marionette.View.extend({
             };
         }
 
-        return getter.apply(this, arguments);
+        return getter(grid_entry_model, column_name);
     },
     getColumnData(column_name) {
         const self = this;
-        let setter;
-
-        setter = function (model, attr_name, val) {
+        const setter = function (model, attr_name, val) {
             //  TODO: parse data on set
             // return model.persist(attr_name, self.getSetterParser(column_name, val));
             return model.persist(attr_name, val);
@@ -171,9 +169,7 @@ export default Marionette.View.extend({
         }
     },
     getDataObject() {
-        let data_object;
-
-        data_object = this.options.grids.getByName(this.active_tab).get('data');
+        const data_object = this.options.grids.getByName(this.active_tab).get('data');
 
         return data_object;
     },

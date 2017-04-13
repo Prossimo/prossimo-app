@@ -2,7 +2,7 @@ import _ from 'underscore';
 import Backbone from 'backbone';
 
 import Schema from '../../../schema';
-import utils from '../../../utils';
+import { math, object } from '../../../utils';
 
 const GRID_ITEM_PROPERTIES = [
     { name: 'height', title: 'Height', type: 'number' },
@@ -19,8 +19,8 @@ export const GridItem = Backbone.Model.extend({
             value: 0,
         };
     },
-    persist() {
-        return this.set.apply(this, arguments);
+    persist(...args) {
+        return this.set(...args);
     },
     parse(data) {
         //  This is for compatibility reasons with the old format
@@ -65,7 +65,7 @@ export const Grid = Backbone.Collection.extend({
                         target_area < this.at(index + 1).getArea() &&
                         target_area > grid_item.getArea()
                     ) {
-                        value = utils.math.linear_interpolation(
+                        value = math.linear_interpolation(
                             target_area,
                             grid_item.getArea(),
                             this.at(index + 1).getArea(),
@@ -129,18 +129,18 @@ export default Backbone.Model.extend({
 
         return default_value;
     },
-    getValue() {
-        return this.get('data').getValue.apply(this.get('data'), arguments);
+    getValue(...args) {
+        return this.get('data').getValue(...args);
     },
-    toJSON() {
-        const json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+    toJSON(...args) {
+        const json = Backbone.Model.prototype.toJSON.apply(this, args);
 
         json.data = this.get('data').toJSON();
 
         return json;
     },
-    persist() {
-        return this.set.apply(this, arguments);
+    persist(...args) {
+        return this.set(...args);
     },
     //  TODO: we need to have some common behavior for inlined models like
     //  try to parse as json if it's a string, then try to check if it's a
@@ -151,9 +151,9 @@ export default Backbone.Model.extend({
     //  parse is set to true on model initialize and throw if it is not
     parse(attributes) {
         const attrs = attributes || {};
-        const grid_data = attributes && attributes.data || {};
+        const grid_data = (attributes && attributes.data) || {};
 
-        attrs.data = new Grid(utils.object.extractObjectOrNull(grid_data), { parse: true });
+        attrs.data = new Grid(object.extractObjectOrNull(grid_data), { parse: true });
 
         return attrs;
     },

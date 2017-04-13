@@ -4,7 +4,7 @@ import Marionette from 'backbone.marionette';
 import Konva from '../module/konva-clip-patch';
 
 import App from '../../../main';
-import utils from '../../../utils';
+import { parseFormat, format, convert } from '../../../utils';
 import UndoManager from '../../../utils/undomanager';
 import DrawingModule from '../module/drawing-module';
 import DrawingGlazingPopup from './drawing-glazing-view';
@@ -120,8 +120,8 @@ export default Marionette.View.extend({
     },
     // Are we looking at unit from the opening side?
     isOpeningView() {
-        return !this.isInsideView() && this.model.isOpeningDirectionOutward() ||
-            this.isInsideView() && !this.model.isOpeningDirectionOutward();
+        return (!this.isInsideView() && this.model.isOpeningDirectionOutward()) ||
+            (this.isInsideView() && !this.model.isOpeningDirectionOutward());
     },
     handleUndoClick() {
         return this.undo_manager.handler.undo();
@@ -227,8 +227,9 @@ export default Marionette.View.extend({
 
         // if Unit is Outward opening, reverse sash type
         // from right to left or from left to right
-        if (this.state.hingeIndicatorMode === 'european' && !this.state.openingView ||
-            this.state.hingeIndicatorMode === 'american' && this.state.openingView
+        if (
+            (this.state.hingeIndicatorMode === 'european' && !this.state.openingView) ||
+            (this.state.hingeIndicatorMode === 'american' && this.state.openingView)
         ) {
             if (type.indexOf('left') >= 0) {
                 type = type.replace('left', 'right');
@@ -380,7 +381,7 @@ export default Marionette.View.extend({
         const view = this;
         const module = this.module;
         const container = $(module.get('stage').container());
-        var $wrap = $('<div>')
+        const $wrap = $('<div>')
             .addClass('popup-wrap')
             .appendTo(container)
             .on('click', (e) => {
@@ -390,8 +391,8 @@ export default Marionette.View.extend({
             });
 
         const padding = 3;
-        const valInInches = utils.convert.mm_to_inches(params.getter());
-        const val = utils.format.dimension(valInInches, 'fraction');
+        const valInInches = convert.mm_to_inches(params.getter());
+        const val = format.dimension(valInInches, 'fraction');
 
         const containerPos = (container.css('position') === 'relative') ? { top: 0, left: 0 } : container.position();
 
@@ -409,10 +410,10 @@ export default Marionette.View.extend({
             .val(val)
             .css({
                 position: 'absolute',
-                top: `${pos.y - padding + containerPos.top}px`,
-                left: `${pos.x - padding + containerPos.left}px`,
-                height: `${size.height + padding * 2}px`,
-                width: `${size.width + 20 + padding * 2}px`,
+                top: `${pos.y - (padding + containerPos.top)}px`,
+                left: `${pos.x - (padding + containerPos.left)}px`,
+                height: `${size.height + (padding * 2)}px`,
+                width: `${size.width + 20 + (padding * 2)}px`,
                 fontSize: '12px',
             })
             .appendTo($wrap)
@@ -427,7 +428,6 @@ export default Marionette.View.extend({
                 if (e.keyCode === 13) {  // enter
                     let _value = this.value;
                     let sign = 1;
-                    let mm;
 
                     if (_value[0] === '-') {
                         sign = (params.canBeNegative) ? -1 : 1;
@@ -437,11 +437,11 @@ export default Marionette.View.extend({
                     const splitHeightsRequested = _value.indexOf('|') !== -1;
                     const isVerticalWholeMetric = params.name === 'vertical_whole_metric';
                     const attr = (splitHeightsRequested && isVerticalWholeMetric) ? 'height' : 'width';
-                    const inches = utils.parseFormat.dimensions(_value, attr);
+                    const inches = parseFormat.dimensions(_value, attr);
 
-                    mm = _.isArray(inches) ?
-                        inches.map(value => utils.convert.inches_to_mm(value) * sign) :
-                        utils.convert.inches_to_mm(inches) * sign;
+                    const mm = _.isArray(inches) ?
+                        inches.map(value => convert.inches_to_mm(value) * sign) :
+                        convert.inches_to_mm(inches) * sign;
 
                     params.setter(mm, view);
 
@@ -469,17 +469,17 @@ export default Marionette.View.extend({
         const unitLayer = module.getLayer('unit').layer;
         const mullion = model.getMullion(mullionId);
         const mullionRect = unitLayer.findOne(`#mullion-${mullionId}`).getClientRect();
-        const mullionX = mullionRect.x * ratio + unitLayer.getClientRect().x;
-        const mullionY = mullionRect.y * ratio + unitLayer.getClientRect().y;
-        const mullionCenterX = mullionX + mullionRect.width * ratio / 2;
-        const mullionCenterY = mullionY + mullionRect.height * ratio / 2;
-        const inputX = mullionCenterX - style.width / 2;
-        const inputY = mullionCenterY - style.height / 2;
+        const mullionX = (mullionRect.x * ratio) + unitLayer.getClientRect().x;
+        const mullionY = (mullionRect.y * ratio) + unitLayer.getClientRect().y;
+        const mullionCenterX = mullionX + ((mullionRect.width * ratio) / 2);
+        const mullionCenterY = mullionY + ((mullionRect.height * ratio) / 2);
+        const inputX = mullionCenterX - (style.width / 2);
+        const inputY = mullionCenterY - (style.height / 2);
         const isVertical = mullion.type === 'vertical' || mullion.type === 'vertical_invisible';
         const isHorizontal = mullion.type === 'horizontal' || mullion.type === 'horizontal_invisible';
         const container = $(module.get('stage').container());
         const containerPosition = (container.css('position') === 'relative') ? { top: 0, left: 0 } : container.position();
-        var $wrap = $('<div>')
+        const $wrap = $('<div>')
             .addClass('popup-wrap')
             .appendTo(container)
             .on('click', (e) => {
@@ -498,10 +498,10 @@ export default Marionette.View.extend({
         $('<input>')
             .css({
                 position: 'absolute',
-                top: `${inputY - style.padding + containerPosition.top}px`,
-                left: `${inputX - style.padding + containerPosition.left}px`,
-                height: `${style.height + style.padding * 2}px`,
-                width: `${style.width + style.padding * 2}px`,
+                top: `${inputY - (style.padding + containerPosition.top)}px`,
+                left: `${inputX - (style.padding + containerPosition.left)}px`,
+                height: `${style.height + (style.padding * 2)}px`,
+                width: `${style.width + (style.padding * 2)}px`,
                 fontSize: `${style.fontSize}px`,
             })
             .appendTo($wrap)
@@ -515,10 +515,10 @@ export default Marionette.View.extend({
             .on('keydown', function (e) {
                 const input = e.target;
                 const attr = (isVertical) ? 'width' : 'height';
-                const newValue = utils.parseFormat.dimensions(this.value, attr);
+                const newValue = parseFormat.dimensions(this.value, attr);
                 const newValueMm = _.isArray(newValue) ?
-                    newValue.map(value => utils.convert.inches_to_mm(value)) :
-                    utils.convert.inches_to_mm(newValue);
+                    newValue.map(value => convert.inches_to_mm(value)) :
+                    convert.inches_to_mm(newValue);
                 const isKeyUp = e.key === 'ArrowUp' || e.key === 'w';
                 const isKeyRight = e.key === 'ArrowRight' || e.key === 'd';
                 const isKeyDown = e.key === 'ArrowDown' || e.key === 's';
@@ -531,20 +531,20 @@ export default Marionette.View.extend({
                     closeWrap();
                 // Set first subsection dimension
                 } else if (
-                    isVertical && isInside && isKeyLeft ||
-                    isVertical && isOutside && isKeyRight ||
-                    isVertical && isInside && isKeyEnter ||
-                    isHorizontal && isKeyUp ||
-                    isHorizontal && isKeyEnter
+                    (isVertical && isInside && isKeyLeft) ||
+                    (isVertical && isOutside && isKeyRight) ||
+                    (isVertical && isInside && isKeyEnter) ||
+                    (isHorizontal && isKeyUp) ||
+                    (isHorizontal && isKeyEnter)
                 ) {
                     model.setSectionMullionPosition(mullionId, newValueMm);
                     closeWrap();
                 // Set second subsection dimension
                 } else if (
-                    isVertical && isInside && isKeyRight ||
-                    isVertical && isOutside && isKeyLeft ||
-                    isVertical && isOutside && isKeyEnter ||
-                    isHorizontal && isKeyDown
+                    (isVertical && isInside && isKeyRight) ||
+                    (isVertical && isOutside && isKeyLeft) ||
+                    (isVertical && isOutside && isKeyEnter) ||
+                    (isHorizontal && isKeyDown)
                 ) {
                     const containerDimension = isVertical ?
                         model.getSizes().frame.width :
@@ -554,17 +554,19 @@ export default Marionette.View.extend({
                     closeWrap();
                 // Move cursor left
                 } else if (
-                    isVertical && isKeyUp ||
-                    isHorizontal && isKeyLeft
+                    (isVertical && isKeyUp) ||
+                    (isHorizontal && isKeyLeft)
                 ) {
-                    input.selectionStart = input.selectionEnd -= 1;
+                    input.selectionStart -= 1;
+                    input.selectionEnd -= 1;
                     e.preventDefault();
                 // Move cursor right
                 } else if (
-                    isVertical && isKeyDown ||
-                    isHorizontal && isKeyRight
+                    (isVertical && isKeyDown) ||
+                    (isHorizontal && isKeyRight)
                 ) {
-                    input.selectionStart = input.selectionEnd += 1;
+                    input.selectionStart += 1;
+                    input.selectionEnd += 1;
                     e.preventDefault();
                 }
             })

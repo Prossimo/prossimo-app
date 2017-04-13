@@ -3,7 +3,7 @@ import Backbone from 'backbone';
 
 import App from '../../main';
 import Schema from '../../schema';
-import utils from '../../utils';
+import { object, convert, math } from '../../utils';
 import constants from '../../constants';
 import UnitOptionCollection from '../collections/inline/unit-option-collection';
 import { globalChannel } from '../../utils/radio';
@@ -190,6 +190,31 @@ function findParent(root, childId) {
     return findParent(root.sections[0], childId) || findParent(root.sections[1], childId);
 }
 
+// static function
+// it will find section with passed id from passed section and all its children
+// via nested search
+export const findSection = function (section, sectionId) {
+    function findNested(sec, id) {
+        if (sec.id === id) {
+            return sec;
+        }
+
+        if (!sec.sections) {
+            return null;
+        }
+
+        for (let i = 0; i < sec.sections.length; i += 1) {
+            const founded = findNested(sec.sections[i], sectionId);
+
+            if (founded) {
+                return founded;
+            }
+        }
+    }
+
+    return findNested(section, sectionId);
+};
+
 const Unit = Backbone.Model.extend({
     schema: Schema.createSchema(UNIT_PROPERTIES),
     defaults() {
@@ -247,9 +272,9 @@ const Unit = Backbone.Model.extend({
 
         return Backbone.sync.call(this, method, model, options);
     },
-    toJSON() {
+    toJSON(...args) {
         const properties_to_omit = ['id'];
-        const json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+        const json = Backbone.Model.prototype.toJSON.apply(this, args);
 
         json.root_section = JSON.stringify(this.get('root_section'));
         json.unit_options = this.get('unit_options').toJSON();
@@ -262,7 +287,7 @@ const Unit = Backbone.Model.extend({
 
         if (parsed_data && parsed_data.unit_options) {
             parsed_data.unit_options = new UnitOptionCollection(
-                utils.object.extractObjectOrNull(parsed_data.unit_options),
+                object.extractObjectOrNull(parsed_data.unit_options),
                 { parse: true },
             );
         }
@@ -392,9 +417,8 @@ const Unit = Backbone.Model.extend({
             current_section.measurements.mullion[measurementType] = ['center', 'center'];
         }
 
-        _.each(current_section.sections, function (section) {
-            section = this.validateSection(section, false);
-        }, this);
+        current_section.sections = current_section.sections &&
+            current_section.sections.map(section => this.validateSection(section, false));
 
         return current_section;
     },
@@ -668,10 +692,10 @@ const Unit = Backbone.Model.extend({
         return this.collection ? this.collection.indexOf(this) + 1 : -1;
     },
     getWidthMM() {
-        return utils.convert.inches_to_mm(this.get('width'));
+        return convert.inches_to_mm(this.get('width'));
     },
     getHeightMM() {
-        return utils.convert.inches_to_mm(this.get('height'));
+        return convert.inches_to_mm(this.get('height'));
     },
     getRoughOpeningWidth() {
         return parseFloat(this.get('width')) + 1;
@@ -680,15 +704,13 @@ const Unit = Backbone.Model.extend({
         return parseFloat(this.get('height')) + 1;
     },
     getAreaInSquareFeet() {
-        return utils.math.square_feet(this.get('width'), this.get('height'));
+        return math.square_feet(this.get('width'), this.get('height'));
     },
     getTotalSquareFeet() {
         return this.getAreaInSquareFeet() * parseFloat(this.get('quantity'));
     },
     getAreaInSquareMeters() {
-        const c = utils.convert;
-
-        return utils.math.square_meters(c.inches_to_mm(this.get('width')), c.inches_to_mm(this.get('height')));
+        return math.square_meters(convert.inches_to_mm(this.get('width')), convert.inches_to_mm(this.get('height')));
     },
     getUnitCost() {
         return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
@@ -697,7 +719,7 @@ const Unit = Backbone.Model.extend({
         return this.getUnitCost() * parseFloat(this.get('quantity'));
     },
     getUnitCostDiscounted() {
-        return this.getUnitCost() * (100 - parseFloat(this.get('supplier_discount'))) / 100;
+        return (this.getUnitCost() * (100 - parseFloat(this.get('supplier_discount')))) / 100;
     },
     getSubtotalCostDiscounted() {
         return this.getUnitCostDiscounted() * parseFloat(this.get('quantity'));
@@ -712,10 +734,10 @@ const Unit = Backbone.Model.extend({
         return parseFloat(this.get('uw')) * 0.176;
     },
     getUnitPriceDiscounted() {
-        return this.getUnitPrice() * (100 - parseFloat(this.get('discount'))) / 100;
+        return (this.getUnitPrice() * (100 - parseFloat(this.get('discount')))) / 100;
     },
     getSubtotalPriceDiscounted() {
-        return this.getSubtotalPrice() * (100 - parseFloat(this.get('discount'))) / 100;
+        return (this.getSubtotalPrice() * (100 - parseFloat(this.get('discount')))) / 100;
     },
     getSubtotalProfit() {
         return this.getSubtotalPriceDiscounted() - this.getSubtotalCostDiscounted();
@@ -888,7 +910,7 @@ const Unit = Backbone.Model.extend({
                 });
                 pricing_data.push({
                     title: `Sash ${index + 1} Area (m2)`,
-                    value: section_data.width / 1000 * section_data.height / 1000,
+                    value: (section_data.width * section_data.height) / (1000 * 1000),
                 });
                 pricing_data.push({
                     title: `Sash ${index + 1} Filling`,
@@ -973,29 +995,25 @@ const Unit = Backbone.Model.extend({
 
         return true;
     },
-    //  FIXME: this uses while true
     getArchedPosition() {
         let root = this.get('root_section');
+        let archPosition = null;
 
         if (root.arched) {
-            return root.archPosition;
+            archPosition = root.archPosition;
         }
 
-        while (true) {
+        while (root) {
             const topSection = root.sections && root.sections[0] && root.sections[0];
 
             if (topSection && topSection.arched) {
-                return root.position;
-            }
-
-            if (!topSection) {
-                return null;
+                archPosition = root.position;
             }
 
             root = topSection;
         }
 
-        return null;
+        return archPosition;
     },
     isRootSection(sectionId) {
         return this.get('root_section').id === sectionId;
@@ -1050,7 +1068,7 @@ const Unit = Backbone.Model.extend({
 
         //  Set or reset radius
         if (section.circular) {
-            section.radius = utils.convert.inches_to_mm(opts.radius);
+            section.radius = convert.inches_to_mm(opts.radius);
         } else {
             section.radius = 0;
         }
@@ -1267,7 +1285,7 @@ const Unit = Backbone.Model.extend({
             let position;
 
             if (type === 'horizontal' || type === 'horizontal_invisible') {
-                position = fullSection.openingParams.y + fullSection.openingParams.height / 2;
+                position = fullSection.openingParams.y + (fullSection.openingParams.height / 2);
 
                 if (this.isTrapezoid()) {
                     const corners = this.getMainTrapezoidInnerCorners();
@@ -1278,7 +1296,7 @@ const Unit = Backbone.Model.extend({
                     const maxHeight = (heights.left < heights.right) ? heights.right : heights.left;
 
                     if (crossing >= -100 && crossing <= width + 100) {
-                        position = maxHeight - minHeight + 200;
+                        position = (maxHeight - minHeight) + 200;
                         section.minPosition = position;
 
                         if (position > fullSection.sashParams.y + fullSection.sashParams.height) {
@@ -1288,7 +1306,7 @@ const Unit = Backbone.Model.extend({
                 }
                 // section.position = position;
             } else {
-                position = fullSection.openingParams.x + fullSection.openingParams.width / 2;
+                position = fullSection.openingParams.x + (fullSection.openingParams.width / 2);
             }
 
             section.divider = type;
@@ -1303,8 +1321,11 @@ const Unit = Backbone.Model.extend({
             section.bars = getDefaultBars();
 
             if (section.fillingType && section.fillingName) {
-                section.sections[0].fillingType = section.sections[1].fillingType = section.fillingType;
-                section.sections[0].fillingName = section.sections[1].fillingName = section.fillingName;
+                section.sections[0].fillingType = section.fillingType;
+                section.sections[1].fillingType = section.fillingType;
+
+                section.sections[0].fillingName = section.fillingName;
+                section.sections[1].fillingName = section.fillingName;
             }
 
             section.position = position;
@@ -1341,8 +1362,8 @@ const Unit = Backbone.Model.extend({
             defaultParams = {
                 x: this.profile.get('frame_width'),
                 y: this.profile.get('frame_width'),
-                width: this.getInMetric('width', 'mm') - this.profile.get('frame_width') * 2,
-                height: this.getInMetric('height', 'mm') - this.profile.get('frame_width') * 2,
+                width: this.getInMetric('width', 'mm') - (this.profile.get('frame_width') * 2),
+                height: this.getInMetric('height', 'mm') - (this.profile.get('frame_width') * 2),
             };
         }
 
@@ -1354,7 +1375,7 @@ const Unit = Backbone.Model.extend({
             defaultParams = {
                 x: this.profile.get('frame_width'),
                 y: this.profile.get('frame_width'),
-                width: this.getInMetric('width', 'mm') - this.profile.get('frame_width') * 2,
+                width: this.getInMetric('width', 'mm') - (this.profile.get('frame_width') * 2),
                 height: this.getInMetric('height', 'mm') -
                     this.profile.get('frame_width') - this.profile.get('threshold_width'),
             };
@@ -1410,8 +1431,8 @@ const Unit = Backbone.Model.extend({
 
         rootSection.glassParams.x = rootSection.sashParams.x + frameWidth;
         rootSection.glassParams.y = rootSection.sashParams.y + frameWidth;
-        rootSection.glassParams.width = rootSection.sashParams.width - frameWidth * 2;
-        rootSection.glassParams.height = rootSection.sashParams.height - frameWidth * 2;
+        rootSection.glassParams.width = rootSection.sashParams.width - (frameWidth * 2);
+        rootSection.glassParams.height = rootSection.sashParams.height - (frameWidth * 2);
 
         const position = rootSection.position;
 
@@ -1421,13 +1442,13 @@ const Unit = Backbone.Model.extend({
             };
 
             if (rootSection.divider === 'vertical' || rootSection.divider === 'vertical_invisible') {
-                mullionAttrs.x = position - this.profile.get('mullion_width') / 2;
+                mullionAttrs.x = position - (this.profile.get('mullion_width') / 2);
                 mullionAttrs.y = rootSection.glassParams.y;
                 mullionAttrs.width = this.profile.get('mullion_width');
                 mullionAttrs.height = rootSection.glassParams.height;
             } else {
                 mullionAttrs.x = rootSection.glassParams.x;
-                mullionAttrs.y = position - this.profile.get('mullion_width') / 2;
+                mullionAttrs.y = position - (this.profile.get('mullion_width') / 2);
                 mullionAttrs.width = rootSection.glassParams.width;
                 mullionAttrs.height = this.profile.get('mullion_width');
             }
@@ -1492,23 +1513,23 @@ const Unit = Backbone.Model.extend({
             sectionParams.y = openingParams.y;
 
             if (isLeft) {
-                sectionParams.x = position + mullionWidth / 2;
-                sectionParams.width = openingParams.width + openingParams.x - position - mullionWidth / 2;
+                sectionParams.x = position + (mullionWidth / 2);
+                sectionParams.width = (openingParams.width + openingParams.x) - position - (mullionWidth / 2);
                 sectionParams.height = openingParams.height;
                 sectionData.mullionEdges.left = rootSection.divider;
             } else if (isRight) {
-                sectionParams.width = position - rootSection.openingParams.x - mullionWidth / 2;
+                sectionParams.width = position - rootSection.openingParams.x - (mullionWidth / 2);
                 sectionParams.height = openingParams.height;
                 sectionData.mullionEdges.right = rootSection.divider;
             } else if (isTop) {
                 sectionParams.width = openingParams.width;
-                sectionParams.height = position - rootSection.openingParams.y - mullionWidth / 2;
+                sectionParams.height = position - rootSection.openingParams.y - (mullionWidth / 2);
                 sectionData.mullionEdges.bottom = rootSection.divider;
                 sectionData.thresholdEdge = false;
             } else if (isBottom) {
-                sectionParams.y = position + mullionWidth / 2;
+                sectionParams.y = position + (mullionWidth / 2);
                 sectionParams.width = openingParams.width;
-                sectionParams.height = openingParams.height + openingParams.y - position - mullionWidth / 2;
+                sectionParams.height = (openingParams.height + openingParams.y) - position - (mullionWidth / 2);
                 sectionData.mullionEdges.top = rootSection.divider;
             }
 
@@ -1656,7 +1677,7 @@ const Unit = Backbone.Model.extend({
             return this.get(attr);
         }
 
-        return utils.convert.inches_to_mm(this.get(attr));
+        return convert.inches_to_mm(this.get(attr));
     },
     //  Inches by default, mm optional
     updateDimension(attr, val, metric) {
@@ -1674,9 +1695,9 @@ const Unit = Backbone.Model.extend({
 
         // Convert to inches if metric is present and it isn't inches. No metric means inches
         if (_.isArray(val) && (metric && metric !== 'inches')) {
-            val = val.map(utils.convert.mm_to_inches);
+            val = val.map(convert.mm_to_inches);
         } else if (metric && metric !== 'inches') {
-            val = utils.convert.mm_to_inches(val);
+            val = convert.mm_to_inches(val);
         }
 
         if (this.getCircleRadius() !== null) {
@@ -1742,8 +1763,8 @@ const Unit = Backbone.Model.extend({
 
         if (!result.frame) {
             result.frame = {
-                width: utils.convert.inches_to_mm(this.get('width')),
-                height: utils.convert.inches_to_mm(this.get('height')),
+                width: convert.inches_to_mm(this.get('width')),
+                height: convert.inches_to_mm(this.get('height')),
                 frame_width: this.profile.get('frame_width'),
             };
         }
@@ -1818,7 +1839,8 @@ const Unit = Backbone.Model.extend({
 
         if (App.settings && App.settings.filling_types) {
             _.find(sizes.glasses, (glass) => {
-                const is_base = App.settings.filling_types.find(filling => filling.get('name') === glass.name && filling.get('is_base_type') === true);
+                const is_base = App.settings.filling_types.find(
+                    filling => filling.get('name') === glass.name && filling.get('is_base_type') === true);
 
                 if (is_base) {
                     has_base_filling = true;
@@ -1892,15 +1914,15 @@ const Unit = Backbone.Model.extend({
         }
 
         function getProfilePerimeterWithoutIntersections(width, height, frame_width) {
-            return (width + height) * 2 - frame_width * 4;
+            return ((width + height) * 2) - (frame_width * 4);
         }
 
         function getBarLengthWithoutIntersections(length, bar_width, intersections_number) {
-            return length - bar_width * intersections_number;
+            return length - (bar_width * intersections_number);
         }
 
         function getArea(width, height) {
-            return utils.math.square_meters(width, height);
+            return math.square_meters(width, height);
         }
 
         result.frame.linear = getProfilePerimeter(sizes.frame.width, sizes.frame.height);
@@ -2162,16 +2184,14 @@ const Unit = Backbone.Model.extend({
                 ) || 0;
 
                 section.base_pricing_scheme = PRICING_SCHEME_PRICING_GRIDS;
-                section.base_cost = utils.math.square_meters(section.width, section.height) *
-                    section.price_per_square_meter;
+                section.base_cost = math.square_meters(section.width, section.height) * section.price_per_square_meter;
             } else if (profile_pricing_data && profile_pricing_data.scheme === PRICING_SCHEME_LINEAR_EQUATION) {
                 const params_source = profile_pricing_data.pricing_equation_params.getByName(section.type);
                 const profile_param_a = params_source.get('param_a') || 0;
                 const profile_param_b = params_source.get('param_b') || 0;
 
                 section.base_pricing_scheme = PRICING_SCHEME_LINEAR_EQUATION;
-                section.base_cost =
-                    profile_param_a * section.height / 1000 * section.width / 1000 + profile_param_b;
+                section.base_cost = (profile_param_a * (section.height / 1000) * (section.width / 1000)) + profile_param_b;
             }
 
             section.filling_price_increase = 0;
@@ -2180,8 +2200,7 @@ const Unit = Backbone.Model.extend({
             //  Add cost increase for fillings
             if (App.settings && App.settings.filling_types) {
                 const filling_type = App.settings.filling_types.getByName(section.filling_name);
-                const ft_pricing_data = filling_type &&
-                    filling_type.getPricingDataForProfile(this.profile.id);
+                const ft_pricing_data = filling_type && filling_type.getPricingDataForProfile(this.profile.id);
 
                 //  If we have correct pricing scheme and data for filling
                 if (ft_pricing_data && ft_pricing_data.scheme === PRICING_SCHEME_PRICING_GRIDS) {
@@ -2193,15 +2212,14 @@ const Unit = Backbone.Model.extend({
                         },
                     ) || 0;
                     section.filling_pricing_scheme = PRICING_SCHEME_PRICING_GRIDS;
-                    section.filling_cost = section.base_cost * section.filling_price_increase / 100;
+                    section.filling_cost = section.base_cost * (section.filling_price_increase / 100);
                 } else if (ft_pricing_data && ft_pricing_data.scheme === PRICING_SCHEME_LINEAR_EQUATION) {
                     const ft_params_source = ft_pricing_data.pricing_equation_params.getByName(section.type);
                     const ft_param_a = ft_params_source.get('param_a') || 0;
                     const ft_param_b = ft_params_source.get('param_b') || 0;
 
                     section.filling_pricing_scheme = PRICING_SCHEME_LINEAR_EQUATION;
-                    section.filling_cost =
-                        ft_param_a * section.height / 1000 * section.width / 1000 + ft_param_b;
+                    section.filling_cost = (ft_param_a * (section.height / 1000) * (section.width / 1000)) + ft_param_b;
                 }
             }
 
@@ -2220,7 +2238,7 @@ const Unit = Backbone.Model.extend({
                     },
                 ) || 0;
 
-                option_cost = section.base_cost * price_increase / 100;
+                option_cost = section.base_cost * (price_increase / 100);
                 section.options_cost += option_cost;
 
                 section.options.push({
@@ -2241,7 +2259,7 @@ const Unit = Backbone.Model.extend({
                 const param_b = option_pricing_data.get('param_b') || 0;
                 const price_increase = 0;
 
-                option_cost = param_a * section.height / 1000 * section.width / 1000 + param_b;
+                option_cost = (param_a * (section.height / 1000) * (section.width / 1000)) + param_b;
                 section.options_cost += option_cost;
 
                 section.options.push({
@@ -2289,7 +2307,7 @@ const Unit = Backbone.Model.extend({
         }, this);
 
         unit_cost.real_cost.difference = unit_cost.total ?
-            (unit_cost.real_cost.total - unit_cost.total) / unit_cost.total * 100 :
+            ((unit_cost.real_cost.total - unit_cost.total) / unit_cost.total) * 100 :
             (unit_cost.real_cost.total ? 100 : 0);
 
         return unit_cost;
@@ -2357,8 +2375,8 @@ const Unit = Backbone.Model.extend({
     //  Source is in mms. Result is in inches by default, millimeters optional
     getSashOpeningSize(openingSizes_mm, sizeType, sashType, result_metric) {
         const possible_metrics = ['mm', 'inches'];
-        const c = utils.convert;
-        const m = utils.math;
+        const c = convert;
+        const m = math;
         let result;
 
         if (result_metric && possible_metrics.indexOf(result_metric) === -1) {
@@ -2508,9 +2526,7 @@ const Unit = Backbone.Model.extend({
     isParentQuoteActive() {
         let is_active = false;
 
-        if (App.current_quote && this.collection && this.collection.options.quote &&
-            this.collection.options.quote === App.current_quote
-        ) {
+        if (App.current_quote && this.collection && this.collection.options.quote && this.collection.options.quote === App.current_quote) {
             is_active = true;
         }
 
@@ -2522,10 +2538,10 @@ const Unit = Backbone.Model.extend({
 
         return root.trapezoidHeights;
     },
-
     /* Determines if the unit has at least one horizontal mullion */
     hasHorizontalMullion() {
-        return this.getMullions().reduce((previous, current) => previous || (current.type === 'horizontal' || current.type === 'horizontal_invisible'), false);
+        return this.getMullions().reduce(
+            (previous, current) => previous || (current.type === 'horizontal' || current.type === 'horizontal_invisible'), false);
     },
     /* eslint-disable no-else-return */
 
@@ -2583,8 +2599,8 @@ const Unit = Backbone.Model.extend({
         }
 
         const heights = this.get('root_section').trapezoidHeights;
-        const left = utils.convert.inches_to_mm(heights[0]);
-        const right = utils.convert.inches_to_mm(heights[1]);
+        const left = convert.inches_to_mm(heights[0]);
+        const right = convert.inches_to_mm(heights[1]);
 
         return (this.inside) ? { left: right, right: left } : { left, right };
     },
@@ -2603,18 +2619,18 @@ const Unit = Backbone.Model.extend({
         if (typeof heights === 'object') {
             const cornerLeft = Math.abs(
                 (Math.atan(((maxHeight - heights.right) - (maxHeight - heights.left)) / (width - 0)) -
-                Math.atan((maxHeight - (maxHeight - heights.left)) / (0 - 0))) / Math.PI * 180,
+                Math.atan((maxHeight - (maxHeight - heights.left)) / (0 - 0))) / (Math.PI * 180),
             ) / 2;
             const cornerRight = Math.abs(90 - cornerLeft);
 
             corners = {
                 left: {
                     x: frameWidth,
-                    y: maxHeight - heights.left + (Math.tan((90 - cornerLeft) / 180 * Math.PI) * frameWidth),
+                    y: (maxHeight - heights.left) + (Math.tan((90 - cornerLeft) / (180 * Math.PI)) * frameWidth),
                 },
                 right: {
                     x: width - frameWidth,
-                    y: maxHeight - heights.right + (Math.tan((90 - cornerRight) / 180 * Math.PI) * frameWidth),
+                    y: (maxHeight - heights.right) + (Math.tan((90 - cornerRight) / (180 * Math.PI)) * frameWidth),
                 },
             };
         }
@@ -2648,12 +2664,10 @@ const Unit = Backbone.Model.extend({
             false;
     },
     getLineCrossingX(x, start, finish) {
-        return (0 - ((start.y - finish.y) * x) - ((start.x * finish.y) - (finish.x * start.y))) /
-            (finish.x - start.x);
+        return (0 - ((start.y - finish.y) * x) - ((start.x * finish.y) - (finish.x * start.y))) / (finish.x - start.x);
     },
     getLineCrossingY(y, start, finish) {
-        return (0 - ((finish.x - start.x) * y) - ((start.x * finish.y) - (finish.x * start.y))) /
-            (start.y - finish.y);
+        return (0 - ((finish.x - start.x) * y) - ((start.x * finish.y) - (finish.x * start.y))) / (start.y - finish.y);
     },
     getFrameOffset() {
         return 34;
@@ -2701,7 +2715,7 @@ const Unit = Backbone.Model.extend({
     },
     checkHorizontalSplit(rootSection, params) {
         if (rootSection.sections && rootSection.sections.length) {
-            for (let i = 0; i < rootSection.sections.length; i++) {
+            for (let i = 0; i < rootSection.sections.length; i += 1) {
                 this.checkHorizontalSplit(rootSection.sections[i], params);
             }
         }
@@ -2710,11 +2724,12 @@ const Unit = Backbone.Model.extend({
             const crossing = this.getLineCrossingY(rootSection.position, params.corners.left, params.corners.right);
 
             if (crossing >= -100) {
-                const maxHeight = utils.convert.inches_to_mm(params.maxHeight);
-                const minHeight = utils.convert.inches_to_mm(params.minHeight);
-                const position = maxHeight - minHeight + 250;
+                const maxHeight = convert.inches_to_mm(params.maxHeight);
+                const minHeight = convert.inches_to_mm(params.minHeight);
+                const position = (maxHeight - minHeight) + 250;
 
-                rootSection.minPosition = rootSection.position = position;
+                rootSection.minPosition = position;
+                rootSection.position = position;
             }
         }
     },
@@ -2728,39 +2743,14 @@ const Unit = Backbone.Model.extend({
 
         if (trapezoidHeights) {
             trapezoidHeights = [
-                utils.convert.inches_to_mm(trapezoidHeights[0]),
-                utils.convert.inches_to_mm(trapezoidHeights[1]),
+                convert.inches_to_mm(trapezoidHeights[0]),
+                convert.inches_to_mm(trapezoidHeights[1]),
             ];
         }
 
-        return trapezoidHeights || utils.convert.inches_to_mm(this.get('height'));
+        return trapezoidHeights || convert.inches_to_mm(this.get('height'));
     },
     /* trapezoid end */
 });
-
-// static function
-// it will find section with passed id from passed section and all its children
-// via nested search
-export const findSection = function (section, sectionId) {
-    function findNested(sec, id) {
-        if (sec.id === id) {
-            return sec;
-        }
-
-        if (!sec.sections) {
-            return null;
-        }
-
-        for (let i = 0; i < sec.sections.length; i++) {
-            const founded = findNested(sec.sections[i], sectionId);
-
-            if (founded) {
-                return founded;
-            }
-        }
-    }
-
-    return findNested(section, sectionId);
-};
 
 export default Unit;

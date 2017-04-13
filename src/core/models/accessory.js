@@ -69,9 +69,9 @@ export default Backbone.Model.extend({
 
         return Backbone.sync.call(this, method, model, options);
     },
-    toJSON() {
+    toJSON(...args) {
         const properties_to_omit = ['id'];
-        const json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+        const json = Backbone.Model.prototype.toJSON.apply(this, args);
 
         return _.omit(json, properties_to_omit);
     },
@@ -185,20 +185,20 @@ export default Backbone.Model.extend({
         if (App.current_quote) {
             //  If this is percent-based optional extras, base is Unit Subtotal
             if (this.isPercentBasedType() && this.isOptionalType()) {
-                subtotal_price = this.getMarkupPercent() / 100 * App.current_quote.getSubtotalUnitsPrice();
+                subtotal_price = (this.getMarkupPercent() / 100) * App.current_quote.getSubtotalUnitsPrice();
             //  If this is tax, base is everything except shipping
             } else if (this.isPercentBasedType()) {
-                subtotal_price = this.getMarkupPercent() / 100 * App.current_quote.getSubtotalPrice();
+                subtotal_price = (this.getMarkupPercent() / 100) * App.current_quote.getSubtotalPrice();
             }
         }
 
         return subtotal_price;
     },
     getUnitPriceDiscounted() {
-        return this.getUnitPrice() * (100 - this.get('discount')) / 100;
+        return (this.getUnitPrice() * (100 - this.get('discount'))) / 100;
     },
     getSubtotalPriceDiscounted() {
-        return this.getSubtotalPrice() * (100 - this.get('discount')) / 100;
+        return (this.getSubtotalPrice() * (100 - this.get('discount'))) / 100;
     },
     getSubtotalProfit() {
         let profit = 0;

@@ -17,8 +17,8 @@ export default Marionette.CompositeView.extend({
             placeholder: this.options.placeholder || undefined,
         };
     },
-    filter() {
-        return this.filter_condition ? this.filter_condition.apply(this, arguments) : true;
+    filter(...args) {
+        return this.filter_condition ? this.filter_condition(...args) : true;
     },
     ui: {
         $container: '.sidebar-list-container',

@@ -134,7 +134,7 @@ export default Marionette.View.extend({
         const intDistance = 40;
         const intDuration = 300;
 
-        for (let x = 1; x <= intShakes; x++) {
+        for (let x = 1; x <= intShakes; x += 1) {
             this.ui.$modal
                 .animate({ left: (intDistance * -1) }, (intDuration / intShakes) / 4)
                 .animate({ left: intDistance }, (intDuration / intShakes) / 2)
@@ -160,10 +160,10 @@ export default Marionette.View.extend({
         };
 
         if (type === 'vertical' || type === 'both') {
-            const vertical_count = parseInt(this.ui.$bar_vertical.val());
+            const vertical_count = parseInt(this.ui.$bar_vertical.val(), 10);
             const vSpace = section.width / (vertical_count + 1);
 
-            for (let i = 0; i < vertical_count; i++) {
+            for (let i = 0; i < vertical_count; i += 1) {
                 const vbar = {
                     id: _.uniqueId(),
                     position: vSpace * (i + 1),
@@ -177,10 +177,10 @@ export default Marionette.View.extend({
         }
 
         if (type === 'horizontal' || type === 'both') {
-            const horizontal_count = parseInt(this.ui.$bar_horizontal.val());
+            const horizontal_count = parseInt(this.ui.$bar_horizontal.val(), 10);
             const hSpace = section.height / (horizontal_count + 1);
 
-            for (let j = 0; j < horizontal_count; j++) {
+            for (let j = 0; j < horizontal_count; j += 1) {
                 const hbar = {
                     id: _.uniqueId(),
                     position: hSpace * (j + 1),

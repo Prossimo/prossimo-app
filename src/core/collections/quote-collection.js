@@ -1,14 +1,13 @@
-import App from '../../main';
 import Backbone from 'backbone';
 
+import App from '../../main';
 import Quote from '../models/quote';
 
 export default Backbone.Collection.extend({
     model: Quote,
     reorder_property_name: 'quotes',
     url() {
-        return `${App.settings.get('api_base_path')
-            }/projects/${this.options.project.get('id')}/quotes`;
+        return `${App.settings.get('api_base_path')}/projects/${this.options.project.get('id')}/quotes`;
     },
     reorder_url() {
         return `${App.settings.get('api_base_path')

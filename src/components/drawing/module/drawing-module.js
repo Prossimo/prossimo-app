@@ -6,7 +6,7 @@ import Konva from 'konva';
 
 import App from '../../../main';
 import LayerManager from './layer-manager';
-import utils from '../../../utils';
+import { object } from '../../../utils';
 
 // This module starts manually with required parameters:
 // new DrawingModule({
@@ -185,8 +185,8 @@ const DrawingModule = Marionette.Object.extend({
         const isTrapezoid = model.isTrapezoid();
         const isInsideView = this.state.insideView;
         const topOffset = 10 + 0.5; // we will add 0.5 pixel offset for better strokes
-        const wr = (stage.width() - metricSize * 2) / frameWidth;
-        const hr = (stage.height() - metricSize * ((isTrapezoid) ? 3 : 2) - topOffset) / frameHeight;
+        const wr = (stage.width() - (metricSize * 2)) / frameWidth;
+        const hr = (stage.height() - (metricSize * ((isTrapezoid) ? 3 : 2)) - topOffset) / frameHeight;
 
         const ratio = (Math.min(wr, hr) * 0.95);
 
@@ -195,10 +195,10 @@ const DrawingModule = Marionette.Object.extend({
 
         // Shift drawing right or left depending on metrics displayed
         // Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js
-        let metricShiftX = 0 - (2 - model.leftMetricCount(isInsideView)) * metricSize / 2;
+        let metricShiftX = 0 - ((2 - model.leftMetricCount(isInsideView)) * (metricSize / 2));
 
         if (model.rightMetricCount() > 1) {
-            metricShiftX -= (model.rightMetricCount(isInsideView) - 1) * metricSize / 2;
+            metricShiftX -= (model.rightMetricCount(isInsideView) - 1) * (metricSize / 2);
         }
 
         const sizes = {
@@ -209,9 +209,9 @@ const DrawingModule = Marionette.Object.extend({
             },
             center: {
                 x: Math.round(
-                    stage.width() / 2 - frameOnScreenWidth / 2
-                    + ((isTrapezoid) ? metricSize / 2 : metricSize)
-                    + metricShiftX,
+                    ((stage.width() / 2) - (frameOnScreenWidth / 2)) +
+                    ((isTrapezoid) ? metricSize / 2 : metricSize) +
+                    metricShiftX,
                 ) + 0.5,
                 y: topOffset,
             },
@@ -362,7 +362,7 @@ const DrawingModule = Marionette.Object.extend({
             },
         };
 
-        styles = utils.object.deep_extend(styles, opts.styles);
+        styles = object.deep_extend(styles, opts.styles);
 
         // Assign styles
         _.each(styles, (style, name) => {
@@ -519,8 +519,8 @@ export const preview = function (unitModel, options) {
     if (_.indexOf(['inside', 'outside'], options.position) !== -1) {
         module.setState({
             insideView: options.position === 'inside',
-            openingView: options.position === 'inside' && !unitModel.isOpeningDirectionOutward() ||
-                options.position === 'outside' && unitModel.isOpeningDirectionOutward(),
+            openingView: (options.position === 'inside' && !unitModel.isOpeningDirectionOutward()) ||
+                (options.position === 'outside' && unitModel.isOpeningDirectionOutward()),
             inchesDisplayMode: options.inchesDisplayMode,
             hingeIndicatorMode: options.hingeIndicatorMode,
         }, false);

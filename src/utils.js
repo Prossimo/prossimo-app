@@ -5,6 +5,15 @@ const MAX_DENOMINATOR = 16;
 //  For numbers that are passed to Decimal constructor
 const MAX_SIGNIFICANT_DIGITS = 15;
 
+export const convert = {
+    inches_to_mm(inch_value) {
+        return parseFloat(inch_value * 25.4);
+    },
+    mm_to_inches(mm_value) {
+        return parseFloat(mm_value / 25.4);
+    },
+};
+
 export const format = {
     dimension(value, decimal_format, inches_display_mode, zero_inch_display_mode) {
         let value_feet;
@@ -165,10 +174,9 @@ export const format = {
             '');
     },
     square_meters(value, num, suffix_format) {
-        suffix_format = (suffix_format && _.indexOf(['normal', 'sup'], suffix_format) !== -1) ?
-            suffix_format : 'sup';
-        return this.fixed_minimal(value, num) + (suffix_format === 'sup' ?
-            ' m<sup>2</sup>' : ' sq.m');
+        suffix_format = (suffix_format && _.indexOf(['normal', 'sup'], suffix_format) !== -1) ? suffix_format : 'sup';
+
+        return this.fixed_minimal(value, num) + (suffix_format === 'sup' ? ' m<sup>2</sup>' : ' sq.m');
     },
     weight(value) {
         return `${this.fixed_minimal(value, 3)} kg`;
@@ -186,8 +194,7 @@ export const format = {
             _.indexOf(['floating', 'fraction'], decimal_format) !== -1 ?
             decimal_format : 'fraction';
 
-        inches_display_mode = inches_display_mode &&
-            _.indexOf(['feet_and_inches', 'inches_only'], inches_display_mode) !== -1 ?
+        inches_display_mode = inches_display_mode && _.indexOf(['feet_and_inches', 'inches_only'], inches_display_mode) !== -1 ?
             inches_display_mode : 'inches_only';
 
         area_format = (area_format && _.indexOf(['normal', 'sup'], area_format) !== -1) ?
@@ -212,7 +219,7 @@ export const format = {
 
         while (parseFloat(size_in_bytes) >= 1024) {
             size_in_bytes = parseFloat(size_in_bytes) / 1024;
-            counter++;
+            counter += 1;
         }
 
         return suffixes[counter] ?
@@ -229,15 +236,15 @@ export const parseFormat = {
         //  Captures everything with mm, cm, m: |500 mm|, |6-3 m|
         const pattern_0 = /(\S*\d+)\s*(mm|cm|m)/i;
         //  Captures |6'-2 1/2"|, |6 - 2 1/2|
-        const pattern_1 = /(\d+)\s*(\'|’|′)*\s*(-|–|—|‒|―|‐|−)\s*(\d+)\s(\d+)\s*\/\s*(\d+)\s*("|”|″)*/i;
+        const pattern_1 = /(\d+)\s*('|’|′)*\s*(-|–|—|‒|―|‐|−)\s*(\d+)\s(\d+)\s*\/\s*(\d+)\s*("|”|″)*/i;
         //  Captures |5-2|, |8'-0|, |9-10"|, |2’–8”|, |2’–8.5”|, |2.5’−8.5”|
-        const pattern_2 = /(\d+(?:\.\d+)*)\s*(\'|’|′)*\s*(-|–|—|‒|―|‐|−)\s*(\d+(?:\.\d+)*)\s*("|”|″)*/i;
+        const pattern_2 = /(\d+(?:\.\d+)*)\s*('|’|′)*\s*(-|–|—|‒|―|‐|−)\s*(\d+(?:\.\d+)*)\s*("|”|″)*/i;
         //  Captures |33 3/8|, |82 1/2"|, |4'6 1/2|
-        const pattern_3 = /(?:(\d+)\s*(?:\'|’|′)\s*)*(\d+)\s(\d+)\s*\/\s*(\d+)/i;
+        const pattern_3 = /(?:(\d+)\s*(?:'|’|′)\s*)*(\d+)\s(\d+)\s*\/\s*(\d+)/i;
         //  Captures |30 '|, |30'|, |30’|, |30.5 ’|, |4'6|
-        const pattern_4 = /(\d+(?:\.\d+)*)\s*(?:\'|’|′)\s*(\d+(?:\.\d+)*)*/i;
+        const pattern_4 = /(\d+(?:\.\d+)*)\s*(?:'|’|′)\s*(\d+(?:\.\d+)*)*/i;
         //  Captures |2 3|, |2.5 8.5|, |2 8.5|, |2' 3|, |2' 3"|
-        const pattern_5 = /(\d+(?:\.\d+)*\s*(?:\'|’|′)*)\s+(\d+(?:\.\d+)*\s*("|”|″)*)/i;
+        const pattern_5 = /(\d+(?:\.\d+)*\s*(?:'|’|′)*)\s+(\d+(?:\.\d+)*\s*("|”|″)*)/i;
         //  Captures |30|, |30 "|, |30"|, |30 ”|, |30.5 ”|
         const pattern_6 = /(\d+(?:\.\d+)*)\s*("|”|″)*/i;
 
@@ -252,21 +259,19 @@ export const parseFormat = {
             }
         } else if (pattern_1.test(size_string)) {
             match = pattern_1.exec(size_string);
-            result = parseFloat(match[1]) * 12 + parseFloat(match[4]) +
-                parseFloat(match[5]) / parseFloat(match[6]);
+            result = (parseFloat(match[1]) * 12) + parseFloat(match[4]) + (parseFloat(match[5]) / parseFloat(match[6]));
         } else if (pattern_2.test(size_string)) {
             match = pattern_2.exec(size_string);
-            result = parseFloat(match[1]) * 12 + parseFloat(match[4]);
+            result = (parseFloat(match[1]) * 12) + parseFloat(match[4]);
         } else if (pattern_3.test(size_string)) {
             match = pattern_3.exec(size_string);
-            result = (match[1] ? match[1] * 12 : 0) +
-                parseFloat(match[2]) + parseFloat(match[3]) / parseFloat(match[4]);
+            result = (match[1] ? match[1] * 12 : 0) + parseFloat(match[2]) + (parseFloat(match[3]) / parseFloat(match[4]));
         } else if (pattern_4.test(size_string)) {
             match = pattern_4.exec(size_string);
-            result = parseFloat(match[1]) * 12 + (match[2] ? parseFloat(match[2]) : 0);
+            result = (parseFloat(match[1]) * 12) + (match[2] ? parseFloat(match[2]) : 0);
         } else if (pattern_5.test(size_string)) {
             match = pattern_5.exec(size_string);
-            result = parseFloat(match[1]) * 12 + (match[2] ? parseFloat(match[2]) : 0);
+            result = (parseFloat(match[1]) * 12) + (match[2] ? parseFloat(match[2]) : 0);
         } else if (pattern_6.test(size_string)) {
             match = pattern_6.exec(size_string);
             result = match[1];
@@ -332,35 +337,26 @@ export const parseFormat = {
 
 export const math = {
     square_feet(width, height) {
-        return parseFloat(width) * parseFloat(height) / 144;
+        return (parseFloat(width) * parseFloat(height)) / 144;
     },
     square_meters(width_mm, height_mm) {
-        return parseFloat(width_mm) / 1000 * parseFloat(height_mm) / 1000;
+        return (parseFloat(width_mm) * parseFloat(height_mm)) / (1000 * 1000);
     },
     linear_interpolation(x, x0, x1, y0, y1) {
-        return y0 + (y1 - y0) * ((x - x0) / (x1 - x0));
-    },
-};
-
-export const convert = {
-    inches_to_mm(inch_value) {
-        return parseFloat(inch_value * 25.4);
-    },
-    mm_to_inches(mm_value) {
-        return parseFloat(mm_value / 25.4);
+        return y0 + ((y1 - y0) * ((x - x0) / (x1 - x0)));
     },
 };
 
 export const object = {
     deep_extend(a, b) {
         if (_.isObject(a) && _.isObject(b)) {
-            for (const prop in b) {
+            Object.keys(b).forEach((prop) => {
                 if (prop in a && _.isObject(b[prop])) {
                     object.deep_extend(a[prop], b[prop]);
                 } else {
                     a[prop] = b[prop];
                 }
-            }
+            });
         } else if (!(_.isUndefined(b) || _.isNull(b) || _.isNaN(b))) {
             a = b;
         }
@@ -402,7 +398,7 @@ export const vector2d = {
     length(v) {
         v = vector2d.getVector(v);
 
-        return Math.sqrt(Math.pow(v.x, 2) + Math.pow(v.y, 2));
+        return Math.sqrt((v.x ** 2) + (v.y ** 2));
     },
     normalize(v) {
         v = vector2d.getVector(v);
@@ -455,9 +451,10 @@ export const vector2d = {
 
         input = input.map(vector2d.getVector);
 
-        return input.sort((a, b) => Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x) +
-                (Math.atan2(b.y, b.x) > base ? -2 * Math.PI : 0) +
-                (Math.atan2(a.y, a.x) > base ? 2 * Math.PI : 0));
+        return input.sort((a, b) =>
+            (Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x)) +
+            (Math.atan2(b.y, b.x) > base ? -2 * Math.PI : 0) +
+            (Math.atan2(a.y, a.x) > base ? 2 * Math.PI : 0));
     },
     points_to_vectors(points, center) {
         const result = [];
@@ -493,10 +490,10 @@ export const vector2d = {
 
 export const angle = {
     rad_to_deg(rad) {
-        return rad * 180 / Math.PI;
+        return rad * (180 / Math.PI);
     },
     deg_to_rad(deg) {
-        return deg * Math.PI / 180;
+        return deg * (Math.PI / 180);
     },
 };
 
@@ -506,19 +503,16 @@ export const geometry = {
         // Modified for our task
         function lerp(p1, p2, t) {
             return {
-                x: p1.x + (p2.x - p1.x) * t,
-                y: p1.y + (p2.y - p1.y) * t,
+                x: p1.x + ((p2.x - p1.x) * t),
+                y: p1.y + ((p2.y - p1.y) * t),
             };
         }
 
         const result = (leave) ? [a2, a1] : [];
-        const a = (a2.x - a1.x) * (a2.x - a1.x) +
-            (a2.y - a1.y) * (a2.y - a1.y);
-        const b = 2 * ((a2.x - a1.x) * (a1.x - c.x) +
-            (a2.y - a1.y) * (a1.y - c.y));
-        const cc = c.x * c.x + c.y * c.y + a1.x * a1.x + a1.y * a1.y -
-            2 * (c.x * a1.x + c.y * a1.y) - r * r;
-        const deter = b * b - 4 * a * cc;
+        const a = ((a2.x - a1.x) * (a2.x - a1.x)) + ((a2.y - a1.y) * (a2.y - a1.y));
+        const b = 2 * (((a2.x - a1.x) * (a1.x - c.x)) + ((a2.y - a1.y) * (a1.y - c.y)));
+        const cc = ((c.x * c.x) + (c.y * c.y) + (a1.x * a1.x) + (a1.y * a1.y)) - (2 * ((c.x * a1.x) + (c.y * a1.y))) - (r * r);
+        const deter = (b * b) - (4 * a * cc);
 
         if (deter > 0) {
             const e = Math.sqrt(deter);
@@ -548,26 +542,6 @@ export const geometry = {
 };
 
 export const array = {
-    moveByIndex(arr, old_index, new_index) {
-        while (old_index < 0) {
-            old_index += arr.length;
-        }
-
-        while (new_index < 0) {
-            new_index += arr.length;
-        }
-
-        if (new_index >= arr.length) {
-            let k = new_index - arr.length;
-
-            while ((k--) + 1) {
-                arr.push(undefined);
-            }
-        }
-
-        arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
-        return arr;
-    },
     moveByValue(arr, findVal, targetVal, after) {
         after = after || false;
 
@@ -576,7 +550,7 @@ export const array = {
 
         if (fi !== -1 && ti !== -1) {
             if (after && ti !== arr.length) {
-                ti++;
+                ti += 1;
             }
 
             arr.splice(ti, 0, arr.splice(fi, 1)[0]);

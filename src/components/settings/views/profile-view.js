@@ -76,7 +76,9 @@ export default Marionette.View.extend({
         }
     },
     renderCustomDimensionAttributes() {
-        const target_views = _.filter(this.attributes_views.dimensions, child_view => _.contains(['visible_frame_width_fixed', 'visible_frame_width_operable'], child_view.name), this);
+        const target_views = _.filter(
+            this.attributes_views.dimensions,
+            child_view => _.contains(['visible_frame_width_fixed', 'visible_frame_width_operable'], child_view.name), this);
 
         _.each(target_views, (view) => {
             view.view_instance.render();
@@ -90,7 +92,9 @@ export default Marionette.View.extend({
         }, this);
     },
     renderThresholdWidth() {
-        const target_views = _.filter(this.attributes_views.threshold, child_view => _.contains(['threshold_width'], child_view.name), this);
+        const target_views = _.filter(
+            this.attributes_views.threshold,
+            child_view => _.contains(['threshold_width'], child_view.name), this);
 
         _.each(target_views, (view) => {
             view.view_instance.render();

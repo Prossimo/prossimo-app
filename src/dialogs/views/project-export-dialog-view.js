@@ -43,7 +43,7 @@ export default BaseDialogView.extend({
                 //  We pad some entries with empty sash data columns, so
                 //  each row has the same number of columns, even if empty
                 if (length_difference > 0) {
-                    for (let i = 0; i < length_difference; i++) {
+                    for (let i = 0; i < length_difference; i += 1) {
                         row_data.push(UNSET_VALUE);
                     }
                 }

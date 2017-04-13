@@ -256,7 +256,7 @@ export default Marionette.View.extend({
                 //  We assume that we have only one option per dictionary,
                 //  although in theory it's possible to have multiple
                 const option_name = current_options.length ? (
-                    this.options.show_supplier_names && current_options[0].entry.get('supplier_name') ||
+                    (this.options.show_supplier_names && current_options[0].entry.get('supplier_name')) ||
                     current_options[0].entry.get('name')
                 ) : false;
 

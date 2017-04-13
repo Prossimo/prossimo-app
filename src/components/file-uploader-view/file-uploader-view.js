@@ -138,7 +138,7 @@ export default Marionette.View.extend({
         });
     },
     progress(e, data) {
-        const progress = parseInt(data.loaded / data.total * 100, 10);
+        const progress = parseInt((data.loaded / data.total) * 100, 10);
 
         _.each(data.files, (file) => {
             const $previewProgress = file.previewContainer.previewProgress;

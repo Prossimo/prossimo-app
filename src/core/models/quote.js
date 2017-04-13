@@ -76,9 +76,9 @@ export default Backbone.Model.extend({
 
         return filtered_data;
     },
-    toJSON() {
+    toJSON(...args) {
         const properties_to_omit = ['id', 'is_default'];
-        const json = Backbone.Model.prototype.toJSON.apply(this, arguments);
+        const json = Backbone.Model.prototype.toJSON.apply(this, args);
 
         return _.omit(json, properties_to_omit);
     },
@@ -202,7 +202,7 @@ export default Backbone.Model.extend({
 
         const total_cost = this.getTotalCost();
         const profit = this.getProfit();
-        const net_profit_percent = grand_total ? profit.net_profit / grand_total * 100 : 0;
+        const net_profit_percent = grand_total ? (profit.net_profit / grand_total) * 100 : 0;
 
         //  TODO: this value should be customizable, not just 50% always,
         //  when it'll be customizable, it should also be tested. Maybe it

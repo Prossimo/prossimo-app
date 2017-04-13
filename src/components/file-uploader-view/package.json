@@ -1,6 +1,0 @@
-{
-  "name": "File Uploader",
-  "version": "0.0.0",
-  "private": true,
-  "main": "./file-uploader-view.js"
-}

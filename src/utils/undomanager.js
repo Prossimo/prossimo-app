@@ -100,14 +100,18 @@ export default function (opts) {
             }
         },
         on(model, options) {
+            options = options || {};
+
             const afterAttributes = model.changedAttributes();
             const keysAfter = _.keys(afterAttributes);
             const previousAttributes = _.pick(model.previousAttributes(), keysAfter);
             const keysPrevious = _.keys(previousAttributes);
-            const unsetData = (options || (options = {})).unsetData = {
+            const unsetData = {
                 after: [],
                 before: [],
             };
+
+            options.unsetData = unsetData;
 
             if (keysAfter.length !== keysPrevious.length) {
                 // There are new attributes or old attributes have been unset

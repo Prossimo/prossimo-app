@@ -58,8 +58,8 @@ export default Backbone.Model.extend({
 
         return default_value;
     },
-    persist() {
-        return this.set.apply(this, arguments);
+    persist(...args) {
+        return this.set(...args);
     },
     parse(data) {
         const settings_data = data && data.settings ? data.settings : data;

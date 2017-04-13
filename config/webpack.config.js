@@ -18,10 +18,10 @@ const cssLoader = `css-loader?${JSON.stringify({
     importLoaders: 1,
     sourceMap: isDebug,
     modules: false,
-    minimize: !isDebug
+    minimize: !isDebug,
 })}`;
 const lessLoader = `less-loader?${JSON.stringify({
-    sourceMap: isDebug
+    sourceMap: isDebug,
 })}`;
 
 module.exports = {
@@ -29,7 +29,7 @@ module.exports = {
     resolve: {
         modules: [
             srcPath,
-            'node_modules'
+            'node_modules',
         ],
         alias: {
             'load-image': 'blueimp-load-image/js/load-image.js',
@@ -37,13 +37,13 @@ module.exports = {
             'load-image-exif': 'blueimp-load-image/js/load-image-exif.js',
             'load-image-scale': 'blueimp-load-image/js/load-image-scale',
             'canvas-to-blob': 'blueimp-canvas-to-blob/js/canvas-to-blob.js',
-            'jquery-ui/widget': 'jquery-ui/ui/widget'
-        }
+            'jquery-ui/widget': 'jquery-ui/ui/widget',
+        },
     },
     output: {
         filename: `app-${version}.js`,
         path: distPath,
-        publicPath: '/'
+        publicPath: '/',
     },
 
     module: {
@@ -52,44 +52,44 @@ module.exports = {
             {
                 test: /\.js$/,
                 use: 'babel-loader',
-                exclude: /(node_modules)/
+                exclude: /(node_modules)/,
             },
-            {test: /backbone\.js$/, use: [path.resolve(webLoaders, 'backbone-extended-loader')]},
-            {test: /\.hbs$/, use: ['handlebars-template-loader']},
+            { test: /backbone\.js$/, use: [path.resolve(webLoaders, 'backbone-extended-loader')] },
+            { test: /\.hbs$/, use: ['handlebars-template-loader'] },
             {
                 test: /\.less$/,
                 use: ExtractTextPlugin.extract({
                     fallback: 'style-loader',
-                    use: [cssLoader, lessLoader].join('!')
-                })
+                    use: [cssLoader, lessLoader].join('!'),
+                }),
             },
             {
                 test: /\.css$/,
                 use: ExtractTextPlugin.extract({
                     fallback: 'style-loader',
-                    use: [cssLoader].join('!')
-                })
+                    use: [cssLoader].join('!'),
+                }),
             },
             {
                 test: /\.txt$/,
-                use: ['raw-loader']
+                use: ['raw-loader'],
             },
             {
                 test: /\.(png|jpe?g|gif|svg)$/,
                 loader: 'url-loader',
                 options: {
                     name: isDebug ? 'img/[name].[ext]?[hash]' : 'img/[hash].[ext]',
-                    limit: 10000
-                }
+                    limit: 10000,
+                },
             },
             {
                 test: /\.(woff|woff2|eot|ttf)$/,
                 loader: 'file-loader',
                 options: {
-                    name: isDebug ? 'fonts/[name].[ext]?[hash]' : 'fonts/[hash].[ext]'
-                }
-            }
-        ]
+                    name: isDebug ? 'fonts/[name].[ext]?[hash]' : 'fonts/[hash].[ext]',
+                },
+            },
+        ],
     },
 
     plugins: [
@@ -98,21 +98,21 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: path.resolve(srcPath, 'index.html'),
             hash: false,
-            version: version,
+            version,
             api_prefix: config.get('app:apiPrefix'),
             printer_prefix: config.get('app:printerPrefix'),
-            favicon: path.resolve(assetsPath, './img/favicon' + (isDebug ? '-dev' : '') + '.png'),
+            favicon: path.resolve(assetsPath, `./img/favicon${(isDebug ? '-dev' : '')}.png`),
             filename: 'index.html',
-            inject: 'body'
+            inject: 'body',
         }),
         new webpack.ProvidePlugin({
             $: 'jquery',
             jQuery: 'jquery',
-            'window.jQuery': 'jquery'
+            'window.jQuery': 'jquery',
         }),
         new webpack.NoEmitOnErrorsPlugin(),
         new webpack.LoaderOptionsPlugin({
-            debug: isDebug
+            debug: isDebug,
         }),
 
         ...isDebug ? [
@@ -123,10 +123,10 @@ module.exports = {
                 minimize: true,
                 compress: {
                     screw_ie8: true,
-                    warnings: isVerbose
-                }
-            })
-        ]
+                    warnings: isVerbose,
+                },
+            }),
+        ],
     ],
 
     entry: APP_ENTRY,
@@ -143,6 +143,6 @@ module.exports = {
         chunks: isVerbose,
         chunkModules: isVerbose,
         cached: isVerbose,
-        cachedAssets: isVerbose
-    }
+        cachedAssets: isVerbose,
+    },
 };

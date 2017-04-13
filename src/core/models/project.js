@@ -151,8 +151,9 @@ export default Backbone.Model.extend({
         let changed_flag = false;
 
         //  If response is empty or there was an error
-        if (!response && App.session.get('no_backend') !== true ||
-            options && options.xhr && options.xhr.status && options.xhr.status !== 200
+        if (
+            (!response && App.session.get('no_backend') !== true) ||
+            (options && options.xhr && options.xhr.status && options.xhr.status !== 200)
         ) {
             return;
         }
