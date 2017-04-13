@@ -1,7 +1,8 @@
 import _ from 'underscore';
-import App from '../src/main';
-import OptionsDictionaryEntryCollection from '../src/core/collections/options-dictionary-entry-collection';
-import OptionsDictionary from '../src/core/models/options-dictionary';
+
+import App from '../../../../src/main';
+import OptionsDictionaryEntryCollection from '../../../../src/core/collections/options-dictionary-entry-collection';
+import OptionsDictionary from '../../../../src/core/models/options-dictionary';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');

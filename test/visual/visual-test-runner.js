@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import resemble from 'resemblejs';
+
 import Unit from '../../src/core/models/unit';
 import Profile from '../../src/core/models/profile';
 import {preview as previewFn} from '../../src/components/drawing/module/drawing-module';

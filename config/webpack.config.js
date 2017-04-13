@@ -55,6 +55,7 @@ module.exports = {
                 exclude: /(node_modules)/,
             },
             { test: /backbone\.js$/, use: [path.resolve(webLoaders, 'backbone-extended-loader')] },
+            { test: /decimal\.es6\.js$/, use: [path.resolve(webLoaders, 'decimal-loader')] },
             { test: /\.hbs$/, use: ['handlebars-template-loader'] },
             {
                 test: /\.less$/,

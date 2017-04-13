@@ -15,7 +15,7 @@ global.notOk = (actual, message) => {
 
 global.equal = (actual, expected, message = 'no_mess') => {
     it(message, () => {
-        expect(actual).to.to.equal(expected);
+        expect(actual).to.equal(expected);
     });
 };
 

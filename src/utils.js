@@ -127,11 +127,12 @@ export const format = {
     },
     price_usd(price) {
         return `${parseFloat(price) < 0 ? '-' : ''}$${
-            new Decimal(Math.abs(parseFloat(price)).toFixed(2)).toFixed(2)}`;
+            new Decimal(Math.abs(parseFloat(price)).toFixed(2)).toFormat(2)}`;
     },
     percent(value, num) {
         num = _.isNumber(num) ? (num < MAX_SIGNIFICANT_DIGITS ? num : MAX_SIGNIFICANT_DIGITS) : 2;
-        return `${new Decimal(parseFloat(value).toFixed(num)).toFixed()}%`;
+
+        return `${new Decimal(parseFloat(value).toFixed(num)).toFormat()}%`;
     },
     percent_difference(value, num) {
         const result = this.percent(value, num);
@@ -140,7 +141,7 @@ export const format = {
     },
     fixed(value, num) {
         num = _.isNumber(num) ? (num < MAX_SIGNIFICANT_DIGITS ? num : MAX_SIGNIFICANT_DIGITS) : 2;
-        return new Decimal(parseFloat(value).toFixed(num)).toFixed(num);
+        return new Decimal(parseFloat(value).toFixed(num)).toFormat(num);
     },
     fixed_minimal(value, num) {
         let result;

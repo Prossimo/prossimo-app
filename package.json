@@ -8,7 +8,10 @@
     "build": "./node_modules/babel-cli/bin/babel-node.js tools/run build",
     "clean": "./node_modules/babel-cli/bin/babel-node.js tools/run clean",
     "lint": "./node_modules/eslint/bin/eslint.js src tools server",
-    "karma": "./node_modules/karma/bin/karma start"
+    "karma": "./node_modules/karma/bin/karma start",
+    "test": "./node_modules/karma/bin/karma start --single-run",
+    "test:visual": "./node_modules/karma/bin/karma start --single-run --onlyVisualTests",
+    "check": "npm run lint && npm run test && npm run test:visual"
   },
   "engines": {
     "node": ">=6.9.5"
@@ -104,6 +107,7 @@
     "konva": "~0.10.0",
     "sortablejs": "^1.5.1",
     "spin.js": "^2.3.2",
+    "toformat": "^1.0.0",
     "underscore": "^1.8.3"
   }
 }

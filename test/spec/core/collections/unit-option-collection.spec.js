@@ -1,7 +1,8 @@
-import App from '../src/main';
-import UnitOptionCollection from '../src/core/collections/inline/unit-option-collection';
-import UnitOption from '../src/core/models/inline/unit-option';
 import {assert} from 'chai';
+
+import App from '../../../../src/main';
+import UnitOptionCollection from '../../../../src/core/collections/inline/unit-option-collection';
+import UnitOption from '../../../../src/core/models/inline/unit-option';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
@@ -20,7 +21,6 @@ test('Unit option collection test', function () {
     test('UnitOptionCollection basic tests', function () {
         let unit_option_collection = new UnitOptionCollection(null, {parse: true});
 
-        ok(unit_option_collection instanceof UnitOptionCollection, 'unit_option_collection is a UnitOptionCollection object');
         equal(unit_option_collection.length, 0, 'unit_option_collection contains 0 entries by default');
 
         let unit_option_collection_with_data = new UnitOptionCollection([
