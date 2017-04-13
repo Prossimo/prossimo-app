@@ -350,13 +350,13 @@ export const math = {
 export const object = {
     deep_extend(a, b) {
         if (_.isObject(a) && _.isObject(b)) {
-            for (const prop in b) {
+            Object.keys(b).forEach((prop) => {
                 if (prop in a && _.isObject(b[prop])) {
                     object.deep_extend(a[prop], b[prop]);
                 } else {
                     a[prop] = b[prop];
                 }
-            }
+            });
         } else if (!(_.isUndefined(b) || _.isNull(b) || _.isNaN(b))) {
             a = b;
         }
@@ -542,26 +542,6 @@ export const geometry = {
 };
 
 export const array = {
-    moveByIndex(arr, old_index, new_index) {
-        while (old_index < 0) {
-            old_index += arr.length;
-        }
-
-        while (new_index < 0) {
-            new_index += arr.length;
-        }
-
-        if (new_index >= arr.length) {
-            let k = new_index - arr.length;
-
-            while ((k -= 1) + 1) {
-                arr.push(undefined);
-            }
-        }
-
-        arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
-        return arr;
-    },
     moveByValue(arr, findVal, targetVal, after) {
         after = after || false;
 

@@ -1,4 +1,5 @@
 {
+  "root": true,
   "extends": "airbnb-base",
   "parser": "babel-eslint",
   "env": {
@@ -26,18 +27,9 @@
       140,
       2
     ],
-    "promise/always-return": "error",
-    "promise/no-return-wrap": "error",
-    "promise/param-names": "error",
-    "promise/catch-or-return": "error",
-    "promise/no-native": "off",
-    "promise/no-nesting": "warn",
-    "promise/no-promise-in-callback": "warn",
-    "promise/no-callback-in-promise": "warn",
-    "promise/avoid-new": "warn",
-    //  TODO: We actually want to enable many of the following rules, but
-    //  we need to make updates to our code first
     "camelcase": "off",
+    //  TODO: We actually want to enable the following rules, but
+    //  we need to make updates to our code first
     "no-underscore-dangle": "off",
     "no-nested-ternary": "warn",
     "no-continue": "warn",

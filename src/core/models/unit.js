@@ -417,9 +417,8 @@ const Unit = Backbone.Model.extend({
             current_section.measurements.mullion[measurementType] = ['center', 'center'];
         }
 
-        _.each(current_section.sections, function (section) {
-            section = this.validateSection(section, false);
-        }, this);
+        current_section.sections = current_section.sections &&
+            current_section.sections.map(section => this.validateSection(section, false));
 
         return current_section;
     },
@@ -996,29 +995,25 @@ const Unit = Backbone.Model.extend({
 
         return true;
     },
-    //  FIXME: this uses while true
     getArchedPosition() {
         let root = this.get('root_section');
+        let archPosition = null;
 
         if (root.arched) {
-            return root.archPosition;
+            archPosition = root.archPosition;
         }
 
-        while (true) {
+        while (root) {
             const topSection = root.sections && root.sections[0] && root.sections[0];
 
             if (topSection && topSection.arched) {
-                return root.position;
-            }
-
-            if (!topSection) {
-                return null;
+                archPosition = root.position;
             }
 
             root = topSection;
         }
 
-        return null;
+        return archPosition;
     },
     isRootSection(sectionId) {
         return this.get('root_section').id === sectionId;
@@ -1326,8 +1321,11 @@ const Unit = Backbone.Model.extend({
             section.bars = getDefaultBars();
 
             if (section.fillingType && section.fillingName) {
-                section.sections[0].fillingType = section.sections[1].fillingType = section.fillingType;
-                section.sections[0].fillingName = section.sections[1].fillingName = section.fillingName;
+                section.sections[0].fillingType = section.fillingType;
+                section.sections[1].fillingType = section.fillingType;
+
+                section.sections[0].fillingName = section.fillingName;
+                section.sections[1].fillingName = section.fillingName;
             }
 
             section.position = position;
@@ -2730,7 +2728,8 @@ const Unit = Backbone.Model.extend({
                 const minHeight = convert.inches_to_mm(params.minHeight);
                 const position = (maxHeight - minHeight) + 250;
 
-                rootSection.minPosition = rootSection.position = position;
+                rootSection.minPosition = position;
+                rootSection.position = position;
             }
         }
     },

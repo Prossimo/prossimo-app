@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
  * @returns {boolean}
  */
 const isMultipartRequest = function (req) {
-    let contentTypeHeader = req.headers['content-type'];
+    const contentTypeHeader = req.headers['content-type'];
     return contentTypeHeader && contentTypeHeader.indexOf('multipart') > -1;
 };
 
@@ -15,7 +15,7 @@ module.exports.bodyParserJsonMiddleware = function () {
         if (isMultipartRequest(req)) {
             return next();
         }
-        return bodyParser.json({limit: '10mb'})(req, res, next);
+        return bodyParser.json({ limit: '10mb' })(req, res, next);
     };
 };
 
@@ -24,6 +24,6 @@ module.exports.bodyParserUrlencodedMiddleware = function () {
         if (isMultipartRequest(req)) {
             return next();
         }
-        return bodyParser.urlencoded({limit: '10mb', extended: true})(req, res, next);
+        return bodyParser.urlencoded({ limit: '10mb', extended: true })(req, res, next);
     };
 };

@@ -557,14 +557,16 @@ export default Marionette.View.extend({
                     (isVertical && isKeyUp) ||
                     (isHorizontal && isKeyLeft)
                 ) {
-                    input.selectionStart = input.selectionEnd -= 1;
+                    input.selectionStart -= 1;
+                    input.selectionEnd -= 1;
                     e.preventDefault();
                 // Move cursor right
                 } else if (
                     (isVertical && isKeyDown) ||
                     (isHorizontal && isKeyRight)
                 ) {
-                    input.selectionStart = input.selectionEnd += 1;
+                    input.selectionStart += 1;
+                    input.selectionEnd += 1;
                     e.preventDefault();
                 }
             })

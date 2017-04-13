@@ -1,4 +1,4 @@
-import {cleanDir} from './lib/fs';
+import { cleanDir } from './lib/fs';
 import config from '../config/config';
 
 /**
@@ -9,7 +9,7 @@ export default function clean() {
         cleanDir(config.get('dist:path'), {
             nosort: true,
             dot: true,
-            ignore: []
-        })
+            ignore: [],
+        }),
     ]);
 }
