@@ -6,7 +6,7 @@ const unit_data = {
     mark: 'C1',
     width: 38,
     height: 78,
-    opening_direction: 'Inward'
+    opening_direction: 'Inward',
 };
 const profile_data = {
     name: 'Workhorse uPVC',
@@ -17,7 +17,7 @@ const profile_data = {
     sash_frame_overlap: 26,
     sash_mullion_overlap: 8,
     threshold_width: 20,
-    low_threshold: false
+    low_threshold: false,
 };
 const root_section_data = {
     id: '8122',
@@ -33,8 +33,8 @@ const root_section_data = {
             fillingName: 'Triple - U=.09 SGHC=.5 VT=.71',
             bars: {
                 vertical: [],
-                horizontal: []
-            }
+                horizontal: [],
+            },
         },
         {
             id: '8650',
@@ -49,8 +49,8 @@ const root_section_data = {
                     fillingName: 'Triple - U=.09 SGHC=.5 VT=.71',
                     bars: {
                         vertical: [],
-                        horizontal: []
-                    }
+                        horizontal: [],
+                    },
                 },
                 {
                     id: '8652',
@@ -59,31 +59,31 @@ const root_section_data = {
                     fillingName: 'Triple - U=.09 SGHC=.5 VT=.71',
                     bars: {
                         vertical: [],
-                        horizontal: []
-                    }
-                }
+                        horizontal: [],
+                    },
+                },
             ],
             position: 1447.7999999999997,
             fillingName: 'Triple - U=.09 SGHC=.5 VT=.71',
             bars: {
                 vertical: [],
-                horizontal: []
-            }
-        }
+                horizontal: [],
+            },
+        },
     ],
     position: 508,
     fillingName: 'Triple - U=.09 SGHC=.5 VT=.71',
     bars: {
         vertical: [],
-        horizontal: []
-    }
+        horizontal: [],
+    },
 };
 const root_section_json_string = JSON.stringify(root_section_data);
 const preview_settings = {
     width: 500,
     height: 500,
     position: 'inside',
-    hingeIndicatorMode: 'american'
+    hingeIndicatorMode: 'american',
 };
 
 export default {
@@ -93,5 +93,5 @@ export default {
     root_section_data,
     root_section_json_string,
     preview_settings,
-    imgData: {chrome, firefox, phantom}
+    imgData: { chrome, firefox, phantom },
 };

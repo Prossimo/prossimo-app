@@ -6,10 +6,10 @@ import FillingTypeCollection from '../../../../src/core/collections/filling-type
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
 
-test('Filling type collection tests', function () {
-    test('filling type collection basic tests', function () {
-        let collection = new FillingTypeCollection();
-        let collection_with_base_types = new FillingTypeCollection(null, {append_base_types: true});
+test('Filling type collection tests', () => {
+    test('filling type collection basic tests', () => {
+        const collection = new FillingTypeCollection();
+        const collection_with_base_types = new FillingTypeCollection(null, { append_base_types: true });
 
         equal(collection.length, 0, 'Collection 1 length is 0 upon creation (no base types)');
         equal(collection_with_base_types.length, 6, 'Collection 2 length is 6 upon creation (it includes base types)');
@@ -17,44 +17,46 @@ test('Filling type collection tests', function () {
         collection.add([
             {
                 name: 'Test Type',
-                type: 'glass'
+                type: 'glass',
             },
             {
                 name: 'Another Test Type',
-                type: 'recessed'
-            }
+                type: 'recessed',
+            },
         ]);
         collection_with_base_types.add([
             {
                 name: 'Test Type',
-                type: 'glass'
+                type: 'glass',
             },
             {
                 name: 'Another Test Type',
-                type: 'recessed'
-            }
+                type: 'recessed',
+            },
         ]);
 
         equal(collection.length, 2, 'Collection 1 length increased by 2 after adding 2 new entries');
         equal(collection_with_base_types.length, 8, 'Collection 2 length increased by 2 after adding 2 new entries');
 
-        deepEqual(_.map(collection_with_base_types.models, function (item) {
-            return item.get('name');
-        }), [
-            'Glass',
-            'Recessed',
-            'Interior Flush Panel',
-            'Exterior Flush Panel',
-            'Full Flush Panel',
-            'Louver',
-            'Test Type',
-            'Another Test Type'
-        ], 'Collection 2 has the expected set of models');
+        deepEqual(
+            _.map(collection_with_base_types.models, item => item.get('name')),
+            [
+                'Glass',
+                'Recessed',
+                'Interior Flush Panel',
+                'Exterior Flush Panel',
+                'Full Flush Panel',
+                'Louver',
+                'Test Type',
+                'Another Test Type',
+            ],
+            'Collection 2 has the expected set of models',
+        );
     });
 
-    test('filling type collection getById, getByName, getNames', function () {
-        let collection = new FillingTypeCollection(null, {append_base_types: true});
-        let first_item_cid = collection.at(0).cid;
+    test('filling type collection getById, getByName, getNames', () => {
+        const collection = new FillingTypeCollection(null, { append_base_types: true });
+        const first_item_cid = collection.at(0).cid;
 
         equal(collection.getById(first_item_cid).get('name'), 'Glass', 'getById returns the expected result upon creation');
         equal(collection.getByName('Glass').get('type'), 'glass', 'getByName returns the expected result upon creation');
@@ -65,23 +67,23 @@ test('Filling type collection tests', function () {
             'Interior Flush Panel',
             'Exterior Flush Panel',
             'Full Flush Panel',
-            'Louver'
+            'Louver',
         ], 'getNames returns the expected result upon creation');
 
         //  Now add 2 new items to the collection
         collection.add([
             {
                 name: 'Test Type',
-                type: 'glass'
+                type: 'glass',
             },
             {
                 name: 'Another Test Type',
-                type: 'recessed'
-            }
+                type: 'recessed',
+            },
         ]);
 
         equal(collection.getByName('Another Test Type').get('type'), 'recessed',
-            'getByName returns the expected result for a newly added type'
+            'getByName returns the expected result for a newly added type',
         );
 
         deepEqual(collection.getNames(), [
@@ -92,19 +94,19 @@ test('Filling type collection tests', function () {
             'Full Flush Panel',
             'Louver',
             'Test Type',
-            'Another Test Type'
+            'Another Test Type',
         ], 'getNames returns the expected result after adding 2 new types');
     });
 
-    test('filling type collection getAvailableForProfile, getDefaultForProfile getDefaultOrFirstAvailableForProfile', function () {
-        let collection = new FillingTypeCollection(null, {append_base_types: true});
+    test('filling type collection getAvailableForProfile, getDefaultForProfile getDefaultOrFirstAvailableForProfile', () => {
+        const collection = new FillingTypeCollection(null, { append_base_types: true });
 
         equal(collection.getAvailableForProfile(1).length, 6, 'getAvailableForProfile returns base types upon creation');
         equal(collection.getDefaultForProfile(1), undefined, 'getDefaultForProfile returns empty result upon creation');
         equal(
             collection.getDefaultOrFirstAvailableForProfile(1).get('name'),
             'Glass',
-            'getDefaultOrFirstAvailableForProfile returns first base type upon creation'
+            'getDefaultOrFirstAvailableForProfile returns first base type upon creation',
         );
 
         //  Now add 2 new items to the collection
@@ -115,9 +117,9 @@ test('Filling type collection tests', function () {
                 filling_type_profiles: [
                     {
                         profile_id: 1,
-                        is_default: true
-                    }
-                ]
+                        is_default: true,
+                    },
+                ],
             },
             {
                 name: 'Another Test Type',
@@ -125,11 +127,11 @@ test('Filling type collection tests', function () {
                 filling_type_profiles: [
                     {
                         profile_id: 2,
-                        is_default: false
-                    }
-                ]
-            }
-        ], {parse: true});
+                        is_default: false,
+                    },
+                ],
+            },
+        ], { parse: true });
 
         equal(collection.getAvailableForProfile(1).length, 7, 'getAvailableForProfile returns expected result for profile_id=1');
         equal(collection.getAvailableForProfile(2).length, 7, 'getAvailableForProfile returns expected result for profile_id=2');
@@ -140,22 +142,22 @@ test('Filling type collection tests', function () {
         equal(
             collection.getDefaultOrFirstAvailableForProfile(1).get('name'),
             'Test Type',
-            'getDefaultOrFirstAvailableForProfile returns expected result for profile_id=1'
+            'getDefaultOrFirstAvailableForProfile returns expected result for profile_id=1',
         );
         equal(
             collection.getDefaultOrFirstAvailableForProfile(2).get('name'),
             'Glass',
-            'getDefaultOrFirstAvailableForProfile returns expected result for profile_id=2'
+            'getDefaultOrFirstAvailableForProfile returns expected result for profile_id=2',
         );
     });
 
-    test('filling type collection getIdsOfAllConnectedProfiles', function () {
-        let collection = new FillingTypeCollection();
+    test('filling type collection getIdsOfAllConnectedProfiles', () => {
+        const collection = new FillingTypeCollection();
 
         deepEqual(
             collection.getIdsOfAllConnectedProfiles(),
             [],
-            'getIdsOfAllConnectedProfiles returns empty array for empty collection'
+            'getIdsOfAllConnectedProfiles returns empty array for empty collection',
         );
 
         collection.add([
@@ -165,9 +167,9 @@ test('Filling type collection tests', function () {
                 filling_type_profiles: [
                     {
                         profile_id: 1,
-                        is_default: true
-                    }
-                ]
+                        is_default: true,
+                    },
+                ],
             },
             {
                 name: 'Another Test Type',
@@ -175,20 +177,20 @@ test('Filling type collection tests', function () {
                 filling_type_profiles: [
                     {
                         profile_id: 1,
-                        is_default: false
+                        is_default: false,
                     },
                     {
                         profile_id: 2,
-                        is_default: true
-                    }
-                ]
-            }
-        ], {parse: true});
+                        is_default: true,
+                    },
+                ],
+            },
+        ], { parse: true });
 
         deepEqual(
             collection.getIdsOfAllConnectedProfiles(),
             [1, 2],
-            'getIdsOfAllConnectedProfiles returns array with 2 ids, after adding two types'
+            'getIdsOfAllConnectedProfiles returns array with 2 ids, after adding two types',
         );
 
         collection.add({
@@ -197,30 +199,30 @@ test('Filling type collection tests', function () {
             filling_type_profiles: [
                 {
                     profile_id: 17,
-                    is_default: true
-                }
-            ]
-        }, {parse: true});
+                    is_default: true,
+                },
+            ],
+        }, { parse: true });
         collection.setItemAvailabilityForProfile(18, collection.at(1), true);
 
         deepEqual(
             collection.getIdsOfAllConnectedProfiles(),
             [1, 2, 17, 18],
-            'getIdsOfAllConnectedProfiles returns array with 4 ids, after adding more types and more connections'
+            'getIdsOfAllConnectedProfiles returns array with 4 ids, after adding more types and more connections',
         );
     });
 
-    test('filling type collection validatePerProfileDefaults', function () {
-        let collection = new FillingTypeCollection([
+    test('filling type collection validatePerProfileDefaults', () => {
+        const collection = new FillingTypeCollection([
             {
                 name: 'Test Type',
                 type: 'glass',
                 filling_type_profiles: [
                     {
                         profile_id: 1,
-                        is_default: true
-                    }
-                ]
+                        is_default: true,
+                    },
+                ],
             },
             {
                 name: 'Another Test Type',
@@ -228,15 +230,15 @@ test('Filling type collection tests', function () {
                 filling_type_profiles: [
                     {
                         profile_id: 1,
-                        is_default: true
+                        is_default: true,
                     },
                     {
                         profile_id: 2,
-                        is_default: true
-                    }
-                ]
-            }
-        ], {parse: true});
+                        is_default: true,
+                    },
+                ],
+            },
+        ], { parse: true });
 
         equal(collection.at(0).isDefaultForProfile(1), true, 'First collection item is set as default for profile_id=1');
         equal(collection.at(1).isDefaultForProfile(1), true, 'Second collection item is set as default for profile_id=1');
@@ -247,31 +249,31 @@ test('Filling type collection tests', function () {
         equal(
             collection.at(0).isDefaultForProfile(1),
             true,
-            'First collection item is still set as default for profile_id=1 after validation'
+            'First collection item is still set as default for profile_id=1 after validation',
         );
         equal(
             collection.at(1).isDefaultForProfile(1),
             false,
-            'Second collection item is no longer set as default for profile_id=1 after validation'
+            'Second collection item is no longer set as default for profile_id=1 after validation',
         );
         equal(
             collection.at(1).isDefaultForProfile(2),
             true,
-            'Second collection item is still set as default for profile_id=2 after validation'
+            'Second collection item is still set as default for profile_id=2 after validation',
         );
     });
 
-    test('filling type collection setItemAvailabilityForProfile', function () {
-        let collection = new FillingTypeCollection([
+    test('filling type collection setItemAvailabilityForProfile', () => {
+        const collection = new FillingTypeCollection([
             {
                 name: 'Test Type',
                 type: 'glass',
                 filling_type_profiles: [
                     {
                         profile_id: 1,
-                        is_default: true
-                    }
-                ]
+                        is_default: true,
+                    },
+                ],
             },
             {
                 name: 'Another Test Type',
@@ -279,17 +281,17 @@ test('Filling type collection tests', function () {
                 filling_type_profiles: [
                     {
                         profile_id: 1,
-                        is_default: false
+                        is_default: false,
                     },
                     {
                         profile_id: 2,
-                        is_default: true
-                    }
-                ]
-            }
-        ], {parse: true});
-        let item_one = collection.at(0);
-        let item_two = collection.at(1);
+                        is_default: true,
+                    },
+                ],
+            },
+        ], { parse: true });
+        const item_one = collection.at(0);
+        const item_two = collection.at(1);
 
         equal(item_one.isAvailableForProfile(1), true, 'First collection item is available for profile_id=1');
         equal(item_two.isAvailableForProfile(1), true, 'Second collection item is available for profile_id=1');
@@ -313,21 +315,21 @@ test('Filling type collection tests', function () {
         deepEqual(
             item_two.getIdsOfProfilesWhereIsAvailable(),
             _.uniq(item_two.getIdsOfProfilesWhereIsAvailable()),
-            'filling_type_profiles array should not contain any duplicated entries'
+            'filling_type_profiles array should not contain any duplicated entries',
         );
     });
 
-    test('filling type collection setItemAsDefaultForProfile', function () {
-        let collection = new FillingTypeCollection([
+    test('filling type collection setItemAsDefaultForProfile', () => {
+        const collection = new FillingTypeCollection([
             {
                 name: 'Test Type',
                 type: 'glass',
                 filling_type_profiles: [
                     {
                         profile_id: 1,
-                        is_default: true
-                    }
-                ]
+                        is_default: true,
+                    },
+                ],
             },
             {
                 name: 'Another Test Type',
@@ -335,17 +337,17 @@ test('Filling type collection tests', function () {
                 filling_type_profiles: [
                     {
                         profile_id: 1,
-                        is_default: false
+                        is_default: false,
                     },
                     {
                         profile_id: 2,
-                        is_default: true
-                    }
-                ]
-            }
-        ], {parse: true});
-        let item_one = collection.at(0);
-        let item_two = collection.at(1);
+                        is_default: true,
+                    },
+                ],
+            },
+        ], { parse: true });
+        const item_one = collection.at(0);
+        const item_two = collection.at(1);
 
         equal(item_one.isDefaultForProfile(1), true, 'First collection item is set as default for profile_id=1');
         equal(item_two.isDefaultForProfile(1), false, 'Second collection item is not set as default for profile_id=1');

@@ -8,58 +8,58 @@ import PricingEquationParamsCollection from '../../../../src/core/collections/in
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
 
-test('Profile tests', function () {
-    test('profile model basic tests', function () {
-        let profile = new Profile();
+test('Profile tests', () => {
+    test('profile model basic tests', () => {
+        const profile = new Profile();
 
         equal(profile.get('unit_type'), 'Window', 'unit_type is Window upon creation');
 
         ok(
             profile.get('pricing_grids') instanceof PricingGridCollection,
-            'pricing_grids is an instance of PricingGridCollection upon profile creation'
+            'pricing_grids is an instance of PricingGridCollection upon profile creation',
         );
         ok(
             profile.get('pricing_equation_params') instanceof PricingEquationParamsCollection,
-            'pricing_equation_params is an instance of PricingEquationParamsCollection upon profile creation'
+            'pricing_equation_params is an instance of PricingEquationParamsCollection upon profile creation',
         );
     });
 
 
-    test('profile parse function', function () {
-        let grids_data_to_set = [
+    test('profile parse function', () => {
+        const grids_data_to_set = [
             {
                 name: 'fixed',
                 data: [
-                    {title: 'Small', height: 500, width: 500, price_per_square_meter: 15},
-                    {title: 'Medium', height: 914, width: 1514, price_per_square_meter: 12},
-                    {title: 'Large', height: 2400, width: 3000, price_per_square_meter: 10}
-                ]
+                    { title: 'Small', height: 500, width: 500, price_per_square_meter: 15 },
+                    { title: 'Medium', height: 914, width: 1514, price_per_square_meter: 12 },
+                    { title: 'Large', height: 2400, width: 3000, price_per_square_meter: 10 },
+                ],
             },
             {
                 name: 'operable',
                 data: [
-                    {height: 500, width: 500, value: 11},
-                    {height: 914, width: 1514, value: 10},
-                    {height: 1200, width: 2400, value: 8}
-                ]
-            }
+                    { height: 500, width: 500, value: 11 },
+                    { height: 914, width: 1514, value: 10 },
+                    { height: 1200, width: 2400, value: 8 },
+                ],
+            },
         ];
-        let equation_data_to_set = [
+        const equation_data_to_set = [
             {
                 name: 'fixed',
                 param_a: 15,
-                param_b: 149
+                param_b: 149,
             },
             {
                 name: 'operable',
                 param_a: 17,
-                param_b: 184
-            }
+                param_b: 184,
+            },
         ];
-        let profile = new Profile({
+        const profile = new Profile({
             pricing_grids: JSON.parse(JSON.stringify(grids_data_to_set)),
-            pricing_equation_params: JSON.parse(JSON.stringify(equation_data_to_set))
-        }, {parse: true});
+            pricing_equation_params: JSON.parse(JSON.stringify(equation_data_to_set)),
+        }, { parse: true });
 
         equal(profile.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
         ok(profile.get('pricing_grids') instanceof PricingGridCollection, 'pricing_grids is a PricingGridCollection object');
@@ -69,37 +69,37 @@ test('Profile tests', function () {
                 {
                     name: 'fixed',
                     data: [
-                        {height: 500, width: 500, value: 15},
-                        {height: 914, width: 1514, value: 12},
-                        {height: 2400, width: 3000, value: 10}
-                    ]
+                        { height: 500, width: 500, value: 15 },
+                        { height: 914, width: 1514, value: 12 },
+                        { height: 2400, width: 3000, value: 10 },
+                    ],
                 },
                 {
                     name: 'operable',
                     data: [
-                        {height: 500, width: 500, value: 11},
-                        {height: 914, width: 1514, value: 10},
-                        {height: 1200, width: 2400, value: 8}
-                    ]
-                }
+                        { height: 500, width: 500, value: 11 },
+                        { height: 914, width: 1514, value: 10 },
+                        { height: 1200, width: 2400, value: 8 },
+                    ],
+                },
             ],
-            'pricing_grids should be parsed properly'
+            'pricing_grids should be parsed properly',
         );
         ok(
             profile.get('pricing_equation_params') instanceof PricingEquationParamsCollection,
-            'pricing_equation_params is a PricingEquationParamsCollection object'
+            'pricing_equation_params is a PricingEquationParamsCollection object',
         );
         deepEqual(
             profile.get('pricing_equation_params').get('param_a'),
             equation_data_to_set.param_a,
-            'pricing_equation_params param_a should be similar to source data param_a'
+            'pricing_equation_params param_a should be similar to source data param_a',
         );
 
         //  Now we want it to pass the same set of tests, but the source data is a string
-        let another_profile = new Profile({
+        const another_profile = new Profile({
             pricing_grids: JSON.stringify(_.clone(grids_data_to_set)),
-            pricing_equation_params: JSON.stringify(equation_data_to_set)
-        }, {parse: true});
+            pricing_equation_params: JSON.stringify(equation_data_to_set),
+        }, { parse: true });
 
         equal(another_profile.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
         ok(another_profile.get('pricing_grids') instanceof PricingGridCollection, 'pricing_grids is a PricingGridCollection object');
@@ -107,69 +107,69 @@ test('Profile tests', function () {
         deepEqual(
             another_profile.get('pricing_grids').at(1).toJSON(),
             grids_data_to_set[1],
-            'pricing_grids second entry should be similar to source data first entry'
+            'pricing_grids second entry should be similar to source data first entry',
         );
         ok(
             another_profile.get('pricing_equation_params') instanceof PricingEquationParamsCollection,
-            'pricing_equation_params is a PricingEquationParamsCollection object'
+            'pricing_equation_params is a PricingEquationParamsCollection object',
         );
         deepEqual(
             another_profile.get('pricing_equation_params').get('param_a'),
             equation_data_to_set.param_a,
-            'pricing_equation_params param_a should be similar to source data param_a'
+            'pricing_equation_params param_a should be similar to source data param_a',
         );
 
         //  We want to make sure no extra data survives the parse step
-        let extra_profile = new Profile({
+        const extra_profile = new Profile({
             wait_what: '',
-            pricing_grids: JSON.parse(JSON.stringify(grids_data_to_set))
-        }, {parse: true});
+            pricing_grids: JSON.parse(JSON.stringify(grids_data_to_set)),
+        }, { parse: true });
 
         equal(extra_profile.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
         equal(extra_profile.get('wait_what'), undefined, 'wait_what attribute should be undefined');
     });
 
 
-    test('profile toJSON function', function () {
-        let default_profile = new Profile();
+    test('profile toJSON function', () => {
+        const default_profile = new Profile();
 
-        let data_to_set = {
+        const data_to_set = {
             name: 'Some random profile',
             threshold_width: 33,
             pricing_equation_params: JSON.stringify([
                 {
                     name: 'fixed',
                     param_a: 12,
-                    param_b: 177
+                    param_b: 177,
                 },
                 {
                     name: 'operable',
                     param_a: 17,
-                    param_b: 184
-                }
+                    param_b: 184,
+                },
             ]),
             pricing_grids: JSON.stringify([
                 {
                     name: 'fixed',
                     data: [
-                        {height: 500, width: 500, value: 15},
-                        {height: 914, width: 1514, value: 90},
-                        {height: 2400, width: 3000, value: 13}
-                    ]
+                        { height: 500, width: 500, value: 15 },
+                        { height: 914, width: 1514, value: 90 },
+                        { height: 2400, width: 3000, value: 13 },
+                    ],
                 },
                 {
                     name: 'operable',
                     data: [
-                        {height: 500, width: 500, value: 22},
-                        {height: 914, width: 1514, value: 33},
-                        {height: 1200, width: 2400, value: 44}
-                    ]
-                }
-            ])
+                        { height: 500, width: 500, value: 22 },
+                        { height: 914, width: 1514, value: 33 },
+                        { height: 1200, width: 2400, value: 44 },
+                    ],
+                },
+            ]),
         };
-        let predefined_profile = new Profile(
+        const predefined_profile = new Profile(
             JSON.parse(JSON.stringify(data_to_set)),
-            {parse: true}
+            { parse: true },
         );
 
         it('Default profile should be properly cast to JSON', () => {
@@ -186,31 +186,31 @@ test('Profile tests', function () {
                     {
                         name: 'fixed',
                         param_a: 0,
-                        param_b: 0
+                        param_b: 0,
                     },
                     {
                         name: 'operable',
                         param_a: 0,
-                        param_b: 0
-                    }
+                        param_b: 0,
+                    },
                 ]),
                 pricing_grids: JSON.stringify([
                     {
                         name: 'fixed',
                         data: [
-                            {height: 500, width: 500, value: 0},
-                            {height: 914, width: 1514, value: 0},
-                            {height: 2400, width: 3000, value: 0}
-                        ]
+                            { height: 500, width: 500, value: 0 },
+                            { height: 914, width: 1514, value: 0 },
+                            { height: 2400, width: 3000, value: 0 },
+                        ],
                     },
                     {
                         name: 'operable',
                         data: [
-                            {height: 500, width: 500, value: 0},
-                            {height: 914, width: 1514, value: 0},
-                            {height: 1200, width: 2400, value: 0}
-                        ]
-                    }
+                            { height: 500, width: 500, value: 0 },
+                            { height: 914, width: 1514, value: 0 },
+                            { height: 1200, width: 2400, value: 0 },
+                        ],
+                    },
                 ]),
                 pricing_scheme: 'PRICING_GRIDS',
                 sash_corners: 'Mitered',
@@ -222,7 +222,7 @@ test('Profile tests', function () {
                 system: 'Workhorse uPVC',
                 threshold_width: 20,
                 unit_type: 'Window',
-                weight_per_length: 0
+                weight_per_length: 0,
             });
         });
 
@@ -240,31 +240,31 @@ test('Profile tests', function () {
                     {
                         name: 'fixed',
                         param_a: 12,
-                        param_b: 177
+                        param_b: 177,
                     },
                     {
                         name: 'operable',
                         param_a: 17,
-                        param_b: 184
-                    }
+                        param_b: 184,
+                    },
                 ]),
                 pricing_grids: JSON.stringify([
                     {
                         name: 'fixed',
                         data: [
-                            {height: 500, width: 500, value: 15},
-                            {height: 914, width: 1514, value: 90},
-                            {height: 2400, width: 3000, value: 13}
-                        ]
+                            { height: 500, width: 500, value: 15 },
+                            { height: 914, width: 1514, value: 90 },
+                            { height: 2400, width: 3000, value: 13 },
+                        ],
                     },
                     {
                         name: 'operable',
                         data: [
-                            {height: 500, width: 500, value: 22},
-                            {height: 914, width: 1514, value: 33},
-                            {height: 1200, width: 2400, value: 44}
-                        ]
-                    }
+                            { height: 500, width: 500, value: 22 },
+                            { height: 914, width: 1514, value: 33 },
+                            { height: 1200, width: 2400, value: 44 },
+                        ],
+                    },
                 ]),
                 pricing_scheme: 'PRICING_GRIDS',
                 sash_corners: 'Mitered',
@@ -276,15 +276,15 @@ test('Profile tests', function () {
                 system: 'Workhorse uPVC',
                 threshold_width: 33,
                 unit_type: 'Window',
-                weight_per_length: 0
+                weight_per_length: 0,
             });
         });
     });
 
 
-    test('profile hasOnlyDefaultAttributes function', function () {
-        let new_profile = new Profile();
-        let another_new_profile = new Profile();
+    test('profile hasOnlyDefaultAttributes function', () => {
+        const new_profile = new Profile();
+        const another_new_profile = new Profile();
 
         ok(new_profile.hasOnlyDefaultAttributes(), 'Profile has only default attributes upon creation');
         ok(another_new_profile.hasOnlyDefaultAttributes(), 'Another profile has only default attributes upon creation');
@@ -295,7 +295,7 @@ test('Profile tests', function () {
         notOk(new_profile.hasOnlyDefaultAttributes(), 'Profile has non-default attributes after calling set');
         notOk(
             another_new_profile.hasOnlyDefaultAttributes(),
-            'Another profile has type non-default attributes after calling set on pricing_grids'
+            'Another profile has type non-default attributes after calling set on pricing_grids',
         );
     });
 });

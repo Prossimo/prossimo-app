@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import {assert} from 'chai';
+import { assert } from 'chai';
 
 import App from '../../../../src/main';
 import FillingType from '../../../../src/core/models/filling-type';
@@ -8,88 +8,88 @@ import FillingTypeProfileCollection from '../../../../src/core/collections/inlin
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
 
-test('Filling type tests', function () {
-    before(function () {
+test('Filling type tests', () => {
+    before(() => {
         //  This is here to avoid creating side effects inside tests.
         //  TODO: we need to get rid of globals eventually
         App.settings.profiles.reset([
-            {id: 1, position: 0},
-            {id: 2, position: 1},
-            {id: 3, position: 2},
-            {id: 22, position: 3},
-            {id: 77, position: 4},
-            {id: 17, position: 5}
-        ], {parse: true});
+            { id: 1, position: 0 },
+            { id: 2, position: 1 },
+            { id: 3, position: 2 },
+            { id: 22, position: 3 },
+            { id: 77, position: 4 },
+            { id: 17, position: 5 },
+        ], { parse: true });
     });
 
-    test('filling type model basic tests', function () {
-        let filling = new FillingType();
+    test('filling type model basic tests', () => {
+        const filling = new FillingType();
 
         equal(filling.get('type'), 'glass', 'Filling gets "glass" type by default');
         ok(
             filling.get('filling_type_profiles') instanceof FillingTypeProfileCollection,
-            'Profiles is an instance of FillingTypeProfileCollection upon filling creation'
+            'Profiles is an instance of FillingTypeProfileCollection upon filling creation',
         );
         equal(filling.get('filling_type_profiles').length, 0, 'Profiles is an empty collection upon filling creation');
 
         //  Another entry, to test profiles sorting on load
-        let filling_two = new FillingType({
+        const filling_two = new FillingType({
             name: 'Insulated PVC Panel',
             type: 'recessed',
             filling_type_profiles: [
                 {
                     profile_id: 3,
-                    is_default: true
+                    is_default: true,
                 },
                 {
                     profile_id: 1,
-                    is_default: true
+                    is_default: true,
                 },
                 {
                     profile_id: 2,
-                    is_default: true
-                }
-            ]
-        }, {parse: true});
+                    is_default: true,
+                },
+            ],
+        }, { parse: true });
 
         assert.sameMembers(filling_two.get('filling_type_profiles').pluck('profile_id'),
             [1, 2, 3],
-            'filling_type_profiles should be sorted on parse'
+            'filling_type_profiles should be sorted on parse',
         );
     });
 
-    test('filling type getBaseTypes function', function () {
-        let filling = new FillingType();
+    test('filling type getBaseTypes function', () => {
+        const filling = new FillingType();
 
         deepEqual(filling.getBaseTypes(), [
-            {name: 'glass', title: 'Glass'},
-            {name: 'recessed', title: 'Recessed'},
-            {name: 'interior-flush-panel', title: 'Interior Flush Panel'},
-            {name: 'exterior-flush-panel', title: 'Exterior Flush Panel'},
-            {name: 'full-flush-panel', title: 'Full Flush Panel'},
-            {name: 'louver', title: 'Louver'}
+            { name: 'glass', title: 'Glass' },
+            { name: 'recessed', title: 'Recessed' },
+            { name: 'interior-flush-panel', title: 'Interior Flush Panel' },
+            { name: 'exterior-flush-panel', title: 'Exterior Flush Panel' },
+            { name: 'full-flush-panel', title: 'Full Flush Panel' },
+            { name: 'louver', title: 'Louver' },
         ], 'getBaseTypes returns expected response');
     });
 
-    test('filling type getBaseTypeTitle function', function () {
-        let filling_one = new FillingType({type: 'glass'});
-        let filling_two = new FillingType({type: 'recessed'});
+    test('filling type getBaseTypeTitle function', () => {
+        const filling_one = new FillingType({ type: 'glass' });
+        const filling_two = new FillingType({ type: 'recessed' });
 
         equal(filling_one.getBaseTypeTitle(), 'Glass', 'Proper title for "glass" base type is "Glass"');
         equal(filling_two.getBaseTypeTitle(), 'Recessed', 'Proper title for "recessed" base type is "Recessed"');
     });
 
-    test('filling type toJSON function', function () {
-        let filling = new FillingType({
+    test('filling type toJSON function', () => {
+        const filling = new FillingType({
             name: 'Insulated PVC Panel',
             type: 'recessed',
             filling_type_profiles: [
                 {
                     profile_id: 3,
-                    is_default: true
-                }
-            ]
-        }, {parse: true});
+                    is_default: true,
+                },
+            ],
+        }, { parse: true });
 
         deepEqual(
             filling.toJSON(),
@@ -107,43 +107,43 @@ test('Filling type tests', function () {
                             {
                                 name: 'fixed',
                                 param_a: 0,
-                                param_b: 0
+                                param_b: 0,
                             },
                             {
                                 name: 'operable',
                                 param_a: 0,
-                                param_b: 0
-                            }
+                                param_b: 0,
+                            },
                         ]),
                         pricing_grids: JSON.stringify([
                             {
                                 name: 'fixed',
                                 data: [
-                                    {height: 500, width: 500, value: 0},
-                                    {height: 914, width: 1514, value: 0},
-                                    {height: 2400, width: 3000, value: 0}
-                                ]
+                                    { height: 500, width: 500, value: 0 },
+                                    { height: 914, width: 1514, value: 0 },
+                                    { height: 2400, width: 3000, value: 0 },
+                                ],
                             },
                             {
                                 name: 'operable',
                                 data: [
-                                    {height: 500, width: 500, value: 0},
-                                    {height: 914, width: 1514, value: 0},
-                                    {height: 1200, width: 2400, value: 0}
-                                ]
-                            }
-                        ])
-                    }
+                                    { height: 500, width: 500, value: 0 },
+                                    { height: 914, width: 1514, value: 0 },
+                                    { height: 1200, width: 2400, value: 0 },
+                                ],
+                            },
+                        ]),
+                    },
                 ],
-                pricing_scheme: 'PRICING_GRIDS'
+                pricing_scheme: 'PRICING_GRIDS',
             },
-            'Filling type should be properly cast to json'
+            'Filling type should be properly cast to json',
         );
     });
 
-    test('filling type hasOnlyDefaultAttributes function', function () {
-        let new_filling = new FillingType();
-        let another_new_filling = new FillingType();
+    test('filling type hasOnlyDefaultAttributes function', () => {
+        const new_filling = new FillingType();
+        const another_new_filling = new FillingType();
 
         ok(new_filling.hasOnlyDefaultAttributes(), 'Filling type has only default attributes upon creation');
         ok(another_new_filling.hasOnlyDefaultAttributes(), 'Another filling type has only default attributes upon creation');
@@ -154,37 +154,37 @@ test('Filling type tests', function () {
         notOk(new_filling.hasOnlyDefaultAttributes(), 'Filling type has non-default attributes after calling set');
         notOk(
             another_new_filling.hasOnlyDefaultAttributes(),
-            'Another filling has type non-default attributes after calling setProfileAvailability'
+            'Another filling has type non-default attributes after calling setProfileAvailability',
         );
     });
 
-    test('filling type isAvailableForProfile function', function () {
-        let filling_one = new FillingType({
+    test('filling type isAvailableForProfile function', () => {
+        const filling_one = new FillingType({
             name: 'Test Type',
             type: 'glass',
             filling_type_profiles: [
                 {
                     profile_id: 1,
-                    is_default: true
-                }
-            ]
-        }, {parse: true});
-        let filling_two = new FillingType({
+                    is_default: true,
+                },
+            ],
+        }, { parse: true });
+        const filling_two = new FillingType({
             name: 'Another Test Type',
             type: 'recessed',
             filling_type_profiles: [
                 {
                     profile_id: 1,
-                    is_default: false
+                    is_default: false,
                 },
                 {
                     profile_id: 2,
-                    is_default: true
-                }
-            ]
-        }, {parse: true});
-        let base_filling = new FillingType({
-            is_base_type: true
+                    is_default: true,
+                },
+            ],
+        }, { parse: true });
+        const base_filling = new FillingType({
+            is_base_type: true,
         });
 
         equal(filling_one.isAvailableForProfile(1), true, 'Filling one should be available for profile_id=1');
@@ -196,33 +196,33 @@ test('Filling type tests', function () {
         equal(base_filling.isAvailableForProfile(744), true, 'Base-Type filling should be available for a random profile');
     });
 
-    test('filling type isDefaultForProfile function', function () {
-        let filling_one = new FillingType({
+    test('filling type isDefaultForProfile function', () => {
+        const filling_one = new FillingType({
             name: 'Test Type',
             type: 'glass',
             filling_type_profiles: [
                 {
                     profile_id: 1,
-                    is_default: true
-                }
-            ]
-        }, {parse: true});
-        let filling_two = new FillingType({
+                    is_default: true,
+                },
+            ],
+        }, { parse: true });
+        const filling_two = new FillingType({
             name: 'Another Test Type',
             type: 'recessed',
             filling_type_profiles: [
                 {
                     profile_id: 1,
-                    is_default: false
+                    is_default: false,
                 },
                 {
                     profile_id: 2,
-                    is_default: true
-                }
-            ]
-        }, {parse: true});
-        let base_filling = new FillingType({
-            is_base_type: true
+                    is_default: true,
+                },
+            ],
+        }, { parse: true });
+        const base_filling = new FillingType({
+            is_base_type: true,
         });
 
         equal(filling_one.isDefaultForProfile(1), true, 'Filling one should be default for profile_id=1');
@@ -234,25 +234,25 @@ test('Filling type tests', function () {
         equal(base_filling.isDefaultForProfile(899), false, 'Base-Type filling should not be default for a random profile');
     });
 
-    test('filling type setProfileAvailability function', function () {
-        let filling = new FillingType({
+    test('filling type setProfileAvailability function', () => {
+        const filling = new FillingType({
             name: 'Test Type',
             type: 'glass',
             filling_type_profiles: [
                 {
                     profile_id: 1,
-                    is_default: true
+                    is_default: true,
                 },
                 {
                     profile_id: 2,
-                    is_default: true
+                    is_default: true,
                 },
                 {
                     profile_id: 54,
-                    is_default: false
-                }
-            ]
-        }, {parse: true});
+                    is_default: false,
+                },
+            ],
+        }, { parse: true });
 
         equal(filling.isAvailableForProfile(1), true, 'Should be available for profile_id=1 upon creation');
         equal(filling.isAvailableForProfile(2), true, 'Should be available for profile_id=2 upon creation');
@@ -301,7 +301,7 @@ test('Filling type tests', function () {
         deepEqual(
             filling.getIdsOfProfilesWhereIsAvailable(),
             _.uniq(filling.getIdsOfProfilesWhereIsAvailable()),
-            'filling_type_profiles array should not contain any duplicated entries'
+            'filling_type_profiles array should not contain any duplicated entries',
         );
 
         //  Now make item not available for all profiles
@@ -313,88 +313,88 @@ test('Filling type tests', function () {
         deepEqual(filling.getIdsOfProfilesWhereIsAvailable(), [], 'List of profiles where is available should be empty');
     });
 
-    test('filling type getIdsOfProfilesWhereIsAvailable function', function () {
-        let normal_filling = new FillingType({
+    test('filling type getIdsOfProfilesWhereIsAvailable function', () => {
+        const normal_filling = new FillingType({
             name: 'Test Type',
             type: 'glass',
             filling_type_profiles: [
                 {
                     profile_id: 1,
-                    is_default: true
+                    is_default: true,
                 },
                 {
                     profile_id: 2,
-                    is_default: true
+                    is_default: true,
                 },
                 {
                     profile_id: 54,
-                    is_default: false
-                }
-            ]
-        }, {parse: true});
-        let base_filling = new FillingType({
-            is_base_type: true
+                    is_default: false,
+                },
+            ],
+        }, { parse: true });
+        const base_filling = new FillingType({
+            is_base_type: true,
         });
 
         deepEqual(
             normal_filling.getIdsOfProfilesWhereIsAvailable(),
             [1, 2, 54],
-            'Normal filling should be available for 3 profiles'
+            'Normal filling should be available for 3 profiles',
         );
         deepEqual(
             base_filling.getIdsOfProfilesWhereIsAvailable(),
             [],
-            'Base-type filling should not be explicitly available for any profile'
+            'Base-type filling should not be explicitly available for any profile',
         );
     });
 
-    test('filling type getIdsOfProfilesWhereIsDefault function', function () {
-        let normal_filling = new FillingType({
+    test('filling type getIdsOfProfilesWhereIsDefault function', () => {
+        const normal_filling = new FillingType({
             name: 'Test Type',
             type: 'glass',
             filling_type_profiles: [
                 {
                     profile_id: 1,
-                    is_default: true
+                    is_default: true,
                 },
                 {
                     profile_id: 2,
-                    is_default: true
+                    is_default: true,
                 },
                 {
                     profile_id: 54,
-                    is_default: false
-                }
-            ]
-        }, {parse: true});
-        let base_filling = new FillingType({
-            is_base_type: true
+                    is_default: false,
+                },
+            ],
+        }, { parse: true });
+        const base_filling = new FillingType({
+            is_base_type: true,
         });
 
         deepEqual(
             normal_filling.getIdsOfProfilesWhereIsDefault(),
             [1, 2],
-            'Normal filling should be default for 2 profiles'
+            'Normal filling should be default for 2 profiles',
         );
         deepEqual(
             base_filling.getIdsOfProfilesWhereIsDefault(),
             [],
-            'Base-type filling should not be default for any profile'
+            'Base-type filling should not be default for any profile',
         );
     });
 
-    test('filling type getPricingDataForProfile function', function () {
-        let filling = new FillingType({
+    test('filling type getPricingDataForProfile function', () => {
+        const filling = new FillingType({
             name: 'Test Type',
             filling_type_profiles: [
-                {profile_id: 1, is_default: true},
-                {profile_id: 54, is_default: false}
+                { profile_id: 1, is_default: true },
+                { profile_id: 54, is_default: false },
             ],
-            pricing_scheme: 'PRICING_GRIDS'
-        }, {parse: true});
+            pricing_scheme: 'PRICING_GRIDS',
+        }, { parse: true });
 
-        let ftp_one_pricing_data = filling.getPricingDataForProfile(54);
-        let nonexistent_ftp_pricing_data = filling.getPricingDataForProfile(177);
+        const ftp_one_pricing_data = filling.getPricingDataForProfile(54);
+        const nonexistent_ftp_pricing_data = filling.getPricingDataForProfile(177);
 
         equal(ftp_one_pricing_data.scheme, 'PRICING_GRIDS', 'getPricingDataForProfile().scheme matches the expected scheme');
         deepEqual(
@@ -403,21 +403,21 @@ test('Filling type tests', function () {
                 {
                     name: 'fixed',
                     data: [
-                        {height: 500, width: 500, value: 0},
-                        {height: 914, width: 1514, value: 0},
-                        {height: 2400, width: 3000, value: 0}
-                    ]
+                        { height: 500, width: 500, value: 0 },
+                        { height: 914, width: 1514, value: 0 },
+                        { height: 2400, width: 3000, value: 0 },
+                    ],
                 },
                 {
                     name: 'operable',
                     data: [
-                        {height: 500, width: 500, value: 0},
-                        {height: 914, width: 1514, value: 0},
-                        {height: 1200, width: 2400, value: 0}
-                    ]
-                }
+                        { height: 500, width: 500, value: 0 },
+                        { height: 914, width: 1514, value: 0 },
+                        { height: 1200, width: 2400, value: 0 },
+                    ],
+                },
             ],
-            'getPricingDataForProfile().pricing_grids matches the expected data'
+            'getPricingDataForProfile().pricing_grids matches the expected data',
         );
 
         equal(nonexistent_ftp_pricing_data, null, 'getPricingDataForProfile returns null for a nonexistent ftp');

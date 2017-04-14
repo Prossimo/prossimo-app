@@ -7,7 +7,7 @@ const unit_data = {
     width: 145,
     height: 90,
     opening_direction: 'Outward',
-    glazing_bar_width: 12
+    glazing_bar_width: 12,
 };
 const profile_data = {
     name: 'PE 78N HI Entry Door',
@@ -18,7 +18,7 @@ const profile_data = {
     sash_frame_overlap: 28,
     sash_mullion_overlap: 12,
     threshold_width: 20,
-    low_threshold: true
+    low_threshold: true,
 };
 const root_section_data = {
     id: '19991',
@@ -45,25 +45,25 @@ const root_section_data = {
                             id: '21064',
                             sashType: 'fixed_in_frame',
                             fillingType: 'glass',
-                            fillingName: 'Triple Low Gain - Tempered'
+                            fillingName: 'Triple Low Gain - Tempered',
                         },
                         {
                             id: '21065',
                             sashType: 'fixed_in_frame',
                             fillingType: 'glass',
-                            fillingName: 'Triple Low Gain - Tempered'
-                        }
+                            fillingName: 'Triple Low Gain - Tempered',
+                        },
                     ],
-                    position: 1498.6
+                    position: 1498.6,
                 },
                 {
                     id: '21051',
                     sashType: 'turn_only_right',
                     fillingType: 'glass',
-                    fillingName: 'Triple Low Gain - Tempered'
-                }
+                    fillingName: 'Triple Low Gain - Tempered',
+                },
             ],
-            position: 717.55
+            position: 717.55,
         },
         {
             id: '21049',
@@ -76,7 +76,7 @@ const root_section_data = {
                     id: '21066',
                     sashType: 'turn_only_left',
                     fillingType: 'glass',
-                    fillingName: 'Triple Low Gain - Tempered'
+                    fillingName: 'Triple Low Gain - Tempered',
                 },
                 {
                     id: '21067',
@@ -89,29 +89,29 @@ const root_section_data = {
                             id: '21068',
                             sashType: 'fixed_in_frame',
                             fillingType: 'glass',
-                            fillingName: 'Triple Low Gain - Tempered'
+                            fillingName: 'Triple Low Gain - Tempered',
                         },
                         {
                             id: '21069',
                             sashType: 'fixed_in_frame',
                             fillingType: 'glass',
-                            fillingName: 'Triple Low Gain - Tempered'
-                        }
+                            fillingName: 'Triple Low Gain - Tempered',
+                        },
                     ],
-                    position: 1498.6
-                }
+                    position: 1498.6,
+                },
             ],
-            position: 2686.05
-        }
+            position: 2686.05,
+        },
     ],
-    position: 1701.8000000000002
+    position: 1701.8000000000002,
 };
 const root_section_json_string = JSON.stringify(root_section_data);
 const preview_settings = {
     width: 500,
     height: 500,
     position: 'outside',
-    hingeIndicatorMode: 'american'
+    hingeIndicatorMode: 'american',
 };
 
 export default {
@@ -121,5 +121,5 @@ export default {
     root_section_data,
     root_section_json_string,
     preview_settings,
-    imgData: {chrome, firefox, phantom}
+    imgData: { chrome, firefox, phantom },
 };

@@ -3,10 +3,10 @@ import resemble from 'resemblejs';
 
 import Unit from '../../src/core/models/unit';
 import Profile from '../../src/core/models/profile';
-import {preview as previewFn} from '../../src/components/drawing/module/drawing-module';
+import { preview as previewFn } from '../../src/components/drawing/module/drawing-module';
 
 function getExpectedFile(imgData) {
-    let user_agent = navigator.userAgent;
+    const user_agent = navigator.userAgent;
     let agent = 'chrome';
 
     if (user_agent.indexOf('PhantomJS') !== -1) {
@@ -19,47 +19,47 @@ function getExpectedFile(imgData) {
 }
 
 const runVisualTest = function (options) {
-    let defaults = {
+    const defaults = {
         diff_threshold: 0,
         test_case: {},
-        callback: undefined
+        callback: undefined,
     };
 
     options = _.defaults({}, options, defaults);
 
-    let time_started = performance.now();
+    const time_started = performance.now();
 
-    let profile = new Profile(options.test_case.profile_data);
-    let unit = new Unit(_.extend({}, options.test_case.unit_data, {
-        root_section: options.test_case.root_section_json_string
+    const profile = new Profile(options.test_case.profile_data);
+    const unit = new Unit(_.extend({}, options.test_case.unit_data, {
+        root_section: options.test_case.root_section_json_string,
     }));
 
     unit.profile = profile;
 
-    let preview = previewFn(unit, {
+    const preview = previewFn(unit, {
         width: options.test_case.preview_settings.width,
         height: options.test_case.preview_settings.height,
         mode: 'base64',
         position: options.test_case.preview_settings.position,
-        hingeIndicatorMode: options.test_case.preview_settings.hingeIndicatorMode
+        hingeIndicatorMode: options.test_case.preview_settings.hingeIndicatorMode,
     });
 
     resemble.outputSettings({
         errorColor: {
             red: 255,
             green: 0,
-            blue: 255
+            blue: 255,
         },
         errorType: 'movementDifferenceIntensity',
         transparency: 0.3,
         largeImageThreshold: 1200,
-        useCrossOrigin: false
+        useCrossOrigin: false,
     });
 
-    let expected_filename = getExpectedFile(options.test_case.imgData);
+    const expected_filename = getExpectedFile(options.test_case.imgData);
 
     resemble(expected_filename).compareTo(preview).ignoreAntialiasing().onComplete(function (data) {
-        let diff_output = {};
+        const diff_output = {};
 
         diff_output.diff_image_src = data.getImageDataUrl();
 
@@ -79,16 +79,16 @@ const runVisualTest = function (options) {
 
         diff_output.mismatch_percentage = data.misMatchPercentage;
 
-        let time_ended = performance.now();
+        const time_ended = performance.now();
 
-        let visual_test_result = {
-            unit: unit,
-            profile: profile,
+        const visual_test_result = {
+            unit,
+            profile,
             test_case: options.test_case,
-            preview: preview,
-            diff_output: diff_output,
+            preview,
+            diff_output,
             execution_time: time_ended - time_started,
-            expected_filename: expected_filename
+            expected_filename,
         };
 
         if (options.callback && _.isFunction(options.callback)) {
@@ -96,4 +96,5 @@ const runVisualTest = function (options) {
         }
     });
 };
+
 export default runVisualTest;
