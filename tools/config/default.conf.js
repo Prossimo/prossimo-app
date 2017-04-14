@@ -1,5 +1,5 @@
 const path = require('path');
-const packageInfo = require('../package.json');
+const packageInfo = require('../../package.json');
 
 module.exports = {
     version: packageInfo.version,
@@ -7,15 +7,15 @@ module.exports = {
     release: false,
     verbose: false,
     app: {
-        assetsPath: path.resolve(__dirname, '../assets'),
-        srcPath: path.resolve(__dirname, '../src'),
+        assetsPath: path.resolve(__dirname, '../../assets'),
+        srcPath: path.resolve(__dirname, '../../src'),
         webLoaders: path.resolve(__dirname, '../web_loaders'),
         devtool: 'cheap-module-eval-source-map',
         apiPrefix: '/api/api',
         printerPrefix: '/print',
     },
     dist: {
-        path: path.resolve(__dirname, '../dist'),
+        path: path.resolve(__dirname, '../../dist'),
         devtool: '',
     },
     log: {

@@ -1,3 +1,5 @@
+/* eslint-disable prefer-template */
+
 module.exports = function (source) {
     if (this.cacheable) this.cacheable();
 

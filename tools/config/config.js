@@ -6,7 +6,7 @@ nconf
     .use('memory')
     .env()
     .argv()
-    .file(path.resolve(__dirname, '../local.conf.json'))
+    .file(path.resolve(__dirname, '../../local.conf.json'))
     .defaults(defaultConf);
 
 const apiUrl = nconf.get('server:apiHost')

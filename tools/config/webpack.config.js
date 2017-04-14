@@ -128,6 +128,9 @@ module.exports = {
                     from: '**/*',
                     to: 'assets/',
                 },
+                {
+                    from: './robots.txt',
+                },
             ]),
             new webpack.optimize.UglifyJsPlugin({
                 minimize: true,
