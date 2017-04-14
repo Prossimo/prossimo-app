@@ -3,6 +3,7 @@ const packageInfo = require('../package.json');
 
 module.exports = {
     version: packageInfo.version,
+    title: packageInfo.title,
     release: false,
     verbose: false,
     app: {
@@ -10,50 +11,50 @@ module.exports = {
         srcPath: path.resolve(__dirname, '../src'),
         webLoaders: path.resolve(__dirname, '../web_loaders'),
         devtool: 'cheap-module-eval-source-map',
-        apiPrefix: '/api',
-        printerPrefix: '/print'
+        apiPrefix: '/api/api',
+        printerPrefix: '/print',
     },
     dist: {
         path: path.resolve(__dirname, '../dist'),
-        devtool: ''
+        devtool: '',
     },
     log: {
         dev: {
             replaceConsole: true,
             level: 'info',
-            usefiles: true,
+            usefiles: false,
             files: [{
                 type: 'file',
                 filename: 'log/app-dev.log',
                 maxLogSize: 10485760,
-                numBackups: 3
+                numBackups: 3,
             }, {
                 type: 'file',
                 filename: 'log/api-dev.log',
                 maxLogSize: 10485760,
                 numBackups: 3,
-                category: 'api'
+                category: 'api',
             }],
-            console: true
+            console: true,
         },
         prod: {
             replaceConsole: true,
             level: 'info',
-            usefiles: true,
+            usefiles: false,
             files: [{
                 type: 'file',
                 filename: 'log/app-prod.log',
                 maxLogSize: 10485760,
-                numBackups: 3
+                numBackups: 3,
             }, {
                 type: 'file',
                 filename: 'log/api-prod.log',
                 maxLogSize: 10485760,
                 numBackups: 3,
-                category: 'api'
+                category: 'api',
             }],
-            console: false
-        }
+            console: false,
+        },
     },
     server: {
         port: '9987',
@@ -65,6 +66,6 @@ module.exports = {
         printerProtocol: 'http',
         printerHost: '127.0.0.1',
         printerPort: '8080',
-        printerPrefix: '/print'
-    }
+        printerPrefix: '/print',
+    },
 };

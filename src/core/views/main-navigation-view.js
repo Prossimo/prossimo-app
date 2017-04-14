@@ -25,7 +25,7 @@ export default Marionette.View.extend({
         App.router.navigate(nav_target, { trigger: true });
     },
     setTitle(title_part) {
-        document.title = `Prossimo Quoting App: ${title_part
+        document.title = `${$('meta[name="app-title"]').attr('value')}: ${title_part
             } (current version: ${$('meta[name="latest-version"]').attr('value')})`;
     },
     setActiveNavItem(key) {

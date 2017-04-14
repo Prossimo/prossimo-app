@@ -2,17 +2,17 @@
 process.env.NODE_ENV = 'test';
 
 const path = require('path');
-const webpackConfig = require('./webpack.config');
-const rootPath = path.join(__dirname, '../');
-
 const config = require('./config');
+const webpackConfig = require('./webpack.config');
+
+const rootPath = path.join(__dirname, '../');
 const doVisual = config.get('onlyVisualTests');
 
 module.exports = {
     basePath: '',
     files: [
         path.resolve(rootPath, './test/index.js'),
-        path.resolve(rootPath, `./test/**/*.${doVisual ? 'visual' : 'spec'}.js`)
+        path.resolve(rootPath, `./test/**/*.${doVisual ? 'visual' : 'spec'}.js`),
     ],
 
     // frameworks to use
@@ -22,20 +22,20 @@ module.exports = {
         [path.resolve(rootPath, './test/index.js')]: ['webpack', 'sourcemap'],
         [path.resolve(rootPath, './test/**/*.spec.js')]: ['webpack', 'sourcemap'],
         [path.resolve(rootPath, './test/**/*.visual.js')]: ['webpack', 'sourcemap'],
-        [path.resolve(rootPath, './test/**/*.png')]: ['webpack']
+        [path.resolve(rootPath, './test/**/*.png')]: ['webpack'],
     },
 
     reporters: ['mocha'],
 
-    webpack: Object.assign({}, webpackConfig, {entry: '', devtool: 'eval'}),
+    webpack: Object.assign({}, webpackConfig, { entry: '', devtool: 'eval' }),
 
     webpackMiddleware: {
-        noInfo: true
+        noInfo: true,
     },
 
     // reporter options
     mochaReporter: {
-        showDiff: false
+        showDiff: false,
     },
 
     plugins: [
@@ -47,8 +47,8 @@ module.exports = {
         require('karma-sinon-chai'),
         require('karma-jquery-chai'),
         require('karma-sourcemap-loader'),
-        require('karma-chrome-launcher')
+        require('karma-chrome-launcher'),
     ],
 
-    browsers: ['PhantomJS']
+    browsers: ['PhantomJS'],
 };

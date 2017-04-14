@@ -5,8 +5,9 @@
     <meta name="api-base-path" value="<%= htmlWebpackPlugin.options.api_prefix %>">
     <meta name="pdf-api-base-path" value="<%= htmlWebpackPlugin.options.printer_prefix %>">
     <meta name="latest-version" value="<%= htmlWebpackPlugin.options.version %>">
+    <meta name="app-title" value="<%= htmlWebpackPlugin.options.app_title %>">
 
-    <title>Prossimo App (current version: <%= htmlWebpackPlugin.options.version %>)</title>
+    <title><%= htmlWebpackPlugin.options.app_title %> (current version: <%= htmlWebpackPlugin.options.version %>)</title>
 </head>
 <body>
     <header id="header" class="header"></header>

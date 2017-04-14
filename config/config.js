@@ -10,11 +10,11 @@ nconf
     .defaults(defaultConf);
 
 const apiUrl = nconf.get('server:apiHost')
-    + (nconf.get('server:apiPort') ? ':' + nconf.get('server:apiPort') : '' )
+    + (nconf.get('server:apiPort') ? `:${nconf.get('server:apiPort')}` : '')
     + nconf.get('server:apiPrefix');
 
 const printerUrl = nconf.get('server:printerHost')
-    + (nconf.get('server:printerPort') ? ':' + nconf.get('server:printerPort') : '')
+    + (nconf.get('server:printerPort') ? `:${nconf.get('server:printerPort')}` : '')
     + nconf.get('server:printerPrefix');
 
 nconf.set('server:apiUrl', apiUrl);
