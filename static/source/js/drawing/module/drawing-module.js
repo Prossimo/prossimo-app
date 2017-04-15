@@ -284,7 +284,9 @@ var app = app || {};
                     fill: 'white',
                     stroke: 'black',
                     sunk: {
-                        opacity: 0.75
+                        opacity: 0.75,
+                        dashLength: 3,
+                        dashGap: 2
                     }
                 },
                 direction_line: {
