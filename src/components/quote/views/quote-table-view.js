@@ -43,7 +43,7 @@ export default Marionette.CompositeView.extend({
             subtotal_optional_extras: format.price_usd(total_prices.subtotal_optional_extras),
             subtotal: format.price_usd(total_prices.subtotal),
             tax_percent: total_prices.tax_percent ?
-                format.percent(total_prices.tax_percent) : false,
+                format.percent(total_prices.tax_percent, 3) : false,
             tax: format.price_usd(total_prices.tax),
             shipping: format.price_usd(total_prices.shipping),
             grand_total: format.price_usd(total_prices.grand_total),

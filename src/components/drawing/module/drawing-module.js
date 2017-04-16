@@ -291,6 +291,9 @@ const DrawingModule = Marionette.Object.extend({
             },
             direction_line: {
                 stroke: 'black',
+                latchOffset: 10,
+                dashLength: 10,
+                dashGap: 10,
             },
             measurements: {
                 label: {

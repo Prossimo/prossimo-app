@@ -1804,7 +1804,7 @@ decamelize@^1.0.0, decamelize@^1.1.1, decamelize@^1.1.2:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/decamelize/-/decamelize-1.2.0.tgz#f6534d15148269b20352e7bee26f501f9a191290"
 
-decimal.js@^7.1.1:
+decimal.js@^7.2.0:
   version "7.2.0"
   resolved "https://registry.yarnpkg.com/decimal.js/-/decimal.js-7.2.0.tgz#abb95d934f527664256ba213087f013f3cdc4fdf"
 
@@ -3826,7 +3826,7 @@ mocha@^3.2.0:
     mkdirp "0.5.1"
     supports-color "3.1.2"
 
-moment@2.x, moment@^2.13.0:
+moment@2.x, moment@^2.13.0, moment@^2.18.1:
   version "2.18.1"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.18.1.tgz#c36193dd3ce1c2eed2adb7c802dbbc77a81b1c0f"
 

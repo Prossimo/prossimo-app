@@ -938,6 +938,9 @@ const Unit = Backbone.Model.extend({
     isOpeningDirectionOutward() {
         return this.get('opening_direction') === 'Outward';
     },
+    isOpeningDirectionInward() {
+        return this.get('opening_direction') === 'Inward';
+    },
     isCircularPossible(sashId) {
         const root = this.generateFullRoot();
 

@@ -7,6 +7,9 @@
 
 @bg_light: darken(@white, 1%);
 
+@quote_max_width: 170rem;
+@quote_min_width: 150rem;
+
 
 //  ------------------------------------------------------------------------
 //  Screen and containers
@@ -21,14 +24,6 @@
     padding: 2rem;
     flex: 1 1 auto;
     overflow: auto;
-    .controls-container {
-        margin: 0 0 2rem;
-        .btn {
-            background: #ddd;
-            border: 1px solid #a6a6a6;
-            color: #333;
-        }
-    }
 }
 
 .quote-container {
@@ -37,10 +32,46 @@
     background-color: @white;
     border: @border_medium;
     min-height: 100%;
-    max-width: 170rem;
-    min-width: 150rem;
+    max-width: @quote_max_width;
+    min-width: @quote_min_width;
     width: 100%;
     overflow: visible;
+}
+
+
+//  ------------------------------------------------------------------------
+//  Quote controls
+//  ------------------------------------------------------------------------
+
+.quote-controls-container {
+    .clearfix();
+    padding: 1rem 0;
+    margin: 0 0 2rem;
+    border: @border_medium;
+    background-color: darken(@white, 2%);
+    max-width: @quote_max_width;
+
+    > div {
+        float: left;
+        padding: 0 1rem;
+    }
+
+    > div + div {
+        border-left: 1px solid #ccc;
+    }
+
+    .export-options .checkbox {
+        margin: 0;
+    }
+
+    .export-options .checkbox + .checkbox {
+        margin-top: 0.2rem;
+    }
+
+    .export-options span em {
+        font-style: normal;
+        color: lighten(@black, 45%);
+    }
 }
 
 

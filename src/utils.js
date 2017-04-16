@@ -162,9 +162,9 @@ export const format = {
         return result;
     },
     fixed_heights(value, num) {
-        return (typeof value === 'number')
-            ? this.fixed_minimal(value, num)
-            : `${this.fixed_minimal(value[0], num)} | ${this.fixed_minimal(value[1], num)}`;
+        return _.isArray(value) ?
+            `${this.fixed_minimal(value[0], num)} | ${this.fixed_minimal(value[1], num)}` :
+            this.fixed_minimal(value, num);
     },
     square_feet(value, num, suffix_format) {
         suffix_format = (suffix_format && _.indexOf(['normal', 'sup'], suffix_format) !== -1) ?

@@ -319,25 +319,29 @@ export default Marionette.View.extend({
         const project_settings = App.settings.getProjectSettings();
         let getter;
 
+        //  We use toFixed a lot here because often we want to copy numbers
+        //  from the table, and we only need them to have 2 decimal places
         const getters_hash = {
             height(model) {
                 return model.getTrapezoidHeight();
             },
             width_mm(model) {
-                return model.getWidthMM();
+                return model.getWidthMM().toFixed(2);
             },
             height_mm(model) {
-                return model.getTrapezoidHeightMM();
+                const height = model.getTrapezoidHeightMM();
+
+                return _.isArray(height) ? _.invoke(height, 'toFixed', 2) : height.toFixed(2);
             },
             dimensions(model) {
                 return format.dimensions(model.get('width'), model.get('height'), null,
                     project_settings.get('inches_display_mode') || null);
             },
             unit_cost(model) {
-                return model.getUnitCost();
+                return model.getUnitCost().toFixed(2);
             },
             unit_cost_discounted(model) {
-                return model.getUnitCostDiscounted();
+                return model.getUnitCostDiscounted().toFixed(2);
             },
             drawing(model) {
                 return preview(model, {
@@ -349,28 +353,28 @@ export default Marionette.View.extend({
                 });
             },
             subtotal_cost(model) {
-                return model.getSubtotalCost();
+                return model.getSubtotalCost().toFixed(2);
             },
             unit_price(model) {
-                return model.getUnitPrice();
+                return model.getUnitPrice().toFixed(2);
             },
             subtotal_price(model) {
-                return model.getSubtotalPrice();
+                return model.getSubtotalPrice().toFixed(2);
             },
             u_value(model) {
                 return model.getUValue();
             },
             unit_price_discounted(model) {
-                return model.getUnitPriceDiscounted();
+                return model.getUnitPriceDiscounted().toFixed(2);
             },
             subtotal_price_discounted(model) {
-                return model.getSubtotalPriceDiscounted();
+                return model.getSubtotalPriceDiscounted().toFixed(2);
             },
             subtotal_cost_discounted(model) {
-                return model.getSubtotalCostDiscounted();
+                return model.getSubtotalCostDiscounted().toFixed(2);
             },
             subtotal_profit(model) {
-                return model.getSubtotalProfit();
+                return model.getSubtotalProfit().toFixed(2);
             },
             system(model) {
                 return model.profile.get('system');
@@ -379,19 +383,19 @@ export default Marionette.View.extend({
                 return model.profile.getThresholdType();
             },
             total_square_feet(model) {
-                return model.getTotalSquareFeet();
+                return model.getTotalSquareFeet().toFixed(2);
             },
             square_feet_price(model) {
-                return model.getSquareFeetPrice();
+                return model.getSquareFeetPrice().toFixed(2);
             },
             square_feet_price_discounted(model) {
-                return model.getSquareFeetPriceDiscounted();
+                return model.getSquareFeetPriceDiscounted().toFixed(2);
             },
             original_cost_estimated(model) {
-                return model.getEstimatedUnitCost().total;
+                return model.getEstimatedUnitCost().total.toFixed(2);
             },
             original_cost_difference(model) {
-                return model.getEstimatedUnitCost().real_cost.difference;
+                return model.getEstimatedUnitCost().real_cost.difference.toFixed(2);
             },
             rough_opening(model) {
                 return format.dimensions(model.getRoughOpeningWidth(), model.getRoughOpeningHeight(), null,
@@ -613,7 +617,7 @@ export default Marionette.View.extend({
             quantity: { format: '0,0[.]00' },
             original_cost: { format: '0,0[.]00' },
             conversion_rate: { format: '0[.]00000' },
-            price_markup: { format: '0,0[.]00' },
+            price_markup: { format: '0,0[.]00[0]00' },
             uw: { format: '0[.]00' },
         };
 
@@ -1016,7 +1020,7 @@ export default Marionette.View.extend({
             subtotal_cost: 100,
             unit_cost_discounted: 100,
             subtotal_cost_discounted: 100,
-            price_markup: 60,
+            price_markup: 80,
             unit_price: 100,
             subtotal_price: 100,
             unit_price_discounted: 100,
