@@ -21,6 +21,7 @@
       "ignoreStrings": true,
       "ignoreTemplateLiterals": true
     }],
+    "import/no-extraneous-dependencies": "off",
     // mocha
     "no-unused-expressions": 0
   }

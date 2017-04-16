@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import {assert} from 'chai';
+import { assert } from 'chai';
 
 import App from '../../../../src/main';
 import OptionsDictionaryEntry from '../../../../src/core/models/options-dictionary-entry';
@@ -7,75 +7,75 @@ import OptionsDictionaryEntry from '../../../../src/core/models/options-dictiona
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
 
-test('Options dictionary entry tests', function () {
-    before(function () {
+test('Options dictionary entry tests', () => {
+    before(() => {
         //  This is here to avoid creating side effects inside tests.
         //  TODO: we need to get rid of globals eventually
         App.settings.profiles.reset([
-            {id: 1, position: 0},
-            {id: 2, position: 1},
-            {id: 3, position: 2},
-            {id: 22, position: 3},
-            {id: 77, position: 4},
-            {id: 17, position: 5}
-        ], {parse: true});
+            { id: 1, position: 0 },
+            { id: 2, position: 1 },
+            { id: 3, position: 2 },
+            { id: 22, position: 3 },
+            { id: 77, position: 4 },
+            { id: 17, position: 5 },
+        ], { parse: true });
     });
     //  ------------------------------------------------------------------------
     //  Single dictionary entry
     //  ------------------------------------------------------------------------
-    test('dictionary entry basic test', function () {
-        let entry = new OptionsDictionaryEntry({
+    test('dictionary entry basic test', () => {
+        const entry = new OptionsDictionaryEntry({
             name: 'White Plastic Handle',
-            price: 15
+            price: 15,
         });
 
         ok(entry.get('name'), 'Entry name should be defined');
 
         //  Another entry, to test profiles sorting on load
-        let entry_two = new OptionsDictionaryEntry({
+        const entry_two = new OptionsDictionaryEntry({
             name: 'White Plastic Handle',
             dictionary_entry_profiles: [
                 {
                     profile_id: 3,
-                    is_default: true
+                    is_default: true,
                 },
                 {
                     profile_id: 1,
-                    is_default: true
+                    is_default: true,
                 },
                 {
                     profile_id: 2,
-                    is_default: true
-                }
-            ]
-        }, {parse: true});
+                    is_default: true,
+                },
+            ],
+        }, { parse: true });
 
         assert.sameMembers(entry_two.get('dictionary_entry_profiles').pluck('profile_id'),
             [1, 2, 3],
-            'dictionary_entry_profiles should be sorted on parse'
+            'dictionary_entry_profiles should be sorted on parse',
         );
     });
 
-    test('dictionary entry parse function', function () {
-        let entry = new OptionsDictionaryEntry({
+    test('dictionary entry parse function', () => {
+        const entry = new OptionsDictionaryEntry({
             name: 'White Plastic Handle',
             price: 15,
-            data: 'some garbled string'
-        }, {parse: true});
+            data: 'some garbled string',
+        }, { parse: true });
 
         deepEqual(entry.get('data'), {}, 'Entry data is set to empty object on parse in case of problematic source data');
     });
 
-    test('dictionary entry toJSON function', function () {
-        let entry = new OptionsDictionaryEntry({
+    test('dictionary entry toJSON function', () => {
+        const entry = new OptionsDictionaryEntry({
             name: 'White Plastic Handle',
             dictionary_entry_profiles: [
                 {
                     profile_id: 3,
-                    is_default: true
-                }
-            ]
-        }, {parse: true});
+                    is_default: true,
+                },
+            ],
+        }, { parse: true });
 
         deepEqual(
             entry.toJSON(),
@@ -93,42 +93,42 @@ test('Options dictionary entry tests', function () {
                             {
                                 name: 'fixed',
                                 data: [
-                                    {height: 500, width: 500, value: 0},
-                                    {height: 914, width: 1514, value: 0},
-                                    {height: 2400, width: 3000, value: 0}
-                                ]
+                                    { height: 500, width: 500, value: 0 },
+                                    { height: 914, width: 1514, value: 0 },
+                                    { height: 2400, width: 3000, value: 0 },
+                                ],
                             },
                             {
                                 name: 'operable',
                                 data: [
-                                    {height: 500, width: 500, value: 0},
-                                    {height: 914, width: 1514, value: 0},
-                                    {height: 1200, width: 2400, value: 0}
-                                ]
-                            }
+                                    { height: 500, width: 500, value: 0 },
+                                    { height: 914, width: 1514, value: 0 },
+                                    { height: 1200, width: 2400, value: 0 },
+                                ],
+                            },
                         ]),
                         pricing_equation_params: JSON.stringify([
                             {
                                 name: 'fixed',
                                 param_a: 0,
-                                param_b: 0
+                                param_b: 0,
                             },
                             {
                                 name: 'operable',
                                 param_a: 0,
-                                param_b: 0
-                            }
-                        ])
-                    }
-                ]
+                                param_b: 0,
+                            },
+                        ]),
+                    },
+                ],
             },
-            'Dictionary entry should be properly cast to json'
+            'Dictionary entry should be properly cast to json',
         );
     });
 
-    test('dictionary entry hasOnlyDefaultAttributes attributes', function () {
-        let entry = new OptionsDictionaryEntry();
-        let another_entry = new OptionsDictionaryEntry();
+    test('dictionary entry hasOnlyDefaultAttributes attributes', () => {
+        const entry = new OptionsDictionaryEntry();
+        const another_entry = new OptionsDictionaryEntry();
 
         ok(entry.hasOnlyDefaultAttributes(), 'Entry has only default attributes upon creation');
         ok(another_entry.hasOnlyDefaultAttributes(), 'Another entry has only default attributes upon creation');
@@ -139,42 +139,42 @@ test('Options dictionary entry tests', function () {
         notOk(entry.hasOnlyDefaultAttributes(), 'Entry has non-default attributes after calling set()');
         notOk(
             another_entry.hasOnlyDefaultAttributes(),
-            'Another entry has non-default attributes after calling setProfileAvailability'
+            'Another entry has non-default attributes after calling setProfileAvailability',
         );
     });
 
-    test('dictionary entry isAvailableForProfile function', function () {
-        let entry = new OptionsDictionaryEntry({
+    test('dictionary entry isAvailableForProfile function', () => {
+        const entry = new OptionsDictionaryEntry({
             name: 'White Plastic Handle',
             price: 15,
             dictionary_entry_profiles: [
                 {
                     profile_id: 1,
-                    is_default: false
+                    is_default: false,
                 },
                 {
                     profile_id: 4,
-                    is_default: false
+                    is_default: false,
                 },
                 {
                     profile_id: 77,
-                    is_default: true
-                }
-            ]
-        }, {parse: true});
-        let entry_two = new OptionsDictionaryEntry({
+                    is_default: true,
+                },
+            ],
+        }, { parse: true });
+        const entry_two = new OptionsDictionaryEntry({
             name: 'Brass Metal Handle',
             dictionary_entry_profiles: [
                 {
                     profile_id: 1,
-                    is_default: false
+                    is_default: false,
                 },
                 {
                     profile_id: 4,
-                    is_default: false
-                }
-            ]
-        }, {parse: true});
+                    is_default: false,
+                },
+            ],
+        }, { parse: true });
 
         ok(entry.isAvailableForProfile(1), 'Should be available');
         notOk(entry.isAvailableForProfile(2), 'Should not be available');
@@ -185,34 +185,34 @@ test('Options dictionary entry tests', function () {
         notOk(entry_two.isAvailableForProfile(77), 'Should not be available');
     });
 
-    test('dictionary entry isDefaultForProfile function', function () {
-        let entry = new OptionsDictionaryEntry({
+    test('dictionary entry isDefaultForProfile function', () => {
+        const entry = new OptionsDictionaryEntry({
             name: 'White Plastic Handle',
             price: 15,
             dictionary_entry_profiles: [
                 {
                     profile_id: 1,
-                    is_default: false
+                    is_default: false,
                 },
                 {
                     profile_id: 4,
-                    is_default: true
-                }
-            ]
-        }, {parse: true});
-        let entry_two = new OptionsDictionaryEntry({
+                    is_default: true,
+                },
+            ],
+        }, { parse: true });
+        const entry_two = new OptionsDictionaryEntry({
             name: 'Brass Metal Handle',
             dictionary_entry_profiles: [
                 {
                     profile_id: 1,
-                    is_default: true
+                    is_default: true,
                 },
                 {
                     profile_id: 77,
-                    is_default: false
-                }
-            ]
-        }, {parse: true});
+                    is_default: false,
+                },
+            ],
+        }, { parse: true });
 
         ok(entry.isDefaultForProfile(4), 'Should be set as default');
         notOk(entry.isDefaultForProfile(1), 'Should not be set as default');
@@ -223,24 +223,24 @@ test('Options dictionary entry tests', function () {
         notOk(entry_two.isDefaultForProfile(2), 'Should not be set as default');
     });
 
-    test('dictionary entry setProfileAvailability function', function () {
-        let entry = new OptionsDictionaryEntry({
+    test('dictionary entry setProfileAvailability function', () => {
+        const entry = new OptionsDictionaryEntry({
             name: 'White Plastic Handle',
             dictionary_entry_profiles: [
                 {
                     profile_id: 1,
-                    is_default: true
+                    is_default: true,
                 },
                 {
                     profile_id: 2,
-                    is_default: true
+                    is_default: true,
                 },
                 {
                     profile_id: 54,
-                    is_default: false
-                }
-            ]
-        }, {parse: true});
+                    is_default: false,
+                },
+            ],
+        }, { parse: true });
 
         equal(entry.isAvailableForProfile(1), true, 'Should be available for profile_id=1 upon creation');
         equal(entry.isAvailableForProfile(2), true, 'Should be available for profile_id=2 upon creation');
@@ -289,7 +289,7 @@ test('Options dictionary entry tests', function () {
         deepEqual(
             entry.getIdsOfProfilesWhereIsAvailable(),
             _.uniq(entry.getIdsOfProfilesWhereIsAvailable()),
-            'dictionary_entry_profiles array should not contain any duplicated entries'
+            'dictionary_entry_profiles array should not contain any duplicated entries',
         );
 
         //  Now make item not available for all profiles
@@ -301,71 +301,71 @@ test('Options dictionary entry tests', function () {
         deepEqual(entry.getIdsOfProfilesWhereIsAvailable(), [], 'List of profiles where is available should be empty');
     });
 
-    test('dictionary entry getIdsOfProfilesWhereIsAvailable function', function () {
-        let entry = new OptionsDictionaryEntry({
+    test('dictionary entry getIdsOfProfilesWhereIsAvailable function', () => {
+        const entry = new OptionsDictionaryEntry({
             name: 'White Plastic Handle',
             dictionary_entry_profiles: [
                 {
                     profile_id: 1,
-                    is_default: true
+                    is_default: true,
                 },
                 {
                     profile_id: 2,
-                    is_default: true
+                    is_default: true,
                 },
                 {
                     profile_id: 54,
-                    is_default: false
-                }
-            ]
-        }, {parse: true});
-        let not_connected_entry = new OptionsDictionaryEntry({
-            name: 'Brass Metal Handle'
+                    is_default: false,
+                },
+            ],
+        }, { parse: true });
+        const not_connected_entry = new OptionsDictionaryEntry({
+            name: 'Brass Metal Handle',
         });
 
         deepEqual(
             entry.getIdsOfProfilesWhereIsAvailable(),
             [1, 2, 54],
-            'Entry should be available for 3 profiles'
+            'Entry should be available for 3 profiles',
         );
         deepEqual(
             not_connected_entry.getIdsOfProfilesWhereIsAvailable(),
             [],
-            'Not connected Entry should not be available for any profile'
+            'Not connected Entry should not be available for any profile',
         );
     });
 
-    test('dictionary entry getIdsOfProfilesWhereIsDefault function', function () {
-        let entry = new OptionsDictionaryEntry({
+    test('dictionary entry getIdsOfProfilesWhereIsDefault function', () => {
+        const entry = new OptionsDictionaryEntry({
             name: 'White Plastic Handle',
             dictionary_entry_profiles: [
                 {
                     profile_id: 1,
-                    is_default: true
+                    is_default: true,
                 },
                 {
                     profile_id: 2,
-                    is_default: true
+                    is_default: true,
                 },
                 {
                     profile_id: 54,
-                    is_default: false
-                }
-            ]
-        }, {parse: true});
-        let not_connected_entry = new OptionsDictionaryEntry({
-            name: 'Brass Metal Handle'
+                    is_default: false,
+                },
+            ],
+        }, { parse: true });
+        const not_connected_entry = new OptionsDictionaryEntry({
+            name: 'Brass Metal Handle',
         });
 
         deepEqual(
             entry.getIdsOfProfilesWhereIsDefault(),
             [1, 2],
-            'Entry should be default for 2 profiles'
+            'Entry should be default for 2 profiles',
         );
         deepEqual(
             not_connected_entry.getIdsOfProfilesWhereIsDefault(),
             [],
-            'Not connected Entry should not be default for any profile'
+            'Not connected Entry should not be default for any profile',
         );
     });
 });

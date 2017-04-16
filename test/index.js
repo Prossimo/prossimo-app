@@ -1,4 +1,5 @@
 import chaiSubset from 'chai-subset';
+
 global.chai.use(chaiSubset);
 
 global.ok = (actual, message) => {
@@ -49,5 +50,5 @@ global.test.skip = (message, callback) => {
     describe.skip(message, callback);
 };
 
-before(function () {
+before(() => {
 });

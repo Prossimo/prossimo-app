@@ -5,7 +5,7 @@ import phantom from './case-3-phantom.png';
 const unit_data = {
     mark: 'A',
     width: 36.75,
-    height: 72.75
+    height: 72.75,
 };
 const profile_data = {
     name: 'Pinnacle uPVC',
@@ -16,7 +16,7 @@ const profile_data = {
     sash_frame_overlap: 34,
     sash_mullion_overlap: 12,
     threshold_width: 20,
-    low_threshold: false
+    low_threshold: false,
 };
 const root_section_data = {
     id: '10565',
@@ -36,35 +36,35 @@ const root_section_data = {
                     id: '21156',
                     sashType: 'fixed_in_frame',
                     fillingType: 'glass',
-                    fillingName: 'Glass'
+                    fillingName: 'Glass',
                 },
                 {
                     id: '21157',
                     sashType: 'fixed_in_frame',
                     fillingType: 'glass',
-                    fillingName: 'Glass'
-                }
+                    fillingName: 'Glass',
+                },
             ],
-            position: 466.72499999999997
+            position: 466.72499999999997,
         },
         {
             id: '11153',
             sashType: 'fixed_in_frame',
             fillingType: 'glass',
             vertical_bars_number: 3,
-            horizontal_bars_number: 2
-        }
+            horizontal_bars_number: 2,
+        },
     ],
     position: 923.925,
     vertical_bars_number: 3,
-    horizontal_bars_number: 4
+    horizontal_bars_number: 4,
 };
 const root_section_json_string = JSON.stringify(root_section_data);
 const preview_settings = {
     width: 500,
     height: 500,
     position: 'outside',
-    hingeIndicatorMode: 'american'
+    hingeIndicatorMode: 'american',
 };
 
 export default {
@@ -74,5 +74,5 @@ export default {
     root_section_data,
     root_section_json_string,
     preview_settings,
-    imgData: {chrome, firefox, phantom}
+    imgData: { chrome, firefox, phantom },
 };

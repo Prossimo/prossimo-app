@@ -6,55 +6,55 @@ import ProjectSettings from '../../../../src/core/models/inline/project-settings
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
 
-test('Project settings test', function () {
-    test('project settings model basic tests', function () {
-        let project_settings = new ProjectSettings();
+test('Project settings test', () => {
+    test('project settings model basic tests', () => {
+        const project_settings = new ProjectSettings();
 
         equal(project_settings.get('inches_display_mode'), 'feet_and_inches', 'Should be feet_and_inches upon creation');
     });
 
-    test('project settings parse function', function () {
-        let data_to_set = {
+    test('project settings parse function', () => {
+        const data_to_set = {
             inches_display_mode: 'feet_and_inches',
             hinge_indicator_mode: 'european',
             pricing_mode: 'normal',
-            show_drawings_in_quote: true
+            show_drawings_in_quote: true,
         };
 
-        let project_settings = new ProjectSettings(
+        const project_settings = new ProjectSettings(
             _.clone(data_to_set),
-            {parse: true}
+            { parse: true },
         );
 
         equal(
             project_settings.get('inches_display_mode'),
             'feet_and_inches',
-            'inches_display_mode is set correctly on parse'
+            'inches_display_mode is set correctly on parse',
         );
         equal(
             project_settings.get('hinge_indicator_mode'),
             'european',
-            'hinge_indicator_mode is set correctly on parse'
+            'hinge_indicator_mode is set correctly on parse',
         );
         equal(
             project_settings.get('pricing_mode'),
             undefined,
-            'pricing_mode is thrown out on parse as expected'
+            'pricing_mode is thrown out on parse as expected',
         );
     });
 
-    test('project settings toJSON function', function () {
-        let data_to_set = {
+    test('project settings toJSON function', () => {
+        const data_to_set = {
             inches_display_mode: 'feet_and_inches',
             hinge_indicator_mode: 'european',
             pricing_mode: 'normal',
-            show_drawings_in_quote: true
+            show_drawings_in_quote: true,
         };
 
-        let default_project_settings = new ProjectSettings();
-        let preloaded_project_settings = new ProjectSettings(
+        const default_project_settings = new ProjectSettings();
+        const preloaded_project_settings = new ProjectSettings(
             _.clone(data_to_set),
-            {parse: true}
+            { parse: true },
         );
 
         deepEqual(
@@ -62,9 +62,9 @@ test('Project settings test', function () {
             {
                 inches_display_mode: 'feet_and_inches',
                 hinge_indicator_mode: 'american',
-                show_drawings_in_quote: true
+                show_drawings_in_quote: true,
             },
-            'Default Project Settings should be correctly cast to JSON representation'
+            'Default Project Settings should be correctly cast to JSON representation',
         );
 
         deepEqual(
@@ -72,9 +72,9 @@ test('Project settings test', function () {
             {
                 inches_display_mode: 'feet_and_inches',
                 hinge_indicator_mode: 'european',
-                show_drawings_in_quote: true
+                show_drawings_in_quote: true,
             },
-            'Preloaded Project Settings should be correctly cast to JSON representation'
+            'Preloaded Project Settings should be correctly cast to JSON representation',
         );
     });
 });

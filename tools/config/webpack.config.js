@@ -2,9 +2,11 @@ const webpack = require('webpack');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const config = require('./config');
 
 const version = config.get('version');
+const appTitle = config.get('title');
 const srcPath = config.get('app:srcPath');
 const assetsPath = config.get('app:assetsPath');
 const webLoaders = config.get('app:webLoaders');
@@ -41,7 +43,7 @@ module.exports = {
         },
     },
     output: {
-        filename: `app-${version}.js`,
+        filename: `app-${version}-[hash]${!isDebug ? '.min' : ''}.js`,
         path: distPath,
         publicPath: '/',
     },
@@ -79,7 +81,7 @@ module.exports = {
                 test: /\.(png|jpe?g|gif|svg)$/,
                 loader: 'url-loader',
                 options: {
-                    name: isDebug ? 'img/[name].[ext]?[hash]' : 'img/[hash].[ext]',
+                    name: isDebug ? 'assets/img/[name].[ext]?[hash]' : 'assets/img/[hash].[ext]',
                     limit: 10000,
                 },
             },
@@ -87,16 +89,17 @@ module.exports = {
                 test: /\.(woff|woff2|eot|ttf)$/,
                 loader: 'file-loader',
                 options: {
-                    name: isDebug ? 'fonts/[name].[ext]?[hash]' : 'fonts/[hash].[ext]',
+                    name: isDebug ? 'assets/fonts/[name].[ext]?[hash]' : 'assets/fonts/[hash].[ext]',
                 },
             },
         ],
     },
 
     plugins: [
-        new ExtractTextPlugin(`css/[name]-${version}.css`),
+        new ExtractTextPlugin(`css/[name]-${version}-[hash]${!isDebug ? '.min' : ''}.css`),
         new webpack.ContextReplacementPlugin(/moment\/locale/, /en-gb/),
         new HtmlWebpackPlugin({
+            app_title: appTitle,
             template: path.resolve(srcPath, 'index.html'),
             hash: false,
             version,
@@ -119,7 +122,16 @@ module.exports = {
         ...isDebug ? [
             // new webpack.HotModuleReplacementPlugin()
         ] : [
-            new webpack.optimize.DedupePlugin(),
+            new CopyWebpackPlugin([
+                {
+                    context: assetsPath,
+                    from: '**/*',
+                    to: 'assets/',
+                },
+                {
+                    from: './robots.txt',
+                },
+            ]),
             new webpack.optimize.UglifyJsPlugin({
                 minimize: true,
                 compress: {

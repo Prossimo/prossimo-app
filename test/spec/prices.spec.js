@@ -1,6 +1,6 @@
 import _ from 'underscore';
 
-import {math as m} from '../../src/utils';
+import { math as m } from '../../src/utils';
 import App from '../../src/main';
 import Profile from '../../src/core/models/profile';
 import Unit from '../../src/core/models/unit';
@@ -11,24 +11,24 @@ App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
 
 const settings = App.settings;
-const restoreSettings = function () {
+const restoreSettings = () => {
     // restore settings
     App.settings = settings;
 };
 
-test('Prices tests', function () {
+test('Prices tests', () => {
     //  ------------------------------------------------------------------------
     //  Test that inner collections are added properly
     //  ------------------------------------------------------------------------
-    test('project basic tests', function () {
-        let current_project = new Project({
+    test('project basic tests', () => {
+        const current_project = new Project({
             client_name: 'Andy Huh',
             client_company_name: 'Cool Project',
             client_phone: '123.456.0001',
             client_email: 'ben@prossimo.us',
             client_address: '98 4th Street Suite 213 Brooklyn, NY 11231',
             project_name: 'Italian Market',
-            project_address: '827 Carpenter Lane Philadelphia, PA'
+            project_address: '827 Carpenter Lane Philadelphia, PA',
         });
 
         equal(current_project.get('client_name'), 'Andy Huh', 'Client name should be Andy Huh');
@@ -36,9 +36,9 @@ test('Prices tests', function () {
         equal(current_project.quotes.models.length, 0, 'Quotes collection shoud have no items');
     });
 
-    test('quote basic tests', function () {
-        let current_quote = new Quote({
-            name: 'One Nice Quote'
+    test('quote basic tests', () => {
+        const current_quote = new Quote({
+            name: 'One Nice Quote',
         });
 
         equal(current_quote.get('name'), 'One Nice Quote', 'Quote name should be correct');
@@ -51,8 +51,8 @@ test('Prices tests', function () {
     //  ------------------------------------------------------------------------
     //  Test that prices for a single Unit model are calculated properly
     //  ------------------------------------------------------------------------
-    test('single unit tests', function () {
-        let current_quote = new Quote();
+    test('single unit tests', () => {
+        const current_quote = new Quote();
 
         current_quote.units.add([
             {
@@ -69,11 +69,11 @@ test('Prices tests', function () {
                 uw: 0.77,
                 glazing: '3Std U=.09 SGHC=.5',
                 discount: 20,
-                supplier_discount: 15
-            }
+                supplier_discount: 15,
+            },
         ]);
 
-        let first_unit = current_quote.units.first();
+        const first_unit = current_quote.units.first();
 
         equal(first_unit.get('mark'), 'A', 'Unit mark is expected to be A');
         equal(first_unit.get('original_cost'), 399, 'Unit original cost is expected to be 399');
@@ -94,8 +94,8 @@ test('Prices tests', function () {
     //  ------------------------------------------------------------------------
     //  Test that prices for a single Accessory model are calculated properly
     //  ------------------------------------------------------------------------
-    test('single accessory tests', function () {
-        let current_quote = new Quote();
+    test('single accessory tests', () => {
+        const current_quote = new Quote();
 
         current_quote.extras.add([
             {
@@ -105,11 +105,11 @@ test('Prices tests', function () {
                 original_currency: 'EUR',
                 conversion_rate: 0.91261693,
                 price_markup: 1.5,
-                discount: 0
-            }
+                discount: 0,
+            },
         ]);
 
-        let first_accessory = current_quote.extras.first();
+        const first_accessory = current_quote.extras.first();
 
         equal(first_accessory.get('original_cost'), 10, 'Unit original cost is expected to be 10');
 
@@ -123,8 +123,8 @@ test('Prices tests', function () {
     //  ------------------------------------------------------------------------
     //  Test that end quote prices are calculated properly
     //  ------------------------------------------------------------------------
-    test('subtotal quote prices', function () {
-        let current_quote = new Quote();
+    test('subtotal quote prices', () => {
+        const current_quote = new Quote();
 
         current_quote.units.add([
             {
@@ -140,7 +140,7 @@ test('Prices tests', function () {
                 price_markup: 2.3,
                 uw: 0.77,
                 glazing: '3Std U=.09 SGHC=.5',
-                discount: 20
+                discount: 20,
             },
             {
                 mark: 'B1',
@@ -155,8 +155,8 @@ test('Prices tests', function () {
                 price_markup: 2.3,
                 uw: 0.78,
                 glazing: '3Std U=.09 SGHC=.5',
-                discount: 20
-            }
+                discount: 20,
+            },
         ]);
 
         current_quote.extras.add([
@@ -167,7 +167,7 @@ test('Prices tests', function () {
                 original_currency: 'EUR',
                 conversion_rate: 0.91261693,
                 price_markup: 1.5,
-                discount: 0
+                discount: 0,
             },
             {
                 description: 'Piece of junk',
@@ -176,7 +176,7 @@ test('Prices tests', function () {
                 original_currency: 'USD',
                 conversion_rate: 1,
                 price_markup: 2,
-                discount: 0
+                discount: 0,
             },
             {
                 description: 'Optional thingy',
@@ -186,7 +186,7 @@ test('Prices tests', function () {
                 conversion_rate: 1,
                 price_markup: 2,
                 discount: 0,
-                extras_type: 'Optional'
+                extras_type: 'Optional',
             },
             {
                 description: 'Hidden costs for freelancers',
@@ -196,7 +196,7 @@ test('Prices tests', function () {
                 conversion_rate: 1,
                 price_markup: 1,
                 discount: 0,
-                extras_type: 'Hidden'
+                extras_type: 'Hidden',
             },
             {
                 description: 'Shipping to site',
@@ -206,14 +206,14 @@ test('Prices tests', function () {
                 conversion_rate: 1,
                 price_markup: 1,
                 discount: 0,
-                extras_type: 'Shipping'
+                extras_type: 'Shipping',
             },
             {
                 description: 'VAT',
                 quantity: 1,
                 price_markup: 1.3,
-                extras_type: 'Tax'
-            }
+                extras_type: 'Tax',
+            },
         ]);
 
         //  End prices for units
@@ -227,7 +227,8 @@ test('Prices tests', function () {
         equal(current_quote.extras.getShippingPrice().toFixed(2), '1500.00', 'Subtotal for shipping is expected to be 1500.00');
 
         //  End prices for the whole project
-        let total_prices = current_quote.getTotalPrices();
+        const total_prices = current_quote.getTotalPrices();
+
         equal(total_prices.subtotal_units.toFixed(2), '1949.47', 'Subtotal price for units is expected to be 1949.47');
         equal(total_prices.subtotal_extras.toFixed(2), '1629.26', 'Subtotal price for extras is expected to be 1629.26');
         equal(total_prices.subtotal.toFixed(2), '3578.73', 'Subtotal price for the whole order is expected to be 3578.73');
@@ -241,7 +242,7 @@ test('Prices tests', function () {
         equal(
             total_prices.net_profit.toFixed(2),
             (total_prices.gross_profit - current_quote.extras.getHiddenPrice()).toFixed(2),
-            'Net Profit should be equal to Gross Profit - Hidden Costs'
+            'Net Profit should be equal to Gross Profit - Hidden Costs',
         );
 
         //  Individual price calculation functions should match with `total_prices`
@@ -250,18 +251,18 @@ test('Prices tests', function () {
         equal(total_prices.subtotal, current_quote.getSubtotalPrice(), 'getSubtotalPrice result should match total_prices.subtotal');
 
         // Total Profit should be the same as profit for all units / extras individually
-        let subtotal_profit_units = _.reduce(current_quote.units.map(function (unit) {
-            return unit.getSubtotalProfit();
-        }), function (memo, item) {
-            return memo + item;
-        }, 0);
-        let subtotal_profit_extras = _.reduce(_.map(current_quote.extras.getRegularItems(), function (unit) {
-            return unit.getSubtotalProfit();
-        }), function (memo, item) {
-            return memo + item;
-        }, 0);
-        let hidden_cost = current_quote.extras.getHiddenPrice();
-        let combined_profit = subtotal_profit_units + subtotal_profit_extras - hidden_cost;
+        const subtotal_profit_units = _.reduce(
+            current_quote.units.map(unit => unit.getSubtotalProfit()),
+            (memo, item) => memo + item,
+            0,
+        );
+        const subtotal_profit_extras = _.reduce(
+            _.map(current_quote.extras.getRegularItems(), unit => unit.getSubtotalProfit()),
+            (memo, item) => memo + item,
+            0,
+        );
+        const hidden_cost = current_quote.extras.getHiddenPrice();
+        const combined_profit = (subtotal_profit_units + subtotal_profit_extras) - hidden_cost;
 
         equal(total_prices.net_profit.toFixed(2), combined_profit.toFixed(2), 'total_prices.net_profit should match combined profit for units & extras');
     });
@@ -269,19 +270,10 @@ test('Prices tests', function () {
     //  ------------------------------------------------------------------------
     //  Test that estimated cost for a unit is calculated properly
     //  ------------------------------------------------------------------------
-    test('estimated unit cost', function () {
-        let unit;
-        let root_id;
-        let full_root;
-        let top_section;
-        let bottom_section;
-        let sections_list;
-        let estimated_list;
-        let pricing_grids;
-
-        unit = new Unit({
+    test('estimated unit cost', () => {
+        const unit = new Unit({
             width: 62,
-            height: 96
+            height: 96,
         });
 
         unit.profile = new Profile({
@@ -290,60 +282,60 @@ test('Prices tests', function () {
             sash_frame_width: 82,
             sash_frame_overlap: 34,
             sash_mullion_overlap: 34,
-            pricing_scheme: 'PRICING_GRIDS'
+            pricing_scheme: 'PRICING_GRIDS',
         });
 
-        pricing_grids = unit.profile.get('pricing_grids');
+        let pricing_grids = unit.profile.get('pricing_grids');
 
         //  Check that areas of default pricing grid tiers are calculated properly
         equal(
             m.square_meters(
                 pricing_grids.getByName('fixed').get('data').at(0).get('width'),
-                pricing_grids.getByName('fixed').get('data').at(0).get('height')
+                pricing_grids.getByName('fixed').get('data').at(0).get('height'),
             ).toFixed(2),
             '0.25',
-            'Fixed small tier area is expected to be 0.25'
+            'Fixed small tier area is expected to be 0.25',
         );
         equal(
             m.square_meters(
                 pricing_grids.getByName('fixed').get('data').at(1).get('width'),
-                pricing_grids.getByName('fixed').get('data').at(1).get('height')
+                pricing_grids.getByName('fixed').get('data').at(1).get('height'),
             ).toFixed(2),
             '1.38',
-            'Fixed medium tier area is expected to be 1.38'
+            'Fixed medium tier area is expected to be 1.38',
         );
         equal(
             m.square_meters(
                 pricing_grids.getByName('fixed').get('data').at(2).get('width'),
-                pricing_grids.getByName('fixed').get('data').at(2).get('height')
+                pricing_grids.getByName('fixed').get('data').at(2).get('height'),
             ).toFixed(2),
             '7.20',
-            'Fixed large tier area is expected to be 7.20'
+            'Fixed large tier area is expected to be 7.20',
         );
 
         equal(
             m.square_meters(
                 pricing_grids.getByName('operable').get('data').at(0).get('width'),
-                pricing_grids.getByName('operable').get('data').at(0).get('height')
+                pricing_grids.getByName('operable').get('data').at(0).get('height'),
             ).toFixed(2),
             '0.25',
-            'Operable small tier area is expected to be 0.25'
+            'Operable small tier area is expected to be 0.25',
         );
         equal(
             m.square_meters(
                 pricing_grids.getByName('operable').get('data').at(1).get('width'),
-                pricing_grids.getByName('operable').get('data').at(1).get('height')
+                pricing_grids.getByName('operable').get('data').at(1).get('height'),
             ).toFixed(2),
             '1.38',
-            'Operable medium tier area is expected to be 1.38'
+            'Operable medium tier area is expected to be 1.38',
         );
         equal(
             m.square_meters(
                 pricing_grids.getByName('operable').get('data').at(2).get('width'),
-                pricing_grids.getByName('operable').get('data').at(2).get('height')
+                pricing_grids.getByName('operable').get('data').at(2).get('height'),
             ).toFixed(2),
             '2.88',
-            'Operable large tier area is expected to be 2.88'
+            'Operable large tier area is expected to be 2.88',
         );
 
         unit.profile.get('pricing_grids').set([
@@ -353,19 +345,19 @@ test('Prices tests', function () {
                     {
                         height: 500,
                         width: 500,
-                        value: 100
+                        value: 100,
                     },
                     {
                         height: 914,
                         width: 1514,
-                        value: 150
+                        value: 150,
                     },
                     {
                         height: 2400,
                         width: 3000,
-                        value: 300
-                    }
-                ]
+                        value: 300,
+                    },
+                ],
             },
             {
                 name: 'operable',
@@ -373,33 +365,33 @@ test('Prices tests', function () {
                     {
                         height: 500,
                         width: 500,
-                        value: 120
+                        value: 120,
                     },
                     {
                         width: 1514,
                         height: 914,
-                        value: 180
+                        value: 180,
                     },
                     {
                         height: 1200,
                         width: 2400,
-                        value: 350
-                    }
-                ]
-            }
-        ], {parse: true});
+                        value: 350,
+                    },
+                ],
+            },
+        ], { parse: true });
 
-        root_id = unit.get('root_section').id;
+        const root_id = unit.get('root_section').id;
         unit.splitSection(root_id, 'horizontal');
-        full_root = unit.generateFullRoot();
+        const full_root = unit.generateFullRoot();
 
-        top_section = full_root.sections[0];
-        bottom_section = full_root.sections[1];
+        const top_section = full_root.sections[0];
+        const bottom_section = full_root.sections[1];
 
         unit.setSectionSashType(top_section.id, 'fixed_in_sash');
         unit.setSectionSashType(bottom_section.id, 'fixed_in_sash');
 
-        sections_list = unit.getFixedAndOperableSectionsList();
+        const sections_list = unit.getFixedAndOperableSectionsList();
 
         //  Areas should be calculated properly
         equal(m.square_meters(sections_list[0].width, sections_list[0].height).toFixed(2), '1.92', 'First section area is expected to be 1.92');
@@ -410,57 +402,57 @@ test('Prices tests', function () {
         equal(sections_list[1].type, 'fixed', 'Second section type is expected to be fixed');
 
         pricing_grids = unit.profile.get('pricing_grids');
-        estimated_list = unit.getSectionsListWithEstimatedCost();
+        const estimated_list = unit.getSectionsListWithEstimatedCost();
 
         //  Areas of pricing grid tiers should be calculated properly
         equal(
             m.square_meters(
                 pricing_grids.getByName('fixed').get('data').at(0).get('width'),
-                pricing_grids.getByName('fixed').get('data').at(0).get('height')
+                pricing_grids.getByName('fixed').get('data').at(0).get('height'),
             ).toFixed(2),
             '0.25',
-            'Fixed small tier area is expected to be 0.25'
+            'Fixed small tier area is expected to be 0.25',
         );
         equal(
             m.square_meters(
                 pricing_grids.getByName('fixed').get('data').at(1).get('width'),
-                pricing_grids.getByName('fixed').get('data').at(1).get('height')
+                pricing_grids.getByName('fixed').get('data').at(1).get('height'),
             ).toFixed(2),
             '1.38',
-            'Fixed medium tier area is expected to be 1.38'
+            'Fixed medium tier area is expected to be 1.38',
         );
         equal(
             m.square_meters(
                 pricing_grids.getByName('fixed').get('data').at(2).get('width'),
-                pricing_grids.getByName('fixed').get('data').at(2).get('height')
+                pricing_grids.getByName('fixed').get('data').at(2).get('height'),
             ).toFixed(2),
             '7.20',
-            'Fixed large tier area is expected to be 7.20'
+            'Fixed large tier area is expected to be 7.20',
         );
 
         equal(
             m.square_meters(
                 pricing_grids.getByName('operable').get('data').at(0).get('width'),
-                pricing_grids.getByName('operable').get('data').at(0).get('height')
+                pricing_grids.getByName('operable').get('data').at(0).get('height'),
             ).toFixed(2),
             '0.25',
-            'Operable small tier area is expected to be 0.25'
+            'Operable small tier area is expected to be 0.25',
         );
         equal(
             m.square_meters(
                 pricing_grids.getByName('operable').get('data').at(1).get('width'),
-                pricing_grids.getByName('operable').get('data').at(1).get('height')
+                pricing_grids.getByName('operable').get('data').at(1).get('height'),
             ).toFixed(2),
             '1.38',
-            'Operable medium tier area is expected to be 1.38'
+            'Operable medium tier area is expected to be 1.38',
         );
         equal(
             m.square_meters(
                 pricing_grids.getByName('operable').get('data').at(2).get('width'),
-                pricing_grids.getByName('operable').get('data').at(2).get('height')
+                pricing_grids.getByName('operable').get('data').at(2).get('height'),
             ).toFixed(2),
             '2.88',
-            'Operable large tier area is expected to be 2.88'
+            'Operable large tier area is expected to be 2.88',
         );
 
         //  Price per square meter should be calculated properly
@@ -475,7 +467,7 @@ test('Prices tests', function () {
     //  ------------------------------------------------------------------------
     //  Test some estimation-related functions, inc. priced fillings / options
     //  ------------------------------------------------------------------------
-    test('unit getUnitOptionsGroupedByPricingScheme function', function () {
+    test('unit getUnitOptionsGroupedByPricingScheme function', () => {
         after(restoreSettings);
 
         App.settings.dictionaries.reset([
@@ -488,10 +480,10 @@ test('Prices tests', function () {
                         name: 'White Color',
                         id: 5,
                         dictionary_entry_profiles: [
-                            {profile_id: 3}
-                        ]
-                    }
-                ]
+                            { profile_id: 3 },
+                        ],
+                    },
+                ],
             },
             {
                 name: 'Interior Handle',
@@ -502,23 +494,23 @@ test('Prices tests', function () {
                         name: 'White Plastic Handle',
                         id: 7,
                         dictionary_entry_profiles: [
-                            {profile_id: 3},
-                            {profile_id: 6}
-                        ]
-                    }
-                ]
-            }
-        ], {parse: true});
+                            { profile_id: 3 },
+                            { profile_id: 6 },
+                        ],
+                    },
+                ],
+            },
+        ], { parse: true });
 
-        let unit = new Unit({
+        const unit = new Unit({
             width: 62,
-            height: 96
+            height: 96,
         });
 
         unit.profile = new Profile({
             id: 3,
             name: 'Nice and Cool Profile',
-            unit_type: 'Window'
+            unit_type: 'Window',
         });
 
         //  Here we basically assign some default options to our unit
@@ -532,7 +524,7 @@ test('Prices tests', function () {
         equal(
             grouped_options.PRICING_GRIDS[0].dictionary_name,
             'Interior Finish',
-            'The option inside PRICING_GRIDS group is from Interior Finish dictionary'
+            'The option inside PRICING_GRIDS group is from Interior Finish dictionary',
         );
         deepEqual(
             grouped_options.PER_ITEM[0],
@@ -541,13 +533,13 @@ test('Prices tests', function () {
                 option_name: 'White Plastic Handle',
                 pricing_data: {
                     scheme: 'PER_ITEM',
-                    cost_per_item: 0
+                    cost_per_item: 0,
                 },
                 has_quantity: true,
                 is_hidden: false,
-                quantity: 1
+                quantity: 1,
             },
-            'The option inside PER_ITEM group matches the expected data'
+            'The option inside PER_ITEM group matches the expected data',
         );
 
         //  Now we want to restrict one dictionary to DOOR_ONLY and see if this
@@ -560,7 +552,7 @@ test('Prices tests', function () {
     });
 
 
-    test('unit getSectionsListWithEstimatedCost, getEstimatedUnitCost functions', function () {
+    test('unit getSectionsListWithEstimatedCost, getEstimatedUnitCost functions', () => {
         after(restoreSettings);
 
         App.settings.dictionaries.reset([
@@ -579,24 +571,24 @@ test('Prices tests', function () {
                                     {
                                         name: 'fixed',
                                         data: [
-                                            {height: 500, width: 500, value: 15},
-                                            {height: 914, width: 1514, value: 14},
-                                            {height: 2400, width: 3000, value: 11}
-                                        ]
+                                            { height: 500, width: 500, value: 15 },
+                                            { height: 914, width: 1514, value: 14 },
+                                            { height: 2400, width: 3000, value: 11 },
+                                        ],
                                     },
                                     {
                                         name: 'operable',
                                         data: [
-                                            {height: 500, width: 500, value: 13},
-                                            {height: 914, width: 1514, value: 12},
-                                            {height: 1200, width: 2400, value: 10}
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
+                                            { height: 500, width: 500, value: 13 },
+                                            { height: 914, width: 1514, value: 12 },
+                                            { height: 1200, width: 2400, value: 10 },
+                                        ],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
             },
             {
                 name: 'Interior Handle',
@@ -607,13 +599,13 @@ test('Prices tests', function () {
                         name: 'White Plastic Handle',
                         id: 7,
                         dictionary_entry_profiles: [
-                            {profile_id: 3, cost_per_item: 14},
-                            {profile_id: 6}
-                        ]
-                    }
-                ]
-            }
-        ], {parse: true});
+                            { profile_id: 3, cost_per_item: 14 },
+                            { profile_id: 6 },
+                        ],
+                    },
+                ],
+            },
+        ], { parse: true });
 
         App.settings.filling_types.reset([
             {
@@ -627,29 +619,29 @@ test('Prices tests', function () {
                             {
                                 name: 'fixed',
                                 data: [
-                                    {height: 500, width: 500, value: 15},
-                                    {height: 914, width: 1514, value: 12},
-                                    {height: 2400, width: 3000, value: 10}
-                                ]
+                                    { height: 500, width: 500, value: 15 },
+                                    { height: 914, width: 1514, value: 12 },
+                                    { height: 2400, width: 3000, value: 10 },
+                                ],
                             },
                             {
                                 name: 'operable',
                                 data: [
-                                    {height: 500, width: 500, value: 11},
-                                    {height: 914, width: 1514, value: 10},
-                                    {height: 1200, width: 2400, value: 8}
-                                ]
-                            }
-                        ]
-                    }
+                                    { height: 500, width: 500, value: 11 },
+                                    { height: 914, width: 1514, value: 10 },
+                                    { height: 1200, width: 2400, value: 8 },
+                                ],
+                            },
+                        ],
+                    },
                 ],
-                pricing_scheme: 'PRICING_GRIDS'
-            }
-        ], {parse: true});
+                pricing_scheme: 'PRICING_GRIDS',
+            },
+        ], { parse: true });
 
-        let unit = new Unit({
+        const unit = new Unit({
             width: 62,
-            height: 96
+            height: 96,
         });
 
         unit.profile = new Profile({
@@ -661,31 +653,31 @@ test('Prices tests', function () {
                 {
                     name: 'fixed',
                     data: [
-                        {height: 500, width: 500, value: 50},
-                        {height: 914, width: 1514, value: 45},
-                        {height: 2400, width: 3000, value: 40}
-                    ]
+                        { height: 500, width: 500, value: 50 },
+                        { height: 914, width: 1514, value: 45 },
+                        { height: 2400, width: 3000, value: 40 },
+                    ],
                 },
                 {
                     name: 'operable',
                     data: [
-                        {height: 500, width: 500, value: 70},
-                        {height: 914, width: 1514, value: 65},
-                        {height: 1200, width: 2400, value: 60}
-                    ]
-                }
-            ]
-        }, {parse: true});
+                        { height: 500, width: 500, value: 70 },
+                        { height: 914, width: 1514, value: 65 },
+                        { height: 1200, width: 2400, value: 60 },
+                    ],
+                },
+            ],
+        }, { parse: true });
 
         unit.validateUnitOptions();
         unit.setFillingType(
             unit.get('root_section').id,
             App.settings.filling_types.at(0).get('type'),
-            App.settings.filling_types.at(0).get('name')
+            App.settings.filling_types.at(0).get('name'),
         );
 
-        let sections_list = unit.getSectionsListWithEstimatedCost();
-        let estimated_cost = unit.getEstimatedUnitCost();
+        const sections_list = unit.getSectionsListWithEstimatedCost();
+        const estimated_cost = unit.getEstimatedUnitCost();
 
         //  First section base cost
         equal(sections_list[0].width.toFixed(2), '1574.80', 'Section width is correct');
@@ -707,7 +699,7 @@ test('Prices tests', function () {
         equal(
             sections_list[0].total_cost,
             sections_list[0].base_cost + sections_list[0].filling_cost + sections_list[0].options_cost,
-            'Section total_cost is the combination of base, fillling and options cost'
+            'Section total_cost is the combination of base, fillling and options cost',
         );
 
         //  Unit total cost
@@ -715,7 +707,7 @@ test('Prices tests', function () {
         equal(
             estimated_cost.total,
             estimated_cost.base + estimated_cost.fillings + estimated_cost.options,
-            'Unit total cost is the combination of base, filllings and options cost'
+            'Unit total cost is the combination of base, filllings and options cost',
         );
     });
 });

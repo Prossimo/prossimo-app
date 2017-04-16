@@ -1,26 +1,26 @@
 import _ from 'underscore';
 
 import App from '../../src/main';
-import {convert as c} from '../../src/utils';
+import { convert as c } from '../../src/utils';
 import Unit from '../../src/core/models/unit';
 import Profile from '../../src/core/models/profile';
 
 App.session.set('no_backend', true);
 App.getChannel().trigger('app:start');
 
-describe('Unit model tests: ', function () {
-    describe('unit basic tests', function () {
-        let unit = new Unit({
+describe('Unit model tests: ', () => {
+    describe('unit basic tests', () => {
+        const unit = new Unit({
             width: c.mm_to_inches(1000),
-            height: c.mm_to_inches(2000)
+            height: c.mm_to_inches(2000),
         });
 
         ok(unit.get('width'), 'width should be defined');
         ok(unit.get('height'), 'height should be defined');
     });
 
-    describe('default attributes', function () {
-        let unit = new Unit();
+    describe('default attributes', () => {
+        const unit = new Unit();
 
         ok(unit.hasOnlyDefaultAttributes(), 'Unit has only default attributes upon creation');
 
@@ -28,37 +28,37 @@ describe('Unit model tests: ', function () {
         notOk(unit.hasOnlyDefaultAttributes(), 'Unit has non-default attributes after calling set()');
     });
 
-    describe('split by two parts', function () {
-        let unit = new Unit({
+    describe('split by two parts', () => {
+        const unit = new Unit({
             width: c.mm_to_inches(1000),
-            height: c.mm_to_inches(2000)
+            height: c.mm_to_inches(2000),
         });
 
         unit.profile = new Profile({
             frame_width: 10,
-            mullion_width: 20
+            mullion_width: 20,
         });
-        let id = unit.get('root_section').id;
+        const id = unit.get('root_section').id;
 
         unit.splitSection(id, 'vertical');
-        let rootSection = unit.generateFullRoot();
-        let leftSection = rootSection.sections[0].openingParams;
+        const rootSection = unit.generateFullRoot();
+        const leftSection = rootSection.sections[0].openingParams;
 
         equal(leftSection.x, unit.profile.get('frame_width'));
         equal(leftSection.y, unit.profile.get('frame_width'));
-        equal(leftSection.width, 500 - 10 - 20 / 2);
-        equal(leftSection.height, 2000 - 10 * 2);
+        equal(leftSection.width, 500 - 10 - (20 / 2));
+        equal(leftSection.height, 2000 - (10 * 2));
     });
 
-    describe('split by 3 parts', function () {
-        let unit = new Unit({
+    describe('split by 3 parts', () => {
+        const unit = new Unit({
             width: c.mm_to_inches(1000),
-            height: c.mm_to_inches(2000)
+            height: c.mm_to_inches(2000),
         });
 
         unit.profile = new Profile({
             frame_width: 10,
-            mullion_width: 20
+            mullion_width: 20,
         });
         let id = unit.get('root_section').id;
 
@@ -66,31 +66,31 @@ describe('Unit model tests: ', function () {
 
         id = unit.get('root_section').sections[0].id;
         unit.splitSection(id, 'vertical');
-        let rootSection = unit.generateFullRoot();
-        let leftSection = rootSection.sections[0].sections[0].openingParams;
+        const rootSection = unit.generateFullRoot();
+        const leftSection = rootSection.sections[0].sections[0].openingParams;
 
         equal(leftSection.x, unit.profile.get('frame_width'));
         equal(leftSection.y, unit.profile.get('frame_width'));
-        equal(leftSection.width, (500 - 10 - 20 / 2) / 2 - 20 / 2);
-        equal(leftSection.height, 2000 - 10 * 2);
+        equal(leftSection.width, ((500 - 10 - (20 / 2)) / 2) - (20 / 2));
+        equal(leftSection.height, 2000 - (10 * 2));
     });
 
-    describe('find sash border offsets', function () {
-        let unit = new Unit({
+    describe('find sash border offsets', () => {
+        const unit = new Unit({
             width: c.mm_to_inches(1000),
-            height: c.mm_to_inches(2000)
+            height: c.mm_to_inches(2000),
         });
 
         unit.profile = new Profile({
             frame_width: 10,
-            mullion_width: 20
+            mullion_width: 20,
         });
         // split by 2 parts
-        let id = unit.get('root_section').id;
+        const id = unit.get('root_section').id;
 
         unit.splitSection(id, 'vertical');
         let rootSection = unit.generateFullRoot();
-        let leftSection = rootSection.sections[0];
+        const leftSection = rootSection.sections[0];
 
         equal(leftSection.mullionEdges.right, 'vertical');
         equal(leftSection.mullionEdges.left, undefined);
@@ -98,12 +98,12 @@ describe('Unit model tests: ', function () {
         equal(leftSection.mullionEdges.bottom, undefined);
 
         // split by 3 parts
-        let rightSection = rootSection.sections[1];
+        const rightSection = rootSection.sections[1];
 
         unit.splitSection(rightSection.id, 'horizontal');
         rootSection = unit.generateFullRoot();
-        let topSection = rootSection.sections[1].sections[0];
-        let bottomSection = rootSection.sections[1].sections[1];
+        const topSection = rootSection.sections[1].sections[0];
+        const bottomSection = rootSection.sections[1].sections[1];
 
         equal(topSection.mullionEdges.right, undefined);
         equal(topSection.mullionEdges.left, 'vertical');
@@ -116,31 +116,29 @@ describe('Unit model tests: ', function () {
         equal(bottomSection.mullionEdges.bottom, undefined);
     });
 
-    describe('Size calculations for Unit #010 from 377 E 10th project', function () {
+    describe('Size calculations for Unit #010 from 377 E 10th project', () => {
         //  We use values in mms because that's what was used in the reference project.
         //  If we use values in inches, there's a noticeable margin of error
-        let sash_list;
-        let unit_sizes;
-        let unit = new Unit({
+        const unit = new Unit({
             width: c.mm_to_inches(1067),
-            height: c.mm_to_inches(1194)
+            height: c.mm_to_inches(1194),
         });
 
         unit.profile = new Profile({
             frame_width: 70,
-            mullion_width: 92
+            mullion_width: 92,
         });
 
-        let target_sizes = {
+        const target_sizes = {
             glasses: [
                 {
                     width: 927,
-                    height: 1054
-                }
-            ]
+                    height: 1054,
+                },
+            ],
         };
 
-        unit_sizes = unit.getSizes();
+        const unit_sizes = unit.getSizes();
 
         //  Frame
         equal(1067, unit_sizes.frame.width, 'Unit width equals calculated width');
@@ -152,7 +150,7 @@ describe('Unit model tests: ', function () {
         equal(target_sizes.glasses[0].height, unit_sizes.glasses[0].height, 'Glass 1 height equals calculated height');
 
         //  Check that list of sashes is correct
-        sash_list = unit.getSashList();
+        const sash_list = unit.getSashList();
 
         equal(sash_list.length, 1, 'The number of sashes is expected to be 1');
         equal(sash_list[0].type, 'Fixed', 'Sash type is expected to be Fixed');
@@ -161,18 +159,17 @@ describe('Unit model tests: ', function () {
         equal(sash_list[0].filling.height, target_sizes.glasses[0].height, 'Sash filling height equals Glass 1 height');
     });
 
-    describe('Size calculations for Unit #001 from 377 E 10th project', function () {
+    describe('Size calculations for Unit #001 from 377 E 10th project', () => {
         //  We use values in mms because that's what was used in the reference project.
         //  1 millimeter difference is possible
-        let margin_of_error = 1;
+        const margin_of_error = 1;
         let unit_sizes;
         let unit_size_stats;
-        let sash_list;
 
-        let unit = new Unit({
+        const unit = new Unit({
             width: c.mm_to_inches(1676),
             height: c.mm_to_inches(2083),
-            glazing_bar_width: 12
+            glazing_bar_width: 12,
         });
 
         unit.profile = new Profile({
@@ -180,51 +177,49 @@ describe('Unit model tests: ', function () {
             mullion_width: 92,
             sash_frame_width: 82,
             sash_frame_overlap: 34,
-            sash_mullion_overlap: 34
+            sash_mullion_overlap: 34,
         });
 
-        let target_sizes = {
+        const target_sizes = {
             glasses: [
                 {
                     width: 626,
-                    height: 1299
+                    height: 1299,
                 },
                 {
                     width: 626,
-                    height: 360
+                    height: 360,
                 },
                 {
                     width: 722,
-                    height: 1395
+                    height: 1395,
                 },
                 {
                     width: 722,
-                    height: 455
-                }
+                    height: 455,
+                },
             ],
             sashes: [
                 {
                     width: 790,
-                    height: 1463
+                    height: 1463,
                 },
                 {
                     width: 790,
-                    height: 524
-                }
-            ]
+                    height: 524,
+                },
+            ],
         };
 
-        let root_id = unit.get('root_section').id;
+        const root_id = unit.get('root_section').id;
         let full_root = unit.generateFullRoot();
 
         unit_sizes = unit.getSizes();
 
-        let converted_height_in_mm = c.inches_to_mm(unit.get('height'));
-        let converted_width_in_mm = c.inches_to_mm(unit.get('width'));
-        let calculated_height_in_mm = full_root.sashParams.height +
-            2 * full_root.sashParams.x;
-        let calculated_width_in_mm = full_root.sashParams.width +
-            2 * full_root.sashParams.y;
+        const converted_height_in_mm = c.inches_to_mm(unit.get('height'));
+        const converted_width_in_mm = c.inches_to_mm(unit.get('width'));
+        const calculated_height_in_mm = full_root.sashParams.height + (2 * full_root.sashParams.x);
+        const calculated_width_in_mm = full_root.sashParams.width + (2 * full_root.sashParams.y);
 
         //  Frame sizes
         equal(converted_height_in_mm, calculated_height_in_mm, 'Converted height equals calculated height');
@@ -237,8 +232,8 @@ describe('Unit model tests: ', function () {
         unit.setSectionMullionPosition(root_id, 838);
         full_root = unit.generateFullRoot();
 
-        let left_section = full_root.sections[0];
-        let right_section = full_root.sections[1];
+        const left_section = full_root.sections[0];
+        const right_section = full_root.sections[1];
 
         //  Split left and right sections as well
         unit.splitSection(left_section.id, 'horizontal');
@@ -260,8 +255,8 @@ describe('Unit model tests: ', function () {
             true, 'Glass 2 height equals calculated height');
 
         //  Add proper sash types
-        let top_right_section = full_root.sections[1].sections[0];
-        let bottom_right_section = full_root.sections[1].sections[1];
+        const top_right_section = full_root.sections[1].sections[0];
+        const bottom_right_section = full_root.sections[1].sections[1];
 
         unit.setSectionSashType(top_right_section.id, 'tilt_turn_right');
         unit.setSectionSashType(bottom_right_section.id, 'turn_only_right');
@@ -299,7 +294,7 @@ describe('Unit model tests: ', function () {
         equal(unit_sizes.mullions[2].type, 'vertical', 'Mullion 3 type is correct');
 
         //  Check that list of sashes is correct
-        sash_list = unit.getSashList();
+        const sash_list = unit.getSashList();
 
         equal(sash_list.length, 4, 'The number of sashes is expected to be 4');
         equal(sash_list[0].type, 'Tilt-turn Right Hinge', 'Sash type is expected to be Tilt-turn Right Hinge');
@@ -344,32 +339,31 @@ describe('Unit model tests: ', function () {
         unit.setSectionBars(bottom_right_section.id, {
             vertical: [
                 { position: 100 },
-                { position: 200 }
+                { position: 200 },
             ],
             horizontal: [
                 { position: 100 },
-                { position: 200 }
-            ]
+                { position: 200 },
+            ],
         });
 
         unit_size_stats = unit.getLinearAndAreaStats();
 
         equal(unit_size_stats.glazing_bars.linear, 1971.4, 'Unit glazing bar linear');
-        equal(unit_size_stats.glazing_bars.linear_without_intersections, 1923.4,
-            'Unit glazing bar linear without intersections');
+        equal(unit_size_stats.glazing_bars.linear_without_intersections, 1923.4, 'Unit glazing bar linear without intersections');
         equal(unit_size_stats.glazing_bars.area.toFixed(7), '0.0236568', 'Unit glazing bar area');
         equal(unit_size_stats.glazing_bars.area_both_sides.toFixed(7), `${0.0236568 * 2}`, 'Unit glazing bar area for both sides');
     });
 
-    describe('Size calculations for Unit #013 from 377 E 10th project', function () {
+    describe('Size calculations for Unit #013 from 377 E 10th project', () => {
         //  We use values in mms because that's what was used in the reference project.
         //  1 millimeter difference is possible
-        let margin_of_error = 1;
+        const margin_of_error = 1;
         let sash_list;
 
-        let unit = new Unit({
+        const unit = new Unit({
             width: c.mm_to_inches(711),
-            height: c.mm_to_inches(1880)
+            height: c.mm_to_inches(1880),
         });
 
         unit.profile = new Profile({
@@ -377,43 +371,43 @@ describe('Unit model tests: ', function () {
             mullion_width: 92,
             sash_frame_width: 82,
             sash_frame_overlap: 34,
-            sash_mullion_overlap: 34
+            sash_mullion_overlap: 34,
         });
 
-        let target_sizes = {
+        const target_sizes = {
             glasses: [
                 {
                     width: 475,
-                    height: 360
+                    height: 360,
                 },
                 {
                     width: 475,
-                    height: 1096
-                }
+                    height: 1096,
+                },
             ],
             sashes: [
                 {
                     width: 639,
-                    height: 524
+                    height: 524,
                 },
                 {
                     width: 639,
-                    height: 1260
-                }
-            ]
+                    height: 1260,
+                },
+            ],
         };
 
-        let root_id = unit.get('root_section').id;
+        const root_id = unit.get('root_section').id;
 
         //  Now split sections as in the reference unit
         unit.splitSection(root_id, 'horizontal');
         unit.setSectionMullionPosition(root_id, 1308);
 
-        let full_root = unit.generateFullRoot();
+        const full_root = unit.generateFullRoot();
 
         //  Add proper sash types
-        let top_section = full_root.sections[0];
-        let bottom_section = full_root.sections[1];
+        const top_section = full_root.sections[0];
+        const bottom_section = full_root.sections[1];
 
         unit.setSectionSashType(top_section.id, 'tilt_turn_left');
         unit.setSectionSashType(bottom_section.id, 'turn_only_left');
@@ -488,15 +482,10 @@ describe('Unit model tests: ', function () {
     //  ------------------------------------------------------------------------
     //  Size calculations for unit with threshold (bugfix test case)
     //  ------------------------------------------------------------------------
-    describe('Size calculations for unit with threshold (bugfix test case)', function () {
-        let unit;
-        let full_root;
-        let root_id;
-        let estimated_list;
-
-        unit = new Unit({
+    describe('Size calculations for unit with threshold (bugfix test case)', () => {
+        const unit = new Unit({
             width: 41,
-            height: 78
+            height: 78,
         });
 
         unit.profile = new Profile({
@@ -506,13 +495,13 @@ describe('Unit model tests: ', function () {
             sash_frame_overlap: 36,
             sash_mullion_overlap: 14,
             low_threshold: true,
-            unit_type: 'Patio Door'
+            unit_type: 'Patio Door',
         });
 
-        full_root = unit.generateFullRoot();
-        root_id = full_root.id;
+        const full_root = unit.generateFullRoot();
+        const root_id = full_root.id;
         unit.setSectionSashType(root_id, 'tilt_only');
-        estimated_list = unit.getSectionsListWithEstimatedCost();
+        const estimated_list = unit.getSectionsListWithEstimatedCost();
 
         equal(estimated_list[0].height.toFixed(2), '1981.20', 'Section height');
         equal(estimated_list[0].width.toFixed(2), '1041.40', 'Section width');
@@ -522,15 +511,10 @@ describe('Unit model tests: ', function () {
     //  Clear opening size calculations - bugfix test case for
     //  https://github.com/prossimo-ben/prossimo-app/issues/181
     //  ------------------------------------------------------------------------
-    describe('Clear opening size calculations (bugfix test case)', function () {
-        let unit;
-        let full_root;
-        let root_id;
-        let sash_list;
-
-        unit = new Unit({
-            width: 2 * 12 + 10,     //  864 mm
-            height: 6 * 12          //  1829 mm
+    describe('Clear opening size calculations (bugfix test case)', () => {
+        const unit = new Unit({
+            width: (2 * 12) + 10,   //  864 mm
+            height: 6 * 12,         //  1829 mm
         });
 
         unit.profile = new Profile({
@@ -539,16 +523,16 @@ describe('Unit model tests: ', function () {
             sash_frame_width: 82,
             sash_frame_overlap: 34,
             sash_mullion_overlap: 12,
-            unit_type: 'Window'
+            unit_type: 'Window',
         });
 
-        full_root = unit.generateFullRoot();
-        root_id = full_root.id;
+        const full_root = unit.generateFullRoot();
+        const root_id = full_root.id;
         unit.setSectionSashType(root_id, 'tilt_turn_right');
-        sash_list = unit.getSashList();
+        const sash_list = unit.getSashList();
 
-        equal(sash_list[0].opening.height.toFixed(), (1829 - 70 * 2).toFixed(), 'Section height');
-        equal(sash_list[0].opening.width.toFixed(), (864 - 70 * 2).toFixed(), 'Section width');
+        equal(sash_list[0].opening.height.toFixed(), (1829 - (70 * 2)).toFixed(), 'Section height');
+        equal(sash_list[0].opening.width.toFixed(), (864 - (70 * 2)).toFixed(), 'Section width');
     });
 
     //  ------------------------------------------------------------------------
@@ -556,19 +540,10 @@ describe('Unit model tests: ', function () {
     //  https://github.com/prossimo-ben/prossimo-app/issues/181
     //  This was calculated by hand. Unit is similar to #001 from 377 E 10th
     //  ------------------------------------------------------------------------
-    describe('Clear opening size calculations (bugfix test case #2)', function () {
-        let unit;
-        let full_root;
-        let root_id;
-        let sash_list;
-        let left_section;
-        let right_section;
-        let top_right_section;
-        let bottom_right_section;
-
-        unit = new Unit({
-            width: 5 * 12 + 6,      //  1676 mm
-            height: 6 * 12 + 10     //  2083 mm
+    describe('Clear opening size calculations (bugfix test case #2)', () => {
+        const unit = new Unit({
+            width: (5 * 12) + 6,        //  1676 mm
+            height: (6 * 12) + 10,      //  2083 mm
         });
 
         unit.profile = new Profile({
@@ -577,18 +552,18 @@ describe('Unit model tests: ', function () {
             sash_frame_width: 82,
             sash_frame_overlap: 34,
             sash_mullion_overlap: 12,
-            unit_type: 'Window'
+            unit_type: 'Window',
         });
 
-        full_root = unit.generateFullRoot();
-        root_id = full_root.id;
+        let full_root = unit.generateFullRoot();
+        const root_id = full_root.id;
 
         //  Now split sections as in the reference unit
         unit.splitSection(root_id, 'vertical');
         unit.setSectionMullionPosition(root_id, 838);
         full_root = unit.generateFullRoot();
-        left_section = full_root.sections[0];
-        right_section = full_root.sections[1];
+        const left_section = full_root.sections[0];
+        const right_section = full_root.sections[1];
 
         //  Split left and right sections as well
         unit.splitSection(left_section.id, 'horizontal');
@@ -598,12 +573,12 @@ describe('Unit model tests: ', function () {
         full_root = unit.generateFullRoot();
 
         //  Add proper sash types
-        top_right_section = full_root.sections[1].sections[0];
-        bottom_right_section = full_root.sections[1].sections[1];
+        const top_right_section = full_root.sections[1].sections[0];
+        const bottom_right_section = full_root.sections[1].sections[1];
         unit.setSectionSashType(top_right_section.id, 'tilt_turn_right');
         unit.setSectionSashType(bottom_right_section.id, 'turn_only_right');
 
-        sash_list = unit.getSashList();
+        const sash_list = unit.getSashList();
 
         //  Openings
         equal(sash_list[0].opening.height.toFixed(), '1395', 'Section 1 opening height');
@@ -618,48 +593,44 @@ describe('Unit model tests: ', function () {
         equal(sash_list[1].sash_frame.width.toFixed(), (722 + 34 + 12).toFixed(), 'Section 2 sash frame width');
 
         //  Fillings (glass sizes)
-        equal(sash_list[0].filling.height.toFixed(), (1395 + 34 + 12 - 82 * 2).toFixed(), 'Section 1 glass height');
-        equal(sash_list[0].filling.width.toFixed(), (722 + 34 + 12 - 82 * 2).toFixed(), 'Section 1 glass width');
-        equal(sash_list[1].filling.height.toFixed(), (455 + 34 + 12 - 82 * 2).toFixed(), 'Section 2 glass height');
-        equal(sash_list[1].filling.width.toFixed(), (722 + 34 + 12 - 82 * 2).toFixed(), 'Section 2 glass width');
+        equal(sash_list[0].filling.height.toFixed(), ((1395 + 34 + 12) - (82 * 2)).toFixed(), 'Section 1 glass height');
+        equal(sash_list[0].filling.width.toFixed(), ((722 + 34 + 12) - (82 * 2)).toFixed(), 'Section 1 glass width');
+        equal(sash_list[1].filling.height.toFixed(), ((455 + 34 + 12) - (82 * 2)).toFixed(), 'Section 2 glass height');
+        equal(sash_list[1].filling.width.toFixed(), ((722 + 34 + 12) - (82 * 2)).toFixed(), 'Section 2 glass width');
         equal(sash_list[2].filling.height.toFixed(), '1395', 'Section 3 glass height');
         equal(sash_list[2].filling.width.toFixed(), '722', 'Section 3 glass width');
         equal(sash_list[3].filling.height.toFixed(), '455', 'Section 4 glass height');
         equal(sash_list[3].filling.width.toFixed(), '722', 'Section 4 glass width');
     });
 
-    describe('hasOperableSections function', function () {
-        let unit_1;
-        let unit_2;
+    describe('hasOperableSections function', () => {
         let full_root;
-        let root_id;
-        let profile;
         let target_section;
 
-        profile = new Profile({
+        const profile = new Profile({
             frame_width: 70,
             mullion_width: 92,
             sash_frame_width: 82,
             sash_frame_overlap: 34,
             sash_mullion_overlap: 12,
-            unit_type: 'Window'
+            unit_type: 'Window',
         });
 
-        unit_1 = new Unit({
-            width: 5 * 12 + 6,
-            height: 6 * 12 + 10
+        const unit_1 = new Unit({
+            width: (5 * 12) + 6,
+            height: (6 * 12) + 10,
         });
 
-        unit_2 = new Unit({
-            width: 8 * 12 + 5,
-            height: 9 * 12 + 2
+        const unit_2 = new Unit({
+            width: (8 * 12) + 5,
+            height: (9 * 12) + 2,
         });
 
         unit_1.profile = profile;
         unit_2.profile = profile;
 
         full_root = unit_2.generateFullRoot();
-        root_id = full_root.id;
+        const root_id = full_root.id;
 
         //  Now split sections as in the reference unit
         unit_2.splitSection(root_id, 'vertical');
@@ -684,8 +655,8 @@ describe('Unit model tests: ', function () {
         equal(unit_2.hasOperableSections(), true, 'Unit 2 is expected to have operable sections');
     });
 
-    describe('getSashName function', function () {
-        let unit = new Unit();
+    describe('getSashName function', () => {
+        const unit = new Unit();
 
         equal(unit.getSashName('tilt_turn_right'), 'Tilt-turn Right Hinge',
             'Name for tilt_turn_right type in normal hinges mode');
@@ -702,15 +673,12 @@ describe('Unit model tests: ', function () {
     //  Total daylight calculations for sections of an operable sash:
     //  https://github.com/prossimo-ben/prossimo-app/issues/126
     //  ------------------------------------------------------------------------
-    describe('Total daylight calculations for sections of an operable sash', function () {
-        let unit;
-        let full_root;
-        let root_id;
+    describe('Total daylight calculations for sections of an operable sash', () => {
         let sash_list;
 
-        unit = new Unit({
-            width: 8 * 12 + 6,      //  2591 mm
-            height: 6 * 12 + 8      //  2032 mm
+        const unit = new Unit({
+            width: (8 * 12) + 6,    //  2591 mm
+            height: (6 * 12) + 8,   //  2032 mm
         });
 
         unit.profile = new Profile({
@@ -719,11 +687,11 @@ describe('Unit model tests: ', function () {
             sash_frame_width: 82,
             sash_frame_overlap: 34,
             sash_mullion_overlap: 12,
-            unit_type: 'Window'
+            unit_type: 'Window',
         });
 
-        full_root = unit.generateFullRoot();
-        root_id = full_root.id;
+        const full_root = unit.generateFullRoot();
+        const root_id = full_root.id;
         unit.setSectionSashType(root_id, 'tilt_turn_right');
 
         sash_list = unit.getSashList();
@@ -753,42 +721,42 @@ describe('Unit model tests: ', function () {
         equal(sash_list[0].sections[1].filling.height.toFixed(), '852', 'Bottom section glazing height');
     });
 
-    describe('hasGlazingBars function', function () {
-        let unit_1 = new Unit({
-            width: 5 * 12 + 6,
-            height: 6 * 12 + 10
+    describe('hasGlazingBars function', () => {
+        const unit_1 = new Unit({
+            width: (5 * 12) + 6,
+            height: (6 * 12) + 10,
         });
 
-        let unit_2 = new Unit({
-            width: 5 * 12 + 6,
-            height: 6 * 12 + 10
+        const unit_2 = new Unit({
+            width: (5 * 12) + 6,
+            height: (6 * 12) + 10,
         });
 
-        let profile = new Profile({
+        const profile = new Profile({
             frame_width: 70,
             mullion_width: 92,
             sash_frame_width: 82,
             sash_frame_overlap: 34,
             sash_mullion_overlap: 12,
-            unit_type: 'Window'
+            unit_type: 'Window',
         });
 
         unit_1.profile = profile;
         unit_2.profile = profile;
 
-        let root_id = unit_2.generateFullRoot().id;
+        const root_id = unit_2.generateFullRoot().id;
 
         unit_2.setSectionBars(root_id, {
             vertical: [
                 {
-                    position: 300
-                }
+                    position: 300,
+                },
             ],
             horizontal: [
                 {
-                    position: 300
-                }
-            ]
+                    position: 300,
+                },
+            ],
         });
 
         equal(unit_1.hasGlazingBars(), false, 'Unit 1 is not expected to have bars');
@@ -798,17 +766,17 @@ describe('Unit model tests: ', function () {
     //  ------------------------------------------------------------------------
     //  Test sizes for Clear Opening / Egress Clear Opening
     //  ------------------------------------------------------------------------
-    describe('getSashOpeningSize function', function () {
+    describe('getSashOpeningSize function', () => {
         // create default values
-        let unitSizes = {
+        const unitSizes = {
             width: c.mm_to_inches(800),
-            height: c.mm_to_inches(1650)
+            height: c.mm_to_inches(1650),
         };
 
         // set values
-        let unit = new Unit({
+        const unit = new Unit({
             width: unitSizes.width,
-            height: unitSizes.height
+            height: unitSizes.height,
         });
 
         unit.profile = new Profile({
@@ -817,17 +785,17 @@ describe('Unit model tests: ', function () {
             sash_frame_width: 82,
             sash_frame_overlap: 34,
             sash_mullion_overlap: 34,
-            clear_width_deduction: 50
+            clear_width_deduction: 50,
         });
 
         // spit sections and add sash
-        let root_id = unit.get('root_section').id;
+        const root_id = unit.get('root_section').id;
 
         unit.splitSection(root_id, 'horizontal');
         unit.setSectionMullionPosition(root_id, 930);
-        let full_root = unit.generateFullRoot();
-        let top_section = full_root.sections[0];
-        let bottom_section = full_root.sections[1];
+        const full_root = unit.generateFullRoot();
+        const top_section = full_root.sections[0];
+        const bottom_section = full_root.sections[1];
 
         // get sash list
         let sashList = unit.getSashList();
@@ -838,12 +806,12 @@ describe('Unit model tests: ', function () {
         equal(
             unit.getSashOpeningSize(sashList[0].opening, 'egress', sashList[0].original_type),
             undefined,
-            'Top sash (Fixed), egress size'
+            'Top sash (Fixed), egress size',
         );
         equal(
             unit.getSashOpeningSize(sashList[1].opening, 'egress', sashList[1].original_type),
             undefined,
-            'Bottom sash (Fixed), egress size'
+            'Bottom sash (Fixed), egress size',
         );
 
         // set types
@@ -857,64 +825,66 @@ describe('Unit model tests: ', function () {
             {
                 area: 5.782803232273132,
                 height: 32.04724409448819,
-                width: 25.984251968503937
+                width: 25.984251968503937,
             },
-            'Top sash (Tilt Only), normal size (26″ x 32 1/16″ (5.78 ft<sup>2</sup>))'
+            'Top sash (Tilt Only), normal size (26″ x 32 1/16″ (5.78 ft<sup>2</sup>))',
         );
         deepEqual(
             unit.getSashOpeningSize(sashList[1].opening),
             {
                 area: 4.290925248517166,
                 height: 23.77952755905513,
-                width: 25.984251968503937
+                width: 25.984251968503937,
             },
-            'Bottom sash (Tilt-turn Left Hinge), normal size (26″ x 23 3/4″ (4.29 ft<sup>2</sup>))'
+            'Bottom sash (Tilt-turn Left Hinge), normal size (26″ x 23 3/4″ (4.29 ft<sup>2</sup>))',
         );
         equal(
             unit.getSashOpeningSize(sashList[0].opening, 'egress', sashList[0].original_type),
             undefined,
-            'Top sash (Tilt Only), egress size'
+            'Top sash (Tilt Only), egress size',
         );
         deepEqual(
             unit.getSashOpeningSize(sashList[1].opening, 'egress', sashList[1].original_type),
             {
                 area: 3.965855153932532,
                 height: 23.77952755905513,
-                width: 24.015748031496063
+                width: 24.015748031496063,
             },
-            'Bottom sash (Tilt-turn Left Hinge), egress size (24″ x 23 3/4″ (3.97 ft<sup>2</sup>))'
+            'Bottom sash (Tilt-turn Left Hinge), egress size (24″ x 23 3/4″ (3.97 ft<sup>2</sup>))',
         );
     });
 
     //  ------------------------------------------------------------------------
     //  Unit weight estimates
     //  ------------------------------------------------------------------------
-    describe('Unit weight calculations function', function () {
-        let createFilling = function (type, name, weight) {
-            let attrs = { type: type, name: name, weight_per_area: weight };
+    describe('Unit weight calculations function', () => {
+        const createFilling = (type, name, weight) => {
+            const attrs = {
+                type,
+                name,
+                weight_per_area: weight,
+            };
 
             return {
-                get: function (attr) {
-                    return attrs[attr];
-                }
+                get: attr => attrs[attr],
             };
         };
 
         // create default values
-        let unitSizes = {
+        const unitSizes = {
             width: c.mm_to_inches(800),
-            height: c.mm_to_inches(1650)
+            height: c.mm_to_inches(1650),
         };
-        let fillings = _([
+        const fillings = _([
             createFilling('glass', 'Test glass', 0.2),
-            createFilling('recessed', 'Test recessed', 0.8)
+            createFilling('recessed', 'Test recessed', 0.8),
         ]);
-        let profileWeight = 1.5;
+        const profileWeight = 1.5;
 
         // set values
-        let unit = new Unit({
+        const unit = new Unit({
             width: unitSizes.width,
-            height: unitSizes.height
+            height: unitSizes.height,
         });
 
         unit.profile = new Profile({
@@ -923,34 +893,32 @@ describe('Unit model tests: ', function () {
             sash_frame_width: 82,
             sash_frame_overlap: 34,
             sash_mullion_overlap: 34,
-            weight_per_length: profileWeight
+            weight_per_length: profileWeight,
         });
         App.settings = {
-            filling_types: fillings
+            filling_types: fillings,
         };
 
         // spit sections and add sash
-        let root_id = unit.get('root_section').id;
+        const root_id = unit.get('root_section').id;
 
         unit.splitSection(root_id, 'horizontal');
         unit.setSectionMullionPosition(root_id, 1308);
 
-        let full_root = unit.generateFullRoot();
-        let top_section = full_root.sections[0];
-        let bottom_section = full_root.sections[1];
+        const full_root = unit.generateFullRoot();
+        const top_section = full_root.sections[0];
+        const bottom_section = full_root.sections[1];
 
         unit.setSectionSashType(top_section.id, 'tilt_turn_left');
         unit.setSectionSashType(bottom_section.id, 'turn_only_left');
 
         // round function
-        let roundWeight = function (weight) {
-            return parseFloat(weight.toFixed(10));
-        };
+        const roundWeight = weight => parseFloat(weight.toFixed(10));
 
         let stats;
 
         // run tests for different filling types
-        fillings.each(function (filling) {
+        fillings.each((filling) => {
             // set filling type and get unit stats
             unit.setFillingType(unit.get('root_section').id, filling.get('type'), filling.get('name'));
             stats = unit.getLinearAndAreaStats();
@@ -959,7 +927,7 @@ describe('Unit model tests: ', function () {
             equal(
                 roundWeight(stats.glasses.area * filling.get('weight_per_area')),
                 roundWeight(stats.glasses.weight),
-                'Glasses weight for glass type: "' + filling.get('type') + '"'
+                `Glasses weight for glass type: "${filling.get('type')}"`,
             );
         });
 
@@ -973,7 +941,7 @@ describe('Unit model tests: ', function () {
         equal(
             roundWeight((stats.profile_total.linear / 1000) * profileWeight),
             roundWeight(stats.profile_total.weight),
-            'Profile weight calculation'
+            'Profile weight calculation',
         );
 
         //  Now compare with pre-calculated values
