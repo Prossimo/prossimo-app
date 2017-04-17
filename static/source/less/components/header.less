@@ -54,6 +54,7 @@
 
 .project-selector-container {
     float: left;
+    padding-top: 1.5rem;
 }
 
 
@@ -63,7 +64,7 @@
 
 .create-project-container {
     float: left;
-    padding: 0.4rem 2rem 0 0;
+    padding: 1.9rem 2rem 0 0;
 }
 
 
@@ -98,20 +99,20 @@
 }
 
 .project-settings-panel {
-    position: absolute;
+    position: relative;
     left: 0;
-    top: -100%;
     z-index: 100;
     width: 100%;
     padding: 0.8rem 2rem;
-    border: 1px solid darken(@white, 65%);
-    background-color: darken(@white, 60%);
+//    background-color: darken(@white, 60%);
     color: darken(@white, 5%);
-    box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.5);
+//    box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.5);
     text-align: center;
     transition: top 0.1s ease-out 0s;
 }
-
+.project-settings-container {
+    float: left;
+}
 .is-project-settings-panel-open .project-settings-panel {
     top: 100%;
 }
