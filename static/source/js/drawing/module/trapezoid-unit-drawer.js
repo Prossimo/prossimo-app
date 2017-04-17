@@ -7,6 +7,42 @@ var app = app || {};
     var model;
     var ratio;
 
+    function drawLouver(context, options) {
+        if (!context || !(options && options.width && options.height)) { return; }
+        var width = options.width;
+        var height = options.height;
+        var bladeWidth = options.bladeWidth || 40;
+        var points = options.points;
+        var i;
+
+        if (points) {  // Trapezoid
+            for (i = 0; i < height / bladeWidth; i++) {
+                var section_crossing = model.getLineCrossingY(
+                    i * bladeWidth,
+                    { x: points[0].x, y: points[0].y },
+                    { x: points[1].x, y: points[1].y }
+                );
+
+                if ( points[0].y < points[1].y && section_crossing > 0 ) {
+                    context.moveTo(0, i * bladeWidth);
+                    context.lineTo(
+                        ( (width < section_crossing) ? width : section_crossing ),
+                        i * bladeWidth
+                    );
+                } else if ( points[0].y > points[1].y && section_crossing < width ) {
+                    context.moveTo(( (section_crossing > 0) ? section_crossing : 0 ), i * bladeWidth);
+                    context.lineTo(width, i * bladeWidth);
+                }
+            }
+
+        } else {  // Non-trapezoid
+            for (i = 0; i < height / bladeWidth; i++) {
+                context.moveTo(0, i * bladeWidth);
+                context.lineTo(width, i * bladeWidth);
+            }
+        }
+    }
+
     app.Drawers = app.Drawers || {};
     app.Drawers.TrapezoidUnitDrawer = Backbone.KonvaView.extend({
         initialize: function (params) {
@@ -2042,54 +2078,67 @@ var app = app || {};
                 )
             };
             var group = new Konva.Group({name: 'filling'});
+            var isLouver = section.fillingType === 'louver';
+            var frameWidth = params.frameWidth || model.profile.get('frame_width');
+            var style = module.getStyle('fillings');
             var filling;
-            var sceneFunc;
             var opts;
             var points;
-            var frameWidth = params.frameWidth || model.profile.get('frame_width');
 
-            var style = module.getStyle('fillings');
-
+            // Arched
             if (section.arched) {
-                // Arched
                 var arcPos = model.getArchedPosition();
-
-                sceneFunc = function (ctx) {
-                    ctx.beginPath();
-                    ctx.moveTo(0, fillHeight);
-                    ctx.lineTo(0, arcPos);
-                    ctx.quadraticCurveTo(0, 0, fillWidth / 2, 0);
-                    ctx.quadraticCurveTo(fillWidth, 0, fillWidth, arcPos);
-                    ctx.lineTo(fillWidth, fillHeight);
-                    ctx.closePath();
-                    ctx.fillStrokeShape(this);
-                };
 
                 opts = {
                     sectionId: section.id,
                     x: fillX,
                     y: fillY,
                     fill: style.glass.fill,
-                    sceneFunc: sceneFunc
+                    sceneFunc: function (ctx) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, fillHeight);
+                        ctx.lineTo(0, arcPos);
+                        ctx.quadraticCurveTo(0, 0, fillWidth / 2, 0);
+                        ctx.quadraticCurveTo(fillWidth, 0, fillWidth, arcPos);
+                        ctx.lineTo(fillWidth, fillHeight);
+                        ctx.clip();
+                        ctx.closePath();
+
+                        if (isLouver) {
+                            drawLouver(ctx, { width: fillWidth, height: fillHeight, bladeWidth: style.louver.bladeWidth });
+                        }
+                        ctx.fillStrokeShape(this);
+                    }
                 };
 
-                // Draw filling
-                filling = new Konva.Shape(opts);
+            // Circular
             } else if (section.circular || params.radius) {
-                // Circular
                 var radius = params.radius || section.radius - frameWidth;
 
                 opts = {
                     sectionId: section.id,
-                    x: fillX + radius,
-                    y: fillY + radius,
+                    x: fillX,
+                    y: fillY,
                     fill: style.glass.fill,
-                    radius: radius + frameWidth + 10
+                    sceneFunc: function (ctx) {
+                        ctx.beginPath();
+
+                        if (radius > 0) {
+                            ctx.arc(fillX + radius, fillY + radius, radius + frameWidth + 10, 0, 2 * Math.PI);
+                        } else {
+                            ctx.rect(0, 0, fillWidth, fillHeight);
+                        }
+
+                        if (isLouver) {
+                            drawLouver(ctx, { width: radius * 2, height: radius * 2, bladeWidth: style.louver.bladeWidth });
+                        }
+
+                        ctx.fillStrokeShape(this);
+                    }
                 };
-                // Draw filling
-                filling = new Konva.Circle(opts);
+
+            // Default
             } else {
-                // Default
                 if ( !crossing.left && !crossing.right ) {
                     opts = {
                         sectionId: section.id,
@@ -2101,14 +2150,9 @@ var app = app || {};
                         sceneFunc: function (ctx) {
                             ctx.beginPath();
                             ctx.rect(0, 0, this.width(), this.height());
-                            // draw louver lines
-                            if (section.fillingType === 'louver') {
-                                var offset = 40;
 
-                                for (var i = 0; i < this.height() / offset; i++) {
-                                    ctx.moveTo(0, i * offset);
-                                    ctx.lineTo(this.width(), i * offset);
-                                }
+                            if (isLouver) {
+                                drawLouver(ctx, { width: fillWidth, height: fillHeight, bladeWidth: style.louver.bladeWidth });
                             }
 
                             ctx.fillStrokeShape(this);
@@ -2159,27 +2203,13 @@ var app = app || {};
                                 ctx.lineTo(points[3].x, points[3].y);
                                 ctx.closePath();
 
-                                if (section.fillingType === 'louver') {
-                                    var offset = 40;
-
-                                    for (var i = 0; i < this.height() / offset; i++) {
-                                        var section_crossing = model.getLineCrossingY(
-                                            i * offset,
-                                            { x: points[0].x, y: points[0].y },
-                                            { x: points[1].x, y: points[1].y }
-                                        );
-
-                                        if ( points[0].y < points[1].y && section_crossing > 0 ) {
-                                            ctx.moveTo(0, i * offset);
-                                            ctx.lineTo(
-                                                ( (this.width() < section_crossing) ? this.width() : section_crossing ),
-                                                i * offset
-                                            );
-                                        } else if ( points[0].y > points[1].y && section_crossing < this.width() ) {
-                                            ctx.moveTo(( (section_crossing > 0) ? section_crossing : 0 ), i * offset);
-                                            ctx.lineTo(this.width(), i * offset);
-                                        }
-                                    }
+                                if (isLouver) {
+                                    drawLouver(ctx, {
+                                        width: this.width(),
+                                        height: this.height(),
+                                        bladeWidth: style.louver.bladeWidth,
+                                        points: points
+                                    });
                                 }
 
                                 ctx.fillStrokeShape(this);
@@ -2224,27 +2254,13 @@ var app = app || {};
                                 ctx.lineTo(points[3].x, points[3].y);
                                 ctx.closePath();
 
-                                if (section.fillingType === 'louver') {
-                                    var offset = 40;
-
-                                    for (var i = 0; i < this.height() / offset; i++) {
-                                        var section_crossing = model.getLineCrossingY(
-                                            i * offset,
-                                            { x: points[0].x, y: points[0].y },
-                                            { x: points[1].x, y: points[1].y }
-                                        );
-
-                                        if ( points[0].y < points[1].y && section_crossing > 0 ) {
-                                            ctx.moveTo(0, i * offset);
-                                            ctx.lineTo(
-                                                ( (this.width() < section_crossing) ? this.width() : section_crossing ),
-                                                i * offset
-                                            );
-                                        } else if ( points[0].y > points[1].y && section_crossing < this.width() ) {
-                                            ctx.moveTo(( (section_crossing > 0) ? section_crossing : 0 ), i * offset);
-                                            ctx.lineTo(this.width(), i * offset);
-                                        }
-                                    }
+                                if (isLouver) {
+                                    drawLouver(ctx, {
+                                        width: this.width(),
+                                        height: this.height(),
+                                        bladeWidth: style.louver.bladeWidth,
+                                        points: points
+                                    });
                                 }
 
                                 ctx.fillStrokeShape(this);
@@ -2252,13 +2268,13 @@ var app = app || {};
                         };
                     }
                 }
-
-                // Draw filling
-                filling = new Konva.Shape(opts);
             }
 
+            // Draw filling
+            filling = new Konva.Shape(opts);
+
             // Special fillings
-            if (section.fillingType === 'louver') {
+            if (isLouver) {
                 filling.stroke(style.louver.stroke);
             }
 

@@ -266,7 +266,8 @@ var app = app || {};
                         fill: 'lightblue'
                     },
                     louver: {
-                        stroke: 'black'
+                        stroke: 'black',
+                        bladeWidth: 40
                     },
                     others: {
                         fill: 'lightgrey'
