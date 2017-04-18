@@ -40,7 +40,7 @@ var app = app || {};
                 //  TODO: we probably want to treat other numbers as well!
                 _.each(data.params, function (param_options, key) {
                     if ( param_options.possible_values_number === 2 ) {
-                        this.toggles[key] = new app.BaseToggleView(param_options);
+                        this.toggles[key] = new app.BaseToggleView(_.extend({}, param_options, {size:'mini', width:'90'}));
                     }
                 }, this);
             }

@@ -54,7 +54,7 @@
 
 .project-selector-container {
     float: left;
-    padding-top: 1.5rem;
+    padding-top: 0.4rem;
 }
 
 
@@ -64,7 +64,7 @@
 
 .create-project-container {
     float: left;
-    padding: 1.9rem 2rem 0 0;
+    padding: 0.8rem 2rem 0 0;
 }
 
 
@@ -99,16 +99,9 @@
 }
 
 .project-settings-panel {
-    position: relative;
-    left: 0;
-    z-index: 100;
-    width: 100%;
-    padding: 0.8rem 2rem;
-//    background-color: darken(@white, 60%);
+    padding: 0 2rem;
     color: darken(@white, 5%);
-//    box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.5);
     text-align: center;
-    transition: top 0.1s ease-out 0s;
 }
 .project-settings-container {
     float: left;
@@ -129,16 +122,18 @@
 
 .project-settings-panel li {
     display: inline-block;
+    margin-left: 2rem;
+    padding-left: 2rem;
+    border-left: 1px solid darken(@white, 50%);    
 }
 
 .project-settings-panel li + li {
-    margin-left: 2rem;
-    padding-left: 2rem;
-    border-left: 1px solid darken(@white, 50%);
+
 }
 
 .project-settings-panel li h6 {
-    margin-top: 0;
+    margin-top: 3px;
+    margin-bottom: 2px;
 }
 
 

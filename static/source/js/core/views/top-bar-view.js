@@ -12,7 +12,6 @@ var app = app || {};
             $project_selector_container: '.project-selector-container',
             $create_project_button: '.js-create-new-project',
             $status_panel_container: '.status-panel-container',
-//            $settings_toggle: '.project-settings-toggle',
             $spinner_container: '.spinner-container',
             $project_settings_container: '.project-settings-container',
             $quote_selector_container: '.quote-selector-container',
@@ -20,7 +19,6 @@ var app = app || {};
             $edit_quotes: '.js-edit-quotes'
         },
         events: {
-//            'click @ui.$settings_toggle': 'onSettingsToggle',
             'click @ui.$create_project_button': 'showCreateProjectDialog',
             'click @ui.$edit_quotes': 'showEditQuotesDialog'
         },
@@ -38,11 +36,6 @@ var app = app || {};
 
             this.listenTo(app.vent, 'project_selector:fetch_current:stop', this.onCurrentProjectLoaded);
         },
-//        onSettingsToggle: function () {
-//            if ( this.isProjectSelected() ) {
-//                this.$el.toggleClass('is-project-settings-panel-open');
-//            }
-//        },
         showEditQuotesDialog: function () {
             if ( this.isProjectSelected() ) {
                 app.dialogs.showDialog('edit-quotes', {
@@ -55,7 +48,6 @@ var app = app || {};
         },
         onCurrentProjectLoaded: function () {
             if ( this.isProjectSelected() ) {
-//                this.ui.$settings_toggle.removeClass('disabled');
                 this.ui.$edit_quotes.removeClass('disabled');
             }
 
@@ -66,7 +58,6 @@ var app = app || {};
         },
         templateContext: function () {
             return {
-//                is_settings_toggle_disabled: !this.isProjectSelected(),
                 is_edit_quotes_disabled: !this.isProjectSelected()
             };
         },
@@ -77,7 +68,6 @@ var app = app || {};
             this.ui.$spinner_container.append(this.spinner_view.render().el);
             this.ui.$project_settings_container.append(this.project_settings_panel_view.render().el);
             this.ui.$main_nav_container.append(this.main_nav_view.render().el);
-//            this.$el.append(this.project_settings_panel_view.render().el);
         }
     });
 })();
