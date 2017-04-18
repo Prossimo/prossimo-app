@@ -2629,11 +2629,11 @@ const Unit = Backbone.Model.extend({
             corners = {
                 left: {
                     x: frameWidth,
-                    y: (maxHeight - heights.left) + ((Math.tan((90 - cornerLeft) / 180) * Math.PI) * frameWidth),
+                    y: (maxHeight - heights.left) + (Math.tan(((90 - cornerLeft) / 180) * Math.PI) * frameWidth),
                 },
                 right: {
                     x: width - frameWidth,
-                    y: (maxHeight - heights.right) + ((Math.tan((90 - cornerRight) / 180) * Math.PI) * frameWidth),
+                    y: (maxHeight - heights.right) + (Math.tan(((90 - cornerRight) / 180) * Math.PI) * frameWidth),
                 },
             };
         }
