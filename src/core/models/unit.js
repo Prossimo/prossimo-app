@@ -2621,19 +2621,19 @@ const Unit = Backbone.Model.extend({
 
         if (typeof heights === 'object') {
             const cornerLeft = Math.abs(
-                (Math.atan(((maxHeight - heights.right) - (maxHeight - heights.left)) / (width - 0)) -
-                Math.atan((maxHeight - (maxHeight - heights.left)) / (0 - 0))) / (Math.PI * 180),
+                ((Math.atan(((maxHeight - heights.right) - (maxHeight - heights.left)) / (width - 0)) -
+                Math.atan((maxHeight - (maxHeight - heights.left)) / (0 - 0))) / Math.PI) * 180,
             ) / 2;
             const cornerRight = Math.abs(90 - cornerLeft);
 
             corners = {
                 left: {
                     x: frameWidth,
-                    y: (maxHeight - heights.left) + (Math.tan((90 - cornerLeft) / (180 * Math.PI)) * frameWidth),
+                    y: (maxHeight - heights.left) + ((Math.tan((90 - cornerLeft) / 180) * Math.PI) * frameWidth),
                 },
                 right: {
                     x: width - frameWidth,
-                    y: (maxHeight - heights.right) + (Math.tan((90 - cornerRight) / (180 * Math.PI)) * frameWidth),
+                    y: (maxHeight - heights.right) + ((Math.tan((90 - cornerRight) / 180) * Math.PI) * frameWidth),
                 },
             };
         }
