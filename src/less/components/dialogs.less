@@ -1,0 +1,186 @@
+//  This extends modal.less from Bootstrap
+
+.modal-header {
+    min-height: 50px;
+}
+
+
+//  ------------------------------------------------------------------------
+//  Items / Profiles availability modal (used for Options and Filling Types)
+//  ------------------------------------------------------------------------
+
+.items-profiles-table-modal h3 {
+    margin-top: 1rem;
+    margin-bottom: 3rem;
+}
+
+.items-profiles-table-modal .modal-dialog {
+    padding: 0 30px;
+    width: 100%;
+    min-width: 800px;
+}
+
+.items-profiles-table-scroll-wrapper {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 500px;
+    background-color: #d9d9d9;
+}
+
+
+//  ------------------------------------------------------------------------
+//  Create project modal
+//  ------------------------------------------------------------------------
+
+.create-project-modal .modal-header h4 {
+    margin: 0 5px;
+}
+
+.create-project-modal .modal-body form {
+    margin-top: .5rem;
+
+    input {
+        margin-bottom: 1.5rem;
+        border-color: darken(@white, 35%);
+
+        &:focus {
+            box-shadow: none;
+            border-color: darken(@white, 60%);
+        }
+    }
+
+    textarea {
+        min-width: 100%;
+        max-width: 100%;
+        margin-bottom: 1.5rem;
+        border-color: darken(@white, 35%);
+
+        &:focus {
+            box-shadow: none;
+            border-color: darken(@white, 60%);
+        }
+    }
+
+    .btn {
+        &:extend(.btn-default all);
+        margin: .5rem 1rem 0 0;
+        border-color: darken(@white, 35%);
+    }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Edit Quotes modal
+//  ------------------------------------------------------------------------
+
+.edit-quotes-modal {
+    .modal-dialog {
+        width: 800px;
+    }
+
+    .btn {
+        border-color: darken(@white, 15%);
+    }
+
+    .quotes-actions-container {
+        .clearfix();
+        margin-bottom: 2rem;
+    }
+
+    .quotes-actions-container .add-new-quote {
+        float: right;
+    }
+
+    table {
+        table-layout: fixed;
+        border-bottom: 1px solid darken(@white, 5%);
+    }
+
+    tr.no-quotes-message td {
+        text-align: center;
+    }
+
+    th.entry-drag,
+    td.entry-drag {
+        width: 5%;
+    }
+
+    td.entry-drag {
+        opacity: 0;
+        border-color: transparent;
+        border-right-color: darken(@white, 30%);
+        padding: 0;
+        text-align: center;
+        color: darken(@white, 55%);
+        cursor: move;
+        cursor: -webkit-grabbing;
+        font-size: 1em;
+        vertical-align: middle;
+    }
+
+    td.entry-drag span {
+        pointer-events: none;
+    }
+
+    th.name,
+    td.name {
+        padding: 3px;
+        width: 30%;
+    }
+
+    td.name p {
+        margin: 6px 4px;
+    }
+
+    th.date,
+    td.date {
+        padding: 3px;
+        width: 22%;
+    }
+
+    tr:hover {
+        td.entry-drag {
+            background-color: darken(@white, 5%);
+            opacity: 1;
+        }
+    }
+
+    tr.sortable-ghost {
+        opacity: 0.3;
+    }
+
+    .reorder-message {
+        text-align: center;
+        color: lighten(@black, 55%);
+    }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Project Export Dialog
+//  ------------------------------------------------------------------------
+
+.project-export-modal {
+    h5 {
+        margin-bottom: 2rem;
+        font-weight: bold;
+    }
+
+    .form-group + h5 {
+        margin-top: 3rem;
+    }
+
+    .checkbox,
+    .radio-inline {
+        padding-top: 0;
+    }
+
+    .checkbox span {
+        padding-left: 0.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+}

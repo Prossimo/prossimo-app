@@ -1,0 +1,204 @@
+import UndoManager from 'backbone-undo';
+import _ from 'underscore';
+
+export default function (opts) {
+    const undo_manager = new UndoManager(opts);
+    const buttons = {
+        undo: null,
+        redo: null,
+    };
+
+    function checkButtons() {
+        if (buttons.undo !== null && buttons.undo.length) {
+            if (undo_manager.isAvailable('undo')) {
+                buttons.undo.prop('disabled', false);
+            } else {
+                buttons.undo.prop('disabled', true);
+            }
+        }
+
+        if (buttons.redo !== null && buttons.redo.length) {
+            if (undo_manager.isAvailable('redo')) {
+                buttons.redo.prop('disabled', false);
+            } else {
+                buttons.redo.prop('disabled', true);
+            }
+        }
+    }
+
+    function registerButton(type, button) {
+        buttons[type] = button;
+        checkButtons();
+    }
+
+    //  Add custom processing for Undo/Redo events to persist them
+    //  correctly to our backend.
+    undo_manager.changeUndoType('add', {
+        undo(collection, ignore, model) {
+            model.destroy();
+        },
+        redo(collection, ignore, model, options) {
+            // Redo add = add
+            if (options.index) {
+                options.at = options.index;
+            }
+
+            if (model.id) {
+                delete model.id;
+            }
+
+            if (model.attributes.id) {
+                delete model.attributes.id;
+            }
+
+            const new_object = collection.add(model, options);
+
+            if (new_object.hasOnlyDefaultAttributes() === false) {
+                model.persist({}, {
+                    validate: true,
+                    parse: true,
+                });
+            }
+        },
+        on(model, collection, options) {
+            return {
+                object: collection,
+                before: undefined,
+                after: model,
+                options: _.clone(options),
+            };
+        },
+    });
+
+    undo_manager.changeUndoType('change', {
+        undo(model, before, after, options) {
+            if (_.isEmpty(before)) {
+                _.each(_.keys(after), model.unset, model);
+            } else {
+                model.persist(before, {
+                    validate: true,
+                    parse: true,
+                });
+
+                if (options && options.unsetData && options.unsetData.before && options.unsetData.before.length) {
+                    _.each(options.unsetData.before, model.unset, model);
+                }
+            }
+        },
+        redo(model, before, after, options) {
+            if (_.isEmpty(after)) {
+                _.each(_.keys(before), model.unset, model);
+            } else {
+                model.persist(after, {
+                    validate: true,
+                    parse: true,
+                });
+
+                if (options && options.unsetData && options.unsetData.after && options.unsetData.after.length) {
+                    _.each(options.unsetData.after, model.unset, model);
+                }
+            }
+        },
+        on(model, options) {
+            options = options || {};
+
+            const afterAttributes = model.changedAttributes();
+            const keysAfter = _.keys(afterAttributes);
+            const previousAttributes = _.pick(model.previousAttributes(), keysAfter);
+            const keysPrevious = _.keys(previousAttributes);
+            const unsetData = {
+                after: [],
+                before: [],
+            };
+
+            options.unsetData = unsetData;
+
+            if (keysAfter.length !== keysPrevious.length) {
+                // There are new attributes or old attributes have been unset
+                if (keysAfter.length > keysPrevious.length) {
+                    // New attributes have been added
+                    _.each(keysAfter, (val) => {
+                        if (!(val in previousAttributes)) {
+                            unsetData.before.push(val);
+                        }
+                    }, this);
+                } else {
+                    // Old attributes have been unset
+                    _.each(keysPrevious, (val) => {
+                        if (!(val in afterAttributes)) {
+                            unsetData.after.push(val);
+                        }
+                    });
+                }
+            }
+
+            if (!(unsetData.before.length === 1 && unsetData.before[0] === 'id')) {
+                return {
+                    object: model,
+                    before: previousAttributes,
+                    after: afterAttributes,
+                    options: _.clone(options),
+                };
+            }
+        },
+    });
+
+    undo_manager.changeUndoType('remove', {
+        undo(collection, model, ignore, options) {
+            if ('index' in options) {
+                options.at = options.index;
+            }
+
+            if (model.id) {
+                delete model.id;
+            }
+
+            if (model.attributes.id) {
+                delete model.attributes.id;
+            }
+
+            collection.add(model, options);
+            model.persist({}, {
+                validate: true,
+                parse: true,
+            });
+        },
+        redo(collection, model) {
+            model.destroy();
+        },
+        on(model, collection, options) {
+            return {
+                object: collection,
+                before: model,
+                after: undefined,
+                options: _.clone(options),
+            };
+        },
+    });
+
+    undo_manager.on('all', checkButtons);
+    undo_manager.stack.on('add', () => {
+        checkButtons();
+    });
+
+    return {
+        manager: undo_manager,
+        handler: {
+            undo() {
+                undo_manager.undo();
+            },
+            redo() {
+                undo_manager.redo();
+            },
+        },
+        isAvailable: {
+            undo() {
+                return undo_manager.isAvailable('undo');
+            },
+            redo() {
+                return undo_manager.isAvailable('redo');
+            },
+        },
+        registerButton,
+    };
+}

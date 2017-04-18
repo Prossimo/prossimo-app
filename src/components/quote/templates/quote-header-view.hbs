@@ -1,0 +1,30 @@
+<div class="quote-header">
+    <div class="prossimo-logo">
+        <img src="/assets/img/logo.png" alt="">
+    </div>
+    <h1>Quotation</h1>
+    <ul class="prossimo-info">
+        <li class="prossimo-address"><strong>4 First Street</strong></li>
+        <li class="prossimo-address"><strong>Godeffroy, NY 12729</strong></li>
+        <li class="prossimo-phone"><strong>347-352-2495</strong></li>
+        <li class="prossimo-email"><strong><a href="mailto:quotes@prossimo.us">quotes@prossimo.us</a></strong></li>
+        <li class="prossimo-web"><strong><a href="http://www.prossimo.us">www.prossimo.us</a></strong></li>
+    </ul>
+    <ul class="quote-info">
+        <li class="quote-number"><strong>Quote #</strong> <span>{{ quote_number }}</span></li>
+        <li class="quote-date"><strong>Quote Date</strong> <span>{{ quote_date }}</span></li>
+        <li class="quote-revision"><strong>Revision #</strong> <span>{{ quote_revision_id }}</span></li>
+    </ul>
+</div>
+
+<div class="quote-project-info">
+    <h2 class="project-name">{{ project_name }}</h2>
+    <h3 class="client-name"><small>Prepared for:</small> <span>{{ client_name }}</span></h3>
+    <h4 class="client-company-name">{{ client_company_name }}</h4>
+    <ul>
+        <li class="client-phone"><strong>Phone:</strong> <span>{{ client_phone }}</span></li>
+        <li class="client-email"><strong>Email:</strong> <span>{{ client_email }}</span></li>
+        <li class="client-address"><strong>Address:</strong> <span>{{ client_address }}</span></li>
+        <li class="project-address"><strong>Project Address:</strong> <span>{{ project_address }}</span></li>
+    </ul>
+</div>
