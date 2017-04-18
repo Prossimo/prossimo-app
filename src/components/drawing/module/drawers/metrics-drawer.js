@@ -683,7 +683,7 @@ export default Backbone.KonvaView.extend({
                 }
 
                 if (type === 'horizontal') {
-                    position.y = 0 + (controlData.position * ratio) + ((correction.size * ratio) - (controlSize / 2));
+                    position.y = (0 + (controlData.position * ratio) + (correction.size * ratio)) - (controlSize / 2);
                     position.x = -metricSize;
 
                     if (model.isTrapezoid()) {
@@ -697,7 +697,7 @@ export default Backbone.KonvaView.extend({
                     width_ = metricSize;
                     height_ = controlSize;
                 } else {
-                    position.x += 0 + (controlData.position * ratio) + ((correction.size * ratio) - (controlSize / 2));
+                    position.x += (0 + (controlData.position * ratio) + (correction.size * ratio)) - (controlSize / 2);
                     position.y = height;
 
                     width_ = controlSize;

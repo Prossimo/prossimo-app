@@ -380,10 +380,10 @@ export default Marionette.View.extend({
     createInput(params, pos, size) {
         const view = this;
         const module = this.module;
-        const container = $(module.get('stage').container());
+        const $container = $(module.get('stage').container());
         const $wrap = $('<div>')
             .addClass('popup-wrap')
-            .appendTo(container)
+            .appendTo($container)
             .on('click', (e) => {
                 if (e.target === $wrap.get(0)) {
                     $wrap.remove();
@@ -394,7 +394,7 @@ export default Marionette.View.extend({
         const valInInches = convert.mm_to_inches(params.getter());
         const val = format.dimension(valInInches, 'fraction');
 
-        const containerPos = (container.css('position') === 'relative') ? { top: 0, left: 0 } : container.position();
+        const containerPos = ($container.css('position') === 'relative') ? { top: 0, left: 0 } : $container.position();
 
         function closeWrap() {
             if (view.setState) {
@@ -410,8 +410,8 @@ export default Marionette.View.extend({
             .val(val)
             .css({
                 position: 'absolute',
-                top: `${pos.y - (padding + containerPos.top)}px`,
-                left: `${pos.x - (padding + containerPos.left)}px`,
+                top: `${(pos.y - padding) + containerPos.top}px`,
+                left: `${(pos.x - padding) + containerPos.left}px`,
                 height: `${size.height + (padding * 2)}px`,
                 width: `${size.width + 20 + (padding * 2)}px`,
                 fontSize: '12px',
@@ -477,11 +477,11 @@ export default Marionette.View.extend({
         const inputY = mullionCenterY - (style.height / 2);
         const isVertical = mullion.type === 'vertical' || mullion.type === 'vertical_invisible';
         const isHorizontal = mullion.type === 'horizontal' || mullion.type === 'horizontal_invisible';
-        const container = $(module.get('stage').container());
-        const containerPosition = (container.css('position') === 'relative') ? { top: 0, left: 0 } : container.position();
+        const $container = $(module.get('stage').container());
+        const containerPosition = ($container.css('position') === 'relative') ? { top: 0, left: 0 } : $container.position();
         const $wrap = $('<div>')
             .addClass('popup-wrap')
-            .appendTo(container)
+            .appendTo($container)
             .on('click', (e) => {
                 if (e.target === $wrap.get(0)) {
                     $wrap.remove();
@@ -498,8 +498,8 @@ export default Marionette.View.extend({
         $('<input>')
             .css({
                 position: 'absolute',
-                top: `${inputY - (style.padding + containerPosition.top)}px`,
-                left: `${inputX - (style.padding + containerPosition.left)}px`,
+                top: `${(inputY - style.padding) + containerPosition.top}px`,
+                left: `${(inputX - style.padding) + containerPosition.left}px`,
                 height: `${style.height + (style.padding * 2)}px`,
                 width: `${style.width + (style.padding * 2)}px`,
                 fontSize: `${style.fontSize}px`,

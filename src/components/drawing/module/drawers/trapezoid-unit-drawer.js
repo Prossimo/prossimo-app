@@ -1295,7 +1295,7 @@ export default Backbone.KonvaView.extend({
                 initialY - factors.stepY,
                 initialX + (factors.stepX * factors[direction].directionSign),
                 initialY,
-                initialX + ((factors.stepX * 2) * factors[direction].directionSign),
+                initialX + (factors.stepX * 2 * factors[direction].directionSign),
                 initialY,
             ],
             pointerLength: (1 / ratio) * 2,
@@ -1473,8 +1473,8 @@ export default Backbone.KonvaView.extend({
 
                 if (circleData.type === 'arc') {
                     this.clipCircle(directionLine, {
-                        x: 2 - (sectionData.sashParams.x + mainFrameWidth),
-                        y: 2 - (sectionData.sashParams.y + mainFrameWidth),
+                        x: (2 - sectionData.sashParams.x) + mainFrameWidth,
+                        y: (2 - sectionData.sashParams.y) + mainFrameWidth,
                         radius: (circleData.radius + mainFrameWidth) - 4,
                     });
                 }
@@ -1628,8 +1628,8 @@ export default Backbone.KonvaView.extend({
                     section.trapezoid.frame.outer[1].y :
                     section.trapezoid.frame.outer[0].y;
 
-                pos.y = (Math.abs(section.trapezoid.frame.outer[0].y - section.trapezoid.frame.outer[1].y) / 2) +
-                    ((offset + frame_outer_y) - handle_data.base.rotationCenter.y);
+                pos.y = ((Math.abs(section.trapezoid.frame.outer[0].y - section.trapezoid.frame.outer[1].y) / 2) +
+                    offset + frame_outer_y) - handle_data.base.rotationCenter.y;
             } else {
                 pos.y = offset - handle_data.base.rotationCenter.y;
             }
@@ -2038,7 +2038,7 @@ export default Backbone.KonvaView.extend({
             number = new Konva.Text(opts);
 
             number.position(section.position);
-            number.y(number.y() + ((section.size.height / 2) - (number.height() / 2)));
+            number.y((number.y() + (section.size.height / 2)) - (number.height() / 2));
 
             group.add(number);
         });
