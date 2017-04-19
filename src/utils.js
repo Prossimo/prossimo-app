@@ -110,8 +110,9 @@ export const format = {
         return `${this.dimension(width, decimal_format, inches_display_mode)
             } × ${this.dimension(height, decimal_format, inches_display_mode)}`;
     },
+    //  Includes a non-breaking space character
     dimension_mm(value) {
-        return `${this.fixed_minimal(value, 0)} mm`;
+        return `${this.fixed_minimal(value, 0)}\u00A0mm`;
     },
     dimensions_mm(width, height) {
         return `${this.fixed_minimal(width, 0)} × ${this.fixed_minimal(height, 0)}`;
@@ -166,21 +167,24 @@ export const format = {
             `${this.fixed_minimal(value[0], num)} | ${this.fixed_minimal(value[1], num)}` :
             this.fixed_minimal(value, num);
     },
+    //  Includes a non-breaking space character
     square_feet(value, num, suffix_format) {
         suffix_format = (suffix_format && _.indexOf(['normal', 'sup'], suffix_format) !== -1) ?
             suffix_format : 'normal';
         return this.fixed_minimal(value, num) +
-            (suffix_format === 'sup' ? ' ft<sup>2</sup>' :
-            (suffix_format === 'normal') ? ' sq.ft' :
+            (suffix_format === 'sup' ? '\u00A0ft<sup>2</sup>' :
+            (suffix_format === 'normal') ? '\u00A0sq.ft' :
             '');
     },
+    //  Includes a non-breaking space character
     square_meters(value, num, suffix_format) {
         suffix_format = (suffix_format && _.indexOf(['normal', 'sup'], suffix_format) !== -1) ? suffix_format : 'sup';
 
-        return this.fixed_minimal(value, num) + (suffix_format === 'sup' ? ' m<sup>2</sup>' : ' sq.m');
+        return this.fixed_minimal(value, num) + (suffix_format === 'sup' ? '\u00A0m<sup>2</sup>' : '\u00A0sq.m');
     },
+    //  Includes a non-breaking space character
     weight(value) {
-        return `${this.fixed_minimal(value, 3)} kg`;
+        return `${this.fixed_minimal(value, 3)}\u00A0kg`;
     },
     dimensions_and_area(
         width,
@@ -214,6 +218,7 @@ export const format = {
         return `${this.dimensions_mm(width, height)
             } (${this.square_meters(area, area_num, area_format)})`;
     },
+    //  Includes a non-breaking space character
     fileSize(size_in_bytes) {
         const suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
         let counter = 0;
@@ -224,7 +229,7 @@ export const format = {
         }
 
         return suffixes[counter] ?
-            `${this.fixed_minimal(size_in_bytes, counter < 2 ? 0 : 1)} ${suffixes[counter]}` :
+            `${this.fixed_minimal(size_in_bytes, counter < 2 ? 0 : 1)}\u00A0${suffixes[counter]}` :
             'Ovflw.';
     },
 };

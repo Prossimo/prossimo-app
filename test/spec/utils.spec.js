@@ -49,8 +49,8 @@ test('Utils.js tests: ', () => {
         test('dimension_mm', () => {
             const f = format;
 
-            equal(f.dimension_mm(2500), '2,500 mm', 'Expected value is 2,500 mm');
-            equal(f.dimension_mm(33.3), '33 mm', 'Expected value is 33 mm');
+            equal(f.dimension_mm(2500), '2,500\u00A0mm', 'Expected value is 2,500 mm');
+            equal(f.dimension_mm(33.3), '33\u00A0mm', 'Expected value is 33 mm');
         });
 
         test('dimensions_mm', () => {
@@ -105,17 +105,17 @@ test('Utils.js tests: ', () => {
         test('square_feet', () => {
             const f = format;
 
-            equal(f.square_feet(12), '12 sq.ft', 'Expected value is 12 sq.ft');
-            equal(f.square_feet(4.55), '4.55 sq.ft', 'Expected value is 4.55 sq.ft');
+            equal(f.square_feet(12), '12\u00A0sq.ft', 'Expected value is 12 sq.ft');
+            equal(f.square_feet(4.55), '4.55\u00A0sq.ft', 'Expected value is 4.55 sq.ft');
 
-            equal(f.square_feet(4.55, 2, 'sup'), '4.55 ft<sup>2</sup>', 'Expected value is 4.55 ft<sup>2</sup>');
+            equal(f.square_feet(4.55, 2, 'sup'), '4.55\u00A0ft<sup>2</sup>', 'Expected value is 4.55 ft<sup>2</sup>');
         });
 
         test('square_meters', () => {
             const f = format;
 
-            equal(f.square_meters(12), '12 m<sup>2</sup>', 'Expected value is 12 m<sup>2</sup>');
-            equal(f.square_meters(4.55), '4.55 m<sup>2</sup>', 'Expected value is 4.55 m<sup>2</sup>');
+            equal(f.square_meters(12), '12\u00A0m<sup>2</sup>', 'Expected value is 12 m<sup>2</sup>');
+            equal(f.square_meters(4.55), '4.55\u00A0m<sup>2</sup>', 'Expected value is 4.55 m<sup>2</sup>');
         });
 
         test('dimensions_and_area', () => {
@@ -123,12 +123,12 @@ test('Utils.js tests: ', () => {
 
             equal(
                 f.dimensions_and_area(26, 32.0625, 'fraction', 'inches_only', 5.78, 2, 'sup'),
-                '26″ × 32 1/16″ (5.78 ft<sup>2</sup>)',
+                '26″ × 32 1/16″ (5.78\u00A0ft<sup>2</sup>)',
                 'Test with all values set the same way as defaults',
             );
             equal(
                 f.dimensions_and_area(26, 32.0625, undefined, undefined, 5.78, undefined, undefined),
-                '26″ × 32 1/16″ (5.78 ft<sup>2</sup>)',
+                '26″ × 32 1/16″ (5.78\u00A0ft<sup>2</sup>)',
                 'Test with no formatting-related values set, and defaults used instead',
             );
         });
@@ -138,12 +138,12 @@ test('Utils.js tests: ', () => {
 
             equal(
                 f.dimensions_and_area_mm(722, 417, 0.301, 2, 'sup'),
-                '722 × 417 (0.3 m<sup>2</sup>)',
+                '722 × 417 (0.3\u00A0m<sup>2</sup>)',
                 'Test with all values set the same way as defaults',
             );
             equal(
                 f.dimensions_and_area_mm(722, 417, 0.301, undefined, undefined),
-                '722 × 417 (0.3 m<sup>2</sup>)',
+                '722 × 417 (0.3\u00A0m<sup>2</sup>)',
                 'Test with no formatting-related values set, and defaults used instead',
             );
         });
@@ -151,11 +151,11 @@ test('Utils.js tests: ', () => {
         test('fileSize', () => {
             const f = format;
 
-            equal(f.fileSize(0), '0 B', 'Expected 0 B');
-            equal(f.fileSize(678), '678 B', 'Expected 678 B');
-            equal(f.fileSize(96085), '94 KB', 'Expected 94 KB');
-            equal(f.fileSize(437575), '427 KB', 'Expected 427 KB');
-            equal(f.fileSize(5867777), '5.6 MB', 'Expected 5.6 MB');
+            equal(f.fileSize(0), '0\u00A0B', 'Expected 0 B');
+            equal(f.fileSize(678), '678\u00A0B', 'Expected 678 B');
+            equal(f.fileSize(96085), '94\u00A0KB', 'Expected 94 KB');
+            equal(f.fileSize(437575), '427\u00A0KB', 'Expected 427 KB');
+            equal(f.fileSize(5867777), '5.6\u00A0MB', 'Expected 5.6 MB');
         });
     });
 
