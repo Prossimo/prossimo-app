@@ -64,6 +64,9 @@ export default Marionette.View.extend({
         $bars_control: '#bars-control',
         $section_control: '#section_control',
         $filling_select: '#filling-select',
+        $filling_tools: '#filling-tools',
+        $filling_clone: '#filling-clone',
+        $filling_sync: '#filling-sync',
         $undo: '#undo',
         $redo: '#redo',
         $sash_types: '.change-sash-type',
@@ -75,6 +78,8 @@ export default Marionette.View.extend({
     },
     events: {
         // Click
+        'click #drawing': 'handleCanvasClick',
+        'contextmenu #drawing': 'handleCanvasClick',
         'click .split-section': 'handleSplitSectionClick',
         'click @ui.$sash_types': 'handleChangeSashTypeClick',
         'click #clear-frame': 'handleClearFrameClick',
@@ -82,6 +87,8 @@ export default Marionette.View.extend({
         'click .toggle-arched': 'handleArchedClick',
         'click .toggle-circular': 'handleCircularClick',
         'click #glazing-bars-popup': 'handleGlazingBarsPopupClick',
+        'click @ui.$filling_clone': 'handleFillingCloneClick',
+        'click @ui.$filling_sync': 'handleFillingSyncClick',
         'click @ui.$undo': 'handleUndoClick',
         'click @ui.$redo': 'handleRedoClick',
         // Tap
@@ -92,6 +99,8 @@ export default Marionette.View.extend({
         'tap .toggle-arched': 'handleArchedClick',
         'tap .toggle-circular': 'handleCircularClick',
         'tap #glazing-bars-popup': 'handleGlazingBarsPopupClick',
+        'tap @ui.$filling_clone': 'handleFillingCloneClick',
+        'tap @ui.$filling_sync': 'handleFillingSyncClick',
         'tap @ui.$undo': 'handleUndoClick',
         'tap @ui.$redo': 'handleRedoClick',
         // Others
@@ -129,7 +138,22 @@ export default Marionette.View.extend({
     handleRedoClick() {
         return this.undo_manager.handler.redo();
     },
+    handleCanvasClick(e) {
+        if (this.isCloningFilling()) {
+            this.cloneFillingDismiss();
+            e.preventDefault();
+        } else if (this.isSyncingFilling()) {
+            this.syncFillingDismiss();
+            e.preventDefault();
+        }
+    },
     handleCanvasKeyDown(e) {
+        if (e.key === 'Escape' && this.isCloningFilling()) {
+            this.cloneFillingDismiss();
+        } else if (e.key === 'Escape' && this.isSyncingFilling()) {
+            this.syncFillingDismiss();
+        }
+
         if (this.module && !this.state.inputFocused) {
             this.module.handleKeyEvents(e);
         }
@@ -174,6 +198,18 @@ export default Marionette.View.extend({
         this.glazing_view
             .setSection(this.state.selectedSashId)
             .showModal();
+    },
+    handleFillingCloneClick() {
+        if (this.state.selectedSashId) {
+            this.cloneFillingStart(this.state.selectedSashId);
+        }
+        // Continues at this.bindModuleEvents()
+    },
+    handleFillingSyncClick() {
+        if (this.state.selectedSashId) {
+            this.syncFillingStart(this.state.selectedSashId);
+        }
+        // Continues at this.bindModuleEvents()
     },
     handleFillingTypeChange() {
         let filling_type;
@@ -338,10 +374,18 @@ export default Marionette.View.extend({
             });
         });
         this.listenTo(this.module, 'state:selected:sash', function (data) {
-            this.deselectAll();
-            this.setState({
-                selectedSashId: data.newValue,
-            });
+            const sourceSashId = data.oldValue;
+            const targetSashId = data.newValue;
+            if (!targetSashId || targetSashId === sourceSashId) { this.deselectAll(); return; }
+
+            if (this.isCloningFilling()) {
+                this.cloneFillingFinish(targetSashId);
+            } else if (this.isSyncingFilling()) {
+                this.syncFillingFinish(targetSashId);
+            } else {
+                this.deselectAll();
+                this.setState({ selectedSashId: data.newValue });
+            }
         });
         this.listenTo(this.module, 'labelClicked', function (data) {
             this.createInput(data.params, data.pos, data.size);
@@ -582,9 +626,18 @@ export default Marionette.View.extend({
 
         const selectedSashId = this.state.selectedSashId;
         const selectedSash = this.model.getSection(selectedSashId);
+        const isLeafSash = selectedSash && selectedSash.sections.length === 0;
         const hasFrame = selectedSash && selectedSash.sashType !== 'fixed_in_frame';
         const isArched = selectedSash && selectedSash.arched;
         const isCircular = selectedSash && selectedSash.circular;
+
+        if (this.isCloningFilling() || this.isSyncingFilling()) {
+            document.body.style.cursor = 'copy';
+        } else {
+            document.body.style.cursor = 'auto';
+        }
+
+        this.ui.$filling_tools.toggle(selectedSash && isLeafSash);
 
         this.ui.$bars_control.toggle(
             !isArched &&
@@ -691,5 +744,87 @@ export default Marionette.View.extend({
             selectedMullionId: null,
             selectedSashId: null,
         });
+    },
+    cloneFillingStart(sourceSashId) {
+        const selectedSash = this.model.getSection(sourceSashId);
+        if (!selectedSash) { return; }
+
+        this.setState({
+            cloneFillingSource: {
+                bars: selectedSash.bars,
+                sashType: selectedSash.sashType,
+                fillingType: selectedSash.fillingType,
+                fillingName: selectedSash.fillingName,
+            },
+        });
+    },
+    cloneFillingFinish(targetSashId) {
+        if (!targetSashId || !this.isCloningFilling()) { return; }
+        const sourceBars = this.state.cloneFillingSource.bars;
+        const sourceSashType = this.state.cloneFillingSource.sashType;
+        const sourceFillingType = this.state.cloneFillingSource.fillingType;
+        const sourceFillingName = this.state.cloneFillingSource.fillingName;
+
+        if (sourceBars) { this.model.setSectionBars(targetSashId, sourceBars); }
+        if (sourceSashType) { this.model.setSectionSashType(targetSashId, sourceSashType); }
+        if (sourceFillingType && sourceFillingName) {
+            this.model.setFillingType(targetSashId, sourceFillingType, sourceFillingName);
+        }
+
+        this.cloneFillingDismiss();
+    },
+    cloneFillingDismiss() {
+        this.deselectAll();
+        this.module.deselectAll();
+        this.setState({ cloneFillingSource: null });
+    },
+    isCloningFilling() {
+        return !!this.state.cloneFillingSource;
+    },
+    syncFillingStart(sourceSashId) {
+        const selectedSash = this.model.getSection(sourceSashId);
+        if (!selectedSash) { return; }
+
+        this.setState({
+            syncFillingSource: {
+                id: sourceSashId,
+                bars: selectedSash.bars,
+            },
+        });
+    },
+    syncFillingFinish(targetSashId) {
+        if (!targetSashId || !this.isSyncingFilling()) { return; }
+        const sourceSashId = this.state.syncFillingSource.id;
+        const sourceBars = this.state.syncFillingSource.bars;
+        const emptyBars = { horizontal: [], vertical: [] };
+        const hasSourceBars = this.model.hasSectionBars(sourceSashId);
+        let hasTargetBars = this.model.hasSectionBars(targetSashId);
+
+        // Copy or erase bars as necessary
+        if (hasSourceBars && !hasTargetBars) {
+            this.model.setSectionBars(targetSashId, sourceBars);
+            hasTargetBars = true;
+        } else if (!hasSourceBars && hasTargetBars) {
+            this.model.setSectionBars(targetSashId, emptyBars);
+            hasTargetBars = false;
+        }
+
+        // Adjust bar positions
+        if (hasSourceBars && hasTargetBars) {
+            this.model.adjustBars(targetSashId, {
+                referenceSectionId: sourceSashId,
+                flipBarsX: !this.isInsideView(),
+            });
+        }
+
+        this.syncFillingDismiss();
+    },
+    syncFillingDismiss() {
+        this.deselectAll();
+        this.module.deselectAll();
+        this.setState({ syncFillingSource: null });
+    },
+    isSyncingFilling() {
+        return !!this.state.syncFillingSource;
     },
 });
