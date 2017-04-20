@@ -4,8 +4,9 @@ import clone from 'clone';
 
 import App from '../../main';
 import Schema from '../../schema';
-import { object, convert, math } from '../../utils';
+import { object, convert, math, format } from '../../utils';
 import UnitOptionCollection from '../collections/inline/unit-option-collection';
+import Multiunit from './multiunit';
 import { mergePreviewOptions, generatePreview } from '../../components/drawing/module/preview';
 import { globalChannel } from '../../utils/radio';
 
@@ -951,8 +952,32 @@ const Unit = Backbone.Model.extend({
     getProfileProperties() {
         return App.settings ? App.settings.getProfileProperties(this.get('profile')) : {};
     },
+    //  Multiunits and normal units share reference numbers within project.
+    //  Numbering starts with multiunits, the first multiunit within the
+    //  project gets 1, and its subunits are 1a, 1b, 1c etc. Second
+    //  multiunit is 2, and so on. The first normal unit that doesn't
+    //  belong to any collection gets the number of last multiunit + 1,
+    //  the remaining normal units are numbered according to their position
     getRefNum() {
-        return this.collection ? this.collection.indexOf(this) + 1 : -1;
+        let ref_num = -1;
+
+        if (this.collection) {
+            if (this.collection.multiunits && this.collection.multiunits.length) {
+                if (this.isSubunit()) {
+                    const parent_multiunit = this.getParentMultiunit();
+
+                    ref_num = parent_multiunit.getRefNum() + format.number_to_letters(this.get('position') + 1);
+                } else {
+                    const number_of_subunits_in_collection = this.collection.filter(item => item.isSubunit()).length;
+
+                    ref_num = (this.get('position') - number_of_subunits_in_collection) + 2;
+                }
+            } else {
+                ref_num = this.get('position') + 1;
+            }
+        }
+
+        return ref_num;
     },
     getWidthMM() {
         return convert.inches_to_mm(this.get('width'));
@@ -2333,7 +2358,7 @@ const Unit = Backbone.Model.extend({
             });
         }
 
-        if (current_root.bars.horizontal.length) {
+        if (current_root.bars && current_root.bars.horizontal.length) {
             _.each(current_root.bars.horizontal, () => {
                 result.glazing_bars.push({
                     type: 'horizontal',
@@ -2344,7 +2369,7 @@ const Unit = Backbone.Model.extend({
             });
         }
 
-        if (current_root.bars.vertical.length) {
+        if (current_root.bars && current_root.bars.vertical.length) {
             _.each(current_root.bars.vertical, () => {
                 result.glazing_bars.push({
                     type: 'vertical',
@@ -3424,6 +3449,39 @@ const Unit = Backbone.Model.extend({
         return trapezoidHeights || convert.inches_to_mm(this.get('height'));
     },
     /* trapezoid end */
+    isSubunit() {
+        const allSubunitIds = this.collection.multiunits.chain()
+            .map(multiunit => multiunit.getSubunitsIds())
+            .flatten()
+            .value();
+
+        return _.contains(allSubunitIds, this.id);
+    },
+    getParentMultiunit() {
+        const subunitId = this.id;
+        const parentMultiunit = this.collection.multiunits.chain()
+            .find(multiunit => _.contains(multiunit.getSubunitsIds(), subunitId))
+            .value();
+
+        return parentMultiunit;
+    },
+    isSubunitOf(multiunit) {
+        const multiunitSubunitsIds = multiunit.getSubunitsIds();
+
+        return _.contains(multiunitSubunitsIds, this.id);
+    },
+    getRelation() {
+        return this.isSubunit() ? 'subunit' : 'loneunit';
+    },
+    toMultiunit() {
+        const multiunit = new Multiunit(null, { subunits: [this] });
+
+        if (this.collection && this.collection.multiunits) {
+            this.collection.multiunits.add(multiunit);
+        }
+
+        return multiunit;
+    },
     //  List attributes that cause unit redraw on change
     //  TODO: ideally, this should be just the root_section attribute,
     //  but it is not enough in the current state

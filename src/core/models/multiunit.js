@@ -30,9 +30,9 @@ export default Backbone.Model.extend({
     defaults() {
         const defaults = {};
 
-        _.each(MULTIUNIT_PROPERTIES, function (item) {
+        _.each(MULTIUNIT_PROPERTIES, (item) => {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
-        }, this);
+        });
 
         return defaults;
     },
@@ -110,11 +110,13 @@ export default Backbone.Model.extend({
         return filtered_data;
     },
     sync(method, model, options) {
+        const current_options = options;
+
         if (method === 'create' || method === 'update') {
-            options.attrs = { project_multiunit: model.toJSON() };
+            current_options.attrs = { project_multiunit: model.toJSON() };
         }
 
-        return Backbone.sync.call(this, method, model, options);
+        return Backbone.sync.call(this, method, model, current_options);
     },
     toJSON(...args) {
         const properties_to_omit = ['id', 'height', 'width'];
@@ -128,7 +130,7 @@ export default Backbone.Model.extend({
     hasOnlyDefaultAttributes() {
         let has_only_defaults = true;
 
-        _.each(this.toJSON(), function (value, key) {
+        _.each(this.toJSON(), (value, key) => {
             if (key !== 'position' && has_only_defaults) {
                 const property_source = _.findWhere(MULTIUNIT_PROPERTIES, { name: key });
                 const type = property_source ? property_source.type : undefined;
@@ -207,14 +209,11 @@ export default Backbone.Model.extend({
     //  Return { name: 'name', title: 'Title' } pairs for each item in
     //  `names` array. If the array is empty, return all possible pairs
     getNameTitleTypeHash(names) {
+        const selected_names = names || _.pluck(MULTIUNIT_PROPERTIES, 'name');
         const name_title_hash = [];
 
-        if (!names) {
-            names = _.pluck(MULTIUNIT_PROPERTIES, 'name');
-        }
-
         _.each(MULTIUNIT_PROPERTIES, (item) => {
-            if (_.indexOf(names, item.name) !== -1) {
+            if (_.indexOf(selected_names, item.name) !== -1) {
                 name_title_hash.push({ name: item.name, title: item.title, type: item.type });
             }
         });
@@ -229,9 +228,9 @@ export default Backbone.Model.extend({
      * }
      */
     generateFullRoot(rootSection) {
-        rootSection = rootSection || JSON.parse(JSON.stringify(this.get('root_section')));
+        const currentRoot = rootSection || JSON.parse(JSON.stringify(this.get('root_section')));
 
-        return rootSection;
+        return currentRoot;
     },
     getSubunitsSum(funcName) {
         if (!_.isFunction(this.subunits.at(0)[funcName])) { return 0; }
