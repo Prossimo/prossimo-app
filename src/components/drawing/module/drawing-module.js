@@ -3,7 +3,6 @@ import $ from 'jquery';
 import Marionette from 'backbone.marionette';
 import Backbone from 'backbone';
 import Konva from 'konva';
-import clone from 'clone';
 
 import App from '../../../main';
 import LayerManager from './layer-manager';
@@ -39,7 +38,7 @@ const SECTION_MENU_HOVER_DELAY = 100;
 //     metricSize: 50               // define a custom metricSize
 // });
 
-const DrawingModule = Marionette.Object.extend({
+export default Marionette.Object.extend({
     initialize(opts) {
         const builder = this;
         const chain = Backbone.$.Deferred();
@@ -668,73 +667,3 @@ const DrawingModule = Marionette.Object.extend({
         this.setState('sectionHoverMenuOpen', false);
     },
 });
-
-export default DrawingModule;
-
-export const preview = function generatePreview(unitModel, options) {
-    const defaults = {
-        width: 300,
-        height: 300,
-        mode: 'base64',
-        position: 'inside',
-        metricSize: 50,
-        preview: true,
-    };
-    const currentModel = unitModel;
-    const currentOptions = _.defaults({}, clone(options), defaults, { model: currentModel });
-    let result;
-
-    const full_root_json_string = JSON.stringify(currentModel.generateFullRoot());
-    const options_json_string = JSON.stringify(currentOptions);
-
-    //  If we already got an image for the same full_root and same options,
-    //  just return it from our preview cache
-    if (
-        currentModel.preview && currentModel.preview.result &&
-        currentModel.preview.result[options_json_string] &&
-        full_root_json_string === currentModel.preview.full_root_json_string
-    ) {
-        return currentModel.preview.result[options_json_string];
-    }
-
-    //  If full root changes, preview cache should be erased
-    if (
-        !currentModel.preview ||
-        !currentModel.preview.result ||
-        full_root_json_string !== currentModel.preview.full_root_json_string
-    ) {
-        currentModel.preview = {};
-        currentModel.preview.result = {};
-    }
-
-    const module = new DrawingModule(currentOptions);
-
-    if (_.indexOf(['inside', 'outside'], currentOptions.position) !== -1) {
-        module.setState({
-            insideView: currentOptions.position === 'inside',
-            openingView: (currentOptions.position === 'inside' && !currentModel.isOpeningDirectionOutward()) ||
-                (currentOptions.position === 'outside' && currentModel.isOpeningDirectionOutward()),
-            inchesDisplayMode: currentOptions.inchesDisplayMode,
-            hingeIndicatorMode: currentOptions.hingeIndicatorMode,
-        }, false);
-    }
-
-    if (currentOptions.width && currentOptions.height) {
-        module.updateSize(currentOptions.width, currentOptions.height);
-    }
-
-    if (currentOptions.mode === 'canvas') {
-        result = module.getCanvas();
-    } else if (currentOptions.mode === 'base64') {
-        result = module.getBase64();
-    } else if (currentOptions.mode === 'image') {
-        result = module.getImage();
-    }
-
-    module.destroy();
-
-    currentModel.preview.full_root_json_string = full_root_json_string;
-    currentModel.preview.result[options_json_string] = result;
-
-    return result;
-};

@@ -6,6 +6,7 @@ import App from '../../main';
 import Schema from '../../schema';
 import { object, convert, math } from '../../utils';
 import UnitOptionCollection from '../collections/inline/unit-option-collection';
+import { mergePreviewOptions, generatePreview } from '../../components/drawing/module/preview';
 import { globalChannel } from '../../utils/radio';
 
 import {
@@ -3422,6 +3423,72 @@ const Unit = Backbone.Model.extend({
         return trapezoidHeights || convert.inches_to_mm(this.get('height'));
     },
     /* trapezoid end */
+    //  List attributes that cause unit redraw on change
+    //  TODO: ideally, this should be just the root_section attribute,
+    //  but it is not enough in the current state
+    getDrawingRepresentation() {
+        const model_attributes_to_cache = [
+            'glazing', 'glazing_bar_width', 'height', 'opening_direction',
+            'profile_id', 'root_section', 'unit_options', 'width',
+        ];
+
+        return this.pick(model_attributes_to_cache);
+    },
+    //  This is a wrapper for `app.preview`, we need it because we want to
+    //  cache preview at the model level to improve app rendering times.
+    //  The way it works is it assumes that preview should be the same if
+    //  none of the model attributes that affect drawing did change
+    //
+    //  - For each combination of preview options we store a separate
+    //    preview image inside the Unit model. For example, we have
+    //    different previews for Customer Quote / Supplier Request, and
+    //    we cache them both
+    //  - If drawing_representation_string changes, we want preview cache
+    //    to be erased, and all previews are removed and then re-created
+    //    again at request
+    getPreview(preview_options) {
+        const complete_preview_options = mergePreviewOptions(this, preview_options);
+        let use_cache = true;
+
+        //  In some cases we want to ignore the cache completely, like when
+        //  preview is expected to return a canvas or a Konva.Group
+        if (complete_preview_options.mode === 'canvas' || complete_preview_options.mode === 'group') {
+            use_cache = false;
+        }
+
+        const drawing_representation_string = JSON.stringify(this.getDrawingRepresentation());
+        const options_json_string = JSON.stringify(_.omit(complete_preview_options, 'model'));
+
+        //  If we already got an image for the same model representation
+        //  and same preview options, just return it from the cache
+        if (
+            use_cache === true && this.preview && this.preview.result &&
+            this.preview.result[options_json_string] &&
+            drawing_representation_string === this.preview.drawing_representation_string
+        ) {
+            return this.preview.result[options_json_string];
+        }
+
+        const result = generatePreview(this, preview_options);
+
+        //  If model representation changes, preview cache should be erased
+        if (
+            (use_cache === true && (!this.preview || !this.preview.result)) ||
+            (use_cache === true && drawing_representation_string !== this.preview.drawing_representation_string)
+        ) {
+            this.preview = {
+                drawing_representation_string,
+                result: {},
+            };
+        }
+
+        //  Add new preview to cache
+        if (use_cache === true) {
+            this.preview.result[options_json_string] = result;
+        }
+
+        return result;
+    },
 });
 
 export default Unit;

@@ -3,7 +3,6 @@ import Marionette from 'backbone.marionette';
 
 import App from '../../../main';
 import { convert, format, math } from '../../../utils';
-import { preview } from '../../drawing/module/drawing-module';
 import template from '../templates/quote-item-view.hbs';
 
 export default Marionette.View.extend({
@@ -285,7 +284,7 @@ export default Marionette.View.extend({
         const title = position === 'inside' ? 'View from Interior' : 'View from Exterior';
 
         return {
-            img: preview(this.model, {
+            img: this.model.getPreview({
                 width: preview_size,
                 height: preview_size,
                 mode: 'base64',
