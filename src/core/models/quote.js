@@ -4,6 +4,7 @@ import Backbone from 'backbone';
 import Schema from '../../schema';
 import AccessoryCollection from '../collections/accessory-collection';
 import UnitCollection from '../collections/unit-collection';
+import MultiunitCollection from '../collections/multiunit-collection';
 
 const QUOTE_PROPERTIES = [
     { name: 'name', title: 'Name', type: 'string' },
@@ -71,6 +72,10 @@ export default Backbone.Model.extend({
 
         if (quote_data && quote_data.units) {
             filtered_data.units = quote_data.units;
+        }
+
+        if (quote_data && quote_data.multiunits) {
+            filtered_data.multiunits = quote_data.multiunits;
         }
 
         return filtered_data;
@@ -245,6 +250,12 @@ export default Backbone.Model.extend({
             changed_flag = true;
         }
 
+        if (this.get('multiunits')) {
+            this.multiunits.set(this.get('multiunits'), { parse: true });
+            this.unset('multiunits', { silent: true });
+            changed_flag = true;
+        }
+
         if (this.get('accessories')) {
             this.extras.set(this.get('accessories'), { parse: true });
             this.extras.trigger('loaded');
@@ -306,6 +317,11 @@ export default Backbone.Model.extend({
                 project: this.collection && this.collection.options.project,
             });
             this.extras = new AccessoryCollection(null, {
+                quote: this,
+                project: this.collection && this.collection.options.project,
+            });
+            this.multiunits = new MultiunitCollection(null, {
+                subunuts: this.units,
                 quote: this,
                 project: this.collection && this.collection.options.project,
             });
