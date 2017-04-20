@@ -24,8 +24,11 @@ function rectsIntersection(rect1, rect2) {
     const height = bottomY - topY;
     let intersection;
 
-    if (width <= 0 || height <= 0) { intersection = null; }
-    else { intersection = { x: leftX, y: topY, width: width, height: height }; }
+    if (width <= 0 || height <= 0) {
+        intersection = null;
+    } else {
+        intersection = { x: leftX, y: topY, width, height };
+    }
 
     return intersection;
 }
@@ -44,10 +47,10 @@ function getAbsoluteRect(konva) {
     const scaleY = transform[3];
 
     const absoluteRect = {
-        x: containerAbsolutePosition.x + clientRect.x * scaleX,
-        y: containerAbsolutePosition.y + clientRect.y * scaleY,
+        x: containerAbsolutePosition.x + (clientRect.x * scaleX),
+        y: containerAbsolutePosition.y + (clientRect.y * scaleY),
         width: clientRect.width * scaleX,
-        height: clientRect.height * scaleY
+        height: clientRect.height * scaleY,
     };
 
     return absoluteRect;
@@ -1397,7 +1400,7 @@ export default Backbone.KonvaView.extend({
 
         return handle;
     },
-    applyHandleFixes: function () {
+    applyHandleFixes() {
         const self = this;
         const style = module.getStyle('handle');
         const handleKonvas = this.layer.find('.handle');
@@ -1405,12 +1408,12 @@ export default Backbone.KonvaView.extend({
         const isPhantomJS = !!window._phantom;
         const dashCorrection = (isPhantomJS) ? ratio : 1;
         const handleDashStyle = [
-            dashCorrection * style.sunk.dashLength / ratio,
-            dashCorrection * style.sunk.dashGap / ratio
+            (dashCorrection * style.sunk.dashLength) / ratio,
+            (dashCorrection * style.sunk.dashGap) / ratio,
         ];
 
         // Calculations are in absolute (real pixel) coordinates, except clipping space
-        handleKonvas.forEach(function (handleKonva) {
+        handleKonvas.forEach((handleKonva) => {
             const handleTransform = handleKonva.getAbsoluteTransform().getMatrix();
             const handleAbsoluteScaleX = handleTransform[0];
             const handleAbsoluteScaleY = handleTransform[3];
@@ -1421,17 +1424,17 @@ export default Backbone.KonvaView.extend({
             const handleBaseAbsoluteScaleX = handleBaseTransform[0];
             const handleBaseAbsoluteScaleY = handleBaseTransform[3];
             const handleOrigin = {
-                x: handleBaseRect.x + handle_data.base.rotationCenter.x * handleBaseAbsoluteScaleX,
-                y: handleBaseRect.y + handle_data.base.rotationCenter.y * handleBaseAbsoluteScaleY
+                x: handleBaseRect.x + (handle_data.base.rotationCenter.x * handleBaseAbsoluteScaleX),
+                y: handleBaseRect.y + (handle_data.base.rotationCenter.y * handleBaseAbsoluteScaleY),
             };
             const handleGrip = handleKonva.findOne('.handleGripStroke');
             const handleGripRect = getAbsoluteRect(handleGrip);
             const handleMullionOverlap = _(mullionKonvas
-                .filter(function (konva) {
+                .filter((konva) => {
                     const mullion = model.getMullion(konva.getAttr('sectionId'));
                     return mullion.type === 'horizontal' || mullion.type === 'horizontal_invisible';
                 })
-                .map(function (konva) {
+                .map((konva) => {
                     const mullionRect = getAbsoluteRect(konva);
                     return rectsIntersection(mullionRect, handleRect);
                 }))
@@ -1440,33 +1443,30 @@ export default Backbone.KonvaView.extend({
             const cutOffThresholdY = handleGripRect.height / 1.65;
             // This means I don't know what else goes into the actual clipping rect coords
             const magicCorrection = { x: 14 * ratio, y: 26 * ratio };
-            const clippingRect = (handleMullionOverlap) ?
-                {  // Clipping rectangle is local, relative to handle origin
-                    x: (handleMullionOverlap.x - handleOrigin.x + magicCorrection.x) / handleAbsoluteScaleX,
-                    y: (handleMullionOverlap.y - handleOrigin.y + magicCorrection.y) / handleAbsoluteScaleY,
+            const clippingRect = handleMullionOverlap &&  // Clipping rectangle is local, relative to handle origin
+                {
+                    x: ((handleMullionOverlap.x - handleOrigin.x) + magicCorrection.x) / handleAbsoluteScaleX,
+                    y: ((handleMullionOverlap.y - handleOrigin.y) + magicCorrection.y) / handleAbsoluteScaleY,
                     width: handleMullionOverlap.width / handleAbsoluteScaleX,
-                    height: handleMullionOverlap.height / handleAbsoluteScaleY
-                }
-                : null;
+                    height: handleMullionOverlap.height / handleAbsoluteScaleY,
+                };
             const isEnoughOverlap = (hangleGripResultRect) ? hangleGripResultRect.height >= cutOffThresholdY : false;
 
-            handleKonva.getAttr('fixes').forEach(function (fix) {
+            handleKonva.getAttr('fixes').forEach((fix) => {
                 if (fix === 'sinkThroughGlass' && handleMullionOverlap && isEnoughOverlap) {
                     self.moveToSeparateLayer(handleKonva);
                     handleGrip.dash(handleDashStyle);
                     handleKonva.setClip(clippingRect);
-
-                } else if (fix === 'sinkThroughGlass' && !handleMullionOverlap || !isEnoughOverlap) {
+                } else if ((fix === 'sinkThroughGlass' && !handleMullionOverlap) || !isEnoughOverlap) {
                     handleKonva.moveDown();
                     handleKonva.moveDown();
-
                 } else if (fix === 'raiseAboveFrame') {
                     self.moveToSeparateLayer(handleKonva);
                 }
             });
         });
     },
-    moveToSeparateLayer: function (konva) {
+    moveToSeparateLayer(konva) {
         const transform = konva.getAbsoluteTransform().getMatrix();
         konva.moveTo(this.layer);
         konva.moveToTop();
