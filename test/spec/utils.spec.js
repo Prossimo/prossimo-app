@@ -4,6 +4,34 @@ import { angle, convert, format, math, parseFormat, vector2d } from '../../src/u
 
 test('Utils.js tests: ', () => {
     //  ------------------------------------------------------------------------
+    //  Test convert functions from utils.js
+    //  ------------------------------------------------------------------------
+    test('convert', () => {
+        test('inches_to_mm', () => {
+            equal(convert.inches_to_mm(20), 508, 'Expected value is 508');
+            equal(convert.inches_to_mm(1), 25.4, 'Expected value is 25.4');
+            equal(convert.inches_to_mm(0), 0, 'Expected value is 0');
+        });
+
+        test('mm_to_inches', () => {
+            equal(convert.mm_to_inches(508), 20, 'Expected value is 20');
+            equal(convert.mm_to_inches(25.4), 1, 'Expected value is 1');
+            equal(convert.mm_to_inches(0), 0, 'Expected value is 0');
+        });
+
+        test('number_to_letters', () => {
+            equal(convert.number_to_letters(0), '', 'Expected value is an empty string');
+            equal(convert.number_to_letters(1), 'a', 'Expected value is a');
+            equal(convert.number_to_letters(12), 'l', 'Expected value is l');
+            equal(convert.number_to_letters(26), 'z', 'Expected value is z');
+            equal(convert.number_to_letters(27), 'aa', 'Expected value is aa');
+            equal(convert.number_to_letters(26 * 2), 'az', 'Expected value is az');
+            equal(convert.number_to_letters((26 * 2) + 1), 'ba', 'Expected value is ba');
+            equal(convert.number_to_letters(26 * 27), 'zz', 'Expected value is zz');
+        });
+    });
+
+    //  ------------------------------------------------------------------------
     //  Test format functions from utils.js
     //  ------------------------------------------------------------------------
     test('format', () => {
@@ -319,27 +347,6 @@ test('Utils.js tests: ', () => {
             equal(m.linear_interpolation(20, 10, 30, 50, 70), 60, 'Expected value is 60');
             equal(m.linear_interpolation(1.2, 1, 2.3, 235, 342).toFixed(2), '251.46', 'Expected value is 251.46');
             equal(m.linear_interpolation(2.2, 1, 2.3, 235, 342).toFixed(2), '333.77', 'Expected value is 333.77');
-        });
-    });
-
-    //  ------------------------------------------------------------------------
-    //  Test convert functions from utils.js
-    //  ------------------------------------------------------------------------
-    test('convert', () => {
-        test('inches_to_mm', () => {
-            const c = convert;
-
-            equal(c.inches_to_mm(20), 508, 'Expected value is 508');
-            equal(c.inches_to_mm(1), 25.4, 'Expected value is 25.4');
-            equal(c.inches_to_mm(0), 0, 'Expected value is 0');
-        });
-
-        test('mm_to_inches', () => {
-            const c = convert;
-
-            equal(c.mm_to_inches(508), 20, 'Expected value is 20');
-            equal(c.mm_to_inches(25.4), 1, 'Expected value is 1');
-            equal(c.mm_to_inches(0), 0, 'Expected value is 0');
         });
     });
 
