@@ -38,7 +38,7 @@ const SECTION_MENU_HOVER_DELAY = 100;
 //     metricSize: 50               // define a custom metricSize
 // });
 
-const DrawingModule = Marionette.Object.extend({
+export default Marionette.Object.extend({
     initialize(opts) {
         const builder = this;
         const chain = Backbone.$.Deferred();
@@ -667,73 +667,3 @@ const DrawingModule = Marionette.Object.extend({
         this.setState('sectionHoverMenuOpen', false);
     },
 });
-
-export default DrawingModule;
-
-export const preview = function (unitModel, options) {
-    let result;
-    const defaults = {
-        width: 300,
-        height: 300,
-        mode: 'base64',
-        position: 'inside',
-        metricSize: 50,
-        preview: true,
-    };
-
-    options = _.defaults({}, options, defaults, { model: unitModel });
-
-    const full_root_json_string = JSON.stringify(unitModel.generateFullRoot());
-    const options_json_string = JSON.stringify(options);
-
-    //  If we already got an image for the same full_root and same options,
-    //  just return it from our preview cache
-    if (
-        unitModel.preview && unitModel.preview.result &&
-        unitModel.preview.result[options_json_string] &&
-        full_root_json_string === unitModel.preview.full_root_json_string
-    ) {
-        return unitModel.preview.result[options_json_string];
-    }
-
-    //  If full root changes, preview cache should be erased
-    if (
-        !unitModel.preview ||
-        !unitModel.preview.result ||
-        full_root_json_string !== unitModel.preview.full_root_json_string
-    ) {
-        unitModel.preview = {};
-        unitModel.preview.result = {};
-    }
-
-    const module = new DrawingModule(options);
-
-    if (_.indexOf(['inside', 'outside'], options.position) !== -1) {
-        module.setState({
-            insideView: options.position === 'inside',
-            openingView: (options.position === 'inside' && !unitModel.isOpeningDirectionOutward()) ||
-                (options.position === 'outside' && unitModel.isOpeningDirectionOutward()),
-            inchesDisplayMode: options.inchesDisplayMode,
-            hingeIndicatorMode: options.hingeIndicatorMode,
-        }, false);
-    }
-
-    if (options.width && options.height) {
-        module.updateSize(options.width, options.height);
-    }
-
-    if (options.mode === 'canvas') {
-        result = module.getCanvas();
-    } else if (options.mode === 'base64') {
-        result = module.getBase64();
-    } else if (options.mode === 'image') {
-        result = module.getImage();
-    }
-
-    module.destroy();
-
-    unitModel.preview.full_root_json_string = full_root_json_string;
-    unitModel.preview.result[options_json_string] = result;
-
-    return result;
-};

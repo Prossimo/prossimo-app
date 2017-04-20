@@ -11,7 +11,6 @@ import UndoManager from '../../utils/undomanager';
 import Unit from '../models/unit';
 import Accessory from '../models/accessory';
 import UnitsTableTotalPricesView from '../../core/views/units-table-total-prices-view';
-import { preview } from '../../components/drawing/module/drawing-module';
 import template from '../../templates/core/units-table-view.hbs';
 
 const UNSET_VALUE = '--';
@@ -344,7 +343,7 @@ export default Marionette.View.extend({
                 return model.getUnitCostDiscounted().toFixed(2);
             },
             drawing(model) {
-                return preview(model, {
+                return model.getPreview({
                     width: 600,
                     height: 600,
                     mode: 'base64',
