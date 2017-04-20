@@ -1,0 +1,592 @@
+@preview_size: 600px;
+@customer_image_size: 150px;
+
+@border_dark: 1px solid darken(@white, 20%);
+@border_medium: 1px solid darken(@white, 15%);
+@border_light: 1px solid darken(@white, 10%);
+
+@bg_light: darken(@white, 1%);
+
+@quote_max_width: 170rem;
+@quote_min_width: 150rem;
+
+
+//  ------------------------------------------------------------------------
+//  Screen and containers
+//  ------------------------------------------------------------------------
+
+.quote-screen {
+    display: flex;
+    flex-flow: column;
+}
+
+.quote-outer-container {
+    padding: 2rem;
+    flex: 1 1 auto;
+    overflow: auto;
+}
+
+.quote-container {
+    margin-bottom: 2rem;
+    padding: 3rem 4rem 4rem;
+    background-color: @white;
+    border: @border_medium;
+    min-height: 100%;
+    max-width: @quote_max_width;
+    min-width: @quote_min_width;
+    width: 100%;
+    overflow: visible;
+}
+
+
+//  ------------------------------------------------------------------------
+//  Quote controls
+//  ------------------------------------------------------------------------
+
+.quote-controls-container {
+    .clearfix();
+    padding: 1rem 0;
+    margin: 0 0 2rem;
+    border: @border_medium;
+    background-color: darken(@white, 2%);
+    max-width: @quote_max_width;
+
+    > div {
+        float: left;
+        padding: 0 1rem;
+    }
+
+    > div + div {
+        border-left: 1px solid #ccc;
+    }
+
+    .export-options .checkbox {
+        margin: 0;
+    }
+
+    .export-options .checkbox + .checkbox {
+        margin-top: 0.2rem;
+    }
+
+    .export-options span em {
+        font-style: normal;
+        color: lighten(@black, 45%);
+    }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Quote header (Prossimo info)
+//  ------------------------------------------------------------------------
+
+.quote-header {
+    position: relative;
+    margin-bottom: 3rem;
+    text-align: right;
+}
+
+.prossimo-logo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 18rem;
+    height: auto;
+}
+
+.prossimo-logo img {
+    width: 100%;
+    height: auto;
+}
+
+.quote-header h1 {
+    padding-top: 2rem;
+    margin: 0 0 4rem;
+    font-weight: 700;
+    color: darken(@white, 30%);
+    text-transform: uppercase;
+    text-align: right;
+}
+
+.quote-header ul {
+    display: inline-block;
+    text-align: left;
+    margin: 0 3rem;
+    list-style-type: none;
+}
+
+
+//  ------------------------------------------------------------------------
+//  Project info
+//  ------------------------------------------------------------------------
+
+.quote-project-info .project-name {
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 2em;
+}
+
+.quote-project-info ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+
+//  ------------------------------------------------------------------------
+//  Table
+//  ------------------------------------------------------------------------
+
+.quote-table-container {
+    margin: 3rem 0 0;
+}
+
+.quote-table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.quote-table thead th {
+    padding: 0.7rem 1.2rem;
+    border: @border_dark;
+    background-color: @bg_light;
+}
+
+.quote-table tbody td {
+    padding: 0.7rem 1.2rem;
+    border: @border_light;
+    vertical-align: top;
+}
+
+
+//  ------------------------------------------------------------------------
+//  Unit info heading (ref, mark, qty, price)
+//  ------------------------------------------------------------------------
+
+.quote-item {
+    margin-bottom: 2rem;
+}
+
+.quote-unit-heading {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.quote-unit-heading tbody td {
+    border: @border_dark;
+    background-color: @bg_light;
+}
+
+.quote-unit-heading td strong,
+.quote-unit-heading td span {
+    min-height: 3rem;
+    vertical-align: middle;
+}
+
+.quote-unit-heading .has-discounted-price td strong,
+.quote-unit-heading .has-discounted-price td span {
+    min-height: 3.7rem;
+}
+
+.quote-unit-heading td.primary-info {
+    padding: 0;
+    width: 56%;
+}
+
+.quote-unit-heading .primary-info td {
+    border-left: none;
+    border-top: none;
+    border-bottom: none;
+    padding: 0;
+}
+
+.quote-unit-heading .primary-info strong,
+.quote-unit-heading .primary-info span {
+    display: block;
+    float: left;
+    padding: 0.5rem 1.5rem;
+}
+
+.quote-unit-heading .primary-info strong {
+    border-right: @border_dark;
+    background-color: @bg_light;
+}
+
+.quote-unit-heading .primary-info span {
+    background-color: @white;
+}
+
+.quote-unit-heading .primary-info.has-price strong {
+    border-bottom: @border_dark;
+    border-right: none;
+}
+
+.quote-unit-heading .primary-info.has-price strong,
+.quote-unit-heading .primary-info.has-price span {
+    float: none;
+}
+
+.quote-unit-heading tbody td.price,
+.quote-unit-heading tbody td.price-discounted {
+    font-size: 1em;
+    width: 22%;
+}
+
+.quote-table .unit-price {
+    display: table;
+    margin: 0;
+    width: 100%;
+}
+
+.quote-table .unit-price li {
+    display: table-row;
+}
+
+.quote-table .unit-price strong {
+    display: table-cell;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.quote-table .unit-price span {
+    display: table-cell;
+    text-align: right;
+}
+
+.quote-table .unit-price .subtotal strong,
+.quote-table .unit-price .subtotal span {
+    font-weight: 700;
+}
+
+.quote-unit-heading td.no-profile-warning {
+    padding: 0.5rem 1.5rem;
+    border: none;
+    vertical-align: middle;
+}
+
+.no-profile-warning p {
+    margin: 0;
+    font-weight: 700;
+    color: @red;
+}
+
+.no-profile-warning p i {
+    padding-right: 0.5em;
+}
+
+
+//  ------------------------------------------------------------------------
+//  Unit info (image, details)
+//  ------------------------------------------------------------------------
+
+.quote-unit {
+    position: relative;
+    top: -1px;
+    width: 100%;
+    table-layout: fixed;
+}
+
+td.product-description,
+td.tech-specs {
+    font-size: 0.9em;
+}
+
+.quote-item .exceptions {
+    color: @red;
+    font-size: 1.1em;
+}
+
+.product-description ul,
+.tech-specs ul {
+    display: table;
+    padding: 0;
+    list-style-type: none;
+    width: 100%;
+}
+
+.product-description li,
+.tech-specs li {
+    display: table-row;
+}
+
+.product-description li strong,
+.tech-specs li strong {
+    display: table-cell;
+    padding-right: 2rem;
+    font-weight: 400;
+    font-style: italic;
+    width: 27%;
+    vertical-align: top;
+}
+
+.product-description li span,
+.tech-specs li span {
+    display: table-cell;
+    width: 73%;
+    vertical-align: bottom;
+}
+
+li.opening h6 {
+    display: table-row;
+    padding: 1rem 0 0.4rem;
+    font-size: 1em;
+    font-weight: 700;
+}
+
+li.opening p {
+    display: table-row;
+    margin-bottom: 0;
+}
+
+table.subtotal,
+table.total-units {
+    table-layout: fixed;
+    width: 100%;
+    border: @border_light;
+    background-color: @bg_light;
+}
+
+td.product-image,
+th.product-image {
+    width: 56%;
+    min-width: @preview_size + @customer_image_size + 20px;
+}
+
+th.product-image em {
+    font-weight: 400;
+}
+
+.product-image img {
+    display: block;
+    max-height: @preview_size;
+    max-width: @preview_size;
+}
+
+td.product-description,
+th.product-description {
+    width: 44%;
+}
+
+.product-description .size-label {
+    font-size: 0.8em;
+    padding: 0 0.4rem;
+    background-color: darken(@white, 5%);
+    font-style: normal;
+}
+
+td.product-image.has-customer-image {
+    position: relative;
+    padding-right: @customer_image_size;
+}
+
+.product-image .customer-image-inner {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: @customer_image_size;
+    padding-bottom: 20px;
+    border-bottom: @border_light;
+    border-left: @border_light;
+}
+
+.customer-image-inner h5 {
+    text-align: center;
+    font-style: italic;
+}
+
+.customer-image-inner img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: @customer_image_size;
+    max-height: @customer_image_size;
+}
+
+.customer-image .customer-image-inner img {
+    max-width: @preview_size;
+    max-height: @preview_size;
+}
+
+.sash-list h5 {
+    margin-left: -1.2rem;
+    margin-right: -1.2rem;
+    padding: 0.7rem 1.2rem;
+    border-top: @border_light;
+    border-bottom: @border_light;
+    background-color: @bg_light;
+    font-weight: 700;
+}
+
+.sash-list h6 {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.sash-list .sections li:first-child h6 {
+    margin-top: 0;
+}
+
+.subtotal td.price,
+.subtotal th.price,
+.total-units td.total-units-column,
+.total-units th.total-units-column,
+.grand-total td.price,
+.grand-total th.price {
+    width: 30%;
+}
+
+
+//  ------------------------------------------------------------------------
+//  Table Footer (Total Prices)
+//  ------------------------------------------------------------------------
+
+.quote-table tfoot td {
+    padding: 0.5rem 1rem;
+    border: @border_light;
+    background-color: @bg_light;
+    vertical-align: top;
+}
+
+.quote-table .quote-total-prices,
+.quote-table .quote-total-units {
+    width: 100%;
+}
+
+.quote-table .total-units + .subtotal,
+.quote-table .total-units + .subtotal td {
+    border-top: none;
+}
+
+.quote-table .quote-total-prices td,
+.quote-table .quote-total-units td {
+    padding: 0;
+    border: none;
+    vertical-align: bottom;
+}
+
+.quote-table .quote-total-prices td.value,
+.quote-table .quote-total-units td.value {
+    text-align: right;
+}
+
+.quote-table .quote-total-prices tr.total,
+.quote-table .quote-total-units tr.total {
+    font-size: 1.2em;
+}
+
+.quote-table .quote-total-prices tr.grand-total {
+    font-size: 1.4em;
+}
+
+table.grand-total tr {
+    background-color: @bg_light;
+}
+
+div + table.grand-total {
+    margin-top: 4rem;
+}
+
+
+//  ------------------------------------------------------------------------
+//  Extras table
+//  ------------------------------------------------------------------------
+
+.quote-extras-table {
+    &:extend(.quote-table all);
+}
+
+.extras-heading {
+    margin: 0.8rem 0.8rem 0;
+    font-size: 1.1em;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.optional-extras-subheading {
+    margin: 0.2rem 0.8rem 0;
+    font-size: 0.9em;
+    text-align: center;
+    font-weight: 700;
+}
+
+.extras-heading + table,
+.optional-extras-subheading + table {
+    margin-top: 1rem;
+}
+
+td.extras-product-description,
+th.extras-product-description {
+    width: 65%;
+}
+
+.quote-extras-table {
+    td.ref,
+    th.ref {
+        width: 5%;
+    }
+
+    td.quantity,
+    th.quantity {
+        width: 5%;
+    }
+
+    td.price,
+    th.price {
+        width: 25%;
+    }
+
+    .unit-price td {
+        padding: 0;
+        border: none;
+        vertical-align: bottom;
+    }
+
+    .unit-price tr.subtotal {
+        font-weight: 700;
+    }
+
+    .unit-price td.value {
+        text-align: right;
+    }
+
+    .unit-price {
+        width: 100%;
+    }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Terms (below table)
+//  ------------------------------------------------------------------------
+
+.quote-terms-info {
+    margin-top: 6rem;
+}
+
+.quote-terms-info h2 {
+    width: 60%;
+    font-size: 1.5em;
+    font-weight: 700;
+}
+
+.quote-terms-info ul {
+    margin: 4rem 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+.warranty {
+    font-weight: 700;
+}
+
+.quote-terms-info table {
+    margin: 4rem 0 0;
+    width: 100%;
+}
+
+.quote-terms-info table td {
+    padding: 1rem 0;
+}
+
+.quote-terms-info table span {
+    color: lighten(@black, 40%);
+}

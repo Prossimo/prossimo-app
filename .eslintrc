@@ -1,70 +1,40 @@
 {
-    "extends": "airbnb-base/legacy",
-    "env": {
-        "browser": true
-    },
-    "rules": {
-        //  FIXME: should be error, not warning
-        "indent": [
-            "warn",
-            4,
-            {
-                "SwitchCase": 1,
-                "VariableDeclarator": 1,
-                "outerIIFEBody": 1
-            }
-        ],
-        "camelcase": "off",
-        "func-names": "off",
-        "max-len": ["error", 140, 2, {
-            "ignoreUrls": true,
-            "ignoreComments": false,
-            "ignoreStrings": true,
-            "ignoreTemplateLiterals": true
-        }],
-        //  TODO: We actually want to enable many of the following rules, but
-        //  we need to make updates to our code first
-        "space-in-parens": "off",
-        "no-param-reassign": "off",
-        "vars-on-top": "off",
-        "no-mixed-operators": "off",
-        "no-plusplus": "off",
-        "object-property-newline": "warn",
-        "object-curly-spacing": "off",
-        "no-nested-ternary": "off",
-        "no-useless-escape": "warn",
-        "no-underscore-dangle": "off",
-        "consistent-return": "off",
-        "no-console": "warn",
-        "no-unneeded-ternary": "warn",
-        "wrap-iife": "off",
-        "no-restricted-syntax": "warn",
-        "computed-property-spacing": "warn",
-        "padded-blocks": "warn",
-        "radix": "warn",
-        "operator-assignment": "warn",
-        "no-use-before-define": "off",
-        "no-lonely-if": "warn",
-        "space-before-blocks": "warn",
-        "no-prototype-builtins": "warn",
-        "no-unused-vars": "warn",
-        "no-constant-condition": "warn",
-        "no-unreachable": "warn",
-        "no-continue": "warn",
-        "block-spacing": "warn",
-        "spaced-comment": "warn",
-        "brace-style": "warn",
-        "block-scoped-var": "warn"
-    },
-    "globals": {
-        "Konva": false,
-        "Marionette": false,
-        "Backbone": false,
-        "$": false,
-        "_": false,
-        "Handsontable": false,
-        "Decimal": false,
-        "Spinner": false,
-        "Clipboard": false
+  "root": true,
+  "extends": "airbnb-base",
+  "parser": "babel-eslint",
+  "env": {
+    "es6": true,
+    "browser": true
+  },
+  "plugins": [
+    "promise"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "arrowFunctions": true,
+      "jsx": false
     }
+  },
+  "rules": {
+    "indent": [
+      "error",
+      4
+    ],
+    "max-len": [
+      "error",
+      140,
+      2
+    ],
+    "camelcase": "off",
+    //  TODO: We actually want to enable the following rules, but
+    //  we need to make updates to our code first
+    "no-underscore-dangle": "off",
+    "no-nested-ternary": "warn",
+    "no-continue": "warn",
+    "consistent-return": "warn",
+    "no-param-reassign": "warn",
+    "no-console": "warn"
+  }
 }

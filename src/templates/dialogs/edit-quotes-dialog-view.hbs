@@ -1,0 +1,19 @@
+@require('./partials/base-dialog-start-wrapper.hbs')
+<div class="edit-quotes-dialog-container">
+    <div class="quotes-actions-container">
+        <button class="btn add-new-quote js-add-new-quote">Add empty quote</button>
+    </div>
+    <table class="table quotes-editor-table">
+        <thead><tr>
+            <th class="entry-drag">&nbsp;</th>
+            <th class="name">Name</th>
+            <th class="date">Date</th>
+            <th class="units">Units</th>
+            <th class="grand-total">Grand Total</th>
+            <th class="actions">Actions</th>
+        </tr></thead>
+        <tbody></tbody>
+    </table>
+    <p class="reorder-message">Drag items in the list to reorder. The first Quote in the list will load automatically on Project load.</p>
+</div>
+@require('./partials/base-dialog-end-wrapper.hbs')

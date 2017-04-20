@@ -1,3 +1,0 @@
-{
-  "baseVersion": "@@hash"
-}
