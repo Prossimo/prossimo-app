@@ -12,6 +12,30 @@ export const convert = {
     mm_to_inches(mm_value) {
         return parseFloat(mm_value / 25.4);
     },
+    // Converts 1..26 to a..z and 27..702 to aa..zz
+    number_to_letters(number) {
+        if (!_.isNumber(number) || number <= 0 || number > 702) {
+            return '';
+        }
+
+        let table;
+        let base;
+        let convertableNumber;
+
+        if (number <= 26) {
+            table = _.object('0123456789abcdefghijklmnop', 'abcdefghijklmnopqrstuvwxyz');
+            base = 26;
+            convertableNumber = number - 1;
+        } else {
+            table = _.object('0123456789abcdefghijklmnopq', ' abcdefghijklmnopqrstuvwxyz');
+            base = 27;
+            convertableNumber = number + Math.floor((number - 1) / 26);
+        }
+
+        const letters = convertableNumber.toString(base).split('').map(digit => table[digit]).join('');
+
+        return letters;
+    },
 };
 
 export const format = {
