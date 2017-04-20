@@ -463,6 +463,7 @@ const Unit = Backbone.Model.extend({
 
         const type_value_hash = {
             number: 0,
+            array: [],
         };
 
         const name_value_hash = {
@@ -2957,7 +2958,7 @@ const Unit = Backbone.Model.extend({
     getParentQuote() {
         return this.collection && this.collection.options.quote;
     },
-    //  Check if this unit belongs to the project which is currently active
+    //  Check if this unit belongs to the quote which is currently active
     isParentQuoteActive() {
         let is_active = false;
 
