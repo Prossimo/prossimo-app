@@ -269,6 +269,7 @@ const DrawingModule = Marionette.Object.extend({
                 },
                 louver: {
                     stroke: 'black',
+                    bladeWidth: 40,
                 },
                 others: {
                     fill: 'lightgrey',
