@@ -321,7 +321,7 @@ export default Backbone.Model.extend({
                 project: this.collection && this.collection.options.project,
             });
             this.multiunits = new MultiunitCollection(null, {
-                subunuts: this.units,
+                subunits: this.units,
                 quote: this,
                 project: this.collection && this.collection.options.project,
             });

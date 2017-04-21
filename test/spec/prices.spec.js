@@ -141,6 +141,8 @@ test('Prices tests', () => {
                 uw: 0.77,
                 glazing: '3Std U=.09 SGHC=.5',
                 discount: 20,
+                root_section: '{"id":"101"}',
+                id: 5,
             },
             {
                 mark: 'B1',
@@ -156,8 +158,23 @@ test('Prices tests', () => {
                 uw: 0.78,
                 glazing: '3Std U=.09 SGHC=.5',
                 discount: 20,
+                root_section: '{"id":"102"}',
+                id: 18,
             },
-        ]);
+        ], { parse: true });
+
+        current_quote.multiunits.add([
+            {
+                multiunit_subunits: [5, 18],
+                mark: 'A',
+                width: 68.78740,
+                height: 40,
+                quantity: 1,
+                description: 'Site-mulled multi frame unit',
+                notes: 'Assembled on site',
+                root_section: '{"id":"99999","connectors":[{"id":"1","side":"right","connects":[5,18],"width":20,"facewidth":40}]}',
+            },
+        ], { parse: true });
 
         current_quote.extras.add([
             {
@@ -214,7 +231,7 @@ test('Prices tests', () => {
                 price_markup: 1.3,
                 extras_type: 'Tax',
             },
-        ]);
+        ], { parse: true });
 
         //  End prices for units
         equal(current_quote.units.getSubtotalPrice().toFixed(2), '2436.84', 'Subtotal for units is expected to be 2436.84');
@@ -1064,5 +1081,80 @@ test('Prices tests', () => {
         equal(estimated_cost.options.toFixed(2), '918.07', 'Options total cost is correct after adding corner based options');
         //  Unit total cost
         equal(estimated_cost.total.toFixed(2), '1181.99', 'Unit total cost is correct after adding corner based options');
+    });
+
+    //  ------------------------------------------------------------------------
+    //  Test that prices for a single Multiunit model are calculated properly
+    //  ------------------------------------------------------------------------
+
+    test('single multiunit tests', () => {
+        const current_quote = new Quote();
+
+        current_quote.units.add([
+            {
+                mark: 'A',
+                width: 62,
+                height: 96,
+                quantity: 1,
+                glazing_bar_width: 12,
+                description: 'Tilt and turn inswing / fixed PVC',
+                notes: 'Opening restriction cord included',
+                profile_id: 9991,
+                original_cost: 399,
+                original_currency: 'EUR',
+                conversion_rate: 0.90326078,
+                price_markup: 2.3,
+                uw: 0.77,
+                glazing: '3Std U=.09 SGHC=.5',
+                discount: 20,
+                root_section: '{"id":"106"}',
+                id: 5,
+            },
+            {
+                mark: '11 W 126th Unit H/I',
+                width: 145,
+                height: 90,
+                quantity: 1,
+                profile_id: 9993,
+                original_cost: 321,
+                glazing: 'Triple Low Gain - Tempered',
+                root_section: '{"id":"19991"}',
+                id: 18,
+            },
+            {
+                mark: 'Moyers Residence Unit A',
+                width: 36.75,
+                height: 72.75,
+                quantity: 1,
+                profile_id: 9991,
+                original_cost: 111,
+                glazing: 'Triple Standard - Ug=.09 SGHC=.50 LT=71%',
+                root_section: '{"id":"10565"}',
+                id: 22,
+            },
+        ], { parse: true });
+
+        current_quote.multiunits.add([
+            {
+                multiunit_subunits: [5, 18, 22],
+                mark: 'A',
+                width: 207.78740,
+                height: 169.53740,
+                quantity: 1,
+                description: 'Site-mulled multi frame unit',
+                notes: 'Assembled on site',
+                root_section: '{"id":"99999","connectors":[{"id":"123","side":"bottom","connects":[5,22],"width":20,"facewidth":40},{"id":"130","side":"right","connects":[5,18],"width":20,"facewidth":40}]}',
+            },
+        ], { parse: true });
+
+        const multiunit = current_quote.multiunits.first();
+
+        equal(multiunit.get('mark'), 'A', 'Unit mark is expected to be A');
+
+        equal(multiunit.getUnitPrice().toFixed(2), '2119.99', 'Multiunit end price is expected to be 2119.99');
+
+        equal(multiunit.getSubtotalPrice(), multiunit.getUnitPrice(), 'Price should be same for a single multiunit and for subtotal');
+        equal(multiunit.getUnitPriceDiscounted().toFixed(2), '1916.79', 'Price with discount is expected to be 1916.79');
+        equal(multiunit.getSubtotalPriceDiscounted(), multiunit.getUnitPriceDiscounted(), 'Discounted price should be same for a single multiunit and for subtotal');
     });
 });
