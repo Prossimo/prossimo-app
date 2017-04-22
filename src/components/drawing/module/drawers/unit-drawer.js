@@ -1457,7 +1457,10 @@ export default Backbone.KonvaView.extend({
                     self.moveToSeparateLayer(handleKonva);
                     handleGrip.dash(handleDashStyle);
                     handleKonva.setClip(clippingRect);
-                } else if ((fix === 'sinkThroughGlass' && !handleMullionOverlap) || !isEnoughOverlap) {
+                } else if (
+                    (fix === 'sinkThroughGlass' && !handleMullionOverlap) ||
+                    (fix === 'sinkThroughGlass' && !isEnoughOverlap)
+                ) {
                     handleKonva.moveDown();
                     handleKonva.moveDown();
                 } else if (fix === 'raiseAboveFrame') {
