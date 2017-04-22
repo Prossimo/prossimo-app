@@ -57,7 +57,7 @@ function createBackendProxy(pach, log) {
     return proxy;
 }
 
-const apiRouter = function (config, log) {
+const apiRouter = (config, log) => {
     const apiPath = getPath(config.get('server:apiProtocol'), config.get('server:apiHost'),
         config.get('server:apiPort'), config.get('server:apiPrefix'));
 
@@ -70,7 +70,7 @@ const apiRouter = function (config, log) {
     };
 };
 
-const printRouter = function (config, log) {
+const printRouter = (config, log) => {
     const apiPath = getPath(config.get('server:printerProtocol'), config.get('server:printerHost'),
         config.get('server:printerPort'), config.get('server:printerPrefix'));
 
@@ -83,7 +83,7 @@ const printRouter = function (config, log) {
     };
 };
 
-module.exports = function (config, log) {
+module.exports = (config, log) => {
     router.all('/api/*', apiRouter(config, log));
     router.all('/print/*', printRouter(config, log));
 
