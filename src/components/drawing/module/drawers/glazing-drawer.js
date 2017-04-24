@@ -5,16 +5,14 @@ import Konva from '../konva-clip-patch';
 
 import { parseFormat, format, convert } from '../../../../utils';
 
-let module;
-let model;
-let metricSize;
-let ratio;
-const minimalGap = 25; // minimal gap between bars
+// minimal gap between bars
+const MINIMAL_GAP = 25;
 
 export default Backbone.KonvaView.extend({
     initialize(params) {
-        module = params.builder;
-        model = module.get('model');
+        this._module = params.builder;
+        this._model = this._module.get('model');
+        this._ratio = this._module.get('ratio');
 
         this.layer = params.layer;
         this.stage = params.stage;
@@ -22,7 +20,7 @@ export default Backbone.KonvaView.extend({
 
         this.sectionId = params.data.sectionId;
 
-        metricSize = params.metricSize;
+        this._metricSize = params.metricSize;
     },
     el() {
         const group = new Konva.Group();
@@ -31,9 +29,9 @@ export default Backbone.KonvaView.extend({
     },
     render() {
         if (this.sectionId) {
-            this.section = model.getSection(this.sectionId);
+            this.section = this._model.getSection(this.sectionId);
 
-            ratio = module.get('ratio');
+            this._ratio = this._module.get('ratio');
 
             // Clear all previous objects
             this.layer.destroyChildren();
@@ -46,33 +44,33 @@ export default Backbone.KonvaView.extend({
     events: {},
     // handlers
     handleBarClick(data) {
-        module.setState({
+        this._module.setState({
             selectedBar: data,
             selectedEdge: null,
         });
     },
     handleEdgeOver(key) {
-        module.setState({
+        this._module.setState({
             hoverEdge: key,
         });
     },
     handleEdgeOut() {
-        module.setState({
+        this._module.setState({
             hoverEdge: null,
         });
     },
     handleEdgeClick(key) {
-        module.setState({
+        this._module.setState({
             selectedEdge: key,
         });
     },
     handleControlOver(key) {
-        module.setState({
+        this._module.setState({
             hoverControl: key,
         });
     },
     handleControlOut() {
-        module.setState({
+        this._module.setState({
             hoverControl: null,
         });
     },
@@ -101,7 +99,7 @@ export default Backbone.KonvaView.extend({
         }
 
         bar.links[params.bar.edge] = id;
-        model.setSectionBars(this.section.id, this.section.bars);
+        this._model.setSectionBars(this.section.id, this.section.bars);
 
         this.resetStates();
     },
@@ -110,7 +108,7 @@ export default Backbone.KonvaView.extend({
     },
     // Common methods
     resetStates() {
-        module.setState({
+        this._module.setState({
             selectedBar: null,
             selectedEdge: null,
             hoverEdge: null,
@@ -118,7 +116,7 @@ export default Backbone.KonvaView.extend({
         });
     },
     getDefaultMetricStyles() {
-        return module.getStyle('measurements');
+        return this._module.getStyle('measurements');
     },
     updateLayer() {
         this.layer.draw();
@@ -140,14 +138,14 @@ export default Backbone.KonvaView.extend({
             if (type === 'horizontal') {
                 position = {
                     x: 0,
-                    y: (bar.position - bar.space) * ratio,
+                    y: (bar.position - bar.space) * this._ratio,
                 };
             }
 
             if (type === 'vertical') {
                 position = {
-                    x: metricSize + ((bar.position - bar.space) * ratio),
-                    y: this.getSize().height * ratio,
+                    x: this._metricSize + ((bar.position - bar.space) * this._ratio),
+                    y: this.getSize().height * this._ratio,
                 };
             }
         }
@@ -197,7 +195,7 @@ export default Backbone.KonvaView.extend({
         group.add(section);
 
         section.setAbsolutePosition({
-            x: (this.stage.width() / 2) - ((this.getSize().width * ratio) / 2) - metricSize,
+            x: (this.stage.width() / 2) - ((this.getSize().width * this._ratio) / 2) - this._metricSize,
             y: 0,
         });
 
@@ -215,7 +213,7 @@ export default Backbone.KonvaView.extend({
 
         // zero position for children graphics
         const zeroPos = {
-            x: (0 + metricSize) / ratio,
+            x: (0 + this._metricSize) / this._ratio,
             y: 0,
         };
 
@@ -233,14 +231,14 @@ export default Backbone.KonvaView.extend({
             height: fillHeight,
         });
         const metrics = this.createMetrics({
-            metricSize,
+            metricSize: this._metricSize,
             width: fillWidth,
             height: fillHeight,
         });
 
         // scale with ratio
-        frameGroup.scale({ x: ratio, y: ratio });
-        bars.scale({ x: ratio, y: ratio });
+        frameGroup.scale({ x: this._ratio, y: this._ratio });
+        bars.scale({ x: this._ratio, y: this._ratio });
 
         // adding to group
         group.add(frameGroup);
@@ -252,7 +250,7 @@ export default Backbone.KonvaView.extend({
     },
     createGlass(params) {
         const group = new Konva.Group();
-        const style = module.getStyle('fillings');
+        const style = this._module.getStyle('fillings');
 
         const glass = new Konva.Rect({
             x: params.x,
@@ -298,8 +296,8 @@ export default Backbone.KonvaView.extend({
                 data = this.section.bars[type][i];
 
                 isSelected = (
-                    module.getState('selectedBar') !== null &&
-                    module.getState('selectedBar').id === data.id
+                    this._module.getState('selectedBar') !== null &&
+                    this._module.getState('selectedBar').id === data.id
                 );
 
                 pos_from = 0;
@@ -312,12 +310,12 @@ export default Backbone.KonvaView.extend({
 
                 if (data.links) {
                     if (data.links[0] !== null) {
-                        tbar = model.getBar(this.section.id, data.links[0]);
+                        tbar = this._model.getBar(this.section.id, data.links[0]);
                         pos_from = (tbar !== null && 'position' in tbar) ? tbar.position : fillOffset;
                     }
 
                     if (data.links[1] !== null) {
-                        tbar = model.getBar(this.section.id, data.links[1]);
+                        tbar = this._model.getBar(this.section.id, data.links[1]);
 
                         if (type === 'vertical') {
                             size_to = (tbar !== null && 'position' in tbar) ? tbar.position : fillSize;
@@ -344,16 +342,16 @@ export default Backbone.KonvaView.extend({
                 });
 
                 // Draw controls to switch edges
-                if (isSelected && module.getState('selectedEdge') === null) {
+                if (isSelected && this._module.getState('selectedEdge') === null) {
                     // 1. Draw controls to select edge
                     controls.add(this.createEdgeControls({
                         type,
                         position,
                         edges,
                     }));
-                } else if (isSelected && module.getState('selectedEdge') !== null) {
+                } else if (isSelected && this._module.getState('selectedEdge') !== null) {
                     // 2. Draw controls to bound selected edge
-                    selectedEdge = module.getState('selectedEdge');
+                    selectedEdge = this._module.getState('selectedEdge');
 
                     const invertedType = (type === 'vertical') ? 'horizontal' : 'vertical';
 
@@ -435,30 +433,30 @@ export default Backbone.KonvaView.extend({
         if (params.type === 'vertical') {
             // For vertical bars
             opts.line = {
-                x: params.position - (model.get('glazing_bar_width') / 2),
+                x: params.position - (this._model.get('glazing_bar_width') / 2),
                 y: params.offset.fillY + params.from,
-                width: model.get('glazing_bar_width'),
+                width: this._model.get('glazing_bar_width'),
                 height: params.to - params.from,
             };
             opts.area = {
-                x: params.position - (model.get('glazing_bar_width') * 2),
+                x: params.position - (this._model.get('glazing_bar_width') * 2),
                 y: params.offset.fillY + params.from,
-                width: model.get('glazing_bar_width') * 4,
+                width: this._model.get('glazing_bar_width') * 4,
                 height: params.to - params.from,
             };
         } else {
             // For horizontal bars
             opts.line = {
                 x: params.offset.fillX + params.from,
-                y: params.position - (model.get('glazing_bar_width') / 2),
+                y: params.position - (this._model.get('glazing_bar_width') / 2),
                 width: params.to - params.from,
-                height: model.get('glazing_bar_width'),
+                height: this._model.get('glazing_bar_width'),
             };
             opts.area = {
                 x: params.offset.fillY + params.from,
-                y: params.position - (model.get('glazing_bar_width') * 2),
+                y: params.position - (this._model.get('glazing_bar_width') * 2),
                 width: params.to - params.from,
-                height: model.get('glazing_bar_width') * 4,
+                height: this._model.get('glazing_bar_width') * 4,
             };
         }
         // Colors
@@ -484,8 +482,8 @@ export default Backbone.KonvaView.extend({
         let isCircleSelected;
 
         for (let j = 0; j < 2; j += 1) {
-            isCircleSelected = (module.getState('selectedEdge') === j);
-            isCircleHover = (module.getState('hoverEdge') === j);
+            isCircleSelected = (this._module.getState('selectedEdge') === j);
+            isCircleHover = (this._module.getState('hoverEdge') === j);
 
             if (!isCircleSelected) {
                 // Position
@@ -504,7 +502,7 @@ export default Backbone.KonvaView.extend({
                 }
                 // Styles
                 opts.name = 'edge';
-                opts.radius = model.get('glazing_bar_width') * 3;
+                opts.radius = this._model.get('glazing_bar_width') * 3;
                 opts.fill = 'red';
                 opts.opacity = (isCircleHover) ? 0.7 : 0.3;
 
@@ -522,14 +520,14 @@ export default Backbone.KonvaView.extend({
         return controls;
     },
     createBoundControl(params) {
-        const style = module.getStyle('glazing_controls');
+        const style = this._module.getStyle('glazing_controls');
         const circle = new Konva.Circle({
             name: 'control',
             x: params.position.x,
             y: params.position.y,
-            radius: model.get('glazing_bar_width') * style.bound.radius,
+            radius: this._model.get('glazing_bar_width') * style.bound.radius,
             fill: style.bound.fill,
-            opacity: (module.getState('hoverControl') === params.index) ?
+            opacity: (this._module.getState('hoverControl') === params.index) ?
                 style.bound.hover.opacity : style.bound.normal.opacity,
         });
 
@@ -573,7 +571,7 @@ export default Backbone.KonvaView.extend({
 
                 if (
                     view &&
-                    (mm >= max[type] - minimalGap || (this.position + delta) < 0 + minimalGap)
+                    (mm >= max[type] - MINIMAL_GAP || (this.position + delta) < 0 + MINIMAL_GAP)
                 ) {
                     view.showError();
                     return;
@@ -597,7 +595,7 @@ export default Backbone.KonvaView.extend({
 
                 if (
                     view &&
-                    (mm > max[type] - minimalGap || val < 0 + minimalGap)
+                    (mm > max[type] - MINIMAL_GAP || val < 0 + MINIMAL_GAP)
                 ) {
                     view.showError();
                     return;
@@ -663,12 +661,12 @@ export default Backbone.KonvaView.extend({
         return metrics;
     },
     createVerticalMetrics(params) {
-        const drawerParams = [params.metricSize, params.height * ratio, params.methods];
+        const drawerParams = [params.metricSize, params.height * this._ratio, params.methods];
 
         return this.createVerticalMetric(...drawerParams);
     },
     createHorizontalMetrics(params) {
-        const drawerParams = [params.width * ratio, params.metricSize, params.methods];
+        const drawerParams = [params.width * this._ratio, params.metricSize, params.methods];
 
         return this.createHorizontalMetric(...drawerParams);
     },
@@ -752,7 +750,7 @@ export default Backbone.KonvaView.extend({
             strokeWidth: styles.label.strokeWidth,
         }));
         const inches = convert.mm_to_inches(params.getter());
-        const val = format.dimension(inches, 'fraction', module.getState('inchesDisplayMode'));
+        const val = format.dimension(inches, 'fraction', this._module.getState('inchesDisplayMode'));
         const textInches = new Konva.Text({
             text: val,
             padding: styles.label.padding,
@@ -772,7 +770,7 @@ export default Backbone.KonvaView.extend({
             params.canBeNegative = true;
 
             labelInches.on('click tap', () => {
-                module.trigger('labelClicked', {
+                this._module.trigger('labelClicked', {
                     params,
                     pos: labelInches.getAbsolutePosition(),
                     size: textInches.size(),
@@ -863,7 +861,7 @@ export default Backbone.KonvaView.extend({
             strokeWidth: styles.label.strokeWidth,
         }));
         const inches = convert.mm_to_inches(params.getter());
-        const val = format.dimension(inches, 'fraction', module.getState('inchesDisplayMode'));
+        const val = format.dimension(inches, 'fraction', this._module.getState('inchesDisplayMode'));
         const textInches = new Konva.Text({
             text: val,
             padding: styles.label.padding,
@@ -883,7 +881,7 @@ export default Backbone.KonvaView.extend({
             params.canBeNegative = true;
 
             labelInches.on('click tap', () => {
-                module.trigger('labelClicked', {
+                this._module.trigger('labelClicked', {
                     params,
                     pos: labelInches.getAbsolutePosition(),
                     size: textInches.size(),

@@ -7,12 +7,9 @@ import handle_data from '../../data/handle-data';
 
 const INDEX_HOVERPAD_SIZE = 15;
 
-let module;
-let model;
-let ratio;
-
-function drawLouver(context, options) {
+function drawLouver(context, model, options) {
     if (!context || !(options && options.width && options.height)) { return; }
+
     const width = options.width;
     const height = options.height;
     const bladeWidth = options.bladeWidth || 40;
@@ -47,12 +44,13 @@ function drawLouver(context, options) {
 
 export default Backbone.KonvaView.extend({
     initialize(params) {
-        module = params.builder;
+        this._module = params.builder;
 
         this.layer = params.layer;
         this.stage = params.stage;
 
-        model = module.get('model');
+        this._model = this._module.get('model');
+        this._ratio = this._module.get('ratio');
     },
     el() {
         const group = new Konva.Group();
@@ -60,7 +58,7 @@ export default Backbone.KonvaView.extend({
         return group;
     },
     render() {
-        ratio = module.get('ratio');
+        this._ratio = this._module.get('ratio');
 
         // Clear all previous objects
         this.layer.destroyChildren();
@@ -107,7 +105,7 @@ export default Backbone.KonvaView.extend({
     },
     // Handlers
     onFrameClick(event) {
-        this.setSelection(event, 'sash', 'frame');
+        this.setSelection(event, 'frame', 'whole');
     },
     onFillingClick(event) {
         this.setSelection(event, 'sash', 'filling');
@@ -119,66 +117,67 @@ export default Backbone.KonvaView.extend({
         this.deselectAll();
     },
     onIndexHoverClick(event) {
-        module.stopSectionMenuHover();
+        this._module.stopSectionMenuHover();
         this.setSelection(event, 'sash', 'filling');
     },
     onIndexHoverEnter(event) {
-        module.startSectionMenuHover({ sectionId: event.target.getAttr('sectionId') });
+        this._module.startSectionMenuHover({ sectionId: event.target.getAttr('sectionId') });
     },
     onIndexHoverMove() {
-        module.restartSectionMenuHover();
+        this._module.restartSectionMenuHover();
     },
     onIndexHoverLeave() {
-        module.stopSectionMenuHover();
+        this._module.stopSectionMenuHover();
     },
-
     // Keyboards handlers
     onKeyDown(e) {
         const isRemove = e.key === 'Delete' || e.key === 'Backspace';
         const isNumeric = /^[0-9]$/.test(e.key);
-        const selectedMullionId = module.getState('selected:mullion');
+        const selectedMullionId = this._module.getState('selected:mullion');
         const isMullionSelected = !!selectedMullionId;
 
         if (isRemove) {
             e.preventDefault();
             this.removeSelected();
         } else if (isNumeric && isMullionSelected) {
-            module.trigger('mullionNumericInput', { mullionId: selectedMullionId });
+            this._module.trigger('mullionNumericInput', { mullionId: selectedMullionId });
         }
     },
-
     // Selections
     setSelection(event, type) {
         const origin = this.getSectionId(event.target);
-        const untype = (type === 'sash') ? 'mullion' : 'sash';
 
-        if (origin) {
-            module.setState(`selected:${untype}`, null);
-            module.setState(`selected:${type}`, origin.attrs.sectionId);
+        this.deselectAll();
+
+        if (type === 'frame') {
+            this._module.setState('selected:frame', 'whole');
+        } else if (type === 'sash' && origin) {
+            this._module.setState('selected:sash', origin.attrs.sectionId);
+        } else if (type === 'mullion' && origin) {
+            this._module.setState('selected:mullion', origin.attrs.sectionId);
         }
     },
     deselectAll(preventUpdate) {
-        module.deselectAll(preventUpdate);
+        this._module.deselectAll(preventUpdate);
     },
     removeSelected() {
-        const selectedMullionId = module.getState('selected:mullion');
-        const selectedSashId = module.getState('selected:sash');
+        const selectedMullionId = this._module.getState('selected:mullion');
+        const selectedSashId = this._module.getState('selected:sash');
 
         if (selectedMullionId) {
-            model.removeMullion(selectedMullionId);
+            this._model.removeMullion(selectedMullionId);
         }
 
         if (selectedSashId) {
-            model.removeSash(selectedSashId);
+            this._model.removeSash(selectedSashId);
         }
 
         this.deselectAll();
     },
-
     // Create unit
     createUnit() {
         const group = this.el;
-        const root = (module.getState('openingView')) ? model.generateFullRoot() : model.generateFullReversedRoot();
+        const root = (this._module.getState('openingView')) ? this._model.generateFullRoot() : this._model.generateFullReversedRoot();
 
         group.add(this.createBack());
 
@@ -188,11 +187,11 @@ export default Backbone.KonvaView.extend({
         group.add(frameGroup);
         group.add(sectionGroup);
 
-        const center = module.get('center');
+        const center = this._module.get('center');
         // place unit on stage center
         group.position(center);
 
-        if (!module.getState('openingView')) {
+        if (!this._module.getState('openingView')) {
             frameGroup.moveToTop();
         }
 
@@ -215,66 +214,66 @@ export default Backbone.KonvaView.extend({
 
         let frameGroup;
         const isDoorFrame =
-            model.profile.isThresholdPossible() &&
-            model.profile.get('low_threshold');
+            this._model.profile.isThresholdPossible() &&
+            this._model.profile.get('low_threshold');
 
-        const isArchedWindow = model.isArchedWindow();
-        const isCircleWindow = model.isCircleWindow();
+        const isArchedWindow = this._model.isArchedWindow();
+        const isCircleWindow = this._model.isCircleWindow();
 
         // create main frame
         if (isDoorFrame) {
-            if (model.isTrapezoid()) {
+            if (this._model.isTrapezoid()) {
                 frameGroup = this.createDoorTrapezoidFrame({
                     sectionId: root.id,
-                    width: model.getInMetric('width', 'mm'),
-                    height: model.getInMetric('height', 'mm'),
-                    trapezoidHeights: model.getTrapezoidHeights(module.getState('insideView')),
-                    maxHeight: model.getTrapezoidMaxHeight(),
-                    trapezoidCorners: model.getMainTrapezoidInnerCorners(),
-                    frameWidth: model.profile.get('frame_width'),
+                    width: this._model.getInMetric('width', 'mm'),
+                    height: this._model.getInMetric('height', 'mm'),
+                    trapezoidHeights: this._model.getTrapezoidHeights(this._module.getState('insideView')),
+                    maxHeight: this._model.getTrapezoidMaxHeight(),
+                    trapezoidCorners: this._model.getMainTrapezoidInnerCorners(),
+                    frameWidth: this._model.profile.get('frame_width'),
                 });
             } else {
                 frameGroup = this.createDoorFrame({
                     sectionId: root.id,
-                    width: model.getInMetric('width', 'mm'),
-                    height: model.getInMetric('height', 'mm'),
-                    frameWidth: model.profile.get('frame_width'),
+                    width: this._model.getInMetric('width', 'mm'),
+                    height: this._model.getInMetric('height', 'mm'),
+                    frameWidth: this._model.profile.get('frame_width'),
                 });
             }
         } else if (isArchedWindow) {
             frameGroup = this.createArchedFrame({
                 sectionId: root.id,
-                width: model.getInMetric('width', 'mm'),
-                height: model.getInMetric('height', 'mm'),
-                frameWidth: model.profile.get('frame_width'),
-                archHeight: model.getArchedPosition(),
+                width: this._model.getInMetric('width', 'mm'),
+                height: this._model.getInMetric('height', 'mm'),
+                frameWidth: this._model.profile.get('frame_width'),
+                archHeight: this._model.getArchedPosition(),
             });
         } else if (isCircleWindow) {
             frameGroup = this.createCircleFrame({
                 sectionId: root.id,
-                radius: model.getCircleRadius(),
-                frameWidth: model.profile.get('frame_width'),
+                radius: this._model.getCircleRadius(),
+                frameWidth: this._model.profile.get('frame_width'),
             });
-        } else if (model.isTrapezoid()) {
+        } else if (this._model.isTrapezoid()) {
             frameGroup = this.createTrapezoidFrame({
                 sectionId: root.id,
-                width: model.getInMetric('width', 'mm'),
-                height: model.getInMetric('height', 'mm'),
-                trapezoidHeights: model.getTrapezoidHeights(module.getState('insideView')),
-                maxHeight: model.getTrapezoidMaxHeight(),
-                trapezoidCorners: model.getMainTrapezoidInnerCorners(),
-                frameWidth: model.profile.get('frame_width'),
+                width: this._model.getInMetric('width', 'mm'),
+                height: this._model.getInMetric('height', 'mm'),
+                trapezoidHeights: this._model.getTrapezoidHeights(this._module.getState('insideView')),
+                maxHeight: this._model.getTrapezoidMaxHeight(),
+                trapezoidCorners: this._model.getMainTrapezoidInnerCorners(),
+                frameWidth: this._model.profile.get('frame_width'),
             });
         } else {
             frameGroup = this.createFrame({
                 sectionId: root.id,
-                width: model.getInMetric('width', 'mm'),
-                height: model.getInMetric('height', 'mm'),
-                frameWidth: model.profile.get('frame_width'),
+                width: this._model.getInMetric('width', 'mm'),
+                height: this._model.getInMetric('height', 'mm'),
+                frameWidth: this._model.profile.get('frame_width'),
             });
         }
 
-        frameGroup.scale({ x: ratio, y: ratio });
+        frameGroup.scale({ x: this._ratio, y: this._ratio });
         group.add(frameGroup);
 
         return group;
@@ -316,8 +315,7 @@ export default Backbone.KonvaView.extend({
         return group;
     },
     createArchSashFrame(params) {
-        const style = module.getStyle('frame');
-
+        const style = this._module.getStyle('frame');
         const opts = this.getCircleSashDrawingOpts(params);
 
         const group = new Konva.Group({
@@ -521,12 +519,12 @@ export default Backbone.KonvaView.extend({
 
         return arcEdge;
     },
-
     createFrame(params) {
         const frameWidth = params.frameWidth;  // in mm
         const width = params.width;
         const height = params.height;
-        const style = module.getStyle('frame');
+        const isSelected = this._module.getState('selected:frame') === 'whole';
+        const style = (isSelected) ? this._module.getStyle('frame').selected : this._module.getStyle('frame').default;
 
         const group = new Konva.Group({
             name: 'frame',
@@ -584,7 +582,8 @@ export default Backbone.KonvaView.extend({
         const width = params.width;
         const trapezoidHeights = params.trapezoidHeights;
         const maxHeight = params.maxHeight;
-        const style = module.getStyle('frame');
+        const isSelected = this._module.getState('selected:frame') === 'whole';
+        const style = (isSelected) ? this._module.getStyle('frame').selected : this._module.getStyle('frame').default;
 
         const group = new Konva.Group({
             name: 'frame',
@@ -638,20 +637,19 @@ export default Backbone.KonvaView.extend({
 
         return group;
     },
-
     createInnerTrapezoidFrame(section, params) {
         const frameWidth = params.frameWidth;
         const width = params.width;
         const height = params.height;
         const frameX = params.x;
         const frameY = params.y;
-        const frameOffset = model.getFrameOffset();
-        const innerCorners = model.getMainTrapezoidInnerCorners();
-        const newLeftY = model.getLineCrossingX(frameX, innerCorners.left, innerCorners.right) - frameY;
-        const newRightY = model.getLineCrossingX(frameX + width, innerCorners.left, innerCorners.right) - frameY;
+        const frameOffset = this._model.getFrameOffset();
+        const innerCorners = this._model.getMainTrapezoidInnerCorners();
+        const newLeftY = this._model.getLineCrossingX(frameX, innerCorners.left, innerCorners.right) - frameY;
+        const newRightY = this._model.getLineCrossingX(frameX + width, innerCorners.left, innerCorners.right) - frameY;
         const maxHeight = height;
 
-        const corners = model.getTrapezoidInnerCorners({
+        const corners = this._model.getTrapezoidInnerCorners({
             heights: { left: height - newLeftY, right: height - newRightY },
             width,
             frameWidth,
@@ -679,7 +677,8 @@ export default Backbone.KonvaView.extend({
 
         section.trapezoid.frame = points;
 
-        const style = module.getStyle('frame');
+        const isSelected = this._module.getState('selected:sash') === 'filling';
+        const style = (isSelected) ? this._module.getStyle('frame').selected : this._module.getStyle('frame').default;
 
         const group = new Konva.Group({
             name: 'frame',
@@ -740,10 +739,10 @@ export default Backbone.KonvaView.extend({
         const width = params.width;
         const height = params.height;
         const opts = {};
-        const frameWidth = model.profile.get('frame_width');
+        const frameWidth = this._model.profile.get('frame_width');
 
         // Extend opts with styles
-        _.extend(opts, module.getStyle('flush_frame'));
+        _.extend(opts, this._module.getStyle('flush_frame'));
         // Extend with sizes and data
         _.extend(opts, {
             width,
@@ -753,10 +752,10 @@ export default Backbone.KonvaView.extend({
         });
 
         let rect;
-        const corners = model.getMainTrapezoidInnerCorners();
+        const corners = this._model.getMainTrapezoidInnerCorners();
         const crossing = {
-            left: model.getLineCrossingX(section.sashParams.x, corners.left, corners.right),
-            right: model.getLineCrossingX(
+            left: this._model.getLineCrossingX(section.sashParams.x, corners.left, corners.right),
+            right: this._model.getLineCrossingX(
                 section.sashParams.x + section.sashParams.width, corners.left, corners.right,
             ),
         };
@@ -784,13 +783,13 @@ export default Backbone.KonvaView.extend({
     // door frame have special case for threshold drawing
     createDoorFrame(params) {
         const frameWidth = params.frameWidth;  // in mm
-        const thresholdWidth = model.profile.get('threshold_width');
+        const thresholdWidth = this._model.profile.get('threshold_width');
         const width = params.width;
         const height = params.height;
-
+        const isSelected = this._module.getState('selected:frame') === 'whole';
         const style = {
-            frame: module.getStyle('frame'),
-            bottom: module.getStyle('door_bottom'),
+            frame: (isSelected) ? this._module.getStyle('frame').selected : this._module.getStyle('frame').default,
+            bottom: this._module.getStyle('door_bottom'),
         };
 
         const group = new Konva.Group({
@@ -850,14 +849,14 @@ export default Backbone.KonvaView.extend({
     },
     createDoorTrapezoidFrame(params) {
         const frameWidth = params.frameWidth;  // in mm
-        const thresholdWidth = model.profile.get('threshold_width');
+        const thresholdWidth = this._model.profile.get('threshold_width');
         const width = params.width;
         const trapezoidHeights = params.trapezoidHeights;
         const maxHeight = params.maxHeight;
-
+        const isSelected = this._module.getState('selected:frame') === 'whole';
         const style = {
-            frame: module.getStyle('frame'),
-            bottom: module.getStyle('door_bottom'),
+            frame: (isSelected) ? this._module.getStyle('frame').selected : this._module.getStyle('frame').default,
+            bottom: this._module.getStyle('door_bottom'),
         };
 
         const group = new Konva.Group({
@@ -923,7 +922,8 @@ export default Backbone.KonvaView.extend({
         const height = params.height;
         const archHeight = params.archHeight;
 
-        const style = module.getStyle('frame');
+        const isSelected = this._module.getState('selected:frame') === 'whole';
+        const style = (isSelected) ? this._module.getStyle('frame').selected : this._module.getStyle('frame').default;
 
         const group = new Konva.Group({
             name: 'frame',
@@ -997,7 +997,7 @@ export default Backbone.KonvaView.extend({
         return group;
     },
     clipCircle(group, params) {
-        const root = model.generateFullRoot();
+        const root = this._model.generateFullRoot();
 
         params = params || {};
         params = _.defaults(params, {
@@ -1016,7 +1016,7 @@ export default Backbone.KonvaView.extend({
     createCircleFrame(params) {
         const frameWidth = params.frameWidth;
         const radius = params.radius;
-        const style = module.getStyle('frame');
+        const style = this._module.getStyle('frame');
         const group = new Konva.Group({
             name: 'frame',
             sectionId: params.sectionId,
@@ -1056,12 +1056,12 @@ export default Backbone.KonvaView.extend({
         // create sections(sashes) recursively
         const sections = this.createSectionsTree(root);
 
-        const radius = model.getCircleRadius();
-        const frameWidth = model.profile.get('frame_width');
+        const radius = this._model.getCircleRadius();
+        const frameWidth = this._model.profile.get('frame_width');
 
         // Reverse sections array to sorting from the deepest children
         // To make parent mullions lays over children sashes
-        // if (!module.getState('openingView')) { comment when fix bug width different mullions width
+        // if (!this._module.getState('openingView')) { comment when fix bug width different mullions width
         //     sections.reverse();
         // }
 
@@ -1075,7 +1075,7 @@ export default Backbone.KonvaView.extend({
                 sectionsGroup.add(input);
 
                 // Clip mullions that out over the edge of filling
-                if (input.attrs.name === 'mullion' && model.isCircleWindow()) {
+                if (input.attrs.name === 'mullion' && drawer._model.isCircleWindow()) {
                     drawer.clipCircle(input, {
                         x: frameWidth + 4,
                         y: frameWidth + 4,
@@ -1088,10 +1088,10 @@ export default Backbone.KonvaView.extend({
         }
 
         drawSectionGroup(sections);
-        sectionsGroup.scale({ x: ratio, y: ratio });
+        sectionsGroup.scale({ x: this._ratio, y: this._ratio });
 
         // Clip a whole unit
-        if (model.isCircleWindow()) {
+        if (this._model.isCircleWindow()) {
             this.clipCircle(sectionsGroup);
         }
 
@@ -1112,11 +1112,11 @@ export default Backbone.KonvaView.extend({
             ];
 
             // Get section data
-            const section = model.getSection(group.attrs.sectionId);
+            const section = this._model.getSection(group.attrs.sectionId);
             // Make some correction in sorting order if section has...
             if (
-                (section.fillingType === 'interior-flush-panel' && module.getState('openingView')) ||
-                (section.fillingType === 'exterior-flush-panel' && !module.getState('openingView')) ||
+                (section.fillingType === 'interior-flush-panel' && this._module.getState('openingView')) ||
+                (section.fillingType === 'exterior-flush-panel' && !this._module.getState('openingView')) ||
                 section.fillingType === 'full-flush-panel'
             ) {
                 // Move frame before filling
@@ -1142,7 +1142,7 @@ export default Backbone.KonvaView.extend({
             const mullion = this.createMullion(rootSection);
 
             // fix bug width different mullion width
-            if (module.getState('openingView')) {
+            if (this._module.getState('openingView')) {
                 objects.push(mullion);
             }
 
@@ -1155,7 +1155,7 @@ export default Backbone.KonvaView.extend({
             objects.push(level);
 
             // fix bug width different mullion width
-            if (!module.getState('openingView')) {
+            if (!this._module.getState('openingView')) {
                 objects.push(mullion);
             }
         } else {
@@ -1165,8 +1165,8 @@ export default Backbone.KonvaView.extend({
         return objects;
     },
     createMullion(section) {
-        const style = module.getStyle('mullions');
-        const fillStyle = module.getStyle('fillings');
+        const style = this._module.getStyle('mullions');
+        const fillStyle = this._module.getStyle('fillings');
         const group = new Konva.Group({
             id: `mullion-${section.id}`,
             name: 'mullion',
@@ -1174,11 +1174,11 @@ export default Backbone.KonvaView.extend({
         });
         const params = section.mullionParams;
         const crossing = {
-            left: model.getTrapezoidCrossing(
+            left: this._model.getTrapezoidCrossing(
                 { x: params.x, y: params.y },
                 { x: params.x, y: params.y + params.height },
             ),
-            right: model.getTrapezoidCrossing(
+            right: this._model.getTrapezoidCrossing(
                 { x: params.x + params.width, y: params.y },
                 { x: params.x + params.width, y: params.y + params.height },
             ),
@@ -1205,12 +1205,12 @@ export default Backbone.KonvaView.extend({
             if (section.trapezoid && section.trapezoid.frame) {
                 const inner = section.trapezoid.frame.inner;
                 const topCrossing = {
-                    left: model.getLineCrossingX(
+                    left: this._model.getLineCrossingX(
                         params.x,
                         { x: inner[0].x + section.sashParams.x, y: inner[0].y + section.sashParams.y },
                         { x: inner[1].x + section.sashParams.x, y: inner[1].y + section.sashParams.y },
                     ),
-                    right: model.getLineCrossingX(
+                    right: this._model.getLineCrossingX(
                         params.x + params.width,
                         { x: inner[0].x + section.sashParams.x, y: inner[0].y + section.sashParams.y },
                         { x: inner[1].x + section.sashParams.x, y: inner[1].y + section.sashParams.y },
@@ -1241,7 +1241,7 @@ export default Backbone.KonvaView.extend({
         const isHorizontalInvisible = (
             section.divider === 'horizontal_invisible'
         );
-        const isSelected = module.getState('selected:mullion') === section.id;
+        const isSelected = this._module.getState('selected:mullion') === section.id;
 
         // do not show mullion for type vertical_invisible
         // and sash is added for both right and left sides
@@ -1286,8 +1286,8 @@ export default Backbone.KonvaView.extend({
         const factors = {
             offsetX: sectionData.sashParams.width / 3,
             offsetY: sectionData.sashParams.height / 4,
-            stepX: 60 / ratio,
-            stepY: 60 / ratio,
+            stepX: 60 / this._ratio,
+            stepY: 60 / this._ratio,
             left: {
                 initialOffsetSign: -1,
                 directionSign: 1,
@@ -1297,8 +1297,8 @@ export default Backbone.KonvaView.extend({
                 directionSign: -1,
             },
         };
-        const initialX = (sectionData.sashParams.width / 2) + ((15 / ratio) * factors[direction].initialOffsetSign);
-        const initialY = (sectionData.sashParams.height / 2) + (10 / ratio);
+        const initialX = (sectionData.sashParams.width / 2) + ((15 / this._ratio) * factors[direction].initialOffsetSign);
+        const initialY = (sectionData.sashParams.height / 2) + (10 / this._ratio);
         const arrowParams = {
             points: [
                 initialX,
@@ -1308,11 +1308,11 @@ export default Backbone.KonvaView.extend({
                 initialX + (factors.stepX * factors[direction].directionSign),
                 initialY - factors.stepY,
             ],
-            pointerLength: (1 / ratio) * 2,
-            pointerWidth: (1 / ratio) * 2,
+            pointerLength: (1 / this._ratio) * 2,
+            pointerWidth: (1 / this._ratio) * 2,
             fill: 'black',
             stroke: 'black',
-            strokeWidth: 1 / ratio,
+            strokeWidth: 1 / this._ratio,
             name: 'index',
         };
         const arrow = new Konva.Arrow(arrowParams);
@@ -1341,7 +1341,7 @@ export default Backbone.KonvaView.extend({
         const centerX = sectionData.sashParams.width / 2;
         const centerY = sectionData.sashParams.height / 2;
         const initialX = centerX + ((factors.stepX / 2) * factors[direction].initialOffsetSign);
-        const initialY = centerY + (10 / ratio);
+        const initialY = centerY + (10 / this._ratio);
         const arrowParams = {
             points: [
                 initialX,
@@ -1353,11 +1353,11 @@ export default Backbone.KonvaView.extend({
                 initialX + (factors.stepX * 2 * factors[direction].directionSign),
                 initialY,
             ],
-            pointerLength: (1 / ratio) * 2,
-            pointerWidth: (1 / ratio) * 2,
+            pointerLength: (1 / this._ratio) * 2,
+            pointerWidth: (1 / this._ratio) * 2,
             fill: 'black',
             stroke: 'black',
-            strokeWidth: 1 / ratio,
+            strokeWidth: 1 / this._ratio,
             name: 'index',
         };
         const arrow = new Konva.Arrow(arrowParams);
@@ -1367,6 +1367,7 @@ export default Backbone.KonvaView.extend({
     },
     /* eslint-disable max-statements */
     createSash(sectionData) {
+        const model = this._model;
         let group = new Konva.Group({
             x: sectionData.sashParams.x,
             y: sectionData.sashParams.y,
@@ -1374,15 +1375,15 @@ export default Backbone.KonvaView.extend({
             sectionId: sectionData.id,
         });
 
-        const circleData = (model.isCircleWindow()) ? model.getCircleSashData(sectionData.id) : null;
+        const circleData = (this._model.isCircleWindow()) ? this._model.getCircleSashData(sectionData.id) : null;
         const hasFrame = (sectionData.sashType !== 'fixed_in_frame');
-        const frameWidth = hasFrame ? model.profile.get('sash_frame_width') : 0;
-        const mainFrameWidth = model.profile.get('frame_width') / 2;
+        const frameWidth = hasFrame ? this._model.profile.get('sash_frame_width') : 0;
+        const mainFrameWidth = this._model.profile.get('frame_width') / 2;
         const fill = {};
 
         if (
             _.includes(['full-flush-panel', 'exterior-flush-panel'], sectionData.fillingType) &&
-            !module.getState('openingView')
+            !this._module.getState('openingView')
         ) {
             fill.x = sectionData.openingParams.x - sectionData.sashParams.x;
             fill.y = sectionData.openingParams.y - sectionData.sashParams.y;
@@ -1390,7 +1391,7 @@ export default Backbone.KonvaView.extend({
             fill.height = sectionData.openingParams.height;
         } else if (
             _.includes(['full-flush-panel', 'interior-flush-panel'], sectionData.fillingType) &&
-            module.getState('openingView')
+            this._module.getState('openingView')
         ) {
             fill.x = 0;
             fill.y = 0;
@@ -1420,7 +1421,7 @@ export default Backbone.KonvaView.extend({
         ].indexOf(sectionData.sashType) === -1);
 
         const shouldDrawHandle = this.shouldDrawHandle(sectionData.sashType);
-        const isSelected = (module.getState('selected:sash') === sectionData.id);
+        const isSelected = (this._module.getState('selected:sash') === sectionData.id);
         let circleClip = {};
         let frameGroup;
 
@@ -1444,7 +1445,7 @@ export default Backbone.KonvaView.extend({
                 return null;
             }(sectionData.id));
 
-            const sashCircleData = model.getCircleSashData(sashData.id);
+            const sashCircleData = this._model.getCircleSashData(sashData.id);
             const pos = {
                 x: sashCircleData.sashParams.x - sectionData.sashParams.x,
                 y: sashCircleData.sashParams.y - sectionData.sashParams.y,
@@ -1544,7 +1545,7 @@ export default Backbone.KonvaView.extend({
                 });
             } else {
                 const params = sectionData.sashParams;
-                const innerCorners = model.getMainTrapezoidInnerCorners();
+                const innerCorners = this._model.getMainTrapezoidInnerCorners();
 
                 if (params.y < innerCorners.left.y || params.y < innerCorners.right.y) {
                     frameGroup = this.createInnerTrapezoidFrame(sectionData, {
@@ -1568,10 +1569,10 @@ export default Backbone.KonvaView.extend({
             group.add(frameGroup);
         }
 
-        const sashList = model.getSashList();
+        const sashList = this._model.getSashList();
         const index = _.findIndex(sashList, s => s.id === sectionData.id);
 
-        if (index >= 0) {
+        if (this._module.getState('drawIndexes') && index >= 0) {
             const indexes = this.createSectionIndexes(sectionData, { main: index, add: null });
 
             group.add(this.createIndexes(indexes));
@@ -1632,11 +1633,11 @@ export default Backbone.KonvaView.extend({
         const handle = new Konva.Group();
         const type = section.sashType;
         const offset = params.frameWidth / 2;
-        const style = module.getStyle('handle');
-        const isInsideView = module.getState('insideView');
+        const style = this._module.getStyle('handle');
+        const isInsideView = this._module.getState('insideView');
         const isOutsideView = !isInsideView;
-        const hasOutsideHandle = model.profile.hasOutsideHandle();
-        const isEntryDoor = model.profile.isEntryDoor();
+        const hasOutsideHandle = this._model.profile.hasOutsideHandle();
+        const isEntryDoor = this._model.profile.isEntryDoor();
         const isVisible = isInsideView || (isOutsideView && hasOutsideHandle);
         const isInvisible = !isVisible;
         const pos = {
@@ -1768,23 +1769,25 @@ export default Backbone.KonvaView.extend({
     },
     applyHandleFixes() {
         const self = this;
-        const style = module.getStyle('handle');
+        const style = this._module.getStyle('handle');
         const handleKonvas = this.layer.find('.handle');
         const vagueBaseStrokeThreshold = 0.25;
         const isPhantomJS = !!window._phantom;
         let dashCorrection;
+
         if (isPhantomJS) {
-            dashCorrection = (ratio < vagueBaseStrokeThreshold) ? 0.75 * ratio : ratio;
+            dashCorrection = (this._ratio < vagueBaseStrokeThreshold) ? 0.75 * this._ratio : this._ratio;
         } else {
-            dashCorrection = (ratio < vagueBaseStrokeThreshold) ? 0.75 : 1;
+            dashCorrection = (this._ratio < vagueBaseStrokeThreshold) ? 0.75 : 1;
         }
+
         const handleBaseDashStyle = [
-            (dashCorrection * style.under.base.dashLength) / ratio,
-            (dashCorrection * style.under.base.dashGap) / ratio,
+            (dashCorrection * style.under.base.dashLength) / this._ratio,
+            (dashCorrection * style.under.base.dashGap) / this._ratio,
         ];
         const handleGripDashStyle = [
-            (dashCorrection * style.under.grip.dashLength) / ratio,
-            (dashCorrection * style.under.grip.dashGap) / ratio,
+            (dashCorrection * style.under.grip.dashLength) / this._ratio,
+            (dashCorrection * style.under.grip.dashGap) / this._ratio,
         ];
 
         // Calculations are in absolute (real pixel) coordinates, except clipping space
@@ -1818,22 +1821,23 @@ export default Backbone.KonvaView.extend({
         konva.position({ x: transform[4], y: transform[5] });
     },
     createDirectionLine(section) {
+        const model = this._model;
         const group = new Konva.Group({ name: 'direction' });
         const type = section.sashType;
-        const style = module.getStyle('direction_line');
-        const isAmericanHinge = module.getState('hingeIndicatorMode') === 'american';
-        const isEuropeanHinge = module.getState('hingeIndicatorMode') === 'european';
+        const style = this._module.getStyle('direction_line');
+        const isAmericanHinge = this._module.getState('hingeIndicatorMode') === 'american';
+        const isEuropeanHinge = this._module.getState('hingeIndicatorMode') === 'european';
         const isLeft = type.indexOf('left') !== -1;
         const isRight = type.indexOf('right') !== -1;
         const hasHiddenLatch = type.indexOf('_hinge_hidden_latch') !== -1;
-        const isOpeningInward = model.isOpeningDirectionInward() && model.hasOperableSections();
+        const isOpeningInward = this._model.isOpeningDirectionInward() && this._model.hasOperableSections();
         const isPhantomJS = !!window._phantom;
-        const dashCorrection = (isPhantomJS) ? ratio : 1;
+        const dashCorrection = (isPhantomJS) ? this._ratio : 1;
         const dashStyle = [
-            (dashCorrection * style.dashLength) / ratio,
-            (dashCorrection * style.dashGap) / ratio,
+            (dashCorrection * style.dashLength) / this._ratio,
+            (dashCorrection * style.dashGap) / this._ratio,
         ];
-        const latchOffset = style.latchOffset / ratio;
+        const latchOffset = style.latchOffset / this._ratio;
         const glassWidth = section.glassParams.width;
         const glassHeight = section.glassParams.height;
         const groupX = section.glassParams.x - section.sashParams.x;
@@ -1995,7 +1999,7 @@ export default Backbone.KonvaView.extend({
 
         // If section has children, create Indexes for them recursively
         if (mainSection.sections.length) {
-            if (module.getState('insideView') && mainSection.divider === 'vertical') {
+            if (this._module.getState('insideView') && mainSection.divider === 'vertical') {
                 mainSection.sections.reverse();
             }
 
@@ -2048,11 +2052,11 @@ export default Backbone.KonvaView.extend({
 
             const glassParams = mainSection.glassParams;
             const crossing = {
-                left: model.getTrapezoidCrossing(
+                left: this._model.getTrapezoidCrossing(
                     { x: glassParams.x, y: glassParams.y },
                     { x: glassParams.x, y: glassParams.y + glassParams.height },
                 ),
-                right: model.getTrapezoidCrossing(
+                right: this._model.getTrapezoidCrossing(
                     { x: glassParams.x + glassParams.width, y: glassParams.y },
                     { x: glassParams.x + glassParams.width, y: glassParams.y + glassParams.height },
                 ),
@@ -2085,20 +2089,21 @@ export default Backbone.KonvaView.extend({
         const group = new Konva.Group({ name: 'index' });
 
         indexes.forEach((section) => {
-            const add = (module.get('debug') ? ` (${section.id})` : '');
+            const add = (this._module.get('debug') ? ` (${section.id})` : '');
             const opts = {
                 width: section.size.width,
                 text: section.text + add,
                 listening: false,
             };
-            _.extend(opts, module.getStyle('indexes'));
-            opts.fontSize /= ratio;
+
+            _.extend(opts, this._module.getStyle('indexes'));
+            opts.fontSize /= this._ratio;
 
             const number = new Konva.Text(opts);
             number.position(section.position);
             number.y((number.y() + (section.size.height / 2)) - (number.height() / 2));
             const minUnitDimension = Math.min(section.size.width, section.size.height);
-            const hoverpadRadius = Math.min(INDEX_HOVERPAD_SIZE / ratio, minUnitDimension / 2);
+            const hoverpadRadius = Math.min(INDEX_HOVERPAD_SIZE / this._ratio, minUnitDimension / 2);
             const hoverpad = new Konva.Circle({
                 id: `indexHoverPad-${section.id}`,
                 name: 'indexHoverPad',
@@ -2114,21 +2119,22 @@ export default Backbone.KonvaView.extend({
         return group;
     },
     createFilling(section, params) {
+        const model = this._model;
         const fillX = params.x;
         const fillY = params.y;
         const fillWidth = params.width;
         const fillHeight = params.height;
         const wrapper = params.wrapper;
         const isLouver = section.fillingType === 'louver';
-        const frameWidth = params.frameWidth || model.profile.get('frame_width');
-        const style = module.getStyle('fillings');
+        const frameWidth = params.frameWidth || this._model.profile.get('frame_width');
+        const style = this._module.getStyle('fillings');
         const group = new Konva.Group({ name: 'filling' });
         let crossing = {
-            left: model.getTrapezoidCrossing(
+            left: this._model.getTrapezoidCrossing(
                 { x: wrapper.x, y: wrapper.y },
                 { x: wrapper.x, y: wrapper.y + fillHeight },
             ),
-            right: model.getTrapezoidCrossing(
+            right: this._model.getTrapezoidCrossing(
                 { x: wrapper.x + fillWidth, y: wrapper.y },
                 { x: wrapper.x + fillWidth, y: wrapper.y + fillHeight },
             ),
@@ -2138,7 +2144,7 @@ export default Backbone.KonvaView.extend({
 
         // Arched
         if (section.arched) {
-            const arcPos = model.getArchedPosition();
+            const arcPos = this._model.getArchedPosition();
 
             opts = {
                 sectionId: section.id,
@@ -2156,7 +2162,7 @@ export default Backbone.KonvaView.extend({
                     ctx.closePath();
 
                     if (isLouver) {
-                        drawLouver(ctx, { width: fillWidth, height: fillHeight, bladeWidth: style.louver.bladeWidth });
+                        drawLouver(ctx, model, { width: fillWidth, height: fillHeight, bladeWidth: style.louver.bladeWidth });
                     }
 
                     ctx.fillStrokeShape(this);
@@ -2182,7 +2188,7 @@ export default Backbone.KonvaView.extend({
                     }
 
                     if (isLouver) {
-                        drawLouver(ctx, { width: radius * 2, height: radius * 2, bladeWidth: style.louver.bladeWidth });
+                        drawLouver(ctx, model, { width: radius * 2, height: radius * 2, bladeWidth: style.louver.bladeWidth });
                     }
 
                     ctx.fillStrokeShape(this);
@@ -2203,7 +2209,7 @@ export default Backbone.KonvaView.extend({
                     ctx.rect(0, 0, this.width(), this.height());
 
                     if (isLouver) {
-                        drawLouver(ctx, { width: fillWidth, height: fillHeight, bladeWidth: style.louver.bladeWidth });
+                        drawLouver(ctx, model, { width: fillWidth, height: fillHeight, bladeWidth: style.louver.bladeWidth });
                     }
 
                     ctx.fillStrokeShape(this);
@@ -2214,11 +2220,11 @@ export default Backbone.KonvaView.extend({
                 ((!crossing.left) ? 'left' : 'right') : '';
 
             if (emptyCrossing) {
-                const innerCorners = model.getMainTrapezoidInnerCorners();
+                const innerCorners = this._model.getMainTrapezoidInnerCorners();
 
                 crossing[emptyCrossing] = {
                     x: (emptyCrossing === 'left') ? 0 : fillWidth,
-                    y: model.getLineCrossingX(
+                    y: this._model.getLineCrossingX(
                         ((emptyCrossing === 'left') ? wrapper.x : wrapper.x + fillWidth),
                         { x: innerCorners.left.x, y: innerCorners.left.y },
                         { x: innerCorners.right.x, y: innerCorners.right.y },
@@ -2254,7 +2260,7 @@ export default Backbone.KonvaView.extend({
                     ctx.closePath();
 
                     if (isLouver) {
-                        drawLouver(ctx, {
+                        drawLouver(ctx, model, {
                             width: this.width(),
                             height: this.height(),
                             bladeWidth: style.louver.bladeWidth,
@@ -2267,11 +2273,11 @@ export default Backbone.KonvaView.extend({
             };
         } else {
             crossing = {
-                left: model.getTrapezoidCrossing(
+                left: this._model.getTrapezoidCrossing(
                     { x: wrapper.x + fillX, y: 0 },
                     { x: wrapper.x + fillX, y: fillHeight },
                 ),
-                right: model.getTrapezoidCrossing(
+                right: this._model.getTrapezoidCrossing(
                     { x: wrapper.x + fillX + fillWidth, y: 0 },
                     { x: wrapper.x + fillX + fillWidth, y: fillHeight },
                 ),
@@ -2305,7 +2311,7 @@ export default Backbone.KonvaView.extend({
                     ctx.closePath();
 
                     if (isLouver) {
-                        drawLouver(ctx, {
+                        drawLouver(ctx, model, {
                             width: this.width(),
                             height: this.height(),
                             bladeWidth: style.louver.bladeWidth,
@@ -2347,16 +2353,16 @@ export default Backbone.KonvaView.extend({
 
         const hBarCount = section.bars.horizontal.length;
         const vBarCount = section.bars.vertical.length;
-        const glazing_bar_width = model.get('glazing_bar_width');
+        const glazing_bar_width = this._model.get('glazing_bar_width');
         let data;
         let space;
 
-        const style = module.getStyle('bars');
+        const style = this._module.getStyle('bars');
 
         let _from;
         let _to;
         let tbar;
-        const heights = model.getTrapezoidHeights();
+        const heights = this._model.getTrapezoidHeights();
 
         for (let i = 0; i < vBarCount; i += 1) {
             data = section.bars.vertical[i];
@@ -2367,12 +2373,12 @@ export default Backbone.KonvaView.extend({
 
             if (data.links) {
                 if (data.links[0] !== null) {
-                    tbar = model.getBar(section.id, data.links[0]);
+                    tbar = this._model.getBar(section.id, data.links[0]);
                     _from = (tbar !== null && 'position' in tbar) ? fillY + tbar.position : fillY;
                 }
 
                 if (data.links[1] !== null) {
-                    tbar = model.getBar(section.id, data.links[1]);
+                    tbar = this._model.getBar(section.id, data.links[1]);
                     _to = (tbar !== null && 'position' in tbar) ? tbar.position : fillHeight;
                 }
             }
@@ -2380,7 +2386,7 @@ export default Backbone.KonvaView.extend({
             _to += fillY;
 
             if (section.trapezoid && section.trapezoid.glass) {
-                _from = model.getLineCrossingX(space, section.trapezoid.glass[0], section.trapezoid.glass[1]);
+                _from = this._model.getLineCrossingX(space, section.trapezoid.glass[0], section.trapezoid.glass[1]);
             }
 
             bar = new Konva.Rect({
@@ -2395,10 +2401,10 @@ export default Backbone.KonvaView.extend({
             group.add(bar);
         }
 
-        const corners = model.getMainTrapezoidInnerCorners();
+        const corners = this._model.getMainTrapezoidInnerCorners();
         const glassCrossing = {
-            left: model.getLineCrossingX(section.glassParams.x, corners.left, corners.right),
-            right: model.getLineCrossingX(
+            left: this._model.getLineCrossingX(section.glassParams.x, corners.left, corners.right),
+            right: this._model.getLineCrossingX(
                 section.glassParams.x + section.glassParams.width,
                 corners.left, corners.right,
             ),
@@ -2413,19 +2419,19 @@ export default Backbone.KonvaView.extend({
 
             if (data.links) {
                 if (data.links[0] !== null) {
-                    tbar = model.getBar(section.id, data.links[0]);
+                    tbar = this._model.getBar(section.id, data.links[0]);
                     _from = (tbar !== null && 'position' in tbar) ? fillX + tbar.position : fillX;
                 }
 
                 if (data.links[1] !== null) {
-                    tbar = model.getBar(section.id, data.links[1]);
+                    tbar = this._model.getBar(section.id, data.links[1]);
                     _to = (tbar !== null && 'position' in tbar) ? tbar.position : fillWidth;
                 }
             }
 
             _to += fillX;
 
-            const crossing = model.getTrapezoidCrossing({
+            const crossing = this._model.getTrapezoidCrossing({
                 x: _from + section.glassParams.x,
                 y: space + section.glassParams.y,
             }, {
@@ -2471,16 +2477,16 @@ export default Backbone.KonvaView.extend({
         const fillHeight = section.glassParams.height;
         const wrapper = params.wrapper;
         let crossing = {
-            left: model.getTrapezoidCrossing(
+            left: this._model.getTrapezoidCrossing(
                 { x: wrapper.x, y: wrapper.y },
                 { x: wrapper.x, y: wrapper.y + fillHeight },
             ),
-            right: model.getTrapezoidCrossing(
+            right: this._model.getTrapezoidCrossing(
                 { x: wrapper.x + fillWidth, y: wrapper.y },
                 { x: wrapper.x + fillWidth, y: wrapper.y + fillHeight },
             ),
         };
-        const style = module.getStyle('selection');
+        const style = this._module.getStyle('selection');
 
         const group = new Konva.Group({
             name: 'selection',
@@ -2490,7 +2496,7 @@ export default Backbone.KonvaView.extend({
 
         if (section.arched) {
             // arched shape
-            const arcPos = model.getArchedPosition();
+            const arcPos = this._model.getArchedPosition();
 
             shape = new Konva.Shape({
                 x: fillX,
@@ -2509,8 +2515,8 @@ export default Backbone.KonvaView.extend({
             });
         } else if (section.circular) {
             // circular shape
-            const radius = model.getCircleRadius();
-            frameWidth = model.profile.get('frame_width');
+            const radius = this._model.getCircleRadius();
+            frameWidth = this._model.profile.get('frame_width');
 
             if (section.sashType !== 'fixed_in_frame') {
                 frameWidth /= 2;
@@ -2554,18 +2560,18 @@ export default Backbone.KonvaView.extend({
                 closed: true,
             });
         } else {
-            frameWidth = model.profile.get('frame_width');
-            const innerCorners = model.getMainTrapezoidInnerCorners();
+            frameWidth = this._model.profile.get('frame_width');
+            const innerCorners = this._model.getMainTrapezoidInnerCorners();
 
             crossing = {
-                left: model.getLineCrossingX(wrapper.x, {
+                left: this._model.getLineCrossingX(wrapper.x, {
                     x: innerCorners.left.x,
                     y: innerCorners.left.y - frameWidth,
                 }, {
                     x: innerCorners.right.x,
                     y: innerCorners.right.y - frameWidth,
                 }),
-                right: model.getLineCrossingX(wrapper.x + section.sashParams.width, {
+                right: this._model.getLineCrossingX(wrapper.x + section.sashParams.width, {
                     x: innerCorners.left.x,
                     y: innerCorners.left.y - frameWidth,
                 }, {
@@ -2600,8 +2606,8 @@ export default Backbone.KonvaView.extend({
         opts.width = params.section.sashParams.width;
         opts.height = params.section.sashParams.height;
         opts.frameWidth = params.frameWidth;
-        opts.mainFrameWidth = model.profile.get('frame_width') / 2;
-        opts.radius = model.getCircleRadius();
+        opts.mainFrameWidth = this._model.profile.get('frame_width') / 2;
+        opts.radius = this._model.getCircleRadius();
         opts.center = {
             x: opts.radius - opts.mainFrameWidth,
             y: opts.radius - opts.mainFrameWidth,

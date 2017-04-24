@@ -51,12 +51,12 @@ export default Marionette.Object.extend({
         if ('model' in opts) {
             this.assignModel(opts.model);
         } else {
-            throw new Error('DrawingModule can\'t start without defined Model!');
+            throw new Error('DrawingModule can\'t start without a defined Model!');
         }
 
         // Bind events
-        this.on('state:any', function () {
-            this.update();
+        this.on('state:any', () => {
+            this.update(opts);
         });
 
         // Assign stage
@@ -159,6 +159,7 @@ export default Marionette.Object.extend({
             hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode'),
             inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
             isPreview: ('preview' in opts && opts.preview) ? opts.preview : false,
+            drawIndexes: ('drawIndexes' in opts && !_.isUndefined(opts.drawIndexes)) ? opts.drawIndexes : true,
         }, false);
 
         return opts;
@@ -173,25 +174,40 @@ export default Marionette.Object.extend({
     assignSizes(opts) {
         const stage = this.get('stage');
         const model = this.get('model');
+        const shrinkFrame = (opts && opts.isMaximized) ? 1 : 0.95;
+        const renderingOffsetX = (opts && opts.isMaximized) ? 0 : 0.5;
+        let metricSize;
+        let topOffset;
+
+        if (opts && opts.isMaximized) {
+            topOffset = 0;
+        } else if (opts && opts.topOffset) {
+            topOffset = opts.topOffset;
+        } else {
+            topOffset = 10 + 0.5; // add 0.5 pixel offset for better strokes
+        }
 
         if (opts && opts.width && opts.height) {
             this.updateSize(opts.width, opts.height);
         }
 
-        const metricSize = (opts && 'metricSize' in opts) ? opts.metricSize :
-            (this.get('metricSize')) ? this.get('metricSize') :
-                50;
+        if (opts && !_.isUndefined(opts.metricSize)) {
+            metricSize = opts.metricSize;
+        } else if (!_.isUndefined(this.get('metricSize'))) {
+            metricSize = this.get('metricSize');
+        } else {
+            metricSize = 50;
+        }
 
         const frameWidth = model.getInMetric('width', 'mm');
         const frameHeight = model.getInMetric('height', 'mm');
 
         const isTrapezoid = model.isTrapezoid();
         const isInsideView = this.state.insideView;
-        const topOffset = 10 + 0.5; // we will add 0.5 pixel offset for better strokes
         const wr = (stage.width() - (metricSize * 2)) / frameWidth;
         const hr = (stage.height() - (metricSize * ((isTrapezoid) ? 3 : 2)) - topOffset) / frameHeight;
 
-        const ratio = (Math.min(wr, hr) * 0.95);
+        const ratio = (Math.min(wr, hr) * shrinkFrame);
 
         const frameOnScreenWidth = frameWidth * ratio;
         const frameOnScreenHeight = frameHeight * ratio;
@@ -215,7 +231,7 @@ export default Marionette.Object.extend({
                     ((stage.width() / 2) - (frameOnScreenWidth / 2)) +
                     ((isTrapezoid) ? metricSize / 2 : metricSize) +
                     metricShiftX,
-                ) + 0.5,
+                ) + renderingOffsetX,
                 y: topOffset,
             },
         };
@@ -236,9 +252,16 @@ export default Marionette.Object.extend({
                 strokeWidth: 1,
             },
             frame: {
-                fill: 'white',
-                stroke: 'black',
-                strokeWidth: 1,
+                default: {
+                    fill: 'white',
+                    stroke: 'black',
+                    strokeWidth: 1,
+                },
+                selected: {
+                    fill: 'lightgrey',
+                    stroke: 'black',
+                    strokeWidth: 1,
+                },
             },
             door_bottom: {
                 fill: 'grey',
@@ -376,6 +399,16 @@ export default Marionette.Object.extend({
                 fontFamily: 'pt-sans',
                 fontSize: 15,
             },
+            subunit_indexes: {
+                label: {
+                    fill: 'white',
+                    stroke: 'grey',
+                    color: '#444',
+                    strokeWidth: 0.5,
+                    padding: 3,
+                    fontSize: 13,
+                },
+            },
             glazing_controls: {
                 bound: {
                     fill: 'green',
@@ -387,6 +420,10 @@ export default Marionette.Object.extend({
                         opacity: 0.3,
                     },
                 },
+            },
+            neighbors_background: {
+                opacity: 0.3,
+                filters: [Konva.Filters.Grayscale],
             },
         };
 
@@ -483,7 +520,28 @@ export default Marionette.Object.extend({
 
         return stage;
     },
+    setBackground(background, options) {
+        if (_.isUndefined(background) || !(background instanceof Konva.Group)) { return; }
 
+        const stage = this.get('stage');
+        const layer = new Konva.Layer({ name: 'background' });
+        const filters = (options && options.filters) ? options.filters : [];
+        const opacity = (options && options.opacity) ? options.opacity : 1;
+
+        background.cache();
+        background.filters(filters);
+        background.setAttrs({
+            name: 'background',
+            opacity,
+        });
+        layer.add(background);
+
+        if (options.x) { layer.offsetX(-options.x); }
+        if (options.y) { layer.offsetY(-options.y); }
+
+        stage.add(layer);
+        layer.moveToBottom();
+    },
     // Events
     update(opts) {
         this.assignSizes(opts);
@@ -493,6 +551,8 @@ export default Marionette.Object.extend({
     deselectAll(preventUpdate) {
         this.setState('selected:mullion', null, preventUpdate);
         this.setState('selected:sash', null, preventUpdate);
+        this.setState('selected:frame', null, preventUpdate);
+        this.setState('selected:subunit', null, preventUpdate);
     },
     // Get layer to work directly with drawer, for example
     getLayer(name) {
@@ -502,7 +562,7 @@ export default Marionette.Object.extend({
 
         return false;
     },
-    // Get result for preview method: canvas / base64 / image
+    // Get result for preview method: canvas / base64 / image / group
     getCanvas() {
         return this.get('stage').container();
     },
@@ -515,6 +575,9 @@ export default Marionette.Object.extend({
         img.src = this.get('stage').toDataURL();
 
         return img;
+    },
+    getGroup() {
+        return this.get('stage').findOne('Group');
     },
     onBeforeDestroy() {
         const stage = this.get('stage');

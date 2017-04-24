@@ -3212,6 +3212,9 @@ const Unit = Backbone.Model.extend({
         return trapezoidHeights || convert.inches_to_mm(this.get('height'));
     },
     /* trapezoid end */
+    isMultiunit() {
+        return false;
+    },
     isSubunit() {
         const allSubunitIds = this.collection.multiunits.chain()
             .map(multiunit => multiunit.getSubunitsIds())
