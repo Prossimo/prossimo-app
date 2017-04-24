@@ -288,6 +288,8 @@ const DrawingModule = Marionette.Object.extend({
                 stroke: 'black',
                 sunk: {
                     opacity: 0.75,
+                    dashLength: 3,
+                    dashGap: 2,
                 },
             },
             direction_line: {
