@@ -168,6 +168,41 @@ function getSectionDefaults(section_type, default_glazing_name, profile_id) {
     };
 }
 
+function isBarsUniform(bars, options) {
+    const precision = 0;
+    const lastBar = bars[bars.length - 1];
+    const gaps = bars.map((bar, index) => {
+        const previousPosition = (index === 0) ? 0 : bars[index - 1].position;
+        return bar.position - previousPosition;
+    });
+    if (options && options.axisLength) {
+        gaps.push(options.axisLength - lastBar.position);
+    }
+
+    const isUniform = gaps.reduce((isStillUniform, gap, index) => {
+        const previousGap = (index === 0) ? 0 : gaps[index - 1];
+        return isStillUniform && (gap.toFixed(precision) === previousGap.toFixed(precision));
+    });
+
+    return isUniform;
+}
+
+function scaleBars(bars, options) {
+    const factor = options && options.factor;
+    if (!factor || factor === 1) { return bars; }
+
+    const oldStep = bars[0].position;
+    const newStep = oldStep * factor;
+
+    const newBars = bars.map((bar, index) => {
+        const clone = _.clone(bar);
+        clone.position = newStep * (index + 1);
+        return clone;
+    });
+
+    return newBars;
+}
+
 function getInvertedDivider(type) {
     if (/vertical/.test(type)) {
         type = type.replace(/vertical/g, 'horizontal');
@@ -307,6 +342,9 @@ const Unit = Backbone.Model.extend({
                 this.setProfile({ validate_filling_types: true });
             }, this);
             this.on('change:glazing', this.onGlazingUpdate, this);
+            this.on('change:section', function ({ section, oldSection }) {
+                this.redistributeBars(section, { oldSection });
+            }, this);
 
             //  If we know that something was changed in dictionaries,
             //  we have to re-validate our unit options
@@ -1045,11 +1083,12 @@ const Unit = Backbone.Model.extend({
     _updateSection(sectionId, func) {
         // HAH, dirty deep clone, rewrite when you have good mood for it
         // we have to make deep clone and backbone will trigger change event
+        const oldRoot = this.generateFullRoot();
         const rootSection = JSON.parse(JSON.stringify(this.get('root_section')));
         const sectionToUpdate = findSection(rootSection, sectionId);
-
         func(sectionToUpdate);
 
+        this.checkSectionsForResize(oldRoot, this.generateFullRoot(rootSection));
         this.persist('root_section', rootSection);
     },
     setCircular(sectionId, opts) {
@@ -1357,6 +1396,41 @@ const Unit = Backbone.Model.extend({
         }
 
         this.setSectionBars(sectionId, bars);
+    },
+    redistributeBars(section, options) {
+        // Algorithm for each of 2 axes:
+        //     1. If existing bar distribution is uniform along this axis, redistribute bars proportionately and return
+        //     2. If there's a central congregation of bars, make sure it stays at the center
+        //     3. If there's a left / top congregation of bars, make sure it stays glued to that side
+        //     4. If there's a right / bottom congregation of bars, make sure it stays glued to that side
+
+        const oldSection = options && options.oldSection;
+        if (!oldSection) { return; }
+        let axes;
+        if (options && options.axes) {
+            axes = options.axes;
+        } else {
+            axes = ['vertical', 'horizontal'];
+        }
+
+        axes.forEach((axis) => {
+            const barType = (axis === 'vertical') ? 'horizontal' : 'vertical';
+            const dimension = (axis === 'vertical') ? 'height' : 'width';
+            if (!this.hasSectionBars(section.id, { types: barType })) { return; }
+            if (section.glassParams[dimension] === oldSection.glassParams[dimension]) { return; }
+
+            const axisBars = section.bars[barType];
+            const axisLength = oldSection.glassParams[dimension];
+            const scalingFactor = section.glassParams[dimension] / oldSection.glassParams[dimension];
+
+            if (isBarsUniform(axisBars, { axisLength })) {
+                const newBars = section.bars;
+                newBars[barType] = scaleBars(axisBars, { factor: scalingFactor });
+                this.setSectionBars(section.id, newBars);
+            } else {
+                // @TODO implementme
+            }
+        });
     },
     // @TODO: Add method, that checks for correct values of measurement data
     // @TODO: Add method, that drops measurement data to default
@@ -1816,7 +1890,8 @@ const Unit = Backbone.Model.extend({
     },
     //  Inches by default, mm optional
     updateDimension(attr, val, metric) {
-        const rootSection = this.get('root_section');
+        const oldRoot = this.generateFullRoot();
+        const newRoot = this.get('root_section');
         const possible_metrics = ['mm', 'inches'];
         const possible_dimensions = ['width', 'height', 'height_max', 'height_min'];
 
@@ -1842,19 +1917,19 @@ const Unit = Backbone.Model.extend({
                 radius: val / 2,
             });
         } else if (attr === 'height' && _.isArray(val) && val.length > 1) {
-            rootSection.trapezoidHeights = [val[0], val[1]];
-            rootSection.circular = false;
-            rootSection.arched = false;
+            newRoot.trapezoidHeights = [val[0], val[1]];
+            newRoot.circular = false;
+            newRoot.arched = false;
             const params = {
                 corners: this.getMainTrapezoidInnerCorners(),
                 minHeight: (val[0] > val[1]) ? val[1] : val[0],
                 maxHeight: (val[0] < val[1]) ? val[1] : val[0],
             };
 
-            this.checkHorizontalSplit(rootSection, params);
+            this.checkHorizontalSplit(newRoot, params);
             this.persist(attr, (val[0] > val[1]) ? val[0] : val[1]);
         } else if (attr === 'height' && !_.isArray(val) && this.isTrapezoid()) {
-            rootSection.trapezoidHeights = false;
+            newRoot.trapezoidHeights = false;
             this.persist('height', val);
         } else if (attr === 'height_max') {
             if (this.isTrapezoid()) {
@@ -1867,6 +1942,8 @@ const Unit = Backbone.Model.extend({
         } else {
             this.persist(attr, val);
         }
+
+        this.checkSectionsForResize(oldRoot);
     },
     clearFrame() {
         const rootId = this.get('root_section').id;
@@ -1881,6 +1958,29 @@ const Unit = Backbone.Model.extend({
             section.sashType = 'fixed_in_frame';
             _.assign(section, getDefaultFillingType(glazing_name, profile_id));
         });
+    },
+    checkSectionsForResize(oldRoot, newRoot) {
+        newRoot = newRoot || this.generateFullRoot();
+        const toObjectByKey = function (array, key) {
+            const obj = {};
+            array.forEach((value) => {
+                obj[value[key]] = value;
+            });
+            return obj;
+        };
+        const oldSashes = this.getSashList(oldRoot);
+        const newSashes = this.getSashList(newRoot);
+        const oldSashesById = toObjectByKey(oldSashes, 'id');
+        const newSashesById = toObjectByKey(newSashes, 'id');
+        const changedSashes = _.filter(newSashesById, (sash) => {
+            const oldSash = oldSashesById[sash.id];
+            return oldSash && !_.isEqual(sash.filling, oldSash.filling);
+        });
+
+        changedSashes.forEach(sash => this.trigger('change:section', {
+            section: findSection(newRoot, sash.id),
+            oldSection: findSection(oldRoot, sash.id),
+        }));
     },
     //  Here we get a list with basic sizes for each piece of the unit:
     //  frame, sashes, mullions, openings, glasses. Each piece got width,
@@ -1916,6 +2016,7 @@ const Unit = Backbone.Model.extend({
 
         if (current_root.sections.length === 0) {
             result.glasses.push({
+                id: current_root.id,
                 name: current_root.fillingName,
                 type: current_root.fillingType,
                 width: current_root.glassParams.width,
@@ -2177,14 +2278,14 @@ const Unit = Backbone.Model.extend({
             current_sash.sash_frame.height = current_root.sashParams.height;
         }
 
-        if (current_root.sections.length === 0 ||
-            ((current_root.sashType === 'fixed_in_frame') && (current_root.sections.length === 0)) ||
-            ((current_root.sashType !== 'fixed_in_frame') && (current_root.sections.length))
-        ) {
+        const isNoSections = !current_root.sections || current_root.sections.length === 0;
+        const isFixedInFrame = current_root.sashType === 'fixed_in_frame';
+
+        if (isNoSections || (isFixedInFrame && isNoSections) || (!isFixedInFrame && current_root.sections.length)) {
             current_sash.original_type = current_root.sashType;
             current_sash.type = this.getSashName(current_root.sashType, reverse_hinges);
-            current_sash.filling.width = current_root.glassParams.width;
-            current_sash.filling.height = current_root.glassParams.height;
+            current_sash.filling.width = current_root.glassParams && current_root.glassParams.width;
+            current_sash.filling.height = current_root.glassParams && current_root.glassParams.height;
 
             current_sash.divider = current_root.divider;
 
@@ -2205,7 +2306,7 @@ const Unit = Backbone.Model.extend({
                 current_sash.filling.name = filling_type.fillingName;
             }
 
-            if (current_root.sections.length) {
+            if (current_root.sections && current_root.sections.length) {
                 current_sash.sections = result.sections;
             }
 
