@@ -949,9 +949,6 @@ const Unit = Backbone.Model.extend({
 
         return _.pluck(name_title_hash, 'title');
     },
-    getProfileProperties() {
-        return App.settings ? App.settings.getProfileProperties(this.get('profile')) : {};
-    },
     //  Multiunits and normal units share reference numbers within project.
     //  Numbering starts with multiunits, the first multiunit within the
     //  project gets 1, and its subunits are 1a, 1b, 1c etc. Second
