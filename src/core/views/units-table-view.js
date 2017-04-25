@@ -10,6 +10,7 @@ import App from '../../main';
 import UndoManager from '../../utils/undomanager';
 import Unit from '../models/unit';
 import Accessory from '../models/accessory';
+import MultiunitCollection from '../collections/multiunit-collection';
 import UnitsTableTotalPricesView from '../../core/views/units-table-total-prices-view';
 import template from '../../templates/core/units-table-view.hbs';
 
@@ -62,7 +63,7 @@ export default Marionette.View.extend({
             specs: {
                 title: 'Specs',
                 collection: this.collection,
-                columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing',
+                columns: ['move_item', 'ref_num', 'mark', 'quantity', 'width', 'height', 'drawing',
                     'customer_image', 'width_mm', 'height_mm', 'rough_opening', 'profile_id', 'description',
                     'notes', 'exceptions', 'system', 'opening_direction',
                     'threshold', 'glazing', 'glazing_bar_width', 'uw', 'u_value'],
@@ -70,7 +71,7 @@ export default Marionette.View.extend({
             unit_options: {
                 title: 'Unit Options',
                 collection: this.collection,
-                columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing'],
+                columns: ['move_item', 'ref_num', 'mark', 'quantity', 'width', 'height', 'drawing'],
                 unit_options_columns: App.settings.dictionaries.getAvailableDictionaryNames(),
                 unit_options_quantity_columns: (function () {
                     const columns = [];
@@ -87,7 +88,7 @@ export default Marionette.View.extend({
             prices: {
                 title: 'Prices',
                 collection: this.collection,
-                columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing', 'width_mm', 'height_mm',
+                columns: ['move_item', 'mark', 'ref_num', 'quantity', 'width', 'height', 'drawing', 'width_mm', 'height_mm',
                     'original_cost_estimated', 'original_cost', 'original_cost_difference', 'original_currency',
                     'conversion_rate', 'unit_cost', 'subtotal_cost',
                     'supplier_discount', 'unit_cost_discounted', 'subtotal_cost_discounted', 'price_markup',
@@ -101,6 +102,12 @@ export default Marionette.View.extend({
                 columns: ['move_item', 'description', 'quantity', 'extras_type', 'original_cost',
                     'original_currency', 'conversion_rate', 'unit_cost', 'price_markup',
                     'unit_price', 'subtotal_cost', 'subtotal_price', 'subtotal_profit'],
+            },
+            multiunits: {
+                title: 'Multiunits',
+                collection: this.collection.multiunits,
+                columns: ['move_item', 'ref_num', 'mark', 'quantity', 'width', 'height', 'drawing', 'customer_image',
+                    'width_mm', 'height_mm', 'description', 'notes', 'exceptions'],
             },
         };
         this.active_tab = 'specs';
@@ -129,19 +136,21 @@ export default Marionette.View.extend({
         }
 
         this.undo_manager = new UndoManager({
-            register: this.collection,
+            register: [this.collection, this.collection.multiunits],
             track: true,
         });
 
         this.selected = [];
 
         this.listenTo(this.collection, 'all', this.updateTable);
+        this.listenTo(this.collection.multiunits, 'all', this.updateTable);
         this.listenTo(this.options.extras, 'all', this.updateTable);
         this.listenTo(this.options.parent_view, 'attach', this.updateTable);
 
         this.listenTo(App.current_project.settings, 'change', this.render);
 
         this.listenTo(this.collection, 'invalid', this.showValidationError);
+        this.listenTo(this.collection.multiunits, 'invalid', this.showValidationError);
         this.listenTo(this.options.extras, 'invalid', this.showValidationError);
 
         this.listenTo(globalChannel, 'paste_image', this.onPasteImage);
@@ -216,7 +225,13 @@ export default Marionette.View.extend({
     onRemoveSelected() {
         if (this.selected.length && this.hot) {
             for (let i = this.selected.length - 1; i >= 0; i -= 1) {
-                this.hot.getSourceData().at(this.selected[i]).destroy();
+                const selected_model = this.hot.getSourceData().at(this.selected[i]);
+
+                if (selected_model instanceof Unit && selected_model.isSubunit()) {
+                    selected_model.getParentMultiunit().removeSubunit(selected_model);
+                } else {
+                    selected_model.destroy();
+                }
             }
 
             //  TODO: do we really need two calls just to unselect?
@@ -227,10 +242,10 @@ export default Marionette.View.extend({
     },
     onCloneSelected() {
         if (this.selected.length === 1 && this.hot) {
-            const selectedData = this.hot.getSourceData().at(this.selected[0]);
+            const selected_model = this.hot.getSourceData().at(this.selected[0]);
 
-            if (!selectedData.hasOnlyDefaultAttributes()) {
-                selectedData.duplicate();
+            if (!selected_model.hasOnlyDefaultAttributes()) {
+                selected_model.duplicate();
             }
         }
     },
@@ -267,6 +282,18 @@ export default Marionette.View.extend({
             this.addNewAccessory(e);
         }
     },
+    getMode() {
+        const active_title = this.getActiveTab().title;
+        let mode = 'units';
+
+        if (active_title === 'Extras') {
+            mode = 'extras';
+        } else if (active_title === 'Multiunits') {
+            mode = 'multiunits';
+        }
+
+        return mode;
+    },
     templateContext() {
         return {
             active_tab: this.active_tab,
@@ -274,7 +301,7 @@ export default Marionette.View.extend({
                 item.is_active = key === this.active_tab;
                 return item;
             }, this),
-            mode: this.getActiveTab().title === 'Extras' ? 'extras' : 'units',
+            mode: this.getMode(),
             table_visibility: this.table_visibility,
             is_always_visible: this.options.is_always_visible,
         };
@@ -321,14 +348,20 @@ export default Marionette.View.extend({
         //  We use toFixed a lot here because often we want to copy numbers
         //  from the table, and we only need them to have 2 decimal places
         const getters_hash = {
+            ref_num(model) {
+                return model.getRefNum();
+            },
+            width(model) {
+                return (model.isMultiunit()) ? model.getInMetric('width', 'inches') : model.get('width');
+            },
             height(model) {
-                return model.getTrapezoidHeight();
+                return (model.isMultiunit()) ? model.getInMetric('height', 'inches') : model.getTrapezoidHeight();
             },
             width_mm(model) {
-                return model.getWidthMM().toFixed(2);
+                return (model.isMultiunit()) ? model.getInMetric('width', 'mm').toFixed(2) : model.getWidthMM().toFixed(2);
             },
             height_mm(model) {
-                const height = model.getTrapezoidHeightMM();
+                const height = (model.isMultiunit()) ? model.getInMetric('height', 'mm') : model.getTrapezoidHeightMM();
 
                 return _.isArray(height) ? _.invoke(height, 'toFixed', 2) : height.toFixed(2);
             },
@@ -621,11 +654,14 @@ export default Marionette.View.extend({
         };
 
         const properties_hash = {
+            ref_num: { readOnly: true },
             width: {
+                readOnly: this.getActiveTab().collection instanceof MultiunitCollection,
                 renderer: hotRenderers.getFormattedRenderer('dimension', null,
                     project_settings.get('inches_display_mode') || null),
             },
             height: {
+                readOnly: this.getActiveTab().collection instanceof MultiunitCollection,
                 renderer: hotRenderers.getFormattedRenderer('dimension_heights', null,
                     project_settings.get('inches_display_mode') || null),
             },
@@ -941,6 +977,7 @@ export default Marionette.View.extend({
     },
     getCustomColumnHeader(column_name) {
         const custom_column_headers_hash = {
+            ref_num: 'Ref #',
             width: 'Width, in',
             height: 'Height, in',
             drawing: 'Drawing',
@@ -1000,6 +1037,7 @@ export default Marionette.View.extend({
     getActiveTabColWidths() {
         let col_widths = {
             move_item: 55,
+            ref_num: 55,
             mark: 60,
             customer_image: 100,
             dimensions: 120,
@@ -1149,10 +1187,22 @@ export default Marionette.View.extend({
                                 self.selected = [startRow];
                                 const selectedData = self.hot.getSourceData().at(startRow);
 
-                                if (selectedData.hasOnlyDefaultAttributes()) {
+                                if (
+                                    (_.isFunction(selectedData.isMultiunit) && selectedData.isMultiunit()) ||
+                                    selectedData.hasOnlyDefaultAttributes()
+                                ) {
                                     self.ui.$clone.addClass('disabled');
                                 } else {
                                     self.ui.$clone.removeClass('disabled');
+                                }
+
+                                if (
+                                    _.isFunction(selectedData.isSubunit) && selectedData.isSubunit() &&
+                                    !selectedData.getParentMultiunit().isSubunitRemovable(selectedData.id)
+                                ) {
+                                    self.ui.$remove.addClass('disabled');
+                                } else {
+                                    self.ui.$remove.removeClass('disabled');
                                 }
                             } else {
                                 let start = startRow;
