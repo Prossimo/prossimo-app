@@ -13,7 +13,7 @@ export default Marionette.Object.extend({
         this.layers = {};
 
         this.trapezoid = opts.builder.get('model').isTrapezoid();
-        this.miltunit = opts.builder.get('model').isMultiunit();
+        this.multiunit = opts.builder.get('model').isMultiunit();
         this.createLayers(opts.layers);
 
         // Start listening update on builder

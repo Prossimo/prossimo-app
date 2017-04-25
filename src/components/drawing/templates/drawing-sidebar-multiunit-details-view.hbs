@@ -1,0 +1,15 @@
+{{#if multiunit_properties }}
+    <div class="active-unit-properties">
+        <h4>Multiunit Properties</h4>
+        <table>
+            <tbody>
+                {{#each multiunit_properties }}
+                <tr>
+                    <td class="title">{{ title }}</td>
+                    <td class="value">{{ value }}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+{{/if}}

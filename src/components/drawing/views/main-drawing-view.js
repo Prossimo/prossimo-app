@@ -62,13 +62,19 @@ export default Marionette.View.extend({
         this.trigger(`drawing_view:${e}`);
     },
     onRender() {
-        this.active_unit = App.current_quote.units.length ?
-            App.current_quote.units.first() : null;
+        if (App.current_quote.multiunits.length) {
+            this.active_unit = App.current_quote.multiunits.first();
+        } else if (App.current_quote.units.length) {
+            this.active_unit = App.current_quote.units.first();
+        } else {
+            this.active_unit = null;
+        }
 
         this.updateDrawingView();
 
         this.sidebar_view = new DrawingSidebarView({
             collection: App.current_quote.units,
+            multiunits: (App.current_quote.multiunits) ? App.current_quote.multiunits : undefined,
             parent_view: this,
         });
 

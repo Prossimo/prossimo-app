@@ -1,0 +1,344 @@
+{{#if unit_image }}
+    <div class="active-unit-image">
+        <h4>Customer Image</h4>
+        <img src="{{ unit_image }}" alt="">
+    </div>
+{{/if}}
+
+<div class="tab-container">
+    <ul class="nav nav-tabs">
+    {{#each tabs }}
+        <li class="{{ @key }}{{#if is_active }} active{{/if}}"><a href="#{{ @key }}">{{ title }}</a></li>
+    {{/each}}
+    </ul>
+</div>
+
+{{#if unit_properties }}
+{{#if tabs.unit_properties.is_active }}
+    <div class="active-unit-properties">
+        <h4>Unit Properties</h4>
+        <table>
+            <tbody>
+                {{#each unit_properties }}
+                <tr>
+                    <td class="title">{{ title }}</td>
+                    <td class="value">{{ value }}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        {{#if unit_options.options_list }}
+            <h4>Unit Options</h4>
+            <table>
+            <tbody>
+                {{#each unit_options.options_list }}
+                <tr>
+                    <td class="title">{{ title }}</td>
+                    <td class="value">{{ value }}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        {{/if}}
+        {{#if unit_options.has_hidden_options }}
+        <p class="description">Options marked with * are hidden and won't be displayed in the quote.</p>
+        {{/if}}
+        {{#if unit_sashes }}
+            <h4>Sash List</h4>
+            {{#each unit_sashes }}
+            <h5>{{ name }}</h5>
+            <table>
+                <tbody>
+                    <tr>
+                        <td class="title">Type</td>
+                        <td class="value">{{ type }}</td>
+                    </tr>
+                    {{#if opening_size }}
+                    <tr>
+                        <td class="title">Vent Opn. Size</td>
+                        <td class="value">{{{ opening_size }}}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if egress_opening_size }}
+                        <tr>
+                            <td class="title">Egress Clear Opening</td>
+                            <td class="value">{{{ egress_opening_size }}}</td>
+                        </tr>
+                    {{/if}}
+                    {{#if sections}}
+                        {{#if daylight_sum }}
+                        <tr>
+                            <td class="title">Total Daylight</td>
+                            <td class="value">{{{ daylight_sum }}}</td>
+                        </tr>
+                        {{/if}}
+                        {{#each sections}}
+                        <tr>
+                            <td class="title" colspan="2"><strong> {{ name }} </strong></td>
+                        </tr>
+                        <tr>
+                            <td class="title">{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}</td>
+                            <td class="value">{{ filling_name }}</td>
+                        </tr>
+                        {{#if filling_is_glass }}
+                        <tr>
+                            <td class="title">Daylight</td>
+                            <td class="value">{{{ filling_size }}}</td>
+                        </tr>
+                        {{/if}}
+                        {{/each}}
+                    {{else}}
+                        <tr>
+                            <td class="title">{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}</td>
+                            <td class="value">{{ filling_name }}</td>
+                        </tr>
+                        {{#if filling_is_glass }}
+                        <tr>
+                            <td class="title">Total Daylight</td>
+                            <td class="value">{{{ filling_size }}}</td>
+                        </tr>
+                        {{/if}}
+                    {{/if}}
+                </tbody>
+            </table>
+            {{/each}}
+        {{/if}}
+    </div>
+{{/if}}
+{{/if}}
+
+{{#if profile_properties }}
+{{#if tabs.profile_properties.is_active }}
+    <div class="active-unit-profile-properties">
+        <h4>Profile Properties</h4>
+        <table>
+            <tbody>
+                {{#each profile_properties }}
+                <tr>
+                    <td class="title">{{ title }}</td>
+                    <td class="value">{{ value }}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+{{/if}}
+{{/if}}
+
+{{#if unit_stats }}
+{{#if tabs.unit_stats.is_active }}
+    <div class="active-unit-profile-properties">
+        {{#each unit_stats }}
+            {{#if hasBaseFilling }}
+                <table>
+                    <h4>{{ title }}</h4>
+                    <p class="weight-base-filling-error">Unit should not have any base filling types</p>
+                </table>
+            {{else}}
+                <table>
+                    <h4>{{ title }}</h4>
+                    <tbody>
+                    {{#each data }}
+                        <tr{{#if is_total }} class="total"{{/if}}>
+                            <td class="title">{{ title }}</td>
+                            <td class="value">{{{ value }}}</td>
+                        </tr>
+                    {{/each}}
+                    </tbody>
+                </table>
+            {{/if}}
+        {{/each}}
+    </div>
+{{/if}}
+{{/if}}
+
+{{#if unit_estimated_cost }}
+{{#if tabs.unit_estimated_cost.is_active }}
+    <div class="active-unit-estimated-cost">
+        <h4>Estimated Unit Cost</h4>
+        <p><em>All prices are nominated in original currency, unless&nbsp;stated&nbsp;otherwise.</em></p>
+        <table>
+            <tbody>
+                <tr>
+                    <td class="title">Profile Name</td>
+                    <td class="value">{{ unit_estimated_cost.profile_name }}</td>
+                </tr>
+                <tr>
+                    <td class="title">Base Cost</td>
+                    <td class="value">{{ unit_estimated_cost.base_cost }}</td>
+                </tr>
+                <tr>
+                    <td class="title">Added Cost for Fillings</td>
+                    <td class="value">{{ unit_estimated_cost.fillings_cost }}</td>
+                </tr>
+                <tr>
+                    <td class="title">Added Cost for Options</td>
+                    <td class="value">{{ unit_estimated_cost.options_cost }}</td>
+                </tr>
+                <tr class="total">
+                    <td class="title">Total for Unit</td>
+                    <td class="value">{{ unit_estimated_cost.total_cost }}</td>
+                </tr>
+                <tr>
+                    <td class="title">Original Currency</td>
+                    <td class="value">{{ unit_estimated_cost.original_currency }}</td>
+                </tr>
+                <tr>
+                    <td class="title">Conversion Rate</td>
+                    <td class="value">{{ unit_estimated_cost.conversion_rate }}</td>
+                </tr>
+                <tr class="total">
+                    <td class="title">Total for Unit, converted to USD</td>
+                    <td class="value">{{ unit_estimated_cost.converted_cost }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4>Estimated Section Cost</h4>
+        {{#each unit_estimated_cost.sections }}
+        <h5>{{ name }}</h5>
+        <table>
+            <tbody>
+                <tr>
+                    <th colspan="2">Base Cost for Sash</th>
+                </tr>
+                <tr>
+                    <td class="title">Sash Type</td>
+                    <td class="value">{{ type }}</td>
+                </tr>
+                <tr>
+                    <td class="title">Width</td>
+                    <td class="value">{{{ width }}}</td>
+                </tr>
+                <tr>
+                    <td class="title">Height</td>
+                    <td class="value">{{{ height }}}</td>
+                </tr>
+                <tr>
+                    <td class="title">Area</td>
+                    <td class="value">{{{ area }}}</td>
+                </tr>
+                <tr>
+                    <td class="title">Pricing Scheme</td>
+                    <td class="value">{{{ base_pricing_scheme }}}</td>
+                </tr>
+                {{#if show_price_per_square_meter }}
+                <tr>
+                    <td class="title">Price / m<sup>2</sup></td>
+                    <td class="value">{{{ price_per_square_meter }}}</td>
+                </tr>
+                {{/if}}
+                <tr>
+                    <td class="title">Cost</td>
+                    <td class="value">{{{ base_cost }}}</td>
+                </tr>
+                <tr>
+                    <th colspan="2">Added Cost for Filling</th>
+                </tr>
+                <tr>
+                    <td class="title">Filling Name</td>
+                    <td class="value">{{ filling_name }}</td>
+                </tr>
+                <tr>
+                    <td class="title">Pricing Scheme</td>
+                    <td class="value">{{{ filling_pricing_scheme }}}</td>
+                </tr>
+                {{#if show_filling_price_increase }}
+                <tr>
+                    <td class="title">Price Increase</td>
+                    <td class="value">{{{ filling_price_increase }}}</td>
+                </tr>
+                {{/if}}
+                <tr>
+                    <td class="title">Added Cost</td>
+                    <td class="value">{{{ filling_cost }}}</td>
+                </tr>
+                {{#if options }}
+                <tr>
+                    <th colspan="2">Added Cost for Options</th>
+                </tr>
+                {{#each options }}
+                    <tr>
+                        <th colspan="2"><em>{{ index }}</em></th>
+                    </tr>
+                    <tr>
+                        <td class="title">Dictionary Name</td>
+                        <td class="value">{{{ dictionary_name }}}</td>
+                    </tr>
+                    <tr>
+                        <td class="title">Option Name</td>
+                        <td class="value">{{{ option_name }}}</td>
+                    </tr>
+                    {{#if is_hidden }}
+                    <tr>
+                        <td class="title">Is Hidden</td>
+                        <td class="value">Yes</td>
+                    </tr>
+                    {{/if}}
+                    <tr>
+                        <td class="title">Pricing Scheme</td>
+                        <td class="value">{{{ pricing_scheme }}}</td>
+                    </tr>
+                    {{#if show_price_increase }}
+                    <tr>
+                        <td class="title">Price Increase</td>
+                        <td class="value">{{{ price_increase }}}</td>
+                    </tr>
+                    {{/if}}
+                    <tr>
+                        <td class="title">Added Cost</td>
+                        <td class="value">{{{ cost }}}</td>
+                    </tr>
+                {{/each}}
+                {{/if}}
+                <tr class="total">
+                    <td class="title">Total Cost for Section</td>
+                    <td class="value">{{{ total_cost }}}</td>
+                </tr>
+            </tbody>
+        </table>
+        {{/each}}
+
+        <h4>Estimated Cost for Per-Item-Priced Options</h4>
+        <table>
+            <tbody>
+                {{#each unit_estimated_cost.per_item_priced_options }}
+                <tr>
+                    <th colspan="2">{{ option_index }}</th>
+                </tr>
+                <tr>
+                    <td class="title">Dictionary Name</td>
+                    <td class="value">{{{ dictionary_name }}}</td>
+                </tr>
+                <tr>
+                    <td class="title">Option Name</td>
+                    <td class="value">{{{ option_name }}}</td>
+                </tr>
+                {{#if is_hidden }}
+                <tr>
+                    <td class="title">Is Hidden</td>
+                    <td class="value">Yes</td>
+                </tr>
+                {{/if}}
+                <tr>
+                    <td class="title">Cost / Item</td>
+                    <td class="value">{{{ cost_per_item }}}</td>
+                </tr>
+                <tr>
+                    <td class="title">Quantity</td>
+                    <td class="value">{{{ quantity }}}</td>
+                </tr>
+                <tr>
+                    <td class="title">Added Cost</td>
+                    <td class="value">{{{ cost }}}</td>
+                </tr>
+                {{/each}}
+                <tr class="total">
+                    <td class="title">Total Cost for Options</td>
+                    <td class="value">{{{ unit_estimated_cost.per_item_priced_options_total_cost }}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+{{/if}}
+{{/if}}
