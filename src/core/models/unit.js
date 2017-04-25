@@ -4,7 +4,7 @@ import clone from 'clone';
 
 import App from '../../main';
 import Schema from '../../schema';
-import { object, convert, math, format } from '../../utils';
+import { object, convert, math } from '../../utils';
 import UnitOptionCollection from '../collections/inline/unit-option-collection';
 import Multiunit from './multiunit';
 import { mergePreviewOptions, generatePreview } from '../../components/drawing/module/preview';
@@ -963,7 +963,7 @@ const Unit = Backbone.Model.extend({
                 if (this.isSubunit()) {
                     const parent_multiunit = this.getParentMultiunit();
 
-                    ref_num = parent_multiunit.getRefNum() + format.number_to_letters(this.get('position') + 1);
+                    ref_num = parent_multiunit.getRefNum() + convert.number_to_letters(this.get('position') + 1);
                 } else {
                     const number_of_subunits_in_collection = this.collection.filter(item => item.isSubunit()).length;
 

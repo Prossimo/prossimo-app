@@ -99,6 +99,20 @@ img.button {
     min-height: 2rem;
     background-color: darken(@white, 30%);
     border-bottom: 1px solid darken(@white, 40%);
+
+    .button {
+        cursor: pointer;
+    }
+
+    .button:hover {
+        filter: brightness(@button-hover-brightness);
+    }
+
+    .button.disabled {
+        opacity: @button-disabled-opacity;
+        filter: grayscale();
+        cursor: default;
+    }
 }
 
 .controls-block {
@@ -174,6 +188,57 @@ img.button {
     display: none;
 }
 
+.drawing-controls .menu {
+    display: inline-block;
+    position: relative;
+
+    .menu-popup {
+        @menu-padding: 8px;
+        @icon-size: 35px;
+        @icon-margin: 1px;
+
+        .bs-dropdown-style();
+
+        display: none;
+        position: absolute;
+        left: -(@icon-size + @menu-padding + @icon-margin);
+        top: -(@icon-size + @menu-padding + @icon-margin) - 1px;
+        width: @icon-size * 3 + @menu-padding * 2 + @icon-margin * 2;
+        height: @icon-size * 3 + @menu-padding * 2 + @icon-margin * 2;
+        padding: @menu-padding;
+        z-index: 1;
+
+        .button {
+            position: absolute;
+
+            &.top {
+                left: @icon-size + @menu-padding + @icon-margin - 1px;
+                top: @menu-padding - 1px;
+            }
+
+            &.right {
+                top: @icon-size + @menu-padding + @icon-margin - 1px;
+                right: @menu-padding - 1px;
+            }
+
+            &.bottom {
+                left: @icon-size + @menu-padding + @icon-margin - 1px;
+                bottom: @menu-padding - 1px;
+            }
+
+            &.left {
+                top: @icon-size + @menu-padding + @icon-margin - 1px;
+                left: @menu-padding - 1px;
+            }
+        }
+    }
+
+    .menu-popup:hover,
+    .menu-button:hover + .menu-popup {
+        display: block;
+    }
+}
+
 //  ------------------------------------------------------------------------
 //  Hovering controls
 //  ------------------------------------------------------------------------
@@ -221,7 +286,6 @@ img.button {
 
     img.button { .drawing-hover-shadow(); }
 }
-
 
 //  ------------------------------------------------------------------------
 //  Popup
@@ -295,6 +359,16 @@ img.button {
 
 //  Controls
 
+.small-label-right() {
+    position: absolute;
+    display: inline;
+    right: 15px;
+    margin: 0.25em 0;
+    font-size: 80%;
+    vertical-align: middle;
+    opacity: 0.85;
+}
+
 .unit-selector-controls {
     .clearfix();
 }
@@ -302,6 +376,36 @@ img.button {
 .unit-selector-select {
     float: left;
     padding-right: 2rem;
+
+    a:focus { outline: none; }
+
+    .multiunit,
+    .subunit {
+        overflow: hidden;
+        padding-right: 4.5em;
+
+        &:after {
+            .small-label-right();
+        }
+    }
+
+    .multiunit,
+    .multiunit:focus {
+        background-color: @blue;
+
+        &:after {
+            content: 'Multiunit';
+        }
+    }
+
+    .subunit,
+    .subunit:focus {
+        background-color: @teal;
+
+        &:after {
+            content: 'Subunit';
+        }
+    }
 }
 
 .unit-selector-buttons {

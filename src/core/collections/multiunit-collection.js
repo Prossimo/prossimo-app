@@ -6,14 +6,14 @@ export default UnitCollection.extend({
     model: Multiunit,
     reorder_property_name: 'multiunits',
     url() {
-        return `${App.settings.get('api_base_path')}
-            /projects/${this.options.project.get('id')}
-            /quotes/${this.options.quote.get('id')}/multiunits`;
+        return `${App.settings.get('api_base_path')
+            }/projects/${this.options.project.get('id')
+            }/quotes/${this.options.quote.get('id')}/multiunits`;
     },
     reorder_url() {
-        return `${App.settings.get('api_base_path')}
-            /projects/${this.options.project.get('id')}
-            /quotes/${this.options.quote.get('id')}/reorder_multiunits`;
+        return `${App.settings.get('api_base_path')
+            }/projects/${this.options.project.get('id')
+            }/quotes/${this.options.quote.get('id')}/reorder_multiunits`;
     },
     initialize(models, options) {
         this.options = options || {};

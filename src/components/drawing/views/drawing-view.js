@@ -92,6 +92,7 @@ export default Marionette.View.extend({
         $filling_tool_controls: '#filling-tool-controls',
         $filling_clone: '#filling-clone',
         $filling_sync: '#filling-sync',
+        $clear_frame: '#clear-frame',
         $sash_types: '.change-sash-type',
         $metric_controls: '.metric-controls',
         $metrics_glass: '[for="additional-metrics-glass"]',
@@ -104,6 +105,15 @@ export default Marionette.View.extend({
         $shortcuts: '[data-key]',
         $undo: '#undo',
         $redo: '#redo',
+        $multiunit_controls: '.drawing-controls .multiunit',
+        $subunit_menu: '.drawing-controls .subunit.menu',
+        $add_connector_buttons: '.drawing-controls .add-connector .button',
+        $add_connector_enabled_buttons: '.drawing-controls .add-connector .button:not(.disabled)',
+        $add_connector_top_button: '.drawing-controls .add-connector .top.button',
+        $add_connector_right_button: '.drawing-controls .add-connector .right.button',
+        $add_connector_bottom_button: '.drawing-controls .add-connector .bottom.button',
+        $add_connector_left_button: '.drawing-controls .add-connector .left.button',
+        $remove_subunit_button: '.drawing-controls .remove-subunit.button',
     },
     events: {
         // Click
@@ -113,7 +123,7 @@ export default Marionette.View.extend({
         'click @ui.$hovering_section_controls .button': 'handleHoveringSectionControlsClick',  // Keep before button events
         'click .split-section': 'handleSplitSectionClick',
         'click @ui.$sash_types': 'handleChangeSashTypeClick',
-        'click #clear-frame': 'handleClearFrameClick',
+        'click @ui.$clear_frame': 'handleClearFrameClick',
         'click #change-view-button': 'handleChangeView',
         'click @ui.$arched_controls': 'handleArchedClick',
         'click @ui.$circular_controls': 'handleCircularClick',
@@ -122,12 +132,14 @@ export default Marionette.View.extend({
         'click @ui.$filling_sync': 'handleFillingSyncClick',
         'click @ui.$undo': 'handleUndoClick',
         'click @ui.$redo': 'handleRedoClick',
+        'click @ui.$add_connector_enabled_buttons': 'handleAddConnectorClick',
+        'click @ui.$remove_subunit_button': 'handleRemoveSubunitClick',
         // Tap
         'tap @ui.$hovering_section_controls': 'handleHoveringSectionControlsClickThrough',
         'tap @ui.$hovering_section_controls .button': 'handleHoveringSectionControlsClick',  // Keep before button events
         'tap .split-section': 'handleSplitSectionClick',
         'tap @ui.$sash_types': 'handleChangeSashTypeClick',
-        'tap #clear-frame': 'handleClearFrameClick',
+        'tap @ui.$clear_frame': 'handleClearFrameClick',
         'tap #change-view-button': 'handleChangeView',
         'tap @ui.$arched_controls': 'handleArchedClick',
         'tap @ui.$circular_controls': 'handleCircularClick',
@@ -136,6 +148,8 @@ export default Marionette.View.extend({
         'tap @ui.$filling_sync': 'handleFillingSyncClick',
         'tap @ui.$undo': 'handleUndoClick',
         'tap @ui.$redo': 'handleRedoClick',
+        'tap @ui.$add_connector_enabled_buttons': 'handleAddConnectorClick',
+        'tap @ui.$remove_subunit_button': 'handleRemoveSubunitClick',
         // Others
         'keydown @ui.$drawing_area': 'handleCanvasKeyDown',
         'change #vertical-bars-number': 'handleBarNumberChange',
@@ -353,8 +367,54 @@ export default Marionette.View.extend({
     handleHoveringSectionControlsLeave() {
         this.closeSectionHoverMenu();
     },
+    handleAddConnectorClick(event) {
+        const connectorSide = $(event.target).data().side;
+        const relation = this.model.getRelation();
+        let multiunit;
+        let modelId;
 
-    // Marrionente lifecycle method
+        if (relation === 'subunit') {
+            multiunit = this.model.getParentMultiunit();
+            modelId = this.model.id;
+        } else if (relation === 'loneunit') {
+            multiunit = this.model.toMultiunit();
+            multiunit.persist({}, {
+                validate: true,
+                parse: true,
+            });
+            modelId = this.model.id;
+        } else if (relation === 'multiunit') {
+            multiunit = this.model;
+            modelId = this.module.getState('selected:subunit');
+        } else { return; }
+
+        if (modelId && connectorSide) {
+            multiunit.addConnector({
+                connects: [modelId],
+                side: connectorSide,
+                success: () => {
+                    this.options.parent_view.sidebar_view.render();
+                    this.selectUnit(multiunit);
+                },
+            });
+        }
+    },
+    handleRemoveSubunitClick() {
+        let subunit;
+
+        if (this.model.isSubunit()) {
+            subunit = this.model;
+        } else if (this.model.isMultiunit()) {
+            subunit = this.model.getSubunitById(this.module.getState('selected:subunit'));
+        }
+
+        if (!subunit) { return; }
+
+        const multiunit = subunit.getParentMultiunit();
+        const subunitId = subunit.id;
+
+        multiunit.removeSubunit(subunitId);
+    },
     onRender() {
         this.changeIcons();
 
@@ -445,11 +505,13 @@ export default Marionette.View.extend({
         this.listenTo(this.module, 'state:selected:sash', (data) => {
             const sourceSashId = data.oldValue;
             const targetSashId = data.newValue;
+
             if (targetSashId) {
                 this.module.disableDelayedHover();
             } else {
                 this.module.enableDelayedHover();
             }
+
             if (!targetSashId || targetSashId === sourceSashId) { this.deselectAll(); return; }
 
             if (this.module.isCloningFilling()) {
@@ -460,6 +522,18 @@ export default Marionette.View.extend({
                 this.deselectAll();
                 this.setState({ selectedSashId: targetSashId });
             }
+        });
+        this.listenTo(this.module, 'state:selected:frame', (data) => {
+            this.deselectAll();
+            this.setState({
+                isFrameSelected: data.newValue,
+            });
+        });
+        this.listenTo(this.module, 'state:selected:subunit', (data) => {
+            this.deselectAll();
+            this.setState({
+                selectedSubunitId: data.newValue,
+            });
         });
         this.listenTo(this.module, 'labelClicked', (data) => {
             this.createInput(data.params, data.pos, data.size);
@@ -761,20 +835,54 @@ export default Marionette.View.extend({
     // Shows and hides various toolbar elements
     updateUI() {
         const selectedSashId = this.state.selectedSashId;
-        const selectedSash = this.model.getSection(selectedSashId);
+        const selectedSash = (this.model.getSection) ? this.model.getSection(selectedSashId) : undefined;
         const isSashSelected = !!selectedSash;
         const isLeafSash = isSashSelected && selectedSash.sections.length === 0;
         const hasFrame = isSashSelected && selectedSash.sashType !== 'fixed_in_frame';
+        const isMultiunit = this.model.isMultiunit();
+        const isSubunit = this.model.isSubunit();
+        const isSubunitSelected = !!(this.state.isFrameSelected || this.state.selectedSubunitId);
         const isArched = !!(isSashSelected && selectedSash.arched);
         const isCircular = !!(isSashSelected && selectedSash.circular);
         const selectedFillingType = isSashSelected && selectedSash.fillingName &&
             App.settings && App.settings.filling_types.getByName(selectedSash.fillingName);
+        let isSubunitTopConnected;
+        let isSubunitRightConnected;
+        let isSubunitBottomConnected;
+        let isSubunitLeftConnected;
+        let isSubunitRemovable;
 
         // View title
         const buttonText = this.isInsideView() ? 'Show outside view' : 'Show inside view';
         const titleText = this.isInsideView() ? 'Inside view' : 'Outside view';
+
         this.$('#change-view-button').text(buttonText);
         this.ui.$drawing_view_title.text(titleText);
+
+        if (isSubunitSelected) {
+            let subunit;
+            let multiunit;
+            let subunitId;
+
+            if (this.state.isFrameSelected) {
+                subunit = this.model;
+            } else if (this.state.selectedSubunitId) {
+                subunit = this.model.getSubunitLinkedUnitById(this.state.selectedSubunitId);
+            }
+
+            if (subunit) {
+                multiunit = subunit.getParentMultiunit();
+                subunitId = subunit.id;
+            }
+
+            if (multiunit && subunitId) {
+                isSubunitTopConnected = _.contains(multiunit.getConnectedSides(subunitId), 'top');
+                isSubunitRightConnected = _.contains(multiunit.getConnectedSides(subunitId), 'right');
+                isSubunitBottomConnected = _.contains(multiunit.getConnectedSides(subunitId), 'bottom');
+                isSubunitLeftConnected = _.contains(multiunit.getConnectedSides(subunitId), 'left');
+                isSubunitRemovable = multiunit.isSubunitRemovable(subunitId);
+            }
+        }
 
         // Mouse pointer
         if (this.module.isCloningFilling() || this.module.isSyncingFilling()) {
@@ -786,36 +894,57 @@ export default Marionette.View.extend({
         //
         // Section controls
         //
-        this.ui.$filling_tool_controls.toggle(isSashSelected && isLeafSash);
-        this.ui.$bar_controls.toggle(!isArched && isSashSelected && selectedSash.fillingType === 'glass');
-        this.ui.$section_controls.toggle(isSashSelected);
-        this.ui.$sash_controls.toggle(!isArched && isSashSelected && this.model.canAddSashToSection(selectedSashId));
-        this.ui.$section_split_controls.toggle(!isArched);
+        this.ui.$filling_tool_controls.toggle(isSashSelected && isLeafSash && !isSubunitSelected);
+        this.ui.$bar_controls.toggle(!isArched && !isSubunitSelected && isSashSelected && selectedSash.fillingType === 'glass');
+        this.ui.$section_controls.toggle(isSashSelected || isSubunitSelected);
+        this.ui.$sash_controls.toggle(!isArched && !isSubunitSelected && isSashSelected && this.model.canAddSashToSection(selectedSashId));
+        this.ui.$section_split_controls.toggle(isSashSelected && !isSubunitSelected && !isArched);
+
         if (selectedFillingType) {
             this.ui.$filling_select.val(selectedFillingType.cid);
         } else {
             this.ui.$filling_select.val('');
         }
+
         this.ui.$filling_select.selectpicker('render');
 
+        this.ui.$filling_type_controls.toggle(isSashSelected && !isSubunitSelected);
+
         // Arched controls
-        this.ui.$arched_controls.toggle(isSashSelected && this.model.isArchedPossible(selectedSashId));
-        this.ui.$remove_arched.toggle(isArched && !isCircular);
-        this.ui.$add_arched.toggle(!isArched && !isCircular);
+        this.ui.$arched_controls.toggle(isSashSelected && !isSubunitSelected && this.model.isArchedPossible(selectedSashId));
+        this.ui.$remove_arched.toggle(isArched && !isCircular && !isSubunitSelected);
+        this.ui.$add_arched.toggle(!isArched && !isCircular && !isSubunitSelected);
 
         // Circular controls
-        this.ui.$circular_controls.toggle(isSashSelected && this.model.isCircularPossible(selectedSashId));
-        this.ui.$remove_circular.toggle(isCircular && !isArched);
-        this.ui.$add_circular.toggle(!isCircular && !isArched);
+        this.ui.$circular_controls.toggle(isSashSelected && !isSubunitSelected && this.model.isCircularPossible(selectedSashId));
+        this.ui.$remove_circular.toggle(isCircular && !isArched && !isSubunitSelected);
+        this.ui.$add_circular.toggle(!isCircular && !isArched && !isSubunitSelected);
 
-        // Undo/Redo buttons
-        if (!this.undo_manager.registered) {  // Register only once
+        // Multiunit controls
+        this.ui.$multiunit_controls.toggle(isSubunitSelected);
+        this.ui.$subunit_menu.toggle((isSubunit || isMultiunit) && isSubunitSelected);
+
+        // Enable if
+        this.ui.$add_connector_top_button.toggleClass('disabled', !(!isSubunitTopConnected));
+        this.ui.$add_connector_right_button.toggleClass('disabled', !(!isSubunitRightConnected));
+        this.ui.$add_connector_bottom_button.toggleClass('disabled', !(!isSubunitBottomConnected));
+        this.ui.$add_connector_left_button.toggleClass('disabled', !(!isSubunitLeftConnected));
+        this.ui.$remove_subunit_button.toggleClass('disabled', !(isSubunitRemovable));
+
+        // Undo, Redo buttons
+        if (!this.undo_manager.registered) {
+            // Register buttons once!
             this.undo_manager.registerButton('undo', this.ui.$undo);
             this.undo_manager.registerButton('redo', this.ui.$redo);
             this.undo_manager.registered = true;
         }
 
+        // Clear frame button
+        this.ui.$clear_frame.toggle(!isMultiunit);
+
         // Additional overlay metrics
+        this.ui.$metric_controls.toggle(!isMultiunit && !isSubunitSelected);
+
         if (isSashSelected) {
             this.ui.$metrics_glass_input.prop('checked', selectedSash.measurements.glass);
             this.ui.$metrics_opening_input.prop('checked', selectedSash.measurements.opening);
@@ -827,12 +956,10 @@ export default Marionette.View.extend({
             );
         }
     },
-
     updateSize(width, height) {
         this.stage.width(width || this.ui.$drawing_area.get(0).offsetWidth);
         this.stage.height(height || this.ui.$drawing_area.get(0).offsetHeight);
     },
-
     updateRenderedScene() {
         this.updateUI();
         this.updateSize();
@@ -855,7 +982,6 @@ export default Marionette.View.extend({
             });
         }
     },
-
     setState(state, preventUpdate) {
         this.state = _.assign(this.state, state);
 
@@ -869,6 +995,9 @@ export default Marionette.View.extend({
             selectedMullionId: null,
             selectedSashId: null,
         });
+    },
+    selectUnit(model) {
+        this.options.parent_view.sidebar_view.selectUnit(model);
     },
     elementsToShortcuts(elements) {
         let current_elements = elements;

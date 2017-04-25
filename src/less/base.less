@@ -76,6 +76,22 @@ mark,
     padding: 0;
 }
 
+.dropdown-menu > li > a {
+    &:focus {
+        background-color: transparent;
+    }
+
+    &:hover,
+    &:hover:focus {
+        background-color: @selection-blue;
+
+        &,
+        & * {
+            color: @white;
+        }
+    }
+}
+
 
 //  ------------------------------------------------------------------------
 //  Base UI elements

@@ -109,7 +109,7 @@ export default Marionette.View.extend({
             prices: {
                 title: 'Prices',
                 collection: this.collection,
-                columns: ['move_item', 'mark', 'ref_num', 'quantity', 'width', 'height', 'drawing', 'width_mm', 'height_mm',
+                columns: ['move_item', 'ref_num', 'mark', 'quantity', 'width', 'height', 'drawing', 'width_mm', 'height_mm',
                     'original_cost_estimated', 'original_cost', 'original_cost_difference', 'original_currency',
                     'conversion_rate', 'unit_cost', 'subtotal_cost',
                     'supplier_discount', 'unit_cost_discounted', 'subtotal_cost_discounted', 'price_markup',
