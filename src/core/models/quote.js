@@ -32,7 +32,6 @@ export default Backbone.Model.extend({
         };
 
         const name_value_hash = {
-            revision: 1,
             is_default: false,
         };
 
