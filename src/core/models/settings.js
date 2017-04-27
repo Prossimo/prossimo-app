@@ -31,6 +31,7 @@ const CORNER_TYPES = ['Mitered', 'Square (Vertical)', 'Square (Horizontal)'];
 const SETTINGS_PROPERTIES = [
     { name: 'api_base_path', title: 'API Base Path', type: 'string' },
     { name: 'pdf_api_base_path', title: 'PDF API Base Path', type: 'string' },
+    { name: 'invoice_base_path', title: 'invoice for Xero.com microservices', type: 'string' },
 ];
 
 export default Backbone.Model.extend({
@@ -53,6 +54,7 @@ export default Backbone.Model.extend({
         const name_value_hash = {
             api_base_path: $('meta[name="api-base-path"]').attr('value') || '/api',
             pdf_api_base_path: $('meta[name="pdf-api-base-path"]').attr('value') || '',
+            invoice_base_path: $('meta[name="invoice-base-path"]').attr('value') || '',
         };
 
         if (_.indexOf(_.keys(type_value_hash), type) !== -1) {

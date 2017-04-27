@@ -18,3 +18,4 @@ split
 /local.conf.json
 /log
 npm-debug.log
+/nbproject/

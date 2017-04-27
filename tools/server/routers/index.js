@@ -83,9 +83,24 @@ const printRouter = function (config, log) {
     };
 };
 
+const invoiceRouter = function (config, log) {
+    const invoicePath = getPath(config.get('server:invoiceProtocol'), config.get('server:invoiceHost'),
+        config.get('server:invoicePort'), config.get('server:invoicePrefix'));
+
+    log.info(`Invoice path: ${invoicePath}`);
+
+    const invoiceRouterBackend = createBackendProxy(invoicePath, log);
+
+    return (req, res) => {
+        invoiceRouterBackend.web(req, res);
+    };
+};
+
+
 module.exports = function (config, log) {
     router.all('/api/*', apiRouter(config, log));
     router.all('/print/*', printRouter(config, log));
+    router.all('/invoice/*', invoiceRouter(config, log));
 
     return router;
 };

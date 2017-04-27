@@ -105,6 +105,7 @@ module.exports = {
             version,
             api_prefix: config.get('app:apiPrefix'),
             printer_prefix: config.get('app:printerPrefix'),
+            invoice_prefix:   config.get('app:invoiceUrl'),
             favicon: path.resolve(assetsPath, `./img/favicon${(isDebug ? '-dev' : '')}.png`),
             filename: 'index.html',
             inject: 'body',
