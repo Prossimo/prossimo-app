@@ -3,10 +3,11 @@
         <td class="primary-info{{#if show_price }} has-price{{#if price.discount }} has-discounted-price{{/if}}{{/if}}">
             <table>
                 <tbody><tr>
-                    <td class="position">
-                        <strong>Unit #</strong>
-                        <span>{{ position }}</span>
+                    <td class="ref_num">
+                        <strong>Ref #</strong>
+                        <span>{{ ref_num }}</span>
                     </td>
+                    {{#unless is_subunit }}
                     <td class="mark">
                         <strong>Mark</strong>
                         <span>{{ mark }}</span>
@@ -15,6 +16,7 @@
                         <strong>Quantity</strong>
                         <span>{{ quantity }}</span>
                     </td>
+                    {{/unless}}
                     {{#if has_dummy_profile }}
                     <td class="no-profile-warning">
                         <p>
@@ -64,7 +66,8 @@
     </tr></tbody>
 </table>
 
-<table class="quote-unit">
+<table class="quote-unit{{#if is_subunit }} subunit{{else}} loneunit{{/if}}">
+    {{#unless is_subunit }}
     <thead>
         <tr>
             {{#if product_image }}
@@ -77,6 +80,7 @@
             <th class="product-description">Product Description</th>
         </tr>
     </thead>
+    {{/unless}}
     <tbody><tr>
         {{#if product_image }}
         <td class="product-image{{#if customer_image }} has-customer-image{{/if}}">

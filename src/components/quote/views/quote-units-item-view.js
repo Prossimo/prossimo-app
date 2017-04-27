@@ -3,16 +3,14 @@ import Marionette from 'backbone.marionette';
 
 import App from '../../../main';
 import { convert, format, math } from '../../../utils';
-import template from '../templates/quote-item-view.hbs';
+import template from '../templates/quote-units-item-view.hbs';
 
 export default Marionette.View.extend({
     tagName: 'div',
-    className: 'quote-item',
-    template,
-    initialize() {
-        this.display_options = this.options.display_options;
-        this.listenTo(this.model, 'change', this.render);
+    className() {
+        return `quote-item ${this.model.isSubunit() ? 'subunit' : 'loneunit'}`;
     },
+    template,
     getPrices() {
         const unit_price = this.model.getUnitPrice();
         const subtotal_price = this.model.getSubtotalPrice();
@@ -280,12 +278,11 @@ export default Marionette.View.extend({
     getCustomerImage() {
         return this.model.get('customer_image');
     },
-    getProductImage(is_alternative) {
-        const position = this.display_options.show_outside_units_view ?
-            (!is_alternative ? 'outside' : 'inside') :
-            (!is_alternative ? 'inside' : 'outside');
+    getProductImage() {
+        const position = this.display_options.show_outside_units_view ? 'outside' : 'inside';
         const preview_size = 600;
         const title = position === 'inside' ? 'View from Interior' : 'View from Exterior';
+        const is_subunit = this.model.isSubunit();
 
         return {
             img: this.model.getPreview({
@@ -293,6 +290,8 @@ export default Marionette.View.extend({
                 height: preview_size,
                 mode: 'base64',
                 position,
+                drawNeighbors: is_subunit,
+                topOffset: is_subunit ? 50 : 0,
                 hingeIndicatorMode: this.display_options.show_european_hinge_indicators ? 'european' : 'american',
             }),
             title,
@@ -314,7 +313,8 @@ export default Marionette.View.extend({
         const show_price = this.display_options.show_price !== false;
 
         return {
-            position: parseFloat(this.model.get('position')) + 1,
+            is_subunit: this.model.isSubunit(),
+            ref_num: this.model.getRefNum(),
             mark: this.model.get('mark'),
             description: this.getDescription(),
             notes: this.model.get('notes'),
@@ -327,5 +327,9 @@ export default Marionette.View.extend({
             has_dummy_profile: this.model.hasDummyProfile(),
             profile_name: this.model.get('profile_name') || this.model.get('profile_id') || '',
         };
+    },
+    initialize() {
+        this.display_options = this.options.display_options;
+        this.listenTo(this.model, 'change', this.render);
     },
 });
