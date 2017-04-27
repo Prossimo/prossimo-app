@@ -62,6 +62,8 @@ export default Marionette.View.extend({
         return moment().format('D MMMM, YYYY');
     },
     templateContext() {
+        const project_settings = App.settings.getProjectSettings();
+
         return {
             urlToDownloadPdf: App.settings.getPdfDownloadUrl(this.options.quote_mode),
             new_revision: this.getNewRevision(),
@@ -70,10 +72,18 @@ export default Marionette.View.extend({
             set_current_date: this.set_current_date,
             increase_revision_enabled: this.options.increase_revision_enabled,
             set_current_date_enabled: this.options.set_current_date_enabled,
+            show_export_options: this.options.increase_revision_enabled || this.options.set_current_date_enabled,
+            display_options: this.options.display_options,
+            inches_display_mode: project_settings.getReadableValue('inches_display_mode'),
+            show_drawings_in_quote: project_settings.getReadableValue('show_drawings_in_quote'),
         };
     },
     initialize() {
+        const project_settings = App.settings.getProjectSettings();
+
         this.increase_revision = this.options.increase_revision_enabled;
         this.set_current_date = this.options.set_current_date_enabled;
+
+        this.listenTo(project_settings, 'change', this.render);
     },
 });

@@ -16,12 +16,22 @@ export default Marionette.View.extend({
         $table_container: '.supplier-request-table-container',
     },
     onRender() {
+        const display_options = {
+            show_price: false,
+            show_customer_image: false,
+            show_outside_units_view: false,
+            show_sizes_in_mm: true,
+            show_supplier_names: true,
+            show_european_hinge_indicators: true,
+        };
+
         this.controls_view = new QuoteControlsView({
             project: App.current_project,
             quote: App.current_quote,
             quote_mode: 'supplier',
             increase_revision_enabled: false,
             set_current_date_enabled: false,
+            display_options,
         });
 
         this.request_header_view = new SupplierRequestHeaderView({
@@ -33,12 +43,7 @@ export default Marionette.View.extend({
             quote: App.current_quote,
             collection: App.current_quote.units,
             extras: App.current_quote.extras,
-            show_price: false,
-            show_customer_image: false,
-            show_sizes_in_mm: true,
-            show_supplier_system: true,
-            show_supplier_names: true,
-            force_european_hinge_indicators: true,
+            display_options,
         });
 
         this.ui.$controls_container.append(this.controls_view.render().el);

@@ -90,6 +90,17 @@ export default Backbone.Model.extend({
             show_drawings_in_quote: SHOW_DRAWINGS_IN_QUOTE_OPTIONS,
         };
     },
+    getReadableValue(attribute_name) {
+        const possible_values = this.getPossibleValuesHash();
+        let result;
+
+        if (attribute_name in possible_values) {
+            const attribute_value = this.get(attribute_name);
+            result = possible_values[attribute_name].find(element => element.value === attribute_value);
+        }
+
+        return (result && result.title) || '';
+    },
     getTitles(names) {
         const name_title_hash = this.getNameTitleTypeHash(names);
 

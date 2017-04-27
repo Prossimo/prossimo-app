@@ -22,12 +22,22 @@ export default Marionette.View.extend({
         };
     },
     onRender() {
+        const display_options = {
+            show_price: true,
+            show_customer_image: true,
+            show_outside_units_view: true,
+            show_sizes_in_mm: false,
+            show_supplier_names: false,
+            show_european_hinge_indicators: false,
+        };
+
         this.controls_view = new QuoteControlsView({
             project: App.current_project,
             quote: App.current_quote,
             quote_mode: 'quote',
             increase_revision_enabled: true,
             set_current_date_enabled: true,
+            display_options,
         });
 
         this.units_table_view = new UnitsTableView({
@@ -46,7 +56,7 @@ export default Marionette.View.extend({
             quote: App.current_quote,
             collection: App.current_quote.units,
             extras: App.current_quote.extras,
-            show_outside_units_view: true,
+            display_options,
         });
 
         this.$el.append(this.units_table_view.render().el);
