@@ -207,6 +207,23 @@
     margin-bottom: 2rem;
 }
 
+.quote-item.multiunit,
+.quote-item.subunit {
+    margin-bottom: -1px;
+}
+
+.quote-unit-group.multiunit {
+    margin-bottom: 2rem;
+}
+
+.subunits-container {
+    position: relative;
+
+    .quote-item {
+        margin-bottom: 0;
+    }
+}
+
 .quote-unit-heading {
     width: 100%;
     table-layout: fixed;
@@ -215,6 +232,11 @@
 .quote-unit-heading tbody td {
     border: @border_dark;
     background-color: @bg_light;
+    border-bottom: none;
+}
+
+.quote-item.subunit .quote-unit-heading tbody td {
+    border-top: none;
 }
 
 .quote-unit-heading td strong,
@@ -320,8 +342,6 @@
 //  ------------------------------------------------------------------------
 
 .quote-unit {
-    position: relative;
-    top: -1px;
     width: 100%;
     table-layout: fixed;
 }
@@ -396,6 +416,10 @@ th.product-image em {
     font-weight: 400;
 }
 
+.quote-item.multiunit thead th em {
+    font-weight: 400;
+}
+
 .product-image img {
     display: block;
     max-height: @preview_size;
@@ -447,19 +471,31 @@ td.product-image.has-customer-image {
     max-height: @preview_size;
 }
 
-.sash-list h5 {
-    margin-left: -1.2rem;
-    margin-right: -1.2rem;
-    padding: 0.7rem 1.2rem;
-    border-top: @border_light;
-    border-bottom: @border_light;
-    background-color: @bg_light;
-    font-weight: 700;
-}
+.sash-list,
+.subunit-list {
+    h5 {
+        margin-left: -1.2rem;
+        margin-right: -1.2rem;
+        padding: 0.7rem 1.2rem;
+        border-top: @border_light;
+        border-bottom: @border_light;
+        background-color: @bg_light;
+        font-weight: 700;
+    }
 
-.sash-list h6 {
-    font-size: 14px;
-    font-weight: 700;
+    h6 {
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    h6 em {
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    li:first-child h6 {
+        margin-top: 0;
+    }
 }
 
 .sash-list .sections li:first-child h6 {
