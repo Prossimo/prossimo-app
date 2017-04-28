@@ -64,7 +64,21 @@
                         <div class="image-wrapper"><img src="{{ product_image.img }}" alt=""></div>
                     {{/if}}
                 </div>
+                {{#if customer_image }}
+                <div class="customer-image-inner">
+                    <h5>Customer Image</h5>
+                    <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
+                </div>
+                {{/if}}
             </td>
+        {{else}}
+            {{#if customer_image }}
+            <td class="customer-image">
+                <div class="customer-image-inner">
+                    <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
+                </div>
+            </td>
+            {{/if}}
         {{/if}}
         <td class="product-description">
             <ul>
