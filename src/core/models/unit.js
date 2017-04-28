@@ -2138,6 +2138,7 @@ const Unit = Backbone.Model.extend({
         return result;
     },
     //  Returns sizes in mms
+    //  Reverse hinges is true when we want outside view and american hinges
     getSashList(current_root, parent_root, reverse_hinges) {
         const current_sash = {
             opening: {},

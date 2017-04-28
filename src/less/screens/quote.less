@@ -51,13 +51,44 @@
     background-color: darken(@white, 2%);
     max-width: @quote_max_width;
 
-    > div {
+    .display-options > div,
+    .export-options-container > div {
         float: left;
+        padding: 0 2rem;
+        min-height: 4.5em;
+    }
+
+    .export-options-container > div {
         padding: 0 1rem;
     }
 
-    > div + div {
+    .display-options > div + div,
+    .export-options-container > div + div {
         border-left: 1px solid #ccc;
+    }
+
+    .display-options h5 {
+        margin: 0 0 0.5em;
+        font-size: 0.9em;
+        font-style: italic;
+    }
+
+    .display-options ul {
+        display: inline-block;
+        margin: 0;
+        padding: 0;
+        font-size: 0.85em;
+        list-style-type: none;
+        line-height: 1.2;
+        vertical-align: top;
+    }
+
+    .display-options ul + ul {
+        padding-left: 2rem;
+    }
+
+    .export-options-container {
+        float: right;
     }
 
     .export-options .checkbox {
@@ -71,6 +102,10 @@
     .export-options span em {
         font-style: normal;
         color: lighten(@black, 45%);
+    }
+
+    .download-button .btn {
+        margin: 0.5rem 1rem;
     }
 }
 

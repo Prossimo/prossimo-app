@@ -1,3 +1,4 @@
+import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 
 import App from '../../../main';
@@ -15,7 +16,18 @@ export default Marionette.CompositeView.extend({
         $extras_table_container: '.quote-extras-table-container',
         $optional_extras_table_container: '.quote-optional-extras-table-container',
     },
-    initialize() {
+    initialize(options) {
+        const default_display_options = {
+            show_price: true,
+            show_customer_image: true,
+            show_outside_units_view: true,
+            show_sizes_in_mm: false,
+            show_supplier_names: false,
+            show_european_hinge_indicators: false,
+        };
+
+        this.display_options = _.extend({}, default_display_options, options.display_options);
+
         this.listenTo(App.current_project.settings, 'change', this.render);
         this.listenTo(this.collection, 'change', this.render);
         this.listenTo(this.options.extras, 'change', this.render);
@@ -25,13 +37,7 @@ export default Marionette.CompositeView.extend({
             extras: this.options.extras,
             project: this.options.project,
             quote: this.options.quote,
-            show_price: this.options.show_price,
-            show_customer_image: this.options.show_customer_image,
-            show_outside_units_view: this.options.show_outside_units_view,
-            show_sizes_in_mm: this.options.show_sizes_in_mm,
-            show_supplier_system: this.options.show_supplier_system,
-            show_supplier_names: this.options.show_supplier_names,
-            force_european_hinge_indicators: this.options.force_european_hinge_indicators,
+            display_options: this.display_options,
         };
     },
     getTotalPrices() {
@@ -60,20 +66,20 @@ export default Marionette.CompositeView.extend({
             has_extras: (this.options.extras && this.options.extras.getRegularItems().length) ||
                 this.options.extras.getOptionalItems().length,
             total_prices: this.getTotalPrices(),
-            show_price: this.options.show_price !== false,
+            show_price: this.display_options.show_price !== false,
         };
     },
     onRender() {
         if (this.templateContext().has_extras) {
             this.quote_extras_table_view = new QuoteExtrasTableView({
                 collection: this.options.extras,
-                show_price: this.options.show_price,
+                show_price: this.display_options.show_price,
                 type: 'Regular',
             });
 
             this.quote_optional_extras_table_view = new QuoteExtrasTableView({
                 collection: this.options.extras,
-                show_price: this.options.show_price,
+                show_price: this.display_options.show_price,
                 type: 'Optional',
             });
 

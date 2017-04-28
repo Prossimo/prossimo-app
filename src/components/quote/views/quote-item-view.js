@@ -11,6 +11,7 @@ export default Marionette.View.extend({
     className: 'quote-item',
     template,
     initialize() {
+        this.display_options = this.options.display_options;
         this.listenTo(this.model, 'change', this.render);
     },
     getPrices() {
@@ -34,7 +35,7 @@ export default Marionette.View.extend({
 
         //  TODO: this name is a bit misleading
         function getFillingPerimeter(width, height) {
-            return view.options.show_sizes_in_mm ?
+            return view.display_options.show_sizes_in_mm ?
                 format.dimensions_mm(width, height) :
                 format.dimensions(
                     convert.mm_to_inches(width),
@@ -47,7 +48,7 @@ export default Marionette.View.extend({
         function getFillingArea(width, height, suffix_format) {
             suffix_format = suffix_format || 'sup';
 
-            const result = view.options.show_sizes_in_mm ?
+            const result = view.display_options.show_sizes_in_mm ?
                 format.square_meters(math.square_meters(width, height)) :
                 format.square_feet(math.square_feet(convert.mm_to_inches(width),
                     convert.mm_to_inches(height)), 2, suffix_format);
@@ -62,8 +63,7 @@ export default Marionette.View.extend({
             return `${filling_size} (${filling_area})`;
         }
 
-        function getSectionInfo(source, options) {
-            options = options || {};
+        function getSectionInfo(source) {
             const result = {};
 
             result.filling_is_glass = source.filling.type === 'glass';
@@ -71,7 +71,7 @@ export default Marionette.View.extend({
             result.filling_size = getFillingSize(source.filling.width, source.filling.height);
 
             //  Show supplier name for filling if it exists
-            if (options.show_supplier_names && App.settings && source.filling && source.filling.name) {
+            if (view.display_options.show_supplier_names && App.settings && source.filling && source.filling.name) {
                 const filling_type = App.settings.filling_types.getByName(source.filling.name);
 
                 if (filling_type && filling_type.get('supplier_name')) {
@@ -82,8 +82,8 @@ export default Marionette.View.extend({
             return result;
         }
 
-        const sash_list_source = this.model.getSashList(null, null, this.options.show_outside_units_view &&
-            project_settings && project_settings.get('hinge_indicator_mode') === 'american');
+        const sash_list_source = this.model.getSashList(null, null, this.display_options.show_outside_units_view &&
+            this.display_options.show_european_hinge_indicators === false);
         const sashes = [];
 
         //  This is the list of params that we want to see in the quote. We
@@ -116,11 +116,11 @@ export default Marionette.View.extend({
                     source_item.opening,
                     undefined,
                     undefined,
-                    this.options.show_sizes_in_mm ? 'mm' : 'inches',
+                    this.display_options.show_sizes_in_mm ? 'mm' : 'inches',
                 );
 
                 if (opening_size_data) {
-                    sash_item.opening_size = this.options.show_sizes_in_mm ?
+                    sash_item.opening_size = this.display_options.show_sizes_in_mm ?
                         format.dimensions_and_area_mm(
                             opening_size_data.width,
                             opening_size_data.height,
@@ -139,11 +139,11 @@ export default Marionette.View.extend({
                     source_item.opening,
                     'egress',
                     source_item.original_type,
-                    this.options.show_sizes_in_mm ? 'mm' : 'inches',
+                    this.display_options.show_sizes_in_mm ? 'mm' : 'inches',
                 );
 
                 if (egress_opening_size_data) {
-                    sash_item.egress_opening_size = this.options.show_sizes_in_mm ?
+                    sash_item.egress_opening_size = this.display_options.show_sizes_in_mm ?
                         format.dimensions_and_area_mm(
                             egress_opening_size_data.width,
                             egress_opening_size_data.height,
@@ -165,11 +165,11 @@ export default Marionette.View.extend({
 
                 sash_item.sections = [];
 
-                _.each(source_item.sections, function (section, s_index) {
+                _.each(source_item.sections, (section, s_index) => {
                     const section_item = {};
 
                     section_item.name = `Section #${index + 1}.${s_index + 1}`;
-                    section_info = getSectionInfo(section, this.options);
+                    section_info = getSectionInfo(section);
                     _.extend(section_item, section_info);
 
                     if (section_info.filling_is_glass) {
@@ -182,7 +182,7 @@ export default Marionette.View.extend({
 
                 sash_item.daylight_sum = sum ? format.square_feet(sum, 2, 'sup') : false;
             } else {
-                section_info = getSectionInfo(source_item, this.options);
+                section_info = getSectionInfo(source_item);
                 _.extend(sash_item, section_info);
             }
 
@@ -224,17 +224,17 @@ export default Marionette.View.extend({
         });
 
         let params_source = {
-            system: this.options.show_supplier_system ?
+            system: this.display_options.show_supplier_names ?
                 this.model.profile.get('supplier_system') :
                 this.model.profile.get('system'),
-            size: this.options.show_sizes_in_mm ?
+            size: this.display_options.show_sizes_in_mm ?
                 format.dimensions_mm(convert.inches_to_mm(this.model.get('width')), convert.inches_to_mm(this.model.get('height'))) :
                 format.dimensions(this.model.get('width'), this.model.get('height'), 'fraction',
                     project_settings && project_settings.get('inches_display_mode')),
             threshold: this.model.profile.isThresholdPossible() ?
                 this.model.profile.getThresholdType() : false,
             u_value: this.model.get('uw') ? format.fixed(this.model.getUValue(), 3) : false,
-            rough_opening: this.options.show_sizes_in_mm ?
+            rough_opening: this.display_options.show_sizes_in_mm ?
                 format.dimensions_mm(convert.inches_to_mm(this.model.getRoughOpeningWidth()),
                     convert.inches_to_mm(this.model.getRoughOpeningHeight())) :
                 format.dimensions(this.model.getRoughOpeningWidth(), this.model.getRoughOpeningHeight(),
@@ -256,7 +256,7 @@ export default Marionette.View.extend({
                 //  We assume that we have only one option per dictionary,
                 //  although in theory it's possible to have multiple
                 const option_name = current_options.length ? (
-                    (this.options.show_supplier_names && current_options[0].entry.get('supplier_name')) ||
+                    (this.display_options.show_supplier_names && current_options[0].entry.get('supplier_name')) ||
                     current_options[0].entry.get('name')
                 ) : false;
 
@@ -282,8 +282,7 @@ export default Marionette.View.extend({
         return this.model.get('customer_image');
     },
     getProductImage(is_alternative) {
-        const project_settings = App.settings && App.settings.getProjectSettings();
-        const position = this.options.show_outside_units_view ?
+        const position = this.display_options.show_outside_units_view ?
             (!is_alternative ? 'outside' : 'inside') :
             (!is_alternative ? 'inside' : 'outside');
         const preview_size = 600;
@@ -295,14 +294,13 @@ export default Marionette.View.extend({
                 height: preview_size,
                 mode: 'base64',
                 position,
-                hingeIndicatorMode: this.options.force_european_hinge_indicators ? 'european' :
-                    project_settings && project_settings.get('hinge_indicator_mode'),
+                hingeIndicatorMode: this.display_options.show_european_hinge_indicators ? 'european' : 'american',
             }),
             title,
         };
     },
     shouldShowCustomerImage() {
-        return this.options.show_customer_image !== false &&
+        return this.display_options.show_customer_image !== false &&
             this.model.collection && this.model.collection.hasAtLeastOneCustomerImage();
     },
     shouldShowDrawings() {
@@ -314,7 +312,7 @@ export default Marionette.View.extend({
     templateContext() {
         const show_customer_image = this.shouldShowCustomerImage();
         const show_drawings = this.shouldShowDrawings();
-        const show_price = this.options.show_price !== false;
+        const show_price = this.display_options.show_price !== false;
 
         return {
             position: parseFloat(this.model.get('position')) + 1,
