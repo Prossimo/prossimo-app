@@ -246,6 +246,9 @@ export default Backbone.Model.extend({
     hasOutsideHandle() {
         return _.indexOf(TYPES_WITH_OUTSIDE_HANDLE, this.get('unit_type')) !== -1;
     },
+    isEntryDoor() {
+        return this.get('unit_type') === 'Entry Door';
+    },
     getThresholdType() {
         let threshold_type = '(None)';
 

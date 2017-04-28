@@ -9,53 +9,6 @@ let module;
 let model;
 let ratio;
 
-function rectsIntersection(rect1, rect2) {
-    if (!rect1 || !rect2) { return; }
-
-    const rect1RightX = rect1.x + rect1.width;
-    const rect2RightX = rect2.x + rect2.width;
-    const rect1BottomY = rect1.y + rect1.height;
-    const rect2BottomY = rect2.y + rect2.height;
-    const leftX = Math.max(rect1.x, rect2.x);
-    const topY = Math.max(rect1.y, rect2.y);
-    const rightX = Math.min(rect1RightX, rect2RightX);
-    const bottomY = Math.min(rect1BottomY, rect2BottomY);
-    const width = rightX - leftX;
-    const height = bottomY - topY;
-    let intersection;
-
-    if (width <= 0 || height <= 0) {
-        intersection = null;
-    } else {
-        intersection = { x: leftX, y: topY, width, height };
-    }
-
-    return intersection;
-}
-
-function getAbsoluteRect(konva) {
-    if (!konva) { return; }
-
-    // Sometimes transform has strange scale coefficients on the order of 10^-16, e.g. for handle grips, thus override
-    let transform = konva.getAbsoluteTransform().getMatrix();
-    if (transform[0] < 0.000001) {
-        transform = konva.getParent().getAbsoluteTransform().getMatrix();
-    }
-    const clientRect = konva.getClientRect();
-    const containerAbsolutePosition = konva.getParent().getAbsolutePosition();
-    const scaleX = transform[0];
-    const scaleY = transform[3];
-
-    const absoluteRect = {
-        x: containerAbsolutePosition.x + (clientRect.x * scaleX),
-        y: containerAbsolutePosition.y + (clientRect.y * scaleY),
-        width: clientRect.width * scaleX,
-        height: clientRect.height * scaleY,
-    };
-
-    return absoluteRect;
-}
-
 function drawLouver(context, options) {
     if (!context || !(options && options.width && options.height)) { return; }
     const width = options.width;
@@ -1664,31 +1617,29 @@ export default Backbone.KonvaView.extend({
         const style = module.getStyle('handle');
         const isInsideView = module.getState('insideView');
         const isOutsideView = !isInsideView;
+        const hasOutsideHandle = model.profile.hasOutsideHandle();
+        const isEntryDoor = model.profile.isEntryDoor();
+        const isVisible = isInsideView || (isOutsideView && hasOutsideHandle);
+        const isInvisible = !isVisible;
         const pos = {
             x: null,
             y: null,
             rotation: 0,
+            scale: { x: 1, y: 1 },
         };
-
-        const positionLeft = function () {
-            pos.x = offset - handle_data.base.rotationCenter.x;
-
+        const positionLeft = () => {
+            pos.x = offset + handle_data.base.rotationCenter.x;
             if (section.trapezoid && section.trapezoid.frame) {
-                pos.y =
-                    (
-                        section.trapezoid.frame.outer[0].y +
-                        ((section.trapezoid.frame.outer[3].y - section.trapezoid.frame.outer[0].y) / 2)
-                    ) -
+                pos.y = (section.trapezoid.frame.outer[0].y +
+                    ((section.trapezoid.frame.outer[3].y - section.trapezoid.frame.outer[0].y) / 2)) -
                     handle_data.base.rotationCenter.y;
             } else {
                 pos.y = (section.sashParams.height / 2) - handle_data.base.rotationCenter.y;
             }
-
-            pos.rotation = -90;
+            pos.scale.x = -pos.scale.x;
         };
-        const positionRight = function () {
+        const positionRight = () => {
             pos.x = section.sashParams.width - offset - handle_data.base.rotationCenter.x;
-
             if (section.trapezoid && section.trapezoid.frame) {
                 pos.y =
                     (
@@ -1698,40 +1649,28 @@ export default Backbone.KonvaView.extend({
             } else {
                 pos.y = (section.sashParams.height / 2) - handle_data.base.rotationCenter.y;
             }
-
-            pos.rotation = 90;
         };
-        const positionRightTilt = function () {
+        const positionRightTilt = () => {
             pos.x = (section.sashParams.width / 2) - handle_data.base.rotationCenter.x;
-
             if (section.trapezoid && section.trapezoid.frame) {
                 const frame_outer_y = section.trapezoid.frame.outer[0].y > section.trapezoid.frame.outer[1].y ?
                     section.trapezoid.frame.outer[1].y :
                     section.trapezoid.frame.outer[0].y;
-
                 pos.y = ((Math.abs(section.trapezoid.frame.outer[0].y - section.trapezoid.frame.outer[1].y) / 2) +
                     offset + frame_outer_y) - handle_data.base.rotationCenter.y;
             } else {
                 pos.y = offset - handle_data.base.rotationCenter.y;
             }
-
-            pos.rotation = 90;
         };
-        const sinkThroughGlass = function () {
+        const positionUnder = () => {
             const fixes = handle.getAttr('fixes') || [];
-
-            handle.setAttrs({
-                fixes: fixes.concat('sinkThroughGlass'),
-                opacity: style.sunk.opacity,
-            });
+            handle.setAttrs({ fixes: fixes.concat('positionUnder') });
         };
-        const raiseAboveFrame = function () {
+        const positionOver = () => {
             const fixes = handle.getAttr('fixes') || [];
-
-            handle.setAttrs({
-                fixes: fixes.concat('raiseAboveFrame'),
-            });
+            handle.setAttrs({ fixes: fixes.concat('positionOver') });
         };
+        const rotate = (angle) => { pos.rotation = angle; };
         const isLeftHandle = (type === 'tilt_turn_right' || type === 'turn_only_right' ||
             type === 'slide-right' || type === 'flush-turn-right' ||
             type === 'slide_left' || type === 'tilt_slide_left');
@@ -1740,56 +1679,48 @@ export default Backbone.KonvaView.extend({
             type === 'slide_right' || type === 'tilt_slide_right');
         const isTiltSection = (type === 'tilt_only');
 
-        if (isInsideView || (isOutsideView && model.profile.hasOutsideHandle())) {
-            if (isLeftHandle) {
-                positionLeft();
-                raiseAboveFrame();
-            } else if (isRightHandle) {
-                positionRight();
-                raiseAboveFrame();
-            } else if (isTiltSection) {
-                positionRightTilt();
-                raiseAboveFrame();
-            }
-        } else if (isOutsideView) {
-            if (isLeftHandle) {
-                positionLeft();
-                sinkThroughGlass();
-            } else if (isRightHandle) {
-                positionRight();
-                sinkThroughGlass();
-            } else if (isTiltSection) {
-                positionRightTilt();
-                sinkThroughGlass();
-            }
+        if (isVisible) {
+            positionOver();
+        } else if (isInvisible) {
+            positionUnder();
+        }
+
+        if (isLeftHandle) {
+            positionLeft();
+        } else if (isRightHandle) {
+            positionRight();
+        } else if (isTiltSection) {
+            positionRightTilt();
+        }
+
+        if (isEntryDoor) {
+            rotate(90);
+        } else {
+            rotate(0);
         }
 
         // Create a group of 2 paths (stroke and backdrop) from SVG path data
-        // If created paths are offset,
-        // use Inkscape's Save as -> Optimized SVG
+        // If created paths are offset, use Inkscape's Save as -> Optimized SVG
         handle.setAttrs({
             name: 'handle',
             x: pos.x,
             y: pos.y,
-            scale: {
-                x: 1,
-                y: 1,
-            },
+            scale: pos.scale,
         });
         const handleBaseBg = new Konva.Path({
             name: 'handleBaseBg',
-            fill: style.fill,
+            fill: style.default.base.fill,
             data: handle_data.base.fill,
         });
         const handleBaseStroke = new Konva.Path({
             name: 'handleBaseStroke',
-            stroke: style.stroke,
-            strokeWidth: 1,
+            stroke: style.default.base.stroke,
+            strokeWidth: style.default.base.strokeWidth,
             data: handle_data.base.stroke,
         });
         const handleGripBg = new Konva.Path({
             name: 'handleGripBg',
-            fill: style.fill,
+            fill: style.default.grip.fill,
             data: handle_data.grip.fill,
             x: handle_data.base.rotationCenter.x,
             y: handle_data.base.rotationCenter.y,
@@ -1801,8 +1732,8 @@ export default Backbone.KonvaView.extend({
         });
         const handleGripStroke = new Konva.Path({
             name: 'handleGripStroke',
-            stroke: style.stroke,
-            strokeWidth: 1,
+            stroke: style.default.grip.stroke,
+            strokeWidth: style.default.grip.strokeWidth,
             data: handle_data.grip.stroke,
             x: handle_data.base.rotationCenter.x,
             y: handle_data.base.rotationCenter.y,
@@ -1821,67 +1752,42 @@ export default Backbone.KonvaView.extend({
         const self = this;
         const style = module.getStyle('handle');
         const handleKonvas = this.layer.find('.handle');
-        const mullionKonvas = this.layer.find('.mullion');
+        const vagueBaseStrokeThreshold = 0.25;
         const isPhantomJS = !!window._phantom;
-        const dashCorrection = (isPhantomJS) ? ratio : 1;
-        const handleDashStyle = [
-            (dashCorrection * style.sunk.dashLength) / ratio,
-            (dashCorrection * style.sunk.dashGap) / ratio,
+        let dashCorrection;
+        if (isPhantomJS) {
+            dashCorrection = (ratio < vagueBaseStrokeThreshold) ? 0.75 * ratio : ratio;
+        } else {
+            dashCorrection = (ratio < vagueBaseStrokeThreshold) ? 0.75 : 1;
+        }
+        const handleBaseDashStyle = [
+            (dashCorrection * style.under.base.dashLength) / ratio,
+            (dashCorrection * style.under.base.dashGap) / ratio,
+        ];
+        const handleGripDashStyle = [
+            (dashCorrection * style.under.grip.dashLength) / ratio,
+            (dashCorrection * style.under.grip.dashGap) / ratio,
         ];
 
         // Calculations are in absolute (real pixel) coordinates, except clipping space
         handleKonvas.forEach((handleKonva) => {
-            const handleTransform = handleKonva.getAbsoluteTransform().getMatrix();
-            const handleAbsoluteScaleX = handleTransform[0];
-            const handleAbsoluteScaleY = handleTransform[3];
-            const handleRect = getAbsoluteRect(handleKonva);
-            const handleBase = handleKonva.findOne('.handleBaseStroke');
-            const handleBaseRect = getAbsoluteRect(handleBase);
-            const handleBaseTransform = handleBase.getAbsoluteTransform().getMatrix();
-            const handleBaseAbsoluteScaleX = handleBaseTransform[0];
-            const handleBaseAbsoluteScaleY = handleBaseTransform[3];
-            const handleOrigin = {
-                x: handleBaseRect.x + (handle_data.base.rotationCenter.x * handleBaseAbsoluteScaleX),
-                y: handleBaseRect.y + (handle_data.base.rotationCenter.y * handleBaseAbsoluteScaleY),
-            };
-            const handleGrip = handleKonva.findOne('.handleGripStroke');
-            const handleGripRect = getAbsoluteRect(handleGrip);
-            const handleMullionOverlap = _(mullionKonvas
-                .filter((konva) => {
-                    const mullion = model.getMullion(konva.getAttr('sectionId'));
-                    return mullion.type === 'horizontal' || mullion.type === 'horizontal_invisible';
-                })
-                .map((konva) => {
-                    const mullionRect = getAbsoluteRect(konva);
-                    return rectsIntersection(mullionRect, handleRect);
-                }))
-                .compact()[0];
-            const hangleGripResultRect = rectsIntersection(handleMullionOverlap, handleGripRect);
-            const cutOffThresholdY = handleGripRect.height / 1.65;
-            // This means I don't know what else goes into the actual clipping rect coords
-            const magicCorrection = { x: 14 * ratio, y: 26 * ratio };
-            const clippingRect = handleMullionOverlap &&  // Clipping rectangle is local, relative to handle origin
-                {
-                    x: ((handleMullionOverlap.x - handleOrigin.x) + magicCorrection.x) / handleAbsoluteScaleX,
-                    y: ((handleMullionOverlap.y - handleOrigin.y) + magicCorrection.y) / handleAbsoluteScaleY,
-                    width: handleMullionOverlap.width / handleAbsoluteScaleX,
-                    height: handleMullionOverlap.height / handleAbsoluteScaleY,
-                };
-            const isEnoughOverlap = (hangleGripResultRect) ? hangleGripResultRect.height >= cutOffThresholdY : false;
+            const handleBaseBg = handleKonva.findOne('.handleBaseBg');
+            const handleBaseStroke = handleKonva.findOne('.handleBaseStroke');
+            const handleGripBg = handleKonva.findOne('.handleGripBg');
+            const handleGripStroke = handleKonva.findOne('.handleGripStroke');
 
             handleKonva.getAttr('fixes').forEach((fix) => {
-                if (fix === 'sinkThroughGlass' && handleMullionOverlap && isEnoughOverlap) {
+                if (fix === 'positionOver') {
                     self.moveToSeparateLayer(handleKonva);
-                    handleGrip.dash(handleDashStyle);
-                    handleKonva.setClip(clippingRect);
-                } else if (
-                    (fix === 'sinkThroughGlass' && !handleMullionOverlap) ||
-                    (fix === 'sinkThroughGlass' && !isEnoughOverlap)
-                ) {
-                    handleKonva.moveDown();
-                    handleKonva.moveDown();
-                } else if (fix === 'raiseAboveFrame') {
+                } else if (fix === 'positionUnder') {
                     self.moveToSeparateLayer(handleKonva);
+                    handleBaseStroke.moveToTop();
+                    handleBaseStroke.dash(handleBaseDashStyle);
+                    handleGripStroke.dash(handleGripDashStyle);
+                    handleBaseStroke.setAttrs({ opacity: style.under.base.opacity });
+                    handleGripStroke.setAttrs({ opacity: style.under.grip.opacity });
+                    handleBaseBg.setAttrs({ opacity: style.under.base.backgroundOpacity });
+                    handleGripBg.setAttrs({ opacity: style.under.grip.backgroundOpacity });
                 }
             });
         });
