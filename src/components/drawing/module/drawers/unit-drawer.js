@@ -705,7 +705,6 @@ export default Backbone.KonvaView.extend({
 
         return group;
     },
-
     clipCircle(group, params) {
         const root = model.generateFullRoot();
 
@@ -723,7 +722,6 @@ export default Backbone.KonvaView.extend({
             group.clipRadius(params.radius + 2);
         }
     },
-
     createCircleFrame(params) {
         const frameWidth = params.frameWidth;
         const radius = params.radius;
@@ -758,7 +756,6 @@ export default Backbone.KonvaView.extend({
 
         return group;
     },
-
     // Create sections
     createSectionGroup(root) {
         const drawer = this;
@@ -809,7 +806,6 @@ export default Backbone.KonvaView.extend({
 
         return sectionsGroup;
     },
-
     sortSection(group) {
         // group = sash or mullion
         if (group.attrs.name === 'sash') {
@@ -845,7 +841,6 @@ export default Backbone.KonvaView.extend({
             });
         }
     },
-
     createSectionsTree(rootSection) {
         const objects = [];
 
@@ -1037,7 +1032,6 @@ export default Backbone.KonvaView.extend({
         const hasFrame = (sectionData.sashType !== 'fixed_in_frame');
         const frameWidth = hasFrame ? model.profile.get('sash_frame_width') : 0;
         const mainFrameWidth = model.profile.get('frame_width') / 2;
-
         const fill = {};
 
         if (
@@ -1503,7 +1497,6 @@ export default Backbone.KonvaView.extend({
                     ctx.strokeShape(this);
                 },
             });
-
             hingeLine.dash(dashStyle);
         }
 
@@ -1554,7 +1547,7 @@ export default Backbone.KonvaView.extend({
                 result = result.concat(view.createSectionIndexes(section, indexes));
             });
 
-        // If section haven't a children sections — create Index for it
+        // If section haven't a children sections - create Index for it
         } else {
             let text = (indexes.main + 1);
             let position = {
@@ -1780,6 +1773,7 @@ export default Backbone.KonvaView.extend({
                 fill: style.normal.fill,
                 listening: false,
             });
+
             group.add(bar);
         }
 
@@ -1812,6 +1806,7 @@ export default Backbone.KonvaView.extend({
                 fill: style.normal.fill,
                 listening: false,
             });
+
             group.add(bar);
         }
 

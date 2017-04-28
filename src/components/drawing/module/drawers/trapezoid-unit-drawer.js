@@ -1386,9 +1386,6 @@ export default Backbone.KonvaView.extend({
         const isFlushType = sectionData.fillingType &&
             sectionData.fillingType.indexOf('flush') >= 0;
 
-        // var shouldDrawFilling =
-        //     !hasSubSections && !isFlushType ||
-        //     !hasSubSections && model.isRootSection(sectionData.id) && isFlushType;
         const shouldDrawFilling = !hasSubSections && !isFlushType;
 
         const shouldDrawBars = (shouldDrawFilling && !sectionData.fillingType) || sectionData.fillingType === 'glass';
@@ -1993,7 +1990,7 @@ export default Backbone.KonvaView.extend({
                 result = result.concat(view.createSectionIndexes(section, indexes));
             });
 
-            // If section haven't a children sections — create Index for it
+        // If section haven't a children sections - create Index for it
         } else {
             let text = (indexes.main + 1);
             let position = {
@@ -2135,6 +2132,7 @@ export default Backbone.KonvaView.extend({
                     if (isLouver) {
                         drawLouver(ctx, { width: fillWidth, height: fillHeight, bladeWidth: style.louver.bladeWidth });
                     }
+
                     ctx.fillStrokeShape(this);
                 },
             };
@@ -2485,8 +2483,8 @@ export default Backbone.KonvaView.extend({
             });
         } else if (section.circular) {
             // circular shape
-            frameWidth = model.profile.get('frame_width');
             const radius = model.getCircleRadius();
+            frameWidth = model.profile.get('frame_width');
 
             if (section.sashType !== 'fixed_in_frame') {
                 frameWidth /= 2;
