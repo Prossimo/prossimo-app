@@ -8,7 +8,7 @@ import template from '../templates/quote-units-item-view.hbs';
 export default Marionette.View.extend({
     tagName: 'div',
     className() {
-        return `quote-item ${this.model.isSubunit() ? 'subunit' : 'loneunit'}`;
+        return `quote-item ${this.model.getRelation()}`;
     },
     template,
     getPrices() {
