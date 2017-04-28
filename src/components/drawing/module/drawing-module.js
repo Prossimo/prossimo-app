@@ -306,6 +306,7 @@ const DrawingModule = Marionette.Object.extend({
                     grip: {
                         dashLength: 3.5,
                         dashGap: 1.5,
+                        opacity: 0.5,
                         backgroundOpacity: 0.5,
                     },
                 },
