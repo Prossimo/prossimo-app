@@ -284,12 +284,31 @@ const DrawingModule = Marionette.Object.extend({
                 },
             },
             handle: {
-                fill: 'white',
-                stroke: 'black',
-                sunk: {
-                    opacity: 0.75,
-                    dashLength: 3,
-                    dashGap: 2,
+                default: {
+                    base: {
+                        fill: 'white',
+                        stroke: 'black',
+                        strokeWidth: 1,
+                    },
+                    grip: {
+                        fill: 'white',
+                        stroke: 'black',
+                        strokeWidth: 1,
+                    },
+                },
+                under: {
+                    base: {
+                        dashLength: 3.5,
+                        dashGap: 1.5,
+                        opacity: 0.75,
+                        backgroundOpacity: 0.5,
+                    },
+                    grip: {
+                        dashLength: 3.5,
+                        dashGap: 1.5,
+                        opacity: 0.5,
+                        backgroundOpacity: 0.5,
+                    },
                 },
             },
             direction_line: {
