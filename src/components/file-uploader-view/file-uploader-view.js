@@ -40,7 +40,7 @@ export default Marionette.View.extend({
         },
         fileUpload: {
             dataType: 'json',
-            acceptFileTypes: /(\.|\/)(gif|jpe?g|png|pdf|docx?|rtf|xlsx?)$/i,
+            acceptFileTypes: new RegExp('(\\.|\\/)(gif|jpe?g|png|pdf|docx?|rtf|xlsx?)$', 'i'),
             maxFileSize: 99999000,
             minFileSize: 100,
             disableImageResize: /Android(?!.*Chrome)|Opera/.test(window.navigator.userAgent),
@@ -62,7 +62,7 @@ export default Marionette.View.extend({
 
         this.collection = this.options.collection || new ProjectFileCollection();
 
-        this.listenTo(this.collection, 'update', function () {
+        this.listenTo(this.collection, 'update', () => {
             this.toggleAddBtn();
         });
     },
@@ -100,7 +100,7 @@ export default Marionette.View.extend({
         };
     },
     onBeforeDestroy() {
-        this.fUplad.fileupload('xd');
+        this.fUplad.fileupload('destroy');
     },
     getUuidForAllFiles() {
         return this.collection.pluck('uuid') || [];
