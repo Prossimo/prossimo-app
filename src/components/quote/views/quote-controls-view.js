@@ -76,6 +76,7 @@ export default Marionette.View.extend({
             display_options: this.options.display_options,
             inches_display_mode: project_settings.getReadableValue('inches_display_mode'),
             show_drawings_in_quote: project_settings.getReadableValue('show_drawings_in_quote'),
+            customer_mode: this.options.quote_mode !== 'supplier',
         };
     },
     initialize() {
