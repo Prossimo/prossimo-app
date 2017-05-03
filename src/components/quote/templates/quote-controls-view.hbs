@@ -1,0 +1,51 @@
+<div class="display-options">
+    <div class="display-options-group">
+        <h5>{{#if customer_mode }}Customer{{else}}Supplier{{/if}} Mode</h5>
+        <div>
+            <ul>
+                <li><span>Units:</span> <strong>{{#if display_options.show_sizes_in_mm }}Metric{{else}}Imperial{{/if}}</strong></li>
+                <li><span>Hinge indicators:</span> <strong>{{#if display_options.show_european_hinge_indicators }}ISO{{else}}ANSI{{/if}}</strong></li>
+                <li><span>Drawings:</span> <strong>{{#if display_options.show_outside_units_view }}Outside{{else}}Inside{{/if}} View</strong></li>
+            </ul>
+            <ul>
+                <li><span>Show prices:</span> <strong>{{#if display_options.show_price }}Yes{{else}}No{{/if}}</strong></li>
+                <li><span>Show customer image:</span> <strong>{{#if display_options.show_customer_image }}Yes{{else}}No{{/if}}</strong></li>
+                <li><span>Show supplier names for things:</span> <strong>{{#if display_options.show_supplier_names }}Yes{{else}}No{{/if}}</strong></li>
+            </ul>
+        </div>
+    </div>
+    <div class="display-options-group">
+        <h5>Project Settings</h5>
+        <ul>
+            {{#unless display_options.show_sizes_in_mm }}
+            <li><span>Inches display mode:</span> <strong>{{ inches_display_mode }}</strong></li>
+            {{/unless}}
+            <li><span>Show drawings in quote:</span> <strong>{{ show_drawings_in_quote }}</strong></li>
+        </ul>
+    </div>
+</div>
+<div class="export-options-container">
+    <div class="download-button">
+        <a href="{{ urlToDownloadPdf }}" target="_blank" class="btn btn-success js-download-pdf">Download PDF</a>
+    </div>
+    {{#if show_export_options }}
+    <div class="export-options">
+        {{#if increase_revision_enabled }}
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" name="increase_revision"{{#if increase_revision }} checked{{/if}}>
+                <span>Increase Revision <em>(new revision: {{ new_revision }})</em></span>
+            </label>
+        </div>
+        {{/if}}
+        {{#if set_current_date_enabled }}
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" name="set_current_date"{{#if set_current_date }} checked{{/if}}>
+                <span>Set Current Date <em>(new date: {{ new_date }})</em></span>
+            </label>
+        </div>
+        {{/if}}
+    </div>
+    {{/if}}
+</div>
