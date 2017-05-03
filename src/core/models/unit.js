@@ -9,6 +9,7 @@ import UnitOptionCollection from '../collections/inline/unit-option-collection';
 import { globalChannel } from '../../utils/radio';
 
 const UNSET_VALUE = '--';
+const REDISTRIBUTE_BARS_PRECISION = 0;
 
 const PRICING_SCHEME_NONE = constants.PRICING_SCHEME_NONE;
 const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
@@ -120,6 +121,10 @@ function getDefaultFillingType(default_glazing_name, profile_id) {
     } : dummy_type;
 }
 
+function cloneObject(obj) {
+    return JSON.parse(JSON.stringify(obj));
+}
+
 function getDefaultBars() {
     return {
         vertical: [],
@@ -168,8 +173,7 @@ function getSectionDefaults(section_type, default_glazing_name, profile_id) {
     };
 }
 
-function isBarsUniform(bars, options) {
-    const precision = 0;
+function getBarsGaps(bars, options) {
     const lastBar = bars[bars.length - 1];
     const gaps = bars.map((bar, index) => {
         const previousPosition = (index === 0) ? 0 : bars[index - 1].position;
@@ -179,6 +183,14 @@ function isBarsUniform(bars, options) {
         gaps.push(options.axisLength - lastBar.position);
     }
 
+    return gaps;
+}
+
+function isBarsUniform(bars, options) {
+    const axisLength = options && options.axisLength;
+    const precision = (options && _.isNumber(options.precision)) || 0;
+    const gaps = getBarsGaps(bars, { axisLength });
+
     const isUniform = gaps.reduce((isStillUniform, gap, index) => {
         const previousGap = (index === 0) ? 0 : gaps[index - 1];
         return isStillUniform && (gap.toFixed(precision) === previousGap.toFixed(precision));
@@ -187,7 +199,33 @@ function isBarsUniform(bars, options) {
     return isUniform;
 }
 
+function isEqualBars(bars1, bars2, options) {
+    if (!bars1 || !bars2) { return false; }
+    const precision = (options && _.isNumber(options.precision)) || 0;
+    let isEqual;
+
+    // Compare bar arrays
+    if (_.isArray(bars1) && _.isArray(bars2)) {
+        isEqual = bars1.reduce((result, bar1, index) => {
+            const bar2 = bars2[index];
+            return result && (bar2 && isEqualBars(bar1, bar2, { precision }));
+        }, true);
+    // Compare individual bars
+    } else if (_.isObject(bars1) && _.isObject(bars2)) {
+        const [bar1, bar2] = [bars1, bars2];
+        const isEqualPositions = bar1.position.toFixed(precision) === bar2.position.toFixed(precision);
+        const isEqualShapes = _.isEqual(bar1.links, bar2.links);
+        isEqual = isEqualPositions && isEqualShapes;
+    // Ignore unidentified glazing objects
+    } else {
+        isEqual = false;
+    }
+
+    return isEqual;
+}
+
 function scaleBars(bars, options) {
+    bars = cloneObject(bars);
     const factor = options && options.factor;
     if (!factor || factor === 1) { return bars; }
 
@@ -201,6 +239,120 @@ function scaleBars(bars, options) {
     });
 
     return newBars;
+}
+
+function mirrorBars(bars, options) {
+    bars = cloneObject(bars);
+    const axisLength = options && options.axisLength;
+    if (!axisLength) { return bars; }
+
+    const newBars = bars.reverse();
+    newBars.forEach((bar) => {
+        bar.position = axisLength - bar.position;
+    });
+
+    return newBars;
+}
+
+function offsetBars(bars, options) {
+    bars = cloneObject(bars);
+    const offset = options && options.offset;
+    if (!offset) { return bars; }
+
+    const newBars = bars;
+    newBars.forEach((bar) => {
+        bar.position += offset;
+    });
+
+    return newBars;
+}
+
+function splitBars(bars, options) {
+    bars = cloneObject(bars);
+    const position = options && options.position;
+    const gapIndex = options && options.gapIndex;
+    let firstHalf;
+    let secondHalf;
+
+    // Split at position (floating point value)
+    if (position) {
+        firstHalf = bars.filter(bar => bar.position < position);
+        secondHalf = bars.filter(bar => bar.position > position);
+        const centralBar = bars.filter(bar => bar.position === position)[0];
+        if (centralBar) {
+            firstHalf.push(cloneObject(centralBar));
+            secondHalf.splice(0, 0, cloneObject(centralBar));
+        }
+        secondHalf.forEach((bar) => {
+            bar.position -= position;
+        });
+    // Split at gap (gap index integer)
+    } else if (gapIndex) {
+        firstHalf = bars.filter((bar, index) => index < gapIndex);
+        secondHalf = bars.filter((bar, index) => index >= gapIndex);
+    // Simulate splitting
+    } else {
+        firstHalf = bars;
+        secondHalf = [];
+    }
+
+    return [firstHalf, secondHalf];
+}
+
+function splitBarsAtLargestGap(bars) {
+    bars = cloneObject(bars);
+    if (bars.length <= 1) { return [bars, []]; }
+
+    const splittableGaps = getBarsGaps(bars);
+    splittableGaps.splice(0, 1);
+    const largestGapIndex = splittableGaps.reduce(([largestGap, largestGapInd], gap, index) => {
+        const largestGapTuple = (gap >= largestGap) ? [gap, index] : [largestGap, largestGapInd];
+        return largestGapTuple;
+    }, [0, 0])[1] + 1;
+
+    return splitBars(bars, { gapIndex: largestGapIndex });
+}
+
+function mergeBars(bars1, bars2, options) {
+    bars1 = cloneObject(bars1);
+    bars2 = cloneObject(bars2);
+    if (!bars1 || !bars2) { return bars1; }
+    const bars1AxisLength = (options && options.bars1AxisLength) || bars1[bars1.length - 1].position;
+    const precision = (options && _.isNumber(options.precision)) || 0;
+
+    const mergedBars = bars1.concat(offsetBars(bars2, { offset: bars1AxisLength }));
+    const deduplicatedBars = mergedBars.filter((bar, index) => {
+        const nextBar = mergedBars[index + 1];
+        return bar.position.toFixed(precision) !== (nextBar && nextBar.position.toFixed(precision));
+    });
+
+    return deduplicatedBars;
+}
+
+function getCentralBars(bars, options) {
+    bars = cloneObject(bars);
+    const axisLength = options && options.axisLength;
+    if (!axisLength) { return []; }
+    const halfLength = axisLength / 2;
+    const precision = REDISTRIBUTE_BARS_PRECISION;
+
+    // Algorithm for extracting central bar group (assuming bars are non-uniform):
+    //     1. Cut axis bars in half in the middle
+    //     2. Mirror one half and compare
+    //     3. If halves are equal, split both along largest gaps
+    //     4. Take the relevant pieces of split halves and reconstitute a single central part from them
+
+    const [firstHalf, secondHalf] = splitBars(bars, { position: halfLength });
+    const mirroredSecondHalf = mirrorBars(secondHalf, { axisLength: halfLength });
+    const isSymmetrical = isEqualBars(firstHalf, mirroredSecondHalf, { precision });
+
+    if (!isSymmetrical) { return []; }
+
+    const firstHalfTail = splitBarsAtLargestGap(firstHalf)[1];
+    const secondHalfHead = splitBarsAtLargestGap(secondHalf)[0];
+    const centralBars = mergeBars(firstHalfTail, secondHalfHead, { bars1AxisLength: halfLength, precision });
+
+    return centralBars;
 }
 
 function getInvertedDivider(type) {
@@ -1418,17 +1570,32 @@ const Unit = Backbone.Model.extend({
             const dimension = (axis === 'vertical') ? 'height' : 'width';
             if (!this.hasSectionBars(section.id, { types: barType })) { return; }
             if (section.glassParams[dimension] === oldSection.glassParams[dimension]) { return; }
+            const precision = REDISTRIBUTE_BARS_PRECISION;
 
             const axisBars = section.bars[barType];
             const axisLength = oldSection.glassParams[dimension];
             const scalingFactor = section.glassParams[dimension] / oldSection.glassParams[dimension];
 
-            if (isBarsUniform(axisBars, { axisLength })) {
+            if (isBarsUniform(axisBars, { axisLength, precision })) {  // For uniform bars, do uniform scaling only
                 const newBars = section.bars;
                 newBars[barType] = scaleBars(axisBars, { factor: scalingFactor });
                 this.setSectionBars(section.id, newBars);
             } else {
-                // @TODO implementme
+                const centralBars = getCentralBars(axisBars, { axisLength, precision });
+                const withoutCentral = axisBars.filter((bar) => {
+                    const isCentralBar = centralBars.some(centralBar => isEqualBars(centralBar, bar, { precision }));
+                    return !isCentralBar;
+                });
+
+                console.log('centralBars', centralBars);
+                console.log('withoutCentral', withoutCentral);
+
+                // @TODO: implementme
+
+                // Algorithm for extracting starting (left/top) and ending (right/bottom) bar groups,
+                // assuming bars are non-uniform and a possible central group has been extracted:
+                //     1. Find the largest gap between bars
+                //     2. Split bars along that gap into starting and ending bar groups
             }
         });
     },
