@@ -299,16 +299,16 @@ function splitBars(bars, options) {
     return [firstHalf, secondHalf];
 }
 
-function splitBarsAtLargestGap(bars) {
+function splitBarsAtLargestGap(bars, options) {
     bars = cloneObject(bars);
     if (bars.length <= 1) { return [bars, []]; }
+    const axisLength = options && options.axisLength;
 
-    const splittableGaps = getBarsGaps(bars);
-    splittableGaps.splice(0, 1);
-    const largestGapIndex = splittableGaps.reduce(([largestGap, largestGapInd], gap, index) => {
+    const gaps = getBarsGaps(bars, { axisLength });
+    const largestGapIndex = gaps.reduce(([largestGap, largestGapInd], gap, index) => {
         const largestGapTuple = (gap >= largestGap) ? [gap, index] : [largestGap, largestGapInd];
         return largestGapTuple;
-    }, [0, 0])[1] + 1;
+    }, [0, 0])[1];
 
     return splitBars(bars, { gapIndex: largestGapIndex });
 }
@@ -345,12 +345,22 @@ function getCentralBars(bars, options) {
     const [firstHalf, secondHalf] = splitBars(bars, { position: halfLength });
     const mirroredSecondHalf = mirrorBars(secondHalf, { axisLength: halfLength });
     const isSymmetrical = isEqualBars(firstHalf, mirroredSecondHalf, { precision });
+    let centralBars;
 
-    if (!isSymmetrical) { return []; }
+    // Extract only from symmetrical bars
+    if (isSymmetrical) {
+        const firstHalfTail = splitBarsAtLargestGap(firstHalf, { axisLength: halfLength })[1];
+        const secondHalfHead = splitBarsAtLargestGap(secondHalf, { axisLength: halfLength })[0];
 
-    const firstHalfTail = splitBarsAtLargestGap(firstHalf)[1];
-    const secondHalfHead = splitBarsAtLargestGap(secondHalf)[0];
-    const centralBars = mergeBars(firstHalfTail, secondHalfHead, { bars1AxisLength: halfLength, precision });
+        if (firstHalfTail.length && secondHalfHead.length) {
+            centralBars = mergeBars(firstHalfTail, secondHalfHead, { bars1AxisLength: halfLength, precision });
+        } else {
+            centralBars = [];
+        }
+    // Simulate result for non-symmetrical bars
+    } else {
+        centralBars = [];
+    }
 
     return centralBars;
 }
