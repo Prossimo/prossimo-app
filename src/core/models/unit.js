@@ -1536,15 +1536,11 @@ const Unit = Backbone.Model.extend({
         const hasBars = bars && (bars.horizontal.length !== 0 || bars.vertical.length !== 0);
 
         if (hasBars && options.x) {
-            bars.vertical.forEach((bar) => {
-                bar.position += options.x;
-            });
+            bars.vertical = offsetBars(bars.vertical, { offset: options.x });
         }
 
         if (hasBars && options.y) {
-            bars.horizontal.forEach((bar) => {
-                bar.position += options.y;
-            });
+            bars.horizontal = offsetBars(bars.horizontal, { offset: options.y });
         }
 
         this.setSectionBars(sectionId, bars);
