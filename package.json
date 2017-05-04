@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "start": "node tools/server/server.js",
+    "start:hot": "node tools/server/server.js --hotWebpack",
     "build": "./node_modules/babel-cli/bin/babel-node.js tools/utils/run build --release",
     "lint": "./node_modules/eslint/bin/eslint.js src tools test",
     "karma": "./node_modules/karma/bin/karma start",

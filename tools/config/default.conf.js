@@ -6,6 +6,7 @@ module.exports = {
     title: packageInfo.title,
     release: false,
     verbose: false,
+    hotWebpack: false,
     app: {
         assetsPath: path.resolve(__dirname, '../../assets'),
         srcPath: path.resolve(__dirname, '../../src'),

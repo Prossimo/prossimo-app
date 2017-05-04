@@ -117,4 +117,8 @@ document.addEventListener('DOMContentLoaded', () => {
     App.start();
 });
 
+if (module.hot) {
+    module.hot.accept();
+}
+
 export default App;

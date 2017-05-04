@@ -17,6 +17,7 @@ const host = config.get('server:host');
 const assetsPath = config.get('app:assetsPath');
 const distPath = config.get('dist:path');
 const isDebug = !config.get('release');
+const hotModuleReplacement = config.get('hotWebpack');
 
 // Create app
 const app = express();
@@ -37,12 +38,14 @@ if (isDebug) {
     const compiler = webpack(webpackConfig);
 
     log.info('Debug mode is true');
-    log.info('Enable webpack dev and HMR middleware');
     app.use(require('webpack-dev-middleware')(compiler, {
         publicPath: webpackConfig.output.publicPath,
         stats: webpackConfig.stats,
     }));
-    // app.use(require('webpack-hot-middleware')(compiler));
+    if (hotModuleReplacement) {
+        log.info('Enable webpack [HRM] middleware');
+        app.use(require('webpack-hot-middleware')(compiler));
+    }
 } else {
     app.use(express.static(distPath));
 }
