@@ -174,13 +174,16 @@ function getSectionDefaults(section_type, default_glazing_name, profile_id) {
 }
 
 function getBarsGaps(bars, options) {
-    const lastBar = bars[bars.length - 1];
+    if (!bars.length) { return []; }
+    const axisLength = options && options.axisLength;
+
+    const lastBar = _.last(bars);
     const gaps = bars.map((bar, index) => {
         const previousPosition = (index === 0) ? 0 : bars[index - 1].position;
         return bar.position - previousPosition;
     });
-    if (options && options.axisLength) {
-        gaps.push(options.axisLength - lastBar.position);
+    if (axisLength) {
+        gaps.push(axisLength - lastBar.position);
     }
 
     return gaps;
@@ -188,9 +191,9 @@ function getBarsGaps(bars, options) {
 
 function isBarsUniform(bars, options) {
     const axisLength = options && options.axisLength;
-    const precision = (options && _.isNumber(options.precision)) || 0;
-    const gaps = getBarsGaps(bars, { axisLength });
+    const precision = (options && _.isNumber(options.precision)) ? options.precision : 0;
 
+    const gaps = getBarsGaps(bars, { axisLength });
     const isUniform = gaps.reduce((isStillUniform, gap, index) => {
         const previousGap = (index === 0) ? 0 : gaps[index - 1];
         return isStillUniform && (gap.toFixed(precision) === previousGap.toFixed(precision));
@@ -200,16 +203,12 @@ function isBarsUniform(bars, options) {
 }
 
 function isEqualBars(bars1, bars2, options) {
-    if (!bars1 || !bars2) { return false; }
-    const precision = (options && _.isNumber(options.precision)) || 0;
-    let isEqual;
+    const precision = (options && _.isNumber(options.precision)) ? options.precision : 0;
 
+    let isEqual;
     // Compare bar arrays
     if (_.isArray(bars1) && _.isArray(bars2)) {
-        isEqual = bars1.reduce((result, bar1, index) => {
-            const bar2 = bars2[index];
-            return result && (bar2 && isEqualBars(bar1, bar2, { precision }));
-        }, true);
+        isEqual = bars1.every((bar1, index) => isEqualBars(bar1, bars2[index], { precision }));
     // Compare individual bars
     } else if (_.isObject(bars1) && _.isObject(bars2)) {
         const [bar1, bar2] = [bars1, bars2];
@@ -231,7 +230,6 @@ function scaleBars(bars, options) {
 
     const oldStep = bars[0].position;
     const newStep = oldStep * factor;
-
     const newBars = bars.map((bar, index) => {
         const clone = _.clone(bar);
         clone.position = newStep * (index + 1);
@@ -267,10 +265,46 @@ function offsetBars(bars, options) {
     return newBars;
 }
 
+function positionBars(bars, options) {
+    bars = cloneObject(bars);
+    if (!(bars && bars.length)) { return bars; }
+    const align = options && options.align;
+    const marginStart = options && options.marginStart;
+    const marginEnd = options && options.marginEnd;
+    const axisLength = options && options.axisLength;
+
+    const doAlignCenter = (align === 'center') && axisLength;
+    const doAlignStart = (align === 'start') && marginStart;
+    const doAlignEnd = (align === 'end') && marginEnd;
+    let offset;
+    let firstGap;
+    let lastGap;
+
+    if (doAlignCenter) {
+        const barGroupLength = _.last(bars).position - _.first(bars).position;
+        firstGap = _.first(getBarsGaps(bars, { axisLength }));
+        const centeredMarginStart = (axisLength - barGroupLength) / 2;
+        offset = centeredMarginStart - firstGap;
+    } else if (doAlignStart) {
+        firstGap = _.first(getBarsGaps(bars, { axisLength }));
+        offset = marginStart - firstGap;
+    } else if (doAlignEnd) {
+        lastGap = _.last(getBarsGaps(bars, { axisLength }));
+        offset = lastGap - marginEnd;
+    } else {
+        offset = 0;
+    }
+
+    const positionedBars = offsetBars(bars, { offset });
+
+    return positionedBars;
+}
+
 function splitBars(bars, options) {
     bars = cloneObject(bars);
     const position = options && options.position;
     const gapIndex = options && options.gapIndex;
+
     let firstHalf;
     let secondHalf;
 
@@ -317,10 +351,14 @@ function mergeBars(bars1, bars2, options) {
     bars1 = cloneObject(bars1);
     bars2 = cloneObject(bars2);
     if (!bars1 || !bars2) { return bars1; }
-    const bars1AxisLength = (options && options.bars1AxisLength) || bars1[bars1.length - 1].position;
-    const precision = (options && _.isNumber(options.precision)) || 0;
+    const doOffsetBars = (options && !_.isUndefined(options.offsetBars)) ? options.offsetBars : true;
+    const bars1AxisLength = (options && options.bars1AxisLength) || _.last(bars1).position;
+    const precision = (options && _.isNumber(options.precision)) ? options.precision : 0;
 
-    const mergedBars = bars1.concat(offsetBars(bars2, { offset: bars1AxisLength }));
+    if (doOffsetBars) {
+        bars2 = offsetBars(bars2, { offset: bars1AxisLength });
+    }
+    const mergedBars = bars1.concat(bars2);
     const deduplicatedBars = mergedBars.filter((bar, index) => {
         const nextBar = mergedBars[index + 1];
         return bar.position.toFixed(precision) !== (nextBar && nextBar.position.toFixed(precision));
@@ -333,34 +371,25 @@ function getCentralBars(bars, options) {
     bars = cloneObject(bars);
     const axisLength = options && options.axisLength;
     if (!axisLength) { return []; }
-    const halfLength = axisLength / 2;
-    const precision = REDISTRIBUTE_BARS_PRECISION;
+    const precision = (options && _.isNumber(options.precision)) ? options.precision : 0;
 
     // Algorithm for extracting central bar group (assuming bars are non-uniform):
-    //     1. Cut axis bars in half in the middle
-    //     2. Mirror one half and compare
-    //     3. If halves are equal, split both along largest gaps
-    //     4. Take the relevant pieces of split halves and reconstitute a single central part from them
+    // 1. Cut axis bars in half in the middle
+    // 2. Mirror one half and compare
+    // 3. If halves are equal, split both along largest gaps
+    // 4. Take the relevant pieces of split halves and reconstitute a single central part from them
 
+    const halfLength = axisLength / 2;
     const [firstHalf, secondHalf] = splitBars(bars, { position: halfLength });
     const mirroredSecondHalf = mirrorBars(secondHalf, { axisLength: halfLength });
     const isSymmetrical = isEqualBars(firstHalf, mirroredSecondHalf, { precision });
-    let centralBars;
+    if (!isSymmetrical) { return []; }
 
-    // Extract only from symmetrical bars
-    if (isSymmetrical) {
-        const firstHalfTail = splitBarsAtLargestGap(firstHalf, { axisLength: halfLength })[1];
-        const secondHalfHead = splitBarsAtLargestGap(secondHalf, { axisLength: halfLength })[0];
+    const firstHalfTail = splitBarsAtLargestGap(firstHalf, { axisLength: halfLength })[1];
+    const secondHalfHead = splitBarsAtLargestGap(secondHalf, { axisLength: halfLength })[0];
+    if (!firstHalfTail.length || !secondHalfHead.length) { return []; }
 
-        if (firstHalfTail.length && secondHalfHead.length) {
-            centralBars = mergeBars(firstHalfTail, secondHalfHead, { bars1AxisLength: halfLength, precision });
-        } else {
-            centralBars = [];
-        }
-    // Simulate result for non-symmetrical bars
-    } else {
-        centralBars = [];
-    }
+    const centralBars = mergeBars(firstHalfTail, secondHalfHead, { bars1AxisLength: halfLength, precision });
 
     return centralBars;
 }
@@ -1246,7 +1275,7 @@ const Unit = Backbone.Model.extend({
         // HAH, dirty deep clone, rewrite when you have good mood for it
         // we have to make deep clone and backbone will trigger change event
         const oldRoot = this.generateFullRoot();
-        const rootSection = JSON.parse(JSON.stringify(this.get('root_section')));
+        const rootSection = cloneObject(this.get('root_section'));
         const sectionToUpdate = findSection(rootSection, sectionId);
         func(sectionToUpdate);
 
@@ -1556,54 +1585,50 @@ const Unit = Backbone.Model.extend({
         this.setSectionBars(sectionId, bars);
     },
     redistributeBars(section, options) {
-        // Algorithm for each of 2 axes:
-        //     1. If existing bar distribution is uniform along this axis, redistribute bars proportionately and return
-        //     2. If there's a central congregation of bars, make sure it stays at the center
-        //     3. If there's a left / top congregation of bars, make sure it stays glued to that side
-        //     4. If there's a right / bottom congregation of bars, make sure it stays glued to that side
-
         const oldSection = options && options.oldSection;
         if (!oldSection) { return; }
-        let axes;
-        if (options && options.axes) {
-            axes = options.axes;
-        } else {
-            axes = ['vertical', 'horizontal'];
-        }
+        const axes = (options && options.axes) ? options.axes : ['vertical', 'horizontal'];
+        const bars = cloneObject(section.bars);
+        const precision = REDISTRIBUTE_BARS_PRECISION;
 
+        // Algorithm for redistributing bars, for each of 2 axes:
+        // 1. If existing bar distribution is uniform along this axis, redistribute bars proportionately
+        // 2. If non-uniform, extract central, left/top, right/bottom bar groups and keep them aligned in their places:
+        //     2.1. Extract the central bar group and align to center
+        //     2.2. Split the rest after extracting central group into left/top and right/bottom, align to respective sides
+        //     2.3. Reconstitute whole bar axis from the above parts
+
+        const redistributedBars = cloneObject(section.bars);
         axes.forEach((axis) => {
             const barType = (axis === 'vertical') ? 'horizontal' : 'vertical';
             const dimension = (axis === 'vertical') ? 'height' : 'width';
             if (!this.hasSectionBars(section.id, { types: barType })) { return; }
             if (section.glassParams[dimension] === oldSection.glassParams[dimension]) { return; }
-            const precision = REDISTRIBUTE_BARS_PRECISION;
-
-            const axisBars = section.bars[barType];
+            const axisBars = bars[barType];
             const axisLength = oldSection.glassParams[dimension];
-            const scalingFactor = section.glassParams[dimension] / oldSection.glassParams[dimension];
+            const newAxisLength = section.glassParams[dimension];
+            const scalingFactor = newAxisLength / axisLength;
 
-            if (isBarsUniform(axisBars, { axisLength, precision })) {  // For uniform bars, do uniform scaling only
-                const newBars = section.bars;
-                newBars[barType] = scaleBars(axisBars, { factor: scalingFactor });
-                this.setSectionBars(section.id, newBars);
+            if (isBarsUniform(axisBars, { axisLength, precision })) {
+                redistributedBars[barType] = scaleBars(axisBars, { factor: scalingFactor });
             } else {
                 const centralBars = getCentralBars(axisBars, { axisLength, precision });
                 const withoutCentral = axisBars.filter((bar) => {
                     const isCentralBar = centralBars.some(centralBar => isEqualBars(centralBar, bar, { precision }));
                     return !isCentralBar;
                 });
+                const [headBars, tailBars] = splitBarsAtLargestGap(withoutCentral, { axisLength });
+                const tailEndGap = _.last(getBarsGaps(tailBars, { axisLength }));
 
-                console.log('centralBars', centralBars);
-                console.log('withoutCentral', withoutCentral);
-
-                // @TODO: implementme
-
-                // Algorithm for extracting starting (left/top) and ending (right/bottom) bar groups,
-                // assuming bars are non-uniform and a possible central group has been extracted:
-                //     1. Find the largest gap between bars
-                //     2. Split bars along that gap into starting and ending bar groups
+                const alignedCentralBars = positionBars(centralBars, { align: 'center', axisLength: newAxisLength });
+                const alignedTailBars = positionBars(tailBars, { align: 'end', marginEnd: tailEndGap, axisLength: newAxisLength });
+                const alignedheadAndCenter = mergeBars(headBars, alignedCentralBars, { offsetBars: false, precision });
+                redistributedBars[barType] = mergeBars(alignedheadAndCenter, alignedTailBars, { offsetBars: false, precision });
             }
         });
+
+        section.bars = redistributedBars;  // Ad-hoc due to race condition with setSectionMullionPosition()
+        this.setSectionBars(section.id, redistributedBars);
     },
     // @TODO: Add method, that checks for correct values of measurement data
     // @TODO: Add method, that drops measurement data to default
