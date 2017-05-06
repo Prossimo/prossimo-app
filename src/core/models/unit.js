@@ -533,9 +533,6 @@ const Unit = Backbone.Model.extend({
                 this.setProfile({ validate_filling_types: true });
             }, this);
             this.on('change:glazing', this.onGlazingUpdate, this);
-            this.on('change:section', function ({ section, oldSection }) {
-                this.redistributeBars(section, { oldSection });
-            }, this);
 
             //  If we know that something was changed in dictionaries,
             //  we have to re-validate our unit options
@@ -1275,12 +1272,16 @@ const Unit = Backbone.Model.extend({
         // HAH, dirty deep clone, rewrite when you have good mood for it
         // we have to make deep clone and backbone will trigger change event
         const oldRoot = this.generateFullRoot();
-        const rootSection = cloneObject(this.get('root_section'));
-        const sectionToUpdate = findSection(rootSection, sectionId);
+        const newRoot = cloneObject(this.get('root_section'));
+        const sectionToUpdate = findSection(newRoot, sectionId);
         func(sectionToUpdate);
 
-        this.checkSectionsForResize(oldRoot, this.generateFullRoot(rootSection));
-        this.persist('root_section', rootSection);
+        this.getResizedSections(oldRoot, this.generateFullRoot(newRoot)).forEach((sash) => {
+            const section = findSection(newRoot, sash.id);
+            const oldSection = findSection(oldRoot, sash.id);
+            section.bars = this.redistributeBars(section, { oldSection });
+        });
+        this.persist('root_section', newRoot);
     },
     setCircular(sectionId, opts) {
         //  Deep clone, same as above
@@ -1627,8 +1628,7 @@ const Unit = Backbone.Model.extend({
             }
         });
 
-        section.bars = redistributedBars;  // Ad-hoc due to race condition with setSectionMullionPosition()
-        this.setSectionBars(section.id, redistributedBars);
+        return redistributedBars;
     },
     // @TODO: Add method, that checks for correct values of measurement data
     // @TODO: Add method, that drops measurement data to default
@@ -2141,7 +2141,13 @@ const Unit = Backbone.Model.extend({
             this.persist(attr, val);
         }
 
-        this.checkSectionsForResize(oldRoot);
+        const newestRoot = this.generateFullRoot();
+        this.getResizedSections(oldRoot, newestRoot).forEach((sash) => {
+            const section = findSection(newestRoot, sash.id);
+            const oldSection = findSection(oldRoot, sash.id);
+            const redistributedBars = this.redistributeBars(section, { oldSection });
+            this.setSectionBars(section.id, redistributedBars);
+        });
     },
     clearFrame() {
         const rootId = this.get('root_section').id;
@@ -2157,7 +2163,7 @@ const Unit = Backbone.Model.extend({
             _.assign(section, getDefaultFillingType(glazing_name, profile_id));
         });
     },
-    checkSectionsForResize(oldRoot, newRoot) {
+    getResizedSections(oldRoot, newRoot) {
         newRoot = newRoot || this.generateFullRoot();
         const toObjectByKey = function (array, key) {
             const obj = {};
@@ -2175,10 +2181,7 @@ const Unit = Backbone.Model.extend({
             return oldSash && !_.isEqual(sash.filling, oldSash.filling);
         });
 
-        changedSashes.forEach(sash => this.trigger('change:section', {
-            section: findSection(newRoot, sash.id),
-            oldSection: findSection(oldRoot, sash.id),
-        }));
+        return changedSashes;
     },
     //  Here we get a list with basic sizes for each piece of the unit:
     //  frame, sashes, mullions, openings, glasses. Each piece got width,
