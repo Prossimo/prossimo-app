@@ -122,7 +122,9 @@ function getDefaultFillingType(default_glazing_name, profile_id) {
 }
 
 function cloneObject(obj) {
-    return JSON.parse(JSON.stringify(obj));
+    const clone = (_.isUndefined(obj)) ? undefined : JSON.parse(JSON.stringify(obj));
+
+    return clone;
 }
 
 function getDefaultBars() {
@@ -174,7 +176,7 @@ function getSectionDefaults(section_type, default_glazing_name, profile_id) {
 }
 
 function getBarsGaps(bars, options) {
-    if (!bars.length) { return []; }
+    if (!bars || !bars.length) { return []; }
     const axisLength = options && options.axisLength;
 
     const lastBar = _.last(bars);
@@ -267,15 +269,15 @@ function offsetBars(bars, options) {
 
 function positionBars(bars, options) {
     bars = cloneObject(bars);
-    if (!(bars && bars.length)) { return bars; }
+    if (!bars || !bars.length) { return bars; }
     const align = options && options.align;
     const marginStart = options && options.marginStart;
     const marginEnd = options && options.marginEnd;
     const axisLength = options && options.axisLength;
 
     const doAlignCenter = (align === 'center') && axisLength;
-    const doAlignStart = (align === 'start') && marginStart;
-    const doAlignEnd = (align === 'end') && marginEnd;
+    const doAlignStart = (align === 'start') && _.isNumber(marginStart);
+    const doAlignEnd = (align === 'end') && _.isNumber(marginEnd);
     let offset;
     let firstGap;
     let lastGap;
@@ -321,7 +323,7 @@ function splitBars(bars, options) {
             bar.position -= position;
         });
     // Split at gap (gap index integer)
-    } else if (gapIndex) {
+    } else if (_.isNumber(gapIndex)) {
         firstHalf = bars.filter((bar, index) => index < gapIndex);
         secondHalf = bars.filter((bar, index) => index >= gapIndex);
     // Simulate splitting
@@ -351,6 +353,8 @@ function mergeBars(bars1, bars2, options) {
     bars1 = cloneObject(bars1);
     bars2 = cloneObject(bars2);
     if (!bars1 || !bars2) { return bars1; }
+    if (!bars1.length) { return bars2; }
+    if (!bars2.length) { return bars1; }
     const doOffsetBars = (options && !_.isUndefined(options.offsetBars)) ? options.offsetBars : true;
     const bars1AxisLength = (options && options.bars1AxisLength) || _.last(bars1).position;
     const precision = (options && _.isNumber(options.precision)) ? options.precision : 0;
