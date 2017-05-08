@@ -91,8 +91,8 @@ export default Marionette.View.extend({
     },
     events: {
         // Click
-        'click @ui.$drawing-area': 'handleCanvasClick',
-        'contextmenu @ui.$drawing-area': 'handleCanvasClick',
+        'click @ui.$drawing_area': 'handleCanvasClick',
+        'contextmenu @ui.$drawing_area': 'handleCanvasClick',
         'click .split-section': 'handleSplitSectionClick',
         'click @ui.$sash_types': 'handleChangeSashTypeClick',
         'click #clear-frame': 'handleClearFrameClick',
@@ -117,7 +117,7 @@ export default Marionette.View.extend({
         'tap @ui.$undo': 'handleUndoClick',
         'tap @ui.$redo': 'handleRedoClick',
         // Others
-        'keydown @ui.$drawing-area': 'handleCanvasKeyDown',
+        'keydown @ui.$drawing_area': 'handleCanvasKeyDown',
         'change #vertical-bars-number': 'handleBarNumberChange',
         'input #vertical-bars-number': 'handleBarNumberChange',
         'change #horizontal-bars-number': 'handleBarNumberChange',
