@@ -617,7 +617,7 @@ export default Marionette.View.extend({
             .on('blur', closeWrap);
     },
     updateUI() {
-        // here we have to hide and should some elements in toolbar
+        // Show or hide various toolbar elements
         const buttonText = this.isInsideView() ? 'Show outside view' : 'Show inside view';
         const titleText = this.isInsideView() ? 'Inside view' : 'Outside view';
 
@@ -638,24 +638,10 @@ export default Marionette.View.extend({
         }
 
         this.ui.$filling_tools.toggle(selectedSash && isLeafSash);
-
-        this.ui.$bars_control.toggle(
-            !isArched &&
-            selectedSash &&
-            selectedSash.fillingType === 'glass',
-        );
-
+        this.ui.$bars_control.toggle(!isArched && selectedSash && selectedSash.fillingType === 'glass');
         this.ui.$section_control.toggle(!!selectedSash);
-
-        this.$('.sash-types').toggle(
-            !isArched &&
-            selectedSash &&
-            this.model.canAddSashToSection(selectedSashId),
-        );
-
-        this.$('.split').toggle(
-            !isArched,
-        );
+        this.$('.sash-types').toggle(!isArched && selectedSash && this.model.canAddSashToSection(selectedSashId));
+        this.$('.split').toggle(!isArched);
 
         const selectedFillingType = selectedSash && selectedSash.fillingName &&
             App.settings && App.settings.filling_types.getByName(selectedSash.fillingName);
