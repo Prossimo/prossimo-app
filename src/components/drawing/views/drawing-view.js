@@ -637,11 +637,12 @@ export default Marionette.View.extend({
 
         const selectedSashId = this.state.selectedSashId;
         const selectedSash = this.model.getSection(selectedSashId);
-        const isLeafSash = selectedSash && selectedSash.sections.length === 0;
-        const hasFrame = selectedSash && selectedSash.sashType !== 'fixed_in_frame';
-        const isArched = selectedSash && selectedSash.arched;
-        const isCircular = selectedSash && selectedSash.circular;
-        const selectedFillingType = selectedSash && selectedSash.fillingName &&
+        const isSashSelected = !!selectedSash;
+        const isLeafSash = isSashSelected && selectedSash.sections.length === 0;
+        const hasFrame = isSashSelected && selectedSash.sashType !== 'fixed_in_frame';
+        const isArched = !!(isSashSelected && selectedSash.arched);
+        const isCircular = !!(isSashSelected && selectedSash.circular);
+        const selectedFillingType = isSashSelected && selectedSash.fillingName &&
             App.settings && App.settings.filling_types.getByName(selectedSash.fillingName);
 
         if (this.isCloningFilling() || this.isSyncingFilling()) {
@@ -650,10 +651,10 @@ export default Marionette.View.extend({
             document.body.style.cursor = 'auto';
         }
 
-        this.ui.$filling_tool_controls.toggle(selectedSash && isLeafSash);
-        this.ui.$bar_controls.toggle(!isArched && selectedSash && selectedSash.fillingType === 'glass');
-        this.ui.$section_controls.toggle(!!selectedSash);
-        this.ui.$sash_controls.toggle(!isArched && selectedSash && this.model.canAddSashToSection(selectedSashId));
+        this.ui.$filling_tool_controls.toggle(isSashSelected && isLeafSash);
+        this.ui.$bar_controls.toggle(!isArched && isSashSelected && selectedSash.fillingType === 'glass');
+        this.ui.$section_controls.toggle(isSashSelected);
+        this.ui.$sash_controls.toggle(!isArched && isSashSelected && this.model.canAddSashToSection(selectedSashId));
         this.ui.$section_split_controls.toggle(!isArched);
 
         if (selectedFillingType) {
@@ -664,13 +665,13 @@ export default Marionette.View.extend({
         this.ui.$filling_select.selectpicker('render');
 
         // Toggle arched controls
-        this.ui.$arched_controls.toggle(selectedSash && this.model.isArchedPossible(selectedSashId));
-        this.ui.$remove_arched.toggle(!!isArched && !isCircular);
+        this.ui.$arched_controls.toggle(isSashSelected && this.model.isArchedPossible(selectedSashId));
+        this.ui.$remove_arched.toggle(isArched && !isCircular);
         this.ui.$add_arched.toggle(!isArched && !isCircular);
 
         // Toggle circular controls
-        this.ui.$circular_controls.toggle(selectedSash && this.model.isCircularPossible(selectedSashId));
-        this.ui.$remove_circular.toggle(!!isCircular && !isArched);
+        this.ui.$circular_controls.toggle(isSashSelected && this.model.isCircularPossible(selectedSashId));
+        this.ui.$remove_circular.toggle(isCircular && !isArched);
         this.ui.$add_circular.toggle(!isCircular && !isArched);
 
         // Undo/Redo: Register buttons once!
@@ -681,7 +682,7 @@ export default Marionette.View.extend({
         }
 
         // Additional overlay metrics
-        if (selectedSash) {
+        if (isSashSelected) {
             this.ui.$metrics_glass_input.prop('checked', selectedSash.measurements.glass);
             this.ui.$metrics_opening_input.prop('checked', selectedSash.measurements.opening);
             this.ui.$metrics_glass.toggle(selectedSash.sections.length === 0);
