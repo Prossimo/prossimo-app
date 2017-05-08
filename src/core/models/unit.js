@@ -1358,6 +1358,22 @@ const Unit = Backbone.Model.extend({
 
         this.setSectionBars(sectionId, bars);
     },
+    redistributeMullions(mullionIds, options) {
+        if (!(mullionIds && mullionIds.length) || mullionIds === 'all') { mullionIds = _.pluck(this.getMullions(), 'id'); }
+        const axis = options && options.axis;
+
+        const fitMullionTypes = (axis === 'vertical') ? ['horizontal', 'horizontal_invisible'] : ['vertical', 'vertical_invisible'];
+        const dimensionLength = (axis === 'vertical') ? this.getHeightMM() : this.getWidthMM();
+        const mullions = mullionIds
+            .map(id => this.getMullion(id))
+            .filter(mullion => _.contains(fitMullionTypes, mullion.type))
+            .sort((mullion1, mullion2) => mullion1.position - mullion2.position);
+        const gapCount = mullions.length + 1;
+        const newStep = dimensionLength / gapCount;
+        mullions.forEach((mullion, index) => {
+            this.setSectionMullionPosition(mullion.id, newStep * (index + 1));
+        });
+    },
     // @TODO: Add method, that checks for correct values of measurement data
     // @TODO: Add method, that drops measurement data to default
     setFillingType(sectionId, type, name) {

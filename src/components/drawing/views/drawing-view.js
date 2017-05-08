@@ -60,6 +60,7 @@ export default Marionette.View.extend({
     },
     ui: {
         $drawing_area: '#drawing-area',
+        $popup_wrap: '.popup-wrap',
         $flush_panels: '[data-type="flush-turn-right"], [data-type="flush-turn-left"]',
         $drawing_view_title: '#drawing-view-title',
         $drawing_controls: '#drawing-controls',
@@ -78,16 +79,17 @@ export default Marionette.View.extend({
         $filling_tool_controls: '#filling-tool-controls',
         $filling_clone: '#filling-clone',
         $filling_sync: '#filling-sync',
-        $mullion_controls: '#mullion-controls',
-        $mullion_tool_controls: '#mullion-tool-controls',
-        $undo: '#undo',
-        $redo: '#redo',
         $sash_types: '.change-sash-type',
         $metric_controls: '.metric-controls',
         $metrics_glass: '[for="additional-metrics-glass"]',
         $metrics_glass_input: '#additional-metrics-glass',
         $metrics_opening: '[for="additional-metrics-opening"]',
         $metrics_opening_input: '#additional-metrics-opening',
+        $mullion_controls: '#mullion-controls',
+        $mullion_tool_controls: '#mullion-tool-controls',
+        $redistribute_all_mullions: '.redistribute-all-mullions',
+        $undo: '#undo',
+        $redo: '#redo',
     },
     events: {
         // Click
@@ -102,6 +104,7 @@ export default Marionette.View.extend({
         'click #glazing-bars-popup': 'handleGlazingBarsPopupClick',
         'click @ui.$filling_clone': 'handleFillingCloneClick',
         'click @ui.$filling_sync': 'handleFillingSyncClick',
+        'click @ui.$redistribute_all_mullions': 'handleRedistributeAllMullionsClick',
         'click @ui.$undo': 'handleUndoClick',
         'click @ui.$redo': 'handleRedoClick',
         // Tap
@@ -114,6 +117,7 @@ export default Marionette.View.extend({
         'tap #glazing-bars-popup': 'handleGlazingBarsPopupClick',
         'tap @ui.$filling_clone': 'handleFillingCloneClick',
         'tap @ui.$filling_sync': 'handleFillingSyncClick',
+        'tap @ui.$redistribute_all_mullions': 'handleRedistributeAllMullionsClick',
         'tap @ui.$undo': 'handleUndoClick',
         'tap @ui.$redo': 'handleRedoClick',
         // Others
@@ -263,15 +267,16 @@ export default Marionette.View.extend({
         this.model.clearFrame();
     },
     handleSplitSectionClick(e) {
-        this.$('.popup-wrap').hide();
+        this.ui.$popup_wrap.hide();
         const divider = $(e.target).data('type');
 
         this.model.splitSection(this.state.selectedSashId, divider);
+
         this.deselectAll();
         this.module.deselectAll();
     },
     handleChangeSashTypeClick(e) {
-        this.$('.popup-wrap').hide();
+        this.ui.$popup_wrap.hide();
         let type = $(e.target).data('type');
 
         // if Unit is Outward opening, reverse sash type
@@ -290,6 +295,15 @@ export default Marionette.View.extend({
         this.model.setSectionSashType(this.state.selectedSashId, type);
 
         this.updateSection(this.state.selectedSashId, 'both');
+    },
+    handleRedistributeAllMullionsClick(event) {
+        this.ui.$popup_wrap.hide();
+        const axis = $(event.target).data('axis');
+
+        this.model.redistributeMullions('all', { axis });
+
+        this.deselectAll();
+        this.module.deselectAll();
     },
     handleObjectClick(id, e) {
         // select on left click only
@@ -682,8 +696,8 @@ export default Marionette.View.extend({
         this.ui.$remove_circular.toggle(isCircular && !isArched);
         this.ui.$add_circular.toggle(!isCircular && !isArched);
 
-        // Undo/Redo buttons (register them only once!)
-        if (!this.undo_manager.registered) {
+        // Undo/Redo buttons
+        if (!this.undo_manager.registered) {  // Register only once
             this.undo_manager.registerButton('undo', this.ui.$undo);
             this.undo_manager.registerButton('redo', this.ui.$redo);
             this.undo_manager.registered = true;
