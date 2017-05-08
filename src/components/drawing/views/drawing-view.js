@@ -78,6 +78,8 @@ export default Marionette.View.extend({
         $filling_tool_controls: '#filling-tool-controls',
         $filling_clone: '#filling-clone',
         $filling_sync: '#filling-sync',
+        $mullion_controls: '#mullion-controls',
+        $mullion_tool_controls: '#mullion-tool-controls',
         $undo: '#undo',
         $redo: '#redo',
         $sash_types: '.change-sash-type',
@@ -627,17 +629,14 @@ export default Marionette.View.extend({
             })
             .on('blur', closeWrap);
     },
+    // Shows and hides various toolbar elements
     updateUI() {
-        // Show or hide various toolbar elements
-        const buttonText = this.isInsideView() ? 'Show outside view' : 'Show inside view';
-        const titleText = this.isInsideView() ? 'Inside view' : 'Outside view';
-
-        this.$('#change-view-button').text(buttonText);
-        this.ui.$drawing_view_title.text(titleText);
-
         const selectedSashId = this.state.selectedSashId;
         const selectedSash = this.model.getSection(selectedSashId);
         const isSashSelected = !!selectedSash;
+        const selectedMullionId = this.state.selectedMullionId;
+        const selectedMullion = this.model.getMullion(selectedMullionId);
+        const isMullionSelected = !!selectedMullion;
         const isLeafSash = isSashSelected && selectedSash.sections.length === 0;
         const hasFrame = isSashSelected && selectedSash.sashType !== 'fixed_in_frame';
         const isArched = !!(isSashSelected && selectedSash.arched);
@@ -645,18 +644,27 @@ export default Marionette.View.extend({
         const selectedFillingType = isSashSelected && selectedSash.fillingName &&
             App.settings && App.settings.filling_types.getByName(selectedSash.fillingName);
 
+        // View title
+        const buttonText = this.isInsideView() ? 'Show outside view' : 'Show inside view';
+        const titleText = this.isInsideView() ? 'Inside view' : 'Outside view';
+        this.$('#change-view-button').text(buttonText);
+        this.ui.$drawing_view_title.text(titleText);
+
+        // Mouse pointer
         if (this.isCloningFilling() || this.isSyncingFilling()) {
             document.body.style.cursor = 'copy';
         } else {
             document.body.style.cursor = 'auto';
         }
 
+        //
+        // Section controls
+        //
         this.ui.$filling_tool_controls.toggle(isSashSelected && isLeafSash);
         this.ui.$bar_controls.toggle(!isArched && isSashSelected && selectedSash.fillingType === 'glass');
         this.ui.$section_controls.toggle(isSashSelected);
         this.ui.$sash_controls.toggle(!isArched && isSashSelected && this.model.canAddSashToSection(selectedSashId));
         this.ui.$section_split_controls.toggle(!isArched);
-
         if (selectedFillingType) {
             this.ui.$filling_select.val(selectedFillingType.cid);
         } else {
@@ -664,17 +672,17 @@ export default Marionette.View.extend({
         }
         this.ui.$filling_select.selectpicker('render');
 
-        // Toggle arched controls
+        // Arched controls
         this.ui.$arched_controls.toggle(isSashSelected && this.model.isArchedPossible(selectedSashId));
         this.ui.$remove_arched.toggle(isArched && !isCircular);
         this.ui.$add_arched.toggle(!isArched && !isCircular);
 
-        // Toggle circular controls
+        // Circular controls
         this.ui.$circular_controls.toggle(isSashSelected && this.model.isCircularPossible(selectedSashId));
         this.ui.$remove_circular.toggle(isCircular && !isArched);
         this.ui.$add_circular.toggle(!isCircular && !isArched);
 
-        // Undo/Redo: Register buttons once!
+        // Undo/Redo buttons (register them only once!)
         if (!this.undo_manager.registered) {
             this.undo_manager.registerButton('undo', this.ui.$undo);
             this.undo_manager.registerButton('redo', this.ui.$redo);
@@ -692,6 +700,11 @@ export default Marionette.View.extend({
                 this.ui.$metrics_opening.is('[style!="display: none;"]'),
             );
         }
+
+        //
+        // Mullion controls
+        //
+        this.ui.$mullion_controls.toggle(isMullionSelected);
     },
 
     updateSize(width, height) {
