@@ -1,6 +1,6 @@
 import BaseDialogView from './base-dialog-view';
 import QuotesEditorTableView from './quotes-editor-table-view';
-import template from '../../templates/dialogs/edit-quotes-dialog-view.hbs';
+import template from '../../../templates/dialogs/edit-quotes-dialog-view.hbs';
 
 export default BaseDialogView.extend({
     className: 'edit-quotes-modal modal fade',

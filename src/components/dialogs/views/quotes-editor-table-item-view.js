@@ -1,9 +1,9 @@
 import Marionette from 'backbone.marionette';
 
-import { format } from '../../utils';
-import BaseDatepickerInputView from '../../core/views/base/base-datepicker-input-view';
-import BaseInputView from '../../core/views/base/base-input-view';
-import template from '../../templates/dialogs/quotes-editor-table-item-view.hbs';
+import { format } from '../../../utils';
+import BaseDatepickerInputView from '../../../core/views/base/base-datepicker-input-view';
+import BaseInputView from '../../../core/views/base/base-input-view';
+import template from '../../../templates/dialogs/quotes-editor-table-item-view.hbs';
 
 export default Marionette.View.extend({
     tagName: 'tr',

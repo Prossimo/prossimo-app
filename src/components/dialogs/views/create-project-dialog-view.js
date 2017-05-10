@@ -1,8 +1,8 @@
 import BaseDialogView from './base-dialog-view';
-import App from '../../main';
-import FileUploaderView from '../../components/file-uploader-view/file-uploader-view';
-import Project from '../../core/models/project';
-import template from '../../templates/dialogs/create-project-dialog-view.hbs';
+import App from '../../../main';
+import FileUploaderView from '../../file-uploader-view/file-uploader-view';
+import Project from '../../../core/models/project';
+import template from '../../../templates/dialogs/create-project-dialog-view.hbs';
 
 export default BaseDialogView.extend({
     className: 'create-project-modal modal fade',

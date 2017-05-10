@@ -3,7 +3,7 @@ import $ from 'jquery';
 import Clipboard from 'clipboard';
 
 import BaseDialogView from './base-dialog-view';
-import template from '../../templates/dialogs/project-export-dialog-view.hbs';
+import template from '../../../templates/dialogs/project-export-dialog-view.hbs';
 
 const UNSET_VALUE = '--';
 

@@ -1,6 +1,6 @@
-import App from '../../main';
+import App from '../../../main';
 import BaseDialogView from './base-dialog-view';
-import template from '../../templates/dialogs/login-dialog-view.hbs';
+import template from '../../../templates/dialogs/login-dialog-view.hbs';
 
 export default BaseDialogView.extend({
     className: 'login-modal modal fade',
