@@ -75,6 +75,8 @@ export default Marionette.View.extend({
         $metrics_glass_input: '#additional-metrics-glass',
         $metrics_opening: '[for="additional-metrics-opening"]',
         $metrics_opening_input: '#additional-metrics-opening',
+        $hovering_drawing_controls: '#hovering-drawing-controls',
+        $hovering_section_controls: '#hovering-section-controls',
     },
     events: {
         // Click

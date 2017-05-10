@@ -8,6 +8,9 @@ import App from '../../../main';
 import LayerManager from './layer-manager';
 import { object } from '../../../utils';
 
+const DEFAULT_DELAYED_HOVER_DELAY = 400;
+const SECTION_MENU_HOVER_DELAY = 400;
+
 // This module starts manually with required parameters:
 // new DrawingModule({
 //     model: model,                // link to the model
@@ -498,6 +501,51 @@ const DrawingModule = Marionette.Object.extend({
         }
 
         this.stopListening();
+    },
+    enableDelayedHover() {
+        this.setState('delayedHoverDisabled', false, true);
+    },
+    disableDelayedHover() {
+        this.setState('delayedHoverDisabled', true, true);
+    },
+    startDelayedHover(func, options) {
+        if (!func) { return; }
+        const delay = (options && _.isNumber(options.delay)) ? options.delay : DEFAULT_DELAYED_HOVER_DELAY;
+        if (this.getState('delayedHover') || this.getState('delayedHoverDisabled')) { return; }
+
+        const handle = setTimeout(() => {
+            if (!this.getState('delayedHoverDisabled')) { func(); }
+            this.stopDelayedHover();
+        }, delay);
+        this.setState('delayedHover', { func, delay, handle }, true);
+    },
+    restartDelayedHover() {
+        const delayedHover = this.getState('delayedHover');
+        if (!delayedHover) { return; }
+
+        this.stopDelayedHover();
+        this.startDelayedHover(delayedHover.func, { delay: delayedHover.delay });
+    },
+    stopDelayedHover() {
+        const delayedHover = this.getState('delayedHover');
+        if (!delayedHover) { return; }
+
+        clearTimeout(delayedHover.handle);
+        this.setState('delayedHover', null, true);
+    },
+    startSectionMenuHover() {
+        const sectionMenuOpener = () => {
+            console.log('open menu');  // @TODO implementme
+            this.disableDelayedHover();
+        };
+
+        this.startDelayedHover(sectionMenuOpener, { delay: SECTION_MENU_HOVER_DELAY });
+    },
+    restartSectionMenuHover() {
+        this.restartDelayedHover();
+    },
+    stopSectionMenuHover() {
+        this.stopDelayedHover();
     },
 });
 
