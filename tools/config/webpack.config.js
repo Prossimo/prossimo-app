@@ -127,7 +127,14 @@ module.exports = {
 
         ...hotModuleReplacement ? [
             new webpack.HotModuleReplacementPlugin(),
-        ] : [
+        ] : [],
+
+        ...isDebug ? [] : [
+            new webpack.DefinePlugin({
+                'process.env': {
+                    NODE_ENV: '"production"',
+                },
+            }),
             new CopyWebpackPlugin([
                 {
                     context: assetsPath,
