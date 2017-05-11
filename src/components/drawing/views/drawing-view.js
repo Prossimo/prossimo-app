@@ -141,6 +141,8 @@ export default Marionette.View.extend({
         return this.undo_manager.handler.redo();
     },
     handleCanvasClick(e) {
+        this.hideSectionHoverMenu();
+
         if (this.isCloningFilling()) {
             this.cloneFillingDismiss();
             e.preventDefault();
@@ -253,6 +255,7 @@ export default Marionette.View.extend({
     },
     handleSplitSectionClick(e) {
         this.$('.popup-wrap').hide();
+        this.hideSectionHoverMenu();
         const divider = $(e.target).data('type');
 
         this.model.splitSection(this.state.selectedSashId, divider);
@@ -261,6 +264,7 @@ export default Marionette.View.extend({
     },
     handleChangeSashTypeClick(e) {
         this.$('.popup-wrap').hide();
+        this.hideSectionHoverMenu();
         let type = $(e.target).data('type');
 
         // if Unit is Outward opening, reverse sash type
@@ -371,9 +375,7 @@ export default Marionette.View.extend({
     bindModuleEvents() {
         this.listenTo(this.module, 'state:selected:mullion', function (data) {
             this.deselectAll();
-            this.setState({
-                selectedMullionId: data.newValue,
-            });
+            this.setState({ selectedMullionId: data.newValue });
         });
         this.listenTo(this.module, 'state:selected:sash', function (data) {
             const sourceSashId = data.oldValue;
@@ -394,6 +396,14 @@ export default Marionette.View.extend({
         });
         this.listenTo(this.module, 'mullionNumericInput', function (data) {
             this.createMullionInput(data.mullionId);
+        });
+        this.listenTo(this.module, 'state:sectionHoverMenuOpen', function (data) {
+            const { x, y } = this.stage.getPointerPosition();
+            if (data.newValue) {
+                this.showSectionHoverMenu({ x, y });
+            } else {
+                this.hideSectionHoverMenu();
+            }
         });
     },
     unbindModuleEvents() {
@@ -617,6 +627,24 @@ export default Marionette.View.extend({
                 }
             })
             .on('blur', closeWrap);
+    },
+    toggleSectionHoverMenu(newState, options) {
+        const oldState = this.ui.$hovering_section_controls.hasClass('open');
+        newState = (!_.isUndefined(newState)) ? newState : !oldState;
+        if (newState === oldState) { return; }
+        const x = options && options.x;
+        const y = options && options.y;
+
+        this.ui.$hovering_section_controls.toggleClass('open', newState);
+        if (!_.isUndefined(x)) { this.ui.$hovering_section_controls.css('left', `${x}px`); }
+        if (!_.isUndefined(y)) { this.ui.$hovering_section_controls.css('top', `${y}px`); }
+        this.module.setState('sectionHoverMenuOpen', newState);
+    },
+    showSectionHoverMenu(options) {
+        this.toggleSectionHoverMenu(true, options);
+    },
+    hideSectionHoverMenu() {
+        this.toggleSectionHoverMenu(false);
     },
     updateUI() {
         // here we have to hide and should some elements in toolbar

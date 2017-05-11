@@ -27,6 +27,15 @@
     overflow: auto;
 }
 
+.button-states() {
+    .button { cursor: pointer; }
+    .button:hover { filter: brightness(@button-hover-brightness); }
+    .button.disabled {
+        opacity: @button-disabled-opacity;
+        filter: grayscale();
+        cursor: default;
+    }
+}
 
 //  ------------------------------------------------------------------------
 //  Controls at the top
@@ -38,6 +47,8 @@
     min-height: 2rem;
     background-color: darken(@white, 30%);
     border-bottom: 1px solid darken(@white, 40%);
+
+    .button-states();
 }
 
 #change-view-button {
@@ -101,13 +112,16 @@
     overflow: visible;
     z-index: 999;
 
+    .button { .drawing-hover-shadow(); }
+    .button-states();
+
     .hovering-section-controls {
-        display: block;
+        display: none;
         position: absolute;
-        top: 400px;
-        left: 400px;
-        margin: -90px 0 0 -10px;
+        margin: -55px 0 0 -10px;
         font-size: 0;
+
+        &.open { display: block; }
 
         .menu-row {
             margin: 4px 0;
@@ -120,6 +134,11 @@
             &:nth-child(5) { margin-left: 40px; }
         }
 
+        .menu-outlier {
+            float: left;
+            margin-left: -46px;
+        }
+
         a {
             position: relative;
             display: inline-block;
@@ -128,6 +147,7 @@
         }
 
         a small {
+            display: none;
             position: absolute;
             right: 0;
             bottom: 0;
@@ -138,21 +158,23 @@
             text-align: center;
             color: white;
             background: rgba(0, 0, 0, 0.64);
-        }
+            pointer-events: none;
 
-        .menu-outlier {
-            float: left;
-            margin-left: -46px;
+            &.visible { display: block; }
 
-            a small {
+            &.tiny {
                 padding-top: 0.35em;
                 padding-left: 0.05em;
                 font-size: 16px;
             }
         }
+        &.help-visible a small { display: block; }
     }
 
-    img { width: 35px; }
+    img {
+        width: 35px;
+        cursor: pointer;
+    }
 }
 
 

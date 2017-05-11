@@ -8,7 +8,7 @@ import App from '../../../main';
 import LayerManager from './layer-manager';
 import { object } from '../../../utils';
 
-const DEFAULT_DELAYED_HOVER_DELAY = 400;
+const DELAYED_HOVER_DEFAULT_DELAY = 400;
 const SECTION_MENU_HOVER_DELAY = 400;
 
 // This module starts manually with required parameters:
@@ -510,7 +510,7 @@ const DrawingModule = Marionette.Object.extend({
     },
     startDelayedHover(func, options) {
         if (!func) { return; }
-        const delay = (options && _.isNumber(options.delay)) ? options.delay : DEFAULT_DELAYED_HOVER_DELAY;
+        const delay = (options && _.isNumber(options.delay)) ? options.delay : DELAYED_HOVER_DEFAULT_DELAY;
         if (this.getState('delayedHover') || this.getState('delayedHoverDisabled')) { return; }
 
         const handle = setTimeout(() => {
@@ -535,8 +535,11 @@ const DrawingModule = Marionette.Object.extend({
     },
     startSectionMenuHover() {
         const sectionMenuOpener = () => {
-            console.log('open menu');  // @TODO implementme
+            this.setState('sectionHoverMenuOpen', true);
             this.disableDelayedHover();
+            this.once('state:sectionHoverMenuOpen', (data) => {
+                if (!data.newValue) { this.enableDelayedHover(); }
+            });
         };
 
         this.startDelayedHover(sectionMenuOpener, { delay: SECTION_MENU_HOVER_DELAY });
