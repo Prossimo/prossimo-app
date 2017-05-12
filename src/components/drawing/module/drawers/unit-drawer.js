@@ -87,6 +87,8 @@ export default Backbone.KonvaView.extend({
         'click #back': 'onBackClick',
         'tap #back': 'onBackClick',
 
+        'click .indexHoverPad': 'onIndexHoverClick',
+        'tap .indexHoverPad': 'onIndexHoverClick',
         'mouseenter .indexHoverPad': 'onIndexHoverEnter',
         'mousemove .indexHoverPad': 'onIndexHoverMove',
         'mouseleave .indexHoverPad': 'onIndexHoverLeave',
@@ -116,8 +118,12 @@ export default Backbone.KonvaView.extend({
     onBackClick() {
         this.deselectAll();
     },
-    onIndexHoverEnter() {
-        module.startSectionMenuHover();
+    onIndexHoverClick(event) {
+        module.stopSectionMenuHover();
+        this.setSelection(event, 'sash', 'filling');
+    },
+    onIndexHoverEnter(event) {
+        module.startSectionMenuHover({ sectionId: event.target.getAttr('sectionId') });
     },
     onIndexHoverMove() {
         module.restartSectionMenuHover();
@@ -147,8 +153,8 @@ export default Backbone.KonvaView.extend({
         const untype = (type === 'sash') ? 'mullion' : 'sash';
 
         if (origin) {
-            module.setState(`selected:${untype}`, null, false);
-            module.setState(`selected:${type}`, origin.attrs.sectionId, false);
+            module.setState(`selected:${untype}`, null);
+            module.setState(`selected:${type}`, origin.attrs.sectionId);
         }
     },
     deselectAll(preventUpdate) {
@@ -1608,9 +1614,7 @@ export default Backbone.KonvaView.extend({
         return result;
     },
     createIndexes(indexes) {
-        const group = new Konva.Group({
-            name: 'index',
-        });
+        const group = new Konva.Group({ name: 'index' });
 
         indexes.forEach((section) => {
             const add = (module.get('debug') ? ` (${section.id})` : '');
@@ -1628,8 +1632,9 @@ export default Backbone.KonvaView.extend({
             const minUnitDimension = Math.min(section.size.width, section.size.height);
             const hoverPadRadius = Math.min(INDEX_HOVER_PAD_SIZE / ratio, minUnitDimension / 2);
             const hoverPad = new Konva.Circle({
-                name: 'indexHoverPad',
                 id: `indexHoverPad-${section.id}`,
+                name: 'indexHoverPad',
+                sectionId: section.id,
                 x: number.x() + (section.size.width / 2),
                 y: number.y() + (number.height() / 2),
                 radius: hoverPadRadius,

@@ -81,6 +81,7 @@ export default Marionette.View.extend({
     events: {
         // Click
         'click #drawing': 'handleCanvasClick',
+        'click @ui.$hovering_section_controls *': 'handleHoveringSectionControlsClick',  // Keep before button events
         'contextmenu #drawing': 'handleCanvasClick',
         'click .split-section': 'handleSplitSectionClick',
         'click @ui.$sash_types': 'handleChangeSashTypeClick',
@@ -94,6 +95,7 @@ export default Marionette.View.extend({
         'click @ui.$undo': 'handleUndoClick',
         'click @ui.$redo': 'handleRedoClick',
         // Tap
+        'tap @ui.$hovering_section_controls *': 'handleHoveringSectionControlsClick',  // Keep before button events
         'tap .split-section': 'handleSplitSectionClick',
         'tap @ui.$sash_types': 'handleChangeSashTypeClick',
         'tap #clear-frame': 'handleClearFrameClick',
@@ -295,6 +297,9 @@ export default Marionette.View.extend({
             selectedSashId: id,
         });
     },
+    handleHoveringSectionControlsClick() {
+        this.setState({ selectedSashId: this.module.getState('selected:sash') });
+    },
 
     // Marrionente lifecycle method
     onRender() {
@@ -398,7 +403,9 @@ export default Marionette.View.extend({
             this.createMullionInput(data.mullionId);
         });
         this.listenTo(this.module, 'state:sectionHoverMenuOpen', function (data) {
-            const { x, y } = this.stage.getPointerPosition();
+            const pointerPosition = this.stage.getPointerPosition();
+            const x = pointerPosition && pointerPosition.x;
+            const y = pointerPosition && pointerPosition.y;
             if (data.newValue) {
                 this.showSectionHoverMenu({ x, y });
             } else {
@@ -656,6 +663,7 @@ export default Marionette.View.extend({
 
         const selectedSashId = this.state.selectedSashId;
         const selectedSash = this.model.getSection(selectedSashId);
+        const isSashSelected = !!selectedSash;
         const isLeafSash = selectedSash && selectedSash.sections.length === 0;
         const hasFrame = selectedSash && selectedSash.sashType !== 'fixed_in_frame';
         const isArched = selectedSash && selectedSash.arched;
@@ -676,6 +684,11 @@ export default Marionette.View.extend({
         );
 
         this.ui.$section_control.toggle(!!selectedSash);
+        if (isSashSelected) {
+            this.module.disableDelayedHover();
+        } else {
+            this.module.enableDelayedHover();
+        }
 
         this.$('.sash-types').toggle(
             !isArched &&

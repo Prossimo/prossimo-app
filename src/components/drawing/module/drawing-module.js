@@ -533,12 +533,22 @@ const DrawingModule = Marionette.Object.extend({
         clearTimeout(delayedHover.handle);
         this.setState('delayedHover', null, true);
     },
-    startSectionMenuHover() {
+    startSectionMenuHover(options) {
+        const sectionId = options && options.sectionId;
+        if (!sectionId) { return; }
+
         const sectionMenuOpener = () => {
             this.setState('sectionHoverMenuOpen', true);
-            this.disableDelayedHover();
-            this.once('state:sectionHoverMenuOpen', (data) => {
-                if (!data.newValue) { this.enableDelayedHover(); }
+            this.setState('selected:sash', sectionId, true);
+            this.disableDelayedHover();  // Prevent menu open calls while open
+
+            // On menu close
+            this.once('state:sectionHoverMenuOpen', (event) => {
+                const doOpen = event.newValue;
+                if (!doOpen) {
+                    this.setState('selected:sash', null, true);
+                    this.enableDelayedHover();
+                }
             });
         };
 
