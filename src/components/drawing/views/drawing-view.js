@@ -116,6 +116,7 @@ export default Marionette.View.extend({
         'change #filling-select': 'handleFillingTypeChange',
         'change @ui.$metrics_glass_input': 'handleAdditionalMetricsChange',
         'change @ui.$metrics_opening_input': 'handleAdditionalMetricsChange',
+        'mouseleave @ui.$hovering_section_controls': 'handleHoveringSectionControlsLeave',
     },
     keyShortcuts: {
         'ctrl+z': 'handleUndoClick',
@@ -299,6 +300,9 @@ export default Marionette.View.extend({
     handleHoveringSectionControlsClick() {
         this.setState({ selectedSashId: this.module.getState('selected:sash') });
     },
+    handleHoveringSectionControlsLeave() {
+        this.closeSectionHoverMenu();
+    },
 
     // Marrionente lifecycle method
     onRender() {
@@ -405,7 +409,8 @@ export default Marionette.View.extend({
             const pointerPosition = this.stage.getPointerPosition();
             const x = pointerPosition && pointerPosition.x;
             const y = pointerPosition && pointerPosition.y;
-            if (data.newValue) {
+            const doOpen = data.newValue;
+            if (doOpen) {
                 this.openSectionHoverMenu({ x, y });
             } else {
                 this.closeSectionHoverMenu();

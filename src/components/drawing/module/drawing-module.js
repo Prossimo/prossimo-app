@@ -9,7 +9,7 @@ import LayerManager from './layer-manager';
 import { object } from '../../../utils';
 
 const DELAYED_HOVER_DEFAULT_DELAY = 400;
-const SECTION_MENU_HOVER_DELAY = 400;
+const SECTION_MENU_HOVER_DELAY = 100;
 
 // This module starts manually with required parameters:
 // new DrawingModule({
@@ -538,7 +538,7 @@ const DrawingModule = Marionette.Object.extend({
         if (!sectionId) { return; }
 
         const sectionMenuOpener = () => {
-            this.setState('sectionHoverMenuOpen', true);
+            this.openSectionHoverMenu();
             this.setState('selected:sash', sectionId, true);
             this.disableDelayedHover();  // Prevent menu open calls while open
 
@@ -559,6 +559,12 @@ const DrawingModule = Marionette.Object.extend({
     },
     stopSectionMenuHover() {
         this.stopDelayedHover();
+    },
+    openSectionHoverMenu() {
+        this.setState('sectionHoverMenuOpen', true);
+    },
+    closeSectionHoverMenu() {
+        this.setState('sectionHoverMenuOpen', false);
     },
 });
 

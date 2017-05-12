@@ -5,7 +5,7 @@ import Konva from '../konva-clip-patch';
 import { geometry, vector2d, array } from '../../../../utils';
 import handle_data from '../../data/handle-data';
 
-const INDEX_HOVER_PAD_SIZE = 70;
+const INDEX_HOVERPAD_SIZE = 60;
 
 let module;
 let model;
@@ -1630,17 +1630,17 @@ export default Backbone.KonvaView.extend({
             number.position(section.position);
             number.y((number.y() + (section.size.height / 2)) - (number.height() / 2));
             const minUnitDimension = Math.min(section.size.width, section.size.height);
-            const hoverPadRadius = Math.min(INDEX_HOVER_PAD_SIZE / ratio, minUnitDimension / 2);
-            const hoverPad = new Konva.Circle({
+            const hoverpadRadius = Math.min(INDEX_HOVERPAD_SIZE / ratio, minUnitDimension / 2);
+            const hoverpad = new Konva.Circle({
                 id: `indexHoverPad-${section.id}`,
                 name: 'indexHoverPad',
                 sectionId: section.id,
                 x: number.x() + (section.size.width / 2),
                 y: number.y() + (number.height() / 2),
-                radius: hoverPadRadius,
+                radius: hoverpadRadius,
             });
 
-            group.add(hoverPad, number);
+            group.add(hoverpad, number);
         });
 
         return group;

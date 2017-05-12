@@ -116,9 +116,13 @@
     .button-states();
 
     .hovering-section-controls {
+        @outlier-offset: 46px;
+        @hover-padding: 55px;
         display: none;
         position: absolute;
-        margin: -55px 0 0 -10px;
+        margin: -(55px + @hover-padding) 0 0 -(10px + @hover-padding + @outlier-offset);
+        padding: @hover-padding @hover-padding @hover-padding (@hover-padding + @outlier-offset);
+        border-radius: 30%;
         font-size: 0;
 
         &.open { display: block; }
@@ -138,7 +142,7 @@
         .menu-outlier {
             .reset-list();
             float: left;
-            margin-left: -46px;
+            margin-left: -@outlier-offset;
         }
 
         li {
