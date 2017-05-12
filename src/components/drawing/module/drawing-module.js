@@ -544,9 +544,9 @@ const DrawingModule = Marionette.Object.extend({
 
             // On menu close
             this.once('state:sectionHoverMenuOpen', (event) => {
-                const doOpen = event.newValue;
-                if (!doOpen) {
-                    this.setState('selected:sash', null, true);
+                const doClose = !event.newValue;
+                if (doClose) {
+                    this.deselectAll();
                     this.enableDelayedHover();
                 }
             });

@@ -81,7 +81,7 @@ export default Marionette.View.extend({
     events: {
         // Click
         'click #drawing': 'handleCanvasClick',
-        'click @ui.$hovering_section_controls *': 'handleHoveringSectionControlsClick',  // Keep before button events
+        'click @ui.$hovering_section_controls .button': 'handleHoveringSectionControlsClick',  // Keep before button events
         'contextmenu #drawing': 'handleCanvasClick',
         'click .split-section': 'handleSplitSectionClick',
         'click @ui.$sash_types': 'handleChangeSashTypeClick',
@@ -95,7 +95,7 @@ export default Marionette.View.extend({
         'click @ui.$undo': 'handleUndoClick',
         'click @ui.$redo': 'handleRedoClick',
         // Tap
-        'tap @ui.$hovering_section_controls *': 'handleHoveringSectionControlsClick',  // Keep before button events
+        'tap @ui.$hovering_section_controls .button': 'handleHoveringSectionControlsClick',  // Keep before button events
         'tap .split-section': 'handleSplitSectionClick',
         'tap @ui.$sash_types': 'handleChangeSashTypeClick',
         'tap #clear-frame': 'handleClearFrameClick',
@@ -143,8 +143,6 @@ export default Marionette.View.extend({
         return this.undo_manager.handler.redo();
     },
     handleCanvasClick(e) {
-        this.hideSectionHoverMenu();
-
         if (this.isCloningFilling()) {
             this.cloneFillingDismiss();
             e.preventDefault();
@@ -152,6 +150,7 @@ export default Marionette.View.extend({
             this.syncFillingDismiss();
             e.preventDefault();
         }
+        this.closeSectionHoverMenu();
     },
     handleCanvasKeyDown(e) {
         if (e.key === 'Escape' && this.isCloningFilling()) {
@@ -257,16 +256,15 @@ export default Marionette.View.extend({
     },
     handleSplitSectionClick(e) {
         this.$('.popup-wrap').hide();
-        this.hideSectionHoverMenu();
         const divider = $(e.target).data('type');
 
         this.model.splitSection(this.state.selectedSashId, divider);
         this.deselectAll();
         this.module.deselectAll();
+        this.closeSectionHoverMenu();
     },
     handleChangeSashTypeClick(e) {
         this.$('.popup-wrap').hide();
-        this.hideSectionHoverMenu();
         let type = $(e.target).data('type');
 
         // if Unit is Outward opening, reverse sash type
@@ -285,6 +283,7 @@ export default Marionette.View.extend({
         this.model.setSectionSashType(this.state.selectedSashId, type);
 
         this.updateSection(this.state.selectedSashId, 'both');
+        this.closeSectionHoverMenu();
     },
     handleObjectClick(id, e) {
         // select on left click only
@@ -407,9 +406,9 @@ export default Marionette.View.extend({
             const x = pointerPosition && pointerPosition.x;
             const y = pointerPosition && pointerPosition.y;
             if (data.newValue) {
-                this.showSectionHoverMenu({ x, y });
+                this.openSectionHoverMenu({ x, y });
             } else {
-                this.hideSectionHoverMenu();
+                this.closeSectionHoverMenu();
             }
         });
     },
@@ -647,10 +646,10 @@ export default Marionette.View.extend({
         if (!_.isUndefined(y)) { this.ui.$hovering_section_controls.css('top', `${y}px`); }
         this.module.setState('sectionHoverMenuOpen', newState);
     },
-    showSectionHoverMenu(options) {
+    openSectionHoverMenu(options) {
         this.toggleSectionHoverMenu(true, options);
     },
-    hideSectionHoverMenu() {
+    closeSectionHoverMenu() {
         this.toggleSectionHoverMenu(false);
     },
     updateUI() {

@@ -124,6 +124,7 @@
         &.open { display: block; }
 
         .menu-row {
+            .reset-list();
             margin: 4px 0;
             display: block;
 
@@ -135,40 +136,42 @@
         }
 
         .menu-outlier {
+            .reset-list();
             float: left;
             margin-left: -46px;
         }
 
-        a {
-            position: relative;
+        li {
             display: inline-block;
+            position: relative;
 
-            & + a { margin-left: 4px; }
-        }
+            & + li { margin-left: 4px; }
 
-        a small {
-            display: none;
-            position: absolute;
-            right: 0;
-            bottom: 0;
-            width: 12px;
-            height: 12px;
-            font: bold 10px Arial, "Helvetica Neue", Helvetica, sans-serif;
-            line-height: 12px;
-            text-align: center;
-            color: white;
-            background: rgba(0, 0, 0, 0.64);
-            pointer-events: none;
+            small {
+                display: none;
+                position: absolute;
+                right: 0;
+                bottom: 0;
+                width: 12px;
+                height: 12px;
+                font: bold 10px Arial, "Helvetica Neue", Helvetica, sans-serif;
+                line-height: 12px;
+                text-align: center;
+                color: white;
+                background: rgba(0, 0, 0, 0.64);
+                pointer-events: none;
 
-            &.visible { display: block; }
+                &.visible { display: block; }
 
-            &.tiny {
-                padding-top: 0.35em;
-                padding-left: 0.05em;
-                font-size: 16px;
+                &.tiny {
+                    padding-top: 0.35em;
+                    padding-left: 0.05em;
+                    font-size: 16px;
+                }
             }
         }
-        &.help-visible a small { display: block; }
+
+        &.help-visible li small { display: block; }
     }
 
     img {
