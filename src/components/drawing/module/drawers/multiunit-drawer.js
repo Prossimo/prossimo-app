@@ -71,7 +71,7 @@ export default Backbone.KonvaView.extend({
         let selectedSubunit;
 
         if (selectedSubunitId) {
-            selectedSubunit = this._model.getSubunitById(selectedSubunitId);
+            selectedSubunit = this._model.getSubunitLinkedUnitById(selectedSubunitId);
             this._model.removeSubunit(selectedSubunit);
         }
 
@@ -160,7 +160,7 @@ export default Backbone.KonvaView.extend({
         });
 
         if (connectorsKonvas.length > 0) {
-            group.add.apply(group, connectorsKonvas);
+            group.add(...connectorsKonvas);
         }
 
         return group;
@@ -301,7 +301,7 @@ export default Backbone.KonvaView.extend({
         );
 
         if (overlaysKonvas.length > 0) {
-            group.add.apply(group, overlaysKonvas);
+            group.add(...overlaysKonvas);
         }
 
         return group;

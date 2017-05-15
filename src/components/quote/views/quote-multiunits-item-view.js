@@ -25,24 +25,21 @@ export default Marionette.View.extend({
     },
     getDescription() {
         const project_settings = App.settings.getProjectSettings();
-        let subunits;
+        const subunits = this.model.get('multiunit_subunits').map((subunit_link) => {
+            const subunit = subunit_link.getUnit();
+            const size = this.display_options.show_sizes_in_mm ?
+                format.dimensions_mm(convert.inches_to_mm(subunit.get('width')), convert.inches_to_mm(subunit.get('height'))) :
+                format.dimensions(subunit.get('width'), subunit.get('height'), 'fraction',
+                    project_settings && project_settings.get('inches_display_mode'));
 
-        if (this.model.subunits) {
-            subunits = this.model.subunits.map((subunit) => {
-                const size = this.display_options.show_sizes_in_mm ?
-                    format.dimensions_mm(convert.inches_to_mm(subunit.get('width')), convert.inches_to_mm(subunit.get('height'))) :
-                    format.dimensions(subunit.get('width'), subunit.get('height'), 'fraction',
-                        project_settings && project_settings.get('inches_display_mode'));
-
-                return {
-                    ref_num: subunit.getRefNum(),
-                    mark: subunit.get('mark'),
-                    size,
-                    description: subunit.get('description'),
-                    notes: subunit.get('notes'),
-                };
-            }, this);
-        }
+            return {
+                ref_num: subunit.getRefNum(),
+                mark: subunit.get('mark'),
+                size,
+                description: subunit.get('description'),
+                notes: subunit.get('notes'),
+            };
+        }, this);
 
         const params = {
             size: {
@@ -117,7 +114,8 @@ export default Marionette.View.extend({
         this.showChildView('subunits_container', new QuoteUnitsTableView({
             project: this.options.project,
             quote: this.options.quote,
-            collection: this.model.subunits,
+            collection: this.options.units,
+            filter: child => child.isSubunitOf(this.model),
             display_options: this.display_options,
         }));
     },

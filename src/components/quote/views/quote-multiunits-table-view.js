@@ -10,6 +10,7 @@ export default Marionette.CollectionView.extend({
         return {
             extras: this.options.extras,
             project: this.options.project,
+            units: this.options.units,
             quote: this.options.quote,
             display_options: this.options.display_options,
         };

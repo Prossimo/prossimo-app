@@ -105,7 +105,7 @@ export default Marionette.View.extend({
             },
             multiunits: {
                 title: 'Multiunits',
-                collection: this.collection.multiunits,
+                collection: this.options.multiunits,
                 columns: ['move_item', 'ref_num', 'mark', 'quantity', 'width', 'height', 'drawing', 'customer_image',
                     'width_mm', 'height_mm', 'description', 'notes', 'exceptions'],
             },
@@ -136,21 +136,21 @@ export default Marionette.View.extend({
         }
 
         this.undo_manager = new UndoManager({
-            register: [this.collection, this.collection.multiunits],
+            register: [this.collection, this.options.multiunits],
             track: true,
         });
 
         this.selected = [];
 
         this.listenTo(this.collection, 'all', this.updateTable);
-        this.listenTo(this.collection.multiunits, 'all', this.updateTable);
+        this.listenTo(this.options.multiunits, 'all', this.updateTable);
         this.listenTo(this.options.extras, 'all', this.updateTable);
         this.listenTo(this.options.parent_view, 'attach', this.updateTable);
 
         this.listenTo(App.current_project.settings, 'change', this.render);
 
         this.listenTo(this.collection, 'invalid', this.showValidationError);
-        this.listenTo(this.collection.multiunits, 'invalid', this.showValidationError);
+        this.listenTo(this.options.multiunits, 'invalid', this.showValidationError);
         this.listenTo(this.options.extras, 'invalid', this.showValidationError);
 
         this.listenTo(globalChannel, 'paste_image', this.onPasteImage);

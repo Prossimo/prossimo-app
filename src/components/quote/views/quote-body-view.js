@@ -67,6 +67,7 @@ export default Marionette.View.extend({
             this.quote_multiunits_table_view = new QuoteMultiunitsTableView({
                 project: this.options.project,
                 quote: this.options.quote,
+                units: this.options.units,
                 collection: this.options.multiunits,
                 display_options: this.display_options,
             });
