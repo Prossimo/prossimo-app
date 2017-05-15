@@ -117,20 +117,26 @@
 
     .hovering-section-controls {
         @outlier-offset: 46px;
-        @hover-padding: 55px;
-        display: none;
+        @hover-padding: 45px;
         position: absolute;
         margin: -(55px + @hover-padding) 0 0 -(10px + @hover-padding + @outlier-offset);
         padding: @hover-padding @hover-padding @hover-padding (@hover-padding + @outlier-offset);
         border-radius: 30%;
         font-size: 0;
+        opacity: 0;
+        transition: @opacity-transition;
+        pointer-events: none;
 
-        &.open { display: block; }
+        &.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
 
         .menu-row {
             .reset-list();
             margin: 4px 0;
             display: block;
+            white-space: nowrap;
 
             &:nth-child(1) { margin-left: 0; }
             &:nth-child(2) { margin-left: 10px; }

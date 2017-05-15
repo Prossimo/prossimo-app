@@ -81,6 +81,7 @@ export default Marionette.View.extend({
     events: {
         // Click
         'click #drawing': 'handleCanvasClick',
+        'click @ui.$hovering_section_controls': 'handleHoveringSectionControlsClickThrough',
         'click @ui.$hovering_section_controls .button': 'handleHoveringSectionControlsClick',  // Keep before button events
         'contextmenu #drawing': 'handleCanvasClick',
         'click .split-section': 'handleSplitSectionClick',
@@ -95,6 +96,7 @@ export default Marionette.View.extend({
         'click @ui.$undo': 'handleUndoClick',
         'click @ui.$redo': 'handleRedoClick',
         // Tap
+        'tap @ui.$hovering_section_controls': 'handleHoveringSectionControlsClickThrough',
         'tap @ui.$hovering_section_controls .button': 'handleHoveringSectionControlsClick',  // Keep before button events
         'tap .split-section': 'handleSplitSectionClick',
         'tap @ui.$sash_types': 'handleChangeSashTypeClick',
@@ -298,7 +300,12 @@ export default Marionette.View.extend({
         });
     },
     handleHoveringSectionControlsClick() {
-        this.setState({ selectedSashId: this.module.getState('selected:sash') });
+        this.setState({ selectedSashId: this.module.getState('selected:sash') }, true);
+    },
+    handleHoveringSectionControlsClickThrough() {
+        const selectedSashId = this.module.getState('selected:sash');
+        this.closeSectionHoverMenu();
+        this.module.setState('selected:sash', selectedSashId);
     },
     handleHoveringSectionControlsLeave() {
         this.closeSectionHoverMenu();
@@ -780,11 +787,13 @@ export default Marionette.View.extend({
         }
     },
 
-    setState(state) {
+    setState(state, preventUpdate) {
         this.state = _.assign(this.state, state);
-        this.updateUI();
-        this.$('#drawing').focus();
-        this.trigger('onSetState');
+
+        if (!preventUpdate) {
+            this.updateRenderedScene();
+            this.trigger('onSetState');
+        }
     },
     deselectAll() {
         this.setState({
