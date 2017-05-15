@@ -5,11 +5,11 @@ import App from '../../main';
 import Schema from '../../schema';
 import { object, convert } from '../../utils';
 import Unit from './unit';
-import UnitCollection from '../collections/unit-collection';
+import MultiunitSubunitCollection from '../collections/inline/multiunit-subunit-collection';
 import { mergePreviewOptions, generatePreview } from '../../components/drawing/module/preview';
 
 const MULTIUNIT_PROPERTIES = [
-    { name: 'multiunit_subunits', title: 'Subunits', type: 'array' },
+    { name: 'multiunit_subunits', title: 'Subunits', type: 'collection:MultiunitSubunitCollection' },
     { name: 'mark', title: 'Mark', type: 'string' },
     { name: 'quantity', title: 'Quantity', type: 'number' },
     { name: 'description', title: 'Customer Description', type: 'string' },
@@ -41,15 +41,24 @@ export default Backbone.Model.extend({
         this._cache = {};
 
         if (!this.options.proxy) {
-            if (_.isArray(this.options.subunits)) {
-                _.each(this.options.subunits, subunit => this.addSubunit(subunit));
-            }
-
+            //  TODO: we only want to update size in the following cases: subunit changes,
+            //  connector changes, subunit profile changes, subunit options change,
+            //  dictionaries or fillings change, etc.
+            //  TODO: actually, we might only want to update this when size changes,
+            //  and in all other cases we want to update the preview
             this.on('change', this.updateMultiunitSize);
-            this.on('add', () => {
-                this.updateSubunitsMetadata();
-                this.listenTo(this.collection, 'update', this.updateSubunitsMetadata);
-                this.listenTo(this.collection.subunits, 'update', this.updateSubunitsMetadata);
+            this.on('add', this.updateSubunitsMetadata);
+
+            //  TODO: maybe we want to trigger this by less events (no change?)
+            this.listenTo(this.get('multiunit_subunits'), 'change update reset', () => {
+                this.persist('multiunit_subunits', this.get('multiunit_subunits'));
+            });
+
+            //  Destroy multiunit when we removed the last subunit
+            this.listenTo(this.get('multiunit_subunits'), 'remove', () => {
+                if (this.get('multiunit_subunits').length === 0) {
+                    this.destroy();
+                }
             });
         }
     },
@@ -69,6 +78,9 @@ export default Backbone.Model.extend({
 
         const name_value_hash = {
             quantity: 1,
+            multiunit_subunits: (name === 'multiunit_subunits') ? new MultiunitSubunitCollection(null, {
+                units: this.getParentQuoteUnits(),
+            }) : [],
             root_section: (name === 'root_section') ? { id: _.uniqueId(), connectors: [] } : '',
         };
 
@@ -82,29 +94,49 @@ export default Backbone.Model.extend({
 
         return default_value;
     },
-    parseAndFixRootSection(root_section_data) {
+    parseAndFixRootSection(root_section_data, subunits) {
         let root_section_parsed = object.extractObjectOrNull(root_section_data);
 
         if (!_.isObject(root_section_parsed)) {
             root_section_parsed = this.getDefaultValue('root_section');
         }
 
-        root_section_parsed = this.validateConnectors(root_section_parsed);
+        root_section_parsed = this.validateConnectors(root_section_parsed, subunits);
 
         return root_section_parsed;
     },
-    parse(data) {
+    parse(data, options) {
         const multiunit_data = data && data.multiunit ? data.multiunit : data;
         const filtered_data = Schema.parseAccordingToSchema(multiunit_data, this.schema);
+        let units = (options && options.units) ? options.units : this.getParentQuoteUnits();
 
         if (filtered_data && filtered_data.multiunit_subunits) {
-            filtered_data.multiunit_subunits =
-                object.extractObjectOrNull(filtered_data.multiunit_subunits) ||
-                this.getDefaultValue('multiunit_subunits', 'array');
+            filtered_data.multiunit_subunits = new MultiunitSubunitCollection(
+                object.extractObjectOrNull(filtered_data.multiunit_subunits),
+                {
+                    units,
+                    parse: true,
+                },
+            );
         }
 
         if (filtered_data && filtered_data.root_section) {
-            filtered_data.root_section = this.parseAndFixRootSection(filtered_data.root_section);
+            filtered_data.root_section = this.parseAndFixRootSection(filtered_data.root_section, filtered_data.multiunit_subunits);
+        }
+
+        //  If this multiunit is created via Unit's toMultiunit() function
+        if (options && options.from_unit) {
+            units = options.from_unit.collection || units;
+
+            filtered_data.multiunit_subunits = filtered_data.multiunit_subunits || new MultiunitSubunitCollection(
+                null,
+                { units },
+            );
+
+            filtered_data.multiunit_subunits.add({
+                unit_id: options.from_unit.id,
+                unit_cid: options.from_unit.cid,
+            }, { parse: true });
         }
 
         return filtered_data;
@@ -113,7 +145,7 @@ export default Backbone.Model.extend({
         const current_options = options;
 
         if (method === 'create' || method === 'update') {
-            current_options.attrs = { project_multiunit: model.toJSON() };
+            current_options.attrs = { multiunit: model.toJSON() };
         }
 
         return Backbone.sync.call(this, method, model, current_options);
@@ -122,7 +154,9 @@ export default Backbone.Model.extend({
         const properties_to_omit = ['id', 'height', 'width'];
         const json = Backbone.Model.prototype.toJSON.apply(this, args);
 
-        json.multiunit_subunits = JSON.stringify(json.multiunit_subunits);
+        json.multiunit_subunits = _.isFunction(this.get('multiunit_subunits').toJSON) ?
+            this.get('multiunit_subunits').toJSON() :
+            this.get('multiunit_subunits');
         json.root_section = JSON.stringify(json.root_section);
 
         return _.omit(json, properties_to_omit);
@@ -146,7 +180,7 @@ export default Backbone.Model.extend({
                         has_only_defaults = false;
                     }
                 } else if (key === 'multiunit_subunits') {
-                    if (value !== JSON.stringify(this.getDefaultValue('multiunit_subunits', 'array'))) {
+                    if (JSON.stringify(value) !== JSON.stringify(this.getDefaultValue('multiunit_subunits', 'array'))) {
                         has_only_defaults = false;
                     }
                 } else if (this.getDefaultValue(key, type) !== value) {
@@ -165,9 +199,10 @@ export default Backbone.Model.extend({
     },
     //  Check if this unit belongs to the quote which is currently active
     isParentQuoteActive() {
+        const parent_quote = this.getParentQuote();
         let is_active = false;
 
-        if (App.current_quote && this.collection && this.collection.options.quote && this.collection.options.quote === App.current_quote) {
+        if (App.current_quote && parent_quote && parent_quote === App.current_quote) {
             is_active = true;
         }
 
@@ -233,9 +268,7 @@ export default Backbone.Model.extend({
         return currentRoot;
     },
     getSubunitsSum(funcName) {
-        if (!_.isFunction(this.subunits.at(0)[funcName])) { return 0; }
-
-        const sum = this.subunits.reduce((tmpSum, subunit) => tmpSum + subunit[funcName](), 0);
+        const sum = this.get('multiunit_subunits').reduce((tmpSum, subunit) => tmpSum + subunit.invokeOnUnit(funcName), 0);
 
         return sum;
     },
@@ -275,205 +308,113 @@ export default Backbone.Model.extend({
     isOpeningDirectionOutward() {
         return false;
     },
-    // this.subunits is a collection with models from project's units collection
-    createSubunitsCollection() {
-        const self = this;
+    getParentQuoteUnits() {
+        const parent_quote = this.getParentQuote();
 
-        this.subunits = new UnitCollection();
-
-        // Trigger self change if any subunit changes
-        this.listenTo(this.subunits, 'change', function () {
-            self.trigger.apply(this, ['change'].concat(Array.prototype.slice.call(arguments)));
-        });
-        this.listenTo(this.subunits, 'add', function () {
-            self.trigger.apply(this, ['change'].concat(Array.prototype.slice.call(arguments)));
-        });
-        this.listenTo(this.subunits, 'remove', function () {
-            self.trigger.apply(this, ['change'].concat(Array.prototype.slice.call(arguments)));
-
-            // Remove multiunit if last subunit is removed
-            if (self.subunits.length === 0) {
-                self.destroy();
-            }
-        });
+        return parent_quote && parent_quote.units;
     },
-    // Reorders subunit models in their collection (not in this.subunits)
-    updateSubunitsIndices() {
-        const self = this;
-
-        if (!this.collection || !this.collection.subunits || !this.subunits) {
-            return;
-        }
-
-        this.subunits.forEach((subunit, subunitIndex) => {
-            const firstSubunit = self.subunits.at(0);
-            const firstSubunitPosition = firstSubunit.collection.indexOf(firstSubunit);
-            const currentPosition = self.collection.subunits.indexOf(subunit);
-            const newPosition = (firstSubunitPosition + subunitIndex < self.collection.subunits.length) ?
-                firstSubunitPosition + subunitIndex :
-                (firstSubunitPosition + subunitIndex) - 1;
-
-            self.collection.subunits.setItemPosition(currentPosition, newPosition);
-        });
+    hasSubunit(unit_model) {
+        return !!this.get('multiunit_subunits').getByUnitId(unit_model.id || unit_model.cid);
     },
     updateSubunitsMetadata() {
         this.validateSubunits();
         this.updateConnectorsLength();
-        this.updateSubunitsIndices();
     },
     updateMultiunitSize(eventData) {
         if (eventData.changed.width || eventData.changed.height) {
             this.recalculateSizes();
         }
     },
-    /* eslint-disable no-unused-expressions */
+    //  If validation succeeds, there is no return value. Otherwise, it returns
+    //  the error object. This is consistent with how Backbone does validation
     validateSubunits(options) {
-        const self = this;
-        const subunitsArray = (this.subunits) ? this.subunits.toArray() : undefined;
-        const subunitsList = _.zip(this.get('multiunit_subunits'), subunitsArray);
-        const onlyCheck = options && options.onlyCheck;  // "Only check and report, don't fix" option
+        // "Only check and report, don't fix" option
+        const onlyCheck = options && options.onlyCheck;
+        let hasErrors = false;
+        let validationError;
 
-        subunitsList.forEach((subunitData) => {
-            const subunitId = subunitData[0];
-            const subunit = subunitData[1];
-            const needsConnector = !self.isOriginId(subunitId || subunit.id);
-            const hasConnector = self.getParentConnector(subunitId || subunit.id);
+        this.get('multiunit_subunits').forEach((subunit_link) => {
+            const subunitId = subunit_link.get('unit_id');
+            const subunit = subunit_link.getUnit();
+            const isOrigin = this.isOriginId(subunit_link.get('unit_id'));
 
-            if (needsConnector && !hasConnector) {
-                if (onlyCheck) { return; }
-                self.removeSubunitId(subunitId);
-                self.removeSubunitObject(subunit);
+            const needsConnector = !isOrigin;
+            const hasConnector = this.getParentConnector(subunitId || (subunit && subunit.id));
+
+            //  Subunit is listed in multiunit_subunits, but there aren't any
+            //  corresponding connectors inside root_section
+            if (subunitId && subunit && needsConnector && !hasConnector) {
+                hasErrors = true;
+                validationError = {
+                    error: `Subunit ${subunitId} needs a connector, but doesn't have one`,
+                };
+
+                if (onlyCheck) {
+                    return;
+                }
+
+                this.removeSubunit(subunit);
             } else if (subunitId && !subunit) {
-                if (onlyCheck) { return; }
-                const foundSubunit = self.getSubunitById(subunitId);
-                self.addSubunitObject(foundSubunit) || self.removeSubunitId(subunitId);
-            } else if (!subunitId && subunit) {
-                if (onlyCheck) { return; }
-                const foundSubunitId = subunit.get('id');
-                self.addSubunitId(foundSubunitId) || self.removeSubunitObject(subunit);
-            } else if (onlyCheck) { return true; }
+                hasErrors = true;
+                validationError = {
+                    error: `Subunit ${subunitId} does not exist in Unit collection`,
+                };
+
+                if (onlyCheck) {
+                    return;
+                }
+
+                subunit_link.destroy();
+            }
         });
+
+        return (hasErrors && validationError) || undefined;
     },
-    /* eslint-enable no-unused-expressions */
-    // Low-level functions to manipulate subunit collection data; don't use unless need to
-    addSubunitId(id) {
-        if (!id) {
-            return;
-        }
-
-        const subunitsIds = this.get('multiunit_subunits');
-        subunitsIds.push(id);
-
-        return this.set('multiunit_subunits', subunitsIds);
-    },
-    addSubunitObject(unit) {
-        if (!unit) {
-            return;
-        }
-
-        if (!this.subunits) {
-            this.createSubunitsCollection();
-        }
-
-        return this.subunits.add(unit);
-    },
-    removeSubunitId(id) {
-        if (!id) {
-            return;
-        }
-
-        const subunitsIds = this.get('multiunit_subunits');
-
-        return this.set('multiunit_subunits', _.without(subunitsIds, id));
-    },
-    removeSubunitObject(subunit) {
-        if (!subunit || !this.subunits) {
-            return;
-        }
-
-        return this.subunits.remove(subunit);
-    },
-    // High-level function for adding subunits; use it if not sure
     addSubunit(subunit) {
         if (!(subunit instanceof Unit)) {
-            return;
+            throw new Error('Subunit should be an instance of the Unit model');
         }
 
-        const multiunit = this;
-        const subunitsIds = this.get('multiunit_subunits');
-        let subunitId = subunit.id;
-        let isGhostId;
+        this.get('multiunit_subunits').add({
+            unit_id: subunit.id,
+            unit_cid: subunit.cid,
+        }, { parse: true });
 
-        if (!subunitId) {
-            subunitId = 1000000000 + parseInt(subunit.cid.slice(1), 10);
-            isGhostId = true;
-        }
-
-        const idRewriter = function (newId) {
-            const idsToRewrite = multiunit.get('multiunit_subunits');
-            const index = idsToRewrite.indexOf(subunitId);
-
-            if (index !== -1) { idsToRewrite[index] = newId; }
-        };
-        const alreadyInAttribute = _.contains(subunitsIds, subunitId);
-        const alreadyInCollection = _.contains(this.subunits, subunit);
-
-        if (alreadyInAttribute && alreadyInCollection) { return; }
-
-        if (isGhostId) {
-            subunit.addGhostAttribute('id', subunitId);
-            subunit.addGhostRewriter('id', idRewriter);
-        }
-
-        if (!alreadyInAttribute) { this.addSubunitId(subunitId); }
-        if (!alreadyInCollection) { this.addSubunitObject(subunit); }
-
-        if (this.validateSubunits({ onlyCheck: true })) {
-            this.updateSubunitsIndices();
+        if (!this.validateSubunits({ onlyCheck: true })) {
             this.recalculateSizes();
         }
     },
-    // High-level function for removing subunits; use it if not sure
-    removeSubunit(subunitOrId) {
-        const subunit = (_.isNumber(subunitOrId)) ? this.getSubunitById(subunitOrId) : subunitOrId;
+    removeSubunit(subunit) {
+        if (!this.hasSubunit(subunit)) {
+            throw new Error('Argument should be a child subunit of this multiunit');
+        }
 
-        if (!(subunit.isSubunitOf && subunit.isSubunitOf(this))) { return; }
-
-        const subunitsIds = this.get('multiunit_subunits');
         const subunitId = subunit.id;
-        const subunitIndex = subunitsIds.indexOf(subunitId);
-        const isSubunitOf = subunitIndex !== -1;
-        const isSubunitRemovable = this.isSubunitRemovable(subunitId);
-        let parentConnector;
+        const isRemovable = this.isSubunitRemovable(subunitId);
+        const parentConnector = this.getParentConnector(subunitId);
 
-        if (isSubunitOf && isSubunitRemovable) {
-            subunitsIds.splice(subunitIndex, 1);
-            parentConnector = this.getParentConnector(subunitId);
+        if (isRemovable) {
+            const subunit_link = this.get('multiunit_subunits').getByUnitId(subunitId);
 
             if (parentConnector) {
-                this.removeConnector(parentConnector.id);
+                this.removeConnector(parentConnector);
             }
 
-            this.validateSubunits();
-            this.updateSubunitsIndices();
-            this.recalculateSizes();
             subunit.destroy();
+            subunit_link.destroy();
 
-            return true;
+            this.validateSubunits();
+            this.recalculateSizes();
         }
     },
+    //  This returns a MultiunitSubunit instance, not Unit
     getSubunitById(id) {
-        let subunit;
+        return this.get('multiunit_subunits').getByUnitId(id);
+    },
+    getSubunitLinkedUnitById(id) {
+        const subunit_link = this.getSubunitById(id);
 
-        if (this.subunits) {
-            subunit = this.subunits.get(id);
-        }
-
-        if (!subunit && this.collection && this.collection.subunits) {
-            subunit = this.collection.subunits.get(id);
-        }
-
-        return subunit;
+        return subunit_link && subunit_link.getUnit();
     },
     getWidth() {
         return this._cache.width || this.recalculateSizes().width;
@@ -518,7 +459,7 @@ export default Backbone.Model.extend({
     },
     isSubunitRemovable(subunitId) {
         const subunitNode = this.getSubunitNode(subunitId);
-        const isLeafSubunit = (subunitNode.children.length === 0);
+        const isLeafSubunit = !subunitNode || (subunitNode.children.length === 0);
 
         return isLeafSubunit;
     },
@@ -529,61 +470,65 @@ export default Backbone.Model.extend({
      * parent - points to the parent node
      * children - points to array of child nodes
      */
-    /* eslint-disable no-loop-func */
     getSubunitsTree() {
-        const self = this;
-        const subunitsIds = this.getSubunitsIds();  // Prepare flat array of node templates
-        const nodeTemplates = subunitsIds.map((subunitId) => {
-            const unitId = subunitId;
-            const parentId = self.getParentSubunitId(subunitId);
-            const childrenIds = self.getChildSubunitsIds(subunitId);
+        // Prepare flat array of node templates
+        const nodeTemplates = this.get('multiunit_subunits').map((subunit_link) => {
+            const parent = this.getParentSubunit(subunit_link);
+            const children = this.getChildSubunits(subunit_link);
             const node = {
-                unit: unitId,
-                parent: parentId,
-                children: childrenIds,
+                unit: subunit_link,
+                parent,
+                children,
             };
             return node;
         });
 
-        if (nodeTemplates.length === 0) { return; }
+        if (nodeTemplates.length === 0) {
+            return {};
+        }
 
-        const originId = this.getOriginSubunitId();  // Bootstrap tree
-        const originNode = nodeTemplates.filter(node => (node.unit === originId))[0];
+        // Bootstrap tree
+        const originId = this.getOriginSubunitId();
+        const originNode = nodeTemplates.find(node => (node.unit.isLinkingToUnit(originId)));
 
-        originNode.unit = self.getSubunitById(originNode.unit);
+        originNode.unit = originNode.unit.getUnit();
 
         const subunitsTree = originNode;
         const processableLeafNodes = [];
 
         processableLeafNodes[0] = subunitsTree;
 
-        while (processableLeafNodes.length > 0) {  // Build tree by appending nodes from array
+        // Build tree by appending nodes from array
+        while (processableLeafNodes.length > 0) {
             const currentNode = processableLeafNodes.pop();
 
-            currentNode.children.forEach((subunitId, childIndex) => {
+            currentNode.children.forEach((subunit, childIndex) => {
                 // Select node
-                const childNode = nodeTemplates.filter(node => node.unit === subunitId)[0];
+                const childNode = nodeTemplates.find(node => node.unit === subunit);
 
                 if (!(childNode && childNode.unit)) {
                     currentNode.children[childIndex] = undefined;
                     return;
                 }
 
-                childNode.unit = self.getSubunitById(subunitId);  // Render node to its final form
+                // Render node to its final form
+                childNode.unit = subunit.getUnit();
                 childNode.parent = currentNode;
 
-                currentNode.children[childIndex] = childNode;  // Append node to tree
+                // Append node to tree
+                currentNode.children[childIndex] = childNode;
 
-                if (childNode.children.length > 0) {  // Mark for later processing
+                // Mark for later processing
+                if (childNode.children.length > 0) {
                     processableLeafNodes.push(childNode);
                 }
             });
+
             currentNode.children = _.without(currentNode.children, undefined);
         }
 
         return subunitsTree;
     },
-    /* eslint-enable no-loop-func */
     // Returns subunit tree with coordinate information at each node, in mm
     getSubunitsCoordinatesTree(options) {
         const self = this;
@@ -643,7 +588,7 @@ export default Backbone.Model.extend({
         return subunitsTree;
     },
     subunitsTreeForEach(subunitNode, func) {
-        if (!subunitNode || !_.isFunction(func)) { return; }
+        if (!subunitNode || _.isEmpty(subunitNode) || !_.isFunction(func)) { return; }
 
         const self = this;
         const children = subunitNode.children;  // start at node and apply down
@@ -676,29 +621,113 @@ export default Backbone.Model.extend({
 
         return { x: minX, y: minY, width: multiunitWidth, height: multiunitHeight };
     },
+    //  Generate all possible unique traversal sequences from the list of
+    //  connectors. If we have connectors [[1, 3], [3, 5], [1, 7]], the
+    //  resulting traversal sequences would be [[1, 3, 5], [1, 7]]. These
+    //  sequences could be used for validation or obtaining the origin id
+    getSubunitsTraversalSequences(connectors) {
+        //  Checks that [1, 2] is subsequence of [1, 2, 3]. Order is important
+        function isSubsequence(sequence, parentSequence) {
+            return sequence.map(entry => parentSequence.indexOf(entry)).every((value, index, array) =>
+                (value !== -1 && (index === 0 || value - array[index - 1] === 1)),
+            );
+        }
+
+        function canBeLeftJoined(left, right) {
+            return right.length > 1 && left[0] === right[right.length - 1];
+        }
+
+        function canBeRightJoined(right, left) {
+            return left.length > 1 && right[0] === left[left.length - 1];
+        }
+
+        function canBeJoined(left, right) {
+            return canBeLeftJoined(left, right) || canBeRightJoined(right, left);
+        }
+
+        function leftJoinConnectors(left, right) {
+            return canBeLeftJoined(left, right) ? right.slice().concat(left.slice(1)) : [left, right];
+        }
+
+        function rightJoinConnectors(right, left) {
+            return canBeRightJoined(right, left) ? left.slice().concat(right.slice(1)) : [right, left];
+        }
+
+        function joinConnectors(left, right) {
+            let result = [left, right];
+
+            if (canBeLeftJoined(left, right)) {
+                result = leftJoinConnectors(left, right);
+            } else if (canBeRightJoined(right, left)) {
+                result = rightJoinConnectors(right, left);
+            }
+
+            return result;
+        }
+
+        let result = connectors.slice();
+
+        result.forEach((connector1) => {
+            result.forEach((connector2) => {
+                if (canBeJoined(connector1, connector2) && !_.contains((joinConnectors(connector1, connector2), result))) {
+                    result.push(joinConnectors(connector1, connector2));
+                }
+            });
+        });
+
+        result = result.filter((entry) => {
+            let is_unique = true;
+
+            result.forEach((another_entry) => {
+                if (another_entry.length > entry.length && isSubsequence(entry, another_entry)) {
+                    is_unique = false;
+                }
+            });
+
+            return is_unique;
+        });
+
+        return result;
+    },
     getSubunitsIds() {
-        return this.get('multiunit_subunits').slice();
+        return this.get('multiunit_subunits').map(subunit => subunit.get('unit_id') || subunit.get('unit_cid'));
     },
     getOriginSubunitId() {
-        return this.get('multiunit_subunits')[0];
+        const subunits = this.get('multiunit_subunits');
+        const has_single_subunit = subunits && subunits.length === 1;
+
+        if (has_single_subunit) {
+            return subunits.at(0).get('unit_id') || subunits.at(0).get('unit_cid');
+        }
+
+        const connections = this.getConnectors().map(connector => connector.connects);
+        const traversal_sequences = this.getSubunitsTraversalSequences(connections);
+        const has_same_origin = traversal_sequences.length && traversal_sequences.map(item => item[0])
+            .every((value, index, array) => (index === 0 || value === array[index - 1]));
+
+        return has_same_origin ? traversal_sequences[0][0] : undefined;
     },
     isOriginId(subunitId) {
         return (subunitId === this.getOriginSubunitId());
     },
-    getParentSubunitId(subunitId) {
-        if (this.isOriginId(subunitId)) { return; }
+    getParentSubunit(subunit) {
+        if (this.isOriginId(subunit.get('unit_id') || subunit.get('unit_cid'))) {
+            return undefined;
+        }
 
-        const parentConnectorId = this.getParentConnector(subunitId).id;
-        const parentSubunitId = this.getConnectorParentSubunitId(parentConnectorId);
+        const parentConnector = this.getParentConnector(subunit.get('unit_id') || subunit.get('unit_cid'));
+        const parentConnectorId = (parentConnector && parentConnector.id) || undefined;
+        const parentSubunitId = parentConnectorId && this.getConnectorParentSubunitId(parentConnectorId);
 
-        return parentSubunitId;
+        return (parentSubunitId && this.get('multiunit_subunits').getByUnitId(parentSubunitId)) || undefined;
     },
-    getChildSubunitsIds(subunitId) {
-        const self = this;
-        const childConnectors = this.getChildConnectors(subunitId);
-        const childSubunitsIds = childConnectors.map(connector => self.getConnectorChildSubunitId(connector.id));
+    getChildSubunits(subunit) {
+        const childConnectors = this.getChildConnectors(subunit.get('unit_id') || subunit.get('unit_cid'));
+        const childSubunitsIds = childConnectors.map(connector => this.getConnectorChildSubunitId(connector.id));
 
-        return childSubunitsIds;
+        return this.get('multiunit_subunits').filter(entry =>
+            _.contains(childSubunitsIds, entry.get('unit_id') || entry.get('unit_cid')),
+        );
     },
     /**
      * = Conceptual connector model:
@@ -725,9 +754,9 @@ export default Backbone.Model.extend({
      * = Example:
      * { id: '17', side: 'right', connects: ['123', '124'], width: 20, facewidth: 40 }
      */
-    validateConnectors(alternativeRoot) {
-        const self = this;
+    validateConnectors(alternativeRoot, subunitsList) {
         const rootSection = alternativeRoot || this.get('root_section');
+        const subunits = subunitsList || this.get('multiunit_subunits');
         const connectors = rootSection.connectors;
 
         if (!connectors) {
@@ -736,12 +765,14 @@ export default Backbone.Model.extend({
 
         rootSection.connectors.forEach((connector, index) => {
             const hasId = _.isNumber(parseInt(connector.id, 10));
-            const hasSide = (['top', 'right', 'bottom', 'left'].indexOf(connector.side) !== 0);
-            const hasConnects = (
+            const hasSide = (['top', 'right', 'bottom', 'left'].indexOf(connector.side) !== -1);
+            const parentSubunit = subunits.getByUnitId(connector.connects[0]);
+            const childSubunit = subunits.getByUnitId(connector.connects[1]);
+            const hasConnects = !!(
                 _.isArray(connector.connects) &&
                 connector.connects.length === 2 &&
-                self.getSubunitById(connector.connects[0]) &&
-                self.getSubunitById(connector.connects[1])
+                parentSubunit &&
+                childSubunit
             );
             const hasWidth = _.isNumber(connector.width);
             const hasFacewidth = _.isNumber(connector.facewidth);
@@ -761,9 +792,14 @@ export default Backbone.Model.extend({
             }
 
             if (!hasLength) {
-                connectors[index] = self.updateConnectorLength(connector);
+                connectors[index] = this.updateConnectorLength(
+                    connector,
+                    parentSubunit && parentSubunit.getUnit(),
+                    childSubunit && childSubunit.getUnit(),
+                );
             }
-        });
+        }, this);
+
         rootSection.connectors = _.without(rootSection.connectors, undefined);
 
         return rootSection;
@@ -775,10 +811,7 @@ export default Backbone.Model.extend({
         return _(this.getConnectors()).find(connector => connector.id === id);
     },
     getParentConnector(subunitId) {
-        const parentConnector = this.getConnectors()
-            .filter(connector => connector.connects[1] === subunitId)[0];
-
-        return parentConnector;
+        return this.getConnectors().find(connector => connector.connects[1] === subunitId);
     },
     getConnectedSides(subunitId) {
         const parentConnector = this.getParentConnector(subunitId);
@@ -816,16 +849,18 @@ export default Backbone.Model.extend({
         return childSubunitId;
     },
     addConnector(options) {
-        if (!(options && options.connects && options.side)) { return; }
+        if (!(options && options.connects && options.side)) {
+            return;
+        }
 
         const self = this;
-        const parentSubunit = this.getSubunitById(options.connects[0]);
+        const parentSubunit = this.getSubunitLinkedUnitById(options.connects[0]);
         const connectors = this.get('root_section').connectors;
-        let highestId = 0;
+        let newChildSubunit;
 
         const pushConnector = function () {
             const connector = {
-                id: highestId + 1,
+                id: _.uniqueId(),
                 connects: options.connects,
                 side: options.side,
                 width: options.width || CONNECTOR_DEFAULTS.width,
@@ -833,18 +868,12 @@ export default Backbone.Model.extend({
             };
 
             connectors.push(connector);
-            self.updateConnectorLength(connector);
+            self.updateConnectorLength(connector, parentSubunit, newChildSubunit);
 
             if (options.success) {
                 options.success();
             }
         };
-
-        let newChildSubunit;
-
-        highestId = connectors
-            .map(connector => connector.id)
-            .reduce((lastHighestId, currentId) => Math.max(currentId, lastHighestId), 0);
 
         if (!options.connects[1]) {
             newChildSubunit = new Unit();
@@ -863,25 +892,26 @@ export default Backbone.Model.extend({
             pushConnector();
         }
     },
-    removeConnector(id) {
+    removeConnector(connector) {
         const connectors = this.get('root_section').connectors;
-        let connector;
-
-        const connectorIndex = connectors.indexOf(this.getConnectorById(id));
+        const connectorIndex = connectors.indexOf(connector);
+        let removed_connector;
 
         if (connectorIndex !== -1) {
-            connector = connectors.splice(connectorIndex, 1)[0];
+            removed_connector = connectors.splice(connectorIndex, 1)[0];
         }
 
-        return connector;
+        return removed_connector;
     },
-    updateConnectorLength(connector) {
-        const parent = this.getSubunitById(connector.connects[0]);
-        const child = this.getSubunitById(connector.connects[1]);
+    updateConnectorLength(connector, parentSubunit, childSubunit) {
+        const parent = parentSubunit || this.getSubunitLinkedUnitById(connector.connects[0]);
+        const child = childSubunit || this.getSubunitLinkedUnitById(connector.connects[1]);
         let parentSide;
         let childSide;
 
-        if (!(parent && child)) { return; }
+        if (!(parent && child)) {
+            return;
+        }
 
         if (connector.side === 'top' || connector.side === 'bottom') {
             parentSide = parent.getInMetric('width', 'mm');
@@ -909,7 +939,7 @@ export default Backbone.Model.extend({
 
         return {
             model: this.pick(model_attributes_to_cache),
-            subunits: this.subunits.map(subunit => subunit.getDrawingRepresentation()),
+            subunits: this.get('multiunit_subunits').map(subunit => subunit.invokeOnUnit('getDrawingRepresentation')),
         };
     },
     //  TODO: this is identical to getPreview from Unit model so maybe

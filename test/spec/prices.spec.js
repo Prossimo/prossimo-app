@@ -165,7 +165,7 @@ test('Prices tests', () => {
 
         current_quote.multiunits.add([
             {
-                multiunit_subunits: [5, 18],
+                multiunit_subunits: [{ id: 5 }, { id: 18 }],
                 mark: 'A',
                 width: 68.78740,
                 height: 40,
@@ -1136,7 +1136,7 @@ test('Prices tests', () => {
 
         current_quote.multiunits.add([
             {
-                multiunit_subunits: [5, 18, 22],
+                multiunit_subunits: [{ id: 5 }, { id: 18 }, { id: 22 }],
                 mark: 'A',
                 width: 207.78740,
                 height: 169.53740,

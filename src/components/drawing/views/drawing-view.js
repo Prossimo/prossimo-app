@@ -386,7 +386,7 @@ export default Marionette.View.extend({
         } else if (relation === 'multiunit') {
             multiunit = this.model;
             modelId = this.module.getState('selected:subunit');
-        } else { return; }
+        }
 
         if (modelId && connectorSide) {
             multiunit.addConnector({
@@ -405,15 +405,15 @@ export default Marionette.View.extend({
         if (this.model.isSubunit()) {
             subunit = this.model;
         } else if (this.model.isMultiunit()) {
-            subunit = this.model.getSubunitById(this.module.getState('selected:subunit'));
+            subunit = this.model.getSubunitLinkedUnitById(this.module.getState('selected:subunit'));
         }
 
         if (!subunit) { return; }
 
         const multiunit = subunit.getParentMultiunit();
-        const subunitId = subunit.id;
 
-        multiunit.removeSubunit(subunitId);
+        multiunit.removeSubunit(subunit);
+        this.selectUnit(multiunit);
     },
     onRender() {
         this.changeIcons();
@@ -832,7 +832,7 @@ export default Marionette.View.extend({
             helpSquaresCheckerHandle: null,
         }, true);
     },
-    // Shows and hides various toolbar elements
+    // Here we hide or show various elements in toolbar
     updateUI() {
         const selectedSashId = this.state.selectedSashId;
         const selectedSash = (this.model.getSection) ? this.model.getSection(selectedSashId) : undefined;

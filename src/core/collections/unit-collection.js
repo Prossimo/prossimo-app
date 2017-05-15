@@ -8,14 +8,20 @@ export default Backbone.Collection.extend({
     model: Unit,
     reorder_property_name: 'units',
     url() {
+        const project_id = this.options.project && this.options.project.get('id');
+        const quote_id = this.options.quote && this.options.quote.get('id');
+
         return `${App.settings.get('api_base_path')
-            }/projects/${this.options.project.get('id')
-            }/quotes/${this.options.quote.get('id')}/units`;
+            }/projects/${project_id
+            }/quotes/${quote_id}/units`;
     },
     reorder_url() {
+        const project_id = this.options.project && this.options.project.get('id');
+        const quote_id = this.options.quote && this.options.quote.get('id');
+
         return `${App.settings.get('api_base_path')
-            }/projects/${this.options.project.get('id')
-            }/quotes/${this.options.quote.get('id')}/reorder_units`;
+            }/projects/${project_id
+            }/quotes/${quote_id}/reorder_units`;
     },
     initialize(models, options) {
         this.options = options || {};

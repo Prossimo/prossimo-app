@@ -956,10 +956,11 @@ const Unit = Backbone.Model.extend({
     //  belong to any collection gets the number of last multiunit + 1,
     //  the remaining normal units are numbered according to their position
     getRefNum() {
+        const parent_quote_multiunits = this.getParentQuoteMultiunits();
         let ref_num = -1;
 
         if (this.collection) {
-            if (this.collection.multiunits && this.collection.multiunits.length) {
+            if (parent_quote_multiunits && parent_quote_multiunits.length) {
                 if (this.isSubunit()) {
                     const parent_multiunit = this.getParentMultiunit();
 
@@ -3446,38 +3447,43 @@ const Unit = Backbone.Model.extend({
         return trapezoidHeights || convert.inches_to_mm(this.get('height'));
     },
     /* trapezoid end */
+    getParentQuoteMultiunits() {
+        const parent_quote = this.getParentQuote();
+
+        return parent_quote && parent_quote.multiunits;
+    },
     isMultiunit() {
         return false;
     },
-    isSubunit() {
-        const allSubunitIds = this.collection.multiunits.chain()
-            .map(multiunit => multiunit.getSubunitsIds())
-            .flatten()
-            .value();
-
-        return _.contains(allSubunitIds, this.id);
-    },
     getParentMultiunit() {
-        const subunitId = this.id;
-        const parentMultiunit = this.collection.multiunits.chain()
-            .find(multiunit => _.contains(multiunit.getSubunitsIds(), subunitId))
-            .value();
+        const parent_quote_multiunits = this.getParentQuoteMultiunits();
 
-        return parentMultiunit;
+        return parent_quote_multiunits && parent_quote_multiunits.getParentForSubunit(this);
+    },
+    isSubunit() {
+        const parent_quote_multiunits = this.getParentQuoteMultiunits();
+
+        return (parent_quote_multiunits && parent_quote_multiunits.isSubunit(this)) || false;
     },
     isSubunitOf(multiunit) {
-        const multiunitSubunitsIds = multiunit.getSubunitsIds();
-
-        return _.contains(multiunitSubunitsIds, this.id);
+        return (multiunit && multiunit.hasSubunit(this)) || false;
     },
     getRelation() {
         return this.isSubunit() ? 'subunit' : 'loneunit';
     },
     toMultiunit() {
-        const multiunit = new Multiunit(null, { subunits: [this] });
+        if (this.isSubunit()) {
+            throw new Error('This Unit cannot be converted to a new Multiunit, because it already belongs to one');
+        }
 
-        if (this.collection && this.collection.multiunits) {
-            this.collection.multiunits.add(multiunit);
+        const parent_quote_multiunits = this.getParentQuoteMultiunits();
+        const multiunit = new Multiunit(null, {
+            from_unit: this,
+            parse: true,
+        });
+
+        if (parent_quote_multiunits) {
+            parent_quote_multiunits.add(multiunit);
         }
 
         return multiunit;
