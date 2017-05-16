@@ -59,40 +59,56 @@ export default Marionette.View.extend({
         });
     },
     ui: {
+        $drawing_area: '#drawing-area',
+        $popup_wrap: '.popup-wrap',
         $flush_panels: '[data-type="flush-turn-right"], [data-type="flush-turn-left"]',
-        $title: '#drawing-view-title',
-        $bars_control: '#bars-control',
-        $section_control: '#section_control',
+        $drawing_view_title: '#drawing-view-title',
+        $drawing_controls: '#drawing-controls',
+        $section_controls: '#section-controls',
+        $sash_controls: '#sash-controls',
+        $section_split_controls: '#section-split-controls',
+        $bar_controls: '#bar-controls',
+        $filling_type_controls: '#filling-type-controls',
+        $arched_controls: '#arched-controls',
+        $add_arched: '#add-arched',
+        $remove_arched: '#remove-arched',
+        $circular_controls: '#circular-controls',
+        $add_circular: '#add-circular',
+        $remove_circular: '#remove-circular',
         $filling_select: '#filling-select',
-        $filling_tools: '#filling-tools',
+        $filling_tool_controls: '#filling-tool-controls',
         $filling_clone: '#filling-clone',
         $filling_sync: '#filling-sync',
-        $undo: '#undo',
-        $redo: '#redo',
         $sash_types: '.change-sash-type',
-        $metrics: '.additional-metrics',
+        $metric_controls: '.metric-controls',
         $metrics_glass: '[for="additional-metrics-glass"]',
         $metrics_glass_input: '#additional-metrics-glass',
         $metrics_opening: '[for="additional-metrics-opening"]',
         $metrics_opening_input: '#additional-metrics-opening',
         $hovering_drawing_controls: '#hovering-drawing-controls',
         $hovering_section_controls: '#hovering-section-controls',
+        $mullion_controls: '#mullion-controls',
+        $mullion_tool_controls: '#mullion-tool-controls',
+        $redistribute_all_mullions: '.redistribute-all-mullions',
+        $undo: '#undo',
+        $redo: '#redo',
     },
     events: {
         // Click
-        'click #drawing': 'handleCanvasClick',
+        'click @ui.$drawing_area': 'handleCanvasClick',
+        'contextmenu @ui.$drawing_area': 'handleCanvasClick',
         'click @ui.$hovering_section_controls': 'handleHoveringSectionControlsClickThrough',
         'click @ui.$hovering_section_controls .button': 'handleHoveringSectionControlsClick',  // Keep before button events
-        'contextmenu #drawing': 'handleCanvasClick',
         'click .split-section': 'handleSplitSectionClick',
         'click @ui.$sash_types': 'handleChangeSashTypeClick',
         'click #clear-frame': 'handleClearFrameClick',
         'click #change-view-button': 'handleChangeView',
-        'click .toggle-arched': 'handleArchedClick',
-        'click .toggle-circular': 'handleCircularClick',
+        'click @ui.$arched_controls': 'handleArchedClick',
+        'click @ui.$circular_controls': 'handleCircularClick',
         'click #glazing-bars-popup': 'handleGlazingBarsPopupClick',
         'click @ui.$filling_clone': 'handleFillingCloneClick',
         'click @ui.$filling_sync': 'handleFillingSyncClick',
+        'click @ui.$redistribute_all_mullions': 'handleRedistributeAllMullionsClick',
         'click @ui.$undo': 'handleUndoClick',
         'click @ui.$redo': 'handleRedoClick',
         // Tap
@@ -102,15 +118,16 @@ export default Marionette.View.extend({
         'tap @ui.$sash_types': 'handleChangeSashTypeClick',
         'tap #clear-frame': 'handleClearFrameClick',
         'tap #change-view-button': 'handleChangeView',
-        'tap .toggle-arched': 'handleArchedClick',
-        'tap .toggle-circular': 'handleCircularClick',
+        'tap @ui.$arched_controls': 'handleArchedClick',
+        'tap @ui.$circular_controls': 'handleCircularClick',
         'tap #glazing-bars-popup': 'handleGlazingBarsPopupClick',
         'tap @ui.$filling_clone': 'handleFillingCloneClick',
         'tap @ui.$filling_sync': 'handleFillingSyncClick',
+        'tap @ui.$redistribute_all_mullions': 'handleRedistributeAllMullionsClick',
         'tap @ui.$undo': 'handleUndoClick',
         'tap @ui.$redo': 'handleRedoClick',
         // Others
-        'keydown #drawing': 'handleCanvasKeyDown',
+        'keydown @ui.$drawing_area': 'handleCanvasKeyDown',
         'change #vertical-bars-number': 'handleBarNumberChange',
         'input #vertical-bars-number': 'handleBarNumberChange',
         'change #horizontal-bars-number': 'handleBarNumberChange',
@@ -252,16 +269,17 @@ export default Marionette.View.extend({
         this.model.clearFrame();
     },
     handleSplitSectionClick(e) {
-        this.$('.popup-wrap').hide();
+        this.ui.$popup_wrap.hide();
         const divider = $(e.target).data('type');
 
         this.model.splitSection(this.state.selectedSashId, divider);
+
         this.deselectAll();
         this.module.deselectAll();
         this.closeSectionHoverMenu();
     },
     handleChangeSashTypeClick(e) {
-        this.$('.popup-wrap').hide();
+        this.ui.$popup_wrap.hide();
         let type = $(e.target).data('type');
 
         // if Unit is Outward opening, reverse sash type
@@ -281,6 +299,15 @@ export default Marionette.View.extend({
 
         this.updateSection(this.state.selectedSashId, 'both');
         this.closeSectionHoverMenu();
+    },
+    handleRedistributeAllMullionsClick(event) {
+        this.ui.$popup_wrap.hide();
+        const axis = $(event.target).data('axis');
+
+        this.model.redistributeMullions('all', { axis });
+
+        this.deselectAll();
+        this.module.deselectAll();
     },
     handleObjectClick(id, e) {
         // select on left click only
@@ -310,7 +337,7 @@ export default Marionette.View.extend({
         this.changeIcons();
 
         this.stage = new Konva.Stage({
-            container: this.$('#drawing').get(0),
+            container: this.ui.$drawing_area.get(0),
         });
 
         this.layer = new Konva.Layer();
@@ -662,109 +689,93 @@ export default Marionette.View.extend({
     closeSectionHoverMenu() {
         this.toggleSectionHoverMenu(false);
     },
+    // Shows and hides various toolbar elements
     updateUI() {
-        // here we have to hide and should some elements in toolbar
-        const buttonText = this.isInsideView() ? 'Show outside view' : 'Show inside view';
-        const titleText = this.isInsideView() ? 'Inside view' : 'Outside view';
-
-        this.$('#change-view-button').text(buttonText);
-        this.ui.$title.text(titleText);
-
         const selectedSashId = this.state.selectedSashId;
         const selectedSash = this.model.getSection(selectedSashId);
         const isSashSelected = !!selectedSash;
-        const isLeafSash = selectedSash && selectedSash.sections.length === 0;
-        const hasFrame = selectedSash && selectedSash.sashType !== 'fixed_in_frame';
-        const isArched = selectedSash && selectedSash.arched;
-        const isCircular = selectedSash && selectedSash.circular;
+        const selectedMullionId = this.state.selectedMullionId;
+        const selectedMullion = this.model.getMullion(selectedMullionId);
+        const isMullionSelected = !!selectedMullion;
+        const isLeafSash = isSashSelected && selectedSash.sections.length === 0;
+        const hasFrame = isSashSelected && selectedSash.sashType !== 'fixed_in_frame';
+        const isArched = !!(isSashSelected && selectedSash.arched);
+        const isCircular = !!(isSashSelected && selectedSash.circular);
+        const selectedFillingType = isSashSelected && selectedSash.fillingName &&
+            App.settings && App.settings.filling_types.getByName(selectedSash.fillingName);
 
+        // View title
+        const buttonText = this.isInsideView() ? 'Show outside view' : 'Show inside view';
+        const titleText = this.isInsideView() ? 'Inside view' : 'Outside view';
+        this.$('#change-view-button').text(buttonText);
+        this.ui.$drawing_view_title.text(titleText);
+
+        // Mouse pointer
         if (this.module.isCloningFilling() || this.module.isSyncingFilling()) {
             document.body.style.cursor = 'copy';
         } else {
             document.body.style.cursor = 'auto';
         }
 
-        this.ui.$filling_tools.toggle(selectedSash && isLeafSash);
-
-        this.ui.$bars_control.toggle(
-            !isArched &&
-            selectedSash &&
-            selectedSash.fillingType === 'glass',
-        );
-
-        this.ui.$section_control.toggle(!!selectedSash);
-        if (isSashSelected) {
-            this.module.disableDelayedHover();
-        } else {
-            this.module.enableDelayedHover();
-        }
-
-        this.$('.sash-types').toggle(
-            !isArched &&
-            selectedSash &&
-            this.model.canAddSashToSection(selectedSashId),
-        );
-
-        this.$('.split').toggle(
-            !isArched,
-        );
-
-        const selectedFillingType = selectedSash && selectedSash.fillingName &&
-            App.settings && App.settings.filling_types.getByName(selectedSash.fillingName);
-
+        //
+        // Section controls
+        //
+        this.ui.$filling_tool_controls.toggle(isSashSelected && isLeafSash);
+        this.ui.$bar_controls.toggle(!isArched && isSashSelected && selectedSash.fillingType === 'glass');
+        this.ui.$section_controls.toggle(isSashSelected);
+        this.ui.$sash_controls.toggle(!isArched && isSashSelected && this.model.canAddSashToSection(selectedSashId));
+        this.ui.$section_split_controls.toggle(!isArched);
         if (selectedFillingType) {
             this.ui.$filling_select.val(selectedFillingType.cid);
         } else {
             this.ui.$filling_select.val('');
         }
-
         this.ui.$filling_select.selectpicker('render');
 
-        // Toggle arched controls
-        this.$('.toggle-arched').toggle(
-            selectedSash &&
-            this.model.isArchedPossible(selectedSashId),
-        );
-        this.$('.remove-arched').toggle(!!isArched && !isCircular);
-        this.$('.add-arched').toggle(!isArched && !isCircular);
+        // Arched controls
+        this.ui.$arched_controls.toggle(isSashSelected && this.model.isArchedPossible(selectedSashId));
+        this.ui.$remove_arched.toggle(isArched && !isCircular);
+        this.ui.$add_arched.toggle(!isArched && !isCircular);
 
-        // Toggle circular controls
-        this.$('.toggle-circular').toggle(
-            selectedSash &&
-            this.model.isCircularPossible(selectedSashId),
-        );
-        this.$('.remove-circular').toggle(!!isCircular && !isArched);
-        this.$('.add-circular').toggle(!isCircular && !isArched);
+        // Circular controls
+        this.ui.$circular_controls.toggle(isSashSelected && this.model.isCircularPossible(selectedSashId));
+        this.ui.$remove_circular.toggle(isCircular && !isArched);
+        this.ui.$add_circular.toggle(!isCircular && !isArched);
 
-        // Undo/Redo: Register buttons once!
-        if (!this.undo_manager.registered) {
+        // Undo/Redo buttons
+        if (!this.undo_manager.registered) {  // Register only once
             this.undo_manager.registerButton('undo', this.ui.$undo);
             this.undo_manager.registerButton('redo', this.ui.$redo);
             this.undo_manager.registered = true;
         }
 
         // Additional overlay metrics
-        if (selectedSash) {
+        if (isSashSelected) {
             this.ui.$metrics_glass_input.prop('checked', selectedSash.measurements.glass);
             this.ui.$metrics_opening_input.prop('checked', selectedSash.measurements.opening);
             this.ui.$metrics_glass.toggle(selectedSash.sections.length === 0);
             this.ui.$metrics_opening.toggle(hasFrame);
-            this.ui.$metrics.toggle(
+            this.ui.$metric_controls.toggle(
                 this.ui.$metrics_glass.is('[style!="display: none;"]') ||
                 this.ui.$metrics_opening.is('[style!="display: none;"]'),
             );
         }
+
+        //
+        // Mullion controls
+        //
+        this.ui.$mullion_controls.toggle(isMullionSelected);
     },
 
     updateSize(width, height) {
-        this.stage.width(width || this.$('#drawing').get(0).offsetWidth);
-        this.stage.height(height || this.$('#drawing').get(0).offsetHeight);
+        this.stage.width(width || this.ui.$drawing_area.get(0).offsetWidth);
+        this.stage.height(height || this.ui.$drawing_area.get(0).offsetHeight);
     },
 
     updateRenderedScene() {
         this.updateUI();
         this.updateSize();
-        this.$('#drawing').focus();
+        this.ui.$drawing_area.focus();
     },
     updateSection(sectionId, type) {
         const view = this;

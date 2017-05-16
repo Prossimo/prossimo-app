@@ -1,30 +1,32 @@
-<div class="drawing-controls">
+<div class="drawing-controls" id="drawing-controls">
+
     <button class="btn btn-xs" id="undo">Undo</button>
     <button class="btn btn-xs" id="redo">Redo</button>
     <button class="btn btn-xs" id="clear-frame">Clear frame</button>
     <button class="btn btn-xs" id="change-view-button">Show outside view</button>
-    <div id="drawing-view-title">Outside view</div>
+    <div class="drawing-view-title" id="drawing-view-title">Outside view</div>
 
-    <div id="section_control">
+    <div class="section-controls" id="section-controls">
 
-        <span class="toggle-arched">
-            <img class="add-arched button" src="/assets/img/add_arched_section.png"/>
-            <img class="remove-arched button" src="/assets/img/remove_arched_section.png"/>
+        <span class="arched-controls" id="arched-controls">
+            <img class="add-arched button" id="add-arched" src="/assets/img/add_arched_section.png"/>
+            <img class="remove-arched button" id="remove-arched" src="/assets/img/remove_arched_section.png"/>
         </span>
 
-        <span class="toggle-circular">
-            <img class="add-circular button" src="/assets/img/add_circular_section.png"/>
-            <img class="remove-circular button" src="/assets/img/remove_circular_section.png"/>
+        <span class="circular-controls" id="circular-controls">
+            <img class="add-circular button" id="add-circular" src="/assets/img/add_circular_section.png"/>
+            <img class="remove-circular button" id="remove-circular" src="/assets/img/remove_circular_section.png"/>
         </span>
 
-        <span class="split">
+        <span class="section-split-controls" id="section-split-controls">
             Split section:
-            <img class="split-section button" data-type="vertical" src="/assets/img/vertical_mullion.png"/>
-            <img class="split-section button" data-type="horizontal" src="/assets/img/horizontal_mullion.png"/>
-            <img class="split-section button" data-type="vertical_invisible" src="/assets/img/vertical_invisible_mullion.png"/>
-            <img class="split-section button" data-type="horizontal_invisible" src="/assets/img/horizontal_invisible_mullion.png"/>
+            <img class="split-section" data-type="vertical" src="/assets/img/vertical_mullion.png"/>
+            <img class="split-section" data-type="horizontal" src="/assets/img/horizontal_mullion.png"/>
+            <img class="split-section" data-type="vertical_invisible" src="/assets/img/vertical_invisible_mullion.png"/>
+            <img class="split-section" data-type="horizontal_invisible" src="/assets/img/horizontal_invisible_mullion.png"/>
         </span>
-        <span class="sash-types">
+
+        <span class="sash-controls" id="sash-controls">
             Section type:
             <img class="change-sash-type button" data-type="tilt_turn_right" src="/assets/img/tilt_turn_right.png"/>
             <img class="change-sash-type button" data-type="tilt_turn_left" src="/assets/img/tilt_turn_left.png"/>
@@ -34,21 +36,17 @@
             <img class="change-sash-type button" data-type="turn_only_right" src="/assets/img/turn_only_right.png"/>
             <img class="change-sash-type button" data-type="turn_only_left" src="/assets/img/turn_only_left.png"/>
             <img class="change-sash-type button" data-type="fixed_in_sash" src="/assets/img/fixed_in_sash.png"/>
-
             <img class="change-sash-type button" data-type="slide_left" src="/assets/img/sash_slide_left_1.png"/>
             <img class="change-sash-type button" data-type="slide_right" src="/assets/img/sash_slide_right_1.png"/>
-
             <img class="change-sash-type button" data-type="turn_only_left_hinge_hidden_latch" src="/assets/img/turn_only_left_hinge_hidden_latch.png"/>
             <img class="change-sash-type button" data-type="turn_only_right_hinge_hidden_latch" src="/assets/img/turn_only_right_hinge_hidden_latch.png"/>
-
             <img class="change-sash-type button" width="30" height="33" data-type="tilt_slide_left" src="/assets/img/tilt_slide_left_1.png"/>
             <img class="change-sash-type button" width="30" height="33" data-type="tilt_slide_right" src="/assets/img/tilt_slide_right_1.png"/>
-
         </span>
 
         <br class="drawing-ui-divider">
 
-        <span class="filling-type">
+        <span class="filling-type-controls" id="filling-type-controls">
             Filling:
             <select id="filling-select" class="selectpicker show-tick" title="Choose filling type" data-live-search="true">
             {{#each filling_types }}
@@ -57,40 +55,39 @@
             </select>
         </span>
 
-        <span id="bars-control" class="bars-control">
+        <span class="bar-controls" id="bar-controls">
             <button class="btn btn-xs" id="glazing-bars-popup">Set Glazing Bars</button>
         </span>
 
-        <span id="filling-tools" class="filling-tools">
+        <span class="filling-tool-controls" id="filling-tool-controls">
             <button class="btn btn-xs" id="filling-clone" title="Clone filling & bars from this sash to another">Clone</button>
             <button class="btn btn-xs" id="filling-sync" title="Align glazing in another sash to this sash">Sync</button>
         </span>
 
-        <span class="additional-metrics">
+        <span class="metric-controls" id="metric-controls">
             <br class="drawing-ui-divider">
             Show overlay metrics:
             <label for="additional-metrics-glass">
-                <input
-                    name="additional-metrics-glass"
-                    id="additional-metrics-glass"
-                    type="checkbox"
-                    value="1"
-                    class="radio"
-                >
+                <input class="radio" name="additional-metrics-glass" id="additional-metrics-glass" type="checkbox" value="1">
                 Glass size
             </label>
             <label for="additional-metrics-opening">
-                <input
-                    name="additional-metrics-opening"
-                    id="additional-metrics-opening"
-                    type="checkbox"
-                    value="1"
-                    class="radio"
-                >
+                <input class="radio" name="additional-metrics-opening" id="additional-metrics-opening" type="checkbox" value="1">
                 Vent Opn. Size
             </label>
         </span>
     </div>
+
+    <div class="mullion-controls" id="mullion-controls">
+
+        <span class="mullion-tool-controls" id="mullion-tool-controls">
+            All mullions:
+            <img class="redistribute-all-mullions" data-axis="horizontal" src="/assets/img/redistribute_all_mullions_horizontal.png">
+            <img class="redistribute-all-mullions" data-axis="vertical" src="/assets/img/redistribute_all_mullions_vertical.png">
+        </span>
+
+    </div>
+
 </div>
 
 <div class="hovering-drawing-controls" id="hovering-drawing-controls">
@@ -127,4 +124,4 @@
 
 </div>
 
-<div id="drawing" class="drawing-area" tabindex="0"></div>
+<div class="drawing-area" id="drawing-area" tabindex="0"></div>
