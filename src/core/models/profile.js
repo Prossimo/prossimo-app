@@ -43,7 +43,7 @@ const PROFILE_PROPERTIES = [
     { name: 'frame_u_value', title: 'Frame U Value', type: 'number' },
     { name: 'spacer_thermal_bridge_value', title: 'Spacer Thermal Bridge Value', type: 'number' },
     { name: 'position', title: 'Position', type: 'number' },
-    { name: 'depth', title: 'Depth', type: 'number' },
+    { name: 'depth', title: 'Depth (mm)', type: 'number' },
     { name: 'weight_per_length', title: 'Weight per Length (kg/m)', type: 'number' },
     { name: 'clear_width_deduction', title: 'Clear Width Deduction (mm)', type: 'number' },
     { name: 'pricing_scheme', title: 'Pricing Scheme', type: 'string' },
