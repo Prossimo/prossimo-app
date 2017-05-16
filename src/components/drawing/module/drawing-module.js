@@ -441,6 +441,12 @@ const DrawingModule = Marionette.Object.extend({
     },
     // Handler
     handleKeyEvents(event) {
+        if (event.key === 'Escape' && this.isCloningFilling()) {
+            this.cloneFillingDismiss();
+        } else if (event.key === 'Escape' && this.isSyncingFilling()) {
+            this.syncFillingDismiss();
+        }
+
         if (this.getState('isPreview') === false && this.layerManager) {
             this.layerManager.handleKeyEvents(event);
         }
@@ -501,6 +507,82 @@ const DrawingModule = Marionette.Object.extend({
         }
 
         this.stopListening();
+    },
+    cloneFillingStart(sourceSashId) {
+        const model = this.get('model');
+        const selectedSash = model.getSection(sourceSashId);
+        if (!selectedSash) { return; }
+
+        this.setState({
+            cloneFillingSource: {
+                bars: selectedSash.bars,
+                sashType: selectedSash.sashType,
+                fillingType: selectedSash.fillingType,
+                fillingName: selectedSash.fillingName,
+            },
+        });
+    },
+    cloneFillingFinish(targetSashId) {
+        if (!targetSashId || !this.isCloningFilling()) { return; }
+        const model = this.get('model');
+        const sourceBars = this.state.cloneFillingSource.bars;
+        const sourceSashType = this.state.cloneFillingSource.sashType;
+        const sourceFillingType = this.state.cloneFillingSource.fillingType;
+        const sourceFillingName = this.state.cloneFillingSource.fillingName;
+
+        if (sourceBars) { model.setSectionBars(targetSashId, sourceBars); }
+        if (sourceSashType) { model.setSectionSashType(targetSashId, sourceSashType); }
+        if (sourceFillingType && sourceFillingName) {
+            model.setFillingType(targetSashId, sourceFillingType, sourceFillingName);
+        }
+
+        this.cloneFillingDismiss();
+    },
+    cloneFillingDismiss() {
+        this.deselectAll();
+        this.setState({ cloneFillingSource: null });
+    },
+    isCloningFilling() {
+        return !!this.state.cloneFillingSource;
+    },
+    syncFillingStart(sourceSashId) {
+        const model = this.get('model');
+        const selectedSash = model.getSection(sourceSashId);
+        if (!selectedSash) { return; }
+
+        this.setState({ syncFillingSource: { id: sourceSashId, bars: selectedSash.bars } });
+    },
+    syncFillingFinish(targetSashId) {
+        if (!targetSashId || !this.isSyncingFilling()) { return; }
+        const model = this.get('model');
+        const sourceSashId = this.state.syncFillingSource.id;
+        const sourceBars = this.state.syncFillingSource.bars;
+        const emptyBars = { horizontal: [], vertical: [] };
+        const hasSourceBars = model.hasSectionBars(sourceSashId);
+        let hasTargetBars = model.hasSectionBars(targetSashId);
+
+        // Copy or erase bars as necessary
+        if (hasSourceBars && !hasTargetBars) {
+            model.setSectionBars(targetSashId, sourceBars);
+            hasTargetBars = true;
+        } else if (!hasSourceBars && hasTargetBars) {
+            model.setSectionBars(targetSashId, emptyBars);
+            hasTargetBars = false;
+        }
+
+        // Adjust bar positions
+        if (hasSourceBars && hasTargetBars) {
+            model.adjustBars(targetSashId, { referenceSectionId: sourceSashId, flipBarsX: !this.state.insideView });
+        }
+
+        this.syncFillingDismiss();
+    },
+    syncFillingDismiss() {
+        this.deselectAll();
+        this.setState({ syncFillingSource: null });
+    },
+    isSyncingFilling() {
+        return !!this.state.syncFillingSource;
     },
     enableDelayedHover() {
         this.setState('delayedHoverDisabled', false, true);
