@@ -119,20 +119,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
 if (module.hot) {
     module.hot.accept('./dialogs', () => {
-        const _Dialogs = require('./dialogs').default;// eslint-disable-line global-require
+        const _Dialogs = require('./dialogs').default;  // eslint-disable-line global-require
         let _oldDialog;
+
         if (App.dialogs) {
             if (App.dialogs.currentView && App.dialogs.currentView.dialog_name) {
                 _oldDialog = App.dialogs.currentView;
                 App.dialogs.close();
             }
+
             App.dialogs = new _Dialogs();
+
             if (_oldDialog) {
                 App.dialogs.showDialog(_oldDialog.dialog_name, _oldDialog.options);
             }
         }
     });
-    module.hot.accept();
 }
 
 export default App;
