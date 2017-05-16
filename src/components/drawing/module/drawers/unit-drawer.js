@@ -5,7 +5,7 @@ import Konva from '../konva-clip-patch';
 import { geometry, vector2d, array } from '../../../../utils';
 import handle_data from '../../data/handle-data';
 
-const INDEX_HOVERPAD_SIZE = 50;
+const INDEX_HOVERPAD_SIZE = 15;
 
 let module;
 let model;
