@@ -1368,10 +1368,52 @@ const Unit = Backbone.Model.extend({
             .map(id => this.getMullion(id))
             .filter(mullion => _.contains(fitMullionTypes, mullion.type))
             .sort((mullion1, mullion2) => mullion1.position - mullion2.position);
-        const gapCount = mullions.length + 1;
+
+        // Algorithm for redistributing mullions, for mullions relevant to this axis:
+        // (If several mullions' positions match, the first is "reference", others are "locked" to it by index.)
+        // 1. Split the list of mullions into locked and non-locked mullions, assigning reference indices in the process.
+        // 2. Calculate required number and size of gaps.
+        // 3. Assign new position to each non-locked mullion, mirroring to respective locked mullions, if any.
+        const lockedMullionsTable = {};
+        let lastReferenceMullionBox = {};
+        const nonlockedMullions = mullions
+            .filter((mullion, index) => {
+                const prevIndex = index - 1;
+                const prevMullion = mullions[index - 1];
+                const prePrevMullion = mullions[index - 2];
+                const isLocked = prevMullion && (mullion.position === prevMullion.position);
+                let doRemove = false;
+                const updateLastReferenceMullion = () => {
+                    if (prevMullion.position === prePrevMullion.position) { return; }
+                    lastReferenceMullionBox = { mullion: prevMullion, index: prevIndex };
+                };
+                const moveToLockedTable = () => {
+                    lockedMullionsTable[lastReferenceMullionBox.index] = lockedMullionsTable[lastReferenceMullionBox.index] || [];
+                    lockedMullionsTable[lastReferenceMullionBox.index].push(mullion);
+                    doRemove = true;
+                };
+
+                if (isLocked) {
+                    updateLastReferenceMullion();
+                    moveToLockedTable();
+                }
+
+                return !doRemove;
+            });
+
+        const gapCount = nonlockedMullions.length + 1;
         const newStep = dimensionLength / gapCount;
-        mullions.forEach((mullion, index) => {
-            this.setSectionMullionPosition(mullion.id, newStep * (index + 1));
+        const moveLockedMullions = (index, mullionPosition) => {
+            if (!lockedMullionsTable[index] || !lockedMullionsTable[index].length) { return; }
+            lockedMullionsTable[index].forEach((lockedMullion) => {
+                this.setSectionMullionPosition(lockedMullion.id, mullionPosition);
+            });
+        };
+
+        nonlockedMullions.forEach((mullion, index) => {
+            const mullionPosition = newStep * (index + 1);
+            this.setSectionMullionPosition(mullion.id, mullionPosition);
+            moveLockedMullions(index, mullionPosition);
         });
     },
     // @TODO: Add method, that checks for correct values of measurement data
