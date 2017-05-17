@@ -9,6 +9,7 @@ import UnitOptionCollection from '../collections/inline/unit-option-collection';
 import { globalChannel } from '../../utils/radio';
 
 const UNSET_VALUE = '--';
+const REDISTRIBUTE_MULLIONS_PRECISION = 0;
 
 const PRICING_SCHEME_NONE = constants.PRICING_SCHEME_NONE;
 const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
@@ -1361,6 +1362,7 @@ const Unit = Backbone.Model.extend({
     redistributeMullions(mullionIds, options) {
         if (!(mullionIds && mullionIds.length) || mullionIds === 'all') { mullionIds = _.pluck(this.getMullions(), 'id'); }
         const axis = options && options.axis;
+        const precision = REDISTRIBUTE_MULLIONS_PRECISION;
 
         const fitMullionTypes = (axis === 'vertical') ? ['horizontal', 'horizontal_invisible'] : ['vertical', 'vertical_invisible'];
         const dimensionLength = (axis === 'vertical') ? this.getHeightMM() : this.getWidthMM();
@@ -1381,10 +1383,10 @@ const Unit = Backbone.Model.extend({
                 const prevIndex = index - 1;
                 const prevMullion = mullions[index - 1];
                 const prePrevMullion = mullions[index - 2];
-                const isLocked = prevMullion && (mullion.position === prevMullion.position);
+                const isLocked = prevMullion && (mullion.position.toFixed(precision) === prevMullion.position.toFixed(precision));
                 let doRemove = false;
                 const updateLastReferenceMullion = () => {
-                    if (prevMullion.position === prePrevMullion.position) { return; }
+                    if (prevMullion.position.toFixed(precision) === prePrevMullion.position.toFixed(precision)) { return; }
                     lastReferenceMullionBox = { mullion: prevMullion, index: prevIndex };
                 };
                 const moveToLockedTable = () => {
@@ -1397,7 +1399,6 @@ const Unit = Backbone.Model.extend({
                     updateLastReferenceMullion();
                     moveToLockedTable();
                 }
-
                 return !doRemove;
             });
 
