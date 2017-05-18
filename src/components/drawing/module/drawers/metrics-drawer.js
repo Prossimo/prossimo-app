@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
+import clone from 'clone';
 import Konva from '../konva-clip-patch';
 
 import { format, convert } from '../../../../utils';
@@ -830,7 +831,7 @@ export default Backbone.KonvaView.extend({
                 width,
                 height,
             });
-            const controlPosition = _.clone(origPosition);
+            const controlPosition = clone(origPosition);
             let correction = 0;
 
             // Correcting position of controls
