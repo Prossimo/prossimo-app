@@ -11,7 +11,6 @@ import { globalChannel } from '../../utils/radio';
 
 const UNSET_VALUE = '--';
 const REDISTRIBUTE_BARS_PRECISION = 0;
-const REDISTRIBUTE_MULLIONS_PRECISION = 0;
 
 const PRICING_SCHEME_NONE = constants.PRICING_SCHEME_NONE;
 const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
@@ -1626,65 +1625,6 @@ const Unit = Backbone.Model.extend({
         });
 
         return redistributedBars;
-    },
-    redistributeMullions(mullionIds, options) {
-        if (!(mullionIds && mullionIds.length) || mullionIds === 'all') { mullionIds = _.pluck(this.getMullions(), 'id'); }
-        const axis = options && options.axis;
-        const precision = REDISTRIBUTE_MULLIONS_PRECISION;
-
-        const fitMullionTypes = (axis === 'vertical') ? ['horizontal', 'horizontal_invisible'] : ['vertical', 'vertical_invisible'];
-        const dimensionLength = (axis === 'vertical') ? this.getHeightMM() : this.getWidthMM();
-        const mullions = mullionIds
-            .map(id => this.getMullion(id))
-            .filter(mullion => _.contains(fitMullionTypes, mullion.type))
-            .sort((mullion1, mullion2) => mullion1.position - mullion2.position);
-
-        // Algorithm for redistributing mullions, for mullions relevant to this axis:
-        // (If several mullions' positions match, the first is "reference", others are "locked" to it by id.)
-        // 1. Split the list of mullions into locked and non-locked mullions, assigning reference indices in the process.
-        // 2. Calculate required number and size of gaps.
-        // 3. Assign new position to each non-locked mullion, mirroring to respective locked mullions, if any.
-        const lockedMullionsTable = {};
-        let lastReferenceMullion = {};
-        const nonlockedMullions = mullions
-            .filter((mullion, index) => {
-                const prevMullion = mullions[index - 1];
-                const prePrevMullion = mullions[index - 2];
-                const isLocked = prevMullion && (mullion.position.toFixed(precision) === prevMullion.position.toFixed(precision));
-                let doRemove = false;
-                const updateLastReferenceMullion = () => {
-                    const prevMullionPosition = prevMullion && prevMullion.position.toFixed(precision);
-                    const prePrevMullionPosition = prePrevMullion && prePrevMullion.position.toFixed(precision);
-                    if (prevMullionPosition && prePrevMullionPosition && (prevMullionPosition === prePrevMullionPosition)) { return; }
-                    lastReferenceMullion = prevMullion;
-                };
-                const moveToLockedTable = () => {
-                    lockedMullionsTable[lastReferenceMullion.id] = lockedMullionsTable[lastReferenceMullion.id] || [];
-                    lockedMullionsTable[lastReferenceMullion.id].push(mullion);
-                    doRemove = true;
-                };
-
-                if (isLocked) {
-                    updateLastReferenceMullion();
-                    moveToLockedTable();
-                }
-                return !doRemove;
-            });
-
-        const gapCount = nonlockedMullions.length + 1;
-        const newStep = dimensionLength / gapCount;
-        const moveLockedMullions = (id, mullionPosition) => {
-            if (!lockedMullionsTable[id] || !lockedMullionsTable[id].length) { return; }
-            lockedMullionsTable[id].forEach((lockedMullion) => {
-                this.setSectionMullionPosition(lockedMullion.id, mullionPosition);
-            });
-        };
-
-        nonlockedMullions.forEach((mullion, index) => {
-            const mullionPosition = newStep * (index + 1);
-            this.setSectionMullionPosition(mullion.id, mullionPosition);
-            moveLockedMullions(mullion.id, mullionPosition);
-        });
     },
     // @TODO: Add method, that checks for correct values of measurement data
     // @TODO: Add method, that drops measurement data to default

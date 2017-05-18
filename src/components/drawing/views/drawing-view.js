@@ -87,9 +87,6 @@ export default Marionette.View.extend({
         $metrics_opening_input: '#additional-metrics-opening',
         $hovering_drawing_controls: '#hovering-drawing-controls',
         $hovering_section_controls: '#hovering-section-controls',
-        $mullion_controls: '#mullion-controls',
-        $mullion_tool_controls: '#mullion-tool-controls',
-        $redistribute_all_mullions: '.redistribute-all-mullions',
         $undo: '#undo',
         $redo: '#redo',
     },
@@ -108,7 +105,6 @@ export default Marionette.View.extend({
         'click #glazing-bars-popup': 'handleGlazingBarsPopupClick',
         'click @ui.$filling_clone': 'handleFillingCloneClick',
         'click @ui.$filling_sync': 'handleFillingSyncClick',
-        'click @ui.$redistribute_all_mullions': 'handleRedistributeAllMullionsClick',
         'click @ui.$undo': 'handleUndoClick',
         'click @ui.$redo': 'handleRedoClick',
         // Tap
@@ -123,7 +119,6 @@ export default Marionette.View.extend({
         'tap #glazing-bars-popup': 'handleGlazingBarsPopupClick',
         'tap @ui.$filling_clone': 'handleFillingCloneClick',
         'tap @ui.$filling_sync': 'handleFillingSyncClick',
-        'tap @ui.$redistribute_all_mullions': 'handleRedistributeAllMullionsClick',
         'tap @ui.$undo': 'handleUndoClick',
         'tap @ui.$redo': 'handleRedoClick',
         // Others
@@ -299,15 +294,6 @@ export default Marionette.View.extend({
 
         this.updateSection(this.state.selectedSashId, 'both');
         this.closeSectionHoverMenu();
-    },
-    handleRedistributeAllMullionsClick(event) {
-        this.ui.$popup_wrap.hide();
-        const axis = $(event.target).data('axis');
-
-        this.model.redistributeMullions('all', { axis });
-
-        this.deselectAll();
-        this.module.deselectAll();
     },
     handleObjectClick(id, e) {
         // select on left click only
@@ -704,9 +690,6 @@ export default Marionette.View.extend({
         const selectedSashId = this.state.selectedSashId;
         const selectedSash = this.model.getSection(selectedSashId);
         const isSashSelected = !!selectedSash;
-        const selectedMullionId = this.state.selectedMullionId;
-        const selectedMullion = this.model.getMullion(selectedMullionId);
-        const isMullionSelected = !!selectedMullion;
         const isLeafSash = isSashSelected && selectedSash.sections.length === 0;
         const hasFrame = isSashSelected && selectedSash.sashType !== 'fixed_in_frame';
         const isArched = !!(isSashSelected && selectedSash.arched);
@@ -770,11 +753,6 @@ export default Marionette.View.extend({
                 this.ui.$metrics_opening.is('[style!="display: none;"]'),
             );
         }
-
-        //
-        // Mullion controls
-        //
-        this.ui.$mullion_controls.toggle(isMullionSelected);
     },
 
     updateSize(width, height) {
