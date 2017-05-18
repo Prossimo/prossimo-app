@@ -1,5 +1,6 @@
 import UndoManager from 'backbone-undo';
 import _ from 'underscore';
+import clone from 'clone';
 
 export default function (opts) {
     const undo_manager = new UndoManager(opts);
@@ -65,7 +66,7 @@ export default function (opts) {
                 object: collection,
                 before: undefined,
                 after: model,
-                options: _.clone(options),
+                options: clone(options),
             };
         },
     });
@@ -137,7 +138,7 @@ export default function (opts) {
                     object: model,
                     before: previousAttributes,
                     after: afterAttributes,
-                    options: _.clone(options),
+                    options: clone(options),
                 };
             }
         },
@@ -171,7 +172,7 @@ export default function (opts) {
                 object: collection,
                 before: model,
                 after: undefined,
-                options: _.clone(options),
+                options: clone(options),
             };
         },
     });

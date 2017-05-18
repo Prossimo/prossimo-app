@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
+import clone from 'clone';
 
 import App from '../../main';
 import Schema from '../../schema';
@@ -9,6 +10,7 @@ import UnitOptionCollection from '../collections/inline/unit-option-collection';
 import { globalChannel } from '../../utils/radio';
 
 const UNSET_VALUE = '--';
+const REDISTRIBUTE_BARS_PRECISION = 0;
 const REDISTRIBUTE_MULLIONS_PRECISION = 0;
 
 const PRICING_SCHEME_NONE = constants.PRICING_SCHEME_NONE;
@@ -167,6 +169,229 @@ function getSectionDefaults(section_type, default_glazing_name, profile_id) {
         bars: getDefaultBars(),
         measurements: getDefaultMeasurements(isRootSection),
     };
+}
+
+function getBarsGaps(bars, options) {
+    if (!bars || !bars.length) { return []; }
+    const axisLength = options && options.axisLength;
+
+    const lastBar = _.last(bars);
+    const gaps = bars.map((bar, index) => {
+        const previousPosition = (index === 0) ? 0 : bars[index - 1].position;
+        return bar.position - previousPosition;
+    });
+    if (axisLength) {
+        gaps.push(axisLength - lastBar.position);
+    }
+
+    return gaps;
+}
+
+function isBarsUniform(bars, options) {
+    const axisLength = options && options.axisLength;
+    const precision = (options && _.isNumber(options.precision)) ? options.precision : 0;
+
+    const gaps = getBarsGaps(bars, { axisLength });
+    const isUniform = gaps.reduce((isStillUniform, gap, index) => {
+        const previousGap = (index === 0) ? 0 : gaps[index - 1];
+        return isStillUniform && (gap.toFixed(precision) === previousGap.toFixed(precision));
+    });
+
+    return isUniform;
+}
+
+function isEqualBars(bars1, bars2, options) {
+    const precision = (options && _.isNumber(options.precision)) ? options.precision : 0;
+
+    let isEqual;
+    // Compare bar arrays
+    if (_.isArray(bars1) && _.isArray(bars2)) {
+        isEqual = bars1.every((bar1, index) => isEqualBars(bar1, bars2[index], { precision }));
+    // Compare individual bars
+    } else if (_.isObject(bars1) && _.isObject(bars2)) {
+        const [bar1, bar2] = [bars1, bars2];
+        const isEqualPositions = bar1.position.toFixed(precision) === bar2.position.toFixed(precision);
+        const isEqualShapes = _.isEqual(bar1.links, bar2.links);
+        isEqual = isEqualPositions && isEqualShapes;
+    // Ignore unidentified glazing objects
+    } else {
+        isEqual = false;
+    }
+
+    return isEqual;
+}
+
+function scaleBars(bars, options) {
+    bars = clone(bars);
+    const factor = options && options.factor;
+    if (!factor || factor === 1) { return bars; }
+
+    const oldStep = bars[0].position;
+    const newStep = oldStep * factor;
+    const newBars = bars.map((bar, index) => {
+        const cloned_bar = clone(bar);
+        cloned_bar.position = newStep * (index + 1);
+        return cloned_bar;
+    });
+
+    return newBars;
+}
+
+function mirrorBars(bars, options) {
+    bars = clone(bars);
+    const axisLength = options && options.axisLength;
+    if (!axisLength) { return bars; }
+
+    const newBars = bars.reverse();
+    newBars.forEach((bar) => {
+        bar.position = axisLength - bar.position;
+    });
+
+    return newBars;
+}
+
+function offsetBars(bars, options) {
+    bars = clone(bars);
+    const offset = options && options.offset;
+    if (!offset) { return bars; }
+
+    const newBars = bars;
+    newBars.forEach((bar) => {
+        bar.position += offset;
+    });
+
+    return newBars;
+}
+
+function positionBars(bars, options) {
+    bars = clone(bars);
+    if (!bars || !bars.length) { return bars; }
+    const align = options && options.align;
+    const marginStart = options && options.marginStart;
+    const marginEnd = options && options.marginEnd;
+    const axisLength = options && options.axisLength;
+
+    const doAlignCenter = (align === 'center') && axisLength;
+    const doAlignStart = (align === 'start') && _.isNumber(marginStart);
+    const doAlignEnd = (align === 'end') && _.isNumber(marginEnd);
+    let offset;
+    let firstGap;
+    let lastGap;
+
+    if (doAlignCenter) {
+        const barGroupLength = _.last(bars).position - _.first(bars).position;
+        firstGap = _.first(getBarsGaps(bars, { axisLength }));
+        const centeredMarginStart = (axisLength - barGroupLength) / 2;
+        offset = centeredMarginStart - firstGap;
+    } else if (doAlignStart) {
+        firstGap = _.first(getBarsGaps(bars, { axisLength }));
+        offset = marginStart - firstGap;
+    } else if (doAlignEnd) {
+        lastGap = _.last(getBarsGaps(bars, { axisLength }));
+        offset = lastGap - marginEnd;
+    } else {
+        offset = 0;
+    }
+
+    const positionedBars = offsetBars(bars, { offset });
+
+    return positionedBars;
+}
+
+function splitBars(bars, options) {
+    bars = clone(bars);
+    const position = options && options.position;
+    const gapIndex = options && options.gapIndex;
+
+    let firstHalf;
+    let secondHalf;
+
+    // Split at position (floating point value)
+    if (position) {
+        firstHalf = bars.filter(bar => bar.position < position);
+        secondHalf = bars.filter(bar => bar.position > position);
+        const centralBar = bars.filter(bar => bar.position === position)[0];
+        if (centralBar) {
+            firstHalf.push(clone(centralBar));
+            secondHalf.splice(0, 0, clone(centralBar));
+        }
+        secondHalf.forEach((bar) => {
+            bar.position -= position;
+        });
+    // Split at gap (gap index integer)
+    } else if (_.isNumber(gapIndex)) {
+        firstHalf = bars.filter((bar, index) => index < gapIndex);
+        secondHalf = bars.filter((bar, index) => index >= gapIndex);
+    // Simulate splitting
+    } else {
+        firstHalf = bars;
+        secondHalf = [];
+    }
+
+    return [firstHalf, secondHalf];
+}
+
+function splitBarsAtLargestGap(bars, options) {
+    bars = clone(bars);
+    if (bars.length <= 1) { return [bars, []]; }
+    const axisLength = options && options.axisLength;
+
+    const gaps = getBarsGaps(bars, { axisLength });
+    const largestGapIndex = gaps.reduce(([largestGap, largestGapInd], gap, index) => {
+        const largestGapTuple = (gap >= largestGap) ? [gap, index] : [largestGap, largestGapInd];
+        return largestGapTuple;
+    }, [0, 0])[1];
+
+    return splitBars(bars, { gapIndex: largestGapIndex });
+}
+
+function mergeBars(bars1, bars2, options) {
+    bars1 = clone(bars1);
+    bars2 = clone(bars2);
+    if (!bars1 || !bars2) { return bars1; }
+    if (!bars1.length) { return bars2; }
+    if (!bars2.length) { return bars1; }
+    const doOffsetBars = (options && !_.isUndefined(options.offsetBars)) ? options.offsetBars : true;
+    const bars1AxisLength = (options && options.bars1AxisLength) || _.last(bars1).position;
+    const precision = (options && _.isNumber(options.precision)) ? options.precision : 0;
+
+    if (doOffsetBars) {
+        bars2 = offsetBars(bars2, { offset: bars1AxisLength });
+    }
+    const mergedBars = bars1.concat(bars2);
+    const deduplicatedBars = mergedBars.filter((bar, index) => {
+        const nextBar = mergedBars[index + 1];
+        return bar.position.toFixed(precision) !== (nextBar && nextBar.position.toFixed(precision));
+    });
+
+    return deduplicatedBars;
+}
+
+function getCentralBars(bars, options) {
+    bars = clone(bars);
+    const axisLength = options && options.axisLength;
+    if (!axisLength) { return []; }
+    const precision = (options && _.isNumber(options.precision)) ? options.precision : 0;
+
+    // Algorithm for extracting central bar group (assuming bars are non-uniform):
+    // 1. Cut axis bars in half in the middle
+    // 2. Mirror one half and compare
+    // 3. If halves are equal, split both along largest gaps
+    // 4. Take the relevant pieces of split halves and reconstitute a single central part from them
+
+    const halfLength = axisLength / 2;
+    const [firstHalf, secondHalf] = splitBars(bars, { position: halfLength });
+    const mirroredSecondHalf = mirrorBars(secondHalf, { axisLength: halfLength });
+    const isSymmetrical = isEqualBars(firstHalf, mirroredSecondHalf, { precision });
+    if (!isSymmetrical) { return []; }
+
+    const firstHalfTail = splitBarsAtLargestGap(firstHalf, { axisLength: halfLength })[1];
+    const secondHalfHead = splitBarsAtLargestGap(secondHalf, { axisLength: halfLength })[0];
+    if (!firstHalfTail.length || !secondHalfHead.length) { return []; }
+
+    const centralBars = mergeBars(firstHalfTail, secondHalfHead, { bars1AxisLength: halfLength, precision });
+
+    return centralBars;
 }
 
 function getInvertedDivider(type) {
@@ -1044,18 +1269,20 @@ const Unit = Backbone.Model.extend({
         return string;
     },
     _updateSection(sectionId, func) {
-        // HAH, dirty deep clone, rewrite when you have good mood for it
-        // we have to make deep clone and backbone will trigger change event
-        const rootSection = JSON.parse(JSON.stringify(this.get('root_section')));
-        const sectionToUpdate = findSection(rootSection, sectionId);
-
+        const oldRoot = this.generateFullRoot();
+        const newRoot = clone(this.get('root_section'));
+        const sectionToUpdate = findSection(newRoot, sectionId);
         func(sectionToUpdate);
 
-        this.persist('root_section', rootSection);
+        this.getResizedSections(oldRoot, this.generateFullRoot(newRoot)).forEach((sash) => {
+            const section = findSection(newRoot, sash.id);
+            const oldSection = findSection(oldRoot, sash.id);
+            section.bars = this.redistributeBars(section, { oldSection });
+        });
+        this.persist('root_section', newRoot);
     },
     setCircular(sectionId, opts) {
-        //  Deep clone, same as above
-        const root_section = JSON.parse(JSON.stringify(this.get('root_section')));
+        const root_section = clone(this.get('root_section'));
         const section = findSection(root_section, sectionId);
         const update_data = {};
 
@@ -1265,7 +1492,7 @@ const Unit = Backbone.Model.extend({
         const adjustGeometry = adjustSection.glassParams;
         const referenceGeometry = referenceSection.glassParams;
         const flipBarsX = function (bars, sectionWidth) {
-            bars = _.clone(bars);
+            bars = clone(bars);
             bars.vertical.reverse();
             bars.vertical.forEach((bar) => {
                 bar.position = sectionWidth - bar.position;
@@ -1346,18 +1573,59 @@ const Unit = Backbone.Model.extend({
         const hasBars = bars && (bars.horizontal.length !== 0 || bars.vertical.length !== 0);
 
         if (hasBars && options.x) {
-            bars.vertical.forEach((bar) => {
-                bar.position += options.x;
-            });
+            bars.vertical = offsetBars(bars.vertical, { offset: options.x });
         }
 
         if (hasBars && options.y) {
-            bars.horizontal.forEach((bar) => {
-                bar.position += options.y;
-            });
+            bars.horizontal = offsetBars(bars.horizontal, { offset: options.y });
         }
 
         this.setSectionBars(sectionId, bars);
+    },
+    redistributeBars(section, options) {
+        const oldSection = options && options.oldSection;
+        if (!oldSection) { return; }
+        const axes = (options && options.axes) ? options.axes : ['vertical', 'horizontal'];
+        const bars = clone(section.bars);
+        const precision = REDISTRIBUTE_BARS_PRECISION;
+
+        // Algorithm for redistributing bars, for each of 2 axes:
+        // 1. If existing bar distribution is uniform along this axis, redistribute bars proportionately
+        // 2. If non-uniform, extract central, left/top, right/bottom bar groups and keep them aligned in their places:
+        //     2.1. Extract the central bar group and align to center
+        //     2.2. Split the rest after extracting central group into left/top and right/bottom, align to respective sides
+        //     2.3. Reconstitute whole bar axis from the above parts
+
+        const redistributedBars = clone(section.bars);
+        axes.forEach((axis) => {
+            const barType = (axis === 'vertical') ? 'horizontal' : 'vertical';
+            const dimension = (axis === 'vertical') ? 'height' : 'width';
+            if (!this.hasSectionBars(section.id, { types: barType })) { return; }
+            if (section.glassParams[dimension] === oldSection.glassParams[dimension]) { return; }
+            const axisBars = bars[barType];
+            const axisLength = oldSection.glassParams[dimension];
+            const newAxisLength = section.glassParams[dimension];
+            const scalingFactor = newAxisLength / axisLength;
+
+            if (isBarsUniform(axisBars, { axisLength, precision })) {
+                redistributedBars[barType] = scaleBars(axisBars, { factor: scalingFactor });
+            } else {
+                const centralBars = getCentralBars(axisBars, { axisLength, precision });
+                const withoutCentral = axisBars.filter((bar) => {
+                    const isCentralBar = centralBars.some(centralBar => isEqualBars(centralBar, bar, { precision }));
+                    return !isCentralBar;
+                });
+                const [headBars, tailBars] = splitBarsAtLargestGap(withoutCentral, { axisLength });
+                const tailEndGap = _.last(getBarsGaps(tailBars, { axisLength }));
+
+                const alignedCentralBars = positionBars(centralBars, { align: 'center', axisLength: newAxisLength });
+                const alignedTailBars = positionBars(tailBars, { align: 'end', marginEnd: tailEndGap, axisLength: newAxisLength });
+                const alignedheadAndCenter = mergeBars(headBars, alignedCentralBars, { offsetBars: false, precision });
+                redistributedBars[barType] = mergeBars(alignedheadAndCenter, alignedTailBars, { offsetBars: false, precision });
+            }
+        });
+
+        return redistributedBars;
     },
     redistributeMullions(mullionIds, options) {
         if (!(mullionIds && mullionIds.length) || mullionIds === 'all') { mullionIds = _.pluck(this.getMullions(), 'id'); }
@@ -1545,7 +1813,7 @@ const Unit = Backbone.Model.extend({
     //     }]
     // }
     generateFullRoot(rootSection, openingParams) {
-        rootSection = rootSection || JSON.parse(JSON.stringify(this.get('root_section')));
+        rootSection = rootSection || clone(this.get('root_section'));
         let defaultParams = {
             x: 0,
             y: 0,
@@ -1701,7 +1969,7 @@ const Unit = Backbone.Model.extend({
             };
 
             // Set section data & glass sizes
-            sectionData.mullionEdges = _.clone(rootSection.mullionEdges);
+            sectionData.mullionEdges = clone(rootSection.mullionEdges);
             sectionData.thresholdEdge = rootSection.thresholdEdge;
             sectionData.parentId = rootSection.id;
             sectionParams.x = openingParams.x;
@@ -1876,7 +2144,8 @@ const Unit = Backbone.Model.extend({
     },
     //  Inches by default, mm optional
     updateDimension(attr, val, metric) {
-        const rootSection = this.get('root_section');
+        const oldRoot = this.generateFullRoot();
+        const newRoot = this.get('root_section');
         const possible_metrics = ['mm', 'inches'];
         const possible_dimensions = ['width', 'height', 'height_max', 'height_min'];
 
@@ -1902,19 +2171,19 @@ const Unit = Backbone.Model.extend({
                 radius: val / 2,
             });
         } else if (attr === 'height' && _.isArray(val) && val.length > 1) {
-            rootSection.trapezoidHeights = [val[0], val[1]];
-            rootSection.circular = false;
-            rootSection.arched = false;
+            newRoot.trapezoidHeights = [val[0], val[1]];
+            newRoot.circular = false;
+            newRoot.arched = false;
             const params = {
                 corners: this.getMainTrapezoidInnerCorners(),
                 minHeight: (val[0] > val[1]) ? val[1] : val[0],
                 maxHeight: (val[0] < val[1]) ? val[1] : val[0],
             };
 
-            this.checkHorizontalSplit(rootSection, params);
+            this.checkHorizontalSplit(newRoot, params);
             this.persist(attr, (val[0] > val[1]) ? val[0] : val[1]);
         } else if (attr === 'height' && !_.isArray(val) && this.isTrapezoid()) {
-            rootSection.trapezoidHeights = false;
+            newRoot.trapezoidHeights = false;
             this.persist('height', val);
         } else if (attr === 'height_max') {
             if (this.isTrapezoid()) {
@@ -1927,6 +2196,14 @@ const Unit = Backbone.Model.extend({
         } else {
             this.persist(attr, val);
         }
+
+        const newestRoot = this.generateFullRoot();
+        this.getResizedSections(oldRoot, newestRoot).forEach((sash) => {
+            const section = findSection(newestRoot, sash.id);
+            const oldSection = findSection(oldRoot, sash.id);
+            const redistributedBars = this.redistributeBars(section, { oldSection });
+            this.setSectionBars(section.id, redistributedBars);
+        });
     },
     clearFrame() {
         const rootId = this.get('root_section').id;
@@ -1941,6 +2218,26 @@ const Unit = Backbone.Model.extend({
             section.sashType = 'fixed_in_frame';
             _.assign(section, getDefaultFillingType(glazing_name, profile_id));
         });
+    },
+    getResizedSections(oldRoot, newRoot) {
+        newRoot = newRoot || this.generateFullRoot();
+        const toObjectByKey = function (array, key) {
+            const obj = {};
+            array.forEach((value) => {
+                obj[value[key]] = value;
+            });
+            return obj;
+        };
+        const oldSashes = this.getSashList(oldRoot);
+        const newSashes = this.getSashList(newRoot);
+        const oldSashesById = toObjectByKey(oldSashes, 'id');
+        const newSashesById = toObjectByKey(newSashes, 'id');
+        const changedSashes = _.filter(newSashesById, (sash) => {
+            const oldSash = oldSashesById[sash.id];
+            return oldSash && !_.isEqual(sash.filling, oldSash.filling);
+        });
+
+        return changedSashes;
     },
     //  Here we get a list with basic sizes for each piece of the unit:
     //  frame, sashes, mullions, openings, glasses. Each piece got width,
@@ -1976,6 +2273,7 @@ const Unit = Backbone.Model.extend({
 
         if (current_root.sections.length === 0) {
             result.glasses.push({
+                id: current_root.id,
                 name: current_root.fillingName,
                 type: current_root.fillingType,
                 width: current_root.glassParams.width,
@@ -2238,14 +2536,14 @@ const Unit = Backbone.Model.extend({
             current_sash.sash_frame.height = current_root.sashParams.height;
         }
 
-        if (current_root.sections.length === 0 ||
-            ((current_root.sashType === 'fixed_in_frame') && (current_root.sections.length === 0)) ||
-            ((current_root.sashType !== 'fixed_in_frame') && (current_root.sections.length))
-        ) {
+        const isNoSections = !current_root.sections || current_root.sections.length === 0;
+        const isFixedInFrame = current_root.sashType === 'fixed_in_frame';
+
+        if (isNoSections || (isFixedInFrame && isNoSections) || (!isFixedInFrame && current_root.sections.length)) {
             current_sash.original_type = current_root.sashType;
             current_sash.type = this.getSashName(current_root.sashType, reverse_hinges);
-            current_sash.filling.width = current_root.glassParams.width;
-            current_sash.filling.height = current_root.glassParams.height;
+            current_sash.filling.width = current_root.glassParams && current_root.glassParams.width;
+            current_sash.filling.height = current_root.glassParams && current_root.glassParams.height;
 
             current_sash.divider = current_root.divider;
 
@@ -2266,7 +2564,7 @@ const Unit = Backbone.Model.extend({
                 current_sash.filling.name = filling_type.fillingName;
             }
 
-            if (current_root.sections.length) {
+            if (current_root.sections && current_root.sections.length) {
                 current_sash.sections = result.sections;
             }
 

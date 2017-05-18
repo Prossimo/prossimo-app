@@ -1,4 +1,4 @@
-import _ from 'underscore';
+import clone from 'clone';
 
 import App from '../../../../src/main';
 import ProjectSettings from '../../../../src/core/models/inline/project-settings';
@@ -22,7 +22,7 @@ test('Project settings test', () => {
         };
 
         const project_settings = new ProjectSettings(
-            _.clone(data_to_set),
+            clone(data_to_set),
             { parse: true },
         );
 
@@ -53,7 +53,7 @@ test('Project settings test', () => {
 
         const default_project_settings = new ProjectSettings();
         const preloaded_project_settings = new ProjectSettings(
-            _.clone(data_to_set),
+            clone(data_to_set),
             { parse: true },
         );
 

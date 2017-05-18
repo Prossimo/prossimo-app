@@ -1,4 +1,4 @@
-import _ from 'underscore';
+import clone from 'clone';
 
 import App from '../../../../src/main';
 import FillingTypeProfile from '../../../../src/core/models/inline/filling-type-to-profile';
@@ -52,8 +52,8 @@ test('FillingTypeProfile model tests', () => {
             },
         ];
         const ftp = new FillingTypeProfile({
-            pricing_grids: JSON.parse(JSON.stringify(data_to_set)),
-            pricing_equation_params: JSON.parse(JSON.stringify(equation_data_to_set)),
+            pricing_grids: clone(data_to_set),
+            pricing_equation_params: clone(equation_data_to_set),
         }, { parse: true });
 
         equal(ftp.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
@@ -75,7 +75,7 @@ test('FillingTypeProfile model tests', () => {
 
         //  Now we want it to pass the same set of tests, but the source data is a string
         const another_ftp = new FillingTypeProfile({
-            pricing_grids: JSON.stringify(_.clone(data_to_set)),
+            pricing_grids: JSON.stringify(clone(data_to_set)),
             pricing_equation_params: JSON.stringify(equation_data_to_set),
         }, { parse: true });
 
@@ -104,7 +104,7 @@ test('FillingTypeProfile model tests', () => {
                 name: 'Random Profile',
             },
             id: 12,
-            pricing_grids: JSON.parse(JSON.stringify(data_to_set)),
+            pricing_grids: clone(data_to_set),
         }, { parse: true });
 
         equal(extra_ftp.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');

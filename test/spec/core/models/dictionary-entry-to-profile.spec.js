@@ -1,4 +1,4 @@
-import _ from 'underscore';
+import clone from 'clone';
 
 import App from '../../../../src/main';
 import DictionaryEntryProfile from '../../../../src/core/models/inline/dictionary-entry-to-profile';
@@ -52,8 +52,8 @@ test('DictionaryEntryProfile tests', () => {
             },
         ];
         const dep = new DictionaryEntryProfile({
-            pricing_grids: JSON.parse(JSON.stringify(grids_data_to_set)),
-            pricing_equation_params: JSON.parse(JSON.stringify(equation_data_to_set)),
+            pricing_grids: clone(grids_data_to_set),
+            pricing_equation_params: clone(equation_data_to_set),
         }, { parse: true });
 
         equal(dep.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
@@ -75,8 +75,8 @@ test('DictionaryEntryProfile tests', () => {
 
         //  Now we want it to pass the same set of tests, but the source data is a string
         const another_dep = new DictionaryEntryProfile({
-            pricing_grids: JSON.stringify(_.clone(grids_data_to_set)),
-            pricing_equation_params: JSON.stringify(equation_data_to_set),
+            pricing_grids: JSON.stringify(clone(grids_data_to_set)),
+            pricing_equation_params: JSON.stringify(clone(equation_data_to_set)),
         }, { parse: true });
 
         equal(another_dep.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
@@ -104,7 +104,7 @@ test('DictionaryEntryProfile tests', () => {
                 name: 'Random Profile',
             },
             id: 12,
-            pricing_grids: JSON.parse(JSON.stringify(grids_data_to_set)),
+            pricing_grids: clone(grids_data_to_set),
         }, { parse: true });
 
         equal(extra_dep.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
