@@ -1372,26 +1372,27 @@ const Unit = Backbone.Model.extend({
             .sort((mullion1, mullion2) => mullion1.position - mullion2.position);
 
         // Algorithm for redistributing mullions, for mullions relevant to this axis:
-        // (If several mullions' positions match, the first is "reference", others are "locked" to it by index.)
+        // (If several mullions' positions match, the first is "reference", others are "locked" to it by id.)
         // 1. Split the list of mullions into locked and non-locked mullions, assigning reference indices in the process.
         // 2. Calculate required number and size of gaps.
         // 3. Assign new position to each non-locked mullion, mirroring to respective locked mullions, if any.
         const lockedMullionsTable = {};
-        let lastReferenceMullionBox = {};
+        let lastReferenceMullion = {};
         const nonlockedMullions = mullions
             .filter((mullion, index) => {
-                const prevIndex = index - 1;
                 const prevMullion = mullions[index - 1];
                 const prePrevMullion = mullions[index - 2];
                 const isLocked = prevMullion && (mullion.position.toFixed(precision) === prevMullion.position.toFixed(precision));
                 let doRemove = false;
                 const updateLastReferenceMullion = () => {
-                    if (prevMullion.position.toFixed(precision) === prePrevMullion.position.toFixed(precision)) { return; }
-                    lastReferenceMullionBox = { mullion: prevMullion, index: prevIndex };
+                    const prevMullionPosition = prevMullion && prevMullion.position.toFixed(precision);
+                    const prePrevMullionPosition = prePrevMullion && prePrevMullion.position.toFixed(precision);
+                    if (prevMullionPosition && prePrevMullionPosition && (prevMullionPosition === prePrevMullionPosition)) { return; }
+                    lastReferenceMullion = prevMullion;
                 };
                 const moveToLockedTable = () => {
-                    lockedMullionsTable[lastReferenceMullionBox.index] = lockedMullionsTable[lastReferenceMullionBox.index] || [];
-                    lockedMullionsTable[lastReferenceMullionBox.index].push(mullion);
+                    lockedMullionsTable[lastReferenceMullion.id] = lockedMullionsTable[lastReferenceMullion.id] || [];
+                    lockedMullionsTable[lastReferenceMullion.id].push(mullion);
                     doRemove = true;
                 };
 
@@ -1404,9 +1405,9 @@ const Unit = Backbone.Model.extend({
 
         const gapCount = nonlockedMullions.length + 1;
         const newStep = dimensionLength / gapCount;
-        const moveLockedMullions = (index, mullionPosition) => {
-            if (!lockedMullionsTable[index] || !lockedMullionsTable[index].length) { return; }
-            lockedMullionsTable[index].forEach((lockedMullion) => {
+        const moveLockedMullions = (id, mullionPosition) => {
+            if (!lockedMullionsTable[id] || !lockedMullionsTable[id].length) { return; }
+            lockedMullionsTable[id].forEach((lockedMullion) => {
                 this.setSectionMullionPosition(lockedMullion.id, mullionPosition);
             });
         };
@@ -1414,7 +1415,7 @@ const Unit = Backbone.Model.extend({
         nonlockedMullions.forEach((mullion, index) => {
             const mullionPosition = newStep * (index + 1);
             this.setSectionMullionPosition(mullion.id, mullionPosition);
-            moveLockedMullions(index, mullionPosition);
+            moveLockedMullions(mullion.id, mullionPosition);
         });
     },
     // @TODO: Add method, that checks for correct values of measurement data
