@@ -410,12 +410,22 @@ export default Marionette.View.extend({
 
     bindModuleEvents() {
         this.listenTo(this.module, 'state:selected:mullion', function (data) {
+            if (data.newValue) {
+                this.module.disableDelayedHover();
+            } else {
+                this.module.enableDelayedHover();
+            }
             this.deselectAll();
             this.setState({ selectedMullionId: data.newValue });
         });
         this.listenTo(this.module, 'state:selected:sash', function (data) {
             const sourceSashId = data.oldValue;
             const targetSashId = data.newValue;
+            if (targetSashId) {
+                this.module.disableDelayedHover();
+            } else {
+                this.module.enableDelayedHover();
+            }
             if (!targetSashId || targetSashId === sourceSashId) { this.deselectAll(); return; }
 
             if (this.module.isCloningFilling()) {
@@ -424,7 +434,7 @@ export default Marionette.View.extend({
                 this.module.syncFillingFinish(targetSashId);
             } else {
                 this.deselectAll();
-                this.setState({ selectedSashId: data.newValue });
+                this.setState({ selectedSashId: targetSashId });
             }
         });
         this.listenTo(this.module, 'labelClicked', function (data) {
