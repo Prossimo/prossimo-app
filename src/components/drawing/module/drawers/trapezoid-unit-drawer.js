@@ -5,6 +5,8 @@ import Konva from '../konva-clip-patch';
 import { geometry, vector2d, array } from '../../../../utils';
 import handle_data from '../../data/handle-data';
 
+const INDEX_HOVERPAD_SIZE = 15;
+
 let module;
 let model;
 let ratio;
@@ -84,6 +86,12 @@ export default Backbone.KonvaView.extend({
 
         'click #back': 'onBackClick',
         'tap #back': 'onBackClick',
+
+        'click .indexHoverPad': 'onIndexHoverClick',
+        'tap .indexHoverPad': 'onIndexHoverClick',
+        'mouseenter .indexHoverPad': 'onIndexHoverEnter',
+        'mousemove .indexHoverPad': 'onIndexHoverMove',
+        'mouseleave .indexHoverPad': 'onIndexHoverLeave',
     },
     // Utils
     // Functions search for Konva Object inside object with specified name
@@ -110,6 +118,19 @@ export default Backbone.KonvaView.extend({
     onBackClick() {
         this.deselectAll();
     },
+    onIndexHoverClick(event) {
+        module.stopSectionMenuHover();
+        this.setSelection(event, 'sash', 'filling');
+    },
+    onIndexHoverEnter(event) {
+        module.startSectionMenuHover({ sectionId: event.target.getAttr('sectionId') });
+    },
+    onIndexHoverMove() {
+        module.restartSectionMenuHover();
+    },
+    onIndexHoverLeave() {
+        module.stopSectionMenuHover();
+    },
 
     // Keyboards handlers
     onKeyDown(e) {
@@ -132,8 +153,8 @@ export default Backbone.KonvaView.extend({
         const untype = (type === 'sash') ? 'mullion' : 'sash';
 
         if (origin) {
-            module.setState(`selected:${untype}`, null, false);
-            module.setState(`selected:${type}`, origin.attrs.sectionId, false);
+            module.setState(`selected:${untype}`, null);
+            module.setState(`selected:${type}`, origin.attrs.sectionId);
         }
     },
     deselectAll(preventUpdate) {
@@ -1972,7 +1993,7 @@ export default Backbone.KonvaView.extend({
             parent: null,
         };
 
-        // If section have a children — create Indexes for them recursively
+        // If section has children, create Indexes for them recursively
         if (mainSection.sections.length) {
             if (module.getState('insideView') && mainSection.divider === 'vertical') {
                 mainSection.sections.reverse();
@@ -1990,7 +2011,7 @@ export default Backbone.KonvaView.extend({
                 result = result.concat(view.createSectionIndexes(section, indexes));
             });
 
-        // If section haven't a children sections - create Index for it
+        // If section has no child sections, create Index for it
         } else {
             let text = (indexes.main + 1);
             let position = {
@@ -2061,10 +2082,7 @@ export default Backbone.KonvaView.extend({
         return result;
     },
     createIndexes(indexes) {
-        const group = new Konva.Group({
-            name: 'index',
-        });
-        let number;
+        const group = new Konva.Group({ name: 'index' });
 
         indexes.forEach((section) => {
             const add = (module.get('debug') ? ` (${section.id})` : '');
@@ -2073,16 +2091,24 @@ export default Backbone.KonvaView.extend({
                 text: section.text + add,
                 listening: false,
             };
-
             _.extend(opts, module.getStyle('indexes'));
             opts.fontSize /= ratio;
 
-            number = new Konva.Text(opts);
-
+            const number = new Konva.Text(opts);
             number.position(section.position);
             number.y((number.y() + (section.size.height / 2)) - (number.height() / 2));
+            const minUnitDimension = Math.min(section.size.width, section.size.height);
+            const hoverpadRadius = Math.min(INDEX_HOVERPAD_SIZE / ratio, minUnitDimension / 2);
+            const hoverpad = new Konva.Circle({
+                id: `indexHoverPad-${section.id}`,
+                name: 'indexHoverPad',
+                sectionId: section.id,
+                x: number.x() + (section.size.width / 2),
+                y: number.y() + (number.height() / 2),
+                radius: hoverpadRadius,
+            });
 
-            group.add(number);
+            group.add(hoverpad, number);
         });
 
         return group;
