@@ -1,6 +1,7 @@
 import _ from 'underscore';
 import $ from 'jquery';
 import Backbone from 'backbone';
+import clone from 'clone';
 
 import App from '../main';
 
@@ -126,7 +127,7 @@ _.extend(Backbone.Model.prototype, {
             cloned_attributes[name_attr] = getClonedItemName(this.get(name_attr), name_attr, this.collection);
             cloned_attributes = _.extend({}, cloned_attributes, options.extra_attributes);
 
-            const new_object = this.collection.add(cloned_attributes, { parse: true });
+            const new_object = this.collection.add(clone(cloned_attributes), { parse: true });
             let persist_options = {
                 validate: true,
                 parse: true,

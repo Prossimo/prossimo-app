@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
+import clone from 'clone';
 
 import App from '../../main';
 import Schema from '../../schema';
@@ -121,12 +122,6 @@ function getDefaultFillingType(default_glazing_name, profile_id) {
     } : dummy_type;
 }
 
-function cloneObject(obj) {
-    const clone = (_.isUndefined(obj)) ? undefined : JSON.parse(JSON.stringify(obj));
-
-    return clone;
-}
-
 function getDefaultBars() {
     return {
         vertical: [],
@@ -226,23 +221,23 @@ function isEqualBars(bars1, bars2, options) {
 }
 
 function scaleBars(bars, options) {
-    bars = cloneObject(bars);
+    bars = clone(bars);
     const factor = options && options.factor;
     if (!factor || factor === 1) { return bars; }
 
     const oldStep = bars[0].position;
     const newStep = oldStep * factor;
     const newBars = bars.map((bar, index) => {
-        const clone = _.clone(bar);
-        clone.position = newStep * (index + 1);
-        return clone;
+        const cloned_bar = clone(bar);
+        cloned_bar.position = newStep * (index + 1);
+        return cloned_bar;
     });
 
     return newBars;
 }
 
 function mirrorBars(bars, options) {
-    bars = cloneObject(bars);
+    bars = clone(bars);
     const axisLength = options && options.axisLength;
     if (!axisLength) { return bars; }
 
@@ -255,7 +250,7 @@ function mirrorBars(bars, options) {
 }
 
 function offsetBars(bars, options) {
-    bars = cloneObject(bars);
+    bars = clone(bars);
     const offset = options && options.offset;
     if (!offset) { return bars; }
 
@@ -268,7 +263,7 @@ function offsetBars(bars, options) {
 }
 
 function positionBars(bars, options) {
-    bars = cloneObject(bars);
+    bars = clone(bars);
     if (!bars || !bars.length) { return bars; }
     const align = options && options.align;
     const marginStart = options && options.marginStart;
@@ -303,7 +298,7 @@ function positionBars(bars, options) {
 }
 
 function splitBars(bars, options) {
-    bars = cloneObject(bars);
+    bars = clone(bars);
     const position = options && options.position;
     const gapIndex = options && options.gapIndex;
 
@@ -316,8 +311,8 @@ function splitBars(bars, options) {
         secondHalf = bars.filter(bar => bar.position > position);
         const centralBar = bars.filter(bar => bar.position === position)[0];
         if (centralBar) {
-            firstHalf.push(cloneObject(centralBar));
-            secondHalf.splice(0, 0, cloneObject(centralBar));
+            firstHalf.push(clone(centralBar));
+            secondHalf.splice(0, 0, clone(centralBar));
         }
         secondHalf.forEach((bar) => {
             bar.position -= position;
@@ -336,7 +331,7 @@ function splitBars(bars, options) {
 }
 
 function splitBarsAtLargestGap(bars, options) {
-    bars = cloneObject(bars);
+    bars = clone(bars);
     if (bars.length <= 1) { return [bars, []]; }
     const axisLength = options && options.axisLength;
 
@@ -350,8 +345,8 @@ function splitBarsAtLargestGap(bars, options) {
 }
 
 function mergeBars(bars1, bars2, options) {
-    bars1 = cloneObject(bars1);
-    bars2 = cloneObject(bars2);
+    bars1 = clone(bars1);
+    bars2 = clone(bars2);
     if (!bars1 || !bars2) { return bars1; }
     if (!bars1.length) { return bars2; }
     if (!bars2.length) { return bars1; }
@@ -372,7 +367,7 @@ function mergeBars(bars1, bars2, options) {
 }
 
 function getCentralBars(bars, options) {
-    bars = cloneObject(bars);
+    bars = clone(bars);
     const axisLength = options && options.axisLength;
     if (!axisLength) { return []; }
     const precision = (options && _.isNumber(options.precision)) ? options.precision : 0;
@@ -1273,10 +1268,8 @@ const Unit = Backbone.Model.extend({
         return string;
     },
     _updateSection(sectionId, func) {
-        // HAH, dirty deep clone, rewrite when you have good mood for it
-        // we have to make deep clone and backbone will trigger change event
         const oldRoot = this.generateFullRoot();
-        const newRoot = cloneObject(this.get('root_section'));
+        const newRoot = clone(this.get('root_section'));
         const sectionToUpdate = findSection(newRoot, sectionId);
         func(sectionToUpdate);
 
@@ -1288,8 +1281,7 @@ const Unit = Backbone.Model.extend({
         this.persist('root_section', newRoot);
     },
     setCircular(sectionId, opts) {
-        //  Deep clone, same as above
-        const root_section = JSON.parse(JSON.stringify(this.get('root_section')));
+        const root_section = clone(this.get('root_section'));
         const section = findSection(root_section, sectionId);
         const update_data = {};
 
@@ -1499,7 +1491,7 @@ const Unit = Backbone.Model.extend({
         const adjustGeometry = adjustSection.glassParams;
         const referenceGeometry = referenceSection.glassParams;
         const flipBarsX = function (bars, sectionWidth) {
-            bars = _.clone(bars);
+            bars = clone(bars);
             bars.vertical.reverse();
             bars.vertical.forEach((bar) => {
                 bar.position = sectionWidth - bar.position;
@@ -1593,7 +1585,7 @@ const Unit = Backbone.Model.extend({
         const oldSection = options && options.oldSection;
         if (!oldSection) { return; }
         const axes = (options && options.axes) ? options.axes : ['vertical', 'horizontal'];
-        const bars = cloneObject(section.bars);
+        const bars = clone(section.bars);
         const precision = REDISTRIBUTE_BARS_PRECISION;
 
         // Algorithm for redistributing bars, for each of 2 axes:
@@ -1603,7 +1595,7 @@ const Unit = Backbone.Model.extend({
         //     2.2. Split the rest after extracting central group into left/top and right/bottom, align to respective sides
         //     2.3. Reconstitute whole bar axis from the above parts
 
-        const redistributedBars = cloneObject(section.bars);
+        const redistributedBars = clone(section.bars);
         axes.forEach((axis) => {
             const barType = (axis === 'vertical') ? 'horizontal' : 'vertical';
             const dimension = (axis === 'vertical') ? 'height' : 'width';
@@ -1761,7 +1753,7 @@ const Unit = Backbone.Model.extend({
     //     }]
     // }
     generateFullRoot(rootSection, openingParams) {
-        rootSection = rootSection || JSON.parse(JSON.stringify(this.get('root_section')));
+        rootSection = rootSection || clone(this.get('root_section'));
         let defaultParams = {
             x: 0,
             y: 0,
@@ -1917,7 +1909,7 @@ const Unit = Backbone.Model.extend({
             };
 
             // Set section data & glass sizes
-            sectionData.mullionEdges = _.clone(rootSection.mullionEdges);
+            sectionData.mullionEdges = clone(rootSection.mullionEdges);
             sectionData.thresholdEdge = rootSection.thresholdEdge;
             sectionData.parentId = rootSection.id;
             sectionParams.x = openingParams.x;

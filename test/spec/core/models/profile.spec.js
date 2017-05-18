@@ -1,4 +1,4 @@
-import _ from 'underscore';
+import clone from 'clone';
 
 import App from '../../../../src/main';
 import Profile from '../../../../src/core/models/profile';
@@ -57,8 +57,8 @@ test('Profile tests', () => {
             },
         ];
         const profile = new Profile({
-            pricing_grids: JSON.parse(JSON.stringify(grids_data_to_set)),
-            pricing_equation_params: JSON.parse(JSON.stringify(equation_data_to_set)),
+            pricing_grids: clone(grids_data_to_set),
+            pricing_equation_params: clone(equation_data_to_set),
         }, { parse: true });
 
         equal(profile.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
@@ -97,7 +97,7 @@ test('Profile tests', () => {
 
         //  Now we want it to pass the same set of tests, but the source data is a string
         const another_profile = new Profile({
-            pricing_grids: JSON.stringify(_.clone(grids_data_to_set)),
+            pricing_grids: JSON.stringify(clone(grids_data_to_set)),
             pricing_equation_params: JSON.stringify(equation_data_to_set),
         }, { parse: true });
 
@@ -122,7 +122,7 @@ test('Profile tests', () => {
         //  We want to make sure no extra data survives the parse step
         const extra_profile = new Profile({
             wait_what: '',
-            pricing_grids: JSON.parse(JSON.stringify(grids_data_to_set)),
+            pricing_grids: clone(grids_data_to_set),
         }, { parse: true });
 
         equal(extra_profile.get('pricing_grids').length, 2, 'pricing_grids should contain 2 entries');
@@ -168,7 +168,7 @@ test('Profile tests', () => {
             ]),
         };
         const predefined_profile = new Profile(
-            JSON.parse(JSON.stringify(data_to_set)),
+            clone(data_to_set),
             { parse: true },
         );
 

@@ -1,4 +1,4 @@
-import _ from 'underscore';
+import clone from 'clone';
 
 import App from '../../../../src/main';
 import PricingGrid, { Grid } from '../../../../src/core/models/inline/pricing-grid';
@@ -22,7 +22,7 @@ test('Pricing grid', () => {
             { height: 2400, width: 3000, value: 10 },
         ];
         const grid = new PricingGrid({
-            data: _.clone(data_to_set),
+            data: clone(data_to_set),
         }, { parse: true });
 
         equal(grid.get('data').length, 3, 'Grid should contain 3 entries');
@@ -35,7 +35,7 @@ test('Pricing grid', () => {
 
         //  Now we want it to pass the same set of tests, but the source data is a string
         const another_grid = new PricingGrid({
-            data: JSON.stringify(_.clone(data_to_set)),
+            data: JSON.stringify(clone(data_to_set)),
         }, { parse: true });
 
         equal(another_grid.get('data').length, 3, 'Grid should contain 3 entries');
@@ -54,7 +54,7 @@ test('Pricing grid', () => {
         ];
 
         const compatible_grid = new PricingGrid({
-            data: JSON.stringify(_.clone(data_in_old_format)),
+            data: JSON.stringify(clone(data_in_old_format)),
         }, { parse: true });
 
         deepEqual(

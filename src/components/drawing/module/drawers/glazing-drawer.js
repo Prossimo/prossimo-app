@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import clone from 'clone';
 import Backbone from 'backbone';
 import Konva from '../konva-clip-patch';
 
@@ -157,7 +158,7 @@ export default Backbone.KonvaView.extend({
         let bars;
 
         if (section) {
-            bars = JSON.parse(JSON.stringify(section.bars));
+            bars = clone(section.bars);
         }
 
         _.each(bars, (group) => {
