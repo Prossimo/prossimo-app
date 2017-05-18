@@ -748,7 +748,7 @@ export default Backbone.KonvaView.extend({
         _.extend(opts, {
             width,
             height,
-            name: 'flush-frame',
+            name: 'frame',
             sectionId: params.sectionId,
         });
 

@@ -1,5 +1,6 @@
 import Backbone from 'backbone';
 import _ from 'underscore';
+import clone from 'clone';
 
 import Schema from '../../schema';
 import { object } from '../../utils';
@@ -16,7 +17,7 @@ const ENTRY_PROPERTIES = [
 ];
 
 function getDefaultEntryData() {
-    return _.clone({});
+    return clone({});
 }
 
 export default Backbone.Model.extend({
