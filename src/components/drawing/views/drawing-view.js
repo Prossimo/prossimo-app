@@ -399,8 +399,10 @@ export default Marionette.View.extend({
 
         const multiunit = subunit.getParentMultiunit();
 
-        multiunit.removeSubunit(subunit);
-        this.selectUnit(multiunit);
+        if (multiunit && multiunit.isSubunitRemovable(subunit.id || subunit.cid)) {
+            multiunit.removeSubunit(subunit);
+            this.selectUnit(multiunit);
+        }
     },
     onRender() {
         this.changeIcons();

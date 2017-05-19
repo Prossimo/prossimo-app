@@ -48,7 +48,7 @@ export default Marionette.View.extend({
         let model = this.collection.get(this.ui.$select.val());
 
         if (!model) {
-            model = this.collection.multiunits.get(this.ui.$select.val());
+            model = this.options.multiunits.get(this.ui.$select.val());
         }
 
         this.selectUnit(model);
