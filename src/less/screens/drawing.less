@@ -27,18 +27,70 @@
     overflow: auto;
 }
 
-.button-states() {
-    .button { cursor: pointer; }
-    .button:hover { filter: brightness(@button-hover-brightness); }
-    .button.disabled {
+//  ------------------------------------------------------------------------
+//  Mixins
+//  ------------------------------------------------------------------------
+
+.button-list {
+    .reset-list();
+
+    li {
+        display: inline-block;
+        .correct-inline-block();
+
+        & + li { margin-left: 4px; }
+    }
+}
+
+img.button {
+    width: 35px;
+    cursor: pointer;
+
+    &:hover { filter: brightness(@button-hover-brightness); }
+
+    &.disabled {
         opacity: @button-disabled-opacity;
         filter: grayscale();
         cursor: default;
     }
 }
 
+.help-squares {
+    li {
+        position: relative;
+
+        small {
+            display: block;
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 12px;
+            height: 12px;
+            font: bold 10px Arial, "Helvetica Neue", Helvetica, sans-serif;
+            line-height: 12px;
+            text-align: center;
+            color: white;
+            background: rgba(0, 0, 0, 0.64);
+            opacity: 0;
+            pointer-events: none;
+            transition: @opacity-transition;
+
+            &.tiny {
+                padding-top: 0.35em;
+                padding-left: 0.05em;
+                font-size: 16px;
+            }
+        }
+    }
+}
+
+.help-visible .help-squares,
+.help-visible.help-squares{
+    li small { opacity: 1; }
+}
+
 //  ------------------------------------------------------------------------
-//  Controls at the top
+//  Regular selection controls
 //  ------------------------------------------------------------------------
 
 .drawing-controls {
@@ -47,15 +99,52 @@
     min-height: 2rem;
     background-color: darken(@white, 30%);
     border-bottom: 1px solid darken(@white, 40%);
+}
 
-    .button-states();
+.controls-block {
+    display: inline-block;
+    margin: 4px 0;
+    vertical-align: middle;
+
+    .button-list { display: inline-block; }
+
+    input {
+        width: 35px;
+
+        &.radio {
+            display: inline-block;
+            width: auto;
+            margin-left: 3px;
+            margin-right: 3px;
+            vertical-align: top;
+        }
+    }
+
+    label {
+        white-space: nowrap;
+
+        & + label { margin-left: 8px; }
+    }
+
+    .btn {
+        .correct-inline-block();
+
+        & + .btn { margin-left: 8px; }
+    }
+}
+
+.controls-label {
+    display: inline-block;
+    margin: 0 0.5em;
+    font-size: 14px;
+    vertical-align: middle;
 }
 
 #change-view-button {
     float: right;
 }
 
-#drawing-view-title {
+.drawing-view-title {
     font-size: 2em;
     font-weight: bold;
     color: white;
@@ -66,37 +155,19 @@
     top: 0;
 }
 
-.drawing-controls input {
-    width: 35px;
-}
-.drawing-controls label {
-    white-space: nowrap;
-}
-.drawing-controls input.radio {
-    display: inline-block;
-    width: auto;
-    margin-right: 3px;
-    margin-left: 15px;
-}
-
-.drawing-controls img {
-    width: 35px;
-}
-
 .section-controls,
 .mullion-controls {
     text-align: center;
     margin-top: 14px;
-    padding-bottom: 10px;
+}
+
+.bar-controls {
+    margin: 0 4px;
 }
 
 .drawing-ui-divider {
     display: block;
     margin: 5px 0;
-}
-
-.bar-controls {
-    margin: 0 10px;
 }
 
 #additional-metrics-opening--label {
@@ -112,83 +183,43 @@
     height: 0;
     overflow: visible;
     z-index: 999;
+}
 
-    .button { .drawing-hover-shadow(); }
-    .button-states();
+.hovering-section-controls {
+    @outlier-offset: 46px;
+    @hover-padding: 15px;
 
-    .hovering-section-controls {
-        @outlier-offset: 46px;
-        @hover-padding: 15px;
-        position: absolute;
-        margin: -(55px + @hover-padding) 0 0 -(10px + @hover-padding + @outlier-offset);
-        padding: @hover-padding @hover-padding @hover-padding (@hover-padding + @outlier-offset);
-        border-radius: 30%;
-        font-size: 0;
-        opacity: 0;
-        transition: @opacity-transition;
-        pointer-events: none;
+    position: absolute;
+    margin: -(55px + @hover-padding) 0 0 -(10px + @hover-padding + @outlier-offset);
+    padding: @hover-padding @hover-padding @hover-padding (@hover-padding + @outlier-offset);
+    border-radius: 30%;
+    opacity: 0;
+    transition: @opacity-transition;
+    pointer-events: none;
 
-        &.open {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .menu-row {
-            .reset-list();
-            margin: 4px 0;
-            display: block;
-            white-space: nowrap;
-
-            &:nth-child(1) { margin-left: 0; }
-            &:nth-child(2) { margin-left: 10px; }
-            &:nth-child(3) { margin-left: 20px; }
-            &:nth-child(4) { margin-left: 30px; }
-            &:nth-child(5) { margin-left: 40px; }
-        }
-
-        .menu-outlier {
-            .reset-list();
-            float: left;
-            margin-left: -@outlier-offset;
-        }
-
-        li {
-            display: inline-block;
-            position: relative;
-
-            & + li { margin-left: 4px; }
-
-            small {
-                display: none;
-                position: absolute;
-                right: 0;
-                bottom: 0;
-                width: 12px;
-                height: 12px;
-                font: bold 10px Arial, "Helvetica Neue", Helvetica, sans-serif;
-                line-height: 12px;
-                text-align: center;
-                color: white;
-                background: rgba(0, 0, 0, 0.64);
-                pointer-events: none;
-
-                &.visible { display: block; }
-
-                &.tiny {
-                    padding-top: 0.35em;
-                    padding-left: 0.05em;
-                    font-size: 16px;
-                }
-            }
-        }
-
-        &.help-visible li small { display: block; }
+    &.open {
+        opacity: 1;
+        pointer-events: auto;
     }
 
-    img {
-        width: 35px;
-        cursor: pointer;
+    .menu-row {
+        margin: 4px 0;
+        display: block;
+        white-space: nowrap;
+
+        &:nth-child(1) { margin-left: 0; }
+        &:nth-child(2) { margin-left: 10px; }
+        &:nth-child(3) { margin-left: 20px; }
+        &:nth-child(4) { margin-left: 30px; }
+        &:nth-child(5) { margin-left: 40px; }
     }
+
+    .menu-outlier {
+        float: left;
+        margin-left: -@outlier-offset;
+    }
+
+    img.button { .drawing-hover-shadow(); }
 }
 
 

@@ -11,9 +11,10 @@
 
 @min-page-width:        1200px;
 
-@top-bar-height:        4rem;
-@bottom-bar-height:     4rem;
-@header-height:         @top-bar-height + @bottom-bar-height;
+@top-bar-height:          4rem;
+@bottom-bar-height:       4rem;
+@header-height:           @top-bar-height + @bottom-bar-height;
+@inline-block-correction: -0.2857em;
 
 
 //  Transitions
@@ -38,4 +39,10 @@
     margin: 0;
     padding: 0;
     list-style: none outside none;
+}
+
+.correct-inline-block() {
+    margin-right: @inline-block-correction;
+
+    &:last-child { margin-right: 0; }
 }

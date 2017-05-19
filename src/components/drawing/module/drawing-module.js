@@ -6,7 +6,7 @@ import Konva from 'konva';
 
 import App from '../../../main';
 import LayerManager from './layer-manager';
-import { object } from '../../../utils';
+import { object, dom } from '../../../utils';
 
 const DELAYED_HOVER_DEFAULT_DELAY = 400;
 const SECTION_MENU_HOVER_DELAY = 100;
@@ -441,15 +441,33 @@ const DrawingModule = Marionette.Object.extend({
     },
     // Handler
     handleKeyEvents(event) {
-        if (event.key === 'Escape' && this.isCloningFilling()) {
+        const isEscape = event.key === 'Escape';
+        const isPreview = this.getState('isPreview');
+        const keysToElementsTable = this.getState('keysToElementsTable');
+        const shortcutKeys = keysToElementsTable && Object.keys(keysToElementsTable);
+        const isShortcutKey = shortcutKeys && _.contains(shortcutKeys, event.key);
+
+        if (isEscape && this.isCloningFilling()) {
             this.cloneFillingDismiss();
-        } else if (event.key === 'Escape' && this.isSyncingFilling()) {
+        } else if (isEscape && this.isSyncingFilling()) {
             this.syncFillingDismiss();
+        } else if (isShortcutKey) {
+            this.handleShortcutKey(event.key);
         }
 
-        if (this.getState('isPreview') === false && this.layerManager) {
+        if (!isPreview && this.layerManager) {
             this.layerManager.handleKeyEvents(event);
         }
+    },
+    handleShortcutKey(key) {
+        if (!key) { return; }
+        const boundElements = this.getState('keysToElementsTable')[key];
+        if (!boundElements) { return; }
+
+        const visibleElements = boundElements.filter(element => dom.isElementVisible(element));
+
+        const lastVisible = _.last(visibleElements);
+        if (lastVisible) { $(lastVisible).trigger('click'); }
     },
     // Create private Konva.Stage (if it wasn't defined in options)
     createStage() {

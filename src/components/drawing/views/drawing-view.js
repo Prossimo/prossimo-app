@@ -10,6 +10,8 @@ import DrawingModule from '../module/drawing-module';
 import DrawingGlazingPopup from './drawing-glazing-view';
 import template from '../templates/drawing-view.hbs';
 
+const HELP_SQUARES_KEYPRESS_DELAY = 800;
+
 // This view is organized in React-like approach but with multiple sources
 // of state as we have:
 //
@@ -87,6 +89,8 @@ export default Marionette.View.extend({
         $metrics_opening_input: '#additional-metrics-opening',
         $hovering_drawing_controls: '#hovering-drawing-controls',
         $hovering_section_controls: '#hovering-section-controls',
+        $help_squares: '.help-squares',
+        $shortcuts: '[data-key]',
         $undo: '#undo',
         $redo: '#redo',
     },
@@ -139,6 +143,12 @@ export default Marionette.View.extend({
         'command+shift+z': 'handleRedoClick',
         'ctrl+y': 'handleRedoClick',
         'command+y': 'handleRedoClick',
+        'ctrl:keydown': 'handleHelpSquaresShow',
+        'ctrl:keyup': 'handleHelpSquaresHide',
+        'shift:keydown': 'handleHelpSquaresShow',
+        'shift:keyup': 'handleHelpSquaresHide',
+        'alt:keydown': 'handleHelpSquaresShow',
+        'alt:keyup': 'handleHelpSquaresHide',
     },
     setGlobalInsideView(value) {
         this.options.parent_view.setGlobalInsideView(value);
@@ -317,6 +327,17 @@ export default Marionette.View.extend({
     handleHoveringSectionControlsLeave() {
         this.closeSectionHoverMenu();
     },
+    handleHelpSquaresShow() {
+        const timeoutHandle = setTimeout(() => {
+            this.ui.$help_squares.toggleClass('help-visible', true);
+        }, HELP_SQUARES_KEYPRESS_DELAY);
+        this.setState({ helpSquaresTimeoutHandle: timeoutHandle }, true);
+    },
+    handleHelpSquaresHide() {
+        const handle = this.state.helpSquaresTimeoutHandle;
+        if (handle) { clearTimeout(handle); }
+        this.ui.$help_squares.toggleClass('help-visible', false);
+    },
 
     // Marrionente lifecycle method
     onRender() {
@@ -352,6 +373,7 @@ export default Marionette.View.extend({
         // this.module.set('debug', true);
 
         this.bindModuleEvents();
+        this.elementsToShortcuts(this.ui.$shortcuts);
     },
     // Marrionente lifecycle method
     onBeforeDestroy() {
@@ -797,5 +819,18 @@ export default Marionette.View.extend({
             selectedMullionId: null,
             selectedSashId: null,
         });
+    },
+    elementsToShortcuts(elements) {
+        if (!elements) { return; }
+        if (elements instanceof window.jQuery) { elements = elements.toArray(); }
+
+        const keysToElementsTable = {};
+        elements.forEach((element) => {
+            const key = element.dataset.key;
+            keysToElementsTable[key] = keysToElementsTable[key] || [];
+            keysToElementsTable[key].push(element);
+        });
+
+        this.module.setState('keysToElementsTable', keysToElementsTable);
     },
 });
