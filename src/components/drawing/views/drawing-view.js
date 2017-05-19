@@ -145,6 +145,8 @@ export default Marionette.View.extend({
         'command+y': 'handleRedoClick',
         'ctrl:keydown': 'handleHelpSquaresShow',
         'ctrl:keyup': 'handleHelpSquaresHide',
+        'command:keydown': 'handleHelpSquaresShow',
+        'command:keyup': 'handleHelpSquaresHide',
         'shift:keydown': 'handleHelpSquaresShow',
         'shift:keyup': 'handleHelpSquaresHide',
         'alt:keydown': 'handleHelpSquaresShow',
