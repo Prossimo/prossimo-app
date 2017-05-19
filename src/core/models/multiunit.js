@@ -51,7 +51,12 @@ export default Backbone.Model.extend({
 
             //  TODO: maybe we want to trigger this by less events (no change?)
             this.listenTo(this.get('multiunit_subunits'), 'change update reset', () => {
-                this.persist('multiunit_subunits', this.get('multiunit_subunits'));
+                this.persist('multiunit_subunits', this.get('multiunit_subunits'), {
+                    success: () => {
+                        this.validateSubunits();
+                        this.recalculateSizes();
+                    },
+                });
             });
 
             //  Destroy multiunit when we removed the last subunit
@@ -334,9 +339,15 @@ export default Backbone.Model.extend({
         let validationError;
 
         this.get('multiunit_subunits').forEach((subunit_link) => {
+            //  This check here is to prevent error in situation when subunit
+            //  is removed while the collection is iterated over
+            if (!subunit_link) {
+                return;
+            }
+
             const subunitId = subunit_link.get('unit_id');
             const subunit = subunit_link.getUnit();
-            const isOrigin = this.isOriginId(subunit_link.get('unit_id'));
+            const isOrigin = this.isOriginId(subunitId);
 
             const needsConnector = !isOrigin;
             const hasConnector = this.getParentConnector(subunitId || (subunit && subunit.id));
@@ -402,9 +413,6 @@ export default Backbone.Model.extend({
 
             subunit.destroy();
             subunit_link.destroy();
-
-            this.validateSubunits();
-            this.recalculateSizes();
         }
     },
     //  This returns a MultiunitSubunit instance, not Unit
@@ -437,7 +445,7 @@ export default Backbone.Model.extend({
         let subunitNode;
 
         this.subunitsTreeForEach(subunitPositionsTree, (node) => {
-            if (node.unit.id === subunitId) {
+            if (node.unit.id === subunitId || node.unit.cid === subunitId) {
                 subunitNode = node;
             }
         });
@@ -457,6 +465,9 @@ export default Backbone.Model.extend({
 
         return coords;  // mm
     },
+    //  Take note that this function only returns false when there is a
+    //  subunit, and it's clearly not removable. In all other cases, including
+    //  when there is no such subunit at all, it returns true
     isSubunitRemovable(subunitId) {
         const subunitNode = this.getSubunitNode(subunitId);
         const isLeafSubunit = !subunitNode || (subunitNode.children.length === 0);
