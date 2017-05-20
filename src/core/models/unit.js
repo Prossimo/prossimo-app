@@ -927,12 +927,18 @@ const Unit = Backbone.Model.extend({
             if (parent_quote_multiunits && parent_quote_multiunits.length) {
                 if (this.isSubunit()) {
                     const parent_multiunit = this.getParentMultiunit();
+                    const subunit_positions = parent_multiunit.get('multiunit_subunits').map(
+                        subunit => parseInt(subunit.invokeOnUnit('get', 'position'), 10)).sort((a, b) => a - b);
 
-                    ref_num = parent_multiunit.getRefNum() + convert.number_to_letters(this.get('position') + 1);
+                    ref_num = parent_multiunit.getRefNum() + convert.number_to_letters(
+                        subunit_positions.indexOf(this.get('position')) + 1,
+                    );
                 } else {
-                    const number_of_subunits_in_collection = this.collection.filter(item => item.isSubunit()).length;
+                    const number_of_multiunits = parent_quote_multiunits.length;
+                    const loneunit_positions = this.collection.filter(item => !item.isSubunit()).map(
+                        loneunit => parseInt(loneunit.get('position'), 10)).sort((a, b) => a - b);
 
-                    ref_num = (this.get('position') - number_of_subunits_in_collection) + 2;
+                    ref_num = loneunit_positions.indexOf(this.get('position')) + number_of_multiunits + 1;
                 }
             } else {
                 ref_num = this.get('position') + 1;
@@ -3240,7 +3246,10 @@ const Unit = Backbone.Model.extend({
         }
 
         const parent_quote_multiunits = this.getParentQuoteMultiunits();
-        const multiunit = new Multiunit(null, {
+        const new_position = parent_quote_multiunits && parent_quote_multiunits.length ? parent_quote_multiunits.getMaxPosition() + 1 : 0;
+        const multiunit = new Multiunit({
+            position: new_position,
+        }, {
             from_unit: this,
             parse: true,
         });

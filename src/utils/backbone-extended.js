@@ -164,14 +164,7 @@ _.extend(Backbone.Collection.prototype, {
 
         return max > 0 ? max : 0;
     },
-    comparator(item) {
-        //  Special case is when multiple units with `position` = 0 exist
-        //  which means our project was created before sorting features
-        //  were introduced, so units had no `position` set
-        const no_positions_state_flag = item.collection.length > 0 && item.collection.getMaxPosition() === 0;
-
-        return no_positions_state_flag ? item.id : item.get('position');
-    },
+    comparator: 'position',
     savePositions(new_order) {
         const reorder_url = this.reorder_url();
         const reorder_property_name = this.reorder_property_name;

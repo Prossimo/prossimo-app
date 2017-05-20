@@ -65,6 +65,11 @@ export default Backbone.Model.extend({
                     this.destroy();
                 }
             });
+
+            //  When multiunit is removed, we destroy each subunit
+            this.on('remove', () => {
+                this.get('multiunit_subunits').forEach(subunit => subunit.invokeOnUnit('destroy'));
+            });
         }
     },
     getNameAttribute() {
@@ -888,7 +893,9 @@ export default Backbone.Model.extend({
         };
 
         if (!options.connects[1]) {
-            newChildSubunit = new Unit();
+            newChildSubunit = new Unit({
+                position: parentSubunit.collection.getMaxPosition() + 1,
+            });
             parentSubunit.collection.add(newChildSubunit);
             newChildSubunit.persist({
                 width: parentSubunit.get('width'),
