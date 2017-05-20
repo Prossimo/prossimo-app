@@ -2,6 +2,8 @@ import UndoManager from 'backbone-undo';
 import _ from 'underscore';
 import clone from 'clone';
 
+import Multiunit from '../core/models/multiunit';
+
 export default function (opts) {
     const undo_manager = new UndoManager(opts);
     const buttons = {
@@ -176,12 +178,14 @@ export default function (opts) {
             model.destroy();
         },
         on(model, collection, options) {
-            return {
-                object: collection,
-                before: model,
-                after: undefined,
-                options: clone(options),
-            };
+            if (!(model instanceof Multiunit)) {
+                return {
+                    object: collection,
+                    before: model,
+                    after: undefined,
+                    options: clone(options),
+                };
+            }
         },
     });
 
