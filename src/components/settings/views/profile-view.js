@@ -122,11 +122,11 @@ export default Marionette.View.extend({
     initialize() {
         this.attributes = {
             general: [
-                'name', 'unit_type', 'system', 'supplier_system', 'depth', 'frame_corners', 'sash_corners',
+                'name', 'unit_type', 'system', 'supplier_system', 'frame_corners', 'sash_corners',
             ],
             dimensions: [
                 'weight_per_length', 'frame_width', 'mullion_width', 'sash_frame_width', 'sash_frame_overlap',
-                'sash_mullion_overlap', 'clear_width_deduction', 'visible_frame_width_fixed',
+                'sash_mullion_overlap', 'clear_width_deduction', 'depth', 'visible_frame_width_fixed',
                 'visible_frame_width_operable',
             ],
             pricing: [

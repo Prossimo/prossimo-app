@@ -119,6 +119,11 @@ test('Utils.js tests: ', () => {
             equal(f.square_meters(12), '12\u00A0m<sup>2</sup>', 'Expected value is 12 m<sup>2</sup>');
             equal(f.square_meters(4.55), '4.55\u00A0m<sup>2</sup>', 'Expected value is 4.55 m<sup>2</sup>');
         });
+        test('cubic_meters', () => {
+            const f = format;
+            equal(f.cubic_meters(12), '12\u00A0m<sup>3</sup>', 'Expected value is 12 m<sup>3</sup>');
+            equal(f.cubic_meters(4.55), '4.55\u00A0m<sup>3</sup>', 'Expected value is 4.55 m<sup>3</sup>');
+        });
 
         test('dimensions_and_area', () => {
             const f = format;
@@ -311,6 +316,13 @@ test('Utils.js tests: ', () => {
             equal(m.square_meters(200, 200), 0.04, 'Expected value is 0.04');
             equal(m.square_meters(1000, 1000), 1, 'Expected value is 1');
             equal(m.square_meters(0, 0), 0, 'Expected value is 0');
+        });
+        test('cubic_meters', () => {
+            const m = math;
+
+            equal(m.cubic_meters(200, 200, 200), 0.008, 'Expected value is 0.008');
+            equal(m.cubic_meters(1000, 1000, 1000), 1, 'Expected value is 1');
+            equal(m.cubic_meters(0, 0, 0), 0, 'Expected value is 0');
         });
 
         test('linear_interpolation', () => {
