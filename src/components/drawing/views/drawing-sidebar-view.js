@@ -2,6 +2,7 @@ import Marionette from 'backbone.marionette';
 
 import App from '../../../main';
 import { format } from '../../../utils';
+import Unit from '../../../core/models/unit';
 import Multiunit from '../../../core/models/multiunit';
 import DrawingSidebarMultiunitDetailsView from './drawing-sidebar-multiunit-details-view';
 import DrawingSidebarUnitDetailsView from './drawing-sidebar-unit-details-view';
@@ -29,10 +30,17 @@ export default Marionette.View.extend({
         left: 'onPrevBtn',
         right: 'onNextBtn',
     },
+    //  Models are sorted like this: [1, 1a, 1b, 2, 2a, 3, 4]
     getModels() {
-        return (this.options.multiunits) ?
+        return (this.options.multiunits ?
             this.options.multiunits.models.concat(this.collection.models) :
-            this.collection.models;
+            this.collection.models
+        ).sort((a, b) => {
+            const a_num = a.getRefNum();
+            const b_num = b.getRefNum();
+
+            return parseInt(a_num, 10) === parseInt(b_num, 10) ? a.getRefNum() > b.getRefNum() : parseInt(a_num, 10) - parseInt(b_num, 10);
+        });
     },
     selectUnit(model) {
         this.ui.$select.selectpicker('val', model.cid);
@@ -93,7 +101,7 @@ export default Marionette.View.extend({
                     item.cid === this.options.parent_view.active_unit.cid,
                 reference_id: item.getRefNum(),
                 cid: item.cid,
-                mark: item.get('mark'),
+                mark: item instanceof Unit ? item.getMark() : item.get('mark'),
                 dimensions: format.dimensions(
                     item.getInMetric('width', 'inches'),
                     item.getInMetric('height', 'inches'),

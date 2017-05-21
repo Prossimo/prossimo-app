@@ -75,7 +75,7 @@ test('Prices tests', () => {
 
         const first_unit = current_quote.units.first();
 
-        equal(first_unit.get('mark'), 'A', 'Unit mark is expected to be A');
+        equal(first_unit.getMark(), 'A', 'Unit mark is expected to be A');
         equal(first_unit.get('original_cost'), 399, 'Unit original cost is expected to be 399');
 
         equal(first_unit.getUnitCost().toFixed(2), '441.73', 'Unit cost converted to USD is expected to be 441.73');
@@ -160,19 +160,6 @@ test('Prices tests', () => {
                 discount: 20,
                 root_section: '{"id":"102"}',
                 id: 18,
-            },
-        ], { parse: true });
-
-        current_quote.multiunits.add([
-            {
-                multiunit_subunits: [{ id: 5 }, { id: 18 }],
-                mark: 'A',
-                width: 68.78740,
-                height: 40,
-                quantity: 1,
-                description: 'Site-mulled multi frame unit',
-                notes: 'Assembled on site',
-                root_section: '{"id":"99999","connectors":[{"id":"1","side":"right","connects":[5,18],"width":20,"facewidth":40}]}',
             },
         ], { parse: true });
 
@@ -794,7 +781,7 @@ test('Prices tests', () => {
 
         const multiunit = current_quote.multiunits.first();
 
-        equal(multiunit.get('mark'), 'A', 'Unit mark is expected to be A');
+        equal(multiunit.get('mark'), 'A', 'Multiunit mark is expected to be A');
 
         equal(multiunit.getUnitPrice().toFixed(2), '2119.99', 'Multiunit end price is expected to be 2119.99');
 

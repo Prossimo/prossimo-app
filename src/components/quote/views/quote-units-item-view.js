@@ -315,11 +315,11 @@ export default Marionette.View.extend({
         return {
             is_subunit: this.model.isSubunit(),
             ref_num: this.model.getRefNum(),
-            mark: this.model.get('mark'),
+            mark: this.model.getMark(),
             description: this.getDescription(),
             notes: this.model.get('notes'),
             exceptions: this.model.get('exceptions'),
-            quantity: this.model.get('quantity'),
+            quantity: this.model.getQuantity(),
             customer_image: show_customer_image ? this.getCustomerImage() : '',
             product_image: show_drawings ? this.getProductImage() : '',
             show_price,
