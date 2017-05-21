@@ -983,6 +983,16 @@ const Unit = Backbone.Model.extend({
 
         return ref_num;
     },
+    getMark() {
+        const parent_multiunit = this.isSubunit() && this.getParentMultiunit();
+
+        return parent_multiunit ? parent_multiunit.get('mark') : this.get('mark');
+    },
+    getQuantity() {
+        const parent_multiunit = this.isSubunit() && this.getParentMultiunit();
+
+        return parent_multiunit ? parent_multiunit.get('quantity') : this.get('quantity');
+    },
     getWidthMM() {
         return convert.inches_to_mm(this.get('width'));
     },
@@ -999,7 +1009,7 @@ const Unit = Backbone.Model.extend({
         return math.square_feet(this.get('width'), this.get('height'));
     },
     getTotalSquareFeet() {
-        return this.getAreaInSquareFeet() * parseFloat(this.get('quantity'));
+        return this.getAreaInSquareFeet() * parseFloat(this.getQuantity());
     },
     getAreaInSquareMeters() {
         return math.square_meters(convert.inches_to_mm(this.get('width')), convert.inches_to_mm(this.get('height')));
@@ -1008,19 +1018,19 @@ const Unit = Backbone.Model.extend({
         return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
     },
     getSubtotalCost() {
-        return this.getUnitCost() * parseFloat(this.get('quantity'));
+        return this.getUnitCost() * parseFloat(this.getQuantity());
     },
     getUnitCostDiscounted() {
         return (this.getUnitCost() * (100 - parseFloat(this.get('supplier_discount')))) / 100;
     },
     getSubtotalCostDiscounted() {
-        return this.getUnitCostDiscounted() * parseFloat(this.get('quantity'));
+        return this.getUnitCostDiscounted() * parseFloat(this.getQuantity());
     },
     getUnitPrice() {
         return this.getUnitCostDiscounted() * parseFloat(this.get('price_markup'));
     },
     getSubtotalPrice() {
-        return this.getUnitPrice() * parseFloat(this.get('quantity'));
+        return this.getUnitPrice() * parseFloat(this.getQuantity());
     },
     getUValue() {
         return parseFloat(this.get('uw')) * 0.176;
@@ -1080,8 +1090,8 @@ const Unit = Backbone.Model.extend({
 
         //  Base unit info, always included
         pricing_data = _.extend({}, pricing_data, {
-            mark: this.get('mark'),
-            quantity: this.get('quantity'),
+            mark: this.getMark(),
+            quantity: this.getQuantity(),
             width: this.get('width'),
             height: this.get('height'),
         });

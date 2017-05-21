@@ -365,6 +365,12 @@ export default Marionette.View.extend({
             ref_num(model) {
                 return model.getRefNum();
             },
+            mark(model) {
+                return model instanceof Unit ? model.getMark() : model.get('mark');
+            },
+            quantity(model) {
+                return model instanceof Unit ? model.getQuantity() : model.get('quantity');
+            },
             width(model) {
                 return (model.isMultiunit()) ? model.getInMetric('width', 'inches') : model.get('width');
             },
@@ -956,6 +962,8 @@ export default Marionette.View.extend({
                     } else if (cell_value === UNSET_VALUE) {
                         cell_properties.readOnly = true;
                     }
+                } else if (item.isSubunit() && ['mark', 'quantity'].indexOf(property) !== -1) {
+                    cell_properties.readOnly = true;
                 }
             }
 

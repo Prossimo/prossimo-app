@@ -34,7 +34,7 @@ export default Marionette.View.extend({
 
             return {
                 ref_num: subunit.getRefNum(),
-                mark: subunit.get('mark'),
+                mark: subunit.getMark(),
                 size,
                 description: subunit.get('description'),
                 notes: subunit.get('notes'),

@@ -116,7 +116,7 @@ describe('Unit model', () => {
         });
 
         it('should have default quantity upon creation', () => {
-            expect(unit.get('quantity')).to.equal(1);
+            expect(unit.getQuantity()).to.equal(1);
         });
 
         it('should have unit_options that are an instance of UnitOptionCollection', () => {
@@ -144,7 +144,7 @@ describe('Unit model', () => {
         const unit = new Unit(data_to_set, { parse: true });
 
         it('should have correct quantity', () => {
-            expect(unit.get('quantity')).to.equal(15);
+            expect(unit.getQuantity()).to.equal(15);
         });
 
         it('should have undefined "whatever" attribute', () => {

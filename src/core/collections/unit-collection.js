@@ -100,8 +100,8 @@ export default Backbone.Collection.extend({
         let total_quantity = 0;
 
         this.each((item) => {
-            if (item.get('quantity')) {
-                total_quantity += parseFloat(item.get('quantity'));
+            if (item.getQuantity()) {
+                total_quantity += parseFloat(item.getQuantity());
             }
         }, this);
 
