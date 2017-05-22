@@ -508,6 +508,11 @@ export default Backbone.Model.extend({
         const originId = this.getOriginSubunitId();
         const originNode = nodeTemplates.find(node => (node.unit.isLinkingToUnit(originId)));
 
+        //  This is possible while subunit is being removed
+        if (!originNode) {
+            return {};
+        }
+
         originNode.unit = originNode.unit.getUnit();
 
         const subunitsTree = originNode;
