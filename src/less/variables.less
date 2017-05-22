@@ -11,11 +11,38 @@
 
 @min-page-width:        1200px;
 
-@top-bar-height:        4rem;
-@bottom-bar-height:     4rem;
-@header-height:         @top-bar-height + @bottom-bar-height;
+@top-bar-height:          4rem;
+@bottom-bar-height:       4rem;
+@header-height:           @top-bar-height + @bottom-bar-height;
+@inline-block-correction: -0.2857em;
 
 
 //  Transitions
 
 @simple-transition:     0.2s ease 0s;
+@opacity-transition:    opacity 0.1s ease;
+
+
+//  Effects
+
+@button-hover-brightness:      104%;
+@button-disabled-opacity:      0.5;
+
+
+//  Style library
+
+.drawing-hover-shadow() {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.075);
+}
+
+.reset-list() {
+    margin: 0;
+    padding: 0;
+    list-style: none outside none;
+}
+
+.correct-inline-block() {
+    margin-right: @inline-block-correction;
+
+    &:last-child { margin-right: 0; }
+}

@@ -566,4 +566,18 @@ export const array = {
     },
 };
 
-export default { format, parseFormat, math, convert, object, vector2d, angle, geometry, array };
+export const dom = {
+    isElementVisible(element) {
+        if (!element) { return; }
+
+        let opacity = 1;
+        window.jQuery(element).parents().andSelf().each((index, elem) => {
+            opacity *= window.jQuery(elem).css('opacity') || 1;
+        });
+        const isVisible = element.clientHeight && opacity;
+
+        return isVisible;
+    },
+};
+
+export default { format, parseFormat, math, convert, object, vector2d, angle, geometry, array, dom };

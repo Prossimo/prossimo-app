@@ -6,7 +6,10 @@ import Konva from 'konva';
 
 import App from '../../../main';
 import LayerManager from './layer-manager';
-import { object } from '../../../utils';
+import { object, dom } from '../../../utils';
+
+const DELAYED_HOVER_DEFAULT_DELAY = 400;
+const SECTION_MENU_HOVER_DELAY = 100;
 
 // This module starts manually with required parameters:
 // new DrawingModule({
@@ -438,9 +441,33 @@ const DrawingModule = Marionette.Object.extend({
     },
     // Handler
     handleKeyEvents(event) {
-        if (this.getState('isPreview') === false && this.layerManager) {
+        const isEscape = event.key === 'Escape';
+        const isPreview = this.getState('isPreview');
+        const keysToElementsTable = this.getState('keysToElementsTable');
+        const shortcutKeys = keysToElementsTable && Object.keys(keysToElementsTable);
+        const isShortcutKey = shortcutKeys && _.contains(shortcutKeys, event.key);
+
+        if (isEscape && this.isCloningFilling()) {
+            this.cloneFillingDismiss();
+        } else if (isEscape && this.isSyncingFilling()) {
+            this.syncFillingDismiss();
+        } else if (isShortcutKey) {
+            this.handleShortcutKey(event.key);
+        }
+
+        if (!isPreview && this.layerManager) {
             this.layerManager.handleKeyEvents(event);
         }
+    },
+    handleShortcutKey(key) {
+        if (!key) { return; }
+        const boundElements = this.getState('keysToElementsTable')[key];
+        if (!boundElements) { return; }
+
+        const visibleElements = boundElements.filter(element => dom.isElementVisible(element));
+
+        const lastVisible = _.last(visibleElements);
+        if (lastVisible) { $(lastVisible).trigger('click'); }
     },
     // Create private Konva.Stage (if it wasn't defined in options)
     createStage() {
@@ -498,6 +525,146 @@ const DrawingModule = Marionette.Object.extend({
         }
 
         this.stopListening();
+    },
+    cloneFillingStart(sourceSashId) {
+        const model = this.get('model');
+        const selectedSash = model.getSection(sourceSashId);
+        if (!selectedSash) { return; }
+
+        this.setState({
+            cloneFillingSource: {
+                bars: selectedSash.bars,
+                sashType: selectedSash.sashType,
+                fillingType: selectedSash.fillingType,
+                fillingName: selectedSash.fillingName,
+            },
+        });
+    },
+    cloneFillingFinish(targetSashId) {
+        if (!targetSashId || !this.isCloningFilling()) { return; }
+        const model = this.get('model');
+        const sourceBars = this.state.cloneFillingSource.bars;
+        const sourceSashType = this.state.cloneFillingSource.sashType;
+        const sourceFillingType = this.state.cloneFillingSource.fillingType;
+        const sourceFillingName = this.state.cloneFillingSource.fillingName;
+
+        if (sourceBars) { model.setSectionBars(targetSashId, sourceBars); }
+        if (sourceSashType) { model.setSectionSashType(targetSashId, sourceSashType); }
+        if (sourceFillingType && sourceFillingName) {
+            model.setFillingType(targetSashId, sourceFillingType, sourceFillingName);
+        }
+
+        this.cloneFillingDismiss();
+    },
+    cloneFillingDismiss() {
+        this.deselectAll();
+        this.setState({ cloneFillingSource: null });
+    },
+    isCloningFilling() {
+        return !!this.state.cloneFillingSource;
+    },
+    syncFillingStart(sourceSashId) {
+        const model = this.get('model');
+        const selectedSash = model.getSection(sourceSashId);
+        if (!selectedSash) { return; }
+
+        this.setState({ syncFillingSource: { id: sourceSashId, bars: selectedSash.bars } });
+    },
+    syncFillingFinish(targetSashId) {
+        if (!targetSashId || !this.isSyncingFilling()) { return; }
+        const model = this.get('model');
+        const sourceSashId = this.state.syncFillingSource.id;
+        const sourceBars = this.state.syncFillingSource.bars;
+        const emptyBars = { horizontal: [], vertical: [] };
+        const hasSourceBars = model.hasSectionBars(sourceSashId);
+        let hasTargetBars = model.hasSectionBars(targetSashId);
+
+        // Copy or erase bars as necessary
+        if (hasSourceBars && !hasTargetBars) {
+            model.setSectionBars(targetSashId, sourceBars);
+            hasTargetBars = true;
+        } else if (!hasSourceBars && hasTargetBars) {
+            model.setSectionBars(targetSashId, emptyBars);
+            hasTargetBars = false;
+        }
+
+        // Adjust bar positions
+        if (hasSourceBars && hasTargetBars) {
+            model.adjustBars(targetSashId, { referenceSectionId: sourceSashId, flipBarsX: !this.state.insideView });
+        }
+
+        this.syncFillingDismiss();
+    },
+    syncFillingDismiss() {
+        this.deselectAll();
+        this.setState({ syncFillingSource: null });
+    },
+    isSyncingFilling() {
+        return !!this.state.syncFillingSource;
+    },
+    enableDelayedHover() {
+        this.setState('delayedHoverDisabled', false, true);
+    },
+    disableDelayedHover() {
+        this.setState('delayedHoverDisabled', true, true);
+    },
+    startDelayedHover(func, options) {
+        if (!func) { return; }
+        const delay = (options && _.isNumber(options.delay)) ? options.delay : DELAYED_HOVER_DEFAULT_DELAY;
+        if (this.getState('delayedHover') || this.getState('delayedHoverDisabled')) { return; }
+
+        const handle = setTimeout(() => {
+            if (!this.getState('delayedHoverDisabled')) { func(); }
+            this.stopDelayedHover();
+        }, delay);
+        this.setState('delayedHover', { func, delay, handle }, true);
+    },
+    restartDelayedHover() {
+        const delayedHover = this.getState('delayedHover');
+        if (!delayedHover) { return; }
+
+        this.stopDelayedHover();
+        this.startDelayedHover(delayedHover.func, { delay: delayedHover.delay });
+    },
+    stopDelayedHover() {
+        const delayedHover = this.getState('delayedHover');
+        if (!delayedHover) { return; }
+
+        clearTimeout(delayedHover.handle);
+        this.setState('delayedHover', null, true);
+    },
+    startSectionMenuHover(options) {
+        const sectionId = options && options.sectionId;
+        if (!sectionId) { return; }
+
+        const sectionMenuOpener = () => {
+            this.openSectionHoverMenu();
+            this.setState('selected:sash', sectionId, true);
+            this.disableDelayedHover();  // Prevent menu open calls while open
+
+            // On menu close
+            this.once('state:sectionHoverMenuOpen', (event) => {
+                const doClose = !event.newValue;
+                if (doClose) {
+                    this.deselectAll();
+                    this.enableDelayedHover();
+                }
+            });
+        };
+
+        this.startDelayedHover(sectionMenuOpener, { delay: SECTION_MENU_HOVER_DELAY });
+    },
+    restartSectionMenuHover() {
+        this.restartDelayedHover();
+    },
+    stopSectionMenuHover() {
+        this.stopDelayedHover();
+    },
+    openSectionHoverMenu() {
+        this.setState('sectionHoverMenuOpen', true);
+    },
+    closeSectionHoverMenu() {
+        this.setState('sectionHoverMenuOpen', false);
     },
 });
 

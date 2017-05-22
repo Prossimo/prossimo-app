@@ -14,7 +14,7 @@ export default Marionette.View.extend({
         $modal: '#glazingPopup',
         $body: '.modal-body',
         $drawing: '.modal-drawing',
-        $bar_controlls: '.glazing-bars-controlls',
+        $bar_controls: '.glazing-bars-controls',
         $bar_vertical: '#vertical-bars-number',
         $bar_horizontal: '#horizontal-bars-number',
     },
