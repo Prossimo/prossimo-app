@@ -94,7 +94,7 @@ export default Marionette.View.extend({
         $shortcuts: '[data-key]',
         $undo: '#undo',
         $redo: '#redo',
-        $multiunit_controls: '.drawing-controls .multiunit',
+        $multiunit_controls: '#multiunit-controls',
         $subunit_menu: '.drawing-controls .subunit.menu',
         $add_connector_buttons: '.drawing-controls .add-connector .button',
         $add_connector_enabled_buttons: '.drawing-controls .add-connector .button:not(.disabled)',
