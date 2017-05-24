@@ -57,7 +57,7 @@ export default Backbone.KonvaView.extend({
     setSelection(event, type) {
         const origin = event.target;
 
-        this.deselectAll();
+        this.deselectAll(true);
 
         if (type === 'subunit') {
             this._module.setState('selected:subunit', origin.attrs.subunitId, false);
