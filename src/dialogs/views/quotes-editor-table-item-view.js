@@ -16,7 +16,6 @@ export default Marionette.View.extend({
     cloneQuote() {
         this.model.duplicate({
             model_name: 'Quote',
-            attributes_to_omit: ['is_default'],
             fetch_after_saving: true,
             extra_attributes: {
                 units: this.model.units.toJSON(),
@@ -29,9 +28,10 @@ export default Marionette.View.extend({
     },
     templateContext() {
         return {
+            id: this.model.id,
             name: this.model.getName(),
             date: this.model.get('date'),
-            is_removable: this.model.get('is_default') !== true,
+            is_removable: !this.model.isDefault(),
             units: `${this.model.units.getTotalUnitTypes()} / ${
                 this.model.units.getTotalUnitQuantity()}`,
             grand_total: format.price_usd(this.model.getTotalPrices().grand_total),
@@ -46,12 +46,11 @@ export default Marionette.View.extend({
         },
     },
     onRender() {
-        if (this.model.get('is_default') !== true) {
-            this.showChildView('name', new BaseInputView({
-                model: this.model,
-                param: 'name',
-            }));
-        }
+        this.showChildView('name', new BaseInputView({
+            model: this.model,
+            param: 'name',
+            placeholder: this.model.getName(),
+        }));
 
         this.showChildView('date', new BaseDatepickerInputView({
             model: this.model,

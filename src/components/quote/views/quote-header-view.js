@@ -7,7 +7,8 @@ export default Marionette.View.extend({
     template,
     templateContext() {
         return _.extend(this.serializeModel(this.model), {
-            quote_number: this.options.quote.getQuoteNumber(),
+            quote_number: this.options.quote.getNumber(),
+            quote_name: this.options.quote.get('name'),
             quote_date: this.options.quote.get('date'),
             quote_revision_id: this.options.quote.get('revision'),
         });
