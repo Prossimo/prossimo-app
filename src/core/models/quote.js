@@ -7,7 +7,6 @@ import UnitCollection from '../collections/unit-collection';
 
 const QUOTE_PROPERTIES = [
     { name: 'name', title: 'Name', type: 'string' },
-    { name: 'is_default', title: 'Is Default', type: 'boolean' },
     { name: 'date', title: 'Quote Date', type: 'string' },
     { name: 'revision', title: 'Quote Revision', type: 'number' },
     { name: 'position', title: 'Position', type: 'number' },
@@ -31,16 +30,8 @@ export default Backbone.Model.extend({
             number: 0,
         };
 
-        const name_value_hash = {
-            is_default: false,
-        };
-
         if (_.indexOf(_.keys(type_value_hash), type) !== -1) {
             default_value = type_value_hash[type];
-        }
-
-        if (_.indexOf(_.keys(name_value_hash), name) !== -1) {
-            default_value = name_value_hash[name];
         }
 
         return default_value;
@@ -76,7 +67,7 @@ export default Backbone.Model.extend({
         return filtered_data;
     },
     toJSON(...args) {
-        const properties_to_omit = ['id', 'is_default'];
+        const properties_to_omit = ['id'];
         const json = Backbone.Model.prototype.toJSON.apply(this, args);
 
         return _.omit(json, properties_to_omit);
@@ -122,15 +113,16 @@ export default Backbone.Model.extend({
     getParentProject() {
         return this.collection && this.collection.options.project;
     },
-    getQuoteNumber() {
+    //  Get something like `501-78`, which is <project_id>-<quote_id>
+    getNumber() {
         const parent_project = this.getParentProject();
         let quote_number = '--';
 
         if (parent_project && !parent_project.isNew()) {
-            quote_number = parent_project.id;
+            quote_number = `${parent_project.id}`;
 
-            if (!this.get('is_default') && this.get('name')) {
-                quote_number += ` - ${this.get('name')}`;
+            if (!this.isNew()) {
+                quote_number += `-${this.id}`;
             }
         }
 
@@ -228,8 +220,16 @@ export default Backbone.Model.extend({
             balance_due_at_delivery,
         };
     },
+    //  If it doesn't belong to any collection, we consider it to be default
+    isDefault() {
+        const collection_default = this.collection && this.collection.getDefaultQuote();
+
+        return collection_default ? (collection_default === this) : true;
+    },
     getName() {
-        return this.get('is_default') ? 'Default Quote' : this.get('name');
+        const current_name = this.get('name');
+
+        return current_name || (this.isDefault() ? 'Default Quote' : 'Unnamed Quote');
     },
     preparePricingDataForExport(options) {
         const units_data = this.units.invoke('preparePricingDataForExport', options);

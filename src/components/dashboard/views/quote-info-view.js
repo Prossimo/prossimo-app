@@ -13,7 +13,6 @@ export default Marionette.View.extend({
     templateContext() {
         return {
             id: this.model.id,
-            is_default: this.model.get('is_default'),
             name: this.model.getName(),
         };
     },
@@ -29,12 +28,11 @@ export default Marionette.View.extend({
         },
     },
     onRender() {
-        if (this.model.get('is_default') !== true) {
-            this.showChildView('name', new BaseInputView({
-                model: this.model,
-                param: 'name',
-            }));
-        }
+        this.showChildView('name', new BaseInputView({
+            model: this.model,
+            param: 'name',
+            placeholder: this.model.getName(),
+        }));
 
         this.showChildView('revision', new BaseInputView({
             model: this.model,

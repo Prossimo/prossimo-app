@@ -207,7 +207,6 @@ const test_quotes_data = [
         id: 222,
         date: '11 June, 2016',
         revision: 1,
-        is_default: true,
     },
 ];
 

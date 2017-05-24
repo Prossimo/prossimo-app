@@ -9,11 +9,9 @@ export default BaseDialogView.extend({
         'click .js-add-new-quote': 'addNewQuote',
     },
     addNewQuote() {
-        const make_default = this.collection.length === 0;
         const new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
 
         this.collection.create({
-            is_default: make_default,
             position: new_position,
         });
     },
