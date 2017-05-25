@@ -1408,9 +1408,9 @@ export default Backbone.KonvaView.extend({
 
             handleKonva.getAttr('fixes').forEach((fix) => {
                 if (fix === 'positionOver') {
-                    self.moveToSeparateLayer(handleKonva);
+                    self.moveToSeparateContainer(handleKonva);
                 } else if (fix === 'positionUnder') {
-                    self.moveToSeparateLayer(handleKonva);
+                    self.moveToSeparateContainer(handleKonva);
                     handleBaseStroke.moveToTop();
                     handleBaseStroke.dash(handleBaseDashStyle);
                     handleGripStroke.dash(handleGripDashStyle);
@@ -1422,12 +1422,15 @@ export default Backbone.KonvaView.extend({
             });
         });
     },
-    moveToSeparateLayer(konva) {
-        const transform = konva.getAbsoluteTransform().getMatrix();
-        konva.moveTo(this.layer);
+    moveToSeparateContainer(konva) {
+        const targetContainer = this.layer.getChildren()[0];
+        const [containerOffsetX, containerOffsetY] = [targetContainer.x(), targetContainer.y()];
+        const [scaleX, , , scaleY, offsetX, offsetY] = konva.getAbsoluteTransform().getMatrix();
+
+        konva.moveTo(targetContainer);
         konva.moveToTop();
-        konva.scale({ x: transform[0], y: transform[3] });
-        konva.position({ x: transform[4], y: transform[5] });
+        konva.scale({ x: scaleX, y: scaleY });
+        konva.position({ x: offsetX - containerOffsetX, y: offsetY - containerOffsetY });
     },
     createDirectionLine(section) {
         const group = new Konva.Group({ name: 'direction' });
