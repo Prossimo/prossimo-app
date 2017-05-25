@@ -123,10 +123,27 @@
         pointer-events: none;
     }
 
+    td > p {
+        margin: 0;
+    }
+
+    th.entry-drag,
+    td.entry-drag {
+        width: 5%;
+    }
+
+    th.id,
+    td.id {
+        width: 5%;
+    }
+
     th.name,
     td.name {
+        width: 25%;
+    }
+
+    td.name {
         padding: 3px;
-        width: 30%;
     }
 
     td.name p {
@@ -135,8 +152,11 @@
 
     th.date,
     td.date {
-        padding: 3px;
         width: 22%;
+    }
+
+    td.date {
+        padding: 3px;
     }
 
     tr:hover {

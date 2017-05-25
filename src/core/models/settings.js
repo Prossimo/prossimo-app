@@ -69,15 +69,12 @@ export default Backbone.Model.extend({
         quote_type = _.contains(['quote', 'supplier'], quote_type) ? quote_type : 'quote';
 
         const base_url = this.get('pdf_api_base_path');
-        let url = '/:type/:project_id/:project_name/:quote_id/:quote_name/:revision/:token';
+        let url = '/:type/:quote_id/:project_name/:quote_name/:revision/:token';
         const replacement_table = {
             ':type': quote_type,
-            ':project_id': App.current_project.id,
+            ':quote_id': String(App.current_quote.getNumber()),
             ':project_name': encodeURIComponent(App.current_project.get('project_name')),
-            ':quote_id': App.current_quote.id,
-            ':quote_name': encodeURIComponent(
-                App.current_quote.get('is_default') ? '' : App.current_quote.get('name'),
-            ),
+            ':quote_name': encodeURIComponent(App.current_quote.get('name')),
             ':revision': String(App.current_quote.get('revision')),
             ':token': window.localStorage.getItem('authToken'),
         };

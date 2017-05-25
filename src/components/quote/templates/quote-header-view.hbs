@@ -12,7 +12,8 @@
     </ul>
     <ul class="quote-info">
         <li class="quote-number"><strong>Quote #</strong> <span>{{ quote_number }}</span></li>
-        <li class="quote-date"><strong>Quote Date</strong> <span>{{ quote_date }}</span></li>
+        {{#if quote_name }}<li class="quote-name"><strong>Quote Name</strong> <span>{{ quote_name }}</span></li>{{/if}}
+        <li class="quote-date"><strong>Date</strong> <span>{{ quote_date }}</span></li>
         <li class="quote-revision"><strong>Revision #</strong> <span>{{ quote_revision_id }}</span></li>
     </ul>
 </div>

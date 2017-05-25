@@ -23,7 +23,7 @@ export default Backbone.Collection.extend({
         return this.proxy_quote.getTitles(names);
     },
     getDefaultQuote() {
-        return this.findWhere({ is_default: true });
+        return this.first();
     },
     initialize(models, options) {
         this.options = options || {};

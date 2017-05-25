@@ -87,18 +87,14 @@ export default BaseDialogView.extend({
         const year = start_time.getFullYear();
         const month = (start_time.getMonth() > 8) ? (start_time.getMonth() + 1) : `0${start_time.getMonth() + 1}`;
         const date = (start_time.getDate() > 9) ? start_time.getDate() : `0${start_time.getDate()}`;
+        const id = this.export_quote_mode.value === 'current' ? this.options.quote.getNumber() : this.model.id;
         let project_name = this.model.get('project_name') ? this.model.get('project_name') : 'unnamed';
-        let quote_name = this.export_quote_mode.value === 'current' ?
-            this.options.quote.getName() :
-            'All Quotes';
+        let quote_name = this.export_quote_mode.value === 'current' ? this.options.quote.get('name') : 'All Quotes';
 
         project_name = project_name.split(/\s/).join('-');
         quote_name = quote_name.split(/\s/).join('-');
 
-        return `${year}-${month}-${date}_${
-            this.model.id ? `${this.model.id}_` : ''
-            }${project_name}_${quote_name}`
-        ;
+        return `${year}-${month}-${date}_${id ? `${id}_` : ''}${project_name}${quote_name ? `_${quote_name}` : ''}`;
     },
     getFilename() {
         this.filename = this.getDefaultFilename();
