@@ -1261,41 +1261,31 @@ export default Backbone.KonvaView.extend({
         return group;
     },
     drawSlideDirection(sectionData, /* Konva.Group*/group) {
-        if (['slide_left', 'slide_right'].indexOf(sectionData.sashType) === -1) {
-            return group;
-        }
+        if (['slide_left', 'slide_right'].indexOf(sectionData.sashType) === -1) { return group; }
+        const ratio = this._ratio;
+        const [sashWidth, sashHeight] = [sectionData.sashParams.width, sectionData.sashParams.height];
+        const [glassWidth, glassHeight] = [sectionData.glassParams.width, sectionData.glassParams.height];
 
-        const direction = sectionData.sashType.split('_').pop();
-        const factors = {
-            offsetX: sectionData.sashParams.width / 3,
-            offsetY: sectionData.sashParams.height / 4,
-            stepX: 60 / this._ratio,
-            stepY: 60 / this._ratio,
-            left: {
-                initialOffsetSign: -1,
-                directionSign: 1,
-            },
-            right: {
-                initialOffsetSign: 1,
-                directionSign: -1,
-            },
-        };
-        const initialX = (sectionData.sashParams.width / 2) + ((15 / this._ratio) * factors[direction].initialOffsetSign);
-        const initialY = (sectionData.sashParams.height / 2) + (10 / this._ratio);
+        const [sashCenterX, sashCenterY] = [sashWidth / 2, sashHeight / 2];
+        const directionSign = (sectionData.sashType.split('_').pop() === 'left') ? 1 : -1;
+        const maxArrowScreenSize = 60 / ratio;
+        const maxArrowWidth = Math.min(0.4 * glassWidth, maxArrowScreenSize);
+        const maxArrowHeight = Math.min(0.5 * glassHeight, maxArrowScreenSize);
+        const arrowWidth = Math.min(maxArrowWidth, maxArrowHeight);
+        const arrowHeight = Math.min(maxArrowWidth, maxArrowHeight);
+        const [offsetX, offsetY] = [arrowWidth / 2, arrowHeight / 2];
+        const [originX, originY] = [sashCenterX - (directionSign * offsetX), sashCenterY + offsetY];
         const arrowParams = {
             points: [
-                initialX,
-                initialY,
-                initialX,
-                initialY - factors.stepY,
-                initialX + (factors.stepX * factors[direction].directionSign),
-                initialY - factors.stepY,
+                originX, originY,
+                originX, originY - arrowHeight,
+                originX + (directionSign * arrowWidth), originY - arrowHeight,
             ],
-            pointerLength: (1 / this._ratio) * 2,
-            pointerWidth: (1 / this._ratio) * 2,
+            pointerLength: 2 / ratio,
+            pointerWidth: 2 / ratio,
             fill: 'black',
             stroke: 'black',
-            strokeWidth: 1 / this._ratio,
+            strokeWidth: 1 / ratio,
             name: 'index',
         };
         const arrow = new Konva.Arrow(arrowParams);
@@ -1304,43 +1294,38 @@ export default Backbone.KonvaView.extend({
         return group;
     },
     drawTiltSlideDirection(sectionData, /* Konva.Group*/group) {
-        if (['tilt_slide_left', 'tilt_slide_right'].indexOf(sectionData.sashType) === -1) {
-            return group;
-        }
+        if (['tilt_slide_left', 'tilt_slide_right'].indexOf(sectionData.sashType) === -1) { return group; }
+        const ratio = this._ratio;
+        const [sashWidth, sashHeight] = [sectionData.sashParams.width, sectionData.sashParams.height];
+        const [glassWidth, glassHeight] = [sectionData.glassParams.width, sectionData.glassParams.height];
 
-        const direction = sectionData.sashType.split('_').pop();
-        const factors = {
-            stepX: sectionData.sashParams.width / 5,
-            stepY: sectionData.sashParams.height / 5,
-            left: {
-                initialOffsetSign: -1,
-                directionSign: 1,
-            },
-            right: {
-                initialOffsetSign: 1,
-                directionSign: -1,
-            },
-        };
-        const centerX = sectionData.sashParams.width / 2;
-        const centerY = sectionData.sashParams.height / 2;
-        const initialX = centerX + ((factors.stepX / 2) * factors[direction].initialOffsetSign);
-        const initialY = centerY + (10 / this._ratio);
+        const [sashCenterX, sashCenterY] = [sashWidth / 2, sashHeight / 2];
+        const directionSign = (sectionData.sashType.split('_').pop() === 'left') ? 1 : -1;
+        const maxArrowScreenSize = 100 / ratio;
+        const maxArrowAspectRatio = 1.25;
+        const maxArrowWidth = Math.min(0.4 * glassWidth, maxArrowScreenSize);
+        const maxArrowHeight = Math.min(0.33 * glassHeight, maxArrowScreenSize);
+        let [arrowWidth, arrowHeight] = [maxArrowWidth, maxArrowHeight];
+        if (arrowWidth / arrowHeight >= maxArrowAspectRatio) {
+            arrowWidth = arrowHeight * maxArrowAspectRatio;
+        } else if (arrowHeight / arrowWidth >= maxArrowAspectRatio) {
+            arrowHeight = arrowWidth * maxArrowAspectRatio;
+        }
+        const doFixIndexOverlapping = arrowHeight * ratio < 30;
+        const [offsetX, offsetY] = [arrowWidth / 3, doFixIndexOverlapping ? 0 : 8 / ratio];
+        const [originX, originY] = [sashCenterX - (directionSign * offsetX), sashCenterY + offsetY];
         const arrowParams = {
             points: [
-                initialX,
-                initialY,
-                initialX + ((factors.stepX / 2) * factors[direction].directionSign),
-                initialY - factors.stepY,
-                initialX + (factors.stepX * factors[direction].directionSign),
-                initialY,
-                initialX + (factors.stepX * 2 * factors[direction].directionSign),
-                initialY,
+                originX, originY,
+                originX + (directionSign * 0.33 * arrowWidth), originY - arrowHeight,
+                originX + (directionSign * 0.66 * arrowWidth), originY,
+                originX + (directionSign * 1 * arrowWidth), originY,
             ],
-            pointerLength: (1 / this._ratio) * 2,
-            pointerWidth: (1 / this._ratio) * 2,
+            pointerLength: 2 / ratio,
+            pointerWidth: 2 / ratio,
             fill: 'black',
             stroke: 'black',
-            strokeWidth: 1 / this._ratio,
+            strokeWidth: 1 / ratio,
             name: 'index',
         };
         const arrow = new Konva.Arrow(arrowParams);
