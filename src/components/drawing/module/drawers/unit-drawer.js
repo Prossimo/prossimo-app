@@ -1626,7 +1626,7 @@ export default Backbone.KonvaView.extend({
                 sectionId: section.id,
                 x: number.x() + (section.size.width / 2),
                 y: number.y() + (number.height() / 2),
-                radius: hoverpadRadius,
+                radius: (hoverpadRadius > 0) ? hoverpadRadius : 0,
             });
 
             group.add(hoverpad, number);
