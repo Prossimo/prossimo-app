@@ -42,27 +42,27 @@ export const format = {
             value_inches = parseFloat(value);
         }
 
+        //  If fractional part is too close to 0 or to 1, we just
+        //  round value_inches to a nearest integer. This prevents
+        //  us from getting something like |2′−6 1/1″|. Too close
+        //  means smaller than half of 1/16 of an inch, given that
+        //  MAX_DENOMINATOR == 16
+        if (
+            Math.abs(Math.round(value_inches) - value_inches) > 0 &&
+            Math.abs(Math.round(value_inches) - value_inches) <= (1 / MAX_DENOMINATOR) / 2
+        ) {
+            value_inches = Math.round(value_inches);
+        }
+
+        //  If value_inches is too close to 12, we set it to 0 and
+        //  increase value_feet by 1. This prevents us from getting
+        //  something like |1′−12″|
+        if (value_inches === 12) {
+            value_feet += 1;
+            value_inches = 0;
+        }
+
         if (decimal_format === 'fraction') {
-            //  If fractional part is too close to 0 or to 1, we just
-            //  round value_inches to a nearest integer. This prevents
-            //  us from getting something like |2′−6 1/1″|. Too close
-            //  means smaller than half of 1/16 of an inch, given that
-            //  MAX_DENOMINATOR == 16
-            if (
-                Math.abs(Math.round(value_inches) - value_inches) > 0 &&
-                Math.abs(Math.round(value_inches) - value_inches) <= (1 / MAX_DENOMINATOR) / 2
-            ) {
-                value_inches = Math.round(value_inches);
-            }
-
-            //  If value_inches is too close to 12, we set it to 0 and
-            //  increase value_feet by 1. This prevents us from getting
-            //  something like |1′−12″|
-            if (value_inches === 12) {
-                value_feet += 1;
-                value_inches = 0;
-            }
-
             if (value_inches - Math.floor(value_inches)) {
                 fractional_part = (value_inches - Math.floor(value_inches));
 
