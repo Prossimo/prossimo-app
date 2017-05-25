@@ -355,7 +355,10 @@ export default Marionette.View.extend({
         this.ui.$help_squares.toggleClass('help-visible', false);
     },
     handleAddConnectorClick(event) {
-        const connectorSide = $(event.target).data().side;
+        const flipSideX = side => (side === 'left' ? 'right' : 'left');
+        const isInside = this.isInsideView();
+        const sideLabel = $(event.target).data().side;
+        const connectorSide = (isInside) ? flipSideX(sideLabel) : sideLabel;
         const relation = this.model.getRelation();
         let multiunit;
         let modelId;
@@ -365,10 +368,7 @@ export default Marionette.View.extend({
             modelId = this.model.id;
         } else if (relation === 'loneunit') {
             multiunit = this.model.toMultiunit();
-            multiunit.persist({}, {
-                validate: true,
-                parse: true,
-            });
+            multiunit.persist({}, { validate: true, parse: true });
             modelId = this.model.id;
         } else if (relation === 'multiunit') {
             multiunit = this.model;
@@ -787,6 +787,7 @@ export default Marionette.View.extend({
     },
     // Here we hide or show various elements in toolbar
     updateUI() {
+        const isInside = this.isInsideView();
         const selectedSashId = this.state.selectedSashId;
         const selectedSash = (this.model.getSection) ? this.model.getSection(selectedSashId) : undefined;
         const isSashSelected = !!selectedSash;
@@ -876,13 +877,16 @@ export default Marionette.View.extend({
         // Multiunit controls
         this.ui.$multiunit_controls.toggle(isSubunitSelected);
         this.ui.$subunit_menu.toggle((isSubunit || isMultiunit) && isSubunitSelected);
-
-        // Enable if
-        this.ui.$add_connector_top_button.toggleClass('disabled', !(!isSubunitTopConnected));
-        this.ui.$add_connector_right_button.toggleClass('disabled', !(!isSubunitRightConnected));
-        this.ui.$add_connector_bottom_button.toggleClass('disabled', !(!isSubunitBottomConnected));
-        this.ui.$add_connector_left_button.toggleClass('disabled', !(!isSubunitLeftConnected));
-        this.ui.$remove_subunit_button.toggleClass('disabled', !(isSubunitRemovable));
+        this.ui.$add_connector_top_button.toggleClass('disabled', isSubunitTopConnected);
+        this.ui.$add_connector_bottom_button.toggleClass('disabled', isSubunitBottomConnected);
+        this.ui.$remove_subunit_button.toggleClass('disabled', !isSubunitRemovable);
+        if (isInside) {
+            this.ui.$add_connector_left_button.toggleClass('disabled', isSubunitRightConnected);
+            this.ui.$add_connector_right_button.toggleClass('disabled', isSubunitLeftConnected);
+        } else {
+            this.ui.$add_connector_left_button.toggleClass('disabled', isSubunitLeftConnected);
+            this.ui.$add_connector_right_button.toggleClass('disabled', isSubunitRightConnected);
+        }
 
         // Undo, Redo buttons
         if (!this.undo_manager.registered) {
