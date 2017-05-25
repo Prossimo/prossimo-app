@@ -2099,16 +2099,19 @@ export default Backbone.KonvaView.extend({
             number.y((number.y() + (section.size.height / 2)) - (number.height() / 2));
             const minUnitDimension = Math.min(section.size.width, section.size.height);
             const hoverpadRadius = Math.min(INDEX_HOVERPAD_SIZE / ratio, minUnitDimension / 2);
-            const hoverpad = new Konva.Circle({
-                id: `indexHoverPad-${section.id}`,
-                name: 'indexHoverPad',
-                sectionId: section.id,
-                x: number.x() + (section.size.width / 2),
-                y: number.y() + (number.height() / 2),
-                radius: hoverpadRadius,
-            });
 
-            group.add(hoverpad, number);
+            if (_.isNumber(hoverpadRadius) && hoverpadRadius > 0) {
+                const hoverpad = new Konva.Circle({
+                    id: `indexHoverPad-${section.id}`,
+                    name: 'indexHoverPad',
+                    sectionId: section.id,
+                    x: number.x() + (section.size.width / 2),
+                    y: number.y() + (number.height() / 2),
+                    radius: hoverpadRadius,
+                });
+
+                group.add(hoverpad, number);
+            }
         });
 
         return group;
