@@ -73,6 +73,9 @@ export default Backbone.KonvaView.extend({
         this.delegateEvents();
     },
     events: {
+        'click .mainFrame': 'onMainFrameClick',
+        'tap .mainFrame': 'onMainFrameClick',
+
         'click .frame': 'onFrameClick',
         'tap .frame': 'onFrameClick',
 
@@ -104,8 +107,11 @@ export default Backbone.KonvaView.extend({
         return false;
     },
     // Handlers
+    onMainFrameClick(event) {
+        this.setSelection(event, 'unit', 'frame');
+    },
     onFrameClick(event) {
-        this.setSelection(event, 'frame', 'whole');
+        this.setSelection(event, 'sash', 'frame');
     },
     onFillingClick(event) {
         this.setSelection(event, 'sash', 'filling');
@@ -149,8 +155,8 @@ export default Backbone.KonvaView.extend({
 
         this.deselectAll();
 
-        if (type === 'frame') {
-            this._module.setState('selected:frame', 'whole');
+        if (type === 'unit') {
+            this._module.setState('selected:unit', 'frame');
         } else if (type === 'sash' && origin) {
             this._module.setState('selected:sash', origin.attrs.sectionId);
         } else if (type === 'mullion' && origin) {
@@ -223,6 +229,7 @@ export default Backbone.KonvaView.extend({
         // create main frame
         if (isDoorFrame) {
             frameGroup = this.createDoorFrame({
+                name: 'mainFrame',
                 sectionId: root.id,
                 width: this._model.getInMetric('width', 'mm'),
                 height: this._model.getInMetric('height', 'mm'),
@@ -230,6 +237,7 @@ export default Backbone.KonvaView.extend({
             });
         } else if (isArchedWindow) {
             frameGroup = this.createArchedFrame({
+                name: 'mainFrame',
                 sectionId: root.id,
                 width: this._model.getInMetric('width', 'mm'),
                 height: this._model.getInMetric('height', 'mm'),
@@ -238,12 +246,14 @@ export default Backbone.KonvaView.extend({
             });
         } else if (isCircleWindow) {
             frameGroup = this.createCircleFrame({
+                name: 'mainFrame',
                 sectionId: root.id,
                 radius: this._model.getCircleRadius(),
                 frameWidth: this._model.profile.get('frame_width'),
             });
         } else {
             frameGroup = this.createFrame({
+                name: 'mainFrame',
                 sectionId: root.id,
                 width: this._model.getInMetric('width', 'mm'),
                 height: this._model.getInMetric('height', 'mm'),
@@ -257,18 +267,15 @@ export default Backbone.KonvaView.extend({
         return group;
     },
     createCircleSashFrame(params) {
+        let group = new Konva.Group({ name: params.name || 'frame', sectionId: params.section.id });
         const section = params.section;
         const frameWidth = params.frameWidth; // in mm
         const data = params.data;
 
-        let group = new Konva.Group({
-            name: 'frame',
-            sectionId: section.id,
-        });
-
         if (data.type === 'rect') {
             // If this is a section that bordered with mullions from each side — it's a simple rectangular sash
             group = this.createFrame({
+                name: params.name,
                 width: section.sashParams.width,
                 height: section.sashParams.height,
                 frameWidth,
@@ -277,6 +284,7 @@ export default Backbone.KonvaView.extend({
         } else if (data.type === 'circle') {
             // If there is no edges around — it's just a circle (sash inside root section)
             group = this.createCircleFrame({
+                name: params.name,
                 frameWidth,
                 radius: data.radius,
                 sectionId: section.id,
@@ -284,6 +292,7 @@ export default Backbone.KonvaView.extend({
         } else if (data.type === 'arc') {
             // Otherwise it's a sash inside one of children section, so this sash have an arc side
             group = this.createArchSashFrame({
+                name: params.name,
                 frameWidth,
                 radius: data.radius,
                 section,
@@ -293,14 +302,10 @@ export default Backbone.KonvaView.extend({
         return group;
     },
     createArchSashFrame(params) {
+        const group = new Konva.Group({ name: params.name || 'frame', sectionId: params.section.id });
         const style = this._module.getStyle('frame');
-
         const opts = this.getCircleSashDrawingOpts(params);
 
-        const group = new Konva.Group({
-            name: 'frame',
-            sectionId: params.section.id,
-        });
         const straightEdges = this.createStraightEdges(params, opts, style);
         const arcEdge = this.createArcEdges(params, opts, style);
 
@@ -484,16 +489,13 @@ export default Backbone.KonvaView.extend({
         return arcEdge;
     },
     createFrame(params) {
+        const group = new Konva.Group({ name: params.name || 'frame', sectionId: params.sectionId });
         const frameWidth = params.frameWidth;  // in mm
         const width = params.width;
         const height = params.height;
-        const isSelected = this._module.getState('selected:frame') === 'whole';
+        const isSelected = this._module.getState('selected:unit') === 'frame';
         const style = (isSelected) ? this._module.getStyle('frame').selected : this._module.getStyle('frame').default;
 
-        const group = new Konva.Group({
-            name: 'frame',
-            sectionId: params.sectionId,
-        });
         const top = new Konva.Line({
             points: [
                 0, 0,
@@ -553,7 +555,7 @@ export default Backbone.KonvaView.extend({
         _.extend(opts, {
             width,
             height,
-            name: 'frame',
+            name: params.name || 'frame',
             sectionId: params.sectionId,
         });
 
@@ -563,19 +565,17 @@ export default Backbone.KonvaView.extend({
     },
     // door frame has special case for threshold drawing
     createDoorFrame(params) {
+        const group = new Konva.Group({ name: params.name || 'frame' });
         const frameWidth = params.frameWidth;  // in mm
         const thresholdWidth = this._model.profile.get('threshold_width');
         const width = params.width;
         const height = params.height;
-        const isSelected = this._module.getState('selected:frame') === 'whole';
+        const isSelected = this._module.getState('selected:unit') === 'frame';
         const style = {
             frame: (isSelected) ? this._module.getStyle('frame').selected : this._module.getStyle('frame').default,
             bottom: this._module.getStyle('door_bottom'),
         };
 
-        const group = new Konva.Group({
-            name: 'frame',
-        });
         const top = new Konva.Line({
             points: [
                 0, 0,
@@ -630,17 +630,15 @@ export default Backbone.KonvaView.extend({
     },
     // arched frame has special case for arched part
     createArchedFrame(params) {
+        const group = new Konva.Group({ name: params.name || 'frame' });
         const frameWidth = params.frameWidth;
         const width = params.width;
         const height = params.height;
         const archHeight = params.archHeight;
 
-        const isSelected = this._module.getState('selected:frame') === 'whole';
+        const isSelected = this._module.getState('selected:unit') === 'frame';
         const style = (isSelected) ? this._module.getStyle('frame').selected : this._module.getStyle('frame').default;
 
-        const group = new Konva.Group({
-            name: 'frame',
-        });
         const top = new Konva.Shape({
             stroke: style.stroke,
             strokeWidth: style.strokeWidth,
@@ -725,14 +723,11 @@ export default Backbone.KonvaView.extend({
         }
     },
     createCircleFrame(params) {
+        const group = new Konva.Group({ name: params.name || 'frame', sectionId: params.sectionId });
         const frameWidth = params.frameWidth;
         const radius = params.radius;
-        const isSelected = this._module.getState('selected:frame') === 'whole';
+        const isSelected = this._module.getState('selected:unit') === 'frame';
         const style = (isSelected) ? this._module.getStyle('frame').selected : this._module.getStyle('frame').default;
-        const group = new Konva.Group({
-            name: 'frame',
-            sectionId: params.sectionId,
-        });
 
         group.add(new Konva.Arc({
             x: radius,
@@ -818,6 +813,7 @@ export default Backbone.KonvaView.extend({
                 'bars',
                 'direction',
                 'frame',
+                'mainFrame',
                 'selection',
                 'handle',
                 'index',

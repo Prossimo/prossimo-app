@@ -525,7 +525,7 @@ export default Marionette.View.extend({
                 this.setState({ selectedSashId: targetSashId });
             }
         });
-        this.listenTo(this.module, 'state:selected:frame', (data) => {
+        this.listenTo(this.module, 'state:selected:unit', (data) => {
             this.deselectAll();
             this.setState({
                 isFrameSelected: data.newValue,

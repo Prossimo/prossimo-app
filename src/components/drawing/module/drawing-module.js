@@ -545,10 +545,10 @@ export default Marionette.Object.extend({
     // Actions
     deselectAll(preventUpdate) {
         this.setState({
-            'selected:mullion': null,
-            'selected:sash': null,
-            'selected:frame': null,
             'selected:subunit': null,
+            'selected:unit': null,
+            'selected:sash': null,
+            'selected:mullion': null,
         }, preventUpdate);
     },
     // Get layer to work directly with drawer, for example
