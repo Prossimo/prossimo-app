@@ -954,7 +954,7 @@ const Unit = Backbone.Model.extend({
     getVolumeInCubicMeters() {
         const width_mm = convert.inches_to_mm(this.get('width'));
         const height_mm = convert.inches_to_mm(this.get('height'));
-        const depth_mm = convert.inches_to_mm(this.profile.get('depth'));
+        const depth_mm = this.profile.get('depth');
         return math.cubic_meters(width_mm, height_mm, depth_mm);
     },
     getUnitCost() {
@@ -2428,7 +2428,7 @@ const Unit = Backbone.Model.extend({
             },
             unit_total: {
                 weight: 0,
-                units_volume: 0,
+                volume: 0,
             },
         };
 
@@ -2447,7 +2447,7 @@ const Unit = Backbone.Model.extend({
         function getArea(width, height) {
             return math.square_meters(width, height);
         }
-        function getUnitsVolume(width, height, depth) {
+        function getVolume(width, height, depth) {
             return math.cubic_meters(width, height, depth);
         }
 
@@ -2525,7 +2525,7 @@ const Unit = Backbone.Model.extend({
         } else {
             result.unit_total.weight = result.profile_total.weight + result.glasses.weight;
         }
-        result.unit_total.units_volume = getUnitsVolume(result.frame.linear_without_intersections, sizes.frame.frame_width, profileDepth);
+        result.unit_total.volume = getVolume(result.frame.linear_without_intersections, sizes.frame.frame_width, profileDepth);
         return result;
     },
     //  Returns sizes in mms

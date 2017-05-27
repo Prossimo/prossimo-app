@@ -389,7 +389,7 @@ export default Marionette.View.extend({
                 area: 'Total Area',
                 area_both_sides: 'Total Area (Both Sides)',
                 weight: 'Total Weight',
-                units_volume: 'Total Volume',
+                volume: 'Total Volume',
             };
             const data_groups = _.keys(group_titles);
             const group_data = {};
@@ -408,7 +408,7 @@ export default Marionette.View.extend({
                             value = f.dimension_mm(item[group_name]);
                         } else if (group_name === 'weight') {
                             value = f.weight(item[group_name]);
-                        } else if (group_name === 'units_volume') {
+                        } else if (group_name === 'volume') {
                             value = f.cubic_meters(item[group_name]);
                         } else {
                             value = f.square_meters(item[group_name]);
