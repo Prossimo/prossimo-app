@@ -5,6 +5,7 @@ import Konva from '../module/konva-clip-patch';
 
 import App from '../../../main';
 import { parseFormat, format, convert } from '../../../utils';
+import Unit from '../../../core/models/unit';
 import UndoManager from '../../../utils/undomanager';
 import DrawingModule from '../module/drawing-module';
 import DrawingGlazingPopup from './drawing-glazing-view';
@@ -77,6 +78,13 @@ export default Marionette.View.extend({
         $flush_panels: '[data-type="flush-turn-right"], [data-type="flush-turn-left"]',
         $drawing_view_title: '#drawing-view-title',
         $drawing_controls: '#drawing-controls',
+        $multiunit_controls: '#multiunit-controls',
+        $add_connector_buttons: '.add-connector.button',
+        $add_connector_top_button: '.add-connector.button[data-side="top"]',
+        $add_connector_right_button: '.add-connector.button[data-side="right"]',
+        $add_connector_bottom_button: '.add-connector.button[data-side="bottom"]',
+        $add_connector_left_button: '.add-connector.button[data-side="left"]',
+        $remove_subunit_button: '.remove-subunit.button',
         $section_controls: '#section-controls',
         $sash_controls: '#sash-controls',
         $section_split_controls: '#section-split-controls',
@@ -105,15 +113,6 @@ export default Marionette.View.extend({
         $shortcuts: '[data-key]',
         $undo: '#undo',
         $redo: '#redo',
-        $multiunit_controls: '#multiunit-controls',
-        $subunit_menu: '.drawing-controls .subunit.menu',
-        $add_connector_buttons: '.drawing-controls .add-connector .button',
-        $add_connector_enabled_buttons: '.drawing-controls .add-connector .button:not(.disabled)',
-        $add_connector_top_button: '.drawing-controls .add-connector .top.button',
-        $add_connector_right_button: '.drawing-controls .add-connector .right.button',
-        $add_connector_bottom_button: '.drawing-controls .add-connector .bottom.button',
-        $add_connector_left_button: '.drawing-controls .add-connector .left.button',
-        $remove_subunit_button: '.drawing-controls .remove-subunit.button',
     },
     events: {
         // Click
@@ -121,6 +120,8 @@ export default Marionette.View.extend({
         'contextmenu @ui.$drawing_area': 'handleCanvasClick',
         'click @ui.$hovering_section_controls': 'handleHoveringSectionControlsClickThrough',
         'click @ui.$hovering_section_controls .button': 'handleHoveringSectionControlsClick',  // Keep before button events
+        'click @ui.$add_connector_buttons': 'handleAddConnectorClick',
+        'click @ui.$remove_subunit_button': 'handleRemoveSubunitClick',
         'click .split-section': 'handleSplitSectionClick',
         'click @ui.$sash_types': 'handleChangeSashTypeClick',
         'click @ui.$clear_frame': 'handleClearFrameClick',
@@ -132,11 +133,11 @@ export default Marionette.View.extend({
         'click @ui.$filling_sync': 'handleFillingSyncClick',
         'click @ui.$undo': 'handleUndoClick',
         'click @ui.$redo': 'handleRedoClick',
-        'click @ui.$add_connector_enabled_buttons': 'handleAddConnectorClick',
-        'click @ui.$remove_subunit_button': 'handleRemoveSubunitClick',
         // Tap
         'tap @ui.$hovering_section_controls': 'handleHoveringSectionControlsClickThrough',
         'tap @ui.$hovering_section_controls .button': 'handleHoveringSectionControlsClick',  // Keep before button events
+        'tap @ui.$add_connector_buttons': 'handleAddConnectorClick',
+        'tap @ui.$remove_subunit_button': 'handleRemoveSubunitClick',
         'tap .split-section': 'handleSplitSectionClick',
         'tap @ui.$sash_types': 'handleChangeSashTypeClick',
         'tap @ui.$clear_frame': 'handleClearFrameClick',
@@ -148,8 +149,6 @@ export default Marionette.View.extend({
         'tap @ui.$filling_sync': 'handleFillingSyncClick',
         'tap @ui.$undo': 'handleUndoClick',
         'tap @ui.$redo': 'handleRedoClick',
-        'tap @ui.$add_connector_enabled_buttons': 'handleAddConnectorClick',
-        'tap @ui.$remove_subunit_button': 'handleRemoveSubunitClick',
         // Others
         'keydown @ui.$drawing_area': 'handleCanvasKeyDown',
         'change #vertical-bars-number': 'handleBarNumberChange',
@@ -368,7 +367,9 @@ export default Marionette.View.extend({
         this.closeSectionHoverMenu();
     },
     handleAddConnectorClick(event) {
-        const flipSideX = side => (side === 'left' ? 'right' : 'left');
+        const isDisabled = $(event.target).hasClass('disabled');
+        if (isDisabled) { return; }
+        const flipSideX = side => (_.contains(['left', 'right'], side) ? { right: 'left', left: 'right' }[side] : side);
         const isInside = this.isInsideView();
         const sideLabel = $(event.target).data().side;
         const connectorSide = (isInside) ? flipSideX(sideLabel) : sideLabel;
@@ -400,21 +401,40 @@ export default Marionette.View.extend({
         }
     },
     handleRemoveSubunitClick() {
-        let subunit;
-
-        if (this.model.isSubunit()) {
-            subunit = this.model;
-        } else if (this.model.isMultiunit()) {
-            subunit = this.model.getSubunitLinkedUnitById(this.module.getState('selected:subunit'));
+        const isModelSubunit = this.model.isSubunit();
+        const isModelMultiunit = this.model.isMultiunit();
+        let target;
+        if (isModelSubunit) {
+            target = this.model;
+        } else if (isModelMultiunit) {
+            target = this.model.getSubunitLinkedUnitById(this.module.getState('selected:subunit'));
+        } else {
+            target = this.model;
         }
+        const isTargetSubunit = target.isSubunit();
 
-        if (!subunit) { return; }
-
-        const multiunit = subunit.getParentMultiunit();
-
-        if (multiunit && multiunit.isSubunitRemovable(subunit.id || subunit.cid)) {
-            multiunit.removeSubunit(subunit);
-            this.selectUnit(multiunit);
+        if (!isTargetSubunit) {
+            const collection = target.collection;
+            const index = collection.indexOf(target);
+            const nextUnit = collection.at(index + 1);
+            const prevUnit = (index > 0) && collection.at(index - 1);
+            let otherUnit;
+            if (nextUnit) {
+                otherUnit = nextUnit;
+            } else if (prevUnit) {
+                otherUnit = prevUnit;
+            } else {
+                otherUnit = new Unit();
+                collection.add(otherUnit);
+            }
+            target.destroy();
+            this.selectUnit(otherUnit);
+        } else {
+            const multiunit = target.getParentMultiunit();
+            if (multiunit && multiunit.isSubunitRemovable(target.id || target.cid)) {
+                multiunit.removeSubunit(target);
+                this.selectUnit(multiunit);
+            }
         }
     },
     onRender() {
@@ -527,15 +547,11 @@ export default Marionette.View.extend({
         });
         this.listenTo(this.module, 'state:selected:unit', (data) => {
             this.deselectAll();
-            this.setState({
-                isFrameSelected: data.newValue,
-            });
+            this.setState({ isFrameSelected: data.newValue });
         });
         this.listenTo(this.module, 'state:selected:subunit', (data) => {
             this.deselectAll();
-            this.setState({
-                selectedSubunitId: data.newValue,
-            });
+            this.setState({ selectedSubunitId: data.newValue });
         });
         this.listenTo(this.module, 'labelClicked', (data) => {
             this.createInput(data.params, data.pos, data.size);
@@ -843,25 +859,13 @@ export default Marionette.View.extend({
         const isLeafSash = isSashSelected && selectedSash.sections.length === 0;
         const hasFrame = isSashSelected && selectedSash.sashType !== 'fixed_in_frame';
         const isMultiunit = this.model.isMultiunit();
-        const isSubunit = this.model.isSubunit();
         const isSubunitSelected = !!(this.state.isFrameSelected || this.state.selectedSubunitId);
         const isArched = !!(isSashSelected && selectedSash.arched);
         const isCircular = !!(isSashSelected && selectedSash.circular);
         const selectedFillingType = isSashSelected && selectedSash.fillingName &&
             App.settings && App.settings.filling_types.getByName(selectedSash.fillingName);
-        let isSubunitTopConnected;
-        let isSubunitRightConnected;
-        let isSubunitBottomConnected;
-        let isSubunitLeftConnected;
-        let isSubunitRemovable;
-
-        // View title
-        const buttonText = this.isInsideView() ? 'Show outside view' : 'Show inside view';
-        const titleText = this.isInsideView() ? 'Inside view' : 'Outside view';
-
-        this.$('#change-view-button').text(buttonText);
-        this.ui.$drawing_view_title.text(titleText);
-
+        let [isTopConnected, isRightConnected, isBottomConnected, isLeftConnected] = [false, false, false, false];
+        let isRemovable = true;
         if (isSubunitSelected) {
             let subunit;
             let multiunit;
@@ -879,13 +883,19 @@ export default Marionette.View.extend({
             }
 
             if (multiunit && subunitId) {
-                isSubunitTopConnected = _.contains(multiunit.getConnectedSides(subunitId), 'top');
-                isSubunitRightConnected = _.contains(multiunit.getConnectedSides(subunitId), 'right');
-                isSubunitBottomConnected = _.contains(multiunit.getConnectedSides(subunitId), 'bottom');
-                isSubunitLeftConnected = _.contains(multiunit.getConnectedSides(subunitId), 'left');
-                isSubunitRemovable = multiunit.isSubunitRemovable(subunitId);
+                isTopConnected = _.contains(multiunit.getConnectedSides(subunitId), 'top');
+                isRightConnected = _.contains(multiunit.getConnectedSides(subunitId), 'right');
+                isBottomConnected = _.contains(multiunit.getConnectedSides(subunitId), 'bottom');
+                isLeftConnected = _.contains(multiunit.getConnectedSides(subunitId), 'left');
+                isRemovable = multiunit.isSubunitRemovable(subunitId);
             }
         }
+
+        // View title
+        const buttonText = this.isInsideView() ? 'Show outside view' : 'Show inside view';
+        const titleText = this.isInsideView() ? 'Inside view' : 'Outside view';
+        this.$('#change-view-button').text(buttonText);
+        this.ui.$drawing_view_title.text(titleText);
 
         // Mouse pointer
         if (this.module.isCloningFilling() || this.module.isSyncingFilling()) {
@@ -894,47 +904,42 @@ export default Marionette.View.extend({
             document.body.style.cursor = 'auto';
         }
 
-        //
         // Section controls
-        //
-        this.ui.$filling_tool_controls.toggle(isSashSelected && isLeafSash && !isSubunitSelected);
-        this.ui.$bar_controls.toggle(!isArched && !isSubunitSelected && isSashSelected && selectedSash.fillingType === 'glass');
+        this.ui.$filling_tool_controls.toggle(isSashSelected && isLeafSash);
+        this.ui.$bar_controls.toggle(!isArched && isSashSelected && selectedSash.fillingType === 'glass');
         this.ui.$section_controls.toggle(isSashSelected || isSubunitSelected);
-        this.ui.$sash_controls.toggle(!isArched && !isSubunitSelected && isSashSelected && this.model.canAddSashToSection(selectedSashId));
-        this.ui.$section_split_controls.toggle(isSashSelected && !isSubunitSelected && !isArched);
-
+        this.ui.$sash_controls.toggle(!isArched && isSashSelected && this.model.canAddSashToSection(selectedSashId));
+        this.ui.$section_split_controls.toggle(isSashSelected && !isArched);
         if (selectedFillingType) {
             this.ui.$filling_select.val(selectedFillingType.cid);
         } else {
             this.ui.$filling_select.val('');
         }
-
         this.ui.$filling_select.selectpicker('render');
-
-        this.ui.$filling_type_controls.toggle(isSashSelected && !isSubunitSelected);
+        this.ui.$filling_type_controls.toggle(isSashSelected);
 
         // Arched controls
-        this.ui.$arched_controls.toggle(isSashSelected && !isSubunitSelected && this.model.isArchedPossible(selectedSashId));
-        this.ui.$remove_arched.toggle(isArched && !isCircular && !isSubunitSelected);
-        this.ui.$add_arched.toggle(!isArched && !isCircular && !isSubunitSelected);
+        this.ui.$arched_controls.toggle(isSashSelected && this.model.isArchedPossible(selectedSashId));
+        this.ui.$remove_arched.toggle(isArched && !isCircular);
+        this.ui.$add_arched.toggle(!isArched && !isCircular);
 
         // Circular controls
-        this.ui.$circular_controls.toggle(isSashSelected && !isSubunitSelected && this.model.isCircularPossible(selectedSashId));
-        this.ui.$remove_circular.toggle(isCircular && !isArched && !isSubunitSelected);
-        this.ui.$add_circular.toggle(!isCircular && !isArched && !isSubunitSelected);
+        this.ui.$circular_controls.toggle(isSashSelected && this.model.isCircularPossible(selectedSashId));
+        this.ui.$remove_circular.toggle(isCircular && !isArched);
+        this.ui.$add_circular.toggle(!isCircular && !isArched);
 
         // Multiunit controls
         this.ui.$multiunit_controls.toggle(isSubunitSelected);
-        this.ui.$subunit_menu.toggle((isSubunit || isMultiunit) && isSubunitSelected);
-        this.ui.$add_connector_top_button.toggleClass('disabled', isSubunitTopConnected);
-        this.ui.$add_connector_bottom_button.toggleClass('disabled', isSubunitBottomConnected);
-        this.ui.$remove_subunit_button.toggleClass('disabled', !isSubunitRemovable);
+        this.ui.$add_connector_top_button.toggleClass('disabled', isTopConnected);
+        this.ui.$add_connector_bottom_button.toggleClass('disabled', isBottomConnected);
+        this.ui.$remove_subunit_button.toggleClass('disabled', !isRemovable);
+
         if (isInside) {
-            this.ui.$add_connector_left_button.toggleClass('disabled', isSubunitRightConnected);
-            this.ui.$add_connector_right_button.toggleClass('disabled', isSubunitLeftConnected);
+            this.ui.$add_connector_left_button.toggleClass('disabled', isRightConnected);
+            this.ui.$add_connector_right_button.toggleClass('disabled', isLeftConnected);
         } else {
-            this.ui.$add_connector_left_button.toggleClass('disabled', isSubunitLeftConnected);
-            this.ui.$add_connector_right_button.toggleClass('disabled', isSubunitRightConnected);
+            this.ui.$add_connector_left_button.toggleClass('disabled', isLeftConnected);
+            this.ui.$add_connector_right_button.toggleClass('disabled', isRightConnected);
         }
 
         // Undo, Redo buttons
@@ -949,8 +954,7 @@ export default Marionette.View.extend({
         this.ui.$clear_frame.toggle(!isMultiunit);
 
         // Additional overlay metrics
-        this.ui.$metric_controls.toggle(!isMultiunit && !isSubunitSelected);
-
+        this.ui.$metric_controls.toggle(!isMultiunit);
         if (isSashSelected) {
             this.ui.$metrics_glass_input.prop('checked', selectedSash.measurements.glass);
             this.ui.$metrics_opening_input.prop('checked', selectedSash.measurements.opening);
