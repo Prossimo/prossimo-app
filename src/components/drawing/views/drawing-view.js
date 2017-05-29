@@ -11,6 +11,8 @@ import DrawingGlazingPopup from './drawing-glazing-view';
 import template from '../templates/drawing-view.hbs';
 
 const HELP_SQUARES_KEYPRESS_DELAY = 800;
+const HELP_SQUARES_MAX_DISPLAY_TIME = 6000;
+const HELP_SQUARES_KEYPRESS_CHECK_INTERVAL = 800;
 
 // This view is organized in React-like approach but with multiple sources
 // of state as we have:
@@ -143,14 +145,14 @@ export default Marionette.View.extend({
         'command+shift+z': 'handleRedoClick',
         'ctrl+y': 'handleRedoClick',
         'command+y': 'handleRedoClick',
-        'ctrl:keydown': 'handleHelpSquaresShow',
-        'ctrl:keyup': 'handleHelpSquaresHide',
-        'command:keydown': 'handleHelpSquaresShow',
-        'command:keyup': 'handleHelpSquaresHide',
-        'shift:keydown': 'handleHelpSquaresShow',
-        'shift:keyup': 'handleHelpSquaresHide',
-        'alt:keydown': 'handleHelpSquaresShow',
-        'alt:keyup': 'handleHelpSquaresHide',
+        'ctrl:keydown': 'handleModifierKeyDown',
+        'ctrl:keyup': 'handleModifierKeyUp',
+        'command:keydown': 'handleModifierKeyDown',
+        'command:keyup': 'handleModifierKeyUp',
+        'shift:keydown': 'handleModifierKeyDown',
+        'shift:keyup': 'handleModifierKeyUp',
+        'alt:keydown': 'handleModifierKeyDown',
+        'alt:keyup': 'handleModifierKeyUp',
     },
     setGlobalInsideView(value) {
         this.options.parent_view.setGlobalInsideView(value);
@@ -162,6 +164,30 @@ export default Marionette.View.extend({
     isOpeningView() {
         return (!this.isInsideView() && this.model.isOpeningDirectionOutward()) ||
             (this.isInsideView() && !this.model.isOpeningDirectionOutward());
+    },
+    isModifierKeyPressed() {
+        const modifierKeysPressed = this.state.modifierKeysPressed;
+        const hasPressedKeys = !!(modifierKeysPressed && modifierKeysPressed.length);
+        return hasPressedKeys;
+    },
+    handleModifierKeyDown(event) {
+        const modifierKeysPressed = this.state.modifierKeysPressed || [];
+        if (_.contains(modifierKeysPressed, event.key)) { return; }
+
+        modifierKeysPressed.push(event.key);
+        this.setState({ modifierKeysPressed }, true);
+        this.helpSquaresShow();
+    },
+    handleModifierKeyUp(event) {
+        const isShift = _.contains(['ShiftLeft', 'ShiftRight'], event.code) || event.keyCode === 16;
+        const eventKey = (isShift) ? 'Shift' : event.key;
+        let modifierKeysPressed = this.state.modifierKeysPressed;
+        const hasPressedKey = modifierKeysPressed && modifierKeysPressed.length && _.contains(modifierKeysPressed, eventKey);
+        if (!hasPressedKey) { return; }
+
+        modifierKeysPressed = _.without(modifierKeysPressed, eventKey);
+        this.setState({ modifierKeysPressed }, true);
+        this.helpSquaresHide();
     },
     handleUndoClick() {
         return this.undo_manager.handler.undo();
@@ -328,17 +354,6 @@ export default Marionette.View.extend({
     },
     handleHoveringSectionControlsLeave() {
         this.closeSectionHoverMenu();
-    },
-    handleHelpSquaresShow() {
-        const timeoutHandle = setTimeout(() => {
-            this.ui.$help_squares.toggleClass('help-visible', true);
-        }, HELP_SQUARES_KEYPRESS_DELAY);
-        this.setState({ helpSquaresTimeoutHandle: timeoutHandle }, true);
-    },
-    handleHelpSquaresHide() {
-        const handle = this.state.helpSquaresTimeoutHandle;
-        if (handle) { clearTimeout(handle); }
-        this.ui.$help_squares.toggleClass('help-visible', false);
     },
 
     // Marrionente lifecycle method
@@ -708,6 +723,37 @@ export default Marionette.View.extend({
     },
     closeSectionHoverMenu() {
         this.toggleSectionHoverMenu(false);
+    },
+    helpSquaresShow() {
+        let checkerHandle;
+        const keyPressedChecker = () => {
+            let stillPressedCounter = this.state.stillPressedCounter || 0;
+            stillPressedCounter += 1;
+            this.setState({ stillPressedCounter }, true);
+            const maxStillPressedCounter = HELP_SQUARES_MAX_DISPLAY_TIME / HELP_SQUARES_KEYPRESS_CHECK_INTERVAL;
+            const isPressTimeout = stillPressedCounter >= maxStillPressedCounter;
+            const isModifiersDepressed = !this.isModifierKeyPressed();
+
+            if (isModifiersDepressed || isPressTimeout) {
+                this.helpSquaresHide();
+                clearInterval(checkerHandle);
+                this.setState({ stillPressedCounter: 0 }, true);
+            }
+
+            if (isPressTimeout) { this.setState({ modifierKeysPressed: [] }, true); }
+        };
+        const helpSquaresEnabler = () => {
+            this.ui.$help_squares.toggleClass('help-visible', true);
+            checkerHandle = setInterval(keyPressedChecker, HELP_SQUARES_KEYPRESS_CHECK_INTERVAL);
+        };
+
+        const timeoutHandle = setTimeout(helpSquaresEnabler, HELP_SQUARES_KEYPRESS_DELAY);
+        this.setState({ helpSquaresTimeoutHandle: timeoutHandle }, true);
+    },
+    helpSquaresHide() {
+        const handle = this.state.helpSquaresTimeoutHandle;
+        if (handle) { clearTimeout(handle); }
+        this.ui.$help_squares.toggleClass('help-visible', false);
     },
     // Shows and hides various toolbar elements
     updateUI() {
