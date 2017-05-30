@@ -312,7 +312,9 @@ export default Backbone.Model.extend({
         return false;
     },
     leftMetricCount() {
-        return 0;
+        const connectors = this.getConnectorsByOrientation();
+        const metricRowCount = (connectors.horizontal.length > 0) ? 2 : 1;
+        return metricRowCount;
     },
     isArchedWindow() {
         return false;
