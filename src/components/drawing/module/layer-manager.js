@@ -46,6 +46,12 @@ export default Marionette.Object.extend({
                     visible: true,
                     active: true,
                 },
+                metrics: {
+                    DrawerClass: Drawers.MetricsDrawer,
+                    zIndex: 1,
+                    visible: true,
+                    active: true,
+                },
             };
         } else {
             defaultLayers = {

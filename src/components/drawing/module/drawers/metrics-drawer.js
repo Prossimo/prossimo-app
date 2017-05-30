@@ -41,12 +41,16 @@ export default Backbone.KonvaView.extend({
         const group = new Konva.Group();
         let infoGroup;
 
+        const isMultiunit = this._model.isMultiunit();
+        const isArched = this._model.get('root_section').arched;
         const frameWidth = this._model.getInMetric('width', 'mm');
         const frameHeight = this._model.getInMetric('height', 'mm');
         const frameOnScreenWidth = frameWidth * this._ratio;
         const frameOnScreenHeight = frameHeight * this._ratio;
 
-        if (this._model.get('root_section').arched) {
+        if (isMultiunit) {
+            infoGroup = this.createMultiunitInfo(frameOnScreenWidth, frameOnScreenHeight);
+        } else if (isArched) {
             infoGroup = this.createArchedInfo(frameOnScreenWidth, frameOnScreenHeight);
         } else {
             let mullions;
@@ -66,6 +70,17 @@ export default Backbone.KonvaView.extend({
         const center = this._module.get('center');
         // place unit on stage center
         group.position(center);
+
+        return group;
+    },
+    createMultiunitInfo(width, height) {
+        const group = new Konva.Group();
+        const subunits = this._model.getSubunitsList();
+        if (!subunits) { return group; }
+
+        const connectors = this._model.getConnectorsByOrientation();
+        const wholeMetrics = this.createWholeMultiunitMetrics(connectors, width, height);
+        group.add(wholeMetrics);
 
         return group;
     },
@@ -913,6 +928,43 @@ export default Backbone.KonvaView.extend({
         };
 
         return view.createMeasurementSelectUI(event, opts);
+    },
+    createWholeMultiunitMetrics(connectors, width, height) {
+        const group = new Konva.Group();
+        const model = this._model;
+        const root_section = this._model.generateFullRoot();
+        const metricSize = this._metricSize;
+        const isPreview = this._module.getState('isPreview');
+        const vRows = (connectors.vertical.length) ? 1 : 0;
+        const hRows = (connectors.horizontal.length) ? 1 : 0;
+
+        // Vertical metric
+        const verticalWholeMetric = this.createVerticalMetric(metricSize, height, {
+            name: 'vertical_whole_metric',
+            getter: () => model.getInMetric('height', 'mm'),
+        });
+        const vPosition = { x: -metricSize * (hRows + 1), y: 0 };
+        verticalWholeMetric.position(vPosition);
+        group.add(verticalWholeMetric);
+
+        // Horizontal metric
+        const horizontalWholeMertic = this.createHorizontalMetric(width, metricSize, {
+            getter: () => model.getInMetric('width', 'mm'),
+        });
+        const hPosition = { x: 0, y: height + (vRows * metricSize) };
+        horizontalWholeMertic.position(hPosition);
+        group.add(horizontalWholeMertic);
+
+        // Controls
+        if (!isPreview) {
+            const vControls = this.createWholeControls(root_section.id, metricSize, height, 'vertical');
+            const hControls = this.createWholeControls(root_section.id, width, metricSize, 'horizontal');
+            vControls.position(vPosition);
+            hControls.position(hPosition);
+            group.add(vControls, hControls);
+        }
+
+        return group;
     },
     createWholeMetrics(mullions, width, height) {
         const group = new Konva.Group();

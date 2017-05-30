@@ -422,8 +422,8 @@ export default Backbone.Model.extend({
                 this.removeConnector(parentConnector);
             }
 
-            subunit.destroy();
             subunit_link.destroy();
+            subunit.destroy();
         }
     },
     //  This returns a MultiunitSubunit instance, not Unit
@@ -501,6 +501,9 @@ export default Backbone.Model.extend({
         const isLeafSubunit = !subunitNode || (subunitNode.children.length === 0);
 
         return isLeafSubunit;
+    },
+    getSubunitsList() {
+        return this.get('multiunit_subunits').models;
     },
     /**
      * Subunit tree consists of nodes corresponding to subunits.
@@ -851,6 +854,19 @@ export default Backbone.Model.extend({
     },
     getConnectors() {
         return this.get('root_section').connectors.slice();
+    },
+    getConnectorsByOrientation() {
+        const connectorsByOrientation = { vertical: [], horizontal: [] };
+        const connectors = this.getConnectors();
+        if (!connectors) { return connectorsByOrientation; }
+        connectors.forEach((connector) => {
+            if (connector.side === 'top' || connector.side === 'bottom') {
+                connectorsByOrientation.horizontal.push(connector);
+            } else if (connector.side === 'left' || connector.side === 'right') {
+                connectorsByOrientation.vertical.push(connector);
+            }
+        });
+        return connectorsByOrientation;
     },
     getConnectorById(id) {
         return _(this.getConnectors()).find(connector => connector.id === id);
