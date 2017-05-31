@@ -53,6 +53,10 @@ export default Marionette.View.extend({
             inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
             hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode'),
             inputFocused: false,
+            modifierKeysPressed: [],
+            helpSquaresTimeoutHandle: null,
+            helpSquaresCheckerHandle: null,
+            helpSquaresStillPressedCounter: 0,
         };
 
         this.groups = {};
@@ -396,6 +400,7 @@ export default Marionette.View.extend({
     onBeforeDestroy() {
         this.stage.destroy();
         this.unbindModuleEvents();
+        this.helpSquaresCleanupState();
 
         if (this.glazing_view) {
             this.glazing_view.destroy();
@@ -725,35 +730,37 @@ export default Marionette.View.extend({
         this.toggleSectionHoverMenu(false);
     },
     helpSquaresShow() {
-        let checkerHandle;
         const keyPressedChecker = () => {
-            let stillPressedCounter = this.state.stillPressedCounter || 0;
+            let stillPressedCounter = this.state.helpSquaresStillPressedCounter || 0;
             stillPressedCounter += 1;
-            this.setState({ stillPressedCounter }, true);
+            this.setState({ helpSquaresStillPressedCounter: stillPressedCounter }, true);
             const maxStillPressedCounter = HELP_SQUARES_MAX_DISPLAY_TIME / HELP_SQUARES_KEYPRESS_CHECK_INTERVAL;
             const isPressTimeout = stillPressedCounter >= maxStillPressedCounter;
             const isModifiersDepressed = !this.isModifierKeyPressed();
-
-            if (isModifiersDepressed || isPressTimeout) {
-                this.helpSquaresHide();
-                clearInterval(checkerHandle);
-                this.setState({ stillPressedCounter: 0 }, true);
-            }
-
-            if (isPressTimeout) { this.setState({ modifierKeysPressed: [] }, true); }
+            if (isModifiersDepressed || isPressTimeout) { this.helpSquaresHide(); }
         };
         const helpSquaresEnabler = () => {
             this.ui.$help_squares.toggleClass('help-visible', true);
-            checkerHandle = setInterval(keyPressedChecker, HELP_SQUARES_KEYPRESS_CHECK_INTERVAL);
+            const checkerHandle = setInterval(keyPressedChecker, HELP_SQUARES_KEYPRESS_CHECK_INTERVAL);
+            this.setState({ helpSquaresCheckerHandle: checkerHandle }, true);
         };
 
         const timeoutHandle = setTimeout(helpSquaresEnabler, HELP_SQUARES_KEYPRESS_DELAY);
         this.setState({ helpSquaresTimeoutHandle: timeoutHandle }, true);
     },
     helpSquaresHide() {
-        const handle = this.state.helpSquaresTimeoutHandle;
-        if (handle) { clearTimeout(handle); }
         this.ui.$help_squares.toggleClass('help-visible', false);
+        this.helpSquaresCleanupState();
+    },
+    helpSquaresCleanupState() {
+        if (this.state.helpSquaresTimeoutHandle) { clearTimeout(this.state.helpSquaresTimeoutHandle); }
+        if (this.state.helpSquaresCheckerHandle) { clearInterval(this.state.helpSquaresCheckerHandle); }
+        this.setState({
+            modifierKeysPressed: [],
+            helpSquaresStillPressedCounter: 0,
+            helpSquaresTimeoutHandle: null,
+            helpSquaresCheckerHandle: null,
+        }, true);
     },
     // Shows and hides various toolbar elements
     updateUI() {
