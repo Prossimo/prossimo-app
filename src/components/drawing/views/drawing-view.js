@@ -355,7 +355,7 @@ export default Marionette.View.extend({
         this.ui.$help_squares.toggleClass('help-visible', false);
     },
     handleAddConnectorClick(event) {
-        const flipSideX = side => (side === 'left' ? 'right' : 'left');
+        const flipSideX = side => (_.contains(['left', 'right'], side) ? { right: 'left', left: 'right' }[side] : side);
         const isInside = this.isInsideView();
         const sideLabel = $(event.target).data().side;
         const connectorSide = (isInside) ? flipSideX(sideLabel) : sideLabel;
