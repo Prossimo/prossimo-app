@@ -2213,8 +2213,11 @@ export default Backbone.KonvaView.extend({
                 },
             };
         } else if (section.sashType === 'fixed_in_frame') {
-            const emptyCrossing = (!crossing.left || !crossing.right) ?
-                ((!crossing.left) ? 'left' : 'right') : '';
+            let emptyCrossing = '';
+
+            if (!crossing.left || !crossing.right) {
+                emptyCrossing = !crossing.left ? 'left' : 'right';
+            }
 
             if (emptyCrossing) {
                 const innerCorners = model.getMainTrapezoidInnerCorners();

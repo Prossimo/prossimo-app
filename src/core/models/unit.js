@@ -1434,10 +1434,7 @@ const Unit = Backbone.Model.extend({
         return edges;
     },
     getInvertedMeasurementVal(val) {
-        return (val === 'min') ? 'max' :
-            (val === 'max') ? 'min' :
-                (val === 'center') ? 'center' :
-                    val;
+        return _.contains(['min', 'max'], val) ? { min: 'max', max: 'min' }[val] : val;
     },
     getBar(sectionId, id) {
         let found = null;
@@ -2740,9 +2737,11 @@ const Unit = Backbone.Model.extend({
             unit_cost.options += option.pricing_data.cost_per_item * option.quantity;
         }, this);
 
-        unit_cost.real_cost.difference = unit_cost.total ?
-            ((unit_cost.real_cost.total - unit_cost.total) / unit_cost.total) * 100 :
-            (unit_cost.real_cost.total ? 100 : 0);
+        if (unit_cost.total) {
+            unit_cost.real_cost.difference = ((unit_cost.real_cost.total - unit_cost.total) / unit_cost.total) * 100;
+        } else {
+            unit_cost.real_cost.difference = unit_cost.real_cost.total ? 100 : 0;
+        }
 
         return unit_cost;
     },

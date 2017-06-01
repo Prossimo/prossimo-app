@@ -290,9 +290,7 @@ export default Backbone.KonvaView.extend({
 
                     // Change state for mullions if this is vertical mullion and it's outside view
                     if (edge === 'mullion' && type === 'vertical' && module.getState('openingView')) {
-                        edge_state = (edge_state === 'min') ? 'max' :
-                            (edge_state === 'max') ? 'min' :
-                                'center';
+                        edge_state = _.contains(['max', 'min'], edge_state) ? { max: 'min', min: 'max' }[edge_state] : 'center';
                     }
 
                     data.edges[key] = {
@@ -506,9 +504,7 @@ export default Backbone.KonvaView.extend({
 
                     // Change state if this is vertical control and it's outside view
                     if (type === 'vertical' && module.getState('openingView')) {
-                        state = (state === 'min') ? 'max' :
-                            (state === 'max') ? 'min' :
-                                'center';
+                        state = _.contains(['max', 'min'], state) ? { max: 'min', min: 'max' }[state] : 'center';
                     }
 
                     const data = {
@@ -725,15 +721,19 @@ export default Backbone.KonvaView.extend({
                 };
 
                 if (invertedType === 'horizontal') {
+                    let pos = correction.pos;
+
+                    if (!module.getState('openingView')) {
+                        pos = correction.pos;
+                    } else if (correction.pos === 0) {
+                        pos = correction.size * -1;
+                    } else if (correction.pos * -1 === correction.size) {
+                        pos = correction.pos + correction.size;
+                    }
+
                     cor = {
                         size: correction.size,
-                        pos: (!module.getState('openingView')) ?
-                            correction.pos :
-                            (correction.pos === 0) ?
-                                correction.size * -1 :
-                                (correction.pos * -1 === correction.size) ?
-                                    correction.pos + correction.size :
-                                    correction.pos,
+                        pos,
                     };
                 }
 
@@ -838,13 +838,15 @@ export default Backbone.KonvaView.extend({
             if (opts.kind === 'frame') {
                 correction = (opt.value === min) ? offset * sign : 0;
             } else if (opts.kind === 'mullion') {
-                controlPosition[posParam] += (opt.value === min) ? (-1 * posCorrection) / 2 :
-                    (opt.value === max) ? posCorrection / 2 :
-                        0;
+                correction = 0;
 
-                correction = (opt.value === min) ? offset * -1 :
-                    (opt.value === max) ? offset :
-                        0;
+                if (opt.value === min) {
+                    controlPosition[posParam] += (-1 * posCorrection) / 2;
+                    correction = offset * -1;
+                } else if (opt.value === max) {
+                    controlPosition[posParam] += posCorrection / 2;
+                    correction = offset;
+                }
             }
 
             controlPosition[posParam] += (correction * ratio);

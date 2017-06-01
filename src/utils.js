@@ -131,7 +131,7 @@ export const format = {
             new Decimal(Math.abs(parseFloat(price)).toFixed(2)).toFormat(2)}`;
     },
     percent(value, num) {
-        num = _.isNumber(num) ? (num < MAX_SIGNIFICANT_DIGITS ? num : MAX_SIGNIFICANT_DIGITS) : 2;
+        num = _.isNumber(num) ? Math.min(num, MAX_SIGNIFICANT_DIGITS) : 2;
 
         return `${new Decimal(parseFloat(value).toFixed(num)).toFormat()}%`;
     },
@@ -141,7 +141,8 @@ export const format = {
         return result === '0%' || result.indexOf('-') !== -1 ? result : `+${result}`;
     },
     fixed(value, num) {
-        num = _.isNumber(num) ? (num < MAX_SIGNIFICANT_DIGITS ? num : MAX_SIGNIFICANT_DIGITS) : 2;
+        num = _.isNumber(num) ? Math.min(num, MAX_SIGNIFICANT_DIGITS) : 2;
+
         return new Decimal(parseFloat(value).toFixed(num)).toFormat(num);
     },
     fixed_minimal(value, num) {
@@ -169,12 +170,10 @@ export const format = {
     },
     //  Includes a non-breaking space character
     square_feet(value, num, suffix_format) {
-        suffix_format = (suffix_format && _.indexOf(['normal', 'sup'], suffix_format) !== -1) ?
-            suffix_format : 'normal';
-        return this.fixed_minimal(value, num) +
-            (suffix_format === 'sup' ? '\u00A0ft<sup>2</sup>' :
-            (suffix_format === 'normal') ? '\u00A0sq.ft' :
-            '');
+        const current_suffix_format = _.contains(['normal', 'sup'], suffix_format) ? suffix_format : 'normal';
+        const current_suffx = current_suffix_format === 'sup' ? '\u00A0ft<sup>2</sup>' : '\u00A0sq.ft';
+
+        return this.fixed_minimal(value, num) + current_suffx;
     },
     //  Includes a non-breaking space character
     square_meters(value, num, suffix_format) {
@@ -448,7 +447,8 @@ export const vector2d = {
             vector2d.normalize(v2),
         );
 
-        scalar = (scalar < -1) ? -1 : (scalar > 1) ? 1 : scalar;
+        //  Make sure scalar is between -1 and 1
+        scalar = Math.max(-1, Math.min(scalar, 1));
 
         return Math.acos(scalar);
     },

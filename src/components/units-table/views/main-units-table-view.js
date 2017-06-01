@@ -16,7 +16,6 @@ export default Marionette.View.extend({
             collection: App.current_quote.units,
             extras: App.current_quote.extras,
             parent_view: this,
-            is_always_visible: true,
         });
 
         this.ui.$wrapper.append(this.units_table_view.render().el);

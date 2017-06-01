@@ -178,9 +178,8 @@ const DrawingModule = Marionette.Object.extend({
             this.updateSize(opts.width, opts.height);
         }
 
-        const metricSize = (opts && 'metricSize' in opts) ? opts.metricSize :
-            (this.get('metricSize')) ? this.get('metricSize') :
-                50;
+        const defaultMetricSize = this.get('metricSize') || 50;
+        const metricSize = (opts && 'metricSize' in opts) ? opts.metricSize : defaultMetricSize;
 
         const frameWidth = model.getInMetric('width', 'mm');
         const frameHeight = model.getInMetric('height', 'mm');

@@ -32,7 +32,6 @@ export default Marionette.View.extend({
         $clone: '.js-clone-selected-items',
     },
     events: {
-        'click .units-table-title': 'toggleTableVisibility',
         'click @ui.$add_new_unit': 'addNewUnit',
         'click @ui.$add_new_accessory': 'addNewAccessory',
         'click .nav-tabs a': 'onTabClick',
@@ -56,8 +55,6 @@ export default Marionette.View.extend({
     initialize() {
         this.table_update_timeout = null;
         this.dropdown_scroll_timer = null;
-        this.table_visibility = this.options.is_always_visible ? 'visible' :
-            (this.options.table_visibility ? this.options.table_visibility : 'hidden');
 
         this.tabs = {
             specs: {
@@ -235,12 +232,6 @@ export default Marionette.View.extend({
             }
         }
     },
-    toggleTableVisibility() {
-        if (!this.options.is_always_visible) {
-            this.table_visibility = this.table_visibility === 'hidden' ? 'visible' : 'hidden';
-            this.render();
-        }
-    },
     addNewUnit() {
         const new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
         const new_unit = new Unit({
@@ -262,9 +253,9 @@ export default Marionette.View.extend({
     onNewUnitOrAccessory(e) {
         const active_tab = this.getActiveTab();
 
-        if (this.table_visibility === 'visible' && active_tab.collection === this.collection) {
+        if (active_tab.collection === this.collection) {
             this.addNewUnit(e);
-        } else if (this.table_visibility === 'visible' && active_tab.collection === this.options.extras) {
+        } else if (active_tab.collection === this.options.extras) {
             this.addNewAccessory(e);
         }
     },
@@ -276,8 +267,6 @@ export default Marionette.View.extend({
                 return item;
             }, this),
             mode: this.getActiveTab().title === 'Extras' ? 'extras' : 'units',
-            table_visibility: this.table_visibility,
-            is_always_visible: this.options.is_always_visible,
         };
     },
     onMoveItemUp(e) {
@@ -1065,8 +1054,6 @@ export default Marionette.View.extend({
         return widths_table;
     },
     onRender() {
-        const is_visible = this.options.is_always_visible ||
-            this.table_visibility === 'visible';
         const self = this;
 
         //  We have to duplicate keydown event handling here because of the
@@ -1100,130 +1087,128 @@ export default Marionette.View.extend({
             }
         }
 
-        if (is_visible) {
-            let dropdown_scroll_reset = false;
+        let dropdown_scroll_reset = false;
 
-            const fixed_columns = ['mark', 'quantity', 'width', 'height', 'drawing'];
-            const active_tab_columns = self.getActiveTab().columns;
-            let fixed_columns_count = 0;
+        const fixed_columns = ['mark', 'quantity', 'width', 'height', 'drawing'];
+        const active_tab_columns = self.getActiveTab().columns;
+        let fixed_columns_count = 0;
 
-            _.each(fixed_columns, (column) => {
-                if (_.indexOf(active_tab_columns, column) !== -1) {
-                    fixed_columns_count += 1;
-                }
-            });
+        _.each(fixed_columns, (column) => {
+            if (_.indexOf(active_tab_columns, column) !== -1) {
+                fixed_columns_count += 1;
+            }
+        });
 
-            //  We use defer because we want to wait until flexbox
-            //  sizes are calculated properly
-            _.defer(() => {
-                self.hot = new Handsontable(self.ui.$hot_container[0], {
-                    data: self.getActiveTab().collection,
-                    columns: self.getActiveTabColumnOptions(),
-                    cells: self.getActiveTabCellsSpecificOptions(),
-                    colHeaders: self.getActiveTabHeaders(),
-                    rowHeaders: true,
-                    rowHeights() {
-                        return _.contains(self.getActiveTab().columns, 'drawing') ||
-                            _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
-                    },
-                    colWidths: self.getActiveTabColWidths(),
-                    trimDropdown: false,
-                    maxRows() {
-                        return self.getActiveTab().collection.length;
-                    },
-                    fixedColumnsLeft: fixed_columns_count,
-                    stretchH: 'all',
-                    viewportRowRenderingOffset: 300,
-                    viewportColumnRenderingOffset: 50,
-                    enterMoves: { row: 1, col: 0 },
-                    beforeKeyDown(e) {
-                        onBeforeKeyDown(e, true);
-                    },
-                    afterSelection(startRow, startColumn, endRow, endColumn) {
-                        self.selected = [];
+        //  We use defer because we want to wait until flexbox
+        //  sizes are calculated properly
+        _.defer(() => {
+            self.hot = new Handsontable(self.ui.$hot_container[0], {
+                data: self.getActiveTab().collection,
+                columns: self.getActiveTabColumnOptions(),
+                cells: self.getActiveTabCellsSpecificOptions(),
+                colHeaders: self.getActiveTabHeaders(),
+                rowHeaders: true,
+                rowHeights() {
+                    return _.contains(self.getActiveTab().columns, 'drawing') ||
+                        _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
+                },
+                colWidths: self.getActiveTabColWidths(),
+                trimDropdown: false,
+                maxRows() {
+                    return self.getActiveTab().collection.length;
+                },
+                fixedColumnsLeft: fixed_columns_count,
+                stretchH: 'all',
+                viewportRowRenderingOffset: 300,
+                viewportColumnRenderingOffset: 50,
+                enterMoves: { row: 1, col: 0 },
+                beforeKeyDown(e) {
+                    onBeforeKeyDown(e, true);
+                },
+                afterSelection(startRow, startColumn, endRow, endColumn) {
+                    self.selected = [];
 
-                        if (startColumn === 0 && endColumn === this.countCols() - 1) {
-                            self.ui.$remove.removeClass('disabled');
-                            self.ui.$reset_unit_options.removeClass('disabled');
+                    if (startColumn === 0 && endColumn === this.countCols() - 1) {
+                        self.ui.$remove.removeClass('disabled');
+                        self.ui.$reset_unit_options.removeClass('disabled');
 
-                            if (startRow === endRow) {
-                                self.selected = [startRow];
-                                const selectedData = self.hot.getSourceData().at(startRow);
+                        if (startRow === endRow) {
+                            self.selected = [startRow];
+                            const selectedData = self.hot.getSourceData().at(startRow);
 
-                                if (selectedData.hasOnlyDefaultAttributes()) {
-                                    self.ui.$clone.addClass('disabled');
-                                } else {
-                                    self.ui.$clone.removeClass('disabled');
-                                }
-                            } else {
-                                let start = startRow;
-                                let end = endRow;
-
-                                if (startRow > endRow) {
-                                    start = endRow;
-                                    end = startRow;
-                                }
-
-                                for (let i = start; i <= end; i += 1) {
-                                    self.selected.push(i);
-                                }
-
+                            if (selectedData.hasOnlyDefaultAttributes()) {
                                 self.ui.$clone.addClass('disabled');
+                            } else {
+                                self.ui.$clone.removeClass('disabled');
                             }
                         } else {
-                            self.ui.$reset_unit_options.addClass('disabled');
-                            self.ui.$remove.addClass('disabled');
+                            let start = startRow;
+                            let end = endRow;
+
+                            if (startRow > endRow) {
+                                start = endRow;
+                                end = startRow;
+                            }
+
+                            for (let i = start; i <= end; i += 1) {
+                                self.selected.push(i);
+                            }
+
                             self.ui.$clone.addClass('disabled');
                         }
-                    },
-                    afterDeselect() {
-                        if (self.selected.length) {
-                            this.selectCell(
-                                self.selected[0],
-                                0,
-                                self.selected[self.selected.length - 1],
-                                this.countCols() - 1, false,
-                            );
-                        }
-                    },
-                });
+                    } else {
+                        self.ui.$reset_unit_options.addClass('disabled');
+                        self.ui.$remove.addClass('disabled');
+                        self.ui.$clone.addClass('disabled');
+                    }
+                },
+                afterDeselect() {
+                    if (self.selected.length) {
+                        this.selectCell(
+                            self.selected[0],
+                            0,
+                            self.selected[self.selected.length - 1],
+                            this.countCols() - 1, false,
+                        );
+                    }
+                },
             });
+        });
 
-            this.appendPopovers();
+        this.appendPopovers();
 
-            clearInterval(this.dropdown_scroll_timer);
-            this.dropdown_scroll_timer = setInterval(() => {
-                const editor = self.hot && self.hot.getActiveEditor();
+        clearInterval(this.dropdown_scroll_timer);
+        this.dropdown_scroll_timer = setInterval(() => {
+            const editor = self.hot && self.hot.getActiveEditor();
 
-                if (editor && editor.htContainer && !dropdown_scroll_reset) {
-                    dropdown_scroll_reset = true;
-                    editor.htContainer.scrollIntoView(false);
-                } else {
-                    dropdown_scroll_reset = false;
-                }
-            }, 100);
-
-            if (this.total_prices_view) {
-                this.total_prices_view.destroy();
+            if (editor && editor.htContainer && !dropdown_scroll_reset) {
+                dropdown_scroll_reset = true;
+                editor.htContainer.scrollIntoView(false);
+            } else {
+                dropdown_scroll_reset = false;
             }
+        }, 100);
 
-            this.total_prices_view = new UnitsTableTotalPricesView({
-                model: App.current_quote,
-                units: this.collection,
-                extras: this.options.extras,
-            });
-
-            this.ui.$total_prices_container.append(this.total_prices_view.render().el);
-
-            this.undo_manager.registerButton('undo', this.ui.$undo);
-            this.undo_manager.registerButton('redo', this.ui.$redo);
-
-            $(window).off('keydown').on('keydown', (e) => {
-                if (!e.isDuplicate && $(e.target).hasClass('copyPaste')) {
-                    onBeforeKeyDown(e);
-                }
-            });
+        if (this.total_prices_view) {
+            this.total_prices_view.destroy();
         }
+
+        this.total_prices_view = new UnitsTableTotalPricesView({
+            model: App.current_quote,
+            units: this.collection,
+            extras: this.options.extras,
+        });
+
+        this.ui.$total_prices_container.append(this.total_prices_view.render().el);
+
+        this.undo_manager.registerButton('undo', this.ui.$undo);
+        this.undo_manager.registerButton('redo', this.ui.$redo);
+
+        $(window).off('keydown').on('keydown', (e) => {
+            if (!e.isDuplicate && $(e.target).hasClass('copyPaste')) {
+                onBeforeKeyDown(e);
+            }
+        });
     },
     onBeforeDestroy() {
         clearInterval(this.dropdown_scroll_timer);

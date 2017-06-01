@@ -95,9 +95,8 @@ _.extend(Backbone.Model.prototype, {
         options = _.extend({}, default_options, options);
 
         function getClonedItemName(name, name_attr, collection) {
-            let old_name = name ?
-                name.replace(/\s*\(copy#(\d+)\)/, '') :
-                (options.model_name ? `New ${options.model_name}` : 'New');
+            const default_name = options.model_name ? `New ${options.model_name}` : 'New';
+            let old_name = name ? name.replace(/\s*\(copy#(\d+)\)/, '') : default_name;
             const possible_names = _.filter(collection.pluck(name_attr), value => value.indexOf(old_name) !== -1, this);
             const pattern = /(.*\S)\s*(\(copy#(\d+)\))/;
             let new_name = `${old_name} (copy#1)`;

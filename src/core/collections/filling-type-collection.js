@@ -22,11 +22,9 @@ export default Backbone.Collection.extend({
         return max > 0 ? max : 0;
     },
     comparator(item) {
-        const no_positions_state_flag = item.collection.length > 0 && item.collection.getMaxPosition() === 0;
         const is_base_type_flag = item.get('is_base_type');
 
-        return is_base_type_flag ? 9999 :
-            (no_positions_state_flag ? item.id : item.get('position'));
+        return is_base_type_flag ? 9999 : item.get('position');
     },
     getBaseTypes() {
         return this.proxy_type.getBaseTypes();

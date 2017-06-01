@@ -281,10 +281,8 @@ export default Marionette.View.extend({
     getCustomerImage() {
         return this.model.get('customer_image');
     },
-    getProductImage(is_alternative) {
-        const position = this.display_options.show_outside_units_view ?
-            (!is_alternative ? 'outside' : 'inside') :
-            (!is_alternative ? 'inside' : 'outside');
+    getProductImage() {
+        const position = this.display_options.show_outside_units_view ? 'outside' : 'inside';
         const preview_size = 600;
         const title = position === 'inside' ? 'View from Interior' : 'View from Exterior';
 
