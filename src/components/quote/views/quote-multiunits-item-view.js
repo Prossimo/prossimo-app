@@ -11,16 +11,16 @@ export default Marionette.View.extend({
     getPrices() {
         const unit_price = this.model.getUnitPrice();
         const subtotal_price = this.model.getSubtotalPrice();
-        const discount = this.model.get('discount');
+        const has_discounts = this.model.hasSubunitsWithDiscount();
         const unit_price_discounted = this.model.getUnitPriceDiscounted();
         const subtotal_price_discounted = this.model.getSubtotalPriceDiscounted();
 
         return {
             unit: format.price_usd(unit_price),
             subtotal: format.price_usd(subtotal_price),
-            discount: discount ? format.percent(discount) : null,
-            unit_discounted: discount ? format.price_usd(unit_price_discounted) : null,
-            subtotal_discounted: discount ? format.price_usd(subtotal_price_discounted) : null,
+            has_discounts,
+            unit_discounted: has_discounts && format.price_usd(unit_price_discounted),
+            subtotal_discounted: has_discounts && format.price_usd(subtotal_price_discounted),
         };
     },
     getDescription() {
