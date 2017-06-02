@@ -1235,7 +1235,7 @@ export default Marionette.View.extend({
 
                             if (
                                 _.isFunction(selectedData.isSubunit) && selectedData.isSubunit() &&
-                                !selectedData.getParentMultiunit().isSubunitRemovable(selectedData.id)
+                                !selectedData.isRemovable()
                             ) {
                                 self.ui.$remove.addClass('disabled');
                             } else {
