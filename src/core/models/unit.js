@@ -3247,6 +3247,9 @@ const Unit = Backbone.Model.extend({
     isSubunitOf(multiunit) {
         return (multiunit && multiunit.hasSubunit(this)) || false;
     },
+    isRemovable() {
+        return this.isSubunit() && this.getParentMultiunit().isSubunitRemovable(this.id);
+    },
     getRelation() {
         return this.isSubunit() ? 'subunit' : 'loneunit';
     },

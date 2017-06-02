@@ -295,6 +295,9 @@ export default Backbone.Model.extend({
     getSubtotalPriceDiscounted() {
         return this.getSubunitsSum('getSubtotalPriceDiscounted');
     },
+    hasSubunitsWithDiscount() {
+        return this.get('multiunit_subunits').some(subunit => subunit.invokeOnUnit('get', 'discount') > 0);
+    },
     getRelation() {
         return 'multiunit';
     },

@@ -1,14 +1,10 @@
+<div class="multiunit-titlebar">
+    <strong>Multi-frame unit:</strong>
+    <em>Frames assembled on site</em>
+</div>
 <table class="quote-unit-heading">
-    <thead>
-    <tr>
-        <th colspan="3">
-            <strong>Multi-frame unit:</strong>
-            <em>Frames assembled on site</em>
-        </th>
-    </tr>
-    </thead>
     <tbody><tr>
-        <td class="primary-info{{#if show_price }} has-price{{/if}}" colspan="2">
+        <td class="primary-info{{#if show_price }} has-price{{#if price.has_discounts }} has-discounted-price{{/if}}{{/if}}">
             <table>
                 <tbody><tr>
                     <td class="ref_num">
@@ -39,6 +35,22 @@
                     </li>
                 </ul>
             </td>
+            {{#if price.has_discounts }}
+            <td class="price-discounted">
+                <ul class="unit-price">
+                    {{#if price.unit_discounted }}<li class="unit">
+                        <strong>Unit Price w/Disc.:</strong>
+                        <span class="value">{{ price.unit_discounted }}</span>
+                    </li>
+                    {{/if}}
+                    {{#if price.subtotal_discounted }}<li class="subtotal">
+                        <strong>Subtotal w/Disc.:</strong>
+                        <span class="value">{{ price.subtotal_discounted }}</span>
+                    </li>
+                    {{/if}}
+                </ul>
+            </td>
+            {{/if}}
         {{/if}}
     </tr></tbody>
 </table>
