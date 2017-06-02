@@ -533,7 +533,7 @@ export default Marionette.View.extend({
         });
         this.listenTo(this.module, 'state:selected:unit', function (data) {
             this.deselectAll();
-            this.setState({ isFrameSelected: data.newValue });
+            this.setState({ isUnitSelected: data.newValue });
         });
         this.listenTo(this.module, 'state:selected:subunit', function (data) {
             this.deselectAll();
@@ -809,7 +809,7 @@ export default Marionette.View.extend({
         const isLeafSash = isSashSelected && selectedSash.sections.length === 0;
         const hasFrame = isSashSelected && selectedSash.sashType !== 'fixed_in_frame';
         const isMultiunit = this.model.isMultiunit();
-        const isSubunitSelected = !!(this.state.isFrameSelected || this.state.selectedSubunitId);
+        const isSubunitSelected = !!(this.state.isUnitSelected || this.state.selectedSubunitId);
         const isArched = !!(isSashSelected && selectedSash.arched);
         const isCircular = !!(isSashSelected && selectedSash.circular);
         const selectedFillingType = isSashSelected && selectedSash.fillingName &&
@@ -821,7 +821,7 @@ export default Marionette.View.extend({
             let multiunit;
             let subunitId;
 
-            if (this.state.isFrameSelected) {
+            if (this.state.isUnitSelected) {
                 subunit = this.model;
             } else if (this.state.selectedSubunitId) {
                 subunit = this.model.getSubunitLinkedUnitById(this.state.selectedSubunitId);
@@ -855,28 +855,28 @@ export default Marionette.View.extend({
         }
 
         // Section controls
-        this.ui.$filling_tool_controls.toggle(isSashSelected && isLeafSash);
-        this.ui.$bar_controls.toggle(!isArched && isSashSelected && selectedSash.fillingType === 'glass');
+        this.ui.$filling_tool_controls.toggle(isSashSelected && isLeafSash && !isSubunitSelected);
+        this.ui.$bar_controls.toggle(!isArched && !isSubunitSelected && isSashSelected && selectedSash.fillingType === 'glass');
         this.ui.$section_controls.toggle(isSashSelected || isSubunitSelected);
-        this.ui.$sash_controls.toggle(!isArched && isSashSelected && this.model.canAddSashToSection(selectedSashId));
-        this.ui.$section_split_controls.toggle(isSashSelected && !isArched);
+        this.ui.$sash_controls.toggle(!isArched && !isSubunitSelected && isSashSelected && this.model.canAddSashToSection(selectedSashId));
+        this.ui.$section_split_controls.toggle(isSashSelected && !isSubunitSelected && !isArched);
         if (selectedFillingType) {
             this.ui.$filling_select.val(selectedFillingType.cid);
         } else {
             this.ui.$filling_select.val('');
         }
         this.ui.$filling_select.selectpicker('render');
-        this.ui.$filling_type_controls.toggle(isSashSelected);
+        this.ui.$filling_type_controls.toggle(isSashSelected && !isSubunitSelected);
 
         // Arched controls
-        this.ui.$arched_controls.toggle(isSashSelected && this.model.isArchedPossible(selectedSashId));
-        this.ui.$remove_arched.toggle(isArched && !isCircular);
-        this.ui.$add_arched.toggle(!isArched && !isCircular);
+        this.ui.$arched_controls.toggle(isSashSelected && !isSubunitSelected && this.model.isArchedPossible(selectedSashId));
+        this.ui.$remove_arched.toggle(isArched && !isCircular && !isSubunitSelected);
+        this.ui.$add_arched.toggle(!isArched && !isCircular && !isSubunitSelected);
 
         // Circular controls
-        this.ui.$circular_controls.toggle(isSashSelected && this.model.isCircularPossible(selectedSashId));
-        this.ui.$remove_circular.toggle(isCircular && !isArched);
-        this.ui.$add_circular.toggle(!isCircular && !isArched);
+        this.ui.$circular_controls.toggle(isSashSelected && !isSubunitSelected && this.model.isCircularPossible(selectedSashId));
+        this.ui.$remove_circular.toggle(isCircular && !isArched && !isSubunitSelected);
+        this.ui.$add_circular.toggle(!isCircular && !isArched && !isSubunitSelected);
 
         // Multiunit controls
         this.ui.$multiunit_controls.toggle(isSubunitSelected);
@@ -898,7 +898,7 @@ export default Marionette.View.extend({
         this.ui.$clear_frame.toggle(!isMultiunit);
 
         // Additional overlay metrics
-        this.ui.$metric_controls.toggle(!isMultiunit);
+        this.ui.$metric_controls.toggle(!isMultiunit && !isSubunitSelected);
         if (isSashSelected) {
             this.ui.$metrics_glass_input.prop('checked', selectedSash.measurements.glass);
             this.ui.$metrics_opening_input.prop('checked', selectedSash.measurements.opening);

@@ -152,13 +152,11 @@ export default Backbone.KonvaView.extend({
     // Selections
     setSelection(event, type) {
         const origin = this.getSectionId(event.target);
-        const topSashId = this._model.get('root_section').id;
 
         this.deselectAll();
 
         if (type === 'unit') {
             this._module.setState('selected:unit', 'frame');
-            this._module.setState('selected:sash', topSashId);
         } else if (type === 'sash' && origin) {
             this._module.setState('selected:sash', origin.attrs.sectionId);
         } else if (type === 'mullion' && origin) {
