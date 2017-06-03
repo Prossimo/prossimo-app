@@ -99,20 +99,6 @@ img.button {
     min-height: 2rem;
     background-color: darken(@white, 30%);
     border-bottom: 1px solid darken(@white, 40%);
-
-    .button {
-        cursor: pointer;
-    }
-
-    .button:hover {
-        filter: brightness(@button-hover-brightness);
-    }
-
-    .button.disabled {
-        opacity: @button-disabled-opacity;
-        filter: grayscale();
-        cursor: default;
-    }
 }
 
 .controls-block {
@@ -145,6 +131,15 @@ img.button {
 
         & + .btn { margin-left: 8px; }
     }
+}
+
+.arched-controls,
+.circular-controls {
+    margin-left: 12px;
+}
+
+.arched-controls[style="display: inline-block;"] + .circular-controls[style="display: inline-block;"] {
+    margin-left: -3px;
 }
 
 .controls-label {
@@ -188,54 +183,51 @@ img.button {
     display: none;
 }
 
-.drawing-controls .menu {
-    display: inline-block;
-    position: relative;
+.multiunit-controls {
+    .button-list > li { position: relative; }
 
-    .menu-popup {
-        @menu-padding: 8px;
-        @icon-size: 35px;
-        @icon-margin: 1px;
+    .button:hover + .button-grid { display: block; }
+
+    .button-grid {
+        @grid-padding: 8px;
+        @button-size: 35px;
+        @button-margin: 1px;
 
         .bs-dropdown-style();
-
         display: none;
         position: absolute;
-        left: -(@icon-size + @menu-padding + @icon-margin);
-        top: -(@icon-size + @menu-padding + @icon-margin) - 1px;
-        width: @icon-size * 3 + @menu-padding * 2 + @icon-margin * 2;
-        height: @icon-size * 3 + @menu-padding * 2 + @icon-margin * 2;
-        padding: @menu-padding;
+        left: -(@button-size + @grid-padding + @button-margin);
+        top: -(@button-size + @grid-padding + @button-margin) - 1px;
+        width: @button-size * 3 + @grid-padding * 2 + @button-margin * 2;
+        height: @button-size * 3 + @grid-padding * 2 + @button-margin * 2;
+        padding: @grid-padding;
         z-index: 1;
+
+        &:hover { display: block; }
 
         .button {
             position: absolute;
 
-            &.top {
-                left: @icon-size + @menu-padding + @icon-margin - 1px;
-                top: @menu-padding - 1px;
+            &[data-side="top"] {
+                left: @button-size + @grid-padding + @button-margin - 1px;
+                top: @grid-padding - 1px;
             }
 
-            &.right {
-                top: @icon-size + @menu-padding + @icon-margin - 1px;
-                right: @menu-padding - 1px;
+            &[data-side="right"] {
+                top: @button-size + @grid-padding + @button-margin - 1px;
+                right: @grid-padding - 1px;
             }
 
-            &.bottom {
-                left: @icon-size + @menu-padding + @icon-margin - 1px;
-                bottom: @menu-padding - 1px;
+            &[data-side="bottom"] {
+                left: @button-size + @grid-padding + @button-margin - 1px;
+                bottom: @grid-padding - 1px;
             }
 
-            &.left {
-                top: @icon-size + @menu-padding + @icon-margin - 1px;
-                left: @menu-padding - 1px;
+            &[data-side="left"] {
+                top: @button-size + @grid-padding + @button-margin - 1px;
+                left: @grid-padding - 1px;
             }
         }
-    }
-
-    .menu-popup:hover,
-    .menu-button:hover + .menu-popup {
-        display: block;
     }
 }
 

@@ -33,7 +33,7 @@ export function generatePreview(unitModel, preview_options) {
             inchesDisplayMode: options.inchesDisplayMode,
             hingeIndicatorMode: options.hingeIndicatorMode,
             drawIndexes: options.drawIndexes,
-            'selected:frame': (options.isSelected) ? 'whole' : undefined,
+            'selected:unit': (options.isSelected) ? 'frame' : undefined,
         }, false);
     }
 
