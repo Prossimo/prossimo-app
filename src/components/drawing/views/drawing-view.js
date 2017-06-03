@@ -883,7 +883,8 @@ export default Marionette.View.extend({
         this.ui.$multiunit_controls.toggle(isSubunitSelected);
         this.ui.$add_connector_top_button.toggleClass('disabled', isTopConnected);
         this.ui.$add_connector_bottom_button.toggleClass('disabled', isBottomConnected);
-        this.ui.$remove_subunit_button.toggleClass('disabled', !isRemovable);        
+        this.ui.$remove_subunit_button.toggleClass('disabled', !isRemovable);
+
         if (isInside) {
             this.ui.$add_connector_left_button.toggleClass('disabled', isRightConnected);
             this.ui.$add_connector_right_button.toggleClass('disabled', isLeftConnected);
