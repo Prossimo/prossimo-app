@@ -278,8 +278,7 @@ export default Marionette.View.extend({
     },
     handleArchedClick() {
         if (!this.state.selectedSashId) {
-            console.warn('no sash selected');
-            return;
+            throw new Error('No sash selected');
         }
 
         this.model._updateSection(this.state.selectedSashId, (section) => {
@@ -295,8 +294,7 @@ export default Marionette.View.extend({
     },
     handleCircularClick() {
         if (!this.state.selectedSashId) {
-            console.warn('no sash selected');
-            return;
+            throw new Error('No sash selected');
         }
 
         this.model.toggleCircular(this.state.selectedSashId);

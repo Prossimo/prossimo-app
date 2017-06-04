@@ -1,5 +1,6 @@
 {
   "rules": {
+    "no-console": "off",
     "promise/always-return": "error",
     "promise/no-return-wrap": "error",
     "promise/param-names": "error",

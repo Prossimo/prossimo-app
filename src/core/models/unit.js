@@ -1359,8 +1359,7 @@ const Unit = Backbone.Model.extend({
     },
     setSectionSashType(sectionId, type) {
         if (!_.includes(SASH_TYPES, type)) {
-            console.error(`Unrecognized sash type: ${type}`);
-            return;
+            throw new Error(`Unrecognized sash type: ${type}`);
         }
 
         const full = this.generateFullRoot();
@@ -1623,12 +1622,11 @@ const Unit = Backbone.Model.extend({
 
         return redistributedBars;
     },
-    // @TODO: Add method, that checks for correct values of measurement data
-    // @TODO: Add method, that drops measurement data to default
+    // @TODO: Add method that checks for correct values of measurement data
+    // @TODO: Add method that drops measurement data to default
     setFillingType(sectionId, type, name) {
         if (!_.includes(FILLING_TYPES, type)) {
-            console.error(`Unknow filling type: ${type}`);
-            return;
+            throw new Error(`Unknow filling type: ${type}`);
         }
 
         this._updateSection(sectionId, (section) => {
@@ -1674,8 +1672,7 @@ const Unit = Backbone.Model.extend({
     },
     splitSection(sectionId, type) {
         if (!_.includes(MULLION_TYPES, type)) {
-            console.error('Unknow mullion type', type);
-            return;
+            throw new Error(`Unknow mullion type: ${type}`);
         }
 
         this._updateSection(sectionId, (section) => {
