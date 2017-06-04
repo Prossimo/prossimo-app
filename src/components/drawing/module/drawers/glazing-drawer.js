@@ -359,32 +359,31 @@ export default Backbone.KonvaView.extend({
 
                     // Draw controls for intersection with horizontal bars
                     for (let j = 0; j < this.getBarsCount()[invertedType]; j += 1) {
-                        if (
+                        if (!(
                             _.isArray(data.links) &&
                             data.links.indexOf(this.section.bars[invertedType][j].id) !== -1
-                        ) {
-                            continue;
-                        }
-
-                        controls.add(this.createBoundControl({
-                            index: j,
-                            edge: selectedEdge,
-                            bar: {
-                                type,
-                                index: i,
+                        )) {
+                            controls.add(this.createBoundControl({
+                                index: j,
                                 edge: selectedEdge,
-                            },
-                            link: this.section.bars[invertedType][j],
-                            position: (type === 'vertical') ?
-                            {
-                                x: position,
-                                y: fillY + this.section.bars[invertedType][j].position,
-                            } : {
-                                x: fillX + this.section.bars.vertical[j].position,
-                                y: position,
-                            },
-                        }));
+                                bar: {
+                                    type,
+                                    index: i,
+                                    edge: selectedEdge,
+                                },
+                                link: this.section.bars[invertedType][j],
+                                position: (type === 'vertical') ?
+                                {
+                                    x: position,
+                                    y: fillY + this.section.bars[invertedType][j].position,
+                                } : {
+                                    x: fillX + this.section.bars.vertical[j].position,
+                                    y: position,
+                                },
+                            }));
+                        }
                     }
+
                     // Draw controls at section edge:
                     // For edge with key === 0 - null means section edge at left/top side
                     // For 1 - right/bottom side
