@@ -960,7 +960,7 @@ export default Backbone.Model.extend({
     //  so if any subunit did change, we want to redraw multiunut preview
     getDrawingRepresentation() {
         const model_attributes_to_cache = [
-            'multiunit_subunits', 'root_section',
+            'multiunit_subunits', 'root_section', 'position',
         ];
 
         return {

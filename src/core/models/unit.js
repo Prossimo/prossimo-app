@@ -3511,13 +3511,17 @@ const Unit = Backbone.Model.extend({
         return multiunit;
     },
     //  List attributes that cause unit redraw on change
-    //  TODO: ideally, this should be just the root_section attribute,
-    //  but it is not enough in the current state
+    //  TODO: this data should be made a single source of truth for the drawing
+    //  builder, so it shouldn't get anything from model or profile directly
     getDrawingRepresentation() {
         const model_attributes_to_cache = [
             'glazing', 'glazing_bar_width', 'height', 'opening_direction',
             'profile_id', 'root_section', 'unit_options', 'width',
         ];
+
+        if (this.isSubunit()) {
+            model_attributes_to_cache.push('position');
+        }
 
         return this.pick(model_attributes_to_cache);
     },
@@ -3548,6 +3552,7 @@ const Unit = Backbone.Model.extend({
 
         //  If we already got an image for the same model representation
         //  and same preview options, just return it from the cache
+        //  TODO: drawing representation string should be encoded here
         if (
             use_cache === true && this.preview && this.preview.result &&
             this.preview.result[options_json_string] &&
