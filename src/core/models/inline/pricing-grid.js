@@ -57,7 +57,7 @@ export const Grid = Backbone.Collection.extend({
             } else if (target_area > this.last().getArea()) {
                 value = this.last().get('value');
             } else {
-                this.models.some(function (grid_item, index) {
+                this.models.some((grid_item, index) => {
                     if (target_area === grid_item.getArea()) {
                         value = grid_item.get('value');
                         return true;
@@ -76,7 +76,7 @@ export const Grid = Backbone.Collection.extend({
                     }
 
                     return false;
-                }, this);
+                });
             }
         }
 
@@ -102,9 +102,9 @@ export default Backbone.Model.extend({
     defaults() {
         const defaults = {};
 
-        _.each(PRICING_GRID_PROPERTIES, function (item) {
+        _.each(PRICING_GRID_PROPERTIES, (item) => {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
-        }, this);
+        });
 
         return defaults;
     },
@@ -161,7 +161,7 @@ export default Backbone.Model.extend({
         //  The order of events doesn't really match the way events
         //  propagate from model to collection, but it should be okay for
         //  the purpose of persisting the model on grid item change
-        this.listenTo(this.get('data'), 'change update', function (changed_object) {
+        this.listenTo(this.get('data'), 'change update', (changed_object) => {
             this.trigger('change:data change', changed_object);
         });
     },

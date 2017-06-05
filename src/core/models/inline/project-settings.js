@@ -29,9 +29,9 @@ export default Backbone.Model.extend({
     defaults() {
         const defaults = {};
 
-        _.each(PROJECT_SETTINGS_PROPERTIES, function (item) {
+        _.each(PROJECT_SETTINGS_PROPERTIES, (item) => {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
-        }, this);
+        });
 
         return defaults;
     },

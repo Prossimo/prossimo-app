@@ -55,7 +55,7 @@ const DrawingModule = Marionette.Object.extend({
         }
 
         // Bind events
-        this.on('state:any', function () {
+        this.on('state:any', () => {
             this.update();
         });
 
@@ -669,7 +669,7 @@ const DrawingModule = Marionette.Object.extend({
 
 export default DrawingModule;
 
-export const preview = function (unitModel, options) {
+export const preview = function generatePreview(unitModel, options) {
     let result;
     const defaults = {
         width: 300,

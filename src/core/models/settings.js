@@ -37,9 +37,9 @@ export default Backbone.Model.extend({
     defaults() {
         const defaults = {};
 
-        _.each(SETTINGS_PROPERTIES, function (item) {
+        _.each(SETTINGS_PROPERTIES, (item) => {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
-        }, this);
+        });
 
         return defaults;
     },
@@ -103,7 +103,7 @@ export default Backbone.Model.extend({
 
             //  When any dictionary or dictionary entry is changed, we remember
             //  this fact to trigger an event later, when we switch screens
-            this.listenTo(this.dictionaries, 'change entries_change', function () {
+            this.listenTo(this.dictionaries, 'change entries_change', () => {
                 this._dependencies_changed = _.extend({}, this._dependencies_changed, { dictionaries: true });
             });
         });

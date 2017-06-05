@@ -163,7 +163,7 @@ export default Marionette.View.extend({
 
             file.previewContainer.data('cid', fileModel.cid);
 
-            const delBtnOptions = function () {
+            const delBtnOptions = () => {
                 if (this.options.showPreview) {
                     return {
                         class: this.options.previewOpts.deleteBtnClass,
@@ -174,7 +174,7 @@ export default Marionette.View.extend({
                 return {
                     class: this.options.previewOpts.deleteBtnNoPreviewClass,
                 };
-            }.bind(this);
+            };
 
             const delBtn = $('<span>', delBtnOptions());
 
@@ -277,7 +277,7 @@ export default Marionette.View.extend({
         }
     },
     deletePreview(preview) {
-        preview.fadeOut(function () {
+        preview.fadeOut(() => {
             $(this).remove();
         });
     },

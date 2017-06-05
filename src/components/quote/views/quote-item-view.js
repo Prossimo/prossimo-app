@@ -90,7 +90,7 @@ export default Marionette.View.extend({
         //  throw out attributes that don't apply to the current unit
         const params_list = _.filter(
             ['rough_opening', 'description', 'opening_direction'],
-            function (param) {
+            (param) => {
                 let condition = true;
 
                 if (this.model.isOperableOnlyAttribute(param) && !this.model.hasOperableSections()) {
@@ -102,7 +102,7 @@ export default Marionette.View.extend({
         const source_hash = this.model.getNameTitleTypeHash(params_list);
 
         //  Add section for each sash (Sash #N title + sash properties)
-        _.each(sash_list_source, function (source_item, index) {
+        _.each(sash_list_source, (source_item, index) => {
             const sash_item = {};
             let opening_size_data;
             let egress_opening_size_data;
@@ -190,11 +190,11 @@ export default Marionette.View.extend({
         }, this);
 
         //  Now get list of Unit Options applicable for this unit
-        const dictionaries = _.map(App.settings.dictionaries.filter(function (dictionary) {
+        const dictionaries = _.map(App.settings.dictionaries.filter((dictionary) => {
             const rules_and_restrictions = dictionary.get('rules_and_restrictions');
             let is_restricted = false;
 
-            _.each(rules_and_restrictions, function (rule) {
+            _.each(rules_and_restrictions, (rule) => {
                 const restriction_applies = this.model.checkIfRestrictionApplies(rule);
 
                 if (restriction_applies) {
@@ -243,7 +243,7 @@ export default Marionette.View.extend({
 
         //  Extend unit attributes with options
         params_source = _.extend({}, params_source, _.object(dictionaries, _.map(dictionaries,
-            function (dictionary_name) {
+            (dictionary_name) => {
                 const dictionary_id = App.settings.dictionaries.getDictionaryIdByName(dictionary_name);
                 const is_dictionary_hidden = App.settings.dictionaries.get(dictionary_id).get('is_hidden');
                 const current_options = dictionary_id ?
@@ -264,14 +264,12 @@ export default Marionette.View.extend({
             }, this),
         ));
 
-        const params = _.map(name_title_hash, function (item, key) {
-            return {
-                name: key,
-                title: item,
-                value: params_source[key] !== undefined ?
-                    params_source[key] : this.model.get(key),
-            };
-        }, this);
+        const params = _.map(name_title_hash, (item, key) => ({
+            name: key,
+            title: item,
+            value: params_source[key] !== undefined ?
+                params_source[key] : this.model.get(key),
+        }));
 
         return {
             sashes,

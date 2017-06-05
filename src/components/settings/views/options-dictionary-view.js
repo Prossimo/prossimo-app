@@ -110,7 +110,7 @@ export default Marionette.View.extend({
             values_list: _.map([
                 { value: true, title: 'Yes' },
                 { value: false, title: 'No' },
-            ], function (item) {
+            ], (item) => {
                 const is_current = item.value === this.model.get('is_hidden');
 
                 return _.extend({}, item, { is_current });

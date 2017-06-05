@@ -80,7 +80,7 @@ export default Marionette.View.extend({
         this.ui.$name_container.empty().append(this.name_input_view.render().el);
         this.ui.$supplier_name_container.empty().append(this.supplier_name_input_view.render().el);
 
-        this.ui.$profiles_list_container.on('mouseenter', function () {
+        this.ui.$profiles_list_container.on('mouseenter', () => {
             const $this = $(this);
 
             if (profiles && this.offsetWidth < this.scrollWidth) {
@@ -92,7 +92,7 @@ export default Marionette.View.extend({
                 $this.tooltip('show');
             }
         });
-        this.ui.$profiles_list_container.on('mouseleave', function () {
+        this.ui.$profiles_list_container.on('mouseleave', () => {
             $(this).tooltip('hide').tooltip('destroy');
         });
 
@@ -140,7 +140,7 @@ export default Marionette.View.extend({
             collection: this.model.get('dictionary_entry_profiles'),
         });
 
-        this.listenTo(this.model, 'change:dictionary_entry_profiles change:namechange:supplier_name', function () {
+        this.listenTo(this.model, 'change:dictionary_entry_profiles change:namechange:supplier_name', () => {
             this.render();
             this.name_input_view.delegateEvents();
             this.supplier_name_input_view.delegateEvents();

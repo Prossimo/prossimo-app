@@ -30,7 +30,7 @@ export default BaseDialogView.extend({
     //  - make the corresponding REST API call to update option to profile
     //  availability
     onDataChange(changes_array) {
-        _.each(changes_array, function (change) {
+        _.each(changes_array, (change) => {
             const profile_index = change[0];
             const column_index = change[1];
             const old_value = change[2];
@@ -64,7 +64,7 @@ export default BaseDialogView.extend({
                 this.options.collection.setItemAvailabilityForProfile(profile.id, item, new_value);
                 this.updateDefaultVariantsForProfile(profile_index);
             }
-        }, this);
+        });
     },
     //  This function only updates the list of default variants here, it
     //  doesn't do any changes to models
@@ -125,11 +125,11 @@ export default BaseDialogView.extend({
         return [UNSET_VALUE].concat(_.map(possible_items, available_item => available_item.get('name')));
     },
     getData() {
-        return this.options.profiles.map(function (profile) {
-            return [this.getDefaultItemName(profile.id)].concat(
+        return this.options.profiles.map(profile => [this.getDefaultItemName(profile.id)]
+            .concat(
                 _.map(this.options.items_filtered, item => _.contains(item.getIdsOfProfilesWhereIsAvailable() || [], profile.id)),
-            );
-        }, this);
+            ),
+        );
     },
     getHeaders() {
         return {
@@ -158,7 +158,7 @@ export default BaseDialogView.extend({
     getCellOptions() {
         const self = this;
 
-        return function (row, col) {
+        return (row, col) => {
             const cell_properties = {};
 
             //  If it's the left ('Default Value') column

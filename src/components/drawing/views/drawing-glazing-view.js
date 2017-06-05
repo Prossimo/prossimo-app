@@ -68,7 +68,7 @@ export default Marionette.View.extend({
     },
 
     bindModuleEvents() {
-        this.listenTo(this.module, 'labelClicked', function (data) {
+        this.listenTo(this.module, 'labelClicked', (data) => {
             this.parent.createInput.call(this, data.params, data.pos, data.size);
         });
     },

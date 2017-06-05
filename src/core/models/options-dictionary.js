@@ -40,9 +40,9 @@ export default Backbone.Model.extend({
     defaults() {
         const defaults = {};
 
-        _.each(DICTIONARY_PROPERTIES, function (item) {
+        _.each(DICTIONARY_PROPERTIES, (item) => {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
-        }, this);
+        });
 
         return defaults;
     },
@@ -126,7 +126,7 @@ export default Backbone.Model.extend({
         }
 
         //  Simple type validation for numbers and booleans
-        _.find(attributes, function (value, key) {
+        _.find(attributes, (value, key) => {
             let attribute_obj = this.getNameTitleTypeHash([key]);
             let has_validation_error = false;
 
@@ -151,14 +151,14 @@ export default Backbone.Model.extend({
             }
 
             return has_validation_error;
-        }, this);
+        });
 
         return error_obj;
     },
     hasOnlyDefaultAttributes() {
         let has_only_defaults = true;
 
-        _.each(this.toJSON(), function (value, key) {
+        _.each(this.toJSON(), (value, key) => {
             if (key !== 'position' && has_only_defaults) {
                 const property_source = _.findWhere(DICTIONARY_PROPERTIES, { name: key });
                 const type = property_source ? property_source.type : undefined;
@@ -173,7 +173,7 @@ export default Backbone.Model.extend({
                     has_only_defaults = false;
                 }
             }
-        }, this);
+        });
 
         return has_only_defaults;
     },
@@ -225,7 +225,7 @@ export default Backbone.Model.extend({
             this.unset('entries', { silent: true });
             this.entries.trigger('fully_loaded');
 
-            this.listenTo(this.entries, 'change', function (e) {
+            this.listenTo(this.entries, 'change', (e) => {
                 this.trigger('entries_change', e);
             });
         }

@@ -70,7 +70,7 @@ export default Marionette.View.extend({
                 collection: this.collection,
                 columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing'],
                 unit_options_columns: App.settings.dictionaries.getAvailableDictionaryNames(),
-                unit_options_quantity_columns: (function () {
+                unit_options_quantity_columns: (() => {
                     const columns = [];
 
                     App.settings.dictionaries.each((dictionary) => {
@@ -80,7 +80,7 @@ export default Marionette.View.extend({
                     });
 
                     return columns;
-                }()),
+                })(),
             },
             prices: {
                 title: 'Prices',
@@ -115,14 +115,14 @@ export default Marionette.View.extend({
             //  We insert quantity columns at specific positions (after
             //  the corresponding option column)
             if (this.tabs.unit_options.unit_options_quantity_columns.length) {
-                _.each(this.tabs.unit_options.unit_options_quantity_columns, function (qty_column_name) {
+                _.each(this.tabs.unit_options.unit_options_quantity_columns, (qty_column_name) => {
                     const target_option_name = qty_column_name.replace(/ Quantity$/, '');
                     const target_position = _.indexOf(this.tabs.unit_options.columns, target_option_name);
 
                     if (target_position !== -1) {
                         this.tabs.unit_options.columns.splice(target_position + 1, 0, qty_column_name);
                     }
-                }, this);
+                });
             }
         }
 
@@ -262,10 +262,10 @@ export default Marionette.View.extend({
     templateContext() {
         return {
             active_tab: this.active_tab,
-            tabs: _.each(this.tabs, function (item, key) {
+            tabs: _.each(this.tabs, (item, key) => {
                 item.is_active = key === this.active_tab;
                 return item;
-            }, this),
+            }),
             mode: this.getActiveTab().title === 'Extras' ? 'extras' : 'units',
         };
     },
@@ -399,7 +399,7 @@ export default Marionette.View.extend({
             _.contains(this.getActiveTab().unit_options_columns, column_name)
         ) {
             //  TODO: deal with multiple values per dictionary somehow
-            getter = function (model, attr_name) {
+            getter = (model, attr_name) => {
                 const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(attr_name);
                 const current_options = target_dictionary_id ?
                     model.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
@@ -410,7 +410,7 @@ export default Marionette.View.extend({
             this.active_tab === 'unit_options' &&
             _.contains(this.getActiveTab().unit_options_quantity_columns, column_name)
         ) {
-            getter = function (model, attr_name) {
+            getter = (model, attr_name) => {
                 const target_dictionary_name = attr_name.replace(/ Quantity$/, '');
                 const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
                 const current_options = target_dictionary_id ?
@@ -419,9 +419,7 @@ export default Marionette.View.extend({
                 return current_options.length ? current_options[0].quantity : UNSET_VALUE;
             };
         } else {
-            getter = function (model, attr_name) {
-                return model.get(attr_name);
-            };
+            getter = (model, attr_name) => model.get(attr_name);
         }
 
         return getter(unit_model, column_name);
@@ -466,9 +464,7 @@ export default Marionette.View.extend({
         if (parsers_hash[column_name]) {
             parser = parsers_hash[column_name];
         } else {
-            parser = function (attr_name, val) {
-                return val;
-            };
+            parser = (attr_name, val) => val;
         }
 
         return parser(column_name, ...args);
@@ -492,7 +488,7 @@ export default Marionette.View.extend({
             this.active_tab === 'unit_options' &&
             _.contains(this.getActiveTab().unit_options_columns, column_name)
         ) {
-            setter = function (model, attr_name, val) {
+            setter = (model, attr_name, val) => {
                 const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(attr_name);
 
                 if (!target_dictionary_id) {
@@ -514,7 +510,7 @@ export default Marionette.View.extend({
             this.active_tab === 'unit_options' &&
             _.contains(this.getActiveTab().unit_options_quantity_columns, column_name)
         ) {
-            setter = function (model, attr_name, val) {
+            setter = (model, attr_name, val) => {
                 const target_dictionary_name = attr_name.replace(/ Quantity$/, '');
                 const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
 
@@ -532,9 +528,7 @@ export default Marionette.View.extend({
                 return model.persistOption(target_dictionary_id, target_entry_id, parseInt(val, 10));
             };
         } else {
-            setter = function (model, attr_name, val) {
-                return model.persist(attr_name, self.getSetterParser(column_name, val));
-            };
+            setter = (model, attr_name, val) => model.persist(attr_name, self.getSetterParser(column_name, val));
         }
 
         return setter(unit_model, column_name, ...args);
@@ -542,7 +536,7 @@ export default Marionette.View.extend({
     getColumnData(column_name) {
         const self = this;
 
-        return function (unit_model, value) {
+        return function columnData(unit_model, value) {
             if (!unit_model) {
                 return false;
             }
@@ -582,7 +576,7 @@ export default Marionette.View.extend({
     },
     getColumnValidator(column_name) {
         const self = this;
-        const validator = function (value, callback) {
+        const validator = function columnValidator(value, callback) {
             const attributes_object = {};
             const model = this.instance.getSourceData().at(this.row);
 
@@ -762,14 +756,14 @@ export default Marionette.View.extend({
     getActiveTabColumnOptions() {
         const columns = [];
 
-        _.each(this.getActiveTab().columns, function (column_name) {
+        _.each(this.getActiveTab().columns, (column_name) => {
             const column_obj = _.extend({}, {
                 data: this.getColumnData(column_name),
                 validator: this.getColumnValidator(column_name),
             }, this.getColumnExtraProperties(column_name));
 
             columns.push(column_obj);
-        }, this);
+        });
 
         return columns;
     },
@@ -779,7 +773,7 @@ export default Marionette.View.extend({
     getActiveTabCellsSpecificOptions() {
         const self = this;
 
-        return function (row, col) {
+        return function cellSpecificOptions(row, col) {
             const cell_properties = {};
             const item = this.instance.getSourceData().at(row);
             const property = self.getActiveTab().columns[col];
@@ -914,7 +908,7 @@ export default Marionette.View.extend({
         const headers = [];
         const active_tab = this.getActiveTab();
 
-        _.each(active_tab.columns, function (column_name) {
+        _.each(active_tab.columns, (column_name) => {
             const custom_header = this.getCustomColumnHeader(column_name);
             const original_header = active_tab.collection.getTitles([column_name]);
             let title = '';
@@ -933,7 +927,7 @@ export default Marionette.View.extend({
             }
 
             headers.push(title);
-        }, this);
+        });
 
         return headers;
     },

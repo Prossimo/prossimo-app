@@ -42,9 +42,9 @@ export default Backbone.Model.extend({
     defaults() {
         const defaults = {};
 
-        _.each(FILLING_TYPE_PROPERTIES, function (item) {
+        _.each(FILLING_TYPE_PROPERTIES, (item) => {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
-        }, this);
+        });
 
         return defaults;
     },
@@ -135,7 +135,7 @@ export default Backbone.Model.extend({
         }
 
         //  Simple type validation for numbers and booleans
-        _.find(attributes, function (value, key) {
+        _.find(attributes, (value, key) => {
             let attribute_obj = this.getNameTitleTypeHash([key]);
             let has_validation_error = false;
 
@@ -160,14 +160,14 @@ export default Backbone.Model.extend({
             }
 
             return has_validation_error;
-        }, this);
+        });
 
         return error_obj;
     },
     hasOnlyDefaultAttributes() {
         let has_only_defaults = true;
 
-        _.each(this.toJSON(), function (value, key) {
+        _.each(this.toJSON(), (value, key) => {
             if (key !== 'position' && has_only_defaults) {
                 const property_source = _.findWhere(FILLING_TYPE_PROPERTIES, { name: key });
                 const type = property_source ? property_source.type : undefined;
@@ -181,7 +181,7 @@ export default Backbone.Model.extend({
                     has_only_defaults = false;
                 }
             }
-        }, this);
+        });
 
         return has_only_defaults;
     },
@@ -291,7 +291,7 @@ export default Backbone.Model.extend({
         this.options = options || {};
 
         //  Any change to `filling_type_profiles` should be persisted
-        this.listenTo(this.get('filling_type_profiles'), 'change update', function () {
+        this.listenTo(this.get('filling_type_profiles'), 'change update', () => {
             this.persist('filling_type_profiles', this.get('filling_type_profiles'));
         });
     },

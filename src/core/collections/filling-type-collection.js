@@ -97,7 +97,7 @@ export default Backbone.Collection.extend({
     validatePerProfileDefaults() {
         const profiles = this.getIdsOfAllConnectedProfiles();
 
-        _.each(profiles, function (profile_id) {
+        _.each(profiles, (profile_id) => {
             const all_items = this.getAvailableForProfile(profile_id);
             const default_item = this.getDefaultForProfile(profile_id);
             const non_default_items = _.without(all_items, default_item);

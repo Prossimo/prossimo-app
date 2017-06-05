@@ -14,9 +14,9 @@ export default Backbone.Model.extend({
     defaults() {
         const defaults = {};
 
-        _.each(UNIT_OPTION_PROPERTIES, function (item) {
+        _.each(UNIT_OPTION_PROPERTIES, (item) => {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
-        }, this);
+        });
 
         return defaults;
     },

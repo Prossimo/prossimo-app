@@ -22,7 +22,7 @@ export default Marionette.View.extend({
     templateContext() {
         return {
             show_notice: this.options.show_notice,
-            tabs: _.each(this.tabs, function (item, key) {
+            tabs: _.each(this.tabs, (item, key) => {
                 item.is_active = key === this.active_tab;
                 return item;
             }, this),
@@ -52,22 +52,18 @@ export default Marionette.View.extend({
         if (getters_hash[column_name]) {
             getter = getters_hash[column_name];
         } else {
-            getter = function (model, attr_name) {
-                return model.get(attr_name);
-            };
+            getter = (model, attr_name) => model.get(attr_name);
         }
 
         return getter(grid_entry_model, column_name);
     },
     getColumnData(column_name) {
         const self = this;
-        const setter = function (model, attr_name, val) {
-            //  TODO: parse data on set
-            // return model.persist(attr_name, self.getSetterParser(column_name, val));
-            return model.persist(attr_name, val);
-        };
+        //  TODO: parse data on set
+        // return model.persist(attr_name, self.getSetterParser(column_name, val));
+        const setter = (model, attr_name, val) => model.persist(attr_name, val);
 
-        return function (grid_entry_model, value) {
+        return (grid_entry_model, value) => {
             if (!grid_entry_model) {
                 return false;
             }
@@ -114,7 +110,7 @@ export default Marionette.View.extend({
     getColumnOptions() {
         const columns = [];
 
-        _.each(this.columns, function (column_name) {
+        _.each(this.columns, (column_name) => {
             const column_obj = _.extend({}, {
                 data: this.getColumnData(column_name),
             }, this.getColumnExtraProperties(column_name));
@@ -127,7 +123,7 @@ export default Marionette.View.extend({
     getColumnHeaders() {
         const headers = [];
 
-        _.each(this.columns, function (column_name) {
+        _.each(this.columns, (column_name) => {
             const custom_header = this.getCustomColumnHeader(column_name);
             let title = '';
 

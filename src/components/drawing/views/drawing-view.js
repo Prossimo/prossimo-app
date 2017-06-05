@@ -437,7 +437,7 @@ export default Marionette.View.extend({
     },
 
     bindModuleEvents() {
-        this.listenTo(this.module, 'state:selected:mullion', function (data) {
+        this.listenTo(this.module, 'state:selected:mullion', (data) => {
             if (data.newValue) {
                 this.module.disableDelayedHover();
             } else {
@@ -446,7 +446,7 @@ export default Marionette.View.extend({
             this.deselectAll();
             this.setState({ selectedMullionId: data.newValue });
         });
-        this.listenTo(this.module, 'state:selected:sash', function (data) {
+        this.listenTo(this.module, 'state:selected:sash', (data) => {
             const sourceSashId = data.oldValue;
             const targetSashId = data.newValue;
             if (targetSashId) {
@@ -465,17 +465,17 @@ export default Marionette.View.extend({
                 this.setState({ selectedSashId: targetSashId });
             }
         });
-        this.listenTo(this.module, 'labelClicked', function (data) {
+        this.listenTo(this.module, 'labelClicked', (data) => {
             this.createInput(data.params, data.pos, data.size);
         });
-        this.listenTo(this.module, 'mullionNumericInput', function (data) {
+        this.listenTo(this.module, 'mullionNumericInput', (data) => {
             this.createMullionInput(data.mullionId);
         });
-        this.listenTo(this.module, 'state:cloneFillingSource state:syncFillingSource', function () {
+        this.listenTo(this.module, 'state:cloneFillingSource state:syncFillingSource', () => {
             this.updateUI();
             this.$('#drawing').focus();
         });
-        this.listenTo(this.module, 'state:sectionHoverMenuOpen', function (data) {
+        this.listenTo(this.module, 'state:sectionHoverMenuOpen', (data) => {
             const pointerPosition = this.stage.getPointerPosition();
             const x = pointerPosition && pointerPosition.x;
             const y = pointerPosition && pointerPosition.y;
@@ -561,7 +561,7 @@ export default Marionette.View.extend({
             })
             .focus()
             .select()
-            .on('keyup', function (e) {
+            .on('keyup', (e) => {
                 if (e.keyCode === 13) {  // enter
                     let _value = this.value;
                     let sign = 1;
@@ -624,7 +624,7 @@ export default Marionette.View.extend({
                     $wrap.remove();
                 }
             });
-        const closeWrap = function () {
+        const closeWrap = () => {
             if (self.setState) {
                 self.setState({ inputFocused: false });
             }
@@ -649,7 +649,7 @@ export default Marionette.View.extend({
             })
             .focus()
             .select()
-            .on('keydown', function (e) {
+            .on('keydown', (e) => {
                 const input = e.target;
                 const attr = (isVertical) ? 'width' : 'height';
                 const newValue = parseFormat.dimensions(this.value, attr);

@@ -18,7 +18,7 @@ export default Backbone.KonvaView.extend({
 
         this.layer = params.layer;
         this.stage = params.stage;
-        this.saveBars = (_.isFunction(params.data.saveBars)) ? params.data.saveBars : function () {};
+        this.saveBars = (_.isFunction(params.data.saveBars)) ? params.data.saveBars : function saveBars() {};
 
         this.sectionId = params.data.sectionId;
 

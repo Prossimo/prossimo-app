@@ -47,7 +47,7 @@ export default Marionette.View.extend({
             },
         });
 
-        this.listenTo(this.fillings_list_view, 'set_active_item', function (options) {
+        this.listenTo(this.fillings_list_view, 'set_active_item', (options) => {
             this.renderActiveItemView(options.item);
         });
     },

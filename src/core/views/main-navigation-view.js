@@ -43,11 +43,11 @@ export default Marionette.View.extend({
         this.router_callbacks = {};
 
         if (this.options) {
-            _.forEach(this.options, function (item, key) {
+            _.forEach(this.options, (item, key) => {
                 if (_.isFunction(item.onAttach)) {
                     const self = this;
 
-                    this.router_callbacks[item.path] = function () {
+                    this.router_callbacks[item.path] = () => {
                         if (App.current_quote || item.path === 'settings') {
                             item.onAttach.call();
                         } else {
@@ -66,7 +66,7 @@ export default Marionette.View.extend({
                         }
                     });
                 }
-            }, this);
+            });
         }
 
         $('#main-nav-container').append(this.render().el);
@@ -76,13 +76,13 @@ export default Marionette.View.extend({
     onRender() {
         //  Append each navigation item
         if (this.options) {
-            _.forEach(this.options, function (item, key) {
+            _.forEach(this.options, (item, key) => {
                 item.class_name = key;
                 const item_tpl = templateItem(item);
                 const $item = $(item_tpl);
 
                 this.ui.$list.append($item);
-            }, this);
+            });
         }
     },
 });

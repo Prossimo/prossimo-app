@@ -59,9 +59,9 @@ export default Backbone.Model.extend({
     defaults() {
         const defaults = {};
 
-        _.each(PROFILE_PROPERTIES, function (item) {
+        _.each(PROFILE_PROPERTIES, (item) => {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
-        }, this);
+        });
 
         return defaults;
     },
@@ -172,7 +172,7 @@ export default Backbone.Model.extend({
         }
 
         //  Simple type validation for numbers and booleans
-        _.find(attributes, function (value, key) {
+        _.find(attributes, (value, key) => {
             let attribute_obj = this.getNameTitleTypeHash([key]);
             let has_validation_error = false;
 
@@ -197,14 +197,14 @@ export default Backbone.Model.extend({
             }
 
             return has_validation_error;
-        }, this);
+        });
 
         return error_obj;
     },
     hasOnlyDefaultAttributes() {
         let has_only_defaults = true;
 
-        _.each(this.toJSON(), function (value, key) {
+        _.each(this.toJSON(), (value, key) => {
             if (key !== 'position' && has_only_defaults) {
                 const property_source = _.findWhere(PROFILE_PROPERTIES, { name: key });
                 const type = property_source ? property_source.type : undefined;
@@ -221,7 +221,7 @@ export default Backbone.Model.extend({
                     has_only_defaults = false;
                 }
             }
-        }, this);
+        });
 
         return has_only_defaults;
     },
@@ -328,13 +328,13 @@ export default Backbone.Model.extend({
         this.options = options || {};
 
         //  Save pricing grids on grid item change
-        this.listenTo(this.get('pricing_grids'), 'change update', function (changed_object) {
+        this.listenTo(this.get('pricing_grids'), 'change update', (changed_object) => {
             this.trigger('change:pricing_grids change', changed_object);
             this.persist('pricing_grids', this.get('pricing_grids'));
         });
 
         //  Save pricing_equation_params on param change
-        this.listenTo(this.get('pricing_equation_params'), 'change update', function (changed_object) {
+        this.listenTo(this.get('pricing_equation_params'), 'change update', (changed_object) => {
             this.trigger('change:pricing_equation_params change', changed_object);
             this.persist('pricing_equation_params', this.get('pricing_equation_params'));
         });

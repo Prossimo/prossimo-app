@@ -184,7 +184,7 @@ export default Marionette.View.extend({
         if (this.options.parent_view.active_unit) {
             active_unit = this.options.parent_view.active_unit;
 
-            active_unit_options = _.map(options_list, function (dictionary_name) {
+            active_unit_options = _.map(options_list, (dictionary_name) => {
                 const dictionary_id = App.settings.dictionaries.getDictionaryIdByName(dictionary_name);
                 let rules_and_restrictions;
                 let is_hidden = false;
@@ -304,7 +304,7 @@ export default Marionette.View.extend({
             sash_list_source = this.options.parent_view.active_unit.getSashList(null, null,
                 project_settings && project_settings.get('hinge_indicator_mode') === 'american');
 
-            _.each(sash_list_source, function (source_item, index) {
+            _.each(sash_list_source, (source_item, index) => {
                 const sash_item = {};
                 let section_info;
 
@@ -396,7 +396,7 @@ export default Marionette.View.extend({
 
             unit_stats = this.options.parent_view.active_unit.getLinearAndAreaStats();
 
-            _.each(unit_stats, function (item, key) {
+            _.each(unit_stats, (item, key) => {
                 _.each(data_groups, (group_name) => {
                     if (item[group_name]) {
                         let value;
@@ -460,7 +460,7 @@ export default Marionette.View.extend({
             result.converted_cost = f.price_usd(unit_cost.total / parseFloat(result.conversion_rate));
 
             //  Collect detailed pricing data for sections
-            _.each(unit_cost.sections_list, function (source_item, index) {
+            _.each(unit_cost.sections_list, (source_item, index) => {
                 const section_item = {};
 
                 section_item.name = `Section #${index + 1}`;
@@ -536,16 +536,14 @@ export default Marionette.View.extend({
         };
 
         return {
-            unit_list: this.collection.map(function (item) {
-                return {
-                    is_selected: this.options.parent_view.active_unit &&
-                        item.cid === this.options.parent_view.active_unit.cid,
-                    reference_id: item.getRefNum(),
-                    cid: item.cid,
-                    mark: item.get('mark'),
-                    dimensions: format.dimensions(item.get('width'), item.get('height'), 'fraction'),
-                };
-            }, this),
+            unit_list: this.collection.map(item => ({
+                is_selected: this.options.parent_view.active_unit &&
+                    item.cid === this.options.parent_view.active_unit.cid,
+                reference_id: item.getRefNum(),
+                cid: item.cid,
+                mark: item.get('mark'),
+                dimensions: format.dimensions(item.get('width'), item.get('height'), 'fraction'),
+            })),
             active_unit_image: this.getActiveUnitImage(),
             active_unit_sashes: this.getActiveUnitSashList(),
             active_unit_properties: tab_contents.active_unit_properties,
@@ -553,7 +551,7 @@ export default Marionette.View.extend({
             active_unit_profile_properties: tab_contents.active_unit_profile_properties,
             active_unit_stats: tab_contents.active_unit_stats,
             active_unit_estimated_cost: tab_contents.active_unit_estimated_cost,
-            tabs: _.each(this.tabs, function (item, key) {
+            tabs: _.each(this.tabs, (item, key) => {
                 item.is_active = key === this.active_tab;
 
                 return item;

@@ -34,7 +34,7 @@ export default Marionette.View.extend({
         this.model.duplicate();
     },
     onRender() {
-        _.each(this.attributes_views, function (views_group, key) {
+        _.each(this.attributes_views, (views_group, key) => {
             const $container = this.ui[`$table_${key}`];
 
             _.each(views_group, (child_view) => {
@@ -103,7 +103,7 @@ export default Marionette.View.extend({
         }, this);
     },
     onBeforeDestroy() {
-        _.each(this.attributes_views, function (views_group) {
+        _.each(this.attributes_views, (views_group) => {
             _.each(views_group, (child_view) => {
                 if (child_view.view_instance) {
                     child_view.view_instance.destroy();
@@ -145,15 +145,11 @@ export default Marionette.View.extend({
         const custom_attributes = {
             visible_frame_width_fixed: {
                 title: 'Visible Frame Width Fixed',
-                value: function () {
-                    return this.model.getVisibleFrameWidthFixed();
-                }.bind(this),
+                value: () => this.model.getVisibleFrameWidthFixed(),
             },
             visible_frame_width_operable: {
                 title: 'Visible Frame Width Operable',
-                value: function () {
-                    return this.model.getVisibleFrameWidthOperable();
-                }.bind(this),
+                value: () => this.model.getVisibleFrameWidthOperable(),
             },
         };
 
@@ -177,8 +173,8 @@ export default Marionette.View.extend({
             }));
         }
 
-        this.attributes_views = _.mapObject(this.attributes, function (attributes_array) {
-            return _.map(attributes_array, function (attribute) {
+        this.attributes_views = _.mapObject(this.attributes, attributes_array => (
+            _.map(attributes_array, (attribute) => {
                 const attr_data = {
                     name: '',
                     title: '',
@@ -221,9 +217,7 @@ export default Marionette.View.extend({
                         model: this.model,
                         param: attr_data.name,
                         values: getAttributeSourceData(this.model, attr_data.name),
-                        custom_setter: attr_data.name === 'unit_type' ? function (new_value) {
-                            return this.model.setUnitType(new_value);
-                        } : false,
+                        custom_setter: attr_data.name === 'unit_type' ? (new_value => this.model.setUnitType(new_value)) : false,
                         multiple: false,
                     });
                 //  And for some values where we want a toggle
@@ -236,14 +230,12 @@ export default Marionette.View.extend({
                         values_list: _.map([
                             { value: true, title: 'Yes' },
                             { value: false, title: 'No' },
-                        ], function (item) {
+                        ], (item) => {
                             const is_current = item.value === this.model.get(attr_data.name);
 
                             return _.extend({}, item, { is_current });
-                        }, this),
-                        is_disabled: function () {
-                            return !this.model.isThresholdEditable();
-                        }.bind(this),
+                        }),
+                        is_disabled: () => !this.model.isThresholdEditable(),
                     });
                 //  And here we just want to make this attribute disabled
                 //  under certain conditions
@@ -254,9 +246,7 @@ export default Marionette.View.extend({
                         input_type: 'text',
                         placeholder: '',
                         disabled_value: '--',
-                        is_disabled: function () {
-                            return !this.model.isThresholdPossible() || !this.model.get('low_threshold');
-                        }.bind(this),
+                        is_disabled: () => !this.model.isThresholdPossible() || !this.model.get('low_threshold'),
                     });
                 //  Rest attributes use simple input view
                 } else {
@@ -274,29 +264,29 @@ export default Marionette.View.extend({
                     value: attr_data.value,
                     view_instance: view,
                 };
-            }, this);
-        }, this);
+            })
+        ));
 
         //  If one of the attributes from `dimensions` group changes,
         //  we want to re-render custom dimensions attributes
-        this.listenTo(this.model, _.map(this.attributes.dimensions, attr_name => `change:${attr_name}`).join(' '), function () {
+        this.listenTo(this.model, _.map(this.attributes.dimensions, attr_name => `change:${attr_name}`).join(' '), () => {
             this.renderCustomDimensionAttributes();
         });
 
         //  When unit type is changed, it's time to re-render threshold-
         //  related attributes
-        this.listenTo(this.model, 'change:unit_type', function () {
+        this.listenTo(this.model, 'change:unit_type', () => {
             this.renderThresholdAttributes();
         });
 
         //  When low_threshold is changed, it's time to re-render
         //  threshold_width attribute
-        this.listenTo(this.model, 'change:low_threshold', function () {
+        this.listenTo(this.model, 'change:low_threshold', () => {
             this.renderThresholdWidth();
         });
 
         //  When pricing_scheme is changed, it's time to show proper editor
-        this.listenTo(this.model, 'change:pricing_scheme', function () {
+        this.listenTo(this.model, 'change:pricing_scheme', () => {
             this.renderPricingEditor();
         });
     },

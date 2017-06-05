@@ -418,7 +418,7 @@ function findParent(root, childId) {
 // static function
 // it will find section with passed id from passed section and all its children
 // via nested search
-export const findSection = function (section, sectionId) {
+export const findSection = function findNestedSection(section, sectionId) {
     function findNested(sec, id) {
         if (sec.id === id) {
             return sec;
@@ -447,9 +447,9 @@ const Unit = Backbone.Model.extend({
     defaults() {
         const defaults = {};
 
-        _.each(UNIT_PROPERTIES, function (item) {
+        _.each(UNIT_PROPERTIES, (item) => {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
-        }, this);
+        });
 
         return defaults;
     },
@@ -530,7 +530,7 @@ const Unit = Backbone.Model.extend({
             this.validateRootSection();
             this.setProfile();
 
-            this.on('change:profile_id', function () {
+            this.on('change:profile_id', () => {
                 this.setProfile({ validate_filling_types: true });
             }, this);
             this.on('change:glazing', this.onGlazingUpdate, this);
@@ -538,14 +538,14 @@ const Unit = Backbone.Model.extend({
             //  If we know that something was changed in dictionaries,
             //  we have to re-validate our unit options
             //  TODO: we want to do the same thing for filling types
-            this.listenTo(globalChannel, 'validate_units:dictionaries', function () {
+            this.listenTo(globalChannel, 'validate_units:dictionaries', () => {
                 if (this.isParentQuoteActive()) {
                     this.validateUnitOptions();
                 }
             });
 
             //  Same as above, but when this unit's quote becomes active
-            this.listenTo(globalChannel, 'current_quote_changed', function () {
+            this.listenTo(globalChannel, 'current_quote_changed', () => {
                 if (this.isParentQuoteActive()) {
                     this.validateUnitOptions();
                 }
@@ -568,7 +568,7 @@ const Unit = Backbone.Model.extend({
                 }
             }
 
-            this.listenTo(this.get('unit_options'), 'change update reset', function () {
+            this.listenTo(this.get('unit_options'), 'change update reset', () => {
                 this.persist('unit_options', this.get('unit_options'));
             });
         }
@@ -653,7 +653,7 @@ const Unit = Backbone.Model.extend({
         const default_options = new UnitOptionCollection();
 
         if (App.settings) {
-            App.settings.dictionaries.each(function (dictionary) {
+            App.settings.dictionaries.each((dictionary) => {
                 const dictionary_id = dictionary.id;
                 const profile_id = this.profile && this.profile.id;
                 const rules = dictionary.get('rules_and_restrictions');
@@ -670,7 +670,7 @@ const Unit = Backbone.Model.extend({
                         });
                     }
                 }
-            }, this);
+            });
         }
 
         return default_options;
@@ -689,7 +689,7 @@ const Unit = Backbone.Model.extend({
         const options_to_set = new UnitOptionCollection();
 
         if (App.settings) {
-            App.settings.dictionaries.each(function (dictionary) {
+            App.settings.dictionaries.each((dictionary) => {
                 const dictionary_id = dictionary.id;
                 const profile_id = this.profile && this.profile.id;
 
@@ -705,7 +705,7 @@ const Unit = Backbone.Model.extend({
                         options_to_set.add(default_option);
                     }
                 }
-            }, this);
+            });
         }
 
         this.get('unit_options').set(options_to_set.models);
@@ -716,7 +716,7 @@ const Unit = Backbone.Model.extend({
 
         current_root = current_root || this.generateFullRoot();
 
-        _.each(current_root.sections, function (section) {
+        _.each(current_root.sections, (section) => {
             section_result = this.getCurrentFillingsList(section);
 
             if (current_root.divider === 'vertical' || current_root.divider === 'vertical_invisible') {
@@ -724,7 +724,7 @@ const Unit = Backbone.Model.extend({
             } else {
                 result = result.concat(section_result);
             }
-        }, this);
+        });
 
         if (current_root.sections.length === 0) {
             result.unshift({
@@ -769,7 +769,7 @@ const Unit = Backbone.Model.extend({
         let error_obj = null;
 
         //  Simple type validation for numbers and booleans
-        _.find(attributes, function (value, key) {
+        _.find(attributes, (value, key) => {
             let attribute_obj = this.getNameTitleTypeHash([key]);
             let has_validation_error = false;
 
@@ -794,7 +794,7 @@ const Unit = Backbone.Model.extend({
             }
 
             return has_validation_error;
-        }, this);
+        });
 
         return error_obj;
     },
@@ -834,7 +834,7 @@ const Unit = Backbone.Model.extend({
     hasOnlyDefaultAttributes() {
         let has_only_defaults = true;
 
-        _.each(this.toJSON(), function (value, key) {
+        _.each(this.toJSON(), (value, key) => {
             if (key !== 'position' && has_only_defaults) {
                 const property_source = _.findWhere(UNIT_PROPERTIES, { name: key });
                 const type = property_source ? property_source.type : undefined;
@@ -864,7 +864,7 @@ const Unit = Backbone.Model.extend({
                     has_only_defaults = false;
                 }
             }
-        }, this);
+        });
 
         return has_only_defaults;
     },
@@ -1094,25 +1094,26 @@ const Unit = Backbone.Model.extend({
             unit_type: 'Unit Type',
         };
 
-        pricing_data = _.map(pricing_data, function (value, key) {
-            return { title: this.getTitles([key])[0] || custom_titles[key], value };
-        }, this);
+        pricing_data = _.map(pricing_data, (value, key) => ({
+            title: this.getTitles([key])[0] || custom_titles[key],
+            value,
+        }));
 
         if (options.include_options) {
             const option_dictionaries = App.settings.dictionaries.getAvailableDictionaryNames();
 
-            _.each(option_dictionaries, function (dictionary_name) {
+            _.each(option_dictionaries, (dictionary_name) => {
                 const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(dictionary_name);
                 const target_dictionary = App.settings.dictionaries.get(target_dictionary_id);
                 const current_options = target_dictionary_id ?
                     this.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
                 let is_restricted = false;
 
-                _.each(target_dictionary.get('rules_and_restrictions'), function (rule) {
+                _.each(target_dictionary.get('rules_and_restrictions'), (rule) => {
                     if (this.checkIfRestrictionApplies(rule)) {
                         is_restricted = true;
                     }
-                }, this);
+                });
 
                 pricing_data.push({
                     title: dictionary_name,
@@ -1120,7 +1121,7 @@ const Unit = Backbone.Model.extend({
                         current_options[0].entry.get('name') :
                         UNSET_VALUE,
                 });
-            }, this);
+            });
         }
 
         if (options.include_sections) {
@@ -1369,9 +1370,9 @@ const Unit = Backbone.Model.extend({
         });
 
         //  Change all nested sections recursively
-        _.each(fullSection.sections, function (childSection) {
+        _.each(fullSection.sections, (childSection) => {
             this.setSectionSashType(childSection.id, 'fixed_in_frame');
-        }, this);
+        });
     },
     setSectionBars(sectionId, bars) {
         this._updateSection(sectionId, (section) => {
@@ -1484,7 +1485,7 @@ const Unit = Backbone.Model.extend({
         const referenceSection = this.getSection(referenceSectionId);
         const adjustGeometry = adjustSection.glassParams;
         const referenceGeometry = referenceSection.glassParams;
-        const flipBarsX = function (bars, sectionWidth) {
+        const flipBarsX = (bars, sectionWidth) => {
             bars = clone(bars);
             bars.vertical.reverse();
             bars.vertical.forEach((bar) => {
@@ -1640,9 +1641,9 @@ const Unit = Backbone.Model.extend({
         const full = this.generateFullRoot();
         const fullSection = findSection(full, sectionId);
 
-        _.each(fullSection.sections, function (childSection) {
+        _.each(fullSection.sections, (childSection) => {
             this.setFillingType(childSection.id, type, name);
-        }, this);
+        });
     },
     setSectionMullionPosition(id, pos) {
         this._updateSection(id, (section) => {
@@ -1880,7 +1881,7 @@ const Unit = Backbone.Model.extend({
             const mullionWidth = this.profile.get('mullion_width');
             const sashFrameGlassOverlap = sashFrameWidth - sashFrameOverlap;
             const overlapDifference = sashFrameOverlap - sashMullionOverlap;
-            const trim = function (amount, sides) {
+            const trim = (amount, sides) => {
                 if (sides === 'all') {
                     sides = ['top', 'right', 'bottom', 'left'];
                 }
@@ -2031,9 +2032,7 @@ const Unit = Backbone.Model.extend({
         let sections = [];
 
         if (rootSection.sections) {
-            sections = _.concat(_.map(rootSection.sections, function (s) {
-                return this.flatterSections(s);
-            }));
+            sections = _.concat(_.map(rootSection.sections, s => this.flatterSections(s)));
         } else {
             sections = [rootSection];
         }
@@ -2157,7 +2156,7 @@ const Unit = Backbone.Model.extend({
     },
     getResizedSections(oldRoot, newRoot) {
         newRoot = newRoot || this.generateFullRoot();
-        const toObjectByKey = function (array, key) {
+        const toObjectByKey = (array, key) => {
             const obj = {};
             array.forEach((value) => {
                 obj[value[key]] = value;
@@ -2197,7 +2196,7 @@ const Unit = Backbone.Model.extend({
             };
         }
 
-        _.each(current_root.sections, function (sec) {
+        _.each(current_root.sections, (sec) => {
             const subSizes = this.getSizes(sec);
 
             result.sashes = result.sashes.concat(subSizes.sashes);
@@ -2205,7 +2204,7 @@ const Unit = Backbone.Model.extend({
             result.openings = result.openings.concat(subSizes.openings);
             result.mullions = result.mullions.concat(subSizes.mullions);
             result.glazing_bars = result.glazing_bars.concat(subSizes.glazing_bars);
-        }, this);
+        });
 
         if (current_root.sections.length === 0) {
             result.glasses.push({
@@ -2226,25 +2225,25 @@ const Unit = Backbone.Model.extend({
         }
 
         if (current_root.bars.horizontal.length) {
-            _.each(current_root.bars.horizontal, function () {
+            _.each(current_root.bars.horizontal, () => {
                 result.glazing_bars.push({
                     type: 'horizontal',
                     width: current_root.glassParams.width,
                     height: this.get('glazing_bar_width'),
                     intersections: current_root.bars.vertical.length,
                 });
-            }, this);
+            });
         }
 
         if (current_root.bars.vertical.length) {
-            _.each(current_root.bars.vertical, function () {
+            _.each(current_root.bars.vertical, () => {
                 result.glazing_bars.push({
                     type: 'vertical',
                     width: this.get('glazing_bar_width'),
                     height: current_root.glassParams.height,
                     intersections: current_root.bars.horizontal.length,
                 });
-            }, this);
+            });
         }
 
         if (current_root.sashType !== 'fixed_in_frame') {
@@ -2457,7 +2456,7 @@ const Unit = Backbone.Model.extend({
             type = 'sections';
         }
 
-        _.each(current_root.sections, function (section) {
+        _.each(current_root.sections, (section) => {
             section_result = this.getSashList(section, current_root, reverse_hinges);
 
             if (current_root.divider === 'vertical' || current_root.divider === 'vertical_invisible') {
@@ -2465,7 +2464,7 @@ const Unit = Backbone.Model.extend({
             } else {
                 result[type] = result[type].concat(section_result);
             }
-        }, this);
+        });
 
         if (_.indexOf(SASH_TYPES_WITH_OPENING, current_root.sashType) !== -1) {
             current_sash.opening.width = current_root.openingParams.width;
@@ -2528,7 +2527,7 @@ const Unit = Backbone.Model.extend({
 
         current_root = current_root || this.generateFullRoot();
 
-        _.each(current_root.sections, function (section) {
+        _.each(current_root.sections, (section) => {
             section_result = this.getFixedAndOperableSectionsList(section);
 
             if (current_root.divider === 'vertical' || current_root.divider === 'vertical_invisible') {
@@ -2536,7 +2535,7 @@ const Unit = Backbone.Model.extend({
             } else {
                 result = result.concat(section_result);
             }
-        }, this);
+        });
 
         if (_.indexOf(OPERABLE_SASH_TYPES, current_root.sashType) !== -1) {
             current_area.type = 'operable';
@@ -2601,7 +2600,7 @@ const Unit = Backbone.Model.extend({
         const sections_list = this.getFixedAndOperableSectionsList();
         const options_grouped_by_scheme = this.getUnitOptionsGroupedByPricingScheme();
 
-        _.each(sections_list, function (section) {
+        _.each(sections_list, (section) => {
             section.price_per_square_meter = 0;
             section.base_cost = 0;
 
@@ -2705,7 +2704,7 @@ const Unit = Backbone.Model.extend({
             }, this);
 
             section.total_cost = section.base_cost + section.filling_cost + section.options_cost;
-        }, this);
+        });
 
         return sections_list;
     },
@@ -2756,13 +2755,13 @@ const Unit = Backbone.Model.extend({
         if (_.contains(OPERABLE_SASH_TYPES, current_root.sashType)) {
             has_operable_sections = true;
         } else {
-            _.each(current_root.sections, function (section) {
+            _.each(current_root.sections, (section) => {
                 const section_is_operable = has_operable_sections || this.hasOperableSections(section);
 
                 if (section_is_operable) {
                     has_operable_sections = true;
                 }
-            }, this);
+            });
         }
 
         return has_operable_sections;
@@ -2780,13 +2779,13 @@ const Unit = Backbone.Model.extend({
         if (current_root.bars.horizontal.length > 0 || current_root.bars.vertical.length > 0) {
             has_glazing_bars = true;
         } else {
-            _.each(current_root.sections, function (section) {
+            _.each(current_root.sections, (section) => {
                 const section_has_glazing_bars = has_glazing_bars || this.hasGlazingBars(section);
 
                 if (section_has_glazing_bars) {
                     has_glazing_bars = true;
                 }
-            }, this);
+            });
         }
 
         return has_glazing_bars;
@@ -2859,7 +2858,7 @@ const Unit = Backbone.Model.extend({
         const result = [];
 
         if (App.settings) {
-            options_list.each(function (list_item) {
+            options_list.each((list_item) => {
                 const option_data = {
                     is_restricted: false,
                     restrictions: [],
@@ -2875,12 +2874,12 @@ const Unit = Backbone.Model.extend({
                         option_data.dictionary = target_dictionary;
                         option_data.entry = target_entry;
 
-                        _.each(target_dictionary.get('rules_and_restrictions'), function (rule) {
+                        _.each(target_dictionary.get('rules_and_restrictions'), (rule) => {
                             if (this.checkIfRestrictionApplies(rule)) {
                                 option_data.is_restricted = true;
                                 option_data.restrictions.push(rule);
                             }
-                        }, this);
+                        });
 
                         option_data.has_quantity = target_dictionary.hasQuantity();
 
@@ -2891,7 +2890,7 @@ const Unit = Backbone.Model.extend({
                         result.push(option_data);
                     }
                 }
-            }, this);
+            });
         }
 
         return result;

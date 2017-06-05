@@ -18,7 +18,7 @@ function getExpectedFile(imgData) {
     return imgData[agent];
 }
 
-const runVisualTest = function (options) {
+const runVisualTest = (options) => {
     const defaults = {
         diff_threshold: 0,
         test_case: {},
@@ -58,7 +58,7 @@ const runVisualTest = function (options) {
 
     const expected_filename = getExpectedFile(options.test_case.imgData);
 
-    resemble(expected_filename).compareTo(preview).ignoreAntialiasing().onComplete(function (data) {
+    resemble(expected_filename).compareTo(preview).ignoreAntialiasing().onComplete((data) => {
         const diff_output = {};
 
         diff_output.diff_image_src = data.getImageDataUrl();

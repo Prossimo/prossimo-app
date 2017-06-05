@@ -53,7 +53,7 @@ _.extend(Backbone.Model.prototype, {
         if (this.isNew()) {
             const successCallback = options.success;
 
-            options.success = function (model, response, backboneOptions) {
+            options.success = function saveSuccessCallback(model, response, backboneOptions) {
                 if (response === null) {
                     response = backboneOptions && backboneOptions.xhr;
                 }
@@ -251,7 +251,7 @@ _.extend(Backbone.Collection.prototype, {
 });
 
 //  Source: https://github.com/amccloud/backbone-safesync
-Backbone.sync = function (method, model, options) {
+Backbone.sync = function safeSync(method, model, options) {
     const lastXHR = model._lastXHR && model._lastXHR[method];
 
     if ((lastXHR && lastXHR.readyState !== 4) && (options && options.safe !== false)) {

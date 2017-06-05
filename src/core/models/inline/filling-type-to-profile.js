@@ -27,9 +27,9 @@ export default Backbone.Model.extend({
     defaults() {
         const defaults = {};
 
-        _.each(PROFILE_CONNECTION_PROPERTIES, function (item) {
+        _.each(PROFILE_CONNECTION_PROPERTIES, (item) => {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
-        }, this);
+        });
 
         return defaults;
     },
@@ -122,10 +122,10 @@ export default Backbone.Model.extend({
         //  The order of events doesn't really match the way events
         //  propagate from model to collection, but it should be okay for
         //  the purpose of persisting the model on grid item change
-        this.listenTo(this.get('pricing_grids'), 'change update', function (changed_object) {
+        this.listenTo(this.get('pricing_grids'), 'change update', (changed_object) => {
             this.trigger('change:pricing_grids change', changed_object);
         });
-        this.listenTo(this.get('pricing_equation_params'), 'change update', function (changed_object) {
+        this.listenTo(this.get('pricing_equation_params'), 'change update', (changed_object) => {
             this.trigger('change:pricing_equation_params change', changed_object);
         });
     },
