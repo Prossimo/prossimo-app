@@ -142,7 +142,7 @@ export default function (opts) {
                 };
             }
 
-            return false;
+            return undefined;
         },
     });
 
