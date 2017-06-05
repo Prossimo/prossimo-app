@@ -68,13 +68,15 @@ export default Marionette.View.extend({
         };
 
         return function (grid_entry_model, value) {
-            if (grid_entry_model) {
-                if (_.isUndefined(value)) {
-                    return self.getGetterFunction(grid_entry_model, column_name);
-                }
-
-                setter(grid_entry_model, column_name, value);
+            if (!grid_entry_model) {
+                return false;
             }
+
+            if (_.isUndefined(value)) {
+                return self.getGetterFunction(grid_entry_model, column_name);
+            }
+
+            return setter(grid_entry_model, column_name, value);
         };
     },
     getColumnExtraProperties(column_name) {

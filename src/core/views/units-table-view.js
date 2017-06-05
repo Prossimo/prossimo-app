@@ -495,18 +495,20 @@ export default Marionette.View.extend({
             setter = function (model, attr_name, val) {
                 const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(attr_name);
 
-                if (target_dictionary_id) {
-                    const target_entry_id = App.settings.dictionaries.getDictionaryEntryIdByName(
-                        target_dictionary_id,
-                        val,
-                    );
-
-                    if (target_entry_id) {
-                        return model.persistOption(target_dictionary_id, target_entry_id);
-                    } else if (val === UNSET_VALUE) {
-                        return model.persistOption(target_dictionary_id, false);
-                    }
+                if (!target_dictionary_id) {
+                    return false;
                 }
+
+                const target_entry_id = App.settings.dictionaries.getDictionaryEntryIdByName(
+                    target_dictionary_id,
+                    val,
+                );
+
+                if (target_entry_id) {
+                    return model.persistOption(target_dictionary_id, target_entry_id);
+                }
+
+                return model.persistOption(target_dictionary_id, false);
             };
         } else if (
             this.active_tab === 'unit_options' &&
@@ -516,14 +518,18 @@ export default Marionette.View.extend({
                 const target_dictionary_name = attr_name.replace(/ Quantity$/, '');
                 const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
 
-                if (target_dictionary_id) {
-                    const target_option = model.get('unit_options').getByDictionaryId(target_dictionary_id);
-                    const target_entry_id = target_option && target_option.get('dictionary_entry_id');
-
-                    if (target_entry_id) {
-                        return model.persistOption(target_dictionary_id, target_entry_id, parseInt(val, 10));
-                    }
+                if (!target_dictionary_id) {
+                    return false;
                 }
+
+                const target_option = model.get('unit_options').getByDictionaryId(target_dictionary_id);
+                const target_entry_id = target_option && target_option.get('dictionary_entry_id');
+
+                if (!target_entry_id) {
+                    return false;
+                }
+
+                return model.persistOption(target_dictionary_id, target_entry_id, parseInt(val, 10));
             };
         } else {
             setter = function (model, attr_name, val) {
@@ -537,13 +543,15 @@ export default Marionette.View.extend({
         const self = this;
 
         return function (unit_model, value) {
-            if (unit_model) {
-                if (_.isUndefined(value)) {
-                    return self.getGetterFunction(unit_model, column_name);
-                }
-
-                self.getSetterFunction(unit_model, column_name, value);
+            if (!unit_model) {
+                return false;
             }
+
+            if (_.isUndefined(value)) {
+                return self.getGetterFunction(unit_model, column_name);
+            }
+
+            return self.getSetterFunction(unit_model, column_name, value);
         };
     },
     showValidationError(model, error) {

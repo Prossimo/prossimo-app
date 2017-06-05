@@ -261,12 +261,13 @@ export default Backbone.Model.extend({
             this.trigger('fully_loaded');
         }
     },
-    validate(attributes, options) {
+    validate(attributes) {
         let error_obj = null;
 
         //  Simple type validation for numbers and booleans
         _.find(attributes, function (value, key) {
             let attribute_obj = this.getNameTitleTypeHash([key]);
+            let has_validation_error = false;
 
             attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
 
@@ -278,20 +279,20 @@ export default Backbone.Model.extend({
                     error_message: `${attribute_obj.title} can't be set to "${value}", it should be a number`,
                 };
 
-                return false;
+                has_validation_error = true;
             } else if (attribute_obj && attribute_obj.type === 'boolean' && !_.isBoolean(value)) {
                 error_obj = {
                     attribute_name: key,
                     error_message: `${attribute_obj.title} can't be set to "${value}", it should be a boolean`,
                 };
 
-                return false;
+                has_validation_error = true;
             }
+
+            return has_validation_error;
         }, this);
 
-        if (options.validate && error_obj) {
-            return error_obj;
-        }
+        return error_obj;
     },
     initialize(attributes, options) {
         this.options = options || {};

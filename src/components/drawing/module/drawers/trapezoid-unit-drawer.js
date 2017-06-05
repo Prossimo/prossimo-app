@@ -1365,7 +1365,6 @@ export default Backbone.KonvaView.extend({
         group.add(arrow);
         return group;
     },
-    /* eslint-disable max-statements */
     createSash(sectionData) {
         let group = new Konva.Group({
             x: sectionData.sashParams.x,
@@ -1609,7 +1608,6 @@ export default Backbone.KonvaView.extend({
 
         return group;
     },
-    /* eslint-enable max-statements */
     shouldDrawHandle(type) {
         let result = false;
 

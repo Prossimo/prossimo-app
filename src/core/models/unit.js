@@ -429,12 +429,14 @@ export const findSection = function (section, sectionId) {
         }
 
         for (let i = 0; i < sec.sections.length; i += 1) {
-            const founded = findNested(sec.sections[i], sectionId);
+            const found = findNested(sec.sections[i], sectionId);
 
-            if (founded) {
-                return founded;
+            if (found) {
+                return found;
             }
         }
+
+        return null;
     }
 
     return findNested(section, sectionId);
@@ -755,14 +757,7 @@ const Unit = Backbone.Model.extend({
             _.map(App.settings.filling_types.getAvailableForProfile(this.profile.id), item => item.get('name')),
             _.pluck(App.settings.filling_types.getBaseTypes(), 'title'),
         );
-        let invalid_flag = false;
-
-        _.find(complete_fillings_list, (filling_name) => {
-            if (_.contains(available_for_profile_list, filling_name) === false) {
-                invalid_flag = true;
-                return true;
-            }
-        }, this);
+        const invalid_flag = !!complete_fillings_list.find(filling_name => !_.contains(available_for_profile_list, filling_name));
 
         //  TODO: maybe we could do only one call here?
         if (invalid_flag) {
@@ -770,12 +765,13 @@ const Unit = Backbone.Model.extend({
             this.onGlazingUpdate();
         }
     },
-    validate(attributes, options) {
+    validate(attributes) {
         let error_obj = null;
 
         //  Simple type validation for numbers and booleans
         _.find(attributes, function (value, key) {
             let attribute_obj = this.getNameTitleTypeHash([key]);
+            let has_validation_error = false;
 
             attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
 
@@ -787,20 +783,20 @@ const Unit = Backbone.Model.extend({
                     error_message: `${attribute_obj.title} can't be set to "${value}", it should be a number`,
                 };
 
-                return false;
+                has_validation_error = true;
             } else if (attribute_obj && attribute_obj.type === 'boolean' && !_.isBoolean(value)) {
                 error_obj = {
                     attribute_name: key,
                     error_message: `${attribute_obj.title} can't be set to "${value}", it should be a boolean`,
                 };
 
-                return false;
+                has_validation_error = true;
             }
+
+            return has_validation_error;
         }, this);
 
-        if (options.validate && error_obj) {
-            return error_obj;
-        }
+        return error_obj;
     },
     setProfile(options) {
         const default_options = {
@@ -1450,13 +1446,13 @@ const Unit = Backbone.Model.extend({
         return found;
     },
     hasSectionBars(sectionId, options) {
-        if (!sectionId || (options && !options.types)) { return; }
+        if (!sectionId || (options && !options.types)) { return false; }
         if (!options) { options = { types: 'any' }; }
 
         const section = this.getSection(sectionId);
         const types = options.types;
-        if (!section) { return; }
-        if (!section.bars) { return false; }
+
+        if (!section || !section.bars) { return false; }
 
         if (types === 'any') {
             return section.bars.horizontal.length !== 0 || section.bars.vertical.length !== 0;
@@ -1467,6 +1463,8 @@ const Unit = Backbone.Model.extend({
         } else if (types === 'vertical') {
             return section.bars.vertical.length !== 0;
         }
+
+        return false;
     },
     adjustBars(adjustSectionId, options) {
         if (!adjustSectionId || !(options && options.referenceSectionId)) { return; }
@@ -1579,7 +1577,11 @@ const Unit = Backbone.Model.extend({
     },
     redistributeBars(section, options) {
         const oldSection = options && options.oldSection;
-        if (!oldSection) { return; }
+
+        if (!oldSection) {
+            throw new Error('options.oldSection is a required argument');
+        }
+
         const axes = (options && options.axes) ? options.axes : ['vertical', 'horizontal'];
         const bars = clone(section.bars);
         const precision = REDISTRIBUTE_BARS_PRECISION;
@@ -1697,7 +1699,7 @@ const Unit = Backbone.Model.extend({
                         section.minPosition = position;
 
                         if (position > fullSection.sashParams.y + fullSection.sashParams.height) {
-                            return false;
+                            return;
                         }
                     }
                 }
@@ -2273,6 +2275,8 @@ const Unit = Backbone.Model.extend({
                     has_base_filling = true;
                     return true;
                 }
+
+                return false;
             });
         }
 
@@ -2973,8 +2977,6 @@ const Unit = Backbone.Model.extend({
         return this.getMullions().reduce(
             (previous, current) => previous || (current.type === 'horizontal' || current.type === 'horizontal_invisible'), false);
     },
-    /* eslint-disable no-else-return */
-
     /* Determines the number of vertical metric columns on the unit drawing's left and right sides
      * Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js */
     leftMetricCount(isInsideView) {
@@ -2993,12 +2995,11 @@ const Unit = Backbone.Model.extend({
         // Arched units always have two metrics on the left
         } else if (this.isArchedWindow()) {
             return 2;
-        // For regular units, at least one horizontal mullion adds the second metric
-        } else {
-            return (this.hasHorizontalMullion()) ? 2 : 1;
         }
-    },
 
+        // For regular units, at least one horizontal mullion adds the second metric
+        return (this.hasHorizontalMullion()) ? 2 : 1;
+    },
     /* Determines the number of vertical metric columns on the unit drawing's right side
      * Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js */
     rightMetricCount(isInsideView) {
@@ -3017,12 +3018,11 @@ const Unit = Backbone.Model.extend({
         // For regular trapezoid units, at least one horizontal mullion adds the second metric
         } else if (this.isTrapezoid()) {
             return (this.hasHorizontalMullion()) ? 2 : 1;
-        // Non-trapezoid units don't have metrics on the right
-        } else {
-            return 0;
         }
+
+        // Non-trapezoid units don't have metrics on the right
+        return 0;
     },
-    /* eslint-enable no-else-return */
     getTrapezoidHeights(inside) {
         if (typeof inside !== 'undefined') {
             this.inside = inside;

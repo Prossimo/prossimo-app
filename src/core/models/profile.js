@@ -151,14 +151,12 @@ export default Backbone.Model.extend({
 
         return _.omit(json, properties_to_omit);
     },
-    validate(attributes, options) {
+    validate(attributes) {
         let error_obj = null;
         const collection_names = this.collection && _.map(this.collection.without(this), item => item.get('name'));
 
         //  We want to have unique profile names across the collection
-        if (options.validate && collection_names &&
-            _.contains(collection_names, attributes.name)
-        ) {
+        if (collection_names && _.contains(collection_names, attributes.name)) {
             return {
                 attribute_name: 'name',
                 error_message: `Profile name "${attributes.name}" is already used in this collection`,
@@ -166,9 +164,7 @@ export default Backbone.Model.extend({
         }
 
         //  Don't allow profile names that consist of numbers only ("123")
-        if (options.validate && attributes.name &&
-            parseInt(attributes.name, 10).toString() === attributes.name
-        ) {
+        if (attributes.name && parseInt(attributes.name, 10).toString() === attributes.name) {
             return {
                 attribute_name: 'name',
                 error_message: 'Profile name can\'t consist of only numbers',
@@ -178,6 +174,7 @@ export default Backbone.Model.extend({
         //  Simple type validation for numbers and booleans
         _.find(attributes, function (value, key) {
             let attribute_obj = this.getNameTitleTypeHash([key]);
+            let has_validation_error = false;
 
             attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
 
@@ -189,20 +186,20 @@ export default Backbone.Model.extend({
                     error_message: `${attribute_obj.title} can't be set to "${value}", it should be a number`,
                 };
 
-                return false;
+                has_validation_error = true;
             } else if (attribute_obj && attribute_obj.type === 'boolean' && !_.isBoolean(value)) {
                 error_obj = {
                     attribute_name: key,
                     error_message: `${attribute_obj.title} can't be set to "${value}", it should be a boolean`,
                 };
 
-                return false;
+                has_validation_error = true;
             }
+
+            return has_validation_error;
         }, this);
 
-        if (options.validate && error_obj) {
-            return error_obj;
-        }
+        return error_obj;
     },
     hasOnlyDefaultAttributes() {
         let has_only_defaults = true;

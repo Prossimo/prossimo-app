@@ -206,7 +206,6 @@ export default Marionette.View.extend({
             height: this.section.glassParams.height,
         };
     },
-    /* eslint-disable max-nested-callbacks */
     checkLinks(bars) {
         const view = this;
         let linked = null;
@@ -227,7 +226,6 @@ export default Marionette.View.extend({
 
         return bars;
     },
-    /* eslint-enable max-nested-callbacks */
     sortBars() {
         _.each(this.section.bars, (group) => {
             group.sort((a, b) => a.position > b.position);

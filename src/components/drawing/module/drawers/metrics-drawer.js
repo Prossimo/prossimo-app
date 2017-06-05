@@ -209,8 +209,6 @@ export default Backbone.KonvaView.extend({
         //
         //        This is a small specification, which is better not to push into production,
         //        but I think we'd better to save it somewhere. :-)
-
-        /* eslint-disable max-nested-callbacks */
         _.each(mullions, (mulGroup, type) => {
             let pos = 0;
             const grouped = {};
@@ -325,7 +323,6 @@ export default Backbone.KonvaView.extend({
                 result[type][i].siblings = siblings;
             });
         });
-        /* eslint-enable max-nested-callbacks */
 
         // Switch edges for frame dimension-point for vertical mullions if it's outside view
         if (module.getState('openingView') && result.vertical.length > 0) {
@@ -664,7 +661,6 @@ export default Backbone.KonvaView.extend({
         const view = this;
         const group = new Konva.Group();
 
-        /* eslint-disable max-nested-callbacks */
         const root_section = model.get('root_section');
 
         _.each(controls, (cGroup, type) => {
@@ -769,7 +765,6 @@ export default Backbone.KonvaView.extend({
                 group.add(frameControls);
             }
         });
-        /* eslint-enable max-nested-callbacks */
 
         return group;
     },

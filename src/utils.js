@@ -568,7 +568,7 @@ export const array = {
 
 export const dom = {
     isElementVisible(element) {
-        if (!element) { return; }
+        if (!element) { return undefined; }
 
         let opacity = 1;
         window.jQuery(element).parents().andSelf().each((index, elem) => {
