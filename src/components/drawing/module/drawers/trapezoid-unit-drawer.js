@@ -1618,8 +1618,6 @@ export default Backbone.KonvaView.extend({
         const isOutsideView = !isInsideView;
         const hasOutsideHandle = model.profile.hasOutsideHandle();
         const isEntryDoor = model.profile.isEntryDoor();
-        const isVisible = isInsideView || (isOutsideView && hasOutsideHandle);
-        const isInvisible = !isVisible;
         const pos = {
             x: null,
             y: null,
@@ -1649,17 +1647,18 @@ export default Backbone.KonvaView.extend({
                 pos.y = (section.sashParams.height / 2) - handle_data.base.rotationCenter.y;
             }
         };
-        const positionRightTilt = () => {
+        const positionTop = () => {
             pos.x = (section.sashParams.width / 2) - handle_data.base.rotationCenter.x;
-            if (section.trapezoid && section.trapezoid.frame) {
-                const frame_outer_y = section.trapezoid.frame.outer[0].y > section.trapezoid.frame.outer[1].y ?
-                    section.trapezoid.frame.outer[1].y :
-                    section.trapezoid.frame.outer[0].y;
-                pos.y = ((Math.abs(section.trapezoid.frame.outer[0].y - section.trapezoid.frame.outer[1].y) / 2) +
-                    offset + frame_outer_y) - handle_data.base.rotationCenter.y;
-            } else {
-                pos.y = offset - handle_data.base.rotationCenter.y;
-            }
+            pos.y = (section.trapezoid && section.trapezoid.frame)
+                ? ((Math.abs(section.trapezoid.frame.outer[0].y - section.trapezoid.frame.outer[1].y) / 2)
+                + offset
+                + (
+                    (section.trapezoid.frame.outer[0].y > section.trapezoid.frame.outer[1].y)
+                        ? section.trapezoid.frame.outer[1].y :
+                        section.trapezoid.frame.outer[0].y
+                ))
+                - handle_data.base.rotationCenter.y
+                : offset - handle_data.base.rotationCenter.y;
         };
         const positionUnder = () => {
             const fixes = handle.getAttr('fixes') || [];
@@ -1677,6 +1676,8 @@ export default Backbone.KonvaView.extend({
             type === 'slide-left' || type === 'flush-turn-left' ||
             type === 'slide_right' || type === 'tilt_slide_right');
         const isTiltSection = (type === 'tilt_only');
+        const isVisible = isInsideView || (isOutsideView && hasOutsideHandle && !isTiltSection);
+        const isInvisible = !isVisible;
 
         if (isVisible) {
             positionOver();
@@ -1689,10 +1690,10 @@ export default Backbone.KonvaView.extend({
         } else if (isRightHandle) {
             positionRight();
         } else if (isTiltSection) {
-            positionRightTilt();
+            positionTop();
         }
 
-        if (isEntryDoor) {
+        if (isEntryDoor && !isTiltSection) {
             rotate(90);
         } else {
             rotate(0);
