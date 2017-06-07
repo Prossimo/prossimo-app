@@ -59,11 +59,13 @@ export default Backbone.Model.extend({
         return default_value;
     },
     sync(method, model, options) {
+        const current_options = clone(options);
+
         if (method === 'create' || method === 'update') {
-            options.attrs = { entry: model.toJSON() };
+            current_options.attrs = { entry: model.toJSON() };
         }
 
-        return Backbone.sync.call(this, method, model, options);
+        return Backbone.sync.call(this, method, model, current_options);
     },
     parse(data) {
         const entry_data = data && data.entry ? data.entry : data;
@@ -179,14 +181,11 @@ export default Backbone.Model.extend({
     //  Return { name: 'name', title: 'Title' } pairs for each item in
     //  `names` array. If the array is empty, return all possible pairs
     getNameTitleTypeHash(names) {
+        const selected_names = names || _.pluck(ENTRY_PROPERTIES, 'name');
         const name_title_hash = [];
 
-        if (!names) {
-            names = _.pluck(ENTRY_PROPERTIES, 'name');
-        }
-
         _.each(ENTRY_PROPERTIES, (item) => {
-            if (_.indexOf(names, item.name) !== -1) {
+            if (_.indexOf(selected_names, item.name) !== -1) {
                 name_title_hash.push({ name: item.name, title: item.title, type: item.type });
             }
         });

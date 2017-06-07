@@ -561,7 +561,7 @@ export default Marionette.View.extend({
             })
             .focus()
             .select()
-            .on('keyup', (e) => {
+            .on('keyup', function onKeyUp(e) {
                 if (e.keyCode === 13) {  // enter
                     let _value = this.value;
                     let sign = 1;
@@ -711,15 +711,17 @@ export default Marionette.View.extend({
     },
     toggleSectionHoverMenu(newState, options) {
         const oldState = this.ui.$hovering_section_controls.hasClass('open');
-        newState = (!_.isUndefined(newState)) ? newState : !oldState;
-        if (newState === oldState) { return; }
+        const currentNewState = (!_.isUndefined(newState)) ? newState : !oldState;
+
+        if (currentNewState === oldState) { return; }
+
         const x = options && options.x;
         const y = options && options.y;
 
-        this.ui.$hovering_section_controls.toggleClass('open', newState);
+        this.ui.$hovering_section_controls.toggleClass('open', currentNewState);
         if (!_.isUndefined(x)) { this.ui.$hovering_section_controls.css('left', `${x}px`); }
         if (!_.isUndefined(y)) { this.ui.$hovering_section_controls.css('top', `${y}px`); }
-        this.module.setState('sectionHoverMenuOpen', newState);
+        this.module.setState('sectionHoverMenuOpen', currentNewState);
     },
     openSectionHoverMenu(options) {
         this.toggleSectionHoverMenu(true, options);
@@ -843,10 +845,9 @@ export default Marionette.View.extend({
     updateSection(sectionId, type) {
         const view = this;
         const section = this.model.getSection(sectionId);
+        const current_type = type || section.divider;
 
-        type = type || section.divider;
-
-        if (type === 'both') {
+        if (current_type === 'both') {
             view.updateSection(sectionId, 'vertical');
             view.updateSection(sectionId, 'horizontal');
         }
@@ -854,7 +855,7 @@ export default Marionette.View.extend({
         // If section has children — update them recursively
         if (section.sections && section.sections.length) {
             section.sections.forEach((child) => {
-                view.updateSection(child.id, type);
+                view.updateSection(child.id, current_type);
             });
         }
     },
@@ -874,11 +875,13 @@ export default Marionette.View.extend({
         });
     },
     elementsToShortcuts(elements) {
-        if (!elements) { return; }
-        if (elements instanceof window.jQuery) { elements = elements.toArray(); }
+        let current_elements = elements;
+
+        if (!current_elements) { return; }
+        if (current_elements instanceof window.jQuery) { current_elements = current_elements.toArray(); }
 
         const keysToElementsTable = {};
-        elements.forEach((element) => {
+        current_elements.forEach((element) => {
             const key = element.dataset.key;
             keysToElementsTable[key] = keysToElementsTable[key] || [];
             keysToElementsTable[key].push(element);

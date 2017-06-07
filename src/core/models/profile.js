@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import clone from 'clone';
 import Backbone from 'backbone';
 
 import App from '../../main';
@@ -108,11 +109,13 @@ export default Backbone.Model.extend({
         return default_value;
     },
     sync(method, model, options) {
+        const current_options = clone(options);
+
         if (method === 'create' || method === 'update') {
-            options.attrs = { profile: model.toJSON() };
+            current_options.attrs = { profile: model.toJSON() };
         }
 
-        return Backbone.sync.call(this, method, model, options);
+        return Backbone.sync.call(this, method, model, current_options);
     },
     parse(data) {
         const profile_data = data && data.profile ? data.profile : data;
@@ -277,14 +280,11 @@ export default Backbone.Model.extend({
     //  Return { name: 'name', title: 'Title' } pairs for each item in
     //  `names` array. If the array is empty, return all possible pairs
     getNameTitleTypeHash(names) {
+        const selected_names = names || _.pluck(PROFILE_PROPERTIES, 'name');
         const name_title_hash = [];
 
-        if (!names) {
-            names = _.pluck(PROFILE_PROPERTIES, 'name');
-        }
-
         _.each(PROFILE_PROPERTIES, (item) => {
-            if (_.indexOf(names, item.name) !== -1) {
+            if (_.indexOf(selected_names, item.name) !== -1) {
                 name_title_hash.push({ name: item.name, title: item.title, type: item.type });
             }
         });

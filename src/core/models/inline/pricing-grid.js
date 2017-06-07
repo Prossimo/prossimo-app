@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import clone from 'clone';
 import Backbone from 'backbone';
 
 import Schema from '../../../schema';
@@ -23,12 +24,14 @@ export const GridItem = Backbone.Model.extend({
         return this.set(...args);
     },
     parse(data) {
+        const data_to_parse = clone(data);
+
         //  This is for compatibility reasons with the old format
-        if (data && data.price_per_square_meter) {
-            data.value = data.price_per_square_meter;
+        if (data_to_parse && data_to_parse.price_per_square_meter) {
+            data_to_parse.value = data_to_parse.price_per_square_meter;
         }
 
-        return Schema.parseAccordingToSchema(data, this.schema);
+        return Schema.parseAccordingToSchema(data_to_parse, this.schema);
     },
     getArea() {
         return this.get('width') * this.get('height');

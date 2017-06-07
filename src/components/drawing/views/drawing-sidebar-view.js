@@ -186,6 +186,7 @@ export default Marionette.View.extend({
 
             active_unit_options = _.map(options_list, (dictionary_name) => {
                 const dictionary_id = App.settings.dictionaries.getDictionaryIdByName(dictionary_name);
+                let current_dictionary_name = dictionary_name;
                 let rules_and_restrictions;
                 let is_hidden = false;
                 let value = '(None)';
@@ -221,12 +222,12 @@ export default Marionette.View.extend({
                 }
 
                 if (is_hidden) {
-                    dictionary_name += '*';
+                    current_dictionary_name += '*';
                     has_hidden_options = true;
                 }
 
                 return {
-                    title: dictionary_name,
+                    title: current_dictionary_name,
                     value,
                 };
             }, this);
@@ -275,10 +276,9 @@ export default Marionette.View.extend({
         }
 
         function getFillingArea(width, height, suffix_format) {
-            suffix_format = suffix_format || 'sup';
-
+            const current_suffix_format = suffix_format || 'sup';
             const result = f.square_feet(m.square_feet(c.mm_to_inches(width),
-                c.mm_to_inches(height)), 2, suffix_format);
+                c.mm_to_inches(height)), 2, current_suffix_format);
 
             return result;
         }
@@ -551,11 +551,11 @@ export default Marionette.View.extend({
             active_unit_profile_properties: tab_contents.active_unit_profile_properties,
             active_unit_stats: tab_contents.active_unit_stats,
             active_unit_estimated_cost: tab_contents.active_unit_estimated_cost,
-            tabs: _.each(this.tabs, (item, key) => {
-                item.is_active = key === this.active_tab;
-
-                return item;
-            }, this),
+            tabs: _.mapObject(this.tabs, (item, key) => (
+                _.extend({}, item, {
+                    is_active: key === this.active_tab,
+                })
+            )),
         };
     },
     onRender() {

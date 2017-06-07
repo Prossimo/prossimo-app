@@ -262,10 +262,11 @@ export default Marionette.View.extend({
     templateContext() {
         return {
             active_tab: this.active_tab,
-            tabs: _.each(this.tabs, (item, key) => {
-                item.is_active = key === this.active_tab;
-                return item;
-            }),
+            tabs: _.mapObject(this.tabs, (item, key) => (
+                _.extend({}, item, {
+                    is_active: key === this.active_tab,
+                })
+            )),
             mode: this.getActiveTab().title === 'Extras' ? 'extras' : 'units',
         };
     },

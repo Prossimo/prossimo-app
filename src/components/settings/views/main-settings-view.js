@@ -72,10 +72,11 @@ export default Marionette.View.extend({
     },
     templateContext() {
         return {
-            tabs: _.each(this.tabs, (item, key) => {
-                item.is_active = key === this.active_tab;
-                return item;
-            }, this),
+            tabs: _.mapObject(this.tabs, (item, key) => (
+                _.extend({}, item, {
+                    is_active: key === this.active_tab,
+                })
+            )),
         };
     },
     onBeforeDestroy() {

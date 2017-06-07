@@ -25,12 +25,12 @@ _.extend(Backbone.Model.prototype, {
     //  On successful first save (via POST) we want to get ID of a newly
     //  created DB entity and assign this ID to our model
     save(key, val, options) {
+        let current_options = clone(options) || {};
+
         //  Mostly to play nice with undo manager
         if (key === null || (typeof key === 'object' && val)) {
-            options = val;
+            current_options = val;
         }
-
-        options = options || {};
 
         function processResponse(model, response) {
             const location_string = response.getResponseHeader('Location');
@@ -51,22 +51,24 @@ _.extend(Backbone.Model.prototype, {
         }
 
         if (this.isNew()) {
-            const successCallback = options.success;
+            const successCallback = current_options.success;
 
-            options.success = function saveSuccessCallback(model, response, backboneOptions) {
-                if (response === null) {
-                    response = backboneOptions && backboneOptions.xhr;
+            current_options.success = function saveSuccessCallback(model, response, backboneOptions) {
+                let success_response = response;
+
+                if (success_response === null) {
+                    success_response = backboneOptions && backboneOptions.xhr;
                 }
 
-                processResponse(model, response);
+                processResponse(model, success_response);
 
                 if (successCallback) {
-                    successCallback.call(backboneOptions.context, model, response, backboneOptions);
+                    successCallback.call(backboneOptions.context, model, success_response, backboneOptions);
                 }
             };
         }
 
-        return oldModelSave.call(this, key, val, options);
+        return oldModelSave.call(this, key, val, current_options);
     },
     //  Don't save anything if we have special flag on `app` or an attribute
     persist(...args) {
@@ -91,11 +93,10 @@ _.extend(Backbone.Model.prototype, {
             attributes_to_omit: [],
             extra_attributes: {},
         };
-
-        options = _.extend({}, default_options, options);
+        const current_options = _.extend({}, default_options, clone(options));
 
         function getClonedItemName(name, name_attr, collection) {
-            const default_name = options.model_name ? `New ${options.model_name}` : 'New';
+            const default_name = current_options.model_name ? `New ${current_options.model_name}` : 'New';
             let old_name = name ? name.replace(/\s*\(copy#(\d+)\)/, '') : default_name;
             const possible_names = _.filter(collection.pluck(name_attr), value => value.indexOf(old_name) !== -1, this);
             const pattern = /(.*\S)\s*(\(copy#(\d+)\))/;
@@ -121,10 +122,10 @@ _.extend(Backbone.Model.prototype, {
 
         if (this.collection) {
             const name_attr = this.getNameAttribute();
-            let cloned_attributes = _.omit(this.toJSON(), _.union(options.attributes_to_omit, ['id']));
+            let cloned_attributes = _.omit(this.toJSON(), _.union(current_options.attributes_to_omit, ['id']));
 
             cloned_attributes[name_attr] = getClonedItemName(this.get(name_attr), name_attr, this.collection);
-            cloned_attributes = _.extend({}, cloned_attributes, options.extra_attributes);
+            cloned_attributes = _.extend({}, cloned_attributes, current_options.extra_attributes);
 
             const new_object = this.collection.add(clone(cloned_attributes), { parse: true });
             let persist_options = {
@@ -133,7 +134,7 @@ _.extend(Backbone.Model.prototype, {
                 wait: true,
             };
 
-            if (options.fetch_after_saving) {
+            if (current_options.fetch_after_saving) {
                 persist_options = _.extend({}, persist_options, {
                     success() {
                         new_object.fetch();
@@ -250,20 +251,23 @@ _.extend(Backbone.Collection.prototype, {
     },
 });
 
+//  When a new request is fired and an old request is still in progress,
+//  the old one would be stopped
 //  Source: https://github.com/amccloud/backbone-safesync
 Backbone.sync = function safeSync(method, model, options) {
-    const lastXHR = model._lastXHR && model._lastXHR[method];
+    const synced_model = model;
+    const lastXHR = synced_model._lastXHR && synced_model._lastXHR[method];
 
     if ((lastXHR && lastXHR.readyState !== 4) && (options && options.safe !== false)) {
         lastXHR.abort('stale');
     }
 
-    if (!model._lastXHR) {
-        model._lastXHR = {};
+    if (!synced_model._lastXHR) {
+        synced_model._lastXHR = {};
     }
 
-    const resp = sync(method, model, options);
-    model._lastXHR[method] = resp;
+    const resp = sync(method, synced_model, options);
+    synced_model._lastXHR[method] = resp;
 
     return resp;
 };

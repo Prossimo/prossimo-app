@@ -141,8 +141,6 @@ function validateBar(opts, type) {
 function getDefaultMeasurements(hasFrame) {
     const result = {};
 
-    hasFrame = hasFrame || false;
-
     if (hasFrame) {
         result.frame = {
             vertical: ['max', 'max'],
@@ -221,50 +219,52 @@ function isEqualBars(bars1, bars2, options) {
 }
 
 function scaleBars(bars, options) {
-    bars = clone(bars);
+    const newBars = clone(bars);
     const factor = options && options.factor;
-    if (!factor || factor === 1) { return bars; }
 
-    const oldStep = bars[0].position;
+    if (!factor || factor === 1) { return newBars; }
+
+    const oldStep = newBars[0].position;
     const newStep = oldStep * factor;
-    const newBars = bars.map((bar, index) => {
-        const cloned_bar = clone(bar);
-        cloned_bar.position = newStep * (index + 1);
-        return cloned_bar;
-    });
 
-    return newBars;
+    return newBars.map((bar, index) => (
+        _.extend({}, bar, {
+            position: newStep * (index + 1),
+        })
+    ));
 }
 
 function mirrorBars(bars, options) {
-    bars = clone(bars);
+    const newBars = clone(bars);
     const axisLength = options && options.axisLength;
-    if (!axisLength) { return bars; }
 
-    const newBars = bars.reverse();
-    newBars.forEach((bar) => {
-        bar.position = axisLength - bar.position;
-    });
+    if (!axisLength) { return newBars; }
 
-    return newBars;
+    return newBars.reverse().map(bar => (
+        _.extend({}, bar, {
+            position: axisLength - bar.position,
+        })
+    ));
 }
 
 function offsetBars(bars, options) {
-    bars = clone(bars);
+    const newBars = clone(bars);
     const offset = options && options.offset;
-    if (!offset) { return bars; }
 
-    const newBars = bars;
-    newBars.forEach((bar) => {
-        bar.position += offset;
-    });
+    if (!offset) { return newBars; }
 
-    return newBars;
+    return newBars.map(bar => (
+        _.extend({}, bar, {
+            position: bar.position + offset,
+        })
+    ));
 }
 
 function positionBars(bars, options) {
-    bars = clone(bars);
-    if (!bars || !bars.length) { return bars; }
+    let positionedBars = clone(bars);
+
+    if (!positionedBars || !positionedBars.length) { return positionedBars; }
+
     const align = options && options.align;
     const marginStart = options && options.marginStart;
     const marginEnd = options && options.marginEnd;
@@ -278,27 +278,27 @@ function positionBars(bars, options) {
     let lastGap;
 
     if (doAlignCenter) {
-        const barGroupLength = _.last(bars).position - _.first(bars).position;
-        firstGap = _.first(getBarsGaps(bars, { axisLength }));
+        const barGroupLength = _.last(positionedBars).position - _.first(positionedBars).position;
+        firstGap = _.first(getBarsGaps(positionedBars, { axisLength }));
         const centeredMarginStart = (axisLength - barGroupLength) / 2;
         offset = centeredMarginStart - firstGap;
     } else if (doAlignStart) {
-        firstGap = _.first(getBarsGaps(bars, { axisLength }));
+        firstGap = _.first(getBarsGaps(positionedBars, { axisLength }));
         offset = marginStart - firstGap;
     } else if (doAlignEnd) {
-        lastGap = _.last(getBarsGaps(bars, { axisLength }));
+        lastGap = _.last(getBarsGaps(positionedBars, { axisLength }));
         offset = lastGap - marginEnd;
     } else {
         offset = 0;
     }
 
-    const positionedBars = offsetBars(bars, { offset });
+    positionedBars = offsetBars(positionedBars, { offset });
 
     return positionedBars;
 }
 
 function splitBars(bars, options) {
-    bars = clone(bars);
+    const newBars = clone(bars);
     const position = options && options.position;
     const gapIndex = options && options.gapIndex;
 
@@ -307,16 +307,20 @@ function splitBars(bars, options) {
 
     // Split at position (floating point value)
     if (position) {
-        firstHalf = bars.filter(bar => bar.position < position);
-        secondHalf = bars.filter(bar => bar.position > position);
-        const centralBar = bars.filter(bar => bar.position === position)[0];
+        firstHalf = newBars.filter(bar => bar.position < position);
+        secondHalf = newBars.filter(bar => bar.position > position);
+        const centralBar = newBars.filter(bar => bar.position === position)[0];
+
         if (centralBar) {
             firstHalf.push(clone(centralBar));
             secondHalf.splice(0, 0, clone(centralBar));
         }
-        secondHalf.forEach((bar) => {
-            bar.position -= position;
-        });
+
+        secondHalf = secondHalf.map(bar => (
+            _.extend({}, bar, {
+                position: bar.position - position,
+            })
+        ));
     // Split at gap (gap index integer)
     } else if (_.isNumber(gapIndex)) {
         firstHalf = bars.filter((bar, index) => index < gapIndex);
@@ -331,33 +335,36 @@ function splitBars(bars, options) {
 }
 
 function splitBarsAtLargestGap(bars, options) {
-    bars = clone(bars);
-    if (bars.length <= 1) { return [bars, []]; }
+    const newBars = clone(bars);
     const axisLength = options && options.axisLength;
 
-    const gaps = getBarsGaps(bars, { axisLength });
+    if (newBars.length <= 1) { return [newBars, []]; }
+
+    const gaps = getBarsGaps(newBars, { axisLength });
     const largestGapIndex = gaps.reduce(([largestGap, largestGapInd], gap, index) => {
         const largestGapTuple = (gap >= largestGap) ? [gap, index] : [largestGap, largestGapInd];
         return largestGapTuple;
     }, [0, 0])[1];
 
-    return splitBars(bars, { gapIndex: largestGapIndex });
+    return splitBars(newBars, { gapIndex: largestGapIndex });
 }
 
 function mergeBars(bars1, bars2, options) {
-    bars1 = clone(bars1);
-    bars2 = clone(bars2);
-    if (!bars1 || !bars2) { return bars1; }
-    if (!bars1.length) { return bars2; }
-    if (!bars2.length) { return bars1; }
+    const newBars1 = clone(bars1);
+    let newBars2 = clone(bars2);
+
+    if (!newBars1 || !newBars2) { return newBars1; }
+    if (!newBars1.length) { return newBars2; }
+    if (!newBars2.length) { return newBars1; }
+
     const doOffsetBars = (options && !_.isUndefined(options.offsetBars)) ? options.offsetBars : true;
-    const bars1AxisLength = (options && options.bars1AxisLength) || _.last(bars1).position;
+    const bars1AxisLength = (options && options.bars1AxisLength) || _.last(newBars1).position;
     const precision = (options && _.isNumber(options.precision)) ? options.precision : 0;
 
     if (doOffsetBars) {
-        bars2 = offsetBars(bars2, { offset: bars1AxisLength });
+        newBars2 = offsetBars(newBars2, { offset: bars1AxisLength });
     }
-    const mergedBars = bars1.concat(bars2);
+    const mergedBars = newBars1.concat(newBars2);
     const deduplicatedBars = mergedBars.filter((bar, index) => {
         const nextBar = mergedBars[index + 1];
         return bar.position.toFixed(precision) !== (nextBar && nextBar.position.toFixed(precision));
@@ -367,10 +374,11 @@ function mergeBars(bars1, bars2, options) {
 }
 
 function getCentralBars(bars, options) {
-    bars = clone(bars);
+    const newBars = clone(bars);
     const axisLength = options && options.axisLength;
-    if (!axisLength) { return []; }
     const precision = (options && _.isNumber(options.precision)) ? options.precision : 0;
+
+    if (!axisLength) { return []; }
 
     // Algorithm for extracting central bar group (assuming bars are non-uniform):
     // 1. Cut axis bars in half in the middle
@@ -379,7 +387,7 @@ function getCentralBars(bars, options) {
     // 4. Take the relevant pieces of split halves and reconstitute a single central part from them
 
     const halfLength = axisLength / 2;
-    const [firstHalf, secondHalf] = splitBars(bars, { position: halfLength });
+    const [firstHalf, secondHalf] = splitBars(newBars, { position: halfLength });
     const mirroredSecondHalf = mirrorBars(secondHalf, { axisLength: halfLength });
     const isSymmetrical = isEqualBars(firstHalf, mirroredSecondHalf, { precision });
     if (!isSymmetrical) { return []; }
@@ -394,13 +402,15 @@ function getCentralBars(bars, options) {
 }
 
 function getInvertedDivider(type) {
+    let new_type = type;
+
     if (/vertical/.test(type)) {
-        type = type.replace(/vertical/g, 'horizontal');
+        new_type = type.replace(/vertical/g, 'horizontal');
     } else if (/horizontal/.test(type)) {
-        type = type.replace(/horizontal/g, 'vertical');
+        new_type = type.replace(/horizontal/g, 'vertical');
     }
 
-    return type;
+    return new_type;
 }
 
 function findParent(root, childId) {
@@ -493,11 +503,13 @@ const Unit = Backbone.Model.extend({
         return default_value;
     },
     sync(method, model, options) {
+        const current_options = clone(options);
+
         if (method === 'create' || method === 'update') {
-            options.attrs = { unit: model.toJSON() };
+            current_options.attrs = { unit: model.toJSON() };
         }
 
-        return Backbone.sync.call(this, method, model, options);
+        return Backbone.sync.call(this, method, model, current_options);
     },
     toJSON(...args) {
         const properties_to_omit = ['id'];
@@ -611,7 +623,9 @@ const Unit = Backbone.Model.extend({
         }
     },
     //  Check if some of the section values aren't valid and try to fix that
-    validateSection(current_section, is_root) {
+    validateSection(section, is_root) {
+        const current_section = clone(section);
+
         //  Replace deprecated sash types with more adequate values
         if (current_section.sashType === 'flush-turn-left') {
             current_section.sashType = 'turn_only_left';
@@ -645,7 +659,7 @@ const Unit = Backbone.Model.extend({
         }
 
         current_section.sections = current_section.sections &&
-            current_section.sections.map(section => this.validateSection(section, false));
+            current_section.sections.map(sec => this.validateSection(sec, false));
 
         return current_section;
     },
@@ -710,11 +724,10 @@ const Unit = Backbone.Model.extend({
 
         this.get('unit_options').set(options_to_set.models);
     },
-    getCurrentFillingsList(current_root) {
+    getCurrentFillingsList(source_root) {
+        const current_root = source_root || this.generateFullRoot();
         let section_result;
         let result = [];
-
-        current_root = current_root || this.generateFullRoot();
 
         _.each(current_root.sections, (section) => {
             section_result = this.getCurrentFillingsList(section);
@@ -802,8 +815,7 @@ const Unit = Backbone.Model.extend({
         const default_options = {
             validate_filling_types: false,
         };
-
-        options = _.defaults({}, options, default_options);
+        const current_options = _.defaults({}, options, default_options);
 
         this.profile = null;
 
@@ -824,7 +836,7 @@ const Unit = Backbone.Model.extend({
 
         this.validateUnitOptions();
 
-        if (options.validate_filling_types) {
+        if (current_options.validate_filling_types) {
             this.validateFillingTypes();
         }
     },
@@ -887,14 +899,11 @@ const Unit = Backbone.Model.extend({
     //  Return { name: 'name', title: 'Title' } pairs for each item in
     //  `names` array. If the array is empty, return all possible pairs
     getNameTitleTypeHash(names) {
+        const selected_names = names || _.pluck(UNIT_PROPERTIES, 'name');
         const name_title_hash = [];
 
-        if (!names) {
-            names = _.pluck(UNIT_PROPERTIES, 'name');
-        }
-
         _.each(UNIT_PROPERTIES, (item) => {
-            if (_.indexOf(names, item.name) !== -1) {
+            if (_.indexOf(selected_names, item.name) !== -1) {
                 name_title_hash.push({ name: item.name, title: item.title, type: item.type });
             }
         });
@@ -969,7 +978,7 @@ const Unit = Backbone.Model.extend({
     getSquareFeetPriceDiscounted() {
         return this.getTotalSquareFeet() ? this.getSubtotalPriceDiscounted() / this.getTotalSquareFeet() : 0;
     },
-    preparePricingDataForExport(options) {
+    preparePricingDataForExport(source_options) {
         const default_options = {
             include_project: true,
             include_quote: true,
@@ -983,8 +992,7 @@ const Unit = Backbone.Model.extend({
             include_options: true,
             include_sections: true,
         };
-
-        options = _.extend({}, default_options, options);
+        const options = _.extend({}, default_options, source_options);
 
         const sections_list = this.getFixedAndOperableSectionsList();
         const parent_project = this.getParentProject();
@@ -1246,7 +1254,7 @@ const Unit = Backbone.Model.extend({
     //  If reverse_hinges is true, we replace "Left" with "Right" and
     //  "Right" with "Left" in sash name
     getSashName(type, reverse_hinges) {
-        reverse_hinges = reverse_hinges || false;
+        const should_reverse_hinges = reverse_hinges || false;
 
         if (_.indexOf(_.keys(SASH_TYPE_NAME_MAP), type) === -1) {
             throw new Error(`Unrecognized sash type: ${type}`);
@@ -1254,7 +1262,7 @@ const Unit = Backbone.Model.extend({
 
         let string = SASH_TYPE_NAME_MAP[type];
 
-        if (reverse_hinges) {
+        if (should_reverse_hinges) {
             if (/Right/.test(string)) {
                 string = string.replace(/Right/g, 'Left');
             } else if (/Left/.test(string)) {
@@ -1265,9 +1273,14 @@ const Unit = Backbone.Model.extend({
         return string;
     },
     _updateSection(sectionId, func) {
+        if (!_.isFunction(func)) {
+            throw new Error('Second argument should be a function');
+        }
+
         const oldRoot = this.generateFullRoot();
         const newRoot = clone(this.get('root_section'));
         const sectionToUpdate = findSection(newRoot, sectionId);
+
         func(sectionToUpdate);
 
         this.getResizedSections(oldRoot, this.generateFullRoot(newRoot)).forEach((sash) => {
@@ -1275,6 +1288,7 @@ const Unit = Backbone.Model.extend({
             const oldSection = findSection(oldRoot, sash.id);
             section.bars = this.redistributeBars(section, { oldSection });
         });
+
         this.persist('root_section', newRoot);
     },
     setCircular(sectionId, opts) {
@@ -1448,20 +1462,19 @@ const Unit = Backbone.Model.extend({
     },
     hasSectionBars(sectionId, options) {
         if (!sectionId || (options && !options.types)) { return false; }
-        if (!options) { options = { types: 'any' }; }
 
+        const current_options = options || { types: 'any' };
         const section = this.getSection(sectionId);
-        const types = options.types;
 
         if (!section || !section.bars) { return false; }
 
-        if (types === 'any') {
+        if (current_options.types === 'any') {
             return section.bars.horizontal.length !== 0 || section.bars.vertical.length !== 0;
-        } else if (types === 'both' || types === 'all') {
+        } else if (current_options.types === 'both' || current_options.types === 'all') {
             return section.bars.horizontal.length !== 0 && section.bars.vertical.length !== 0;
-        } else if (types === 'horizontal') {
+        } else if (current_options.types === 'horizontal') {
             return section.bars.horizontal.length !== 0;
-        } else if (types === 'vertical') {
+        } else if (current_options.types === 'vertical') {
             return section.bars.vertical.length !== 0;
         }
 
@@ -1486,12 +1499,15 @@ const Unit = Backbone.Model.extend({
         const adjustGeometry = adjustSection.glassParams;
         const referenceGeometry = referenceSection.glassParams;
         const flipBarsX = (bars, sectionWidth) => {
-            bars = clone(bars);
-            bars.vertical.reverse();
-            bars.vertical.forEach((bar) => {
-                bar.position = sectionWidth - bar.position;
-            });
-            return bars;
+            const newBars = clone(bars);
+
+            newBars.vertical = newBars.vertical.reverse().map(bar => (
+                _.extend({}, bar, {
+                    position: sectionWidth - bar.position,
+                })
+            ));
+
+            return newBars;
         };
         const adjustBars = (options.flipBarsX) ?
             flipBarsX(adjustSection.bars, adjustGeometry.width) :
@@ -1646,12 +1662,14 @@ const Unit = Backbone.Model.extend({
         });
     },
     setSectionMullionPosition(id, pos) {
+        let new_pos = pos;
+
         this._updateSection(id, (section) => {
-            if (section.minPosition && section.minPosition > pos) {
-                pos = section.minPosition;
+            if (section.minPosition && section.minPosition > new_pos) {
+                new_pos = section.minPosition;
             }
 
-            section.position = parseFloat(pos);
+            section.position = parseFloat(new_pos);
         });
     },
     removeMullion(sectionId) {
@@ -1749,8 +1767,8 @@ const Unit = Backbone.Model.extend({
     //         openingParams: {}
     //     }]
     // }
-    generateFullRoot(rootSection, openingParams) {
-        rootSection = rootSection || clone(this.get('root_section'));
+    generateFullRoot(currentRoot, currentOpeningParams) {
+        const rootSection = clone(currentRoot) || clone(this.get('root_section'));
         let defaultParams = {
             x: 0,
             y: 0,
@@ -1782,7 +1800,8 @@ const Unit = Backbone.Model.extend({
             rootSection.thresholdEdge = true;
         }
 
-        openingParams = openingParams || defaultParams;
+        const openingParams = clone(currentOpeningParams) || defaultParams;
+
         rootSection.openingParams = openingParams;
         rootSection.mullionEdges = rootSection.mullionEdges || {};
         rootSection.glassParams = {};
@@ -1863,7 +1882,8 @@ const Unit = Backbone.Model.extend({
         const isParentTop = openingParams.isTop;
         const isParentBottom = openingParams.isBottom;
 
-        rootSection.sections = _.map(rootSection.sections, (sectionData, i) => {
+        rootSection.sections = _.map(rootSection.sections, (currentSectionData, i) => {
+            const sectionData = clone(currentSectionData);
             const sectionParams = {
                 x: null, y: null, width: null, height: null,
             };
@@ -1881,7 +1901,9 @@ const Unit = Backbone.Model.extend({
             const mullionWidth = this.profile.get('mullion_width');
             const sashFrameGlassOverlap = sashFrameWidth - sashFrameOverlap;
             const overlapDifference = sashFrameOverlap - sashMullionOverlap;
-            const trim = (amount, sides) => {
+            const trim = (amount, sides_to_trim) => {
+                let sides = clone(sides_to_trim);
+
                 if (sides === 'all') {
                     sides = ['top', 'right', 'bottom', 'left'];
                 }
@@ -1973,8 +1995,8 @@ const Unit = Backbone.Model.extend({
 
         return rootSection;
     },
-    generateFullReversedRoot(rootSection) {
-        rootSection = rootSection || this.generateFullRoot();
+    generateFullReversedRoot(currentRoot) {
+        const rootSection = currentRoot || this.generateFullRoot();
         const width = this.getInMetric('width', 'mm');
 
         rootSection.openingParams.x = width - rootSection.openingParams.x - rootSection.openingParams.width;
@@ -2001,12 +2023,15 @@ const Unit = Backbone.Model.extend({
 
         rootSection.sashType = type;
         rootSection.sections = _.map(rootSection.sections, (sectionData) => {
-            const temp = sectionData.mullionEdges.left;
+            const currentSectionData = sectionData;
+            const temp = currentSectionData.mullionEdges.left;
 
-            sectionData.mullionEdges.left = sectionData.mullionEdges.right;
-            sectionData.mullionEdges.right = temp;
-            return this.generateFullReversedRoot(sectionData);
+            currentSectionData.mullionEdges.left = currentSectionData.mullionEdges.right;
+            currentSectionData.mullionEdges.right = temp;
+
+            return this.generateFullReversedRoot(currentSectionData);
         });
+
         return rootSection;
     },
     // it is not possible to add sash inside another sash
@@ -2028,30 +2053,30 @@ const Unit = Backbone.Model.extend({
         return this.canAddSashToSection(section.parentId);
     },
     flatterSections(rootSection) {
-        rootSection = rootSection || this.get('root_section');
+        const currentRoot = rootSection || this.get('root_section');
         let sections = [];
 
-        if (rootSection.sections) {
-            sections = _.concat(_.map(rootSection.sections, s => this.flatterSections(s)));
+        if (currentRoot.sections) {
+            sections = _.concat(_.map(currentRoot.sections, s => this.flatterSections(s)));
         } else {
-            sections = [rootSection];
+            sections = [currentRoot];
         }
 
         return sections;
     },
     getMullions(rootSection) {
-        rootSection = rootSection || this.get('root_section');
+        const currentRoot = rootSection || this.get('root_section');
         let mullions = [];
 
-        if (rootSection.sections && rootSection.sections.length) {
+        if (currentRoot.sections && currentRoot.sections.length) {
             mullions.push({
-                type: rootSection.divider,
-                position: rootSection.position,
-                id: rootSection.id,
-                sections: [rootSection.sections[0], rootSection.sections[1]],
+                type: currentRoot.divider,
+                position: currentRoot.position,
+                id: currentRoot.id,
+                sections: [currentRoot.sections[0], currentRoot.sections[1]],
             });
 
-            const submullions = _.map(rootSection.sections, s => this.getMullions(s));
+            const submullions = _.map(currentRoot.sections, s => this.getMullions(s));
 
             mullions = mullions.concat(submullions);
         } else {
@@ -2083,6 +2108,7 @@ const Unit = Backbone.Model.extend({
         const newRoot = this.get('root_section');
         const possible_metrics = ['mm', 'inches'];
         const possible_dimensions = ['width', 'height', 'height_max', 'height_min'];
+        let new_val = val;
 
         if (!attr || possible_dimensions.indexOf(attr) === -1) {
             throw new Error(`Wrong dimension. Possible values: ${possible_dimensions.join(', ')}`);
@@ -2093,43 +2119,43 @@ const Unit = Backbone.Model.extend({
         }
 
         // Convert to inches if metric is present and it isn't inches. No metric means inches
-        if (_.isArray(val) && (metric && metric !== 'inches')) {
-            val = val.map(convert.mm_to_inches);
+        if (_.isArray(new_val) && (metric && metric !== 'inches')) {
+            new_val = new_val.map(convert.mm_to_inches);
         } else if (metric && metric !== 'inches') {
-            val = convert.mm_to_inches(val);
+            new_val = convert.mm_to_inches(new_val);
         }
 
         if (this.getCircleRadius() !== null) {
             const full_root = this.generateFullRoot();
 
             this.setCircular(full_root.id, {
-                radius: val / 2,
+                radius: new_val / 2,
             });
-        } else if (attr === 'height' && _.isArray(val) && val.length > 1) {
-            newRoot.trapezoidHeights = [val[0], val[1]];
+        } else if (attr === 'height' && _.isArray(new_val) && new_val.length > 1) {
+            newRoot.trapezoidHeights = [new_val[0], new_val[1]];
             newRoot.circular = false;
             newRoot.arched = false;
             const params = {
                 corners: this.getMainTrapezoidInnerCorners(),
-                minHeight: (val[0] > val[1]) ? val[1] : val[0],
-                maxHeight: (val[0] < val[1]) ? val[1] : val[0],
+                minHeight: (new_val[0] > new_val[1]) ? new_val[1] : new_val[0],
+                maxHeight: (new_val[0] < new_val[1]) ? new_val[1] : new_val[0],
             };
 
             this.checkHorizontalSplit(newRoot, params);
-            this.persist(attr, (val[0] > val[1]) ? val[0] : val[1]);
-        } else if (attr === 'height' && !_.isArray(val) && this.isTrapezoid()) {
+            this.persist(attr, (new_val[0] > new_val[1]) ? new_val[0] : new_val[1]);
+        } else if (attr === 'height' && !_.isArray(new_val) && this.isTrapezoid()) {
             newRoot.trapezoidHeights = false;
-            this.persist('height', val);
+            this.persist('height', new_val);
         } else if (attr === 'height_max') {
             if (this.isTrapezoid()) {
-                this.updateTrapezoidHeight('max', val);
+                this.updateTrapezoidHeight('max', new_val);
             } else {
-                this.persist('height', val);
+                this.persist('height', new_val);
             }
         } else if (attr === 'height_min') {
-            this.updateTrapezoidHeight('min', val);
+            this.updateTrapezoidHeight('min', new_val);
         } else {
-            this.persist(attr, val);
+            this.persist(attr, new_val);
         }
 
         const newestRoot = this.generateFullRoot();
@@ -2155,7 +2181,6 @@ const Unit = Backbone.Model.extend({
         });
     },
     getResizedSections(oldRoot, newRoot) {
-        newRoot = newRoot || this.generateFullRoot();
         const toObjectByKey = (array, key) => {
             const obj = {};
             array.forEach((value) => {
@@ -2164,7 +2189,7 @@ const Unit = Backbone.Model.extend({
             return obj;
         };
         const oldSashes = this.getSashList(oldRoot);
-        const newSashes = this.getSashList(newRoot);
+        const newSashes = this.getSashList(newRoot || this.generateFullRoot());
         const oldSashesById = toObjectByKey(oldSashes, 'id');
         const newSashesById = toObjectByKey(newSashes, 'id');
         const changedSashes = _.filter(newSashesById, (sash) => {
@@ -2177,8 +2202,8 @@ const Unit = Backbone.Model.extend({
     //  Here we get a list with basic sizes for each piece of the unit:
     //  frame, sashes, mullions, openings, glasses. Each piece got width,
     //  height, and some also got frame_width
-    getSizes(current_root) {
-        current_root = current_root || this.generateFullRoot();
+    getSizes(root_section) {
+        const current_root = root_section || this.generateFullRoot();
 
         const result = {
             sashes: [],
@@ -2434,22 +2459,22 @@ const Unit = Backbone.Model.extend({
     },
     //  Returns sizes in mms
     //  Reverse hinges is true when we want outside view and american hinges
-    getSashList(current_root, parent_root, reverse_hinges) {
+    getSashList(current_root_section, parent_root, reverse_hinges) {
         const current_sash = {
             opening: {},
             sash_frame: {},
             filling: {},
             sections: [],
         };
-        let section_result;
-        let filling_type;
         const result = {
             sashes: [],
             sections: [],
         };
+        const current_root = current_root_section || this.generateFullRoot();
+        let section_result;
+        let filling_type;
         let type = 'sashes';
 
-        current_root = current_root || this.generateFullRoot();
         current_sash.id = current_root.id;
 
         if (current_root.sashType !== 'fixed_in_frame') {
@@ -2519,13 +2544,12 @@ const Unit = Backbone.Model.extend({
     //  this list of sections as a source for cost estimation
     //
     //  Returns sizes in mms
-    getFixedAndOperableSectionsList(current_root) {
+    getFixedAndOperableSectionsList(root_section) {
+        const current_root = root_section || this.generateFullRoot();
         const profile = this.profile;
         const current_area = {};
         let section_result;
         let result = [];
-
-        current_root = current_root || this.generateFullRoot();
 
         _.each(current_root.sections, (section) => {
             section_result = this.getFixedAndOperableSectionsList(section);
@@ -2600,7 +2624,9 @@ const Unit = Backbone.Model.extend({
         const sections_list = this.getFixedAndOperableSectionsList();
         const options_grouped_by_scheme = this.getUnitOptionsGroupedByPricingScheme();
 
-        _.each(sections_list, (section) => {
+        return sections_list.map((source_section) => {
+            const section = clone(source_section);
+
             section.price_per_square_meter = 0;
             section.base_cost = 0;
 
@@ -2704,9 +2730,9 @@ const Unit = Backbone.Model.extend({
             }, this);
 
             section.total_cost = section.base_cost + section.filling_cost + section.options_cost;
-        });
 
-        return sections_list;
+            return section;
+        });
     },
     getEstimatedUnitCost() {
         const sections_list = this.getSectionsListWithEstimatedCost();
@@ -2747,10 +2773,9 @@ const Unit = Backbone.Model.extend({
     },
     //  Check if unit has at least one operable section. This could be used
     //  to determine whether we should allow editing handles and such stuff
-    hasOperableSections(current_root) {
+    hasOperableSections(root_section) {
+        const current_root = root_section || this.generateFullRoot();
         let has_operable_sections = false;
-
-        current_root = current_root || this.generateFullRoot();
 
         if (_.contains(OPERABLE_SASH_TYPES, current_root.sashType)) {
             has_operable_sections = true;
@@ -2771,10 +2796,9 @@ const Unit = Backbone.Model.extend({
     },
     //  Check if any of unit sections has glazing bars. This could be used
     //  to determine whether we should allow editing related properties
-    hasGlazingBars(current_root) {
+    hasGlazingBars(root_section) {
+        const current_root = root_section || this.generateFullRoot();
         let has_glazing_bars = false;
-
-        current_root = current_root || this.generateFullRoot();
 
         if (current_root.bars.horizontal.length > 0 || current_root.bars.vertical.length > 0) {
             has_glazing_bars = true;
@@ -2806,46 +2830,33 @@ const Unit = Backbone.Model.extend({
         return _.indexOf(EGRESS_ENABLED_TYPES, sash_type) !== -1;
     },
     //  Source is in mms. Result is in inches by default, millimeters optional
-    getSashOpeningSize(openingSizes_mm, sizeType, sashType, result_metric) {
-        const possible_metrics = ['mm', 'inches'];
-        const c = convert;
-        const m = math;
-        let result;
-
-        if (result_metric && possible_metrics.indexOf(result_metric) === -1) {
-            throw new Error(`Wrong metric. Possible values: ${possible_metrics.join(', ')}`);
-        }
-
+    getSashOpeningSize(openingSizes_mm, sizeType, sashType, metric) {
         //  Set inches by default
-        if (!result_metric) {
-            result_metric = 'inches';
-        }
+        const result_metric = _.contains(['mm', 'inches'], metric) ? metric : 'inches';
+        const openingSizes = clone(openingSizes_mm);
+        let result;
 
         if (sizeType === 'egress') {
             const clear_width_deduction = this.profile.get('clear_width_deduction');
 
             if (clear_width_deduction && this.isEgressEnabledType(sashType)) {
-                openingSizes_mm.width -= clear_width_deduction;
+                openingSizes.width -= clear_width_deduction;
             } else {
                 return undefined;
             }
         }
 
-        if (openingSizes_mm && openingSizes_mm.height && openingSizes_mm.width) {
+        if (openingSizes && openingSizes.height && openingSizes.width) {
             const opening_area = (result_metric === 'inches') ?
-                m.square_feet(
-                    c.mm_to_inches(openingSizes_mm.width),
-                    c.mm_to_inches(openingSizes_mm.height),
+                math.square_feet(
+                    convert.mm_to_inches(openingSizes.width),
+                    convert.mm_to_inches(openingSizes.height),
                 ) :
-                m.square_meters(openingSizes_mm.width, openingSizes_mm.height);
+                math.square_meters(openingSizes.width, openingSizes.height);
 
             result = {
-                height: (result_metric === 'inches') ?
-                    c.mm_to_inches(openingSizes_mm.height) :
-                    openingSizes_mm.height,
-                width: (result_metric === 'inches') ?
-                    c.mm_to_inches(openingSizes_mm.width) :
-                    openingSizes_mm.width,
+                height: (result_metric === 'inches') ? convert.mm_to_inches(openingSizes.height) : openingSizes.height,
+                width: (result_metric === 'inches') ? convert.mm_to_inches(openingSizes.width) : openingSizes.width,
                 area: opening_area,
             };
         }

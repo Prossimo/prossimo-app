@@ -39,23 +39,26 @@ export default function (opts) {
             model.destroy();
         },
         redo(collection, ignore, model, options) {
+            const redo_options = clone(options);
+            const redo_model = model;
+
             // Redo add = add
-            if (options.index) {
-                options.at = options.index;
+            if (redo_options.index) {
+                redo_options.at = redo_options.index;
             }
 
-            if (model.id) {
-                delete model.id;
+            if (redo_model.id) {
+                delete redo_model.id;
             }
 
-            if (model.attributes.id) {
-                delete model.attributes.id;
+            if (redo_model.attributes.id) {
+                delete redo_model.attributes.id;
             }
 
-            const new_object = collection.add(model, options);
+            const new_object = collection.add(redo_model, redo_options);
 
             if (new_object.hasOnlyDefaultAttributes() === false) {
-                model.persist({}, {
+                redo_model.persist({}, {
                     validate: true,
                     parse: true,
                 });
@@ -101,7 +104,7 @@ export default function (opts) {
             }
         },
         on(model, options) {
-            options = options || {};
+            const redo_options = clone(options) || {};
 
             const afterAttributes = model.changedAttributes();
             const keysAfter = _.keys(afterAttributes);
@@ -112,7 +115,7 @@ export default function (opts) {
                 before: [],
             };
 
-            options.unsetData = unsetData;
+            redo_options.unsetData = unsetData;
 
             if (keysAfter.length !== keysPrevious.length) {
                 // There are new attributes or old attributes have been unset
@@ -138,7 +141,7 @@ export default function (opts) {
                     object: model,
                     before: previousAttributes,
                     after: afterAttributes,
-                    options: clone(options),
+                    options: redo_options,
                 };
             }
 
@@ -148,20 +151,23 @@ export default function (opts) {
 
     undo_manager.changeUndoType('remove', {
         undo(collection, model, ignore, options) {
-            if ('index' in options) {
-                options.at = options.index;
+            const undo_options = clone(options);
+            const undo_model = model;
+
+            if ('index' in undo_options) {
+                undo_options.at = undo_options.index;
             }
 
-            if (model.id) {
-                delete model.id;
+            if (undo_model.id) {
+                delete undo_model.id;
             }
 
-            if (model.attributes.id) {
-                delete model.attributes.id;
+            if (undo_model.attributes.id) {
+                delete undo_model.attributes.id;
             }
 
-            collection.add(model, options);
-            model.persist({}, {
+            collection.add(undo_model, undo_options);
+            undo_model.persist({}, {
                 validate: true,
                 parse: true,
             });

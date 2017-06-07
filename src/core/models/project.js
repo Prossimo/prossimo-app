@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import clone from 'clone';
 import Backbone from 'backbone';
 
 import App from '../../main';
@@ -60,10 +61,12 @@ export default Backbone.Model.extend({
     },
     sync(method, model, options) {
         const properties_to_omit = ['id'];
+        const current_model = model;
+        const current_options = clone(options);
 
         if (method === 'update' || method === 'create') {
             const extended_props = {
-                settings: JSON.stringify(model.settings.toJSON()),
+                settings: JSON.stringify(current_model.settings.toJSON()),
             };
 
             //  The logic here:
@@ -79,12 +82,12 @@ export default Backbone.Model.extend({
             //    `files` array in our request at all, and this guarantees
             //    that there won't be any changes with linked files
             if (method === 'create') {
-                extended_props.files = model.getUuidsForFiles();
+                extended_props.files = current_model.getUuidsForFiles();
             }
 
-            options.attrs = {
+            current_options.attrs = {
                 project: _.extendOwn(
-                    _.omit(model.toJSON(), properties_to_omit),
+                    _.omit(current_model.toJSON(), properties_to_omit),
                     extended_props,
                 ),
             };
@@ -96,19 +99,19 @@ export default Backbone.Model.extend({
         //  need to constantly monitor changes made by other users, but
         //  that should be a separate concern
         if (method === 'read') {
-            const successCallback = options.success;
+            const successCallback = current_options.success;
 
             //  This is similar to what they do in the original Model.fetch
-            options.success = (response) => {
-                model._wasFetched = true;
+            current_options.success = (response) => {
+                current_model._wasFetched = true;
 
                 if (successCallback) {
-                    successCallback.call(model, response, options);
+                    successCallback.call(current_model, response, current_options);
                 }
             };
         }
 
-        return Backbone.sync.call(this, method, model, options);
+        return Backbone.sync.call(this, method, current_model, current_options);
     },
     parse(data) {
         const project_data = data && data.project ? data.project : data;
@@ -213,14 +216,11 @@ export default Backbone.Model.extend({
     //  Return { name: 'name', title: 'Title' } pairs for each item in
     //  `names` array. If the array is empty, return all possible pairs
     getNameTitleTypeHash(names) {
+        const selected_names = names || _.pluck(PROJECT_PROPERTIES, 'name');
         const name_title_hash = [];
 
-        if (!names) {
-            names = _.pluck(PROJECT_PROPERTIES, 'name');
-        }
-
         _.each(PROJECT_PROPERTIES, (item) => {
-            if (_.indexOf(names, item.name) !== -1) {
+            if (_.indexOf(selected_names, item.name) !== -1) {
                 name_title_hash.push({ name: item.name, title: item.title, type: item.type });
             }
         });
@@ -238,9 +238,9 @@ export default Backbone.Model.extend({
         }
 
         const quote_mode = options.quote_mode || 'current';
-        let quotes_units_data = [];
         const current_quote = App.current_quote;
         const default_quote = this.quotes.getDefaultQuote();
+        let quotes_units_data = [];
 
         if (quote_mode === 'current') {
             quotes_units_data = current_quote ?

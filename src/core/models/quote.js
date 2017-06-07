@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import clone from 'clone';
 import Backbone from 'backbone';
 
 import Schema from '../../schema';
@@ -46,11 +47,13 @@ export default Backbone.Model.extend({
         return target_attribute ? target_attribute.type : undefined;
     },
     sync(method, model, options) {
+        const request_options = clone(options);
+
         if (method === 'create' || method === 'update') {
-            options.attrs = { quote: model.toJSON() };
+            request_options.attrs = { quote: model.toJSON() };
         }
 
-        return Backbone.sync.call(this, method, model, options);
+        return Backbone.sync.call(this, method, model, request_options);
     },
     parse(data) {
         const quote_data = data && data.quote ? data.quote : data;
@@ -91,14 +94,11 @@ export default Backbone.Model.extend({
     //  Return { name: 'name', title: 'Title' } pairs for each item in
     //  `names` array. If the array is empty, return all possible pairs
     getNameTitleTypeHash(names) {
+        const selected_names = names || _.pluck(QUOTE_PROPERTIES, 'name');
         const name_title_hash = [];
 
-        if (!names) {
-            names = _.pluck(QUOTE_PROPERTIES, 'name');
-        }
-
         _.each(QUOTE_PROPERTIES, (item) => {
-            if (_.indexOf(names, item.name) !== -1) {
+            if (_.indexOf(selected_names, item.name) !== -1) {
                 name_title_hash.push({ name: item.name, title: item.title, type: item.type });
             }
         });

@@ -1,6 +1,7 @@
 import Marionette from 'backbone.marionette';
 import $ from 'jquery';
 import _ from 'underscore';
+import clone from 'clone';
 
 import App from '../../main';
 import { globalChannel } from '../../utils/radio';
@@ -77,8 +78,10 @@ export default Marionette.View.extend({
         //  Append each navigation item
         if (this.options) {
             _.forEach(this.options, (item, key) => {
-                item.class_name = key;
-                const item_tpl = templateItem(item);
+                const current_item = _.extend({}, clone(item), {
+                    class_name: key,
+                });
+                const item_tpl = templateItem(current_item);
                 const $item = $(item_tpl);
 
                 this.ui.$list.append($item);

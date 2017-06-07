@@ -23,12 +23,8 @@ export default {
         const defaults = {
             allow_id: true,
         };
-
-        options = _.defaults({}, options, defaults);
-
-        const allowed_properties = options.allow_id ?
-            _.union(_.keys(schema), ['id']) :
-            _.keys(schema);
+        const current_options = _.defaults({}, options, defaults);
+        const allowed_properties = current_options.allow_id ? _.union(_.keys(schema), ['id']) : _.keys(schema);
         const parsed_data = {};
 
         _.each(model_data, (value, key) => {

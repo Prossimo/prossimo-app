@@ -66,18 +66,17 @@ export default Backbone.Model.extend({
         return default_value;
     },
     getPdfDownloadUrl(quote_type) {
-        quote_type = _.contains(['quote', 'supplier'], quote_type) ? quote_type : 'quote';
-
+        const current_quote_type = _.contains(['quote', 'supplier'], quote_type) ? quote_type : 'quote';
         const base_url = this.get('pdf_api_base_path');
-        let url = '/:type/:quote_id/:project_name/:quote_name/:revision/:token';
         const replacement_table = {
-            ':type': quote_type,
+            ':type': current_quote_type,
             ':quote_id': String(App.current_quote.getNumber()),
             ':project_name': encodeURIComponent(App.current_project.get('project_name')),
             ':quote_name': encodeURIComponent(App.current_quote.get('name')),
             ':revision': String(App.current_quote.get('revision')),
             ':token': window.localStorage.getItem('authToken'),
         };
+        let url = '/:type/:quote_id/:project_name/:quote_name/:revision/:token';
 
         url = url.replace(/:\w+/g, match => replacement_table[match] || match);
 
@@ -188,14 +187,11 @@ export default Backbone.Model.extend({
         });
     },
     getNameTitleTypeHash(names) {
+        const selected_names = names || _.pluck(SETTINGS_PROPERTIES, 'name');
         const name_title_type_hash = {};
 
-        if (!names) {
-            names = _.pluck(SETTINGS_PROPERTIES, 'name');
-        }
-
         _.each(SETTINGS_PROPERTIES, (item) => {
-            if (_.indexOf(names, item.name) !== -1) {
+            if (_.indexOf(selected_names, item.name) !== -1) {
                 name_title_type_hash[item.name] = { title: item.title, type: item.type };
             }
         });

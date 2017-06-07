@@ -46,12 +46,12 @@ export default Marionette.View.extend({
         }
 
         function getFillingArea(width, height, suffix_format) {
-            suffix_format = suffix_format || 'sup';
+            const current_suffix_format = suffix_format || 'sup';
 
             const result = view.display_options.show_sizes_in_mm ?
                 format.square_meters(math.square_meters(width, height)) :
                 format.square_feet(math.square_feet(convert.mm_to_inches(width),
-                    convert.mm_to_inches(height)), 2, suffix_format);
+                    convert.mm_to_inches(height)), 2, current_suffix_format);
 
             return result;
         }

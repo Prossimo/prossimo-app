@@ -29,9 +29,6 @@
     ],
     "camelcase": "off",
     "no-underscore-dangle": "off",
-    "no-console": "error",
-    //  TODO: We actually want to enable the following rules, but
-    //  we need to make updates to our code first
-    "no-param-reassign": "warn"
+    "no-console": "error"
   }
 }

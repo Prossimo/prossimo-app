@@ -119,20 +119,22 @@ export default Marionette.View.extend({
     },
     processAlways(e, data) {
         _.each(data.files, (file) => {
-            file.previewContainer = this.createEmptyPreview();
+            const current_file = file;
 
-            if (file.preview && !file.error && this.options.showPreview) {
-                file.previewContainer.prepend(file.preview);
+            current_file.previewContainer = this.createEmptyPreview();
+
+            if (current_file.preview && !current_file.error && this.options.showPreview) {
+                current_file.previewContainer.prepend(current_file.preview);
             }
 
-            if (file.error) {
-                this.fileUploadedError(file.previewContainer, file.error);
+            if (current_file.error) {
+                this.fileUploadedError(current_file.previewContainer, current_file.error);
             }
 
-            file.previewContainer
+            current_file.previewContainer
                 .prepend($('<span/>', {
                     class: this.options.previewOpts.prevTitleClass,
-                    html: file.name,
+                    html: current_file.name,
                 }))
                 .fadeIn();
         });

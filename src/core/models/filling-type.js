@@ -1,4 +1,5 @@
 import Backbone from 'backbone';
+import clone from 'clone';
 import _ from 'underscore';
 
 import Schema from '../../schema';
@@ -84,11 +85,13 @@ export default Backbone.Model.extend({
         return default_value;
     },
     sync(method, model, options) {
+        const current_options = clone(options);
+
         if (method === 'create' || method === 'update') {
-            options.attrs = { filling_type: model.toJSON() };
+            current_options.attrs = { filling_type: model.toJSON() };
         }
 
-        return Backbone.sync.call(this, method, model, options);
+        return Backbone.sync.call(this, method, model, current_options);
     },
     parse(data) {
         const filling_type_data = data && data.filling_type ? data.filling_type : data;
@@ -188,14 +191,11 @@ export default Backbone.Model.extend({
     //  Return { name: 'name', title: 'Title', type: 'type' } objects for
     //  each item in `names`. If `names` is empty, return everything
     getNameTitleTypeHash(names) {
+        const selected_names = names || _.pluck(FILLING_TYPE_PROPERTIES, 'name');
         const name_title_hash = [];
 
-        if (!names) {
-            names = _.pluck(FILLING_TYPE_PROPERTIES, 'name');
-        }
-
         _.each(FILLING_TYPE_PROPERTIES, (item) => {
-            if (_.indexOf(names, item.name) !== -1) {
+            if (_.indexOf(selected_names, item.name) !== -1) {
                 name_title_hash.push({ name: item.name, title: item.title, type: item.type });
             }
         });
