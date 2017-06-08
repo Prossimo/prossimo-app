@@ -413,25 +413,30 @@ function getInvertedDivider(type) {
     return new_type;
 }
 
-function findParent(root, childId) {
-    if (root.sections.length === 0) {
+function findParent(current_root, childId) {
+    if (current_root.sections.length === 0) {
         return null;
     }
 
-    if (root.sections[0].id === childId || root.sections[1].id === childId) {
-        return root;
+    if (current_root.sections[0].id === childId || current_root.sections[1].id === childId) {
+        return current_root;
     }
 
-    return findParent(root.sections[0], childId) || findParent(root.sections[1], childId);
+    return findParent(current_root.sections[0], childId) || findParent(current_root.sections[1], childId);
 }
 
-// static function
-// it will find section with passed id from passed section and all its children
-// via nested search
-export const findSection = function findNestedSection(section, sectionId) {
+//  Static function. Find section with passed id inside passed section and all
+//  of its children, via nested search. It also returns section parent and
+//  section index in parent's list of sections, and this gives us an insertion
+//  point if we're about to update the target section
+export const findSection = function findNestedSection(rootSection, targetSectionId) {
     function findNested(sec, id) {
         if (sec.id === id) {
-            return sec;
+            return {
+                section: sec,
+                parent: undefined,
+                index: undefined,
+            };
         }
 
         if (!sec.sections) {
@@ -439,17 +444,21 @@ export const findSection = function findNestedSection(section, sectionId) {
         }
 
         for (let i = 0; i < sec.sections.length; i += 1) {
-            const found = findNested(sec.sections[i], sectionId);
+            const { section, parent, index } = findNested(sec.sections[i], id) || {};
 
-            if (found) {
-                return found;
+            if (section) {
+                return {
+                    section,
+                    parent: parent || sec,
+                    index: index !== undefined ? index : i,
+                };
             }
         }
 
         return null;
     }
 
-    return findNested(section, sectionId);
+    return findNested(rootSection, targetSectionId) || {};
 };
 
 const Unit = Backbone.Model.extend({
@@ -1152,7 +1161,7 @@ const Unit = Backbone.Model.extend({
         return pricing_data;
     },
     getSection(sectionId) {
-        return findSection(this.generateFullRoot(), sectionId);
+        return findSection(this.generateFullRoot(), sectionId).section;
     },
     //  Right now we think that door is something where profile
     //  returns `true` on `hasOutsideHandle` call
@@ -1172,35 +1181,36 @@ const Unit = Backbone.Model.extend({
         return this.get('opening_direction') === 'Inward';
     },
     isCircularPossible(sashId) {
-        const root = this.generateFullRoot();
+        const current_root = this.generateFullRoot();
 
-        return !findParent(root, sashId) && !root.trapezoidHeights;
+        return !findParent(current_root, sashId) && !current_root.trapezoidHeights;
     },
     getCircleRadius() {
-        const root = this.generateFullRoot();
+        const current_root = this.generateFullRoot();
 
-        if (root.circular) {
-            return root.radius;
+        if (current_root.circular) {
+            return current_root.radius;
         }
 
         return null;
     },
     isArchedPossible(sashId) {
-        const root = this.generateFullRoot();
+        const current_root = this.generateFullRoot();
+        const { section } = findSection(current_root, sashId);
 
-        if (root.trapezoidHeights) {
+        if (current_root.trapezoidHeights) {
             return false;
         }
 
-        if (findSection(root, sashId).sashType !== 'fixed_in_frame') {
+        if (section.sashType !== 'fixed_in_frame') {
             return false;
         }
 
-        if (root.id === sashId && root.sections.length === 0) {
+        if (current_root.id === sashId && current_root.sections.length === 0) {
             return true;
         }
 
-        let parent = findParent(root, sashId);
+        let parent = findParent(current_root, sashId);
 
         if (!parent) {
             return false;
@@ -1223,27 +1233,27 @@ const Unit = Backbone.Model.extend({
             }
 
             childId = parent.id;
-            parent = findParent(root, childId);
+            parent = findParent(current_root, childId);
         }
 
         return true;
     },
     getArchedPosition() {
-        let root = this.get('root_section');
+        let current_root = this.get('root_section');
         let archPosition = null;
 
-        if (root.arched) {
-            archPosition = root.archPosition;
+        if (current_root.arched) {
+            archPosition = current_root.archPosition;
         }
 
-        while (root) {
-            const topSection = root.sections && root.sections[0] && root.sections[0];
+        while (current_root) {
+            const topSection = current_root.sections && current_root.sections[0] && current_root.sections[0];
 
             if (topSection && topSection.arched) {
-                archPosition = root.position;
+                archPosition = current_root.position;
             }
 
-            root = topSection;
+            current_root = topSection;
         }
 
         return archPosition;
@@ -1278,22 +1288,30 @@ const Unit = Backbone.Model.extend({
         }
 
         const oldRoot = this.generateFullRoot();
-        const newRoot = clone(this.get('root_section'));
-        const sectionToUpdate = findSection(newRoot, sectionId);
+        let newRoot = clone(oldRoot);
+        const { section, parent, index } = findSection(newRoot, sectionId);
+        const updatedSection = func(section);
 
-        func(sectionToUpdate);
+        if (updatedSection && parent && index !== undefined) {
+            parent.sections[index] = updatedSection;
+        } else if (updatedSection && updatedSection.id === newRoot.id) {
+            newRoot = updatedSection;
+        }
+
+        newRoot = this.generateFullRoot(newRoot);
 
         this.getResizedSections(oldRoot, this.generateFullRoot(newRoot)).forEach((sash) => {
-            const section = findSection(newRoot, sash.id);
-            const oldSection = findSection(oldRoot, sash.id);
-            section.bars = this.redistributeBars(section, { oldSection });
+            const { section: currentSection } = findSection(newRoot, sash.id);
+            const { section: oldSection } = findSection(oldRoot, sash.id);
+
+            currentSection.bars = this.redistributeBars(currentSection, { oldSection });
         });
 
         this.persist('root_section', newRoot);
     },
     setCircular(sectionId, opts) {
         const root_section = clone(this.get('root_section'));
-        const section = findSection(root_section, sectionId);
+        const { section } = findSection(root_section, sectionId);
         const update_data = {};
 
         if (opts.radius) {
@@ -1368,19 +1386,44 @@ const Unit = Backbone.Model.extend({
 
         return result;
     },
+    toggleArched(sectionId) {
+        this._updateSection(sectionId, (section) => {
+            const updatedSection = clone(section);
+
+            updatedSection.arched = !updatedSection.arched;
+
+            if (this.isRootSection(updatedSection.id)) {
+                const width = this.getInMetric('width', 'mm');
+                const height = this.getInMetric('height', 'mm');
+
+                updatedSection.archPosition = Math.min(width / 2, height);
+            }
+
+            return updatedSection;
+        });
+    },
+    setSectionArchPosition(sectionId, archPosition) {
+        this._updateSection(sectionId, section => (
+            _.extend({}, clone(section), {
+                archPosition,
+            })
+        ));
+    },
     setSectionSashType(sectionId, type) {
         if (!_.includes(SASH_TYPES, type)) {
             throw new Error(`Unrecognized sash type: ${type}`);
         }
 
-        const full = this.generateFullRoot();
-        const fullSection = findSection(full, sectionId);
+        const { section: fullSection } = findSection(this.generateFullRoot(), sectionId);
 
-        // Update section
         this._updateSection(sectionId, (section) => {
-            section.sashType = type;
-            section.measurements.opening = false;
-            section.measurements.glass = false;
+            const updated_section = clone(section);
+
+            updated_section.sashType = type;
+            updated_section.measurements.opening = false;
+            updated_section.measurements.glass = false;
+
+            return updated_section;
         });
 
         //  Change all nested sections recursively
@@ -1389,14 +1432,18 @@ const Unit = Backbone.Model.extend({
         });
     },
     setSectionBars(sectionId, bars) {
-        this._updateSection(sectionId, (section) => {
-            section.bars = bars;
-        });
+        this._updateSection(sectionId, section => (
+            _.extend({}, clone(section), {
+                bars,
+            })
+        ));
     },
     setSectionMeasurements(sectionId, measurements) {
-        this._updateSection(sectionId, (section) => {
-            section.measurements = measurements;
-        });
+        this._updateSection(sectionId, section => (
+            _.extend({}, clone(section), {
+                measurements,
+            })
+        ));
     },
     getMeasurementStates(type) {
         const defaults = {
@@ -1600,7 +1647,7 @@ const Unit = Backbone.Model.extend({
         }
 
         const axes = (options && options.axes) ? options.axes : ['vertical', 'horizontal'];
-        const bars = clone(section.bars);
+        const redistributedBars = clone(section.bars);
         const precision = REDISTRIBUTE_BARS_PRECISION;
 
         // Algorithm for redistributing bars, for each of 2 axes:
@@ -1610,13 +1657,14 @@ const Unit = Backbone.Model.extend({
         //     2.2. Split the rest after extracting central group into left/top and right/bottom, align to respective sides
         //     2.3. Reconstitute whole bar axis from the above parts
 
-        const redistributedBars = clone(section.bars);
         axes.forEach((axis) => {
             const barType = (axis === 'vertical') ? 'horizontal' : 'vertical';
             const dimension = (axis === 'vertical') ? 'height' : 'width';
+
             if (!this.hasSectionBars(section.id, { types: barType })) { return; }
             if (section.glassParams[dimension] === oldSection.glassParams[dimension]) { return; }
-            const axisBars = bars[barType];
+
+            const axisBars = redistributedBars[barType];
             const axisLength = oldSection.glassParams[dimension];
             const newAxisLength = section.glassParams[dimension];
             const scalingFactor = newAxisLength / axisLength;
@@ -1648,14 +1696,16 @@ const Unit = Backbone.Model.extend({
             throw new Error(`Unknow filling type: ${type}`);
         }
 
-        this._updateSection(sectionId, (section) => {
-            section.fillingType = type;
-            section.fillingName = name;
-        });
+        this._updateSection(sectionId, section => (
+            _.extend({}, clone(section), {
+                fillingType: type,
+                fillingName: name,
+            })
+        ));
 
         //  We also change all nested sections recursively
         const full = this.generateFullRoot();
-        const fullSection = findSection(full, sectionId);
+        const { section: fullSection } = findSection(full, sectionId);
 
         _.each(fullSection.sections, (childSection) => {
             this.setFillingType(childSection.id, type, name);
@@ -1669,27 +1719,32 @@ const Unit = Backbone.Model.extend({
                 new_pos = section.minPosition;
             }
 
-            section.position = parseFloat(new_pos);
+            return _.extend({}, clone(section), {
+                position: parseFloat(new_pos),
+            });
         });
     },
     removeMullion(sectionId) {
-        this._updateSection(sectionId, (section) => {
-            section.divider = null;
-            section.sections = [];
-            section.position = null;
-        });
+        this._updateSection(sectionId, section => (
+            _.extend({}, clone(section), {
+                divider: null,
+                sections: [],
+                position: null,
+            })
+        ));
     },
     removeSash(sectionId) {
         const glazing_name = this.get('glazing');
         const profile_id = this.profile && this.profile.id;
 
-        this._updateSection(sectionId, (section) => {
-            section.sashType = 'fixed_in_frame';
-            _.assign(section, getDefaultFillingType(glazing_name, profile_id));
-            section.divider = null;
-            section.sections = [];
-            section.position = null;
-        });
+        this._updateSection(sectionId, section => (
+            _.extend({}, clone(section), {
+                sashType: 'fixed_in_frame',
+                divider: null,
+                sections: [],
+                position: null,
+            }, getDefaultFillingType(glazing_name, profile_id))
+        ));
     },
     splitSection(sectionId, type) {
         if (!_.includes(MULLION_TYPES, type)) {
@@ -1697,8 +1752,9 @@ const Unit = Backbone.Model.extend({
         }
 
         this._updateSection(sectionId, (section) => {
+            const updatedSection = clone(section);
             const full = this.generateFullRoot();
-            const fullSection = findSection(full, sectionId);
+            const { section: fullSection } = findSection(full, sectionId);
             const measurementType = getInvertedDivider(type).replace(/_invisible/, '');
             let position;
 
@@ -1715,10 +1771,10 @@ const Unit = Backbone.Model.extend({
 
                     if (crossing >= -100 && crossing <= width + 100) {
                         position = (maxHeight - minHeight) + 200;
-                        section.minPosition = position;
+                        updatedSection.minPosition = position;
 
                         if (position > fullSection.sashParams.y + fullSection.sashParams.height) {
-                            return;
+                            return null;
                         }
                     }
                 }
@@ -1727,26 +1783,28 @@ const Unit = Backbone.Model.extend({
                 position = fullSection.openingParams.x + (fullSection.openingParams.width / 2);
             }
 
-            section.divider = type;
-            section.sections = [getSectionDefaults(), getSectionDefaults()];
+            updatedSection.divider = type;
+            updatedSection.sections = [getSectionDefaults(), getSectionDefaults()];
             // Drop mullion dimension-points
-            section.measurements.mullion = {};
-            section.measurements.mullion[measurementType] = ['center', 'center'];
+            updatedSection.measurements.mullion = {};
+            updatedSection.measurements.mullion[measurementType] = ['center', 'center'];
             // Drop overlay glassSize metrics (openingSize still actually)
-            section.measurements.glass = false;
+            updatedSection.measurements.glass = false;
 
             // Reset bars parameter
-            section.bars = getDefaultBars();
+            updatedSection.bars = getDefaultBars();
 
-            if (section.fillingType && section.fillingName) {
-                section.sections[0].fillingType = section.fillingType;
-                section.sections[1].fillingType = section.fillingType;
+            if (updatedSection.fillingType && updatedSection.fillingName) {
+                updatedSection.sections[0].fillingType = updatedSection.fillingType;
+                updatedSection.sections[1].fillingType = updatedSection.fillingType;
 
-                section.sections[0].fillingName = section.fillingName;
-                section.sections[1].fillingName = section.fillingName;
+                updatedSection.sections[0].fillingName = updatedSection.fillingName;
+                updatedSection.sections[1].fillingName = updatedSection.fillingName;
             }
 
-            section.position = position;
+            updatedSection.position = position;
+
+            return updatedSection;
         });
     },
     // after full calulcalation section will be something like:
@@ -2038,13 +2096,13 @@ const Unit = Backbone.Model.extend({
     // so this function check all parent
     canAddSashToSection(sectionId) {
         const fullRoot = this.generateFullRoot();
-        const section = findSection(fullRoot, sectionId);
+        const { section } = findSection(fullRoot, sectionId);
 
         if (section.parentId === undefined) {
             return true;
         }
 
-        const parentSection = findSection(fullRoot, section.parentId);
+        const { section: parentSection } = findSection(fullRoot, section.parentId);
 
         if (parentSection.sashType !== 'fixed_in_frame') {
             return false;
@@ -2160,8 +2218,8 @@ const Unit = Backbone.Model.extend({
 
         const newestRoot = this.generateFullRoot();
         this.getResizedSections(oldRoot, newestRoot).forEach((sash) => {
-            const section = findSection(newestRoot, sash.id);
-            const oldSection = findSection(oldRoot, sash.id);
+            const { section } = findSection(newestRoot, sash.id);
+            const { section: oldSection } = findSection(oldRoot, sash.id);
             const redistributedBars = this.redistributeBars(section, { oldSection });
             this.setSectionBars(section.id, redistributedBars);
         });
@@ -2172,13 +2230,14 @@ const Unit = Backbone.Model.extend({
         const glazing_name = this.get('glazing');
 
         //  Similar to removeMullion but affects more properties
-        this._updateSection(rootId, (section) => {
-            section.divider = null;
-            section.sections = [];
-            section.position = null;
-            section.sashType = 'fixed_in_frame';
-            _.assign(section, getDefaultFillingType(glazing_name, profile_id));
-        });
+        this._updateSection(rootId, section => (
+            _.extend({}, clone(section), {
+                sashType: 'fixed_in_frame',
+                divider: null,
+                sections: [],
+                position: null,
+            }, getDefaultFillingType(glazing_name, profile_id))
+        ));
     },
     getResizedSections(oldRoot, newRoot) {
         const toObjectByKey = (array, key) => {
@@ -2194,6 +2253,7 @@ const Unit = Backbone.Model.extend({
         const newSashesById = toObjectByKey(newSashes, 'id');
         const changedSashes = _.filter(newSashesById, (sash) => {
             const oldSash = oldSashesById[sash.id];
+
             return oldSash && !_.isEqual(sash.filling, oldSash.filling);
         });
 
@@ -3153,23 +3213,26 @@ const Unit = Backbone.Model.extend({
             }
         }
     },
+    //  TODO: this should actually call updateSection, not update directly
     checkHorizontalSplit(rootSection, params) {
-        if (rootSection.sections && rootSection.sections.length) {
-            for (let i = 0; i < rootSection.sections.length; i += 1) {
-                this.checkHorizontalSplit(rootSection.sections[i], params);
+        const currentRoot = rootSection;
+
+        if (currentRoot.sections && currentRoot.sections.length) {
+            for (let i = 0; i < currentRoot.sections.length; i += 1) {
+                this.checkHorizontalSplit(currentRoot.sections[i], params);
             }
         }
 
-        if (rootSection.divider && rootSection.divider === 'horizontal' && rootSection.position) {
-            const crossing = this.getLineCrossingY(rootSection.position, params.corners.left, params.corners.right);
+        if (currentRoot.divider && currentRoot.divider === 'horizontal' && currentRoot.position) {
+            const crossing = this.getLineCrossingY(currentRoot.position, params.corners.left, params.corners.right);
 
             if (crossing >= -100) {
                 const maxHeight = convert.inches_to_mm(params.maxHeight);
                 const minHeight = convert.inches_to_mm(params.minHeight);
                 const position = (maxHeight - minHeight) + 250;
 
-                rootSection.minPosition = position;
-                rootSection.position = position;
+                currentRoot.minPosition = position;
+                currentRoot.position = position;
             }
         }
     },

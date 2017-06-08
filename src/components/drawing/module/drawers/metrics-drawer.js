@@ -1158,12 +1158,10 @@ export default Backbone.KonvaView.extend({
                 return archHeight;
             },
             setter(val) {
-                const current_val = val - vCorrection[0].size;
-                const id = root_section.id;
+                const archPosition = val - vCorrection[0].size;
+                const sectionId = root_section.id;
 
-                model._updateSection(id, (section) => {
-                    section.archPosition = current_val;
-                });
+                model.setSectionArchPosition(sectionId, archPosition);
             },
         };
 
@@ -1193,12 +1191,10 @@ export default Backbone.KonvaView.extend({
             setter(val) {
                 const new_val = val - vCorrection[1].size;
 
-                const id = model.get('root_section').id;
+                const sectionId = model.get('root_section').id;
                 const archPosition = model.getInMetric('height', 'mm') - new_val;
 
-                model._updateSection(id, (section) => {
-                    section.archPosition = archPosition;
-                });
+                model.setSectionArchPosition(sectionId, archPosition);
             },
         };
         metric = this.createVerticalMetric(metricSize, (nonArchHeight + vCorrection[0].size) * ratio, params);

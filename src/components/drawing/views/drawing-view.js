@@ -281,16 +281,7 @@ export default Marionette.View.extend({
             throw new Error('No sash selected');
         }
 
-        this.model._updateSection(this.state.selectedSashId, (section) => {
-            section.arched = !section.arched;
-
-            if (this.model.isRootSection(section.id)) {
-                const width = this.model.getInMetric('width', 'mm');
-                const height = this.model.getInMetric('height', 'mm');
-
-                section.archPosition = Math.min(width / 2, height);
-            }
-        });
+        this.model.toggleArched(this.state.selectedSashId);
     },
     handleCircularClick() {
         if (!this.state.selectedSashId) {
