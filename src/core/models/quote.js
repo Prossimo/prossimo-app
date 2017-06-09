@@ -1,5 +1,4 @@
 import _ from 'underscore';
-import clone from 'clone';
 import Backbone from 'backbone';
 
 import Schema from '../../schema';
@@ -47,7 +46,7 @@ export default Backbone.Model.extend({
         return target_attribute ? target_attribute.type : undefined;
     },
     sync(method, model, options) {
-        const request_options = clone(options);
+        const request_options = options;
 
         if (method === 'create' || method === 'update') {
             request_options.attrs = { quote: model.toJSON() };

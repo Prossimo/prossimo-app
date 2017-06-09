@@ -1,5 +1,4 @@
 import Backbone from 'backbone';
-import clone from 'clone';
 import _ from 'underscore';
 
 import Schema from '../../schema';
@@ -85,7 +84,7 @@ export default Backbone.Model.extend({
         return default_value;
     },
     sync(method, model, options) {
-        const current_options = clone(options);
+        const current_options = options;
 
         if (method === 'create' || method === 'update') {
             current_options.attrs = { filling_type: model.toJSON() };

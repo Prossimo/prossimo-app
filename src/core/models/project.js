@@ -1,5 +1,4 @@
 import _ from 'underscore';
-import clone from 'clone';
 import Backbone from 'backbone';
 
 import App from '../../main';
@@ -62,7 +61,7 @@ export default Backbone.Model.extend({
     sync(method, model, options) {
         const properties_to_omit = ['id'];
         const current_model = model;
-        const current_options = clone(options);
+        const current_options = options;
 
         if (method === 'update' || method === 'create') {
             const extended_props = {

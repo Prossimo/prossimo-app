@@ -1,6 +1,5 @@
 import Backbone from 'backbone';
 import _ from 'underscore';
-import clone from 'clone';
 import $ from 'jquery';
 
 import User from './user';
@@ -15,7 +14,7 @@ const backboneSync = Backbone.sync;
 Backbone.sync = function patchedBackboneSync(method, model, options) {
     const token = window.localStorage.getItem('authToken');
     const errorCallback = options.error;
-    const sync_options = clone(options);
+    const sync_options = options;
 
     sync_options.error = function syncError(xhr, textStatus, errorThrown) {
         //  We just received an 401 Unauthorized response. This means our
