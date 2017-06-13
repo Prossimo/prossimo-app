@@ -1326,9 +1326,12 @@ export default Backbone.KonvaView.extend({
         if (isEntryDoor && !isTiltSection) {
             rotateBase(0);
             rotateGrip(90);
-        } else if (isTiltSection) {
+        } else if (isTiltSection && isOutsideView) {
             rotateBase(90);
-            rotateGrip(0);
+            rotateGrip(90);
+        } else if (isTiltSection && isInsideView) {
+            rotateBase(-90);
+            rotateGrip(-90);
         } else {
             rotateBase(0);
             rotateGrip(0);
