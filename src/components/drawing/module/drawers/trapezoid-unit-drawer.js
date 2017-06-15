@@ -1618,12 +1618,11 @@ export default Backbone.KonvaView.extend({
         const isOutsideView = !isInsideView;
         const hasOutsideHandle = model.profile.hasOutsideHandle();
         const isEntryDoor = model.profile.isEntryDoor();
-        const isVisible = isInsideView || (isOutsideView && hasOutsideHandle);
-        const isInvisible = !isVisible;
         const pos = {
             x: null,
             y: null,
-            rotation: 0,
+            baseRotation: 0,
+            gripRotation: 0,
             scale: { x: 1, y: 1 },
         };
         const positionLeft = () => {
@@ -1649,17 +1648,18 @@ export default Backbone.KonvaView.extend({
                 pos.y = (section.sashParams.height / 2) - handle_data.base.rotationCenter.y;
             }
         };
-        const positionRightTilt = () => {
+        const positionTop = () => {
             pos.x = (section.sashParams.width / 2) - handle_data.base.rotationCenter.x;
-            if (section.trapezoid && section.trapezoid.frame) {
-                const frame_outer_y = section.trapezoid.frame.outer[0].y > section.trapezoid.frame.outer[1].y ?
-                    section.trapezoid.frame.outer[1].y :
-                    section.trapezoid.frame.outer[0].y;
-                pos.y = ((Math.abs(section.trapezoid.frame.outer[0].y - section.trapezoid.frame.outer[1].y) / 2) +
-                    offset + frame_outer_y) - handle_data.base.rotationCenter.y;
-            } else {
-                pos.y = offset - handle_data.base.rotationCenter.y;
-            }
+            pos.y = (section.trapezoid && section.trapezoid.frame)
+                ? ((Math.abs(section.trapezoid.frame.outer[0].y - section.trapezoid.frame.outer[1].y) / 2)
+                + offset
+                + (
+                    (section.trapezoid.frame.outer[0].y > section.trapezoid.frame.outer[1].y)
+                        ? section.trapezoid.frame.outer[1].y :
+                        section.trapezoid.frame.outer[0].y
+                ))
+                - handle_data.base.rotationCenter.y
+                : offset - handle_data.base.rotationCenter.y;
         };
         const positionUnder = () => {
             const fixes = handle.getAttr('fixes') || [];
@@ -1669,7 +1669,20 @@ export default Backbone.KonvaView.extend({
             const fixes = handle.getAttr('fixes') || [];
             handle.setAttrs({ fixes: fixes.concat('positionOver') });
         };
-        const rotate = (angle) => { pos.rotation = angle; };
+        const rotateBase = (angle) => { pos.baseRotation = angle; };
+        const rotateGrip = (angle) => { pos.gripRotation = angle; };
+        const getFrameAngle = () => {
+            let angle;
+            if (section.trapezoid && section.trapezoid.frame) {
+                const [bottomX, bottomY] = [section.trapezoid.frame.outer[0].x, section.trapezoid.frame.outer[0].y];
+                const [topX, topY] = [section.trapezoid.frame.outer[1].x, section.trapezoid.frame.outer[1].y];
+                const sidesRatio = (bottomY - topY) / (topX - bottomX);
+                angle = 90 - ((Math.atan(sidesRatio) * 180) / Math.PI);
+            } else {
+                angle = 90;
+            }
+            return angle;
+        };
         const isLeftHandle = (type === 'tilt_turn_right' || type === 'turn_only_right' ||
             type === 'slide-right' || type === 'flush-turn-right' ||
             type === 'slide_left' || type === 'tilt_slide_left');
@@ -1677,6 +1690,8 @@ export default Backbone.KonvaView.extend({
             type === 'slide-left' || type === 'flush-turn-left' ||
             type === 'slide_right' || type === 'tilt_slide_right');
         const isTiltSection = (type === 'tilt_only');
+        const isVisible = isInsideView || (isOutsideView && hasOutsideHandle && !isTiltSection);
+        const isInvisible = !isVisible;
 
         if (isVisible) {
             positionOver();
@@ -1689,13 +1704,21 @@ export default Backbone.KonvaView.extend({
         } else if (isRightHandle) {
             positionRight();
         } else if (isTiltSection) {
-            positionRightTilt();
+            positionTop();
         }
 
-        if (isEntryDoor) {
-            rotate(90);
+        if (isEntryDoor && !isTiltSection) {
+            rotateBase(0);
+            rotateGrip(90);
+        } else if (isTiltSection && isOutsideView) {
+            rotateBase(getFrameAngle());
+            rotateGrip(getFrameAngle());
+        } else if (isTiltSection && isInsideView) {
+            rotateBase(getFrameAngle() - 180);
+            rotateGrip(getFrameAngle() - 180);
         } else {
-            rotate(0);
+            rotateBase(0);
+            rotateGrip(0);
         }
 
         // Create a group of 2 paths (stroke and backdrop) from SVG path data
@@ -1710,12 +1733,26 @@ export default Backbone.KonvaView.extend({
             name: 'handleBaseBg',
             fill: style.default.base.fill,
             data: handle_data.base.fill,
+            x: handle_data.base.rotationCenter.x,
+            y: handle_data.base.rotationCenter.y,
+            rotation: pos.baseRotation,
+            offset: {
+                x: handle_data.base.rotationCenter.x,
+                y: handle_data.base.rotationCenter.y,
+            },
         });
         const handleBaseStroke = new Konva.Path({
             name: 'handleBaseStroke',
             stroke: style.default.base.stroke,
             strokeWidth: style.default.base.strokeWidth,
             data: handle_data.base.stroke,
+            x: handle_data.base.rotationCenter.x,
+            y: handle_data.base.rotationCenter.y,
+            rotation: pos.baseRotation,
+            offset: {
+                x: handle_data.base.rotationCenter.x,
+                y: handle_data.base.rotationCenter.y,
+            },
         });
         const handleGripBg = new Konva.Path({
             name: 'handleGripBg',
@@ -1723,7 +1760,7 @@ export default Backbone.KonvaView.extend({
             data: handle_data.grip.fill,
             x: handle_data.base.rotationCenter.x,
             y: handle_data.base.rotationCenter.y,
-            rotation: pos.rotation,
+            rotation: pos.gripRotation,
             offset: {
                 x: handle_data.base.rotationCenter.x,
                 y: handle_data.base.rotationCenter.y,
@@ -1736,7 +1773,7 @@ export default Backbone.KonvaView.extend({
             data: handle_data.grip.stroke,
             x: handle_data.base.rotationCenter.x,
             y: handle_data.base.rotationCenter.y,
-            rotation: pos.rotation,
+            rotation: pos.gripRotation,
             offset: {
                 x: handle_data.base.rotationCenter.x,
                 y: handle_data.base.rotationCenter.y,
