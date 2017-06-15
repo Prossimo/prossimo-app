@@ -91,7 +91,9 @@ export default Backbone.Model.extend({
             multiunit_subunits: (name === 'multiunit_subunits') ? new MultiunitSubunitCollection(null, {
                 units: this.getParentQuoteUnits(),
             }) : [],
-            root_section: (name === 'root_section') ? { id: _.uniqueId(), connectors: [] } : '',
+            root_section: (name === 'root_section') ?
+                { id: _.uniqueId(), originCoords: { x: 0, y: 0 }, connectors: [] } :
+                '',
         };
 
         if (_.indexOf(_.keys(type_value_hash), type) !== -1) {
@@ -440,8 +442,25 @@ export default Backbone.Model.extend({
     },
     // Updates multiunit width/height based on subunit sizes & positions
     recalculateSizes() {
-        const subunitPositionsTree = this.getSubunitsCoordinatesTree();
-        const rect = this.subunitsTreeGetRect(subunitPositionsTree);
+        const isFloating = (coordTree) => {
+            let result = true;
+            this.subunitsTreeForEach(coordTree, (node) => {
+                if (node.y === 0) { result = false; }
+            });
+            return result;
+        };
+        const isOverhung = rect => rect.y < 0;
+        const coordTree = this.getSubunitsCoordinatesTree();
+        let rect = this.subunitsTreeGetRect(coordTree);
+
+        if (isOverhung(rect)) {
+            this.shiftOrigin({ offsetY: -rect.y });
+            rect = this.subunitsTreeGetRect(this.getSubunitsCoordinatesTree());
+        } else if (isFloating(coordTree)) {
+            const originY = this.get('root_section').originCoords.y;
+            this.shiftOrigin({ offsetY: -originY });
+            rect = this.subunitsTreeGetRect(this.getSubunitsCoordinatesTree());
+        }
 
         this._cache.width = convert.mm_to_inches(rect.width);
         this._cache.height = convert.mm_to_inches(rect.height);
@@ -557,6 +576,7 @@ export default Backbone.Model.extend({
     getSubunitsCoordinatesTree(options) {
         const self = this;
         const flipX = options && options.flipX;
+        const originCoords = this.get('root_section').originCoords;
         const subunitsTree = this.getSubunitsTree();
 
         this.subunitsTreeForEach(subunitsTree, (node) => {
@@ -567,8 +587,8 @@ export default Backbone.Model.extend({
             if (isOrigin) {
                 node.width = node.unit.getInMetric('width', 'mm');
                 node.height = node.unit.getInMetric('height', 'mm');
-                node.x = 0;
-                node.y = 0;
+                node.x = (originCoords && originCoords.x) || 0;
+                node.y = (originCoords && originCoords.y) || 0;
             } else {
                 const width = node.unit.getInMetric('width', 'mm');
                 const height = node.unit.getInMetric('height', 'mm');
@@ -955,6 +975,17 @@ export default Backbone.Model.extend({
         const connectors = this.get('root_section').connectors;
 
         connectors.forEach(connector => this.updateConnectorLength(connector));
+    },
+    shiftOrigin(options) {
+        if (!options) { return; }
+        const [offsetX, offsetY] = [options.offsetX, options.offsetY];
+        const rootSection = this.get('root_section');
+        if (!rootSection.originCoords) { rootSection.originCoords = { x: 0, y: 0 }; }
+        const originCoords = rootSection.originCoords;
+
+        if (offsetX) { originCoords.x += offsetX; }
+        if (offsetY) { originCoords.y += offsetY; }
+        if ((offsetX || offsetY) && options.success) { options.success(); }
     },
     //  Drawing representation for multiunits includes subunits as well,
     //  so if any subunit did change, we want to redraw multiunut preview
