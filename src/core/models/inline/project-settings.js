@@ -29,9 +29,9 @@ export default Backbone.Model.extend({
     defaults() {
         const defaults = {};
 
-        _.each(PROJECT_SETTINGS_PROPERTIES, function (item) {
+        _.each(PROJECT_SETTINGS_PROPERTIES, (item) => {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
-        }, this);
+        });
 
         return defaults;
     },
@@ -69,14 +69,11 @@ export default Backbone.Model.extend({
     //  Return { name: 'name', title: 'Title' } pairs for each item in
     //  `names` array. If the array is empty, return all possible pairs
     getNameTitleTypeHash(names) {
+        const selected_names = names || _.pluck(PROJECT_SETTINGS_PROPERTIES, 'name');
         const name_title_hash = [];
 
-        if (!names) {
-            names = _.pluck(PROJECT_SETTINGS_PROPERTIES, 'name');
-        }
-
         _.each(PROJECT_SETTINGS_PROPERTIES, (item) => {
-            if (_.indexOf(names, item.name) !== -1) {
+            if (_.indexOf(selected_names, item.name) !== -1) {
                 name_title_hash.push({ name: item.name, title: item.title, type: item.type });
             }
         });

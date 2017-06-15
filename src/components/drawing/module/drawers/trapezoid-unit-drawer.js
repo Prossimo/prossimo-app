@@ -470,22 +470,6 @@ export default Backbone.KonvaView.extend({
             name: 'arcEdge',
         });
 
-        // Calculate and draw arched parts of sash frame
-        let uPoints = [
-            { x: 0, y: 0 },
-            { x: 0, y: 0 + opts.height },
-            { x: 0 + opts.width, y: 0 + opts.height },
-            { x: 0 + opts.width, y: 0 },
-        ];
-
-        // Convert every point into absolute position
-        _.each(uPoints, (point) => {
-            point.x += opts.absX;
-            point.y += opts.absY;
-        });
-        // Convert points to vectors relative to the center point of unit
-        uPoints = vector2d.points_to_vectors(uPoints, opts.center);
-
         arcEdge.add(
             new Konva.Arc({
                 x: opts.arcCenter.x,
@@ -640,6 +624,7 @@ export default Backbone.KonvaView.extend({
     },
 
     createInnerTrapezoidFrame(section, params) {
+        const current_section = section;
         const frameWidth = params.frameWidth;
         const width = params.width;
         const height = params.height;
@@ -673,11 +658,11 @@ export default Backbone.KonvaView.extend({
             ],
         };
 
-        if (!section.trapezoid) {
-            section.trapezoid = {};
+        if (!current_section.trapezoid) {
+            current_section.trapezoid = {};
         }
 
-        section.trapezoid.frame = points;
+        current_section.trapezoid.frame = points;
 
         const style = module.getStyle('frame');
 
@@ -997,20 +982,18 @@ export default Backbone.KonvaView.extend({
         return group;
     },
     clipCircle(group, params) {
-        const root = model.generateFullRoot();
-
-        params = params || {};
-        params = _.defaults(params, {
+        const current_root = model.generateFullRoot();
+        const current_params = _.defaults(params || {}, {
             x: 0,
             y: 0,
-            radius: root.radius,
+            radius: current_root.radius,
         });
 
-        if (root.circular && params.radius > 0) {
+        if (current_root.circular && current_params.radius > 0) {
             group.clipType('circle');
-            group.clipX(params.x - 2);
-            group.clipY(params.y - 2);
-            group.clipRadius(params.radius + 2);
+            group.clipX(current_params.x - 2);
+            group.clipY(current_params.y - 2);
+            group.clipRadius(current_params.radius + 2);
         }
     },
     createCircleFrame(params) {
@@ -1365,7 +1348,6 @@ export default Backbone.KonvaView.extend({
         group.add(arrow);
         return group;
     },
-    /* eslint-disable max-statements */
     createSash(sectionData) {
         let group = new Konva.Group({
             x: sectionData.sashParams.x,
@@ -1609,7 +1591,6 @@ export default Backbone.KonvaView.extend({
 
         return group;
     },
-    /* eslint-enable max-statements */
     shouldDrawHandle(type) {
         let result = false;
 
@@ -1985,13 +1966,12 @@ export default Backbone.KonvaView.extend({
     },
     createSectionIndexes(mainSection, indexes) {
         const view = this;
-        let result = [];
-
-        indexes = indexes || {
+        const current_indexes = indexes || {
             main: 0,
             add: null,
             parent: null,
         };
+        let result = [];
 
         // If section has children, create Indexes for them recursively
         if (mainSection.sections.length) {
@@ -2001,19 +1981,19 @@ export default Backbone.KonvaView.extend({
 
             mainSection.sections.forEach((section) => {
                 if (mainSection.sashType !== 'fixed_in_frame') {
-                    indexes.parent = mainSection;
+                    current_indexes.parent = mainSection;
                 }
 
                 if (!section.sections.length) {
-                    indexes.add += 1;
+                    current_indexes.add += 1;
                 }
 
-                result = result.concat(view.createSectionIndexes(section, indexes));
+                result = result.concat(view.createSectionIndexes(section, current_indexes));
             });
 
         // If section has no child sections, create Index for it
         } else {
-            let text = (indexes.main + 1);
+            let text = (current_indexes.main + 1);
             let position = {
                 x: (
                     mainSection.glassParams.x - mainSection.sashParams.x
@@ -2027,16 +2007,16 @@ export default Backbone.KonvaView.extend({
                 height: mainSection.glassParams.height,
             };
 
-            if (indexes.add !== null) {
-                text += `.${indexes.add}`;
+            if (current_indexes.add !== null) {
+                text += `.${current_indexes.add}`;
 
-                if (indexes.parent) {
+                if (current_indexes.parent) {
                     position = {
                         x: (
-                            mainSection.glassParams.x - indexes.parent.sashParams.x
+                            mainSection.glassParams.x - current_indexes.parent.sashParams.x
                         ),
                         y: (
-                            mainSection.glassParams.y - indexes.parent.sashParams.y
+                            mainSection.glassParams.y - current_indexes.parent.sashParams.y
                         ),
                     };
                     size = {
@@ -2117,12 +2097,13 @@ export default Backbone.KonvaView.extend({
         return group;
     },
     createFilling(section, params) {
+        const current_section = section;
         const fillX = params.x;
         const fillY = params.y;
         const fillWidth = params.width;
         const fillHeight = params.height;
         const wrapper = params.wrapper;
-        const isLouver = section.fillingType === 'louver';
+        const isLouver = current_section.fillingType === 'louver';
         const frameWidth = params.frameWidth || model.profile.get('frame_width');
         const style = module.getStyle('fillings');
         const group = new Konva.Group({ name: 'filling' });
@@ -2140,11 +2121,11 @@ export default Backbone.KonvaView.extend({
         let points;
 
         // Arched
-        if (section.arched) {
+        if (current_section.arched) {
             const arcPos = model.getArchedPosition();
 
             opts = {
-                sectionId: section.id,
+                sectionId: current_section.id,
                 x: fillX,
                 y: fillY,
                 fill: style.glass.fill,
@@ -2167,11 +2148,11 @@ export default Backbone.KonvaView.extend({
             };
 
         // Circular
-        } else if (section.circular || params.radius) {
-            const radius = params.radius || section.radius - frameWidth;
+        } else if (current_section.circular || params.radius) {
+            const radius = params.radius || current_section.radius - frameWidth;
 
             opts = {
-                sectionId: section.id,
+                sectionId: current_section.id,
                 x: fillX,
                 y: fillY,
                 fill: style.glass.fill,
@@ -2195,7 +2176,7 @@ export default Backbone.KonvaView.extend({
         // Default
         } else if (!crossing.left && !crossing.right) {
             opts = {
-                sectionId: section.id,
+                sectionId: current_section.id,
                 x: fillX,
                 y: fillY,
                 width: fillWidth,
@@ -2212,9 +2193,12 @@ export default Backbone.KonvaView.extend({
                     ctx.fillStrokeShape(this);
                 },
             };
-        } else if (section.sashType === 'fixed_in_frame') {
-            const emptyCrossing = (!crossing.left || !crossing.right) ?
-                ((!crossing.left) ? 'left' : 'right') : '';
+        } else if (current_section.sashType === 'fixed_in_frame') {
+            let emptyCrossing = '';
+
+            if (!crossing.left || !crossing.right) {
+                emptyCrossing = !crossing.left ? 'left' : 'right';
+            }
 
             if (emptyCrossing) {
                 const innerCorners = model.getMainTrapezoidInnerCorners();
@@ -2229,20 +2213,20 @@ export default Backbone.KonvaView.extend({
                 };
             }
 
-            if (!section.trapezoid) {
-                section.trapezoid = {};
+            if (!current_section.trapezoid) {
+                current_section.trapezoid = {};
             }
 
-            section.trapezoid.glass = [
+            current_section.trapezoid.glass = [
                 { x: 0, y: crossing.left.y - wrapper.y },
                 { x: fillWidth, y: crossing.right.y - wrapper.y },
                 { x: fillWidth, y: fillHeight },
                 { x: 0, y: fillHeight },
             ];
-            points = section.trapezoid.glass;
+            points = current_section.trapezoid.glass;
 
             opts = {
-                sectionId: section.id,
+                sectionId: current_section.id,
                 x: fillX,
                 y: fillY,
                 width: fillWidth,
@@ -2280,20 +2264,20 @@ export default Backbone.KonvaView.extend({
                 ),
             };
 
-            if (!section.trapezoid) {
-                section.trapezoid = {};
+            if (!current_section.trapezoid) {
+                current_section.trapezoid = {};
             }
 
-            section.trapezoid.glass = [
+            current_section.trapezoid.glass = [
                 { x: 0, y: crossing.left.y - frameWidth },
                 { x: fillWidth, y: crossing.right.y - frameWidth },
                 { x: fillWidth, y: fillHeight },
                 { x: 0, y: fillHeight },
             ];
-            points = section.trapezoid.glass;
+            points = current_section.trapezoid.glass;
 
             opts = {
-                sectionId: section.id,
+                sectionId: current_section.id,
                 x: params.x,
                 y: params.y,
                 width: params.width,
@@ -2329,7 +2313,7 @@ export default Backbone.KonvaView.extend({
             filling.stroke(style.louver.stroke);
         }
 
-        if (section.fillingType && section.fillingType !== 'glass') {
+        if (current_section.fillingType && current_section.fillingType !== 'glass') {
             filling.fill(style.others.fill);
         }
 

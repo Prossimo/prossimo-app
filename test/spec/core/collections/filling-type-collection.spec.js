@@ -41,14 +41,14 @@ test('Filling type collection tests', () => {
         deepEqual(
             _.map(collection_with_base_types.models, item => item.get('name')),
             [
+                'Test Type',
+                'Another Test Type',
                 'Glass',
                 'Recessed',
                 'Interior Flush Panel',
                 'Exterior Flush Panel',
                 'Full Flush Panel',
                 'Louver',
-                'Test Type',
-                'Another Test Type',
             ],
             'Collection 2 has the expected set of models',
         );
@@ -87,14 +87,14 @@ test('Filling type collection tests', () => {
         );
 
         deepEqual(collection.getNames(), [
+            'Test Type',
+            'Another Test Type',
             'Glass',
             'Recessed',
             'Interior Flush Panel',
             'Exterior Flush Panel',
             'Full Flush Panel',
             'Louver',
-            'Test Type',
-            'Another Test Type',
         ], 'getNames returns the expected result after adding 2 new types');
     });
 
@@ -146,7 +146,7 @@ test('Filling type collection tests', () => {
         );
         equal(
             collection.getDefaultOrFirstAvailableForProfile(2).get('name'),
-            'Glass',
+            'Another Test Type',
             'getDefaultOrFirstAvailableForProfile returns expected result for profile_id=2',
         );
     });

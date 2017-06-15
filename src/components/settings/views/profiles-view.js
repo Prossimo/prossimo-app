@@ -44,7 +44,7 @@ export default Marionette.View.extend({
             multiple_items_name: 'profiles',
         });
 
-        this.listenTo(this.profile_list_view, 'set_active_item', function (options) {
+        this.listenTo(this.profile_list_view, 'set_active_item', (options) => {
             this.renderActiveItemView(options.item);
         });
     },

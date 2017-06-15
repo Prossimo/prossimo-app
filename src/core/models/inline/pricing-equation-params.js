@@ -14,7 +14,7 @@ export default Backbone.Model.extend({
     defaults() {
         const defaults = {};
 
-        _.each(EQUATION_PROPERTIES, function (item) {
+        _.each(EQUATION_PROPERTIES, (item) => {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
         }, this);
 

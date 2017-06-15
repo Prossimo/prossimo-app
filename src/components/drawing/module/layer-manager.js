@@ -160,10 +160,11 @@ export default Marionette.Object.extend({
     },
     // Handler
     handleKeyEvents(event) {
-        const eventHandler = (event.type === 'keydown') ? 'onKeyDown' :
-            (event.type === 'keyup') ? 'onKeyUp' :
-                (event.type === 'keypress') ? 'onKeyPress' :
-                    null;
+        const eventHandler = {
+            keydown: 'onKeyDown',
+            keypress: 'onKeyPress',
+            keyup: 'onKeyUp',
+        }[event.type] || null;
 
         if (eventHandler !== null) {
             this.each((layer) => {

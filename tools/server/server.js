@@ -1,4 +1,3 @@
-/* eslint-disable no-console*/
 /* eslint-disable global-require*/
 
 require('babel-polyfill');

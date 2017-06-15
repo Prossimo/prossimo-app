@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import clone from 'clone';
 import Backbone from 'backbone';
 
 import Schema from '../../../schema';
@@ -23,12 +24,14 @@ export const GridItem = Backbone.Model.extend({
         return this.set(...args);
     },
     parse(data) {
+        const data_to_parse = clone(data);
+
         //  This is for compatibility reasons with the old format
-        if (data && data.price_per_square_meter) {
-            data.value = data.price_per_square_meter;
+        if (data_to_parse && data_to_parse.price_per_square_meter) {
+            data_to_parse.value = data_to_parse.price_per_square_meter;
         }
 
-        return Schema.parseAccordingToSchema(data, this.schema);
+        return Schema.parseAccordingToSchema(data_to_parse, this.schema);
     },
     getArea() {
         return this.get('width') * this.get('height');
@@ -57,7 +60,7 @@ export const Grid = Backbone.Collection.extend({
             } else if (target_area > this.last().getArea()) {
                 value = this.last().get('value');
             } else {
-                this.models.some(function (grid_item, index) {
+                this.models.some((grid_item, index) => {
                     if (target_area === grid_item.getArea()) {
                         value = grid_item.get('value');
                         return true;
@@ -76,7 +79,7 @@ export const Grid = Backbone.Collection.extend({
                     }
 
                     return false;
-                }, this);
+                });
             }
         }
 
@@ -102,9 +105,9 @@ export default Backbone.Model.extend({
     defaults() {
         const defaults = {};
 
-        _.each(PRICING_GRID_PROPERTIES, function (item) {
+        _.each(PRICING_GRID_PROPERTIES, (item) => {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
-        }, this);
+        });
 
         return defaults;
     },
@@ -161,7 +164,7 @@ export default Backbone.Model.extend({
         //  The order of events doesn't really match the way events
         //  propagate from model to collection, but it should be okay for
         //  the purpose of persisting the model on grid item change
-        this.listenTo(this.get('data'), 'change update', function (changed_object) {
+        this.listenTo(this.get('data'), 'change update', (changed_object) => {
             this.trigger('change:data change', changed_object);
         });
     },

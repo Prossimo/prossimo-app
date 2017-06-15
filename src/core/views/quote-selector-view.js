@@ -37,7 +37,7 @@ export default Marionette.View.extend({
                 }, this);
             }
 
-            this.listenTo(App.current_quote, 'remove', function () {
+            this.listenTo(App.current_quote, 'remove', () => {
                 this.selectFirstOrDefaultQuote();
             });
         } else {

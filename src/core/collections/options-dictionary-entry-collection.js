@@ -62,7 +62,7 @@ export default Backbone.Collection.extend({
     validatePerProfileDefaults() {
         const profiles = this.getIdsOfAllConnectedProfiles();
 
-        _.each(profiles, function (profile_id) {
+        _.each(profiles, (profile_id) => {
             const all_items = this.getAvailableForProfile(profile_id);
             const default_item = this.getDefaultForProfile(profile_id);
             const non_default_items = _.without(all_items, default_item);
@@ -106,7 +106,7 @@ export default Backbone.Collection.extend({
         this.options = options || {};
         this.proxy_entry = new OptionsDictionaryEntry(null, { proxy: true });
 
-        this.once('fully_loaded', function () {
+        this.once('fully_loaded', () => {
             this.validatePositions();
             this.validatePerProfileDefaults();
         }, this);

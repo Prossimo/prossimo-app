@@ -17,9 +17,9 @@ export default Backbone.Model.extend({
     defaults() {
         const defaults = {};
 
-        _.each(QUOTE_PROPERTIES, function (item) {
+        _.each(QUOTE_PROPERTIES, (item) => {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
-        }, this);
+        });
 
         return defaults;
     },
@@ -46,11 +46,13 @@ export default Backbone.Model.extend({
         return target_attribute ? target_attribute.type : undefined;
     },
     sync(method, model, options) {
+        const request_options = options;
+
         if (method === 'create' || method === 'update') {
-            options.attrs = { quote: model.toJSON() };
+            request_options.attrs = { quote: model.toJSON() };
         }
 
-        return Backbone.sync.call(this, method, model, options);
+        return Backbone.sync.call(this, method, model, request_options);
     },
     parse(data) {
         const quote_data = data && data.quote ? data.quote : data;
@@ -75,7 +77,7 @@ export default Backbone.Model.extend({
     hasOnlyDefaultAttributes() {
         let has_only_defaults = true;
 
-        _.each(this.toJSON(), function (value, key) {
+        _.each(this.toJSON(), (value, key) => {
             if (key !== 'position' && has_only_defaults) {
                 const property_source = _.findWhere(QUOTE_PROPERTIES, { name: key });
                 const type = property_source ? property_source.type : undefined;
@@ -84,21 +86,18 @@ export default Backbone.Model.extend({
                     has_only_defaults = false;
                 }
             }
-        }, this);
+        });
 
         return has_only_defaults;
     },
     //  Return { name: 'name', title: 'Title' } pairs for each item in
     //  `names` array. If the array is empty, return all possible pairs
     getNameTitleTypeHash(names) {
+        const selected_names = names || _.pluck(QUOTE_PROPERTIES, 'name');
         const name_title_hash = [];
 
-        if (!names) {
-            names = _.pluck(QUOTE_PROPERTIES, 'name');
-        }
-
         _.each(QUOTE_PROPERTIES, (item) => {
-            if (_.indexOf(names, item.name) !== -1) {
+            if (_.indexOf(selected_names, item.name) !== -1) {
                 name_title_hash.push({ name: item.name, title: item.title, type: item.type });
             }
         });
@@ -261,12 +260,13 @@ export default Backbone.Model.extend({
             this.trigger('fully_loaded');
         }
     },
-    validate(attributes, options) {
+    validate(attributes) {
         let error_obj = null;
 
         //  Simple type validation for numbers and booleans
-        _.find(attributes, function (value, key) {
+        _.find(attributes, (value, key) => {
             let attribute_obj = this.getNameTitleTypeHash([key]);
+            let has_validation_error = false;
 
             attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
 
@@ -278,20 +278,20 @@ export default Backbone.Model.extend({
                     error_message: `${attribute_obj.title} can't be set to "${value}", it should be a number`,
                 };
 
-                return false;
+                has_validation_error = true;
             } else if (attribute_obj && attribute_obj.type === 'boolean' && !_.isBoolean(value)) {
                 error_obj = {
                     attribute_name: key,
                     error_message: `${attribute_obj.title} can't be set to "${value}", it should be a boolean`,
                 };
 
-                return false;
+                has_validation_error = true;
             }
-        }, this);
 
-        if (options.validate && error_obj) {
-            return error_obj;
-        }
+            return has_validation_error;
+        });
+
+        return error_obj;
     },
     initialize(attributes, options) {
         this.options = options || {};

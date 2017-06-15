@@ -76,12 +76,10 @@ export default Backbone.KonvaView.extend({
     },
     createInfo(mullions, width, height) {
         const group = new Konva.Group();
-
         // Get data for info layer
-        mullions = this.sortMullions(mullions);
-
-        const measurements = this.getMeasurements(mullions);
-        const controls = this.getControls(mullions);
+        const sorted_mullions = this.sortMullions(mullions);
+        const measurements = this.getMeasurements(sorted_mullions);
+        const controls = this.getControls(sorted_mullions);
 
         // Draw mullion metrics
         group.add(this.createMullionMetrics(measurements, width, height));
@@ -209,8 +207,6 @@ export default Backbone.KonvaView.extend({
         //
         //        This is a small specification, which is better not to push into production,
         //        but I think we'd better to save it somewhere. :-)
-
-        /* eslint-disable max-nested-callbacks */
         _.each(mullions, (mulGroup, type) => {
             let pos = 0;
             const grouped = {};
@@ -248,20 +244,21 @@ export default Backbone.KonvaView.extend({
                 let loaded = false;
 
                 edges.forEach((edge, key) => {
-                    let store_index = store_index_accordance[edge][key];
+                    let current_edge = edge;
+                    let store_index = store_index_accordance[current_edge][key];
                     let edge_section;
                     let edge_state;
 
-                    if (edge === 'frame') {
+                    if (current_edge === 'frame') {
                         if (key === 0 && saved_mullion !== null) {
-                            edge = 'mullion';
+                            current_edge = 'mullion';
                             edge_section = saved_mullion;
                             saved_mullion = null;
                             store_index = 1;
                         } else {
                             edge_section = root_section;
                         }
-                    } else if (edge === 'mullion') {
+                    } else if (current_edge === 'mullion') {
                         if (index !== key) {
                             edge_section = (saved_mullion) || current_section;
                             loaded = !!(saved_mullion);
@@ -282,23 +279,21 @@ export default Backbone.KonvaView.extend({
                         }
                     }
 
-                    if (invertedType in edge_section.measurements[edge]) {
-                        edge_state = edge_section.measurements[edge][invertedType][store_index];
+                    if (invertedType in edge_section.measurements[current_edge]) {
+                        edge_state = edge_section.measurements[current_edge][invertedType][store_index];
                     } else {
-                        edge_state = edge_section.measurements[edge][type][store_index];
+                        edge_state = edge_section.measurements[current_edge][type][store_index];
                     }
 
                     // Change state for mullions if this is vertical mullion and it's outside view
-                    if (edge === 'mullion' && type === 'vertical' && module.getState('openingView')) {
-                        edge_state = (edge_state === 'min') ? 'max' :
-                            (edge_state === 'max') ? 'min' :
-                                'center';
+                    if (current_edge === 'mullion' && type === 'vertical' && module.getState('openingView')) {
+                        edge_state = _.contains(['max', 'min'], edge_state) ? { max: 'min', min: 'max' }[edge_state] : 'center';
                     }
 
                     data.edges[key] = {
                         section_id: edge_section.id,
                         state: edge_state,
-                        type: edge,
+                        type: current_edge,
                         index: store_index,
                     };
                 });
@@ -327,7 +322,6 @@ export default Backbone.KonvaView.extend({
                 result[type][i].siblings = siblings;
             });
         });
-        /* eslint-enable max-nested-callbacks */
 
         // Switch edges for frame dimension-point for vertical mullions if it's outside view
         if (module.getState('openingView') && result.vertical.length > 0) {
@@ -397,12 +391,13 @@ export default Backbone.KonvaView.extend({
 
         return group;
     },
-    createMetric(mullion, params, type) {
+    createMetric(mullion, current_params, type) {
         const view = this;
         const section = model.getSection(mullion.section_id);
         const group = new Konva.Group();
         const gap = (mullion.index === 1) ? '_gap' : '';
         const methodName = `setter_${type}${gap}`;
+        const params = clone(current_params);
 
         const correction = view.getTotalCorrection(mullion, type);
         const methods = {
@@ -410,30 +405,32 @@ export default Backbone.KonvaView.extend({
                 return this.space;
             },
             setter_vertical(val) {
-                val -= correction.size;
+                let new_val = val - correction.size;
 
                 if (!this.openingView) {
-                    val = model.getInMetric('width', 'mm') - val;
+                    new_val = model.getInMetric('width', 'mm') - new_val;
                 }
 
-                model.setSectionMullionPosition(this.id, val);
+                model.setSectionMullionPosition(this.id, new_val);
             },
             setter_vertical_gap(val) {
-                val -= correction.size;
+                let new_val = val - correction.size;
 
                 if (this.openingView) {
-                    val = model.getInMetric('width', 'mm') - val;
+                    new_val = model.getInMetric('width', 'mm') - new_val;
                 }
 
-                model.setSectionMullionPosition(this.id, val);
+                model.setSectionMullionPosition(this.id, new_val);
             },
             setter_horizontal(val) {
-                val -= correction.size;
-                model.setSectionMullionPosition(this.id, val);
+                const new_val = val - correction.size;
+
+                model.setSectionMullionPosition(this.id, new_val);
             },
             setter_horizontal_gap(val) {
-                val -= correction.size;
-                model.setSectionMullionPosition(this.id, model.getInMetric('height', 'mm') - val);
+                const new_val = val - correction.size;
+
+                model.setSectionMullionPosition(this.id, model.getInMetric('height', 'mm') - new_val);
             },
         };
         const drawingAccordance = {
@@ -506,9 +503,7 @@ export default Backbone.KonvaView.extend({
 
                     // Change state if this is vertical control and it's outside view
                     if (type === 'vertical' && module.getState('openingView')) {
-                        state = (state === 'min') ? 'max' :
-                            (state === 'max') ? 'min' :
-                                'center';
+                        state = _.contains(['max', 'min'], state) ? { max: 'min', min: 'max' }[state] : 'center';
                     }
 
                     const data = {
@@ -536,50 +531,49 @@ export default Backbone.KonvaView.extend({
         return result;
     },
     getMullionCorrection(type, value, index, correction) {
-        value = value || 0;
-        correction = correction || this.getCorrection();
+        const current_value = value || 0;
+        const current_correction = correction || this.getCorrection();
 
         if (type === 'frame') {
-            if (value === 'min') {
-                correction.size -= correction.frame_width;
-                correction.pos += (index === 0) ? correction.frame_width : 0;
+            if (current_value === 'min') {
+                current_correction.size -= current_correction.frame_width;
+                current_correction.pos += (index === 0) ? current_correction.frame_width : 0;
             }
 
             // Max is default
         } else {
-            if (value === 'min') {
-                correction.size -= correction.mullion_width;
-                correction.pos += (index === 1) ? correction.mullion_width : 0;
+            if (current_value === 'min') {
+                current_correction.size -= current_correction.mullion_width;
+                current_correction.pos += (index === 1) ? current_correction.mullion_width : 0;
             }
 
-            if (value === 'max') {
-                correction.size += correction.mullion_width;
-                correction.pos -= (index === 1) ? correction.mullion_width : 0;
+            if (current_value === 'max') {
+                current_correction.size += current_correction.mullion_width;
+                current_correction.pos -= (index === 1) ? current_correction.mullion_width : 0;
             }
 
             // Center is default
         }
 
-        return correction;
+        return current_correction;
     },
     getFrameCorrectionSum(type, correction) {
         const root_section = model.get('root_section');
         const measurementData = root_section.measurements.frame;
+        const current_correction = correction || this.getCorrection();
 
         if (type === 'horizontal' && module.getState('openingView')) {
             measurementData[type].reverse();
         }
 
-        correction = correction || this.getCorrection();
-
         measurementData[type].forEach((value, i) => {
             if (value === 'min') {
-                correction.size -= correction.frame_width;
-                correction.pos += (i === 0) ? correction.frame_width : 0;
+                current_correction.size -= current_correction.frame_width;
+                current_correction.pos += (i === 0) ? current_correction.frame_width : 0;
             }
         });
 
-        return correction;
+        return current_correction;
     },
     getFrameCorrection(type) {
         const root_section = model.get('root_section');
@@ -668,7 +662,6 @@ export default Backbone.KonvaView.extend({
         const view = this;
         const group = new Konva.Group();
 
-        /* eslint-disable max-nested-callbacks */
         const root_section = model.get('root_section');
 
         _.each(controls, (cGroup, type) => {
@@ -725,15 +718,19 @@ export default Backbone.KonvaView.extend({
                 };
 
                 if (invertedType === 'horizontal') {
+                    let pos = correction.pos;
+
+                    if (!module.getState('openingView')) {
+                        pos = correction.pos;
+                    } else if (correction.pos === 0) {
+                        pos = correction.size * -1;
+                    } else if (correction.pos * -1 === correction.size) {
+                        pos = correction.pos + correction.size;
+                    }
+
                     cor = {
                         size: correction.size,
-                        pos: (!module.getState('openingView')) ?
-                            correction.pos :
-                            (correction.pos === 0) ?
-                                correction.size * -1 :
-                                (correction.pos * -1 === correction.size) ?
-                                    correction.pos + correction.size :
-                                    correction.pos,
+                        pos,
                     };
                 }
 
@@ -769,7 +766,6 @@ export default Backbone.KonvaView.extend({
                 group.add(frameControls);
             }
         });
-        /* eslint-enable max-nested-callbacks */
 
         return group;
     },
@@ -838,13 +834,15 @@ export default Backbone.KonvaView.extend({
             if (opts.kind === 'frame') {
                 correction = (opt.value === min) ? offset * sign : 0;
             } else if (opts.kind === 'mullion') {
-                controlPosition[posParam] += (opt.value === min) ? (-1 * posCorrection) / 2 :
-                    (opt.value === max) ? posCorrection / 2 :
-                        0;
+                correction = 0;
 
-                correction = (opt.value === min) ? offset * -1 :
-                    (opt.value === max) ? offset :
-                        0;
+                if (opt.value === min) {
+                    controlPosition[posParam] += (-1 * posCorrection) / 2;
+                    correction = offset * -1;
+                } else if (opt.value === max) {
+                    controlPosition[posParam] += posCorrection / 2;
+                    correction = offset;
+                }
             }
 
             controlPosition[posParam] += (correction * ratio);
@@ -943,12 +941,14 @@ export default Backbone.KonvaView.extend({
         const verticalWholeMertic = this.createVerticalMetric(metricSize, vHeight, {
             name: 'vertical_whole_metric',
             setter(val) {
-                if (_.isArray(val)) {
-                    val = val.map(value => value - vCorrection.size);
-                    model.updateDimension('height', val, 'mm');
+                let current_val = clone(val);
+
+                if (_.isArray(current_val)) {
+                    current_val = current_val.map(value => value - vCorrection.size);
+                    model.updateDimension('height', current_val, 'mm');
                 } else {
-                    val -= vCorrection.size;
-                    model.updateDimension('height_max', val, 'mm');
+                    current_val -= vCorrection.size;
+                    model.updateDimension('height_max', current_val, 'mm');
                 }
             },
             getter() {
@@ -974,12 +974,14 @@ export default Backbone.KonvaView.extend({
             const secondVerticalWholeMertic = this.createVerticalMetric(metricSize, secondVerticalHeight, {
                 name: 'vertical_whole_metric',
                 setter(val) {
-                    if (_.isArray(val)) {
-                        val = val.map(value => value - vCorrection.size);
-                        model.updateDimension('height', val, 'mm');
+                    let current_val = clone(val);
+
+                    if (_.isArray(current_val)) {
+                        current_val = current_val.map(value => value - vCorrection.size);
+                        model.updateDimension('height', current_val, 'mm');
                     } else {
-                        val -= vCorrection.size;
-                        model.updateDimension('height_min', val, 'mm');
+                        current_val -= vCorrection.size;
+                        model.updateDimension('height_min', current_val, 'mm');
                     }
                 },
                 getter() {
@@ -999,12 +1001,14 @@ export default Backbone.KonvaView.extend({
             const thirdVerticalWholeMertic = this.createVerticalMetric(metricSize, thirdVerticalHeight, {
                 name: 'vertical_whole_metric',
                 setter(val) {
-                    if (_.isArray(val)) {
-                        val = val.map(value => value - vCorrection.size);
-                        model.updateDimension('height', val, 'mm');
+                    let current_val = clone(val);
+
+                    if (_.isArray(current_val)) {
+                        current_val = current_val.map(value => value - vCorrection.size);
+                        model.updateDimension('height', current_val, 'mm');
                     } else {
-                        val -= vCorrection.size;
-                        model.updateDimension('height_min', maxHeight - val, 'mm');
+                        current_val -= vCorrection.size;
+                        model.updateDimension('height_min', maxHeight - current_val, 'mm');
                     }
                 },
                 getter() {
@@ -1024,8 +1028,9 @@ export default Backbone.KonvaView.extend({
         const hWidth = width + (hCorrection.size * ratio);
         const horizontalWholeMertic = this.createHorizontalMetric(hWidth, metricSize, {
             setter(val) {
-                val -= hCorrection.size;
-                model.updateDimension('width', val, 'mm');
+                const current_val = val - hCorrection.size;
+
+                model.updateDimension('width', current_val, 'mm');
             },
             getter() {
                 return model.getInMetric('width', 'mm') + hCorrection.size;
@@ -1068,7 +1073,7 @@ export default Backbone.KonvaView.extend({
 
         // Function to find overlay metrics recursively
         function findOverlay(section, results, level) {
-            level = level || 0;
+            let current_level = level || 0;
 
             if (
                 section.measurements.glass ||
@@ -1079,13 +1084,13 @@ export default Backbone.KonvaView.extend({
                 results.push({
                     section_id: section.id,
                     type,
-                    level,
+                    level: current_level,
                     params: section[`${type}Params`],
                 });
             } else if (section.sections.length) {
                 section.sections.forEach((child) => {
-                    level += 1;
-                    findOverlay(child, results, level);
+                    current_level += 1;
+                    findOverlay(child, results, current_level);
                 });
             }
 
@@ -1153,13 +1158,10 @@ export default Backbone.KonvaView.extend({
                 return archHeight;
             },
             setter(val) {
-                val -= vCorrection[0].size;
+                const archPosition = val - vCorrection[0].size;
+                const sectionId = root_section.id;
 
-                const id = root_section.id;
-
-                model._updateSection(id, (section) => {
-                    section.archPosition = val;
-                });
+                model.setSectionArchPosition(sectionId, archPosition);
             },
         };
 
@@ -1187,14 +1189,12 @@ export default Backbone.KonvaView.extend({
                 return nonArchHeight;
             },
             setter(val) {
-                val -= vCorrection[1].size;
+                const new_val = val - vCorrection[1].size;
 
-                const id = model.get('root_section').id;
-                const archPosition = model.getInMetric('height', 'mm') - val;
+                const sectionId = model.get('root_section').id;
+                const archPosition = model.getInMetric('height', 'mm') - new_val;
 
-                model._updateSection(id, (section) => {
-                    section.archPosition = archPosition;
-                });
+                model.setSectionArchPosition(sectionId, archPosition);
             },
         };
         metric = this.createVerticalMetric(metricSize, (nonArchHeight + vCorrection[0].size) * ratio, params);
@@ -1209,12 +1209,14 @@ export default Backbone.KonvaView.extend({
             {
                 name: 'vertical_whole_metric',
                 setter(val) {
-                    if (_.isArray(val)) {
-                        val = val.map(value => value - vwCorrection.size);
-                        model.updateDimension('height', val, 'mm');
+                    let new_val = val;
+
+                    if (_.isArray(new_val)) {
+                        new_val = new_val.map(value => value - vwCorrection.size);
+                        model.updateDimension('height', new_val, 'mm');
                     } else {
-                        val -= vwCorrection.size;
-                        model.updateDimension('height', val, 'mm');
+                        new_val -= vwCorrection.size;
+                        model.updateDimension('height', new_val, 'mm');
                     }
                 },
                 getter() {
@@ -1239,8 +1241,8 @@ export default Backbone.KonvaView.extend({
             metricSize,
             {
                 setter(val) {
-                    val -= hwCorrection.size;
-                    model.updateDimension('width', val, 'mm');
+                    const new_val = val - hwCorrection.size;
+                    model.updateDimension('width', new_val, 'mm');
                 },
                 getter() {
                     return (model.getInMetric('width', 'mm') + hwCorrection.size);
@@ -1270,14 +1272,11 @@ export default Backbone.KonvaView.extend({
 
         return edgeTypes;
     },
-    createVerticalMetric(width, height, params, styles) {
+    createVerticalMetric(width, height, params, current_styles) {
+        const styles = _.defaults(current_styles || {}, this.getDefaultMetricStyles());
         const arrowOffset = width / 2;
         const arrowSize = 5;
         const group = new Konva.Group({ name: params.name });
-
-        // Define styles
-        styles = styles || {};
-        styles = _.defaults(styles, this.getDefaultMetricStyles());
 
         const lines = new Konva.Shape({
             sceneFunc(ctx) {
@@ -1379,14 +1378,11 @@ export default Backbone.KonvaView.extend({
         return group;
     },
 
-    createHorizontalMetric(width, height, params, styles) {
+    createHorizontalMetric(width, height, params, current_styles) {
+        const styles = _.defaults(current_styles || {}, this.getDefaultMetricStyles());
         const arrowOffset = height / 2;
         const arrowSize = 5;
         const group = new Konva.Group();
-
-        // Define styles
-        styles = styles || {};
-        styles = _.defaults(styles, this.getDefaultMetricStyles());
 
         const lines = new Konva.Shape({
             sceneFunc(ctx) {

@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import _ from 'underscore';
+import clone from 'clone';
 import Marionette from 'backbone.marionette';
 import Konva from '../module/konva-clip-patch';
 
@@ -68,7 +69,7 @@ export default Marionette.View.extend({
     },
 
     bindModuleEvents() {
-        this.listenTo(this.module, 'labelClicked', function (data) {
+        this.listenTo(this.module, 'labelClicked', (data) => {
             this.parent.createInput.call(this, data.params, data.pos, data.size);
         });
     },
@@ -142,10 +143,11 @@ export default Marionette.View.extend({
         }
     },
     updateSize(width, height) {
-        width = width || this.ui.$drawing.get(0).offsetWidth;
-        height = height || this.ui.$drawing.get(0).offsetHeight;
-        this.stage.width(width);
-        this.stage.height(height);
+        const current_width = width || this.ui.$drawing.get(0).offsetWidth;
+        const current_height = height || this.ui.$drawing.get(0).offsetHeight;
+
+        this.stage.width(current_width);
+        this.stage.height(current_height);
     },
     changeBarsNumber(type) {
         let vertical = [];
@@ -206,28 +208,27 @@ export default Marionette.View.extend({
             height: this.section.glassParams.height,
         };
     },
-    /* eslint-disable max-nested-callbacks */
     checkLinks(bars) {
+        const current_bars = clone(bars);
         const view = this;
         let linked = null;
 
-        _.each(bars, (arr, type) => {
+        _.each(current_bars, (arr, type) => {
             _.each(arr, (bar, index) => {
                 _.each(bar.links, (link, edge) => {
                     if (link !== null) {
                         linked = view.model.getBar(view.section.id, link);
 
                         if (linked === null) {
-                            bars[type][index].links[edge] = null;
+                            current_bars[type][index].links[edge] = null;
                         }
                     }
                 });
             });
         });
 
-        return bars;
+        return current_bars;
     },
-    /* eslint-enable max-nested-callbacks */
     sortBars() {
         _.each(this.section.bars, (group) => {
             group.sort((a, b) => a.position > b.position);

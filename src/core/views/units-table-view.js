@@ -32,7 +32,6 @@ export default Marionette.View.extend({
         $clone: '.js-clone-selected-items',
     },
     events: {
-        'click .units-table-title': 'toggleTableVisibility',
         'click @ui.$add_new_unit': 'addNewUnit',
         'click @ui.$add_new_accessory': 'addNewAccessory',
         'click .nav-tabs a': 'onTabClick',
@@ -56,8 +55,6 @@ export default Marionette.View.extend({
     initialize() {
         this.table_update_timeout = null;
         this.dropdown_scroll_timer = null;
-        this.table_visibility = this.options.is_always_visible ? 'visible' :
-            (this.options.table_visibility ? this.options.table_visibility : 'hidden');
 
         this.tabs = {
             specs: {
@@ -73,7 +70,7 @@ export default Marionette.View.extend({
                 collection: this.collection,
                 columns: ['move_item', 'mark', 'quantity', 'width', 'height', 'drawing'],
                 unit_options_columns: App.settings.dictionaries.getAvailableDictionaryNames(),
-                unit_options_quantity_columns: (function () {
+                unit_options_quantity_columns: (() => {
                     const columns = [];
 
                     App.settings.dictionaries.each((dictionary) => {
@@ -83,7 +80,7 @@ export default Marionette.View.extend({
                     });
 
                     return columns;
-                }()),
+                })(),
             },
             prices: {
                 title: 'Prices',
@@ -118,14 +115,14 @@ export default Marionette.View.extend({
             //  We insert quantity columns at specific positions (after
             //  the corresponding option column)
             if (this.tabs.unit_options.unit_options_quantity_columns.length) {
-                _.each(this.tabs.unit_options.unit_options_quantity_columns, function (qty_column_name) {
+                _.each(this.tabs.unit_options.unit_options_quantity_columns, (qty_column_name) => {
                     const target_option_name = qty_column_name.replace(/ Quantity$/, '');
                     const target_position = _.indexOf(this.tabs.unit_options.columns, target_option_name);
 
                     if (target_position !== -1) {
                         this.tabs.unit_options.columns.splice(target_position + 1, 0, qty_column_name);
                     }
-                }, this);
+                });
             }
         }
 
@@ -235,12 +232,6 @@ export default Marionette.View.extend({
             }
         }
     },
-    toggleTableVisibility() {
-        if (!this.options.is_always_visible) {
-            this.table_visibility = this.table_visibility === 'hidden' ? 'visible' : 'hidden';
-            this.render();
-        }
-    },
     addNewUnit() {
         const new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
         const new_unit = new Unit({
@@ -262,22 +253,21 @@ export default Marionette.View.extend({
     onNewUnitOrAccessory(e) {
         const active_tab = this.getActiveTab();
 
-        if (this.table_visibility === 'visible' && active_tab.collection === this.collection) {
+        if (active_tab.collection === this.collection) {
             this.addNewUnit(e);
-        } else if (this.table_visibility === 'visible' && active_tab.collection === this.options.extras) {
+        } else if (active_tab.collection === this.options.extras) {
             this.addNewAccessory(e);
         }
     },
     templateContext() {
         return {
             active_tab: this.active_tab,
-            tabs: _.each(this.tabs, function (item, key) {
-                item.is_active = key === this.active_tab;
-                return item;
-            }, this),
+            tabs: _.mapObject(this.tabs, (item, key) => (
+                _.extend({}, item, {
+                    is_active: key === this.active_tab,
+                })
+            )),
             mode: this.getActiveTab().title === 'Extras' ? 'extras' : 'units',
-            table_visibility: this.table_visibility,
-            is_always_visible: this.options.is_always_visible,
         };
     },
     onMoveItemUp(e) {
@@ -410,7 +400,7 @@ export default Marionette.View.extend({
             _.contains(this.getActiveTab().unit_options_columns, column_name)
         ) {
             //  TODO: deal with multiple values per dictionary somehow
-            getter = function (model, attr_name) {
+            getter = (model, attr_name) => {
                 const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(attr_name);
                 const current_options = target_dictionary_id ?
                     model.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
@@ -421,7 +411,7 @@ export default Marionette.View.extend({
             this.active_tab === 'unit_options' &&
             _.contains(this.getActiveTab().unit_options_quantity_columns, column_name)
         ) {
-            getter = function (model, attr_name) {
+            getter = (model, attr_name) => {
                 const target_dictionary_name = attr_name.replace(/ Quantity$/, '');
                 const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
                 const current_options = target_dictionary_id ?
@@ -430,9 +420,7 @@ export default Marionette.View.extend({
                 return current_options.length ? current_options[0].quantity : UNSET_VALUE;
             };
         } else {
-            getter = function (model, attr_name) {
-                return model.get(attr_name);
-            };
+            getter = (model, attr_name) => model.get(attr_name);
         }
 
         return getter(unit_model, column_name);
@@ -477,9 +465,7 @@ export default Marionette.View.extend({
         if (parsers_hash[column_name]) {
             parser = parsers_hash[column_name];
         } else {
-            parser = function (attr_name, val) {
-                return val;
-            };
+            parser = (attr_name, val) => val;
         }
 
         return parser(column_name, ...args);
@@ -503,43 +489,47 @@ export default Marionette.View.extend({
             this.active_tab === 'unit_options' &&
             _.contains(this.getActiveTab().unit_options_columns, column_name)
         ) {
-            setter = function (model, attr_name, val) {
+            setter = (model, attr_name, val) => {
                 const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(attr_name);
 
-                if (target_dictionary_id) {
-                    const target_entry_id = App.settings.dictionaries.getDictionaryEntryIdByName(
-                        target_dictionary_id,
-                        val,
-                    );
-
-                    if (target_entry_id) {
-                        return model.persistOption(target_dictionary_id, target_entry_id);
-                    } else if (val === UNSET_VALUE) {
-                        return model.persistOption(target_dictionary_id, false);
-                    }
+                if (!target_dictionary_id) {
+                    return false;
                 }
+
+                const target_entry_id = App.settings.dictionaries.getDictionaryEntryIdByName(
+                    target_dictionary_id,
+                    val,
+                );
+
+                if (target_entry_id) {
+                    return model.persistOption(target_dictionary_id, target_entry_id);
+                }
+
+                return model.persistOption(target_dictionary_id, false);
             };
         } else if (
             this.active_tab === 'unit_options' &&
             _.contains(this.getActiveTab().unit_options_quantity_columns, column_name)
         ) {
-            setter = function (model, attr_name, val) {
+            setter = (model, attr_name, val) => {
                 const target_dictionary_name = attr_name.replace(/ Quantity$/, '');
                 const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
 
-                if (target_dictionary_id) {
-                    const target_option = model.get('unit_options').getByDictionaryId(target_dictionary_id);
-                    const target_entry_id = target_option && target_option.get('dictionary_entry_id');
-
-                    if (target_entry_id) {
-                        return model.persistOption(target_dictionary_id, target_entry_id, parseInt(val, 10));
-                    }
+                if (!target_dictionary_id) {
+                    return false;
                 }
+
+                const target_option = model.get('unit_options').getByDictionaryId(target_dictionary_id);
+                const target_entry_id = target_option && target_option.get('dictionary_entry_id');
+
+                if (!target_entry_id) {
+                    return false;
+                }
+
+                return model.persistOption(target_dictionary_id, target_entry_id, parseInt(val, 10));
             };
         } else {
-            setter = function (model, attr_name, val) {
-                return model.persist(attr_name, self.getSetterParser(column_name, val));
-            };
+            setter = (model, attr_name, val) => model.persist(attr_name, self.getSetterParser(column_name, val));
         }
 
         return setter(unit_model, column_name, ...args);
@@ -547,14 +537,16 @@ export default Marionette.View.extend({
     getColumnData(column_name) {
         const self = this;
 
-        return function (unit_model, value) {
-            if (unit_model) {
-                if (_.isUndefined(value)) {
-                    return self.getGetterFunction(unit_model, column_name);
-                }
-
-                self.getSetterFunction(unit_model, column_name, value);
+        return function columnData(unit_model, value) {
+            if (!unit_model) {
+                return false;
             }
+
+            if (_.isUndefined(value)) {
+                return self.getGetterFunction(unit_model, column_name);
+            }
+
+            return self.getSetterFunction(unit_model, column_name, value);
         };
     },
     showValidationError(model, error) {
@@ -585,7 +577,7 @@ export default Marionette.View.extend({
     },
     getColumnValidator(column_name) {
         const self = this;
-        const validator = function (value, callback) {
+        const validator = function columnValidator(value, callback) {
             const attributes_object = {};
             const model = this.instance.getSourceData().at(this.row);
 
@@ -765,14 +757,14 @@ export default Marionette.View.extend({
     getActiveTabColumnOptions() {
         const columns = [];
 
-        _.each(this.getActiveTab().columns, function (column_name) {
+        _.each(this.getActiveTab().columns, (column_name) => {
             const column_obj = _.extend({}, {
                 data: this.getColumnData(column_name),
                 validator: this.getColumnValidator(column_name),
             }, this.getColumnExtraProperties(column_name));
 
             columns.push(column_obj);
-        }, this);
+        });
 
         return columns;
     },
@@ -782,7 +774,7 @@ export default Marionette.View.extend({
     getActiveTabCellsSpecificOptions() {
         const self = this;
 
-        return function (row, col) {
+        return function cellSpecificOptions(row, col) {
             const cell_properties = {};
             const item = this.instance.getSourceData().at(row);
             const property = self.getActiveTab().columns[col];
@@ -917,7 +909,7 @@ export default Marionette.View.extend({
         const headers = [];
         const active_tab = this.getActiveTab();
 
-        _.each(active_tab.columns, function (column_name) {
+        _.each(active_tab.columns, (column_name) => {
             const custom_header = this.getCustomColumnHeader(column_name);
             const original_header = active_tab.collection.getTitles([column_name]);
             let title = '';
@@ -936,7 +928,7 @@ export default Marionette.View.extend({
             }
 
             headers.push(title);
-        }, this);
+        });
 
         return headers;
     },
@@ -1065,8 +1057,6 @@ export default Marionette.View.extend({
         return widths_table;
     },
     onRender() {
-        const is_visible = this.options.is_always_visible ||
-            this.table_visibility === 'visible';
         const self = this;
 
         //  We have to duplicate keydown event handling here because of the
@@ -1100,130 +1090,128 @@ export default Marionette.View.extend({
             }
         }
 
-        if (is_visible) {
-            let dropdown_scroll_reset = false;
+        let dropdown_scroll_reset = false;
 
-            const fixed_columns = ['mark', 'quantity', 'width', 'height', 'drawing'];
-            const active_tab_columns = self.getActiveTab().columns;
-            let fixed_columns_count = 0;
+        const fixed_columns = ['mark', 'quantity', 'width', 'height', 'drawing'];
+        const active_tab_columns = self.getActiveTab().columns;
+        let fixed_columns_count = 0;
 
-            _.each(fixed_columns, (column) => {
-                if (_.indexOf(active_tab_columns, column) !== -1) {
-                    fixed_columns_count += 1;
-                }
-            });
+        _.each(fixed_columns, (column) => {
+            if (_.indexOf(active_tab_columns, column) !== -1) {
+                fixed_columns_count += 1;
+            }
+        });
 
-            //  We use defer because we want to wait until flexbox
-            //  sizes are calculated properly
-            _.defer(() => {
-                self.hot = new Handsontable(self.ui.$hot_container[0], {
-                    data: self.getActiveTab().collection,
-                    columns: self.getActiveTabColumnOptions(),
-                    cells: self.getActiveTabCellsSpecificOptions(),
-                    colHeaders: self.getActiveTabHeaders(),
-                    rowHeaders: true,
-                    rowHeights() {
-                        return _.contains(self.getActiveTab().columns, 'drawing') ||
-                            _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
-                    },
-                    colWidths: self.getActiveTabColWidths(),
-                    trimDropdown: false,
-                    maxRows() {
-                        return self.getActiveTab().collection.length;
-                    },
-                    fixedColumnsLeft: fixed_columns_count,
-                    stretchH: 'all',
-                    viewportRowRenderingOffset: 300,
-                    viewportColumnRenderingOffset: 50,
-                    enterMoves: { row: 1, col: 0 },
-                    beforeKeyDown(e) {
-                        onBeforeKeyDown(e, true);
-                    },
-                    afterSelection(startRow, startColumn, endRow, endColumn) {
-                        self.selected = [];
+        //  We use defer because we want to wait until flexbox
+        //  sizes are calculated properly
+        _.defer(() => {
+            self.hot = new Handsontable(self.ui.$hot_container[0], {
+                data: self.getActiveTab().collection,
+                columns: self.getActiveTabColumnOptions(),
+                cells: self.getActiveTabCellsSpecificOptions(),
+                colHeaders: self.getActiveTabHeaders(),
+                rowHeaders: true,
+                rowHeights() {
+                    return _.contains(self.getActiveTab().columns, 'drawing') ||
+                        _.contains(self.getActiveTab().columns, 'customer_image') ? 52 : 25;
+                },
+                colWidths: self.getActiveTabColWidths(),
+                trimDropdown: false,
+                maxRows() {
+                    return self.getActiveTab().collection.length;
+                },
+                fixedColumnsLeft: fixed_columns_count,
+                stretchH: 'all',
+                viewportRowRenderingOffset: 300,
+                viewportColumnRenderingOffset: 50,
+                enterMoves: { row: 1, col: 0 },
+                beforeKeyDown(e) {
+                    onBeforeKeyDown(e, true);
+                },
+                afterSelection(startRow, startColumn, endRow, endColumn) {
+                    self.selected = [];
 
-                        if (startColumn === 0 && endColumn === this.countCols() - 1) {
-                            self.ui.$remove.removeClass('disabled');
-                            self.ui.$reset_unit_options.removeClass('disabled');
+                    if (startColumn === 0 && endColumn === this.countCols() - 1) {
+                        self.ui.$remove.removeClass('disabled');
+                        self.ui.$reset_unit_options.removeClass('disabled');
 
-                            if (startRow === endRow) {
-                                self.selected = [startRow];
-                                const selectedData = self.hot.getSourceData().at(startRow);
+                        if (startRow === endRow) {
+                            self.selected = [startRow];
+                            const selectedData = self.hot.getSourceData().at(startRow);
 
-                                if (selectedData.hasOnlyDefaultAttributes()) {
-                                    self.ui.$clone.addClass('disabled');
-                                } else {
-                                    self.ui.$clone.removeClass('disabled');
-                                }
-                            } else {
-                                let start = startRow;
-                                let end = endRow;
-
-                                if (startRow > endRow) {
-                                    start = endRow;
-                                    end = startRow;
-                                }
-
-                                for (let i = start; i <= end; i += 1) {
-                                    self.selected.push(i);
-                                }
-
+                            if (selectedData.hasOnlyDefaultAttributes()) {
                                 self.ui.$clone.addClass('disabled');
+                            } else {
+                                self.ui.$clone.removeClass('disabled');
                             }
                         } else {
-                            self.ui.$reset_unit_options.addClass('disabled');
-                            self.ui.$remove.addClass('disabled');
+                            let start = startRow;
+                            let end = endRow;
+
+                            if (startRow > endRow) {
+                                start = endRow;
+                                end = startRow;
+                            }
+
+                            for (let i = start; i <= end; i += 1) {
+                                self.selected.push(i);
+                            }
+
                             self.ui.$clone.addClass('disabled');
                         }
-                    },
-                    afterDeselect() {
-                        if (self.selected.length) {
-                            this.selectCell(
-                                self.selected[0],
-                                0,
-                                self.selected[self.selected.length - 1],
-                                this.countCols() - 1, false,
-                            );
-                        }
-                    },
-                });
+                    } else {
+                        self.ui.$reset_unit_options.addClass('disabled');
+                        self.ui.$remove.addClass('disabled');
+                        self.ui.$clone.addClass('disabled');
+                    }
+                },
+                afterDeselect() {
+                    if (self.selected.length) {
+                        this.selectCell(
+                            self.selected[0],
+                            0,
+                            self.selected[self.selected.length - 1],
+                            this.countCols() - 1, false,
+                        );
+                    }
+                },
             });
+        });
 
-            this.appendPopovers();
+        this.appendPopovers();
 
-            clearInterval(this.dropdown_scroll_timer);
-            this.dropdown_scroll_timer = setInterval(() => {
-                const editor = self.hot && self.hot.getActiveEditor();
+        clearInterval(this.dropdown_scroll_timer);
+        this.dropdown_scroll_timer = setInterval(() => {
+            const editor = self.hot && self.hot.getActiveEditor();
 
-                if (editor && editor.htContainer && !dropdown_scroll_reset) {
-                    dropdown_scroll_reset = true;
-                    editor.htContainer.scrollIntoView(false);
-                } else {
-                    dropdown_scroll_reset = false;
-                }
-            }, 100);
-
-            if (this.total_prices_view) {
-                this.total_prices_view.destroy();
+            if (editor && editor.htContainer && !dropdown_scroll_reset) {
+                dropdown_scroll_reset = true;
+                editor.htContainer.scrollIntoView(false);
+            } else {
+                dropdown_scroll_reset = false;
             }
+        }, 100);
 
-            this.total_prices_view = new UnitsTableTotalPricesView({
-                model: App.current_quote,
-                units: this.collection,
-                extras: this.options.extras,
-            });
-
-            this.ui.$total_prices_container.append(this.total_prices_view.render().el);
-
-            this.undo_manager.registerButton('undo', this.ui.$undo);
-            this.undo_manager.registerButton('redo', this.ui.$redo);
-
-            $(window).off('keydown').on('keydown', (e) => {
-                if (!e.isDuplicate && $(e.target).hasClass('copyPaste')) {
-                    onBeforeKeyDown(e);
-                }
-            });
+        if (this.total_prices_view) {
+            this.total_prices_view.destroy();
         }
+
+        this.total_prices_view = new UnitsTableTotalPricesView({
+            model: App.current_quote,
+            units: this.collection,
+            extras: this.options.extras,
+        });
+
+        this.ui.$total_prices_container.append(this.total_prices_view.render().el);
+
+        this.undo_manager.registerButton('undo', this.ui.$undo);
+        this.undo_manager.registerButton('redo', this.ui.$redo);
+
+        $(window).off('keydown').on('keydown', (e) => {
+            if (!e.isDuplicate && $(e.target).hasClass('copyPaste')) {
+                onBeforeKeyDown(e);
+            }
+        });
     },
     onBeforeDestroy() {
         clearInterval(this.dropdown_scroll_timer);

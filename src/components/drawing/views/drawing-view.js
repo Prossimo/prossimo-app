@@ -278,25 +278,14 @@ export default Marionette.View.extend({
     },
     handleArchedClick() {
         if (!this.state.selectedSashId) {
-            console.warn('no sash selected');
-            return;
+            throw new Error('No sash selected');
         }
 
-        this.model._updateSection(this.state.selectedSashId, (section) => {
-            section.arched = !section.arched;
-
-            if (this.model.isRootSection(section.id)) {
-                const width = this.model.getInMetric('width', 'mm');
-                const height = this.model.getInMetric('height', 'mm');
-
-                section.archPosition = Math.min(width / 2, height);
-            }
-        });
+        this.model.toggleArched(this.state.selectedSashId);
     },
     handleCircularClick() {
         if (!this.state.selectedSashId) {
-            console.warn('no sash selected');
-            return;
+            throw new Error('No sash selected');
         }
 
         this.model.toggleCircular(this.state.selectedSashId);
@@ -439,7 +428,7 @@ export default Marionette.View.extend({
     },
 
     bindModuleEvents() {
-        this.listenTo(this.module, 'state:selected:mullion', function (data) {
+        this.listenTo(this.module, 'state:selected:mullion', (data) => {
             if (data.newValue) {
                 this.module.disableDelayedHover();
             } else {
@@ -448,7 +437,7 @@ export default Marionette.View.extend({
             this.deselectAll();
             this.setState({ selectedMullionId: data.newValue });
         });
-        this.listenTo(this.module, 'state:selected:sash', function (data) {
+        this.listenTo(this.module, 'state:selected:sash', (data) => {
             const sourceSashId = data.oldValue;
             const targetSashId = data.newValue;
             if (targetSashId) {
@@ -467,17 +456,17 @@ export default Marionette.View.extend({
                 this.setState({ selectedSashId: targetSashId });
             }
         });
-        this.listenTo(this.module, 'labelClicked', function (data) {
+        this.listenTo(this.module, 'labelClicked', (data) => {
             this.createInput(data.params, data.pos, data.size);
         });
-        this.listenTo(this.module, 'mullionNumericInput', function (data) {
+        this.listenTo(this.module, 'mullionNumericInput', (data) => {
             this.createMullionInput(data.mullionId);
         });
-        this.listenTo(this.module, 'state:cloneFillingSource state:syncFillingSource', function () {
+        this.listenTo(this.module, 'state:cloneFillingSource state:syncFillingSource', () => {
             this.updateUI();
             this.$('#drawing').focus();
         });
-        this.listenTo(this.module, 'state:sectionHoverMenuOpen', function (data) {
+        this.listenTo(this.module, 'state:sectionHoverMenuOpen', (data) => {
             const pointerPosition = this.stage.getPointerPosition();
             const x = pointerPosition && pointerPosition.x;
             const y = pointerPosition && pointerPosition.y;
@@ -563,7 +552,7 @@ export default Marionette.View.extend({
             })
             .focus()
             .select()
-            .on('keyup', function (e) {
+            .on('keyup', function onKeyUp(e) {
                 if (e.keyCode === 13) {  // enter
                     let _value = this.value;
                     let sign = 1;
@@ -626,7 +615,7 @@ export default Marionette.View.extend({
                     $wrap.remove();
                 }
             });
-        const closeWrap = function () {
+        const closeWrap = () => {
             if (self.setState) {
                 self.setState({ inputFocused: false });
             }
@@ -651,7 +640,7 @@ export default Marionette.View.extend({
             })
             .focus()
             .select()
-            .on('keydown', function (e) {
+            .on('keydown', (e) => {
                 const input = e.target;
                 const attr = (isVertical) ? 'width' : 'height';
                 const newValue = parseFormat.dimensions(this.value, attr);
@@ -713,15 +702,17 @@ export default Marionette.View.extend({
     },
     toggleSectionHoverMenu(newState, options) {
         const oldState = this.ui.$hovering_section_controls.hasClass('open');
-        newState = (!_.isUndefined(newState)) ? newState : !oldState;
-        if (newState === oldState) { return; }
+        const currentNewState = (!_.isUndefined(newState)) ? newState : !oldState;
+
+        if (currentNewState === oldState) { return; }
+
         const x = options && options.x;
         const y = options && options.y;
 
-        this.ui.$hovering_section_controls.toggleClass('open', newState);
+        this.ui.$hovering_section_controls.toggleClass('open', currentNewState);
         if (!_.isUndefined(x)) { this.ui.$hovering_section_controls.css('left', `${x}px`); }
         if (!_.isUndefined(y)) { this.ui.$hovering_section_controls.css('top', `${y}px`); }
-        this.module.setState('sectionHoverMenuOpen', newState);
+        this.module.setState('sectionHoverMenuOpen', currentNewState);
     },
     openSectionHoverMenu(options) {
         this.toggleSectionHoverMenu(true, options);
@@ -845,10 +836,9 @@ export default Marionette.View.extend({
     updateSection(sectionId, type) {
         const view = this;
         const section = this.model.getSection(sectionId);
+        const current_type = type || section.divider;
 
-        type = type || section.divider;
-
-        if (type === 'both') {
+        if (current_type === 'both') {
             view.updateSection(sectionId, 'vertical');
             view.updateSection(sectionId, 'horizontal');
         }
@@ -856,7 +846,7 @@ export default Marionette.View.extend({
         // If section has children — update them recursively
         if (section.sections && section.sections.length) {
             section.sections.forEach((child) => {
-                view.updateSection(child.id, type);
+                view.updateSection(child.id, current_type);
             });
         }
     },
@@ -876,11 +866,13 @@ export default Marionette.View.extend({
         });
     },
     elementsToShortcuts(elements) {
-        if (!elements) { return; }
-        if (elements instanceof window.jQuery) { elements = elements.toArray(); }
+        let current_elements = elements;
+
+        if (!current_elements) { return; }
+        if (current_elements instanceof window.jQuery) { current_elements = current_elements.toArray(); }
 
         const keysToElementsTable = {};
-        elements.forEach((element) => {
+        current_elements.forEach((element) => {
             const key = element.dataset.key;
             keysToElementsTable[key] = keysToElementsTable[key] || [];
             keysToElementsTable[key].push(element);

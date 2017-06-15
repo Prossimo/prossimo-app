@@ -30,10 +30,9 @@ export default Backbone.Collection.extend({
     },
     getAvailableOptions(dictionary_id, profile_id, put_default_first) {
         const target_dictionary = this.get(dictionary_id);
+        const should_put_default_first = put_default_first || false;
         let available_options = [];
         let default_option;
-
-        put_default_first = put_default_first || false;
 
         if (target_dictionary) {
             available_options = target_dictionary.entries.getAvailableForProfile(profile_id);
@@ -41,7 +40,7 @@ export default Backbone.Collection.extend({
         }
 
         //  Union merges arrays and removes duplicates
-        if (put_default_first && default_option && available_options.length > 1) {
+        if (should_put_default_first && default_option && available_options.length > 1) {
             available_options = _.union([default_option], available_options);
         }
 

@@ -59,9 +59,9 @@ export default Backbone.Model.extend({
     defaults() {
         const defaults = {};
 
-        _.each(PROFILE_PROPERTIES, function (item) {
+        _.each(PROFILE_PROPERTIES, (item) => {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
-        }, this);
+        });
 
         return defaults;
     },
@@ -108,11 +108,13 @@ export default Backbone.Model.extend({
         return default_value;
     },
     sync(method, model, options) {
+        const current_options = options;
+
         if (method === 'create' || method === 'update') {
-            options.attrs = { profile: model.toJSON() };
+            current_options.attrs = { profile: model.toJSON() };
         }
 
-        return Backbone.sync.call(this, method, model, options);
+        return Backbone.sync.call(this, method, model, current_options);
     },
     parse(data) {
         const profile_data = data && data.profile ? data.profile : data;
@@ -151,14 +153,12 @@ export default Backbone.Model.extend({
 
         return _.omit(json, properties_to_omit);
     },
-    validate(attributes, options) {
+    validate(attributes) {
         let error_obj = null;
         const collection_names = this.collection && _.map(this.collection.without(this), item => item.get('name'));
 
         //  We want to have unique profile names across the collection
-        if (options.validate && collection_names &&
-            _.contains(collection_names, attributes.name)
-        ) {
+        if (collection_names && _.contains(collection_names, attributes.name)) {
             return {
                 attribute_name: 'name',
                 error_message: `Profile name "${attributes.name}" is already used in this collection`,
@@ -166,9 +166,7 @@ export default Backbone.Model.extend({
         }
 
         //  Don't allow profile names that consist of numbers only ("123")
-        if (options.validate && attributes.name &&
-            parseInt(attributes.name, 10).toString() === attributes.name
-        ) {
+        if (attributes.name && parseInt(attributes.name, 10).toString() === attributes.name) {
             return {
                 attribute_name: 'name',
                 error_message: 'Profile name can\'t consist of only numbers',
@@ -176,8 +174,9 @@ export default Backbone.Model.extend({
         }
 
         //  Simple type validation for numbers and booleans
-        _.find(attributes, function (value, key) {
+        _.find(attributes, (value, key) => {
             let attribute_obj = this.getNameTitleTypeHash([key]);
+            let has_validation_error = false;
 
             attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
 
@@ -189,25 +188,25 @@ export default Backbone.Model.extend({
                     error_message: `${attribute_obj.title} can't be set to "${value}", it should be a number`,
                 };
 
-                return false;
+                has_validation_error = true;
             } else if (attribute_obj && attribute_obj.type === 'boolean' && !_.isBoolean(value)) {
                 error_obj = {
                     attribute_name: key,
                     error_message: `${attribute_obj.title} can't be set to "${value}", it should be a boolean`,
                 };
 
-                return false;
+                has_validation_error = true;
             }
-        }, this);
 
-        if (options.validate && error_obj) {
-            return error_obj;
-        }
+            return has_validation_error;
+        });
+
+        return error_obj;
     },
     hasOnlyDefaultAttributes() {
         let has_only_defaults = true;
 
-        _.each(this.toJSON(), function (value, key) {
+        _.each(this.toJSON(), (value, key) => {
             if (key !== 'position' && has_only_defaults) {
                 const property_source = _.findWhere(PROFILE_PROPERTIES, { name: key });
                 const type = property_source ? property_source.type : undefined;
@@ -224,7 +223,7 @@ export default Backbone.Model.extend({
                     has_only_defaults = false;
                 }
             }
-        }, this);
+        });
 
         return has_only_defaults;
     },
@@ -280,14 +279,11 @@ export default Backbone.Model.extend({
     //  Return { name: 'name', title: 'Title' } pairs for each item in
     //  `names` array. If the array is empty, return all possible pairs
     getNameTitleTypeHash(names) {
+        const selected_names = names || _.pluck(PROFILE_PROPERTIES, 'name');
         const name_title_hash = [];
 
-        if (!names) {
-            names = _.pluck(PROFILE_PROPERTIES, 'name');
-        }
-
         _.each(PROFILE_PROPERTIES, (item) => {
-            if (_.indexOf(names, item.name) !== -1) {
+            if (_.indexOf(selected_names, item.name) !== -1) {
                 name_title_hash.push({ name: item.name, title: item.title, type: item.type });
             }
         });
@@ -331,13 +327,13 @@ export default Backbone.Model.extend({
         this.options = options || {};
 
         //  Save pricing grids on grid item change
-        this.listenTo(this.get('pricing_grids'), 'change update', function (changed_object) {
+        this.listenTo(this.get('pricing_grids'), 'change update', (changed_object) => {
             this.trigger('change:pricing_grids change', changed_object);
             this.persist('pricing_grids', this.get('pricing_grids'));
         });
 
         //  Save pricing_equation_params on param change
-        this.listenTo(this.get('pricing_equation_params'), 'change update', function (changed_object) {
+        this.listenTo(this.get('pricing_equation_params'), 'change update', (changed_object) => {
             this.trigger('change:pricing_equation_params change', changed_object);
             this.persist('pricing_equation_params', this.get('pricing_equation_params'));
         });

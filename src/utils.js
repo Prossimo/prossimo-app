@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import clone from 'clone';
 import Decimal from 'decimal.js';
 
 const MAX_DENOMINATOR = 16;
@@ -16,25 +17,19 @@ export const convert = {
 
 export const format = {
     dimension(value, decimal_format, inches_display_mode, zero_inch_display_mode) {
+        const current_decimal_format = _.contains(['floating', 'fraction'], decimal_format) ? decimal_format : 'floating';
+        const current_inches_display_mode = _.contains(['feet_and_inches', 'inches_only'], inches_display_mode) ?
+            inches_display_mode :
+            'feet_and_inches';
+        const current_zero_inch_display_mode = _.contains(['show', 'remove'], zero_inch_display_mode) ? zero_inch_display_mode : 'show';
+
         let value_feet;
         let value_inches;
         let integer_part;
         let fractional_part;
         let closest_possible_fraction = 0;
 
-        decimal_format = decimal_format &&
-            _.indexOf(['floating', 'fraction'], decimal_format) !== -1 ?
-            decimal_format : 'floating';
-
-        inches_display_mode = inches_display_mode &&
-            _.indexOf(['feet_and_inches', 'inches_only'], inches_display_mode) !== -1 ?
-            inches_display_mode : 'feet_and_inches';
-
-        zero_inch_display_mode = zero_inch_display_mode &&
-            _.indexOf(['show', 'remove'], zero_inch_display_mode) !== -1 ?
-            zero_inch_display_mode : 'show';
-
-        if (inches_display_mode === 'feet_and_inches') {
+        if (current_inches_display_mode === 'feet_and_inches') {
             value_feet = Math.floor(parseFloat(value) / 12);
             value_inches = parseFloat(value) % 12;
         } else {
@@ -62,7 +57,7 @@ export const format = {
             value_inches = 0;
         }
 
-        if (decimal_format === 'fraction') {
+        if (current_decimal_format === 'fraction') {
             if (value_inches - Math.floor(value_inches)) {
                 fractional_part = (value_inches - Math.floor(value_inches));
 
@@ -82,7 +77,7 @@ export const format = {
 
                 integer_part = Math.floor(value_inches);
                 fractional_part = closest_possible_fraction.toFixed(MAX_SIGNIFICANT_DIGITS);
-                value_inches = (integer_part || zero_inch_display_mode === 'show' ?
+                value_inches = (integer_part || current_zero_inch_display_mode === 'show' ?
                     `${integer_part} ` : '') +
                     new Decimal(fractional_part).toFraction(MAX_DENOMINATOR).join('/');
             }
@@ -131,9 +126,9 @@ export const format = {
             new Decimal(Math.abs(parseFloat(price)).toFixed(2)).toFormat(2)}`;
     },
     percent(value, num) {
-        num = _.isNumber(num) ? (num < MAX_SIGNIFICANT_DIGITS ? num : MAX_SIGNIFICANT_DIGITS) : 2;
+        const current_num = _.isNumber(num) ? Math.min(num, MAX_SIGNIFICANT_DIGITS) : 2;
 
-        return `${new Decimal(parseFloat(value).toFixed(num)).toFormat()}%`;
+        return `${new Decimal(parseFloat(value).toFixed(current_num)).toFormat()}%`;
     },
     percent_difference(value, num) {
         const result = this.percent(value, num);
@@ -141,8 +136,9 @@ export const format = {
         return result === '0%' || result.indexOf('-') !== -1 ? result : `+${result}`;
     },
     fixed(value, num) {
-        num = _.isNumber(num) ? (num < MAX_SIGNIFICANT_DIGITS ? num : MAX_SIGNIFICANT_DIGITS) : 2;
-        return new Decimal(parseFloat(value).toFixed(num)).toFormat(num);
+        const current_num = _.isNumber(num) ? Math.min(num, MAX_SIGNIFICANT_DIGITS) : 2;
+
+        return new Decimal(parseFloat(value).toFixed(current_num)).toFormat(current_num);
     },
     fixed_minimal(value, num) {
         let result;
@@ -169,18 +165,16 @@ export const format = {
     },
     //  Includes a non-breaking space character
     square_feet(value, num, suffix_format) {
-        suffix_format = (suffix_format && _.indexOf(['normal', 'sup'], suffix_format) !== -1) ?
-            suffix_format : 'normal';
-        return this.fixed_minimal(value, num) +
-            (suffix_format === 'sup' ? '\u00A0ft<sup>2</sup>' :
-            (suffix_format === 'normal') ? '\u00A0sq.ft' :
-            '');
+        const current_suffix_format = _.contains(['normal', 'sup'], suffix_format) ? suffix_format : 'normal';
+        const current_suffx = current_suffix_format === 'sup' ? '\u00A0ft<sup>2</sup>' : '\u00A0sq.ft';
+
+        return this.fixed_minimal(value, num) + current_suffx;
     },
     //  Includes a non-breaking space character
     square_meters(value, num, suffix_format) {
-        suffix_format = (suffix_format && _.indexOf(['normal', 'sup'], suffix_format) !== -1) ? suffix_format : 'sup';
+        const current_suffix_format = _.contains(['normal', 'sup'], suffix_format) ? suffix_format : 'sup';
 
-        return this.fixed_minimal(value, num) + (suffix_format === 'sup' ? '\u00A0m<sup>2</sup>' : '\u00A0sq.m');
+        return this.fixed_minimal(value, num) + (current_suffix_format === 'sup' ? '\u00A0m<sup>2</sup>' : '\u00A0sq.m');
     },
     //  Includes a non-breaking space character
     weight(value) {
@@ -195,18 +189,14 @@ export const format = {
         area_num,
         area_format,
     ) {
-        decimal_format = decimal_format &&
-            _.indexOf(['floating', 'fraction'], decimal_format) !== -1 ?
-            decimal_format : 'fraction';
+        const current_decimal_format = _.contains(['floating', 'fraction'], decimal_format) ? decimal_format : 'fraction';
+        const current_inches_display_mode = _.contains(['feet_and_inches', 'inches_only'], inches_display_mode) ?
+            inches_display_mode :
+            'inches_only';
+        const current_area_format = _.contains(['normal', 'sup'], area_format) ? area_format : 'sup';
 
-        inches_display_mode = inches_display_mode && _.indexOf(['feet_and_inches', 'inches_only'], inches_display_mode) !== -1 ?
-            inches_display_mode : 'inches_only';
-
-        area_format = (area_format && _.indexOf(['normal', 'sup'], area_format) !== -1) ?
-            area_format : 'sup';
-
-        return `${this.dimensions(width, height, decimal_format, inches_display_mode)
-            } (${this.square_feet(area, area_num, area_format)})`;
+        return `${this.dimensions(width, height, current_decimal_format, current_inches_display_mode)
+            } (${this.square_feet(area, area_num, current_area_format)})`;
     },
     dimensions_and_area_mm(
         width,
@@ -221,15 +211,16 @@ export const format = {
     //  Includes a non-breaking space character
     fileSize(size_in_bytes) {
         const suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+        let current_size_in_bytes = size_in_bytes;
         let counter = 0;
 
-        while (parseFloat(size_in_bytes) >= 1024) {
-            size_in_bytes = parseFloat(size_in_bytes) / 1024;
+        while (parseFloat(current_size_in_bytes) >= 1024) {
+            current_size_in_bytes = parseFloat(current_size_in_bytes) / 1024;
             counter += 1;
         }
 
         return suffixes[counter] ?
-            `${this.fixed_minimal(size_in_bytes, counter < 2 ? 0 : 1)}\u00A0${suffixes[counter]}` :
+            `${this.fixed_minimal(current_size_in_bytes, counter < 2 ? 0 : 1)}\u00A0${suffixes[counter]}` :
             'Ovflw.';
     },
 };
@@ -288,13 +279,12 @@ export const parseFormat = {
         return parseFloat(result);
     },
     dimensions(size_string, attr) {
+        const current_attr = _.contains(['both', 'width', 'height'], attr) ? attr : 'both';
+
         let width;
         let height;
         let result;
         let match;
-
-        attr = attr && _.indexOf(['both', 'width', 'height'], attr) !== -1 ?
-            attr : 'both';
 
         const pattern = /(\S+(?:\s*\S*)*)\s*(?:x|X|✕|✖)\s*(\S+(?:\s*\S*)*)/i;
 
@@ -323,9 +313,9 @@ export const parseFormat = {
             height = this.dimension(height);
         }
 
-        if (attr === 'width') {
+        if (current_attr === 'width') {
             result = width;
-        } else if (attr === 'height') {
+        } else if (current_attr === 'height') {
             result = height;
         } else {
             result = {
@@ -355,19 +345,22 @@ export const math = {
 
 export const object = {
     deep_extend(a, b) {
-        if (_.isObject(a) && _.isObject(b)) {
-            Object.keys(b).forEach((prop) => {
-                if (prop in a && _.isObject(b[prop])) {
-                    object.deep_extend(a[prop], b[prop]);
+        const cloned_b = clone(b);
+        let cloned_a = clone(a);
+
+        if (_.isObject(cloned_a) && _.isObject(cloned_b)) {
+            Object.keys(cloned_b).forEach((prop) => {
+                if (prop in cloned_a && _.isObject(cloned_b[prop])) {
+                    object.deep_extend(cloned_a[prop], cloned_b[prop]);
                 } else {
-                    a[prop] = b[prop];
+                    cloned_a[prop] = cloned_b[prop];
                 }
             });
-        } else if (!(_.isUndefined(b) || _.isNull(b) || _.isNaN(b))) {
-            a = b;
+        } else if (!(_.isUndefined(cloned_b) || _.isNull(cloned_b) || _.isNaN(cloned_b))) {
+            cloned_a = cloned_b;
         }
 
-        return a;
+        return cloned_a;
     },
     extractObjectOrNull(data_object) {
         let result = null;
@@ -402,40 +395,39 @@ export const vector2d = {
         return { x: 0, y: 0 };
     },
     length(v) {
-        v = vector2d.getVector(v);
+        const vector = vector2d.getVector(v);
 
-        return Math.sqrt((v.x ** 2) + (v.y ** 2));
+        return Math.sqrt((vector.x ** 2) + (vector.y ** 2));
     },
     normalize(v) {
-        v = vector2d.getVector(v);
+        const vector = vector2d.getVector(v);
+        const len = vector2d.length(vector);
 
-        const len = vector2d.length(v);
-
-        return { x: v.x / len, y: v.y / len };
+        return { x: vector.x / len, y: vector.y / len };
     },
     add(v1, v2) {
-        v1 = vector2d.getVector(v1);
-        v2 = vector2d.getVector(v2);
+        const vector1 = vector2d.getVector(v1);
+        const vector2 = vector2d.getVector(v2);
 
-        return { x: v1.x + v2.x, y: v1.y + v2.y };
+        return { x: vector1.x + vector2.x, y: vector1.y + vector2.y };
     },
     substract(v1, v2) {
-        v1 = vector2d.getVector(v1);
-        v2 = vector2d.getVector(v2);
+        const vector1 = vector2d.getVector(v1);
+        const vector2 = vector2d.getVector(v2);
 
-        return { x: v1.x - v2.x, y: v1.y - v2.y };
+        return { x: vector1.x - vector2.x, y: vector1.y - vector2.y };
     },
     multiply(v1, v2) {
-        v1 = vector2d.getVector(v1);
-        v2 = vector2d.getVector(v2);
+        const vector1 = vector2d.getVector(v1);
+        const vector2 = vector2d.getVector(v2);
 
-        return { x: v1.x * v2.x, y: v1.y * v2.y };
+        return { x: vector1.x * vector2.x, y: vector1.y * vector2.y };
     },
     divide(v1, v2) {
-        v1 = vector2d.getVector(v1);
-        v2 = vector2d.getVector(v2);
+        const vector1 = vector2d.getVector(v1);
+        const vector2 = vector2d.getVector(v2);
 
-        return { x: v1.x / v2.x, y: v1.y / v2.y };
+        return { x: vector1.x / vector2.x, y: vector1.y / vector2.y };
     },
     scalar(v1, v2) {
         const sc = vector2d.multiply(v1, v2);
@@ -448,16 +440,16 @@ export const vector2d = {
             vector2d.normalize(v2),
         );
 
-        scalar = (scalar < -1) ? -1 : (scalar > 1) ? 1 : scalar;
+        //  Make sure scalar is between -1 and 1
+        scalar = Math.max(-1, Math.min(scalar, 1));
 
         return Math.acos(scalar);
     },
     clockwiseSort(input) {
         const base = Math.atan2(1, 0);
+        const input_mapped = input.map(vector2d.getVector);
 
-        input = input.map(vector2d.getVector);
-
-        return input.sort((a, b) =>
+        return input_mapped.sort((a, b) =>
             (Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x)) +
             (Math.atan2(b.y, b.x) > base ? -2 * Math.PI : 0) +
             (Math.atan2(a.y, a.x) > base ? 2 * Math.PI : 0));
@@ -549,13 +541,13 @@ export const geometry = {
 
 export const array = {
     moveByValue(arr, findVal, targetVal, after) {
-        after = after || false;
+        const current_after = after || false;
 
         const fi = arr.indexOf(findVal);
         let ti = arr.indexOf(targetVal);
 
         if (fi !== -1 && ti !== -1) {
-            if (after && ti !== arr.length) {
+            if (current_after && ti !== arr.length) {
                 ti += 1;
             }
 
@@ -568,7 +560,7 @@ export const array = {
 
 export const dom = {
     isElementVisible(element) {
-        if (!element) { return; }
+        if (!element) { return undefined; }
 
         let opacity = 1;
         window.jQuery(element).parents().andSelf().each((index, elem) => {

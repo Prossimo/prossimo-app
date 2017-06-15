@@ -50,7 +50,7 @@ export default Marionette.Object.extend({
         const reader = new FileReader();
         const self = this;
 
-        reader.onload = function (event) {
+        reader.onload = (event) => {
             self.processImage(event.target.result);
         };
 
@@ -91,7 +91,7 @@ export default Marionette.Object.extend({
     processImage(source) {
         const pastedImage = new Image();
 
-        pastedImage.onload = function () {
+        pastedImage.onload = () => {
             globalChannel.trigger('paste_image', source);
         };
 

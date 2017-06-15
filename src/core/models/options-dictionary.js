@@ -40,9 +40,9 @@ export default Backbone.Model.extend({
     defaults() {
         const defaults = {};
 
-        _.each(DICTIONARY_PROPERTIES, function (item) {
+        _.each(DICTIONARY_PROPERTIES, (item) => {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
-        }, this);
+        });
 
         return defaults;
     },
@@ -91,11 +91,13 @@ export default Backbone.Model.extend({
         return filtered_data;
     },
     sync(method, model, options) {
+        const current_options = options;
+
         if (method === 'create' || method === 'update') {
-            options.attrs = { dictionary: model.toJSON() };
+            current_options.attrs = { dictionary: model.toJSON() };
         }
 
-        return Backbone.sync.call(this, method, model, options);
+        return Backbone.sync.call(this, method, model, current_options);
     },
     toJSON(...args) {
         const properties_to_omit = ['id', 'entries'];
@@ -105,14 +107,12 @@ export default Backbone.Model.extend({
 
         return _.omit(json, properties_to_omit);
     },
-    validate(attributes, options) {
+    validate(attributes) {
         let error_obj = null;
         const collection_names = this.collection && _.map(this.collection.without(this), item => item.get('name'));
 
         //  We want to have unique dictionary names across the collection
-        if (options.validate && collection_names &&
-            _.contains(collection_names, attributes.name)
-        ) {
+        if (collection_names && _.contains(collection_names, attributes.name)) {
             return {
                 attribute_name: 'name',
                 error_message: `Dictionary name "${attributes.name}" is already used in this collection`,
@@ -120,9 +120,7 @@ export default Backbone.Model.extend({
         }
 
         //  Don't allow dictionary names that consist of numbers only ("123")
-        if (options.validate && attributes.name &&
-            parseInt(attributes.name, 10).toString() === attributes.name
-        ) {
+        if (attributes.name && parseInt(attributes.name, 10).toString() === attributes.name) {
             return {
                 attribute_name: 'name',
                 error_message: 'Dictionary name can\'t consist of only numbers',
@@ -130,8 +128,9 @@ export default Backbone.Model.extend({
         }
 
         //  Simple type validation for numbers and booleans
-        _.find(attributes, function (value, key) {
+        _.find(attributes, (value, key) => {
             let attribute_obj = this.getNameTitleTypeHash([key]);
+            let has_validation_error = false;
 
             attribute_obj = attribute_obj.length === 1 ? attribute_obj[0] : null;
 
@@ -143,25 +142,25 @@ export default Backbone.Model.extend({
                     error_message: `${attribute_obj.title} can't be set to "${value}", it should be a number`,
                 };
 
-                return false;
+                has_validation_error = true;
             } else if (attribute_obj && attribute_obj.type === 'boolean' && !_.isBoolean(value)) {
                 error_obj = {
                     attribute_name: key,
                     error_message: `${attribute_obj.title} can't be set to "${value}", it should be a boolean`,
                 };
 
-                return false;
+                has_validation_error = true;
             }
-        }, this);
 
-        if (options.validate && error_obj) {
-            return error_obj;
-        }
+            return has_validation_error;
+        });
+
+        return error_obj;
     },
     hasOnlyDefaultAttributes() {
         let has_only_defaults = true;
 
-        _.each(this.toJSON(), function (value, key) {
+        _.each(this.toJSON(), (value, key) => {
             if (key !== 'position' && has_only_defaults) {
                 const property_source = _.findWhere(DICTIONARY_PROPERTIES, { name: key });
                 const type = property_source ? property_source.type : undefined;
@@ -176,21 +175,18 @@ export default Backbone.Model.extend({
                     has_only_defaults = false;
                 }
             }
-        }, this);
+        });
 
         return has_only_defaults;
     },
     //  Return { name: 'name', title: 'Title' } pairs for each item in
     //  `names` array. If the array is empty, return all possible pairs
     getNameTitleTypeHash(names) {
+        const selected_names = names || _.pluck(DICTIONARY_PROPERTIES, 'name');
         const name_title_hash = [];
 
-        if (!names) {
-            names = _.pluck(DICTIONARY_PROPERTIES, 'name');
-        }
-
         _.each(DICTIONARY_PROPERTIES, (item) => {
-            if (_.indexOf(names, item.name) !== -1) {
+            if (_.indexOf(selected_names, item.name) !== -1) {
                 name_title_hash.push({ name: item.name, title: item.title, type: item.type });
             }
         });
@@ -228,7 +224,7 @@ export default Backbone.Model.extend({
             this.unset('entries', { silent: true });
             this.entries.trigger('fully_loaded');
 
-            this.listenTo(this.entries, 'change', function (e) {
+            this.listenTo(this.entries, 'change', (e) => {
                 this.trigger('entries_change', e);
             });
         }

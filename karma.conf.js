@@ -2,6 +2,6 @@
 
 const conf = require('./tools/config/karma.conf');
 
-module.exports = function (config) {
+module.exports = (config) => {
     config.set(conf);
 };
