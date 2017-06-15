@@ -24,6 +24,8 @@ import MainSupplierRequestView from './components/supplier-request/views/main-su
 
 class Application extends Marionette.Application {
     constructor(options = {}) {
+
+
         super(Object.assign({
             //  Register a communication channel for all events in the app
             channelName: getGlobalChannelName(),
