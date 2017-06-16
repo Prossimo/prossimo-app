@@ -14,3 +14,8 @@ test:
   pre:
     - mkdir -p $CIRCLE_TEST_REPORTS/reports
     - npm run lint -- --format junit --output-file $CIRCLE_TEST_REPORTS/reports/eslint.xml
+  override:
+    - npm test -- --reporters junit:
+        environment:
+          JUNIT_REPORT_PATH: $CIRCLE_TEST_REPORTS/junit/
+          JUNIT_REPORT_NAME: test-results.xml

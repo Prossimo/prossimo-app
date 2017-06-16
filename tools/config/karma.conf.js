@@ -38,12 +38,19 @@ module.exports = {
         showDiff: false,
     },
 
+    junitReporter: {
+        outputDir: process.env.JUNIT_REPORT_PATH,
+        outputFile: process.env.JUNIT_REPORT_NAME,
+        useBrowserName: false,
+    },
+
     plugins: [
         require('karma-webpack'),
         require('karma-mocha'),
         require('karma-coverage'),
         require('karma-phantomjs-launcher'),
         require('karma-mocha-reporter'),
+        require('karma-junit-reporter'),
         require('karma-sinon-chai'),
         require('karma-jquery-chai'),
         require('karma-sourcemap-loader'),
