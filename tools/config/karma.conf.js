@@ -11,6 +11,7 @@ const doVisual = config.get('onlyVisualTests');
 module.exports = {
     basePath: '',
     files: [
+        path.resolve(rootPath, './node_modules/babel-polyfill/dist/polyfill.js'),
         path.resolve(rootPath, './test/index.js'),
         path.resolve(rootPath, `./test/**/*.${doVisual ? 'visual' : 'spec'}.js`),
     ],
@@ -58,4 +59,5 @@ module.exports = {
     ],
 
     browsers: ['PhantomJS'],
+    browserNoActivityTimeout: 30000,
 };
