@@ -70,7 +70,7 @@ First, ensure that your code passes lint checks:
 npm run lint
 ```
 
-This command is powered by `eslint`. We mostly rely on the [config used by aribnb](https://github.com/airbnb/javascript), but have a few minor changes (see our `.eslintrc` for that). Also, our tests and development tools use slightly different configurations as well, but mostly follow our root configuration. _Currently, our configuration produces a lot of warnings (yellow). This is okay for now. However, any errors (red) are not okay and should be fixed immediately._
+This command is powered by `eslint`. We mostly rely on the [config used by aribnb](https://github.com/airbnb/javascript), but have a few minor changes (see our `.eslintrc` for that). Also, our tests and development tools use slightly different configurations as well, but mostly follow our root configuration.
 
 Then, run unit tests with this command:
 

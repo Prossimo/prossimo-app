@@ -31,7 +31,7 @@ test('Prices tests', () => {
             project_address: '827 Carpenter Lane Philadelphia, PA',
         });
 
-        equal(current_project.get('client_name'), 'Andy Whatever', 'Client name should be Andy Huh');
+        equal(current_project.get('client_name'), 'Andy Huh', 'Client name should be Andy Huh');
         ok(_.isArray(current_project.quotes.models), 'Quotes collection should be an array');
         equal(current_project.quotes.models.length, 0, 'Quotes collection shoud have no items');
     });

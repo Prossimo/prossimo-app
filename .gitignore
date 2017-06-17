@@ -17,4 +17,5 @@ split
 .idea
 /local.conf.json
 /log
+/reports
 npm-debug.log
