@@ -4,26 +4,34 @@ import FileUploaderView from '../../file-uploader-view/file-uploader-view';
 import Project from '../../../core/models/project';
 import template from '../../../templates/dialogs/create-project-dialog-view.hbs';
 
-export default BaseDialogView.extend({
-    className: 'create-project-modal modal fade',
-    template,
-    ui: {
-        $form: '.modal-body form',
-        $filesRegion: '.form-control-files',
-        $data_project_name: '.modal-body form input[name="project_name"]',
-        $data_client_name: '.modal-body form input[name="client_name"]',
-        $data_company: '.modal-body form input[name="company"]',
-        $data_phone: '.modal-body form input[name="phone"]',
-        $data_email: '.modal-body form input[name="email"]',
-        $data_client_address: '.modal-body form input[name="client_address"]',
-        $data_project_address: '.modal-body form input[name="project_address"]',
-        $data_project_notes: '.modal-body form textarea[name="project_notes"]',
-        $data_shipping_notes: '.modal-body form textarea[name="shipping_notes"]',
-        $data_lead_time: '.modal-body form input[name="lead_time"]',
-    },
-    events: {
-        'submit form': 'addNewProject',
-    },
+export default class extends BaseDialogView {
+    constructor(...args) {
+        super({
+            className: 'create-project-modal modal fade',
+            template,
+            ui: {
+                $form: '.modal-body form',
+                $filesRegion: '.form-control-files',
+                $data_project_name: '.modal-body form input[name="project_name"]',
+                $data_client_name: '.modal-body form input[name="client_name"]',
+                $data_company: '.modal-body form input[name="company"]',
+                $data_phone: '.modal-body form input[name="phone"]',
+                $data_email: '.modal-body form input[name="email"]',
+                $data_client_address: '.modal-body form input[name="client_address"]',
+                $data_project_address: '.modal-body form input[name="project_address"]',
+                $data_project_notes: '.modal-body form textarea[name="project_notes"]',
+                $data_shipping_notes: '.modal-body form textarea[name="shipping_notes"]',
+                $data_lead_time: '.modal-body form input[name="lead_time"]',
+            },
+            events: {
+                'submit form': 'addNewProject',
+            },
+            templateContext: {
+                dialog_title: 'Create Project',
+            },
+            ...args,
+        });
+    }
     addNewProject(e) {
         const newProject = new Project({
             project_name: this.ui.$data_project_name.val().trim(),
@@ -42,12 +50,7 @@ export default BaseDialogView.extend({
         e.preventDefault();
         this.$el.modal('hide');
         App.projects.create(newProject);
-    },
-    templateContext() {
-        return {
-            dialog_title: 'Create Project',
-        };
-    },
+    }
     onRender() {
         if (this.file_uploader) {
             this.file_uploader.destroy();
@@ -59,10 +62,10 @@ export default BaseDialogView.extend({
 
         this.file_uploader.render()
             .$el.appendTo(this.ui.$filesRegion);
-    },
+    }
     onBeforeDestroy() {
         if (this.file_uploader) {
             this.file_uploader.destroy();
         }
-    },
-});
+    }
+}
