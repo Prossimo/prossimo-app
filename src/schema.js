@@ -9,10 +9,7 @@ export default {
         const schema = {};
 
         _.each(properties_array, (property) => {
-            schema[property.name] = {
-                type: property.type,
-                title: property.title,
-            };
+            schema[property.name] = { ...property };
         });
 
         return schema;

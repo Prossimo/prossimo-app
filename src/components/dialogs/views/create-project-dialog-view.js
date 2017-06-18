@@ -9,6 +9,7 @@ export default class extends BaseDialogView {
         super({
             className: 'create-project-modal modal fade',
             template,
+            model: new Project(),
             ui: {
                 $form: '.modal-body form',
                 $filesRegion: '.form-control-files',
@@ -26,8 +27,11 @@ export default class extends BaseDialogView {
             events: {
                 'submit form': 'addNewProject',
             },
-            templateContext: {
-                dialog_title: 'Create Project',
+            templateContext() {
+                return {
+                    dialog_title: 'Create Project',
+                    schema: this.model.schema,
+                };
             },
             ...args,
         });
