@@ -449,8 +449,8 @@ export default Marionette.View.extend({
                 let profile_id = null;
                 const profile_by_id =
                     (parseInt(val, 10).toString() === val || parseInt(val, 10) === val) &&
-                    App.settings && App.settings.getProfileByIdOrDummy(parseInt(val, 10));
-                const profile_id_by_name = App.settings && App.settings.getProfileIdByName(val);
+                    App.settings && App.settings.profiles.getProfileByIdOrDummy(parseInt(val, 10));
+                const profile_id_by_name = App.settings && App.settings.profiles.getProfileIdByName(val);
 
                 if (profile_by_id && profile_by_id.get('is_dummy') !== true) {
                     profile_id = profile_by_id.get('id');
@@ -690,7 +690,7 @@ export default Marionette.View.extend({
             },
             profile_id: {
                 type: 'dropdown',
-                source: App.settings.getAvailableProfileNames(),
+                source: App.settings.profiles.getAvailableProfileNames(),
                 renderer: hotRenderers.unitProfileRenderer,
             },
             total_square_feet: {
@@ -711,11 +711,11 @@ export default Marionette.View.extend({
             },
             glazing_bar_width: {
                 type: 'dropdown',
-                source: App.settings.getGlazingBarWidths().map(item => item.toString()),
+                source: this.collection.getGlazingBarWidths().map(item => item.toString()),
             },
             opening_direction: {
                 type: 'dropdown',
-                source: App.settings.getOpeningDirections(),
+                source: this.collection.getOpeningDirections(),
             },
             subtotal_profit: {
                 readOnly: true,

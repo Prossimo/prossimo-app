@@ -2,7 +2,6 @@ import _ from 'underscore';
 import $ from 'jquery';
 import Marionette from 'backbone.marionette';
 
-import App from '../../../main';
 import PricingGridsEditorView from './pricing-grids-editor-view';
 import EquationParamsView from './equation-params-view';
 import BaseSelectView from '../../../core/views/base/base-select-view';
@@ -160,9 +159,9 @@ export default Marionette.View.extend({
             if (attribute_name === 'unit_type') {
                 data_array = model.getUnitTypes();
             } else if (attribute_name === 'sash_corners') {
-                data_array = App.settings.getSashCornerTypes();
+                data_array = model.getSashCornerTypes();
             } else if (attribute_name === 'frame_corners') {
-                data_array = App.settings.getFrameCornerTypes();
+                data_array = model.getFrameCornerTypes();
             } else if (attribute_name === 'pricing_scheme') {
                 data_array = model.getPossiblePricingSchemes();
             }

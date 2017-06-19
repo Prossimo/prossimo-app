@@ -34,6 +34,12 @@ export default Backbone.Collection.extend({
     getTitles(names) {
         return this.proxy_unit.getTitles(names);
     },
+    getGlazingBarWidths() {
+        return this.proxy_unit.getGlazingBarWidths();
+    },
+    getOpeningDirections() {
+        return this.proxy_unit.getOpeningDirections();
+    },
     getSubtotalPrice() {
         let total_price = 0;
 
@@ -103,7 +109,7 @@ export default Backbone.Collection.extend({
         return _.map(this.groupBy('profile_id'), (units, profile_id) => new this.constructor(units, {
             model: this.model,
             comparator: this.comparator,
-            profile: App.settings.getProfileByIdOrDummy(profile_id),
+            profile: App.settings.profiles.getProfileByIdOrDummy(profile_id),
         }));
     },
     /**
