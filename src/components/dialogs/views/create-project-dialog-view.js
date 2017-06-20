@@ -1,4 +1,5 @@
 import props from '../../../utils/decorators/props';
+import stickableMixin from '../../../utils/decorators/stickableMixin';
 import BaseDialogView from './base-dialog-view';
 import App from '../../../main';
 import FileUploaderView from '../../file-uploader-view/file-uploader-view';
@@ -7,6 +8,9 @@ import template from '../../../templates/dialogs/create-project-dialog-view.hbs'
 
 @props({
     className: 'create-project-modal modal fade',
+    options: {
+        dialog_title: 'Create Project',
+    },
     template,
     model: new Project(),
     ui: {
@@ -28,11 +32,12 @@ import template from '../../../templates/dialogs/create-project-dialog-view.hbs'
     },
     templateContext() {
         return {
-            dialog_title: 'Create Project',
+            dialog_title: this.options.dialog_title,
             schema: this.model.schema,
         };
     },
 })
+@stickableMixin
 export default class extends BaseDialogView {
     addNewProject(e) {
         const newProject = new Project({
@@ -53,6 +58,15 @@ export default class extends BaseDialogView {
         this.$el.modal('hide');
         App.projects.create(newProject);
     }
+    bindings() {
+        return {
+            '@ui.$data_project_name': 'project_name',
+            '.modal-title': {
+                observe: 'project_name',
+                onGet: val => `${this.options.dialog_title}${val ? `: ${val}` : ''}`,
+            },
+        };
+    }
     onRender() {
         if (this.file_uploader) {
             this.file_uploader.destroy();
@@ -61,6 +75,10 @@ export default class extends BaseDialogView {
         this.file_uploader = new FileUploaderView({
             maxLength: 10,
         });
+
+        // setTimeout(() => {
+        //     this.model.set('project_name', 'test project');
+        // }, 4000);
 
         this.file_uploader.render()
             .$el.appendTo(this.ui.$filesRegion);
