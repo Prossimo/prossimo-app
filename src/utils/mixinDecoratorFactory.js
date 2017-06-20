@@ -1,5 +1,21 @@
 import _ from 'underscore';
 
+// Avoid closures
+function _createWrapper(_behaviourFn, prototypeFn) {
+    // you can't use arrow functions
+    return function (...args) { // eslint-disable-line func-names
+        let returnValue;
+        [_behaviourFn, prototypeFn].forEach((fn) => {
+            const returnedValue = _.isFunction(fn) ? fn.apply(this, args) : fn;
+            returnValue = (typeof returnedValue === 'undefined'
+                ? returnValue
+                : returnedValue);
+        });
+
+        return returnValue;
+    };
+}
+
 /**
  * Function to create mixin as decorator
  * thanks http://raganwald.com/2015/06/26/decorators-in-es7.html
@@ -23,20 +39,11 @@ export default function (behaviour, sharedBehaviour = {}) {
     function _mixin(clazz) {
         instanceKeys.forEach((property) => {
             let value;
-            const _behaviourFn = behaviour[property];
             // if parent class property anb property is function, we need to call it.
             if (Object.prototype.hasOwnProperty.call(clazz.prototype, property) && _.isFunction(clazz.prototype[property])) {
-                value = function _wrapper(...args) {
-                    let returnValue;
-                    [_behaviourFn, clazz.prototype[property]].forEach((fn) => {
-                        const returnedValue = _.isFunction(fn) ? fn.apply(this, args) : fn;
-                        returnValue = (typeof returnedValue === 'undefined' ? returnValue : returnedValue);
-                    });
-
-                    return returnValue;
-                };
+                value = _createWrapper(behaviour[property], clazz.prototype[property]);
             } else {
-                value = _behaviourFn;
+                value = behaviour[property];
             }
             Object.defineProperty(clazz.prototype, property,
                 { value, writable: true });
