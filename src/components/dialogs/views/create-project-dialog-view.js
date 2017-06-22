@@ -59,12 +59,20 @@ export default class extends BaseDialogView {
         App.projects.create(newProject);
     }
     bindings() {
+        const _schemaBindings = {};
+        Object.keys(this.model.schema).forEach((observe) => {
+            _schemaBindings[`[name=${observe}]`] = {
+                observe,
+                getVal($el) { return $el.val().trim(); },
+            };
+        });
         return {
             '@ui.$data_project_name': 'project_name',
             '.modal-title': {
                 observe: 'project_name',
                 onGet: val => `${this.options.dialog_title}${val ? `: ${val}` : ''}`,
             },
+            ..._schemaBindings,
         };
     }
     onRender() {
@@ -75,10 +83,6 @@ export default class extends BaseDialogView {
         this.file_uploader = new FileUploaderView({
             maxLength: 10,
         });
-
-        // setTimeout(() => {
-        //     this.model.set('project_name', 'test project');
-        // }, 4000);
 
         this.file_uploader.render()
             .$el.appendTo(this.ui.$filesRegion);
