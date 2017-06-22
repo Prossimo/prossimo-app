@@ -32,9 +32,12 @@ const PROJECT_PROPERTIES = [
     { name: 'extra_id_data', title: 'Extra ID Data', type: 'string' },
     { name: 'settings', title: 'Settings', type: 'model:ProjectSettings' },
 ];
+const schema = Schema.createSchema(PROJECT_PROPERTIES);
+const validation = schema.validation;
 
 export default Backbone.Model.extend({
-    schema: Schema.createSchema(PROJECT_PROPERTIES),
+    schema,
+    validation,
     defaults() {
         const defaults = {};
 

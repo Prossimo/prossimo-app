@@ -7,10 +7,26 @@ export default {
     //  among the list of allowed types (and have correct format as well)
     createSchema(properties_array) {
         const schema = {};
+        const validations = {};
 
-        _.each(properties_array, (property) => {
-            schema[property.name] = { ...property };
+        _.each(properties_array, ({ validation = {}, ...property }) => {
+            const _validation = _.isFunction(validation)
+                ? validation.call(this, property)
+                : validation;
+
+            if (!_.isEmpty(_validation)) {
+                validations[property.name] = _validation;
+            }
+
+            schema[property.name] = { ..._validation, ...property };
         });
+
+        if (!_.isEmpty(validations)) {
+            Object.defineProperty(schema, 'validation', {
+                value: validations,
+                enumerable: false,
+            });
+        }
 
         return schema;
     },
