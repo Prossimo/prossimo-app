@@ -86,6 +86,13 @@ export default Backbone.Model.extend({
         const self = this;
         const d = $.Deferred();
 
+        const hash_parts = (window.location.hash) ? window.location.hash.substr(1).split('/') : false;
+        const hash_token = hash_parts && hash_parts.length ? hash_parts[2] : false;
+
+        if (hash_token) {
+            window.localStorage.setItem('authToken', hash_token);
+        }
+
         this.fetch({
             url: `${App.settings.get('api_base_path')}/users/current`,
             success(model, response) {
