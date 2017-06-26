@@ -25,7 +25,7 @@ export default Marionette.View.extend({
     templateContext() {
         return {
             multiple: this.options.multiple,
-            options: _.map(this.options.values, function (item) {
+            options: _.map(this.options.values, (item) => {
                 const value = item.value || item;
                 const is_selected = this.options.multiple ?
                     _.contains(this.model.get(this.options.param), value) :
@@ -36,7 +36,7 @@ export default Marionette.View.extend({
                     value,
                     title: item.title || value,
                 };
-            }, this),
+            }),
         };
     },
     //  TODO: make is_disabled a property, similar how it's done for

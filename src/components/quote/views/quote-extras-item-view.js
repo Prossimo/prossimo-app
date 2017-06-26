@@ -17,11 +17,11 @@ export default Marionette.View.extend({
         };
     },
     getReferenceId() {
-        return this.model.collection.filter(function (item) {
-            return this.options.type === 'Optional' ?
+        return this.model.collection.filter(item => (
+            this.options.type === 'Optional' ?
                 item.isOptionalType() :
-                item.get('extras_type') === this.options.type;
-        }, this).indexOf(this.model) + 1;
+                item.get('extras_type') === this.options.type
+        )).indexOf(this.model) + 1;
     },
     getDescription() {
         let description = this.model.get('description');

@@ -74,12 +74,13 @@ export default {
 
         return (instance, td, row, col, prop, value, ...rest) => {
             const $td = $(td);
+            let formatted_value = value;
 
             if (formatters_hash[attr_name]) {
-                value = formatters_hash[attr_name](value, attr_name, is_highlighted);
+                formatted_value = formatters_hash[attr_name](value, attr_name, is_highlighted);
             }
 
-            Handsontable.renderers.TextRenderer(instance, td, row, col, prop, value, ...rest);
+            Handsontable.renderers.TextRenderer(instance, td, row, col, prop, formatted_value, ...rest);
 
             if (
                 _.indexOf(['dimension', 'percent', 'percent_difference', 'fixed_minimal', 'fixed',
@@ -93,9 +94,9 @@ export default {
             }
 
             if (attr_name === 'percent_difference') {
-                if (parseInt(value.replace(',', ''), 10) === 0) {
+                if (parseInt(formatted_value.replace(',', ''), 10) === 0) {
                     $td.addClass('is-perfect');
-                } else if (Math.abs(parseInt(value.replace(',', ''), 10)) <= 15) {
+                } else if (Math.abs(parseInt(formatted_value.replace(',', ''), 10)) <= 15) {
                     $td.addClass('is-okay');
                 } else {
                     $td.addClass('is-average');
@@ -136,26 +137,27 @@ export default {
     },
     //  Just replace visible cell value with "--" or another message
     getDisabledPropertyRenderer(message) {
-        message = message || '--';
+        const current_message = message || '--';
 
         return (instance, td) => {
-            $(td).addClass('htDimmed').text(message);
+            $(td).addClass('htDimmed').text(current_message);
             return td;
         };
     },
     unitProfileRenderer(instance, td, row, col, prop, value, ...rest) {
         const current_unit = instance.getSourceData().at(row) && instance.getSourceData().at(row);
         const current_profile = current_unit && current_unit.profile;
+        let current_value = value;
 
         if (current_profile && current_profile.get('name')) {
-            value = current_profile.get('name');
-            Handsontable.renderers.AutocompleteRenderer(instance, td, row, col, prop, value, ...rest);
+            current_value = current_profile.get('name');
+            Handsontable.renderers.AutocompleteRenderer(instance, td, row, col, prop, current_value, ...rest);
         } else {
             if (current_unit && current_unit.get('profile_name')) {
-                value = current_unit.get('profile_name');
+                current_value = current_unit.get('profile_name');
             }
 
-            Handsontable.renderers.AutocompleteRenderer(instance, td, row, col, prop, value, ...rest);
+            Handsontable.renderers.AutocompleteRenderer(instance, td, row, col, prop, current_value, ...rest);
             $(td).addClass('htInvalid');
         }
 

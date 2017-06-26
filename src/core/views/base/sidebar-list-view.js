@@ -83,7 +83,7 @@ export default Marionette.CompositeView.extend({
             this.collection.at(0);
 
         //  Make next (or last) item in the collection active on remove
-        this.listenTo(this.collection, 'remove', function (removed_items, collection, options) {
+        this.listenTo(this.collection, 'remove', (removed_items, collection, options) => {
             const filtered_collection = this.filter_condition ?
                 this.collection.filter(this.filter_condition) :
                 this.collection.models;
@@ -103,7 +103,7 @@ export default Marionette.CompositeView.extend({
         });
 
         //  If new item was added to an empty collection, make it active
-        this.listenTo(this.collection, 'add', function () {
+        this.listenTo(this.collection, 'add', () => {
             const filtered_collection = this.filter_condition ?
                 this.collection.filter(this.filter_condition) :
                 this.collection.models;

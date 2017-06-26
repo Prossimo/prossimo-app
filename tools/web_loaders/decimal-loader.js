@@ -1,6 +1,6 @@
 /* eslint-disable prefer-template */
 
-module.exports = function (source) {
+module.exports = function decimalLoader(source) {
     if (this.cacheable) this.cacheable();
 
     // This is an async loader

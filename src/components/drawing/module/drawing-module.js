@@ -3,6 +3,7 @@ import $ from 'jquery';
 import Marionette from 'backbone.marionette';
 import Backbone from 'backbone';
 import Konva from 'konva';
+import clone from 'clone';
 
 import App from '../../../main';
 import LayerManager from './layer-manager';
@@ -55,7 +56,7 @@ const DrawingModule = Marionette.Object.extend({
         }
 
         // Bind events
-        this.on('state:any', function () {
+        this.on('state:any', () => {
             this.update();
         });
 
@@ -92,9 +93,10 @@ const DrawingModule = Marionette.Object.extend({
     // Define setter/getter for state
     setState(name, val, preventUpdate) {
         const eventData = [];
+        let shouldPreventUpdate = preventUpdate;
 
         if (typeof name === 'object') {
-            preventUpdate = val;
+            shouldPreventUpdate = val;
 
             _.each(name, (value, key) => {
                 eventData.push({
@@ -115,13 +117,13 @@ const DrawingModule = Marionette.Object.extend({
             if (data.oldValue !== data.newValue) {
                 this.state[data.name] = data.newValue;
 
-                if (!preventUpdate) {
+                if (!shouldPreventUpdate) {
                     this.trigger(`state:${data.name}`, data);
                 }
             }
         });
 
-        if (!preventUpdate) {
+        if (!shouldPreventUpdate) {
             this.trigger('state:any', eventData);
         }
 
@@ -178,9 +180,8 @@ const DrawingModule = Marionette.Object.extend({
             this.updateSize(opts.width, opts.height);
         }
 
-        const metricSize = (opts && 'metricSize' in opts) ? opts.metricSize :
-            (this.get('metricSize')) ? this.get('metricSize') :
-                50;
+        const defaultMetricSize = this.get('metricSize') || 50;
+        const metricSize = (opts && 'metricSize' in opts) ? opts.metricSize : defaultMetricSize;
 
         const frameWidth = model.getInMetric('width', 'mm');
         const frameHeight = model.getInMetric('height', 'mm');
@@ -670,8 +671,7 @@ const DrawingModule = Marionette.Object.extend({
 
 export default DrawingModule;
 
-export const preview = function (unitModel, options) {
-    let result;
+export const preview = function generatePreview(unitModel, options) {
     const defaults = {
         width: 300,
         height: 300,
@@ -680,60 +680,61 @@ export const preview = function (unitModel, options) {
         metricSize: 50,
         preview: true,
     };
+    const currentModel = unitModel;
+    const currentOptions = _.defaults({}, clone(options), defaults, { model: currentModel });
+    let result;
 
-    options = _.defaults({}, options, defaults, { model: unitModel });
-
-    const full_root_json_string = JSON.stringify(unitModel.generateFullRoot());
-    const options_json_string = JSON.stringify(options);
+    const full_root_json_string = JSON.stringify(currentModel.generateFullRoot());
+    const options_json_string = JSON.stringify(currentOptions);
 
     //  If we already got an image for the same full_root and same options,
     //  just return it from our preview cache
     if (
-        unitModel.preview && unitModel.preview.result &&
-        unitModel.preview.result[options_json_string] &&
-        full_root_json_string === unitModel.preview.full_root_json_string
+        currentModel.preview && currentModel.preview.result &&
+        currentModel.preview.result[options_json_string] &&
+        full_root_json_string === currentModel.preview.full_root_json_string
     ) {
-        return unitModel.preview.result[options_json_string];
+        return currentModel.preview.result[options_json_string];
     }
 
     //  If full root changes, preview cache should be erased
     if (
-        !unitModel.preview ||
-        !unitModel.preview.result ||
-        full_root_json_string !== unitModel.preview.full_root_json_string
+        !currentModel.preview ||
+        !currentModel.preview.result ||
+        full_root_json_string !== currentModel.preview.full_root_json_string
     ) {
-        unitModel.preview = {};
-        unitModel.preview.result = {};
+        currentModel.preview = {};
+        currentModel.preview.result = {};
     }
 
-    const module = new DrawingModule(options);
+    const module = new DrawingModule(currentOptions);
 
-    if (_.indexOf(['inside', 'outside'], options.position) !== -1) {
+    if (_.indexOf(['inside', 'outside'], currentOptions.position) !== -1) {
         module.setState({
-            insideView: options.position === 'inside',
-            openingView: (options.position === 'inside' && !unitModel.isOpeningDirectionOutward()) ||
-                (options.position === 'outside' && unitModel.isOpeningDirectionOutward()),
-            inchesDisplayMode: options.inchesDisplayMode,
-            hingeIndicatorMode: options.hingeIndicatorMode,
+            insideView: currentOptions.position === 'inside',
+            openingView: (currentOptions.position === 'inside' && !currentModel.isOpeningDirectionOutward()) ||
+                (currentOptions.position === 'outside' && currentModel.isOpeningDirectionOutward()),
+            inchesDisplayMode: currentOptions.inchesDisplayMode,
+            hingeIndicatorMode: currentOptions.hingeIndicatorMode,
         }, false);
     }
 
-    if (options.width && options.height) {
-        module.updateSize(options.width, options.height);
+    if (currentOptions.width && currentOptions.height) {
+        module.updateSize(currentOptions.width, currentOptions.height);
     }
 
-    if (options.mode === 'canvas') {
+    if (currentOptions.mode === 'canvas') {
         result = module.getCanvas();
-    } else if (options.mode === 'base64') {
+    } else if (currentOptions.mode === 'base64') {
         result = module.getBase64();
-    } else if (options.mode === 'image') {
+    } else if (currentOptions.mode === 'image') {
         result = module.getImage();
     }
 
     module.destroy();
 
-    unitModel.preview.full_root_json_string = full_root_json_string;
-    unitModel.preview.result[options_json_string] = result;
+    currentModel.preview.full_root_json_string = full_root_json_string;
+    currentModel.preview.result[options_json_string] = result;
 
     return result;
 };

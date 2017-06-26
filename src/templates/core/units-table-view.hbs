@@ -1,8 +1,5 @@
-<div class="units-table{{#if is_always_visible }} always-visible{{/if}}">
-    <div class="units-table-title">
-        <p>Units list</p>
-    </div>
-    <div class="units-table-contents {{ table_visibility }}">
+<div class="units-table">
+    <div class="units-table-contents">
         <div class="tabs-and-controls-container">
             <div class="tab-container">
                 <ul class="nav nav-tabs">
@@ -11,7 +8,7 @@
                 {{/each}}
                 </ul>
             </div>
-            <div class="units-table-controls {{ table_visibility }} show-{{ mode }} show-tab-{{ active_tab }}">
+            <div class="units-table-controls show-{{ mode }} show-tab-{{ active_tab }}">
                 <button class="btn btn-xs js-undo">Undo</button>
                 <button class="btn btn-xs js-redo">Redo</button>
                 <button class="btn js-reset-unit-options reset-unit-options disabled">

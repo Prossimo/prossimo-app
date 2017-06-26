@@ -16,40 +16,6 @@
     background-color: inherit;
 }
 
-.units-table-title {
-    background-color: darken(@white, 35%);
-    border-top: 1px solid darken(@white, 45%);
-    border-bottom: 1px solid darken(@white, 45%);
-    text-align: center;
-    padding: 0.2em 3em;
-    text-shadow: 1px 1px 0 darken(@white, 25%);
-
-    &:hover,
-    &:active {
-        background-color: darken(@white, 30%);
-        cursor: pointer;
-    }
-}
-
-.units-table.always-visible .units-table-title {
-    text-align: left;
-    padding: 0.2rem 1.5rem;
-
-    p {
-        margin: 1rem 0 1rem;
-    }
-
-    &:hover,
-    &:active {
-        background-color: darken(@white, 35%);
-        cursor: default;
-    }
-}
-
-.units-table-title p {
-    margin: 0;
-}
-
 
 //  ------------------------------------------------------------------------
 //  Table content part
@@ -217,10 +183,6 @@
     display: flex;
     flex-flow: column;
     height: 100%;
-}
-
-.units-table-screen .units-table-title {
-    display: none;
 }
 
 .units-table-screen .units-table-total-prices-container {

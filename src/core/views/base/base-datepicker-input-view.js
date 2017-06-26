@@ -48,12 +48,15 @@ export default Marionette.View.extend({
         const is_disabled = this.options.is_disabled && _.isFunction(this.options.is_disabled) ?
             this.options.is_disabled() :
             this.options.is_disabled;
+        let readable_value = value !== '' ? value : placeholder;
+
+        if (is_disabled && this.options.disabled_value) {
+            readable_value = this.options.disabled_value;
+        }
 
         return {
             value,
-            readable_value: (is_disabled && this.options.disabled_value) ?
-                this.options.disabled_value :
-                (value !== '' ? value : placeholder),
+            readable_value,
             show_placeholder: !value && placeholder,
             is_disabled,
         };

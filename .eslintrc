@@ -28,13 +28,7 @@
       2
     ],
     "camelcase": "off",
-    //  TODO: We actually want to enable the following rules, but
-    //  we need to make updates to our code first
     "no-underscore-dangle": "off",
-    "no-nested-ternary": "warn",
-    "no-continue": "warn",
-    "consistent-return": "warn",
-    "no-param-reassign": "warn",
-    "no-console": "warn"
+    "no-console": "error"
   }
 }

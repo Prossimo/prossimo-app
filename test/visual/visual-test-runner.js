@@ -18,30 +18,29 @@ function getExpectedFile(imgData) {
     return imgData[agent];
 }
 
-const runVisualTest = function (options) {
+const runVisualTest = (options) => {
     const defaults = {
         diff_threshold: 0,
         test_case: {},
         callback: undefined,
     };
-
-    options = _.defaults({}, options, defaults);
+    const current_options = _.defaults({}, options, defaults);
 
     const time_started = performance.now();
 
-    const profile = new Profile(options.test_case.profile_data);
-    const unit = new Unit(_.extend({}, options.test_case.unit_data, {
-        root_section: options.test_case.root_section_json_string,
+    const profile = new Profile(current_options.test_case.profile_data);
+    const unit = new Unit(_.extend({}, current_options.test_case.unit_data, {
+        root_section: current_options.test_case.root_section_json_string,
     }));
 
     unit.profile = profile;
 
     const preview = previewFn(unit, {
-        width: options.test_case.preview_settings.width,
-        height: options.test_case.preview_settings.height,
+        width: current_options.test_case.preview_settings.width,
+        height: current_options.test_case.preview_settings.height,
         mode: 'base64',
-        position: options.test_case.preview_settings.position,
-        hingeIndicatorMode: options.test_case.preview_settings.hingeIndicatorMode,
+        position: current_options.test_case.preview_settings.position,
+        hingeIndicatorMode: current_options.test_case.preview_settings.hingeIndicatorMode,
     });
 
     resemble.outputSettings({
@@ -56,14 +55,14 @@ const runVisualTest = function (options) {
         useCrossOrigin: false,
     });
 
-    const expected_filename = getExpectedFile(options.test_case.imgData);
+    const expected_filename = getExpectedFile(current_options.test_case.imgData);
 
-    resemble(expected_filename).compareTo(preview).ignoreAntialiasing().onComplete(function (data) {
+    resemble(expected_filename).compareTo(preview).ignoreAntialiasing().onComplete((data) => {
         const diff_output = {};
 
         diff_output.diff_image_src = data.getImageDataUrl();
 
-        if (data.rawMisMatchPercentage <= options.diff_threshold) {
+        if (data.rawMisMatchPercentage <= current_options.diff_threshold) {
             diff_output.status = 'success';
             diff_output.status_text = 'Images are identical';
         } else {
@@ -84,15 +83,15 @@ const runVisualTest = function (options) {
         const visual_test_result = {
             unit,
             profile,
-            test_case: options.test_case,
+            test_case: current_options.test_case,
             preview,
             diff_output,
             execution_time: time_ended - time_started,
             expected_filename,
         };
 
-        if (options.callback && _.isFunction(options.callback)) {
-            options.callback.call(this, visual_test_result);
+        if (current_options.callback && _.isFunction(current_options.callback)) {
+            current_options.callback.call(this, visual_test_result);
         }
     });
 };

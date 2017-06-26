@@ -7,7 +7,7 @@ import Konva from 'konva';
 Konva.Factory.addGetterSetter(Konva.Container, 'clipType');
 Konva.Factory.addGetterSetter(Konva.Container, 'clipRadius');
 
-Konva.Container.prototype._drawChildren = function (canvas, drawMethod, top, caching, skipBuffer) {
+Konva.Container.prototype._drawChildren = function drawChildren(canvas, drawMethod, top, caching, skipBuffer) {
     const layer = this.getLayer();
     const context = canvas && canvas.getContext();
     const clipWidth = this.getClipWidth();

@@ -1,6 +1,5 @@
 /* eslint quotes:0  */
 /* eslint max-len:0 */
-/* eslint max-nested-callbacks:0 */
 
 import App from '../../../src/main';
 import Project from '../../../src/core/models/project';

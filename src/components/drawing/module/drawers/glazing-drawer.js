@@ -18,7 +18,7 @@ export default Backbone.KonvaView.extend({
 
         this.layer = params.layer;
         this.stage = params.stage;
-        this.saveBars = (_.isFunction(params.data.saveBars)) ? params.data.saveBars : function () {};
+        this.saveBars = (_.isFunction(params.data.saveBars)) ? params.data.saveBars : function saveBars() {};
 
         this.sectionId = params.data.sectionId;
 
@@ -76,7 +76,8 @@ export default Backbone.KonvaView.extend({
             hoverControl: null,
         });
     },
-    handleControlClick(params) {
+    handleControlClick(current_params) {
+        const params = clone(current_params);
         const bar = this.section.bars[params.bar.type][params.bar.index];
         let id;
 
@@ -155,22 +156,20 @@ export default Backbone.KonvaView.extend({
         return position;
     },
     getBarsWithSpaces(section) {
-        let bars;
-
-        if (section) {
-            bars = clone(section.bars);
-        }
-
-        _.each(bars, (group) => {
+        return section && _.mapObject(section.bars, (group) => {
+            const barGroup = clone(group);
             let spaceUsed = 0;
 
-            group.forEach((bar) => {
-                bar.space = bar.position - spaceUsed;
-                spaceUsed += bar.space;
+            return barGroup.map((bar) => {
+                const barSpace = bar.position - spaceUsed;
+
+                spaceUsed += barSpace;
+
+                return _.extend({}, bar, {
+                    space: barSpace,
+                });
             });
         });
-
-        return bars;
     },
     getSize() {
         return {
@@ -359,32 +358,31 @@ export default Backbone.KonvaView.extend({
 
                     // Draw controls for intersection with horizontal bars
                     for (let j = 0; j < this.getBarsCount()[invertedType]; j += 1) {
-                        if (
+                        if (!(
                             _.isArray(data.links) &&
                             data.links.indexOf(this.section.bars[invertedType][j].id) !== -1
-                        ) {
-                            continue;
-                        }
-
-                        controls.add(this.createBoundControl({
-                            index: j,
-                            edge: selectedEdge,
-                            bar: {
-                                type,
-                                index: i,
+                        )) {
+                            controls.add(this.createBoundControl({
+                                index: j,
                                 edge: selectedEdge,
-                            },
-                            link: this.section.bars[invertedType][j],
-                            position: (type === 'vertical') ?
-                            {
-                                x: position,
-                                y: fillY + this.section.bars[invertedType][j].position,
-                            } : {
-                                x: fillX + this.section.bars.vertical[j].position,
-                                y: position,
-                            },
-                        }));
+                                bar: {
+                                    type,
+                                    index: i,
+                                    edge: selectedEdge,
+                                },
+                                link: this.section.bars[invertedType][j],
+                                position: (type === 'vertical') ?
+                                {
+                                    x: position,
+                                    y: fillY + this.section.bars[invertedType][j].position,
+                                } : {
+                                    x: fillX + this.section.bars.vertical[j].position,
+                                    y: position,
+                                },
+                            }));
+                        }
                     }
+
                     // Draw controls at section edge:
                     // For edge with key === 0 - null means section edge at left/top side
                     // For 1 - right/bottom side
@@ -672,14 +670,12 @@ export default Backbone.KonvaView.extend({
 
         return this.createHorizontalMetric(...drawerParams);
     },
-    createVerticalMetric(width, height, params, styles) {
+    createVerticalMetric(width, height, current_params, current_styles) {
         const arrowOffset = width / 2;
         const arrowSize = 5;
         const group = new Konva.Group();
-
-        // Define styles
-        styles = styles || {};
-        styles = _.defaults(styles, this.getDefaultMetricStyles());
+        const params = clone(current_params);
+        const styles = _.defaults(clone(current_styles) || {}, this.getDefaultMetricStyles());
 
         const lines = new Konva.Shape({
             sceneFunc(ctx) {
@@ -784,14 +780,12 @@ export default Backbone.KonvaView.extend({
         group.add(lines, arrow, labelInches, labelMM);
         return group;
     },
-    createHorizontalMetric(width, height, params, styles) {
+    createHorizontalMetric(width, height, current_params, current_styles) {
         const arrowOffset = height / 2;
         const arrowSize = 5;
         const group = new Konva.Group();
-
-        // Define styles
-        styles = styles || {};
-        styles = _.defaults(styles, this.getDefaultMetricStyles());
+        const params = clone(current_params);
+        const styles = _.defaults(clone(current_styles) || {}, this.getDefaultMetricStyles());
 
         const lines = new Konva.Shape({
             sceneFunc(ctx) {

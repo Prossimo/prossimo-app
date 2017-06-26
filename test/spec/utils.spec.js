@@ -35,6 +35,8 @@ test('Utils.js tests: ', () => {
 
             equal(f.dimension(0.472, 'fraction', null, 'remove'), '1/2″', 'Expected value is 1/2″');
             equal(f.dimension(0.472, 'fraction', null, 'show'), '0 1/2″', 'Expected value is 0 1/2″');
+
+            equal(f.dimension(47.99999, null, 'fraction'), '4′−0″', 'Expected to return 4-0, not 3-12');
         });
 
         test('dimensions', () => {

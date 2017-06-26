@@ -47,7 +47,7 @@ export default Marionette.View.extend({
         }
     },
     onRender() {
-        _.each(this.attribute_views, function (child_view) {
+        _.each(this.attribute_views, (child_view) => {
             const $row = $('<tr class="filling-type-attribute-container" />');
 
             $row.append(`<td><h4 class="title">${child_view.title}</h4></td>`);
@@ -94,7 +94,7 @@ export default Marionette.View.extend({
             }));
         }
 
-        this.attribute_views = _.map(this.attributes_to_render, function (attribute) {
+        this.attribute_views = _.map(this.attributes_to_render, (attribute) => {
             //  We use text inputs for most attributes except for "type"
             //  attribute where we want a selectbox
             const view = _.contains(['type', 'pricing_scheme'], attribute.name) ?

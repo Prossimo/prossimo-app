@@ -1,0 +1,21 @@
+machine:
+  node:
+    version: 6.10.3
+  environment:
+    PATH: "${PATH}:${HOME}/${CIRCLE_PROJECT_REPONAME}/node_modules/.bin"
+
+dependencies:
+  override:
+    - yarn
+  cache_directories:
+    - ~/.cache/yarn
+
+test:
+  pre:
+    - mkdir -p $CIRCLE_TEST_REPORTS/reports
+    - npm run lint -- --format junit --output-file $CIRCLE_TEST_REPORTS/reports/eslint.xml
+  override:
+    - npm test -- --reporters junit:
+        environment:
+          JUNIT_REPORT_PATH: $CIRCLE_TEST_REPORTS/reports/
+          JUNIT_REPORT_NAME: test-results.xml

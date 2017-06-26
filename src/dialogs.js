@@ -72,13 +72,19 @@ export default Marionette.Region.extend({
                 const modal_options = _.extend({}, default_modal_options,
                     this.registered_dialogs[dialog_name].modal_options);
 
+                this.currentView.dialog_name = dialog_name;
                 this.currentView.$el.modal(modal_options);
             }
         }
     },
     onSwapOut(view) {
         if (view) {
-            view.$el.modal('hide');
+            view.close();
+        }
+    },
+    close() {
+        if (this.currentView) {
+            this.currentView.close();
         }
     },
 });

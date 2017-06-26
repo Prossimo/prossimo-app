@@ -13,18 +13,18 @@ const webLoaders = config.get('app:webLoaders');
 const distPath = config.get('dist:path');
 const isDebug = !config.get('release');
 const isVerbose = config.get('verbose');
+const hotModuleReplacement = config.get('hotWebpack') && isDebug;
 
-const APP_ENTRY = ['babel-polyfill', path.resolve(srcPath, 'main.js'), path.resolve(srcPath, 'less/styles.less')];
+const APP_ENTRY = [
+    ...hotModuleReplacement ? ['webpack-hot-middleware/client?reload=true'] : [],
+    path.resolve(srcPath, 'less/styles.less'),
+    'babel-polyfill', path.resolve(srcPath, 'main.js'),
+];
 
-const cssLoader = `css-loader?${JSON.stringify({
-    importLoaders: 1,
-    sourceMap: isDebug,
-    modules: false,
-    minimize: !isDebug,
-})}`;
-const lessLoader = `less-loader?${JSON.stringify({
-    sourceMap: isDebug,
-})}`;
+const extractLess = new ExtractTextPlugin({
+    filename: `css/[name]-${version}-[hash].css`,
+    disable: isDebug,
+});
 
 module.exports = {
     context: srcPath,
@@ -60,17 +60,23 @@ module.exports = {
             { test: /decimal\.es6\.js$/, use: [path.resolve(webLoaders, 'decimal-loader')] },
             { test: /\.hbs$/, use: ['handlebars-template-loader'] },
             {
-                test: /\.less$/,
-                use: ExtractTextPlugin.extract({
+                test: /(\.css|\.less)$/,
+                use: extractLess.extract({
+                    use: [{
+                        loader: 'css-loader',
+                        options: {
+                            importLoaders: 1,
+                            sourceMap: isDebug,
+                            modules: false,
+                            minimize: !isDebug,
+                        },
+                    }, {
+                        loader: 'less-loader',
+                        options: {
+                            sourceMap: isDebug,
+                        },
+                    }],
                     fallback: 'style-loader',
-                    use: [cssLoader, lessLoader].join('!'),
-                }),
-            },
-            {
-                test: /\.css$/,
-                use: ExtractTextPlugin.extract({
-                    fallback: 'style-loader',
-                    use: [cssLoader].join('!'),
                 }),
             },
             {
@@ -96,7 +102,7 @@ module.exports = {
     },
 
     plugins: [
-        new ExtractTextPlugin(`css/[name]-${version}-[hash]${!isDebug ? '.min' : ''}.css`),
+        extractLess,
         new webpack.ContextReplacementPlugin(/moment\/locale/, /en-gb/),
         new HtmlWebpackPlugin({
             app_title: appTitle,
@@ -119,9 +125,16 @@ module.exports = {
             debug: isDebug,
         }),
 
-        ...isDebug ? [
-            // new webpack.HotModuleReplacementPlugin()
-        ] : [
+        ...hotModuleReplacement ? [
+            new webpack.HotModuleReplacementPlugin(),
+        ] : [],
+
+        ...isDebug ? [] : [
+            new webpack.DefinePlugin({
+                'process.env': {
+                    NODE_ENV: '"production"',
+                },
+            }),
             new CopyWebpackPlugin([
                 {
                     context: assetsPath,

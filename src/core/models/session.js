@@ -11,11 +11,12 @@ import { globalChannel } from '../../utils/radio';
 //  to a separate file or something
 const backboneSync = Backbone.sync;
 
-Backbone.sync = function (method, model, options) {
+Backbone.sync = function patchedBackboneSync(method, model, options) {
     const token = window.localStorage.getItem('authToken');
     const errorCallback = options.error;
+    const sync_options = options;
 
-    options.error = function (xhr, textStatus, errorThrown) {
+    sync_options.error = function syncError(xhr, textStatus, errorThrown) {
         //  We just received an 401 Unauthorized response. This means our
         //  current token does not work any longer
         if (textStatus === 'error' && xhr.status === 401) {
@@ -24,20 +25,20 @@ Backbone.sync = function (method, model, options) {
 
         //  This is the same thing they do in the original Backbone.Sync
         if (errorCallback) {
-            options.textStatus = textStatus;
-            options.errorThrown = errorThrown;
-            errorCallback.call(options.context, xhr, textStatus, errorThrown);
+            sync_options.textStatus = textStatus;
+            sync_options.errorThrown = errorThrown;
+            errorCallback.call(sync_options.context, xhr, textStatus, errorThrown);
         }
     };
 
     if (token) {
-        options.headers = {
+        sync_options.headers = {
             Authorization: `Bearer ${token}`,
         };
     }
 
     //  Call the original function
-    backboneSync(method, model, options);
+    backboneSync(method, model, sync_options);
 };
 
 export default Backbone.Model.extend({
@@ -84,6 +85,13 @@ export default Backbone.Model.extend({
     checkAuth(callback) {
         const self = this;
         const d = $.Deferred();
+
+        const hash_parts = (window.location.hash) ? window.location.hash.substr(1).split('/') : false;
+        const hash_token = hash_parts && hash_parts.length ? hash_parts[2] : false;
+
+        if (hash_token) {
+            window.localStorage.setItem('authToken', hash_token);
+        }
 
         this.fetch({
             url: `${App.settings.get('api_base_path')}/users/current`,
