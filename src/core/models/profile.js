@@ -29,7 +29,7 @@ const TYPES_WITH_OUTSIDE_HANDLE = ['Patio Door', 'Entry Door'];
 const PROFILE_PROPERTIES = [
     { name: 'name', title: 'Name', type: 'string' },
     { name: 'unit_type', title: 'Type', type: 'string' },
-    { name: 'system', title: 'Prossimo System', type: 'string' },
+    { name: 'system', title: 'System', type: 'string' },
     { name: 'supplier_system', title: 'Supplier System', type: 'string' },
     { name: 'frame_width', title: 'Frame Width (mm)', type: 'number' },
     { name: 'mullion_width', title: 'Mullion Width (mm)', type: 'number' },

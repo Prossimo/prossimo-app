@@ -1,7 +1,7 @@
 {
   "name": "prossimo-app",
   "version": "1.22.0",
-  "title": "Prossimo Quoting App",
+  "title": "Mavrik Quoting App",
   "private": true,
   "scripts": {
     "start": "node tools/server/server.js",

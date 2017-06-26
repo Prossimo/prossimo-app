@@ -27,7 +27,7 @@ const BASE_TYPES = [
 //  TODO: `type` attribute should be actually called `base_type`, makes
 //  more sense that way (but we need to get rid of `is_base_type` concept)
 const FILLING_TYPE_PROPERTIES = [
-    { name: 'name', title: 'Prossimo Name', type: 'string' },
+    { name: 'name', title: 'Name', type: 'string' },
     { name: 'supplier_name', title: 'Supplier Name', type: 'string' },
     { name: 'type', title: 'Type', type: 'string' },
     { name: 'is_base_type', title: 'Is Base Type', type: 'boolean' },
