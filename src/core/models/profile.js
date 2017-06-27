@@ -1,7 +1,6 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
 
-import App from '../../main';
 import Schema from '../../schema';
 import constants from '../../constants';
 import { object } from '../../utils';
@@ -24,6 +23,10 @@ const TYPES_WITH_ALWAYS_LOW_THRESHOLD = ['Entry Door'];
 const TYPES_WITH_POSSIBLE_SOLID_PANEL = ['Patio Door', 'Entry Door'];
 const TYPES_WITH_POSSIBLE_FLUSH_PANEL = ['Entry Door', 'Window'];
 const TYPES_WITH_OUTSIDE_HANDLE = ['Patio Door', 'Entry Door'];
+
+const SYSTEMS = ['Workhorse uPVC', 'Pinnacle uPVC'];
+const SUPPLIER_SYSTEMS = ['Gaelan S8000', 'Gaelan S9000'];
+const CORNER_TYPES = ['Mitered', 'Square (Vertical)', 'Square (Horizontal)'];
 
 //  Profile sizes are set in millimeters
 const PROFILE_PROPERTIES = [
@@ -88,14 +91,11 @@ export default Backbone.Model.extend({
             pricing_scheme: this.getPossiblePricingSchemes()[0],
             pricing_grids: new PricingGridCollection(null, { append_default_grids: true }),
             pricing_equation_params: new PricingEquationParamsCollection(null, { append_default_sets: true }),
+            system: SYSTEMS[0],
+            supplier_system: SUPPLIER_SYSTEMS[0],
+            frame_corners: this.getFrameCornerTypes()[0],
+            sash_corners: this.getSashCornerTypes()[0],
         };
-
-        if (App.settings) {
-            name_value_hash.system = App.settings.getSystems()[0];
-            name_value_hash.supplier_system = App.settings.getSupplierSystems()[0];
-            name_value_hash.frame_corners = App.settings.getFrameCornerTypes()[0];
-            name_value_hash.sash_corners = App.settings.getSashCornerTypes()[0];
-        }
 
         if (_.indexOf(_.keys(type_value_hash), type) !== -1) {
             default_value = type_value_hash[type];
@@ -300,6 +300,12 @@ export default Backbone.Model.extend({
     },
     getPossiblePricingSchemes() {
         return POSSIBLE_PRICING_SCHEMES;
+    },
+    getFrameCornerTypes() {
+        return CORNER_TYPES;
+    },
+    getSashCornerTypes() {
+        return CORNER_TYPES;
     },
     getVisibleFrameWidthFixed() {
         return this.get('frame_width');

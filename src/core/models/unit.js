@@ -43,6 +43,9 @@ const UNIT_PROPERTIES = [
     { name: 'root_section', title: 'Root Section', type: 'object' },
 ];
 
+const GLAZING_BAR_WIDTHS = [12, 22, 44];
+const OPENING_DIRECTIONS = ['Inward', 'Outward'];
+
 //  We only allow editing these attributes for units where
 //  `hasOperableSections` is `true`
 const OPERABLE_ONLY_PROPERTIES = ['opening_direction'];
@@ -493,11 +496,11 @@ const Unit = Backbone.Model.extend({
             quantity: 1,
             root_section: name === 'root_section' ? getSectionDefaults(name) : '',
             unit_options: name === 'unit_options' ? this.getDefaultUnitOptions() : [],
+            glazing_bar_width: this.getGlazingBarWidths()[0],
+            opening_direction: this.getOpeningDirections()[0],
         };
 
         if (App.settings) {
-            name_value_hash.glazing_bar_width = App.settings.getGlazingBarWidths()[0];
-            name_value_hash.opening_direction = App.settings.getOpeningDirections()[0];
             name_value_hash.glazing = App.settings.filling_types.getNames()[0];
         }
 
@@ -594,15 +597,17 @@ const Unit = Backbone.Model.extend({
             });
         }
     },
+    getGlazingBarWidths() {
+        return GLAZING_BAR_WIDTHS;
+    },
+    getOpeningDirections() {
+        return OPENING_DIRECTIONS;
+    },
     //  TODO: this should happen on parse. Also, why only this property is
     //  validated?
     validateOpeningDirection() {
-        if (!App.settings) {
-            return;
-        }
-
-        if (!_.contains(App.settings.getOpeningDirections(), this.get('opening_direction'))) {
-            this.set('opening_direction', App.settings.getOpeningDirections()[0]);
+        if (!_.contains(this.getOpeningDirections(), this.get('opening_direction'))) {
+            this.set('opening_direction', this.getOpeningDirections()[0]);
         }
     },
     //  TODO: this function should be improved
@@ -830,11 +835,11 @@ const Unit = Backbone.Model.extend({
 
         //  Assign the default profile id to a newly created unit
         if (App.settings && !this.get('profile_id') && !this.get('profile_name')) {
-            this.set('profile_id', App.settings.getDefaultProfileId());
+            this.set('profile_id', App.settings.profiles.getDefaultProfileId());
         }
 
         if (App.settings) {
-            this.profile = App.settings.getProfileByIdOrDummy(this.get('profile_id'));
+            this.profile = App.settings.profiles.getProfileByIdOrDummy(this.get('profile_id'));
         }
 
         //  Store profile name so in case when profile was deleted we can
@@ -861,11 +866,11 @@ const Unit = Backbone.Model.extend({
                 const type = property_source ? property_source.type : undefined;
 
                 if (key === 'profile_id') {
-                    if (App.settings && App.settings.getDefaultProfileId() !== value) {
+                    if (App.settings && App.settings.profiles.getDefaultProfileId() !== value) {
                         has_only_defaults = false;
                     }
                 } else if (key === 'profile_name') {
-                    const profile = App.settings && App.settings.getProfileByIdOrDummy(this.get('profile_id'));
+                    const profile = App.settings && App.settings.profiles.getProfileByIdOrDummy(this.get('profile_id'));
 
                     if (profile && profile.get('name') !== value) {
                         has_only_defaults = false;
