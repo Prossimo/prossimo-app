@@ -12,7 +12,7 @@ import Session from './core/models/session';
 import Router from './router';
 import ProjectCollection from './core/collections/project-collection';
 import TopBarView from './core/views/top-bar-view';
-import Dialogs from './dialogs';
+import Dialogs from './components/dialogs/dialogs';
 import PasteImageHelper from './utils/paste-image';
 import MainNavigationView from './core/views/main-navigation-view';
 import MainDashboardView from './components/dashboard/views/main-dashboard-view';
@@ -118,8 +118,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 if (module.hot) {
-    module.hot.accept('./dialogs', () => {
-        const _Dialogs = require('./dialogs').default;  // eslint-disable-line global-require
+    module.hot.accept('./components/dialogs/dialogs', () => {
+        const _Dialogs = require('./components/dialogs/dialogs').default;  // eslint-disable-line global-require
         let _oldDialog;
 
         if (App.dialogs) {

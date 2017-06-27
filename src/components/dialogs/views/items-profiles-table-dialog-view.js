@@ -1,9 +1,9 @@
 import _ from 'underscore';
 import Handsontable from 'handsontable/dist/handsontable.full';
 
-import hotRenderers from '../../hot-renderers';
+import hotRenderers from '../../../hot-renderers';
 import BaseDialogView from './base-dialog-view';
-import template from '../../templates/dialogs/items-profiles-table-dialog-view.hbs';
+import template from '../../../templates/dialogs/items-profiles-table-dialog-view.hbs';
 
 const DEFAULT_COLUMN_TITLE = 'Default Variant';
 const UNSET_VALUE = '--';

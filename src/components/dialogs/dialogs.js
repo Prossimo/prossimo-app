@@ -2,11 +2,11 @@ import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 import 'bootstrap/js/modal';
 
-import LoginDialogView from './dialogs/views/login-dialog-view';
-import ItemsProfilesTableDialogView from './dialogs/views/items-profiles-table-dialog-view';
-import CreateProjectDialogView from './dialogs/views/create-project-dialog-view';
-import EditQuotesDialogView from './dialogs/views/edit-quotes-dialog-view';
-import ProjectExportDialogView from './dialogs/views/project-export-dialog-view';
+import LoginDialogView from './views/login-dialog-view';
+import ItemsProfilesTableDialogView from './views/items-profiles-table-dialog-view';
+import CreateProjectDialogView from './views/create-project-dialog-view';
+import EditQuotesDialogView from './views/edit-quotes-dialog-view';
+import ProjectExportDialogView from './views/project-export-dialog-view';
 
 export default Marionette.Region.extend({
     el: '#dialogs',

@@ -1,12 +1,18 @@
+import props from '../../../utils/decorators/props';
+import stickableMixin from '../../../utils/decorators/stickableMixin';
 import BaseDialogView from './base-dialog-view';
-import App from '../../main';
-import FileUploaderView from '../../components/file-uploader-view/file-uploader-view';
-import Project from '../../core/models/project';
-import template from '../../templates/dialogs/create-project-dialog-view.hbs';
+import App from '../../../main';
+import FileUploaderView from '../../file-uploader-view/file-uploader-view';
+import Project from '../../../core/models/project';
+import template from '../../../templates/dialogs/create-project-dialog-view.hbs';
 
-export default BaseDialogView.extend({
+@props({
     className: 'create-project-modal modal fade',
+    options: {
+        dialog_title: 'Create Project',
+    },
     template,
+    model: new Project(),
     ui: {
         $form: '.modal-body form',
         $filesRegion: '.form-control-files',
@@ -24,6 +30,15 @@ export default BaseDialogView.extend({
     events: {
         'submit form': 'addNewProject',
     },
+    templateContext() {
+        return {
+            dialog_title: this.options.dialog_title,
+            schema: this.model.schema,
+        };
+    },
+})
+@stickableMixin
+export default class extends BaseDialogView {
     addNewProject(e) {
         const newProject = new Project({
             project_name: this.ui.$data_project_name.val().trim(),
@@ -42,12 +57,24 @@ export default BaseDialogView.extend({
         e.preventDefault();
         this.$el.modal('hide');
         App.projects.create(newProject);
-    },
-    templateContext() {
+    }
+    bindings() {
+        const _schemaBindings = {};
+        Object.keys(this.model.schema).forEach((observe) => {
+            _schemaBindings[`[name=${observe}]`] = {
+                observe,
+                getVal($el) { return $el.val().trim(); },
+            };
+        });
         return {
-            dialog_title: 'Create Project',
+            '@ui.$data_project_name': 'project_name',
+            '.modal-title': {
+                observe: 'project_name',
+                onGet: val => `${this.options.dialog_title}${val ? `: ${val}` : ''}`,
+            },
+            ..._schemaBindings,
         };
-    },
+    }
     onRender() {
         if (this.file_uploader) {
             this.file_uploader.destroy();
@@ -59,10 +86,10 @@ export default BaseDialogView.extend({
 
         this.file_uploader.render()
             .$el.appendTo(this.ui.$filesRegion);
-    },
+    }
     onBeforeDestroy() {
         if (this.file_uploader) {
             this.file_uploader.destroy();
         }
-    },
-});
+    }
+}
