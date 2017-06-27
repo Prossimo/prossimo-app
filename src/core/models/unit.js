@@ -951,6 +951,12 @@ const Unit = Backbone.Model.extend({
     getAreaInSquareMeters() {
         return math.square_meters(convert.inches_to_mm(this.get('width')), convert.inches_to_mm(this.get('height')));
     },
+    getVolumeInCubicMeters() {
+        const width_mm = convert.inches_to_mm(this.get('width'));
+        const height_mm = convert.inches_to_mm(this.get('height'));
+        const depth_mm = this.profile.get('depth');
+        return math.cubic_meters(width_mm, height_mm, depth_mm);
+    },
     getUnitCost() {
         return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
     },
@@ -2371,6 +2377,7 @@ const Unit = Backbone.Model.extend({
     //  cost of options for the unit
     getLinearAndAreaStats() {
         const profileWeight = this.profile.get('weight_per_length');
+        const profileDepth = this.profile.get('depth');
         const fillingWeight = {};
 
         if (App.settings && App.settings.filling_types) {
@@ -2421,6 +2428,7 @@ const Unit = Backbone.Model.extend({
             },
             unit_total: {
                 weight: 0,
+                volume: 0,
             },
         };
 
@@ -2438,6 +2446,9 @@ const Unit = Backbone.Model.extend({
 
         function getArea(width, height) {
             return math.square_meters(width, height);
+        }
+        function getVolume(width, height, depth) {
+            return math.cubic_meters(width, height, depth);
         }
 
         result.frame.linear = getProfilePerimeter(sizes.frame.width, sizes.frame.height);
@@ -2514,7 +2525,7 @@ const Unit = Backbone.Model.extend({
         } else {
             result.unit_total.weight = result.profile_total.weight + result.glasses.weight;
         }
-
+        result.unit_total.volume = getVolume(result.frame.linear_without_intersections, sizes.frame.frame_width, profileDepth);
         return result;
     },
     //  Returns sizes in mms
