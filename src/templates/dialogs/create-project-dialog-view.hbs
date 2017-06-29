@@ -1,55 +1,115 @@
 @require('./partials/base-dialog-start-wrapper.hbs')
 <div class="create-project-box">
-    <form action="">
+    <form role="form" action="" class="form-horizontal">
         {{!project_name}}
-        <input name="{{schema.project_name.name}}" type="text" required class="form-control" placeholder="{{schema.project_name.title}}">
-        {{!client_name}}
-        <input name="{{schema.client_name.name}}" type="text" class="form-control" placeholder="{{schema.client_name.title}}">
-        {{!client_company_name}}
-        <input name="{{schema.client_company_name.name}}" type="text" class="form-control" placeholder="{{schema.client_company_name.title}}">
-        {{!client_phone}}
-        <input name="{{schema.client_phone.name}}" type="text" class="form-control" placeholder="{{schema.client_phone.title}}">
-        {{!client_email}}
-        <input name="{{schema.client_email.name}}" type="text" class="form-control" placeholder="{{schema.client_email.title}}">
-        {{!client_address_line}}
-        <input name="{{schema.client_address_line.name}}" type="text" class="form-control" placeholder="{{schema.client_address_line.title}}">
-        {{!client_address_city}}
-        <input name="{{schema.client_address_city.name}}" type="text" class="form-control" placeholder="{{schema.client_address_city.title}}">
-        <div class="row">
-            <div class="col-md-6">
-                {{!client_address_state}}
-                <input name="{{schema.client_address_state.name}}" type="text" class="form-control" placeholder="{{schema.client_address_state.title}}">
+        <label class="sr-only">{{schema.project_name.title}}</label>
+        <input name="{{schema.project_name.name}}" type="text" class="form-control" placeholder="{{schema.project_name.title}}">
+        <fieldset>
+            <legend>Client Information</legend>
+            <div class="form-group">
+                <div class="col-sm-6">
+                    {{!client_name}}
+                    <label class="sr-only">{{schema.client_name.title}}</label>
+                    <input name="{{schema.client_name.name}}" type="text" class="form-control" placeholder="{{schema.client_name.title}}">
+                </div>
+                <div class="col-sm-6">
+                    {{!client_company_name}}
+                    <label class="sr-only">{{schema.client_company_name.title}}</label>
+                    <input name="{{schema.client_company_name.name}}" type="text" class="form-control" placeholder="{{schema.client_company_name.title}}">
+                </div>
+                <div class="col-sm-6">
+                    {{!client_phone}}
+                    <label class="sr-only">{{schema.client_phone.title}}</label>
+                    <input name="{{schema.client_phone.name}}" type="text" class="form-control" placeholder="{{schema.client_phone.title}}">
+                </div>
+                <div class="col-sm-6">
+                    {{!client_email}}
+                    <label class="sr-only">{{schema.client_email.title}}</label>
+                    <input name="{{schema.client_email.name}}" type="text" class="form-control" placeholder="{{schema.client_email.title}}">
+                </div>
             </div>
-            <div class="col-md-6">
-                {{!client_address_zip}}
-                <input name="{{schema.client_address_zip.name}}" type="text" class="form-control" placeholder="{{schema.client_address_zip.title}}">
+        </fieldset>
+        <fieldset>
+            <legend>Client Address</legend>
+            <div class="form-group">
+                <div class="col-sm-12">
+                    {{!client_address_line}}
+                    <label class="sr-only">{{schema.client_address_line.title}}</label>
+                    <input name="{{schema.client_address_line.name}}" type="text" class="form-control" placeholder="{{schema.client_address_line.title}}">
+                </div>
+                <div class="col-sm-6">
+                    {{!client_address_city}}
+                    <label class="sr-only">{{schema.client_address_city.title}}</label>
+                    <input name="{{schema.client_address_city.name}}" type="text" class="form-control" placeholder="{{schema.client_address_city.title}}">
+                </div>
+                <div class="col-sm-6">
+                    {{!client_address_state}}
+                    <label class="sr-only">{{schema.client_address_state.title}}</label>
+                    <input name="{{schema.client_address_state.name}}" type="text" class="form-control" placeholder="{{schema.client_address_state.title}}">
+                </div>
+                <div class="col-sm-6">
+                    {{!client_address_zip}}
+                    <label class="sr-only">{{schema.client_address_zip.title}}</label>
+                    <input name="{{schema.client_address_zip.name}}" type="text" class="form-control" placeholder="{{schema.client_address_zip.title}}">
+                </div>
+                <div class="col-sm-6">
+                    {{!client_address_country}}
+                    <label class="sr-only">{{schema.client_address_country.title}}</label>
+                    <input name="{{schema.client_address_country.name}}" type="text" class="form-control" placeholder="{{schema.client_address_country.title}}">
+                </div>
             </div>
-        </div>
-        {{!client_address_country}}
-        <input name="{{schema.client_address_country.name}}" type="text" class="form-control" placeholder="{{schema.client_address_country.title}}">
-        {{!project_address_line}}
-        <input name="{{schema.project_address_line.name}}" type="text" class="form-control" placeholder="{{schema.project_address_line.title}}">
-        {{!project_address_city}}
-        <input name="{{schema.project_address_city.name}}" type="text" class="form-control" placeholder="{{schema.project_address_city.title}}">
-        <div class="row">
-            <div class="col-md-6">
-                {{!project_address_state}}
-                <input name="{{schema.project_address_state.name}}" type="text" class="form-control" placeholder="{{schema.project_address_state.title}}">
+        </fieldset>
+        <fieldset>
+            <legend>Project Address</legend>
+            <div class="form-group">
+                <div class="col-sm-12">
+                    {{!project_address_line}}
+                    <label class="sr-only">{{schema.project_address_line.title}}</label>
+                    <input name="{{schema.project_address_line.name}}" type="text" class="form-control" placeholder="{{schema.project_address_line.title}}">
+                </div>
+                <div class="col-sm-6">
+                    {{!project_address_city}}
+                    <label class="sr-only">{{schema.project_address_city.title}}</label>
+                    <input name="{{schema.project_address_city.name}}" type="text" class="form-control" placeholder="{{schema.project_address_city.title}}">
+                </div>
+                <div class="col-sm-6">
+                    {{!project_address_state}}
+                    <label class="sr-only">{{schema.project_address_state.title}}</label>
+                    <input name="{{schema.project_address_state.name}}" type="text" class="form-control" placeholder="{{schema.project_address_state.title}}">
+                </div>
+                <div class="col-sm-6">
+                    {{!project_address_zip}}
+                    <label class="sr-only">{{schema.project_address_zip.title}}</label>
+                    <input name="{{schema.project_address_zip.name}}" type="text" class="form-control" placeholder="{{schema.project_address_zip.title}}">
+                </div>
+                <div class="col-sm-6">
+                    {{!project_address_country}}
+                    <label class="sr-only">{{schema.project_address_country.title}}</label>
+                    <input name="{{schema.project_address_country.name}}" type="text" class="form-control" placeholder="{{schema.project_address_country.title}}">
+                </div>
             </div>
-            <div class="col-md-6">
-                {{!project_address_zip}}
-                <input name="{{schema.project_address_zip.name}}" type="text" class="form-control" placeholder="{{schema.project_address_zip.title}}">
+        </fieldset>
+        <fieldset>
+            <legend>Extra Information</legend>
+            <div class="form-group">
+                <div class="col-sm-12">
+                    {{!project_notes}}
+                    <label class="sr-only">{{schema.project_notes.title}}</label>
+                    <textarea name="{{schema.project_notes.name}}" class="form-control" placeholder="{{schema.project_notes.title}}"></textarea>
+                </div>
+                <div class="col-sm-12">
+                    {{!shipping_notes}}
+                    <label class="sr-only">{{schema.shipping_notes.title}}</label>
+                    <textarea name="{{schema.shipping_notes.name}}" class="form-control" placeholder="{{schema.shipping_notes.title}}"></textarea>
+                </div>
+                <div class="col-sm-12">
+                    {{!lead_time}}
+                    <label class="sr-only">{{schema.lead_time.title}}</label>
+                    <input name="{{schema.lead_time.name}}" type="number" class="form-control" placeholder="{{schema.lead_time.title}}">
+                </div>
             </div>
-        </div>
-        {{!project_address_country}}
-        <input name="{{schema.project_address_country.name}}" type="text" class="form-control" placeholder="{{schema.project_address_country.title}}">
-        {{!project_notes}}
-        <textarea name="{{schema.project_notes.name}}" class="form-control" placeholder="{{schema.project_notes.title}}"></textarea>
-        {{!shipping_notes}}
-        <textarea name="{{schema.shipping_notes.name}}" class="form-control" placeholder="{{schema.shipping_notes.title}}"></textarea>
-        {{!lead_time}}
-        <input name="{{schema.lead_time.name}}" type="number" class="form-control" placeholder="{{schema.lead_time.title}}">
-        <div class="form-control-files"></div>
+            <div class="form-control-files"></div>
+        </fieldset>
         <button type="submit" class="btn btn-save">Save</button>
         <button type="button" class="btn btn-cancel" data-dismiss="modal">Cancel</button>
     </form>
