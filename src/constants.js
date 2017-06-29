@@ -25,6 +25,17 @@ export const DATE_FORMAT_MOMENTJS = 'D MMMM, YYYY';
 export const DATE_FORMAT_BS_DATEPICKER = 'd MM, yyyy';
 
 //  ------------------------------------------------------------------------
+//  Key codes
+//  ------------------------------------------------------------------------
+
+export const KEY_ENTER = 13;
+export const KEY_ESC = 27;
+export const KEY_CTRL = 17;
+export const KEY_Y = 89;
+export const KEY_Z = 90;
+export const KEY_N = 78;
+
+//  ------------------------------------------------------------------------
 //  UI error messages (for HoT tables and some other places)
 //  ------------------------------------------------------------------------
 

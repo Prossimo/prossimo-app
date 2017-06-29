@@ -10,6 +10,11 @@ import DrawingModule from '../module/drawing-module';
 import DrawingGlazingPopup from './drawing-glazing-view';
 import template from '../templates/drawing-view.hbs';
 
+import {
+    KEY_ENTER,
+    KEY_ESC,
+} from '../../../constants';
+
 const HELP_SQUARES_KEYPRESS_DELAY = 800;
 const HELP_SQUARES_MAX_DISPLAY_TIME = 6000;
 const HELP_SQUARES_KEYPRESS_CHECK_INTERVAL = 800;
@@ -553,7 +558,7 @@ export default Marionette.View.extend({
             .focus()
             .select()
             .on('keyup', function onKeyUp(e) {
-                if (e.keyCode === 13) {  // enter
+                if (e.keyCode === KEY_ENTER) {
                     let _value = this.value;
                     let sign = 1;
 
@@ -576,7 +581,7 @@ export default Marionette.View.extend({
                     closeWrap();
                 }
 
-                if (e.keyCode === 27) { // esc
+                if (e.keyCode === KEY_ESC) {
                     closeWrap();
                 }
             })

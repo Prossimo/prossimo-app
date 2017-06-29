@@ -25,6 +25,10 @@ import {
     VALUE_ERROR_GLAZING_BARS_ONLY,
     VALUE_ERROR_NO_VARIANTS,
     VALUE_ERROR_NO_PROFILE,
+    KEY_CTRL,
+    KEY_Y,
+    KEY_Z,
+    KEY_N,
 } from '../../constants';
 
 export default Marionette.View.extend({
@@ -1083,18 +1087,19 @@ export default Marionette.View.extend({
                 isFullRowSelected = selection[3] === selection[3] - selection[1];
             }
 
-            if (isCtrlDown && event.keyCode === 17 && isFullRowSelected) {
+            if (isCtrlDown && event.keyCode === KEY_CTRL && isFullRowSelected) {
                 event.stopImmediatePropagation();
                 return;
             }
 
             //  Ctrl + Y || Ctrl + Shift + Z
-            if (isCtrlDown && (event.keyCode === 89 || (event.shiftKey && event.keyCode === 90))) {
+            if (isCtrlDown && (event.keyCode === KEY_Y || (event.shiftKey && event.keyCode === KEY_Z))) {
                 self.onRedo();
             //  Ctrl + Z
-            } else if (isCtrlDown && event.keyCode === 90) {
+            } else if (isCtrlDown && event.keyCode === KEY_Z) {
                 self.onUndo();
-            } else if (!onlyCtrlKeys && !isCtrlDown && event.keyCode === 78) {
+            //  N
+            } else if (!onlyCtrlKeys && !isCtrlDown && event.keyCode === KEY_N) {
                 self.onNewUnitOrAccessory(event);
                 event.preventDefault();
                 event.stopPropagation();
