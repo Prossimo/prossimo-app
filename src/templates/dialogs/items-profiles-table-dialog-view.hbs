@@ -1,6 +1,23 @@
 @require('./partials/base-dialog-start-wrapper.hbs')
-    <div class="items-profiles-table-main-container">
+    <div class="items-profiles-table-main-container{{#if is_wide }} is-wide{{/if}}">
         <h3>{{ collection_title }} availability for profiles</h3>
+
+        <div class="item-selector">
+            <h5>For item:</h5>
+            <select class="selectpicker" title="None selected">
+                <option value="all">All items</option>
+                <option data-divider="true"></option>
+                {{#each possible_items }}
+                <option
+                    value="{{ id }}"
+                    {{#if is_selected}} selected{{/if}}
+                    data-content="<span class='title'>{{ name }}</span>{{#if is_initial}}<span class='label label-dropdown'>Current</span>{{/if}}"
+                >
+                    {{ name }}
+                </option>
+                {{/each}}
+            </select>
+        </div>
 
         <div class="items-profiles-table-scroll-wrapper">
             <div class="handsontable-container"></div>
