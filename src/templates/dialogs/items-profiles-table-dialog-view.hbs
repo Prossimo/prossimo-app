@@ -8,7 +8,13 @@
                 <option value="all">All items</option>
                 <option data-divider="true"></option>
                 {{#each possible_items }}
-                <option value="{{ id }}"{{#if is_selected}} selected{{/if}}>{{ name }}</option>
+                <option
+                    value="{{ id }}"
+                    {{#if is_selected}} selected{{/if}}
+                    data-content="<span class='title'>{{ name }}</span>{{#if is_initial}}<span class='label label-dropdown'>Current</span>{{/if}}"
+                >
+                    {{ name }}
+                </option>
                 {{/each}}
             </select>
         </div>

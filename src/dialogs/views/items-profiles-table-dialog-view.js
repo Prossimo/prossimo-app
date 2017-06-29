@@ -6,6 +6,8 @@ import BaseDialogView from './base-dialog-view';
 import template from '../../templates/dialogs/items-profiles-table-dialog-view.hbs';
 
 const DEFAULT_COLUMN_TITLE = 'Default Variant';
+const DEFAULT_COLUMN_SINGLE_ITEM_TITLE = 'Is Default';
+const AVAILABLE_COLUMN_SINGLE_ITEM_TITLE = 'Is Available';
 const UNSET_VALUE = '--';
 
 export default BaseDialogView.extend({
@@ -51,13 +53,23 @@ export default BaseDialogView.extend({
             }
 
             //  This means we changed a default value for some profile
-            if (column_index === 0) {
+            if (column_index === 0 && this.options.active_item === 'all') {
                 //  Set item `new_item` to be default for this profile,
                 //  and make sure item `old_item` is not default anymore
                 const new_item = this.options.collection.findWhere({ name: new_value });
                 const old_item = this.options.collection.findWhere({ name: old_value });
 
                 this.options.collection.setItemAsDefaultForProfile(profile.id, new_item, old_item);
+            } else if (column_index === 0) {
+                const item = this.options.active_item;
+
+                if (new_value === true) {
+                    this.options.collection.setItemAsDefaultForProfile(profile.id, item);
+                } else {
+                    item.setProfileAvailability(profile.id, true, false);
+                }
+
+                this.updateTable();
             //  This means we changed availability for some profile/item
             } else {
                 const item_index = column_index - 1;
@@ -66,7 +78,12 @@ export default BaseDialogView.extend({
                     this.options.active_item;
 
                 this.options.collection.setItemAvailabilityForProfile(profile.id, item, new_value);
-                this.updateDefaultVariantsForProfile(profile_index);
+
+                if (this.options.active_item === 'all') {
+                    this.updateDefaultVariantsForProfile(profile_index);
+                } else {
+                    this.updateTable();
+                }
             }
         });
     },
@@ -129,34 +146,39 @@ export default BaseDialogView.extend({
         return [UNSET_VALUE].concat(_.map(possible_items, available_item => available_item.get('name')));
     },
     getData() {
-        return this.options.profiles.map(profile =>
-            [this.getDefaultItemName(profile.id)]
-            .concat(
-                this.options.active_item === 'all' ?
-                    _.map(this.options.items_filtered, item => _.contains(item.getIdsOfProfilesWhereIsAvailable() || [], profile.id)) :
-                    [_.contains(this.options.active_item.getIdsOfProfilesWhereIsAvailable() || [], profile.id)],
-            ),
-        );
+        return this.options.profiles.map(profile => (
+            this.options.active_item === 'all' ?
+                [this.getDefaultItemName(profile.id)]
+                .concat(
+                    _.map(this.options.items_filtered, item => _.contains(item.getIdsOfProfilesWhereIsAvailable() || [], profile.id)),
+                ) :
+            [
+                _.contains(this.options.active_item.getIdsOfProfilesWhereIsDefault() || [], profile.id),
+                _.contains(this.options.active_item.getIdsOfProfilesWhereIsAvailable() || [], profile.id),
+            ]
+        ));
     },
     getHeaders() {
         return {
             rowHeaders: this.options.profiles.map(profile => profile.get('name')),
-            colHeaders: [DEFAULT_COLUMN_TITLE].concat(
-                this.options.items_filtered.filter(
-                    item => this.options.active_item === 'all' || item.id === this.options.active_item.id,
-                ).map(item => item.get('name')),
-            ),
+            colHeaders: this.options.active_item === 'all' ?
+                [DEFAULT_COLUMN_TITLE].concat(
+                    this.options.items_filtered.map(item => item.get('name')),
+                ) :
+                [DEFAULT_COLUMN_SINGLE_ITEM_TITLE, AVAILABLE_COLUMN_SINGLE_ITEM_TITLE],
         };
     },
+    //  A cell should only contain a dropdown if it is a "Default Variant", and
+    //  we're in the "All items" mode, otherwise it should be a checkbox
     getColumnOptions() {
         const column_options = [];
 
         _.each(this.getHeaders().colHeaders, (column_title, index) => {
-            const is_default_column = column_title === DEFAULT_COLUMN_TITLE;
+            const is_default_all_mode = column_title === DEFAULT_COLUMN_TITLE;
 
             const column_obj = _.extend({}, {
                 data: index,
-                type: is_default_column ? 'dropdown' : 'checkbox',
+                type: is_default_all_mode ? 'dropdown' : 'checkbox',
             });
 
             column_options.push(column_obj);
@@ -170,8 +192,8 @@ export default BaseDialogView.extend({
         return (row, col) => {
             const cell_properties = {};
 
-            //  If it's the left ('Default Value') column
-            if (col === 0) {
+            //  If it's the left ('Default Value') column, in "All items" mode
+            if (col === 0 && self.options.active_item === 'all') {
                 const available_names = self.getAvailableItemNames(
                     self.options.profiles.at(row).id,
                 );
@@ -210,6 +232,7 @@ export default BaseDialogView.extend({
                 name: item.get('name'),
                 id: item.id,
                 is_selected: this.options.active_item !== 'all' && this.options.active_item.id === item.id,
+                is_initial: this.options.active_item.id === item.id,
             })),
         };
     },
@@ -277,6 +300,7 @@ export default BaseDialogView.extend({
         };
 
         this.options = _.extend(default_options, options);
+        this.options.initial_item = this.options.active_item;
 
         if (!this.options.active_item || !this.options.collection || !this.options.profiles) {
             throw new Error('Items to profiles dialog was not initialized correctly, check input options');
