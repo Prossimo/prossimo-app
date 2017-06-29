@@ -2,27 +2,35 @@ import _ from 'underscore';
 import Backbone from 'backbone';
 
 import Schema from '../../schema';
-import constants from '../../constants';
 import { object } from '../../utils';
 import PricingGridCollection from '../collections/inline/pricing-grid-collection';
 import PricingEquationParamsCollection from '../collections/inline/pricing-equation-params-collection';
 
-const PRICING_SCHEME_NONE = constants.PRICING_SCHEME_NONE;
-const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
-const PRICING_SCHEME_LINEAR_EQUATION = constants.PRICING_SCHEME_LINEAR_EQUATION;
+import {
+    PRICING_SCHEME_NONE,
+    PRICING_SCHEME_PRICING_GRIDS,
+    PRICING_SCHEME_LINEAR_EQUATION,
+    VALUE_ERROR_NONE,
+} from '../../constants';
 
 const POSSIBLE_PRICING_SCHEMES = [
     PRICING_SCHEME_PRICING_GRIDS,
     PRICING_SCHEME_LINEAR_EQUATION,
 ];
-const UNIT_TYPES = ['Window', 'Patio Door', 'Entry Door'];
-const DEFAULT_UNIT_TYPE = 'Window';
-const TYPES_WITH_POSSIBLE_THRESHOLD = ['Patio Door', 'Entry Door'];
-const TYPES_WITH_EDITABLE_THRESHOLD = ['Patio Door'];
-const TYPES_WITH_ALWAYS_LOW_THRESHOLD = ['Entry Door'];
-const TYPES_WITH_POSSIBLE_SOLID_PANEL = ['Patio Door', 'Entry Door'];
-const TYPES_WITH_POSSIBLE_FLUSH_PANEL = ['Entry Door', 'Window'];
-const TYPES_WITH_OUTSIDE_HANDLE = ['Patio Door', 'Entry Door'];
+
+const UNIT_TYPE_WINDOW = 'Window';
+const UNIT_TYPE_PATIO_DOOR = 'Patio Door';
+const UNIT_TYPE_ENTRY_DOOR = 'Entry Door';
+
+const UNIT_TYPES = [UNIT_TYPE_WINDOW, UNIT_TYPE_PATIO_DOOR, UNIT_TYPE_ENTRY_DOOR];
+const DEFAULT_UNIT_TYPE = UNIT_TYPE_WINDOW;
+
+const TYPES_WITH_POSSIBLE_THRESHOLD = [UNIT_TYPE_PATIO_DOOR, UNIT_TYPE_ENTRY_DOOR];
+const TYPES_WITH_EDITABLE_THRESHOLD = [UNIT_TYPE_PATIO_DOOR];
+const TYPES_WITH_ALWAYS_LOW_THRESHOLD = [UNIT_TYPE_ENTRY_DOOR];
+const TYPES_WITH_POSSIBLE_SOLID_PANEL = [UNIT_TYPE_PATIO_DOOR, UNIT_TYPE_ENTRY_DOOR];
+const TYPES_WITH_POSSIBLE_FLUSH_PANEL = [UNIT_TYPE_ENTRY_DOOR, UNIT_TYPE_WINDOW];
+const TYPES_WITH_OUTSIDE_HANDLE = [UNIT_TYPE_PATIO_DOOR, UNIT_TYPE_ENTRY_DOOR];
 
 const SYSTEMS = ['Workhorse uPVC', 'Pinnacle uPVC'];
 const SUPPLIER_SYSTEMS = ['Gaelan S8000', 'Gaelan S9000'];
@@ -246,10 +254,10 @@ export default Backbone.Model.extend({
         return _.indexOf(TYPES_WITH_OUTSIDE_HANDLE, this.get('unit_type')) !== -1;
     },
     isEntryDoor() {
-        return this.get('unit_type') === 'Entry Door';
+        return this.get('unit_type') === UNIT_TYPE_ENTRY_DOOR;
     },
     getThresholdType() {
-        let threshold_type = '(None)';
+        let threshold_type = VALUE_ERROR_NONE;
 
         if (this.isThresholdPossible()) {
             if (this.get('low_threshold') === true) {

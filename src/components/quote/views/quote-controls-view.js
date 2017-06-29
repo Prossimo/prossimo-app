@@ -5,6 +5,8 @@ import moment from 'moment';
 import App from '../../../main';
 import template from '../templates/quote-controls-view.hbs';
 
+import { DATE_FORMAT_MOMENTJS } from '../../../constants';
+
 export default Marionette.View.extend({
     tagName: 'div',
     className: 'quote-controls-container',
@@ -59,7 +61,7 @@ export default Marionette.View.extend({
         return parseInt(this.options.quote.get('revision'), 10) + 1;
     },
     getNewDate() {
-        return moment().format('D MMMM, YYYY');
+        return moment().format(DATE_FORMAT_MOMENTJS);
     },
     templateContext() {
         const project_settings = App.settings.getProjectSettings();

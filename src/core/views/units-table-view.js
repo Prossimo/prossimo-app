@@ -14,7 +14,18 @@ import UnitsTableTotalPricesView from '../../core/views/units-table-total-prices
 import { preview } from '../../components/drawing/module/drawing-module';
 import template from '../../templates/core/units-table-view.hbs';
 
-const UNSET_VALUE = '--';
+import {
+    RULE_IS_OPTIONAL,
+    RULE_DOOR_ONLY,
+    RULE_OPERABLE_ONLY,
+    RULE_GLAZING_BARS_ONLY,
+    UNSET_VALUE,
+    VALUE_ERROR_DOORS_ONLY,
+    VALUE_ERROR_OPERABLE_ONLY,
+    VALUE_ERROR_GLAZING_BARS_ONLY,
+    VALUE_ERROR_NO_VARIANTS,
+    VALUE_ERROR_NO_PROFILE,
+} from '../../constants';
 
 export default Marionette.View.extend({
     tagName: 'div',
@@ -785,10 +796,10 @@ export default Marionette.View.extend({
             if (item && item instanceof Unit) {
                 if (item.isOperableOnlyAttribute(property) && !item.hasOperableSections()) {
                     cell_properties.readOnly = true;
-                    cell_properties.renderer = hotRenderers.getDisabledPropertyRenderer('(Operable Only)');
+                    cell_properties.renderer = hotRenderers.getDisabledPropertyRenderer(VALUE_ERROR_OPERABLE_ONLY);
                 } else if (item.isGlazingBarProperty(property) && !item.hasGlazingBars()) {
                     cell_properties.readOnly = true;
-                    cell_properties.renderer = hotRenderers.getDisabledPropertyRenderer('(Has no Bars)');
+                    cell_properties.renderer = hotRenderers.getDisabledPropertyRenderer(VALUE_ERROR_GLAZING_BARS_ONLY);
                 } else if (property === 'glazing') {
                     profile_id = item.profile && item.profile.id;
                     options = [];
@@ -806,7 +817,7 @@ export default Marionette.View.extend({
                         cell_properties.source = _.map(options, option => option.get('name'));
                     //  When we have no options, disable editing
                     } else {
-                        message = profile_id ? '(No Variants)' : '(No Profile)';
+                        message = profile_id ? VALUE_ERROR_NO_VARIANTS : VALUE_ERROR_NO_PROFILE;
 
                         cell_properties.readOnly = true;
                         cell_properties.renderer = hotRenderers.getDisabledPropertyRenderer(message);
@@ -839,17 +850,17 @@ export default Marionette.View.extend({
                     _.each(rules_and_restrictions, (rule) => {
                         const restriction_applies = item.checkIfRestrictionApplies(rule);
 
-                        if (rule === 'IS_OPTIONAL') {
+                        if (rule === RULE_IS_OPTIONAL) {
                             is_optional = true;
-                        } else if (restriction_applies && rule === 'DOOR_ONLY') {
+                        } else if (restriction_applies && rule === RULE_DOOR_ONLY) {
                             is_restricted = true;
-                            message = '(Doors Only)';
-                        } else if (restriction_applies && rule === 'OPERABLE_ONLY') {
+                            message = VALUE_ERROR_DOORS_ONLY;
+                        } else if (restriction_applies && rule === RULE_OPERABLE_ONLY) {
                             is_restricted = true;
-                            message = '(Operable Only)';
-                        } else if (restriction_applies && rule === 'GLAZING_BARS_ONLY') {
+                            message = VALUE_ERROR_OPERABLE_ONLY;
+                        } else if (restriction_applies && rule === RULE_GLAZING_BARS_ONLY) {
                             is_restricted = true;
-                            message = '(Has no Bars)';
+                            message = VALUE_ERROR_GLAZING_BARS_ONLY;
                         }
                     }, this);
 
@@ -870,7 +881,7 @@ export default Marionette.View.extend({
                         }
                     //  When we have no options, disable editing
                     } else {
-                        message = profile_id ? '(No Variants)' : '(No Profile)';
+                        message = profile_id ? VALUE_ERROR_NO_VARIANTS : VALUE_ERROR_NO_PROFILE;
 
                         cell_properties.readOnly = true;
                         cell_properties.renderer = hotRenderers.getDisabledPropertyRenderer(message);

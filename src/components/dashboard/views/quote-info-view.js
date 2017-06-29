@@ -4,7 +4,7 @@ import BaseInputView from '../../../core/views/base/base-input-view';
 import BaseDatepickerInputView from '../../../core/views/base/base-datepicker-input-view';
 import template from '../templates/quote-info-view.hbs';
 
-const UNSET_VALUE = '--';
+import { UNSET_VALUE } from '../../../constants';
 
 export default Marionette.View.extend({
     tagName: 'div',

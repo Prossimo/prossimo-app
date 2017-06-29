@@ -1,15 +1,16 @@
 import Marionette from 'backbone.marionette';
 
-import constants from '../../../constants';
 import App from '../../../main';
 import BaseInputView from '../../../core/views/base/base-input-view';
 import EquationParamsView from './equation-params-view';
 import PricingGridsEditorView from './pricing-grids-editor-view';
 import template from '../templates/profile-connections-table-item-view.hbs';
 
-const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
-const PRICING_SCHEME_PER_ITEM = constants.PRICING_SCHEME_PER_ITEM;
-const PRICING_SCHEME_LINEAR_EQUATION = constants.PRICING_SCHEME_LINEAR_EQUATION;
+import {
+    PRICING_SCHEME_PRICING_GRIDS,
+    PRICING_SCHEME_PER_ITEM,
+    PRICING_SCHEME_LINEAR_EQUATION,
+} from '../../../constants';
 
 export default Marionette.View.extend({
     tagName: 'div',

@@ -5,17 +5,22 @@ import clone from 'clone';
 import App from '../../main';
 import Schema from '../../schema';
 import { object, convert, math } from '../../utils';
-import constants from '../../constants';
 import UnitOptionCollection from '../collections/inline/unit-option-collection';
 import { globalChannel } from '../../utils/radio';
 
-const UNSET_VALUE = '--';
-const REDISTRIBUTE_BARS_PRECISION = 0;
+import {
+    PRICING_SCHEME_NONE,
+    PRICING_SCHEME_PRICING_GRIDS,
+    PRICING_SCHEME_PER_ITEM,
+    PRICING_SCHEME_LINEAR_EQUATION,
+    RULE_IS_OPTIONAL,
+    RULE_DOOR_ONLY,
+    RULE_OPERABLE_ONLY,
+    RULE_GLAZING_BARS_ONLY,
+    UNSET_VALUE,
+} from '../../constants';
 
-const PRICING_SCHEME_NONE = constants.PRICING_SCHEME_NONE;
-const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
-const PRICING_SCHEME_PER_ITEM = constants.PRICING_SCHEME_PER_ITEM;
-const PRICING_SCHEME_LINEAR_EQUATION = constants.PRICING_SCHEME_LINEAR_EQUATION;
+const REDISTRIBUTE_BARS_PRECISION = 0;
 
 const UNIT_PROPERTIES = [
     { name: 'mark', title: 'Mark', type: 'string' },
@@ -685,7 +690,7 @@ const Unit = Backbone.Model.extend({
                 const dictionary_id = dictionary.id;
                 const profile_id = this.profile && this.profile.id;
                 const rules = dictionary.get('rules_and_restrictions');
-                const is_optional = _.contains(rules, 'IS_OPTIONAL');
+                const is_optional = _.contains(rules, RULE_IS_OPTIONAL);
 
                 if (!is_optional && dictionary_id && profile_id) {
                     //  TODO: we need to call this directly on `dictionary` iterable
@@ -2993,11 +2998,11 @@ const Unit = Backbone.Model.extend({
     checkIfRestrictionApplies(restriction) {
         let restriction_applies = false;
 
-        if (restriction === 'DOOR_ONLY' && !this.isDoorType()) {
+        if (restriction === RULE_DOOR_ONLY && !this.isDoorType()) {
             restriction_applies = true;
-        } else if (restriction === 'OPERABLE_ONLY' && !this.hasOperableSections()) {
+        } else if (restriction === RULE_OPERABLE_ONLY && !this.hasOperableSections()) {
             restriction_applies = true;
-        } else if (restriction === 'GLAZING_BARS_ONLY' && !this.hasGlazingBars()) {
+        } else if (restriction === RULE_GLAZING_BARS_ONLY && !this.hasGlazingBars()) {
             restriction_applies = true;
         }
 

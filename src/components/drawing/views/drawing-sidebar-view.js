@@ -4,12 +4,20 @@ import Marionette from 'backbone.marionette';
 
 import App from '../../../main';
 import { math, format, convert } from '../../../utils';
-import constants from '../../../constants';
 import template from '../templates/drawing-sidebar-view.hbs';
 
-const UNSET_VALUE = '--';
-
-const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
+import {
+    PRICING_SCHEME_PER_ITEM,
+    PRICING_SCHEME_PRICING_GRIDS,
+    RULE_DOOR_ONLY,
+    RULE_OPERABLE_ONLY,
+    RULE_GLAZING_BARS_ONLY,
+    UNSET_VALUE,
+    VALUE_ERROR_DOORS_ONLY,
+    VALUE_ERROR_OPERABLE_ONLY,
+    VALUE_ERROR_GLAZING_BARS_ONLY,
+    VALUE_ERROR_NONE,
+} from '../../../constants';
 
 export default Marionette.View.extend({
     tagName: 'div',
@@ -163,9 +171,9 @@ export default Marionette.View.extend({
                     let val = params_source[prop_name] || active_unit.get(prop_name);
 
                     if (active_unit.isOperableOnlyAttribute(prop_name) && !active_unit.hasOperableSections()) {
-                        val = '(Operable Only)';
+                        val = VALUE_ERROR_OPERABLE_ONLY;
                     } else if (active_unit.isGlazingBarProperty(prop_name) && !active_unit.hasGlazingBars()) {
-                        val = '(Has no Bars)';
+                        val = VALUE_ERROR_GLAZING_BARS_ONLY;
                     }
 
                     return val;
@@ -189,7 +197,7 @@ export default Marionette.View.extend({
                 let current_dictionary_name = dictionary_name;
                 let rules_and_restrictions;
                 let is_hidden = false;
-                let value = '(None)';
+                let value = VALUE_ERROR_NONE;
                 let is_restricted = false;
                 let current_options = [];
 
@@ -203,15 +211,15 @@ export default Marionette.View.extend({
                 _.each(rules_and_restrictions, (rule) => {
                     const restriction_applies = active_unit.checkIfRestrictionApplies(rule);
 
-                    if (restriction_applies && rule === 'DOOR_ONLY') {
+                    if (restriction_applies && rule === RULE_DOOR_ONLY) {
                         is_restricted = true;
-                        value = '(Doors Only)';
-                    } else if (restriction_applies && rule === 'OPERABLE_ONLY') {
+                        value = VALUE_ERROR_DOORS_ONLY;
+                    } else if (restriction_applies && rule === RULE_OPERABLE_ONLY) {
                         is_restricted = true;
-                        value = '(Operable Only)';
-                    } else if (restriction_applies && rule === 'GLAZING_BARS_ONLY') {
+                        value = VALUE_ERROR_OPERABLE_ONLY;
+                    } else if (restriction_applies && rule === RULE_GLAZING_BARS_ONLY) {
                         is_restricted = true;
-                        value = '(Has no Bars)';
+                        value = VALUE_ERROR_GLAZING_BARS_ONLY;
                     }
                 }, this);
 
@@ -506,7 +514,7 @@ export default Marionette.View.extend({
             let per_item_priced_options_total_cost = 0;
 
             //  Collect detailed pricing data for per-item-priced options
-            _.each(unit_cost.options_list.PER_ITEM, (source_item, index) => {
+            _.each(unit_cost.options_list[PRICING_SCHEME_PER_ITEM], (source_item, index) => {
                 const option_item = {};
 
                 option_item.option_index = `Option #${index + 1}`;

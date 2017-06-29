@@ -5,10 +5,14 @@ import hotRenderers from '../../hot-renderers';
 import BaseDialogView from './base-dialog-view';
 import template from '../../templates/dialogs/items-profiles-table-dialog-view.hbs';
 
+import {
+    UNSET_VALUE,
+    VALUE_ERROR_NO_VARIANTS,
+} from '../../constants';
+
 const DEFAULT_COLUMN_TITLE = 'Default Variant';
 const DEFAULT_COLUMN_SINGLE_ITEM_TITLE = 'Is Default';
 const AVAILABLE_COLUMN_SINGLE_ITEM_TITLE = 'Is Available';
-const UNSET_VALUE = '--';
 
 export default BaseDialogView.extend({
     className: 'items-profiles-table-modal modal fade',
@@ -110,7 +114,7 @@ export default BaseDialogView.extend({
             if (new_possible_defaults.length === 1) {
                 this.hot.setCellMetaObject(profile_index, 0, {
                     readOnly: true,
-                    renderer: hotRenderers.getDisabledPropertyRenderer('(No Variants)'),
+                    renderer: hotRenderers.getDisabledPropertyRenderer(VALUE_ERROR_NO_VARIANTS),
                 });
             } else if (old_possible_defaults.length === 1 && new_possible_defaults.length > 1) {
                 this.hot.setCellMetaObject(profile_index, 0, {
@@ -206,7 +210,7 @@ export default BaseDialogView.extend({
                     cell_properties.source = available_names;
                 } else {
                     cell_properties.readOnly = true;
-                    cell_properties.renderer = hotRenderers.getDisabledPropertyRenderer('(No Variants)');
+                    cell_properties.renderer = hotRenderers.getDisabledPropertyRenderer(VALUE_ERROR_NO_VARIANTS);
                 }
             }
 

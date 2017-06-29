@@ -2,15 +2,16 @@ import Backbone from 'backbone';
 import _ from 'underscore';
 
 import Schema from '../../../schema';
-import constants from '../../../constants';
 import { object } from '../../../utils';
 import PricingEquationParamsCollection from '../../collections/inline/pricing-equation-params-collection';
 import PricingGridCollection from '../../collections/inline/pricing-grid-collection';
 
-const PRICING_SCHEME_NONE = constants.PRICING_SCHEME_NONE;
-const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
-const PRICING_SCHEME_PER_ITEM = constants.PRICING_SCHEME_PER_ITEM;
-const PRICING_SCHEME_LINEAR_EQUATION = constants.PRICING_SCHEME_LINEAR_EQUATION;
+import {
+    PRICING_SCHEME_NONE,
+    PRICING_SCHEME_PRICING_GRIDS,
+    PRICING_SCHEME_PER_ITEM,
+    PRICING_SCHEME_LINEAR_EQUATION,
+} from '../../../constants';
 
 //  We switch between cost_per_item, pricing_grids, pricing_equation_params
 //  when we call getPricingData(), only value for one of them is returned,
