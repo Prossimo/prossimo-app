@@ -1,9 +1,13 @@
 @require('./partials/base-dialog-start-wrapper.hbs')
 <div class="create-project-box">
     <form role="form" action="" class="form-horizontal">
-        {{!project_name}}
-        <label class="sr-only">{{schema.project_name.title}}</label>
-        <input name="{{schema.project_name.name}}" type="text" class="form-control" placeholder="{{schema.project_name.title}}">
+        <div class="form-group">
+            <div class="col-sm-12">
+                {{!project_name}}
+                <label class="sr-only">{{schema.project_name.title}}</label>
+                <input name="{{schema.project_name.name}}" type="text" class="form-control" placeholder="{{schema.project_name.title}}">
+            </div>
+        </div>
         <fieldset>
             <legend>Client Information</legend>
             <div class="form-group">

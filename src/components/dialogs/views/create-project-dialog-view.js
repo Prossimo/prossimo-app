@@ -1,10 +1,26 @@
 import props from '../../../utils/decorators/props';
 import stickableMixin from '../../../utils/decorators/stickableMixin';
+import validatableMixin from '../../../utils/decorators/validatableMixin';
 import BaseDialogView from './base-dialog-view';
 import App from '../../../main';
 import FileUploaderView from '../../file-uploader-view/file-uploader-view';
 import Project from '../../../core/models/project';
 import template from '../../../templates/dialogs/create-project-dialog-view.hbs';
+
+const model = new Project();
+const _schemaBindings = {};
+const _ui = {};
+Object.keys(model.schema).forEach((observe) => {
+    const el = `[name=${observe}]`;
+    _ui[`${observe}`] = el;
+    _schemaBindings[el] = {
+        observe,
+        getVal($el) { return $el.val().trim(); },
+        setOptions: {
+            validate: true,
+        },
+    };
+});
 
 @props({
     className: 'create-project-modal modal fade',
@@ -12,20 +28,11 @@ import template from '../../../templates/dialogs/create-project-dialog-view.hbs'
         dialog_title: 'Create Project',
     },
     template,
-    model: new Project(),
+    model,
     ui: {
         $form: '.modal-body form',
         $filesRegion: '.form-control-files',
-        $data_project_name: '.modal-body form input[name="project_name"]',
-        $data_client_name: '.modal-body form input[name="client_name"]',
-        $data_company: '.modal-body form input[name="company"]',
-        $data_phone: '.modal-body form input[name="phone"]',
-        $data_email: '.modal-body form input[name="email"]',
-        $data_client_address: '.modal-body form input[name="client_address"]',
-        $data_project_address: '.modal-body form input[name="project_address"]',
-        $data_project_notes: '.modal-body form textarea[name="project_notes"]',
-        $data_shipping_notes: '.modal-body form textarea[name="shipping_notes"]',
-        $data_lead_time: '.modal-body form input[name="lead_time"]',
+        ..._ui,
     },
     events: {
         'submit form': 'addNewProject',
@@ -38,6 +45,7 @@ import template from '../../../templates/dialogs/create-project-dialog-view.hbs'
     },
 })
 @stickableMixin
+@validatableMixin
 export default class extends BaseDialogView {
     addNewProject(e) {
         const newProject = new Project({
@@ -59,15 +67,7 @@ export default class extends BaseDialogView {
         App.projects.create(newProject);
     }
     bindings() {
-        const _schemaBindings = {};
-        Object.keys(this.model.schema).forEach((observe) => {
-            _schemaBindings[`[name=${observe}]`] = {
-                observe,
-                getVal($el) { return $el.val().trim(); },
-            };
-        });
         return {
-            '@ui.$data_project_name': 'project_name',
             '.modal-title': {
                 observe: 'project_name',
                 onGet: val => `${this.options.dialog_title}${val ? `: ${val}` : ''}`,
