@@ -13,9 +13,11 @@ export default BaseDialogView.extend({
     template,
     ui: {
         $hot_container: '.handsontable-container',
+        $select: 'select',
     },
     events: {
         'shown.bs.modal': 'onModalShown',
+        'change @ui.$select': 'onSelectChange',
     },
     //  We have two strategies here.
     //  1. If we set or unset some option as a default for some profile,
@@ -59,7 +61,9 @@ export default BaseDialogView.extend({
             //  This means we changed availability for some profile/item
             } else {
                 const item_index = column_index - 1;
-                const item = this.options.items_filtered[item_index];
+                const item = this.options.active_item === 'all' ?
+                    this.options.items_filtered[item_index] :
+                    this.options.active_item;
 
                 this.options.collection.setItemAvailabilityForProfile(profile.id, item, new_value);
                 this.updateDefaultVariantsForProfile(profile_index);
@@ -125,9 +129,12 @@ export default BaseDialogView.extend({
         return [UNSET_VALUE].concat(_.map(possible_items, available_item => available_item.get('name')));
     },
     getData() {
-        return this.options.profiles.map(profile => [this.getDefaultItemName(profile.id)]
+        return this.options.profiles.map(profile =>
+            [this.getDefaultItemName(profile.id)]
             .concat(
-                _.map(this.options.items_filtered, item => _.contains(item.getIdsOfProfilesWhereIsAvailable() || [], profile.id)),
+                this.options.active_item === 'all' ?
+                    _.map(this.options.items_filtered, item => _.contains(item.getIdsOfProfilesWhereIsAvailable() || [], profile.id)) :
+                    [_.contains(this.options.active_item.getIdsOfProfilesWhereIsAvailable() || [], profile.id)],
             ),
         );
     },
@@ -135,7 +142,9 @@ export default BaseDialogView.extend({
         return {
             rowHeaders: this.options.profiles.map(profile => profile.get('name')),
             colHeaders: [DEFAULT_COLUMN_TITLE].concat(
-                _.map(this.options.items_filtered, item => item.get('name')),
+                this.options.items_filtered.filter(
+                    item => this.options.active_item === 'all' || item.id === this.options.active_item.id,
+                ).map(item => item.get('name')),
             ),
         };
     },
@@ -182,11 +191,40 @@ export default BaseDialogView.extend({
             return cell_properties;
         };
     },
+    onSelectChange() {
+        let new_value = this.ui.$select.val() || 'all';
+
+        if (new_value !== 'all') {
+            new_value = this.options.items_filtered.find(item => item.id === parseInt(new_value, 10));
+        }
+
+        this.options.active_item = new_value || 'all';
+        this.$el.toggleClass('is-wide', this.options.active_item === 'all');
+        this.updateTable();
+    },
     templateContext() {
         return {
-            item_name: this.options.active_item.get('name'),
+            is_wide: this.options.active_item === 'all',
             collection_title: this.options.collection_title,
+            possible_items: this.options.items_filtered.map(item => ({
+                name: item.get('name'),
+                id: item.id,
+                is_selected: this.options.active_item !== 'all' && this.options.active_item.id === item.id,
+            })),
         };
+    },
+    updateTable() {
+        if (this.hot) {
+            const headers = this.getHeaders();
+
+            this.hot.updateSettings({
+                data: this.getData(),
+                colHeaders: headers.colHeaders,
+                columns: this.getColumnOptions(),
+                cells: this.getCellOptions(),
+            });
+            this.hot.render();
+        }
     },
     onRender() {
         const self = this;
@@ -208,9 +246,15 @@ export default BaseDialogView.extend({
                     },
                     columns: self.getColumnOptions(),
                     cells: self.getCellOptions(),
+                    stretchH: 'all',
                 });
             });
         }
+
+        this.ui.$select.selectpicker({
+            style: 'btn',
+            width: 'fit',
+        });
     },
     onModalShown() {
         if (this.hot) {
