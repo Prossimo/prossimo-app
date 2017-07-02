@@ -177,6 +177,12 @@ export const format = {
         return this.fixed_minimal(value, num) + (current_suffix_format === 'sup' ? '\u00A0m<sup>2</sup>' : '\u00A0sq.m');
     },
     //  Includes a non-breaking space character
+    cubic_meters(value, num, suffix_format) {
+        const current_suffix_format = _.contains(['normal', 'sup'], suffix_format) ? suffix_format : 'sup';
+
+        return this.fixed_minimal(value, num) + (current_suffix_format === 'sup' ? '\u00A0m<sup>3</sup>' : '\u00A0cub.m');
+    },
+    //  Includes a non-breaking space character
     weight(value) {
         return `${this.fixed_minimal(value, 3)}\u00A0kg`;
     },
@@ -337,6 +343,9 @@ export const math = {
     },
     square_meters(width_mm, height_mm) {
         return (parseFloat(width_mm) * parseFloat(height_mm)) / (1000 * 1000);
+    },
+    cubic_meters(width_mm, height_mm, depth_mm) {
+        return (parseFloat(width_mm) * parseFloat(height_mm) * parseFloat(depth_mm)) / (1000 * 1000 * 1000);
     },
     linear_interpolation(x, x0, x1, y0, y1) {
         return y0 + ((y1 - y0) * ((x - x0) / (x1 - x0)));
