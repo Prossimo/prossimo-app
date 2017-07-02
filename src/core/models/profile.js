@@ -48,6 +48,7 @@ const PROFILE_PROPERTIES = [
     { name: 'position', title: 'Position', type: 'number' },
     { name: 'weight_per_length', title: 'Weight per Length (kg/m)', type: 'number' },
     { name: 'clear_width_deduction', title: 'Clear Width Deduction (mm)', type: 'number' },
+    { name: 'depth', title: 'Depth (mm)', type: 'number' },
     { name: 'pricing_scheme', title: 'Pricing Scheme', type: 'string' },
     { name: 'pricing_grids', title: 'Pricing Grids', type: 'collection:PricingGridCollection' },
     {

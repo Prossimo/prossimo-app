@@ -956,6 +956,10 @@ const Unit = Backbone.Model.extend({
     getAreaInSquareMeters() {
         return math.square_meters(convert.inches_to_mm(this.get('width')), convert.inches_to_mm(this.get('height')));
     },
+    getVolumeInCubicMeters() {
+        return math.cubic_meters(convert.inches_to_mm(this.get('width')), convert.inches_to_mm(this.get('height')),
+            this.profile.get('depth'));
+    },
     getUnitCost() {
         return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
     },
@@ -2426,6 +2430,7 @@ const Unit = Backbone.Model.extend({
             },
             unit_total: {
                 weight: 0,
+                volume: 0,
             },
         };
 
@@ -2443,6 +2448,10 @@ const Unit = Backbone.Model.extend({
 
         function getArea(width, height) {
             return math.square_meters(width, height);
+        }
+
+        function getVolume(width, height, depth) {
+            return math.cubic_meters(width, height, depth);
         }
 
         result.frame.linear = getProfilePerimeter(sizes.frame.width, sizes.frame.height);
@@ -2512,6 +2521,8 @@ const Unit = Backbone.Model.extend({
         result.profile_total.area = result.frame.area + result.sashes.area + result.mullions.area;
         result.profile_total.area_both_sides = result.profile_total.area * 2;
         result.profile_total.weight = (result.profile_total.linear / 1000) * profileWeight;
+
+        result.unit_total.volume = getVolume(sizes.frame.width, sizes.frame.height, this.profile.get('depth'));
 
         //  Calculate total unit weight, but only if there are no base fillings
         if (hasBaseFilling) {

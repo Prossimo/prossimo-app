@@ -243,7 +243,7 @@ export default Marionette.View.extend({
         let active_unit_profile;
 
         const relevant_properties = [
-            'name', 'unit_type', 'system', 'frame_width', 'mullion_width',
+            'name', 'unit_type', 'system', 'frame_width', 'depth', 'mullion_width',
             'sash_frame_width', 'sash_frame_overlap', 'sash_mullion_overlap',
             'low_threshold', 'threshold_width',
         ];
@@ -389,6 +389,7 @@ export default Marionette.View.extend({
                 area: 'Total Area',
                 area_both_sides: 'Total Area (Both Sides)',
                 weight: 'Total Weight',
+                volume: 'Total Volume',
             };
             const data_groups = _.keys(group_titles);
             const group_data = {};
@@ -407,6 +408,8 @@ export default Marionette.View.extend({
                             value = f.dimension_mm(item[group_name]);
                         } else if (group_name === 'weight') {
                             value = f.weight(item[group_name]);
+                        } else if (group_name === 'volume') {
+                            value = f.cubic_meters(item[group_name]);
                         } else {
                             value = f.square_meters(item[group_name]);
                         }

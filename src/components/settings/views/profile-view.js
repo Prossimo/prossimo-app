@@ -125,7 +125,7 @@ export default Marionette.View.extend({
             ],
             dimensions: [
                 'weight_per_length', 'frame_width', 'mullion_width', 'sash_frame_width', 'sash_frame_overlap',
-                'sash_mullion_overlap', 'clear_width_deduction', 'visible_frame_width_fixed',
+                'sash_mullion_overlap', 'clear_width_deduction', 'depth', 'visible_frame_width_fixed',
                 'visible_frame_width_operable',
             ],
             pricing: [
