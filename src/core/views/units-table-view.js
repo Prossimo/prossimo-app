@@ -31,6 +31,10 @@ import {
     KEY_N,
 } from '../../constants';
 
+function extractDictionaryName(name_string) {
+    return name_string.replace(/ Quantity(.)*$/, '');
+}
+
 export default Marionette.View.extend({
     tagName: 'div',
     className: 'units-table-container',
@@ -90,7 +94,10 @@ export default Marionette.View.extend({
 
                     App.settings.dictionaries.each((dictionary) => {
                         if (dictionary.hasQuantity()) {
-                            columns.push(`${dictionary.get('name')} Quantity`);
+                            const quantity_multiplier = dictionary.getQuantityMultiplier();
+                            const name_suffix = `Quantity${quantity_multiplier ? ` / ${quantity_multiplier}` : ''}`;
+
+                            columns.push(`${dictionary.get('name')} ${name_suffix}`);
                         }
                     });
 
@@ -131,7 +138,7 @@ export default Marionette.View.extend({
             //  the corresponding option column)
             if (this.tabs.unit_options.unit_options_quantity_columns.length) {
                 _.each(this.tabs.unit_options.unit_options_quantity_columns, (qty_column_name) => {
-                    const target_option_name = qty_column_name.replace(/ Quantity$/, '');
+                    const target_option_name = extractDictionaryName(qty_column_name);
                     const target_position = _.indexOf(this.tabs.unit_options.columns, target_option_name);
 
                     if (target_position !== -1) {
@@ -427,7 +434,7 @@ export default Marionette.View.extend({
             _.contains(this.getActiveTab().unit_options_quantity_columns, column_name)
         ) {
             getter = (model, attr_name) => {
-                const target_dictionary_name = attr_name.replace(/ Quantity$/, '');
+                const target_dictionary_name = extractDictionaryName(attr_name);
                 const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
                 const current_options = target_dictionary_id ?
                     model.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
@@ -527,7 +534,7 @@ export default Marionette.View.extend({
             _.contains(this.getActiveTab().unit_options_quantity_columns, column_name)
         ) {
             setter = (model, attr_name, val) => {
-                const target_dictionary_name = attr_name.replace(/ Quantity$/, '');
+                const target_dictionary_name = extractDictionaryName(attr_name);
                 const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
 
                 if (!target_dictionary_id) {
@@ -541,7 +548,7 @@ export default Marionette.View.extend({
                     return false;
                 }
 
-                return model.persistOption(target_dictionary_id, target_entry_id, parseInt(val, 10));
+                return model.persistOption(target_dictionary_id, target_entry_id, parseFloat(val));
             };
         } else {
             setter = (model, attr_name, val) => model.persist(attr_name, self.getSetterParser(column_name, val));
@@ -937,7 +944,10 @@ export default Marionette.View.extend({
                 active_tab.unit_options_quantity_columns &&
                 _.contains(active_tab.unit_options_quantity_columns, column_name)
             ) {
-                title = 'Option Qty';
+                const pattern = /(\s\/\s\w+)$/i;
+                const name_suffix = pattern.test(column_name) ? pattern.exec(column_name)[0] : '';
+
+                title = `Option Qty${name_suffix}`;
             } else {
                 title = column_name;
             }
@@ -1056,12 +1066,21 @@ export default Marionette.View.extend({
 
         //  Calculate optimal width for Unit Options columns
         unit_options_col_widths = _.object(
-            App.settings.dictionaries.getAvailableDictionaryNames(),
-            _.map(App.settings.dictionaries.getAvailableDictionaryNames(), (dictionary_name) => {
-                const calculated_length = 30 + (dictionary_name.length * 7);
+            _.union(
+                this.tabs.unit_options.unit_options_columns,
+                this.tabs.unit_options.unit_options_quantity_columns,
+            ),
+            _.map(_.union(
+                this.tabs.unit_options.unit_options_columns,
+                this.tabs.unit_options.unit_options_quantity_columns,
+            ), (column_name) => {
+                const calculated_length =
+                    _.contains(this.tabs.unit_options.unit_options_quantity_columns, column_name) ?
+                    120 :
+                    30 + (column_name.length * 7);
 
-                return unit_options_col_widths[dictionary_name] ?
-                    unit_options_col_widths[dictionary_name] : calculated_length;
+                return unit_options_col_widths[column_name] ?
+                    unit_options_col_widths[column_name] : calculated_length;
             }, this),
         );
 

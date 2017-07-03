@@ -9,6 +9,7 @@ import template from '../templates/drawing-sidebar-view.hbs';
 import {
     PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_PRICING_GRIDS,
+    PRICING_SCHEME_PER_OPERABLE_SASH,
     RULE_DOOR_ONLY,
     RULE_OPERABLE_ONLY,
     RULE_GLAZING_BARS_ONLY,
@@ -270,6 +271,8 @@ export default Marionette.View.extend({
 
         return active_unit_profile_properties;
     },
+    //  TODO: most of this functionality should be moved to unit model, we
+    //  should only apply formatters here
     getActiveUnitSashList() {
         const project_settings = App.settings.getProjectSettings();
         const f = format;
@@ -380,6 +383,7 @@ export default Marionette.View.extend({
         const stats_data = [];
 
         const titles = {
+            operable_sashes: 'Operable Sashes',
             frame: 'Frame',
             sashes: 'Sash Frames',
             mullions: 'Mullions',
@@ -403,6 +407,16 @@ export default Marionette.View.extend({
             const hasBaseFilling = this.options.parent_view.active_unit.hasBaseFilling();
 
             unit_stats = this.options.parent_view.active_unit.getLinearAndAreaStats();
+
+            stats_data.push({
+                title: 'Number Of',
+                data: Object.keys(unit_stats.number_of).map(key => ({
+                    key,
+                    title: titles[key],
+                    value: unit_stats.number_of[key],
+                    is_total: false,
+                })),
+            });
 
             _.each(unit_stats, (item, key) => {
                 _.each(data_groups, (group_name) => {
@@ -430,8 +444,10 @@ export default Marionette.View.extend({
             }, this);
 
             _.each(group_titles, (title, key) => {
-                group_data[key] = _.sortBy(group_data[key], param => _.indexOf(['frame', 'sashes', 'mullions', 'profile_total', 'glasses',
-                    'openings', 'glazing_bars', 'unit_total'], param.key));
+                group_data[key] = _.sortBy(group_data[key], param => _.indexOf([
+                    'operable_sashes', 'frame', 'sashes', 'mullions', 'profile_total', 'glasses',
+                    'openings', 'glazing_bars', 'unit_total',
+                ], param.key));
 
                 stats_data.push({
                     title,
@@ -450,11 +466,13 @@ export default Marionette.View.extend({
         const result = {
             sections: [],
             per_item_priced_options: [],
+            per_operable_sash_priced_options: [],
         };
 
         if (this.options.parent_view.active_unit) {
             active_unit_profile = this.options.parent_view.active_unit.profile;
             const unit_cost = this.options.parent_view.active_unit.getEstimatedUnitCost();
+            const operable_sashes_number = this.options.parent_view.active_unit.getOperableSashesNumber();
 
             result.profile_name = active_unit_profile ? active_unit_profile.get('name') : UNSET_VALUE;
             result.base_cost = f.fixed(unit_cost.base);
@@ -530,7 +548,29 @@ export default Marionette.View.extend({
                 result.per_item_priced_options.push(option_item);
             }, this);
 
+            let per_operable_sash_priced_options_total_cost = 0;
+
+            //  Collect detailed pricing data for per-operable-sash-priced options
+            _.each(unit_cost.options_list[PRICING_SCHEME_PER_OPERABLE_SASH], (source_item, index) => {
+                const option_item = {};
+
+                option_item.option_index = `Option #${index + 1}`;
+                option_item.option_name = source_item.option_name;
+                option_item.dictionary_name = source_item.dictionary_name;
+                option_item.is_hidden = source_item.is_hidden;
+                option_item.operable_sashes_number = operable_sashes_number;
+                option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
+                option_item.quantity = source_item.quantity;
+                option_item.cost = f.fixed(source_item.pricing_data.cost_per_item * source_item.quantity * operable_sashes_number);
+
+                per_operable_sash_priced_options_total_cost +=
+                    source_item.pricing_data.cost_per_item * source_item.quantity * operable_sashes_number;
+
+                result.per_operable_sash_priced_options.push(option_item);
+            }, this);
+
             result.per_item_priced_options_total_cost = f.fixed(per_item_priced_options_total_cost);
+            result.per_operable_sash_priced_options_total_cost = f.fixed(per_operable_sash_priced_options_total_cost);
         }
 
         return result;

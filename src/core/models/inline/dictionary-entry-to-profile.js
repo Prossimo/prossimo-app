@@ -11,6 +11,7 @@ import {
     PRICING_SCHEME_PRICING_GRIDS,
     PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_LINEAR_EQUATION,
+    PRICING_SCHEME_PER_OPERABLE_SASH,
 } from '../../../constants';
 
 //  We switch between cost_per_item, pricing_grids, pricing_equation_params
@@ -127,6 +128,9 @@ export default Backbone.Model.extend({
         ) {
             pricing_data.scheme = PRICING_SCHEME_LINEAR_EQUATION;
             pricing_data.pricing_equation_params = this.get('pricing_equation_params');
+        } else if (parent_dictionary && parent_dictionary.get('pricing_scheme') === PRICING_SCHEME_PER_OPERABLE_SASH) {
+            pricing_data.scheme = PRICING_SCHEME_PER_OPERABLE_SASH;
+            pricing_data.cost_per_item = this.get('cost_per_item');
         }
 
         return pricing_data;

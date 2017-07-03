@@ -13,6 +13,7 @@ import {
     PRICING_SCHEME_PRICING_GRIDS,
     PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_LINEAR_EQUATION,
+    PRICING_SCHEME_PER_OPERABLE_SASH,
     RULE_IS_OPTIONAL,
     RULE_DOOR_ONLY,
     RULE_OPERABLE_ONLY,
@@ -2380,6 +2381,7 @@ const Unit = Backbone.Model.extend({
     //  These values could be used as a base to calculate estimated
     //  cost of options for the unit
     getLinearAndAreaStats() {
+        const operableSashesNumber = this.getOperableSashesNumber();
         const profileWeight = this.profile.get('weight_per_length');
         const fillingWeight = {};
 
@@ -2391,6 +2393,9 @@ const Unit = Backbone.Model.extend({
 
         const sizes = this.getSizes();
         const result = {
+            number_of: {
+                operable_sashes: operableSashesNumber,
+            },
             frame: {
                 linear: 0,
                 linear_without_intersections: 0,
@@ -2605,6 +2610,17 @@ const Unit = Backbone.Model.extend({
 
         return result.sashes;
     },
+    getOperableSashesNumber() {
+        let counter = 0;
+
+        this.getSashList().forEach((sash) => {
+            if (_.contains(OPERABLE_SASH_TYPES, sash.original_type)) {
+                counter += 1;
+            }
+        });
+
+        return counter;
+    },
     //  This function is used to "slice" unit into a set of fixed and
     //  operable sections, meaning we just draw some imaginary lines so
     //  that each part of the unit should belong to some section. And for
@@ -2671,6 +2687,7 @@ const Unit = Backbone.Model.extend({
         result[PRICING_SCHEME_PRICING_GRIDS] = [];
         result[PRICING_SCHEME_PER_ITEM] = [];
         result[PRICING_SCHEME_LINEAR_EQUATION] = [];
+        result[PRICING_SCHEME_PER_OPERABLE_SASH] = [];
 
         _.each(connected_options, (option) => {
             const pricing_data = option.entry.getPricingDataForProfile(profile_id);
@@ -2807,6 +2824,7 @@ const Unit = Backbone.Model.extend({
     getEstimatedUnitCost() {
         const sections_list = this.getSectionsListWithEstimatedCost();
         const options_list = this.getUnitOptionsGroupedByPricingScheme();
+        const operable_sashes_number = this.getOperableSashesNumber();
         const unit_cost = {
             total: 0,
             base: 0,
@@ -2831,6 +2849,16 @@ const Unit = Backbone.Model.extend({
         _.each(options_list[PRICING_SCHEME_PER_ITEM], (option) => {
             unit_cost.total += option.pricing_data.cost_per_item * option.quantity;
             unit_cost.options += option.pricing_data.cost_per_item * option.quantity;
+        }, this);
+
+        //  Now add cost for all per-operable-sash priced options
+        _.each(options_list[PRICING_SCHEME_PER_OPERABLE_SASH], (option) => {
+            const option_cost = option.pricing_data.cost_per_item *
+                option.quantity *
+                operable_sashes_number;
+
+            unit_cost.total += option_cost;
+            unit_cost.options += option_cost;
         }, this);
 
         if (unit_cost.total) {

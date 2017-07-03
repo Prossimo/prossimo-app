@@ -10,6 +10,7 @@ import {
     PRICING_SCHEME_PRICING_GRIDS,
     PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_LINEAR_EQUATION,
+    PRICING_SCHEME_PER_OPERABLE_SASH,
     RULE_DOOR_ONLY,
     RULE_OPERABLE_ONLY,
     RULE_GLAZING_BARS_ONLY,
@@ -37,6 +38,7 @@ const POSSIBLE_PRICING_SCHEMES = [
     PRICING_SCHEME_PRICING_GRIDS,
     PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_LINEAR_EQUATION,
+    PRICING_SCHEME_PER_OPERABLE_SASH,
 ];
 
 function getDefaultRulesAndRestrictions() {
@@ -219,7 +221,10 @@ export default Backbone.Model.extend({
         return POSSIBLE_PRICING_SCHEMES;
     },
     hasQuantity() {
-        return this.get('pricing_scheme') === PRICING_SCHEME_PER_ITEM;
+        return _.contains([PRICING_SCHEME_PER_ITEM, PRICING_SCHEME_PER_OPERABLE_SASH], this.get('pricing_scheme'));
+    },
+    getQuantityMultiplier() {
+        return this.get('pricing_scheme') === PRICING_SCHEME_PER_OPERABLE_SASH ? 'Sash' : '';
     },
     initialize(attributes, options) {
         this.options = options || {};
