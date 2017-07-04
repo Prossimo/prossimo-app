@@ -38,6 +38,9 @@ const validation = schema.validation;
 export default Backbone.Model.extend({
     schema,
     validation,
+    urlRoot() {
+        return `${App.settings.get('api_base_path')}/projects`;
+    },
     defaults() {
         const defaults = {};
 

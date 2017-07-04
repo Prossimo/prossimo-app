@@ -15,7 +15,9 @@ Object.keys(model.schema).forEach((observe) => {
     _ui[`${observe}`] = el;
     _schemaBindings[el] = {
         observe,
-        getVal($el) { return $el.val().trim(); },
+        getVal($el) {
+            return $el.val().trim();
+        },
         setOptions: {
             validate: true,
         },
@@ -32,10 +34,14 @@ Object.keys(model.schema).forEach((observe) => {
     ui: {
         $form: '.modal-body form',
         $filesRegion: '.form-control-files',
+        $createBtn: '.btn-save',
         ..._ui,
     },
     events: {
-        'submit form': 'addNewProject',
+        'click @ui.$createBtn': 'createProject',
+    },
+    modelEvents: {
+        validated: 'checkModelValidate',
     },
     templateContext() {
         return {
@@ -47,25 +53,17 @@ Object.keys(model.schema).forEach((observe) => {
 @stickableMixin
 @validatableMixin
 export default class extends BaseDialogView {
-    addNewProject(e) {
-        const newProject = new Project({
-            project_name: this.ui.$data_project_name.val().trim(),
-            client_name: this.ui.$data_client_name.val().trim(),
-            client_company_name: this.ui.$data_company.val().trim(),
-            client_phone: this.ui.$data_phone.val().trim(),
-            client_email: this.ui.$data_email.val().trim(),
-            client_address: this.ui.$data_client_address.val().trim(),
-            project_address: this.ui.$data_project_address.val().trim(),
-            project_notes: this.ui.$data_project_notes.val().trim(),
-            shipping_notes: this.ui.$data_shipping_notes.val().trim(),
-            lead_time: this.ui.$data_lead_time.val().trim(),
-            files: this.file_uploader.getUuidForAllFiles(),
-        });
-
+    createProject(e) {
         e.preventDefault();
-        this.$el.modal('hide');
-        App.projects.create(newProject);
+
+        this.model.save(null, {
+            success: (createdModel) => {
+                this.$el.modal('hide');
+                App.projects.create(createdModel);
+            },
+        });
     }
+
     bindings() {
         return {
             '.modal-title': {
@@ -75,7 +73,9 @@ export default class extends BaseDialogView {
             ..._schemaBindings,
         };
     }
+
     onRender() {
+        this.checkModelValidate(!!this.model.isValid());
         if (this.file_uploader) {
             this.file_uploader.destroy();
         }
@@ -86,7 +86,22 @@ export default class extends BaseDialogView {
 
         this.file_uploader.render()
             .$el.appendTo(this.ui.$filesRegion);
+
+        this.listenTo(this.file_uploader.collection, 'all', () => {
+            this.model.set('files', this.file_uploader.getUuidForAllFiles());
+        });
     }
+
+    checkModelValidate(isValid) {
+        if (this.isModelValid === isValid) return;
+
+        this.ui.$createBtn
+            .prop('disabled', !isValid)
+            .toggleClass('disabled', !isValid);
+
+        this.isModelValid = isValid;
+    }
+
     onBeforeDestroy() {
         if (this.file_uploader) {
             this.file_uploader.destroy();
