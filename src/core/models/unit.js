@@ -14,6 +14,8 @@ import {
     PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_LINEAR_EQUATION,
     PRICING_SCHEME_PER_OPERABLE_SASH,
+    PRICING_SCHEME_PER_FRAME_LENGTH,
+    PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
     RULE_IS_OPTIONAL,
     RULE_DOOR_ONLY,
     RULE_OPERABLE_ONLY,
@@ -2397,6 +2399,7 @@ const Unit = Backbone.Model.extend({
                 operable_sashes: operableSashesNumber,
             },
             frame: {
+                width: 0,
                 linear: 0,
                 linear_without_intersections: 0,
                 area: 0,
@@ -2454,6 +2457,8 @@ const Unit = Backbone.Model.extend({
         function getArea(width, height) {
             return math.square_meters(width, height);
         }
+
+        result.frame.width = sizes.frame.width;
 
         result.frame.linear = getProfilePerimeter(sizes.frame.width, sizes.frame.height);
         result.frame.linear_without_intersections =
@@ -2688,11 +2693,17 @@ const Unit = Backbone.Model.extend({
         result[PRICING_SCHEME_PER_ITEM] = [];
         result[PRICING_SCHEME_LINEAR_EQUATION] = [];
         result[PRICING_SCHEME_PER_OPERABLE_SASH] = [];
+        result[PRICING_SCHEME_PER_FRAME_LENGTH] = [];
+        result[PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH] = [];
 
         _.each(connected_options, (option) => {
             const pricing_data = option.entry.getPricingDataForProfile(profile_id);
 
-            if (!option.is_restricted && pricing_data && pricing_data.scheme !== PRICING_SCHEME_NONE) {
+            if (
+                !option.is_restricted && pricing_data &&
+                pricing_data.scheme !== PRICING_SCHEME_NONE &&
+                result[pricing_data.scheme] !== undefined
+            ) {
                 result[pricing_data.scheme].push({
                     dictionary_name: option.dictionary.get('name'),
                     is_hidden: option.dictionary.get('is_hidden'),
@@ -2824,7 +2835,7 @@ const Unit = Backbone.Model.extend({
     getEstimatedUnitCost() {
         const sections_list = this.getSectionsListWithEstimatedCost();
         const options_list = this.getUnitOptionsGroupedByPricingScheme();
-        const operable_sashes_number = this.getOperableSashesNumber();
+        const unit_stats = this.getLinearAndAreaStats();
         const unit_cost = {
             total: 0,
             base: 0,
@@ -2845,17 +2856,33 @@ const Unit = Backbone.Model.extend({
             unit_cost.options += section.options_cost;
         }, this);
 
-        //  Now add cost for all per-item priced options
+        //  Add cost for all per-item priced options
         _.each(options_list[PRICING_SCHEME_PER_ITEM], (option) => {
             unit_cost.total += option.pricing_data.cost_per_item * option.quantity;
             unit_cost.options += option.pricing_data.cost_per_item * option.quantity;
         }, this);
 
-        //  Now add cost for all per-operable-sash priced options
+        //  Add cost for all per-operable-sash priced options
         _.each(options_list[PRICING_SCHEME_PER_OPERABLE_SASH], (option) => {
             const option_cost = option.pricing_data.cost_per_item *
                 option.quantity *
-                operable_sashes_number;
+                unit_stats.number_of.operable_sashes;
+
+            unit_cost.total += option_cost;
+            unit_cost.options += option_cost;
+        }, this);
+
+        //  Add cost for all options priced per frame length
+        _.each(options_list[PRICING_SCHEME_PER_FRAME_LENGTH], (option) => {
+            const option_cost = option.pricing_data.cost_per_item * (unit_stats.frame.linear / 1000);
+
+            unit_cost.total += option_cost;
+            unit_cost.options += option_cost;
+        }, this);
+
+        //  Add cost for all options priced per sill / threshold length
+        _.each(options_list[PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH], (option) => {
+            const option_cost = option.pricing_data.cost_per_item * (unit_stats.frame.width / 1000);
 
             unit_cost.total += option_cost;
             unit_cost.options += option_cost;

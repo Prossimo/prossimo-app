@@ -3,13 +3,13 @@
         <th class="profile-name">Profile Name</th>
         <th class="profile-is-default">Is Default?</th>
         {{#if has_per_item_cost }}
-        <th class="profile-cost-per-item">Cost Per Item</th>
-        {{/if}}
-        {{#if has_grids }}
-        <th class="profile-pricing-grid">Pricing Grid</th>
-        {{/if}}
-        {{#if has_linear_cost }}
-        <th class="profile-linear-cost">Equation Params (y = ax + b)</th>
+            <th class="profile-cost-per-item">Cost Per Item</th>
+        {{else if has_per_length_cost }}
+            <th class="profile-cost-per-item">Cost Per Meter</th>
+        {{else if has_grids }}
+            <th class="profile-pricing-grid">Pricing Grid</th>
+        {{else if has_linear_cost }}
+            <th class="profile-linear-cost">Equation Params (y = ax + b)</th>
         {{/if}}
     </tr></thead>
     <tbody><tr>
@@ -23,16 +23,16 @@
             {{/if}}
         </p></td>
         {{#if has_per_item_cost }}
-        <td class="profile-cost-per-item"></td>
-        {{/if}}
-        {{#if has_grids }}
-        <td class="profile-pricing-grid">
-            <span>{{ pricing_grid_string }}</span>
-            <button class="btn btn-xs toggle-grid js-toggle-grid">Expand grid</button>
-        </td>
-        {{/if}}
-        {{#if has_linear_cost }}
-        <td class="profile-linear-cost"></td>
+            <td class="profile-cost-per-item"></td>
+        {{else if has_per_length_cost }}
+            <td class="profile-cost-per-item"></td>
+        {{else if has_grids }}
+            <td class="profile-pricing-grid">
+                <span>{{ pricing_grid_string }}</span>
+                <button class="btn btn-xs toggle-grid js-toggle-grid">Expand grid</button>
+            </td>
+        {{else if has_linear_cost }}
+            <td class="profile-linear-cost"></td>
         {{/if}}
     </tr></tbody>
 </table>

@@ -7,6 +7,8 @@ export const PRICING_SCHEME_PRICING_GRIDS = 'PRICING_GRIDS';
 export const PRICING_SCHEME_PER_ITEM = 'PER_ITEM';
 export const PRICING_SCHEME_LINEAR_EQUATION = 'LINEAR_EQUATION';
 export const PRICING_SCHEME_PER_OPERABLE_SASH = 'PER_OPERABLE_SASH';
+export const PRICING_SCHEME_PER_FRAME_LENGTH = 'PER_FRAME_LENGTH';
+export const PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH = 'PER_SILL_OR_THRESHOLD_LENGTH';
 
 //  ------------------------------------------------------------------------
 //  Rules and restrictions (Dictionary attributes)

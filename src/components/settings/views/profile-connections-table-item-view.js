@@ -12,6 +12,8 @@ import {
     PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_LINEAR_EQUATION,
     PRICING_SCHEME_PER_OPERABLE_SASH,
+    PRICING_SCHEME_PER_FRAME_LENGTH,
+    PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
 } from '../../../constants';
 
 export default Marionette.View.extend({
@@ -66,14 +68,17 @@ export default Marionette.View.extend({
     templateContext() {
         const pricing_data = this.model.getPricingData();
         const has_grids = pricing_data && pricing_data.scheme === PRICING_SCHEME_PRICING_GRIDS;
+        const has_linear_cost = pricing_data && pricing_data.scheme === PRICING_SCHEME_LINEAR_EQUATION;
         const has_per_item_cost = pricing_data &&
             _.contains([PRICING_SCHEME_PER_ITEM, PRICING_SCHEME_PER_OPERABLE_SASH], pricing_data.scheme);
-        const has_linear_cost = pricing_data && pricing_data.scheme === PRICING_SCHEME_LINEAR_EQUATION;
+        const has_per_length_cost = pricing_data &&
+            _.contains([PRICING_SCHEME_PER_FRAME_LENGTH, PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH], pricing_data.scheme);
 
         return {
             has_grids,
             has_per_item_cost,
             has_linear_cost,
+            has_per_length_cost,
             show_grids: this.show_grids,
             profile_name: this.getProfileName(),
             pricing_grid_string: has_grids && this.getPricingGridString(),
@@ -103,7 +108,7 @@ export default Marionette.View.extend({
             this.ui.$grid_container.append(this.pricing_grids_view.render().el);
         }
 
-        if (context.has_per_item_cost) {
+        if (context.has_per_item_cost || context.has_per_length_cost) {
             this.per_item_cost_editor_view = new BaseInputView({
                 model: this.model,
                 param: 'cost_per_item',

@@ -10,6 +10,8 @@ import {
     PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_PRICING_GRIDS,
     PRICING_SCHEME_PER_OPERABLE_SASH,
+    PRICING_SCHEME_PER_FRAME_LENGTH,
+    PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
     RULE_DOOR_ONLY,
     RULE_OPERABLE_ONLY,
     RULE_GLAZING_BARS_ONLY,
@@ -465,14 +467,13 @@ export default Marionette.View.extend({
         let active_unit_profile;
         const result = {
             sections: [],
-            per_item_priced_options: [],
-            per_operable_sash_priced_options: [],
+            separately_priced_options: [],
         };
 
         if (this.options.parent_view.active_unit) {
             active_unit_profile = this.options.parent_view.active_unit.profile;
             const unit_cost = this.options.parent_view.active_unit.getEstimatedUnitCost();
-            const operable_sashes_number = this.options.parent_view.active_unit.getOperableSashesNumber();
+            const unit_stats = this.options.parent_view.active_unit.getLinearAndAreaStats();
 
             result.profile_name = active_unit_profile ? active_unit_profile.get('name') : UNSET_VALUE;
             result.base_cost = f.fixed(unit_cost.base);
@@ -529,48 +530,62 @@ export default Marionette.View.extend({
                 result.sections.push(section_item);
             }, this);
 
-            let per_item_priced_options_total_cost = 0;
+            let separately_priced_options_total_cost = 0;
 
             //  Collect detailed pricing data for per-item-priced options
-            _.each(unit_cost.options_list[PRICING_SCHEME_PER_ITEM], (source_item, index) => {
+            _.each(_.union(
+                unit_cost.options_list[PRICING_SCHEME_PER_ITEM],
+                unit_cost.options_list[PRICING_SCHEME_PER_OPERABLE_SASH],
+                unit_cost.options_list[PRICING_SCHEME_PER_FRAME_LENGTH],
+                unit_cost.options_list[PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH],
+            ), (source_item, index) => {
+                const scheme = source_item.pricing_data.scheme;
                 const option_item = {};
+                let option_cost = 0;
 
                 option_item.option_index = `Option #${index + 1}`;
                 option_item.option_name = source_item.option_name;
                 option_item.dictionary_name = source_item.dictionary_name;
                 option_item.is_hidden = source_item.is_hidden;
-                option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
-                option_item.quantity = source_item.quantity;
-                option_item.cost = f.fixed(source_item.pricing_data.cost_per_item * source_item.quantity);
+                option_item.pricing_scheme = scheme;
 
-                per_item_priced_options_total_cost += source_item.pricing_data.cost_per_item * source_item.quantity;
+                if (scheme === PRICING_SCHEME_PER_ITEM) {
+                    option_cost = source_item.pricing_data.cost_per_item * source_item.quantity;
 
-                result.per_item_priced_options.push(option_item);
+                    option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
+                    option_item.quantity = source_item.quantity;
+                } else if (scheme === PRICING_SCHEME_PER_OPERABLE_SASH) {
+                    const operable_sashes_number = unit_stats.number_of.operable_sashes;
+
+                    option_cost = source_item.pricing_data.cost_per_item * source_item.quantity * operable_sashes_number;
+
+                    option_item.operable_sashes_number = operable_sashes_number;
+                    option_item.quantity_per_sash = source_item.quantity;
+                    option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
+                } else if (scheme === PRICING_SCHEME_PER_FRAME_LENGTH) {
+                    const frame_length = unit_stats.frame.linear;
+
+                    option_cost = source_item.pricing_data.cost_per_item * (frame_length / 1000);
+
+                    option_item.frame_length = f.dimension_mm(frame_length);
+                    option_item.cost_per_meter = f.fixed(source_item.pricing_data.cost_per_item);
+                } else if (scheme === PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH) {
+                    const frame_width = unit_stats.frame.width;
+
+                    option_cost = source_item.pricing_data.cost_per_item * (frame_width / 1000);
+
+                    option_item.frame_width = f.dimension_mm(frame_width);
+                    option_item.cost_per_meter = f.fixed(source_item.pricing_data.cost_per_item);
+                }
+
+                option_item.cost = f.fixed(option_cost);
+
+                separately_priced_options_total_cost += option_cost;
+
+                result.separately_priced_options.push(option_item);
             }, this);
 
-            let per_operable_sash_priced_options_total_cost = 0;
-
-            //  Collect detailed pricing data for per-operable-sash-priced options
-            _.each(unit_cost.options_list[PRICING_SCHEME_PER_OPERABLE_SASH], (source_item, index) => {
-                const option_item = {};
-
-                option_item.option_index = `Option #${index + 1}`;
-                option_item.option_name = source_item.option_name;
-                option_item.dictionary_name = source_item.dictionary_name;
-                option_item.is_hidden = source_item.is_hidden;
-                option_item.operable_sashes_number = operable_sashes_number;
-                option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
-                option_item.quantity = source_item.quantity;
-                option_item.cost = f.fixed(source_item.pricing_data.cost_per_item * source_item.quantity * operable_sashes_number);
-
-                per_operable_sash_priced_options_total_cost +=
-                    source_item.pricing_data.cost_per_item * source_item.quantity * operable_sashes_number;
-
-                result.per_operable_sash_priced_options.push(option_item);
-            }, this);
-
-            result.per_item_priced_options_total_cost = f.fixed(per_item_priced_options_total_cost);
-            result.per_operable_sash_priced_options_total_cost = f.fixed(per_operable_sash_priced_options_total_cost);
+            result.separately_priced_options_total_cost = f.fixed(separately_priced_options_total_cost);
         }
 
         return result;

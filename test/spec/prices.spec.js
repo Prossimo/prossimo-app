@@ -621,7 +621,6 @@ test('Prices tests', () => {
                         id: 7,
                         dictionary_entry_profiles: [
                             { profile_id: 3, cost_per_item: 14 },
-                            { profile_id: 6 },
                         ],
                     },
                 ],
@@ -636,7 +635,34 @@ test('Prices tests', () => {
                         id: 12,
                         dictionary_entry_profiles: [
                             { profile_id: 3, cost_per_item: 22 },
-                            { profile_id: 6, cost_per_item: 14 },
+                        ],
+                    },
+                ],
+            },
+            {
+                name: 'Additional Outer Profile',
+                pricing_scheme: 'PER_FRAME_LENGTH',
+                id: 8,
+                entries: [
+                    {
+                        name: 'Basic Outer Profile',
+                        id: 13,
+                        dictionary_entry_profiles: [
+                            { profile_id: 3, cost_per_item: 11 },
+                        ],
+                    },
+                ],
+            },
+            {
+                name: 'Some Per Sill Length Priced Thing',
+                pricing_scheme: 'PER_SILL_OR_THRESHOLD_LENGTH',
+                id: 9,
+                entries: [
+                    {
+                        name: 'Basic Thing of This Type',
+                        id: 15,
+                        dictionary_entry_profiles: [
+                            { profile_id: 3, cost_per_item: 32.3 },
                         ],
                     },
                 ],
@@ -672,6 +698,21 @@ test('Prices tests', () => {
                     },
                 ],
                 pricing_scheme: 'PRICING_GRIDS',
+            },
+            {
+                name: 'Economy Triple Glazed',
+                type: 'glass',
+                id: 19,
+                filling_type_profiles: [
+                    {
+                        profile_id: 3,
+                        pricing_equation_params: [
+                            { name: 'fixed', param_a: 11, param_b: 39 },
+                            { name: 'operable', param_a: 9, param_b: 62 },
+                        ],
+                    },
+                ],
+                pricing_scheme: 'LINEAR_EQUATION',
             },
         ], { parse: true });
 
@@ -739,7 +780,7 @@ test('Prices tests', () => {
         );
 
         //  Unit total cost
-        equal(estimated_cost.total.toFixed(2), '218.03', 'Unit total cost is correct');
+        equal(estimated_cost.total.toFixed(2), '357.19', 'Unit total cost is correct');
         equal(
             estimated_cost.total,
             estimated_cost.base + estimated_cost.fillings + estimated_cost.options,
@@ -747,10 +788,15 @@ test('Prices tests', () => {
         );
 
         //  ----------------------------------------------------------------
-        //  Now set section type to operable, and repeat calculations
+        //  Now set section type to operable, change filling type, and repeat calculations
         //  ----------------------------------------------------------------
 
         unit.setSectionSashType(unit.get('root_section').id, 'tilt_turn_left');
+        unit.setFillingType(
+            unit.get('root_section').id,
+            App.settings.filling_types.at(1).get('type'),
+            App.settings.filling_types.at(1).get('name'),
+        );
 
         sections_list = unit.getSectionsListWithEstimatedCost();
         estimated_cost = unit.getEstimatedUnitCost();
@@ -760,8 +806,7 @@ test('Prices tests', () => {
         equal(sections_list[0].base_cost.toFixed(2), '230.40', 'Section base_cost is correct');
 
         //  First section filling cost
-        equal(sections_list[0].filling_price_increase.toFixed(2), '8.00', 'Section filling_price_increase is correct');
-        equal(sections_list[0].filling_cost.toFixed(2), '18.43', 'Section filling_cost is correct');
+        equal(sections_list[0].filling_cost.toFixed(2), '96.56', 'Section filling_cost is correct');
 
         //  First section options cost
         equal(sections_list[0].options.length, 1, 'Section has one priced option');
@@ -769,7 +814,7 @@ test('Prices tests', () => {
         equal(sections_list[0].options_cost.toFixed(2), '23.04', 'Section options_cost is correct');
 
         //  First section total cost
-        equal(sections_list[0].total_cost.toFixed(2), '271.87', 'Section total_cost is correct');
+        equal(sections_list[0].total_cost.toFixed(2), '350.00', 'Section total_cost is correct');
         equal(
             sections_list[0].total_cost,
             sections_list[0].base_cost + sections_list[0].filling_cost + sections_list[0].options_cost,
@@ -777,7 +822,7 @@ test('Prices tests', () => {
         );
 
         //  Unit total cost (includes price for interior handle and opening restrictor)
-        equal(estimated_cost.total.toFixed(2), '307.87', 'Unit total cost is correct');
+        equal(estimated_cost.total.toFixed(2), '525.16', 'Unit total cost is correct');
         equal(
             estimated_cost.total,
             estimated_cost.base + estimated_cost.fillings + estimated_cost.options,

@@ -9,9 +9,7 @@ import PricingGridCollection from '../../collections/inline/pricing-grid-collect
 import {
     PRICING_SCHEME_NONE,
     PRICING_SCHEME_PRICING_GRIDS,
-    PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_LINEAR_EQUATION,
-    PRICING_SCHEME_PER_OPERABLE_SASH,
 } from '../../../constants';
 
 //  We switch between cost_per_item, pricing_grids, pricing_equation_params
@@ -114,23 +112,21 @@ export default Backbone.Model.extend({
         };
 
         const parent_entry = this.collection && this.collection.options.parent_entry;
-        const parent_dictionary = parent_entry && parent_entry.collection &&
-            parent_entry.collection.options.dictionary;
+        const parent_dictionary = parent_entry && parent_entry.collection && parent_entry.collection.options.dictionary;
+        const parent_scheme = parent_dictionary && parent_dictionary.get('pricing_scheme') !== PRICING_SCHEME_NONE ?
+            parent_dictionary.get('pricing_scheme') :
+            false;
 
-        if (parent_dictionary && parent_dictionary.get('pricing_scheme') === PRICING_SCHEME_PRICING_GRIDS) {
-            pricing_data.scheme = PRICING_SCHEME_PRICING_GRIDS;
-            pricing_data.pricing_grids = this.get('pricing_grids');
-        } else if (parent_dictionary && parent_dictionary.get('pricing_scheme') === PRICING_SCHEME_PER_ITEM) {
-            pricing_data.scheme = PRICING_SCHEME_PER_ITEM;
-            pricing_data.cost_per_item = this.get('cost_per_item');
-        } else if (
-            parent_dictionary && parent_dictionary.get('pricing_scheme') === PRICING_SCHEME_LINEAR_EQUATION
-        ) {
-            pricing_data.scheme = PRICING_SCHEME_LINEAR_EQUATION;
-            pricing_data.pricing_equation_params = this.get('pricing_equation_params');
-        } else if (parent_dictionary && parent_dictionary.get('pricing_scheme') === PRICING_SCHEME_PER_OPERABLE_SASH) {
-            pricing_data.scheme = PRICING_SCHEME_PER_OPERABLE_SASH;
-            pricing_data.cost_per_item = this.get('cost_per_item');
+        if (parent_scheme) {
+            pricing_data.scheme = parent_scheme;
+
+            if (parent_scheme === PRICING_SCHEME_PRICING_GRIDS) {
+                pricing_data.pricing_grids = this.get('pricing_grids');
+            } else if (parent_scheme === PRICING_SCHEME_LINEAR_EQUATION) {
+                pricing_data.pricing_equation_params = this.get('pricing_equation_params');
+            } else {
+                pricing_data.cost_per_item = this.get('cost_per_item');
+            }
         }
 
         return pricing_data;
