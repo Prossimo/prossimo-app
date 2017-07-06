@@ -7,6 +7,11 @@ import BaseToggleView from '../../../core/views/base/base-toggle-view';
 import OptionsDictionaryEntriesTableView from './options-dictionary-entries-table-view';
 import template from '../templates/options-dictionary-view.hbs';
 
+import {
+    RULE_TITLES,
+    PRICING_SCHEME_TITLES,
+} from '../../../constants';
+
 export default Marionette.View.extend({
     tagName: 'div',
     className: 'options-dictionary',
@@ -92,14 +97,20 @@ export default Marionette.View.extend({
         this.rules_and_restrictions_view = new BaseSelectView({
             model: this.model,
             param: 'rules_and_restrictions',
-            values: this.model.getPossibleRulesAndRestrictions(),
+            values: this.model.getPossibleRulesAndRestrictions().map(value => ({
+                value,
+                title: RULE_TITLES[value] || value,
+            })),
             multiple: true,
         });
 
         this.pricing_scheme_view = new BaseSelectView({
             model: this.model,
             param: 'pricing_scheme',
-            values: this.model.getPossiblePricingSchemes(),
+            values: this.model.getPossiblePricingSchemes().map(value => ({
+                value,
+                title: PRICING_SCHEME_TITLES[value] || value,
+            })),
             multiple: false,
         });
 

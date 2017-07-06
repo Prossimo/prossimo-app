@@ -10,6 +10,16 @@ export const PRICING_SCHEME_PER_OPERABLE_SASH = 'PER_OPERABLE_SASH';
 export const PRICING_SCHEME_PER_FRAME_LENGTH = 'PER_FRAME_LENGTH';
 export const PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH = 'PER_SILL_OR_THRESHOLD_LENGTH';
 
+export const PRICING_SCHEME_TITLES = {
+    [PRICING_SCHEME_NONE]: 'None',
+    [PRICING_SCHEME_PRICING_GRIDS]: 'Pricing Grids',
+    [PRICING_SCHEME_PER_ITEM]: 'Per Item',
+    [PRICING_SCHEME_LINEAR_EQUATION]: 'Linear Equation',
+    [PRICING_SCHEME_PER_OPERABLE_SASH]: 'Per Operable Sash',
+    [PRICING_SCHEME_PER_FRAME_LENGTH]: 'Per Frame Length',
+    [PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH]: 'Per Sill / Threshold Length',
+};
+
 //  ------------------------------------------------------------------------
 //  Rules and restrictions (Dictionary attributes)
 //  ------------------------------------------------------------------------
@@ -18,6 +28,13 @@ export const RULE_DOOR_ONLY = 'DOOR_ONLY';
 export const RULE_OPERABLE_ONLY = 'OPERABLE_ONLY';
 export const RULE_GLAZING_BARS_ONLY = 'GLAZING_BARS_ONLY';
 export const RULE_IS_OPTIONAL = 'IS_OPTIONAL';
+
+export const RULE_TITLES = {
+    [RULE_DOOR_ONLY]: 'Only for Doors',
+    [RULE_OPERABLE_ONLY]: 'Only if has Operable Sashes',
+    [RULE_GLAZING_BARS_ONLY]: 'Only if has Glazing Bars',
+    [RULE_IS_OPTIONAL]: 'Is Optional',
+};
 
 //  ------------------------------------------------------------------------
 //  Common string values

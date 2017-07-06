@@ -1065,8 +1065,8 @@ export default Marionette.View.extend({
         };
 
         //  Calculate optimal width for Unit Options columns
-        unit_options_col_widths = _.object(
-            _.union(
+        unit_options_col_widths = this.tabs.unit_options ? _.object(
+              _.union(
                 this.tabs.unit_options.unit_options_columns,
                 this.tabs.unit_options.unit_options_quantity_columns,
             ),
@@ -1082,7 +1082,7 @@ export default Marionette.View.extend({
                 return unit_options_col_widths[column_name] ?
                     unit_options_col_widths[column_name] : calculated_length;
             }, this),
-        );
+        ) : {};
 
         col_widths = _.extend({}, col_widths, unit_options_col_widths);
 

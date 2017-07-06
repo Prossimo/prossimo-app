@@ -9,6 +9,8 @@ import BaseToggleView from '../../../core/views/base/base-toggle-view';
 import BaseInputView from '../../../core/views/base/base-input-view';
 import template from '../templates/profile-view.hbs';
 
+import { PRICING_SCHEME_TITLES } from '../../../constants';
+
 export default Marionette.View.extend({
     tagName: 'div',
     className: 'profile',
@@ -163,12 +165,15 @@ export default Marionette.View.extend({
             } else if (attribute_name === 'frame_corners') {
                 data_array = model.getFrameCornerTypes();
             } else if (attribute_name === 'pricing_scheme') {
-                data_array = model.getPossiblePricingSchemes();
+                data_array = model.getPossiblePricingSchemes().map(value => ({
+                    value,
+                    title: PRICING_SCHEME_TITLES[value] || value,
+                }));
             }
 
             return _.map(data_array, item => ({
-                value: item,
-                title: item,
+                value: item.value || item,
+                title: item.title || item,
             }));
         }
 

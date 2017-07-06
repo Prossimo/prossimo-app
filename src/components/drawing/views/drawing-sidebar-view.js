@@ -12,6 +12,7 @@ import {
     PRICING_SCHEME_PER_OPERABLE_SASH,
     PRICING_SCHEME_PER_FRAME_LENGTH,
     PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
+    PRICING_SCHEME_TITLES,
     RULE_DOOR_ONLY,
     RULE_OPERABLE_ONLY,
     RULE_GLAZING_BARS_ONLY,
@@ -499,7 +500,7 @@ export default Marionette.View.extend({
                     m.square_meters(source_item.width, source_item.height),
                     2, 'sup');
 
-                section_item.base_pricing_scheme = source_item.base_pricing_scheme;
+                section_item.base_pricing_scheme = PRICING_SCHEME_TITLES[source_item.base_pricing_scheme];
                 section_item.price_per_square_meter = f.fixed(source_item.price_per_square_meter);
                 section_item.base_cost = f.fixed(source_item.base_cost);
                 section_item.show_price_per_square_meter =
@@ -507,7 +508,7 @@ export default Marionette.View.extend({
 
                 //  Add cost for Filling
                 section_item.filling_name = source_item.filling_name;
-                section_item.filling_pricing_scheme = source_item.filling_pricing_scheme;
+                section_item.filling_pricing_scheme = PRICING_SCHEME_TITLES[source_item.filling_pricing_scheme];
                 section_item.filling_price_increase = f.percent(source_item.filling_price_increase);
                 section_item.filling_cost = f.fixed(source_item.filling_cost);
                 section_item.show_filling_price_increase =
@@ -517,7 +518,7 @@ export default Marionette.View.extend({
                 section_item.options = _.map(source_item.options, (item, item_index) => ({
                     index: `Option #${item_index + 1}`,
                     dictionary_name: item.dictionary_name,
-                    pricing_scheme: item.dictionary_pricing_scheme,
+                    pricing_scheme: PRICING_SCHEME_TITLES[item.dictionary_pricing_scheme],
                     is_hidden: item.is_hidden,
                     option_name: item.option_name,
                     price_increase: f.percent(item.price_increase),
@@ -547,7 +548,7 @@ export default Marionette.View.extend({
                 option_item.option_name = source_item.option_name;
                 option_item.dictionary_name = source_item.dictionary_name;
                 option_item.is_hidden = source_item.is_hidden;
-                option_item.pricing_scheme = scheme;
+                option_item.pricing_scheme = PRICING_SCHEME_TITLES[scheme];
 
                 if (scheme === PRICING_SCHEME_PER_ITEM) {
                     option_cost = source_item.pricing_data.cost_per_item * source_item.quantity;

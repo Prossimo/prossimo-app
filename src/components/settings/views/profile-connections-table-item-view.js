@@ -26,6 +26,11 @@ export default Marionette.View.extend({
         $equation_params_container: 'td.profile-linear-cost',
         $toggle_grid: '.js-toggle-grid',
     },
+    regions: {
+        grid_container: '@ui.$grid_container',
+        cost_per_item_container: '@ui.$cost_per_item_container',
+        equation_params_container: '@ui.$equation_params_container',
+    },
     events: {
         'click @ui.$toggle_grid': 'toggleGrid',
     },
@@ -87,53 +92,25 @@ export default Marionette.View.extend({
     onRender() {
         const context = this.templateContext();
 
-        if (this.pricing_grid_view) {
-            this.pricing_grids_view.destroy();
-        }
-
-        if (this.per_item_cost_editor_view) {
-            this.per_item_cost_editor_view.destroy();
-        }
-
-        if (this.equation_params_view) {
-            this.equation_params_view.destroy();
-        }
-
         if (context.has_grids) {
-            this.pricing_grids_view = new PricingGridsEditorView({
+            this.showChildView('grid_container', new PricingGridsEditorView({
                 grids: this.model.get('pricing_grids'),
                 parent_view: this,
                 show_notice: true,
-            });
-            this.ui.$grid_container.append(this.pricing_grids_view.render().el);
+            }));
         }
 
         if (context.has_per_item_cost || context.has_per_length_cost) {
-            this.per_item_cost_editor_view = new BaseInputView({
+            this.showChildView('cost_per_item_container', new BaseInputView({
                 model: this.model,
                 param: 'cost_per_item',
-            });
-            this.ui.$cost_per_item_container.append(this.per_item_cost_editor_view.render().el);
+            }));
         }
 
         if (context.has_linear_cost) {
-            this.equation_params_view = new EquationParamsView({
+            this.showChildView('equation_params_container', new EquationParamsView({
                 collection: this.model.get('pricing_equation_params'),
-            });
-            this.ui.$equation_params_container.append(this.equation_params_view.render().el);
-        }
-    },
-    onBeforeDestroy() {
-        if (this.pricing_grid_view) {
-            this.pricing_grids_view.destroy();
-        }
-
-        if (this.per_item_cost_editor_view) {
-            this.per_item_cost_editor_view.destroy();
-        }
-
-        if (this.equation_params_view) {
-            this.equation_params_view.destroy();
+            }));
         }
     },
     initialize() {
