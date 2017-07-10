@@ -2,18 +2,19 @@ import Backbone from 'backbone';
 import _ from 'underscore';
 
 import Schema from '../../schema';
-import constants from '../../constants';
 import { object } from '../../utils';
 import FillingTypeProfileCollection from '../collections/inline/filling-type-to-profile-collection';
 
-const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
-const PRICING_SCHEME_LINEAR_EQUATION = constants.PRICING_SCHEME_LINEAR_EQUATION;
+import {
+    PRICING_SCHEME_PRICING_GRIDS,
+    PRICING_SCHEME_LINEAR_EQUATION,
+    UNSET_VALUE,
+} from '../../constants';
 
 const POSSIBLE_PRICING_SCHEMES = [
     PRICING_SCHEME_PRICING_GRIDS,
     PRICING_SCHEME_LINEAR_EQUATION,
 ];
-const UNSET_VALUE = '--';
 
 const BASE_TYPES = [
     { name: 'glass', title: 'Glass' },

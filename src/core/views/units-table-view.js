@@ -14,7 +14,26 @@ import UnitsTableTotalPricesView from '../../core/views/units-table-total-prices
 import { preview } from '../../components/drawing/module/drawing-module';
 import template from '../../templates/core/units-table-view.hbs';
 
-const UNSET_VALUE = '--';
+import {
+    RULE_IS_OPTIONAL,
+    RULE_DOOR_ONLY,
+    RULE_OPERABLE_ONLY,
+    RULE_GLAZING_BARS_ONLY,
+    UNSET_VALUE,
+    VALUE_ERROR_DOORS_ONLY,
+    VALUE_ERROR_OPERABLE_ONLY,
+    VALUE_ERROR_GLAZING_BARS_ONLY,
+    VALUE_ERROR_NO_VARIANTS,
+    VALUE_ERROR_NO_PROFILE,
+    KEY_CTRL,
+    KEY_Y,
+    KEY_Z,
+    KEY_N,
+} from '../../constants';
+
+function extractDictionaryName(name_string) {
+    return name_string.replace(/ Quantity(.)*$/, '');
+}
 
 export default Marionette.View.extend({
     tagName: 'div',
@@ -75,7 +94,10 @@ export default Marionette.View.extend({
 
                     App.settings.dictionaries.each((dictionary) => {
                         if (dictionary.hasQuantity()) {
-                            columns.push(`${dictionary.get('name')} Quantity`);
+                            const quantity_multiplier = dictionary.getQuantityMultiplier();
+                            const name_suffix = `Quantity${quantity_multiplier ? ` / ${quantity_multiplier}` : ''}`;
+
+                            columns.push(`${dictionary.get('name')} ${name_suffix}`);
                         }
                     });
 
@@ -116,7 +138,7 @@ export default Marionette.View.extend({
             //  the corresponding option column)
             if (this.tabs.unit_options.unit_options_quantity_columns.length) {
                 _.each(this.tabs.unit_options.unit_options_quantity_columns, (qty_column_name) => {
-                    const target_option_name = qty_column_name.replace(/ Quantity$/, '');
+                    const target_option_name = extractDictionaryName(qty_column_name);
                     const target_position = _.indexOf(this.tabs.unit_options.columns, target_option_name);
 
                     if (target_position !== -1) {
@@ -412,7 +434,7 @@ export default Marionette.View.extend({
             _.contains(this.getActiveTab().unit_options_quantity_columns, column_name)
         ) {
             getter = (model, attr_name) => {
-                const target_dictionary_name = attr_name.replace(/ Quantity$/, '');
+                const target_dictionary_name = extractDictionaryName(attr_name);
                 const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
                 const current_options = target_dictionary_id ?
                     model.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
@@ -512,7 +534,7 @@ export default Marionette.View.extend({
             _.contains(this.getActiveTab().unit_options_quantity_columns, column_name)
         ) {
             setter = (model, attr_name, val) => {
-                const target_dictionary_name = attr_name.replace(/ Quantity$/, '');
+                const target_dictionary_name = extractDictionaryName(attr_name);
                 const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
 
                 if (!target_dictionary_id) {
@@ -526,7 +548,7 @@ export default Marionette.View.extend({
                     return false;
                 }
 
-                return model.persistOption(target_dictionary_id, target_entry_id, parseInt(val, 10));
+                return model.persistOption(target_dictionary_id, target_entry_id, parseFloat(val));
             };
         } else {
             setter = (model, attr_name, val) => model.persist(attr_name, self.getSetterParser(column_name, val));
@@ -785,10 +807,10 @@ export default Marionette.View.extend({
             if (item && item instanceof Unit) {
                 if (item.isOperableOnlyAttribute(property) && !item.hasOperableSections()) {
                     cell_properties.readOnly = true;
-                    cell_properties.renderer = hotRenderers.getDisabledPropertyRenderer('(Operable Only)');
+                    cell_properties.renderer = hotRenderers.getDisabledPropertyRenderer(VALUE_ERROR_OPERABLE_ONLY);
                 } else if (item.isGlazingBarProperty(property) && !item.hasGlazingBars()) {
                     cell_properties.readOnly = true;
-                    cell_properties.renderer = hotRenderers.getDisabledPropertyRenderer('(Has no Bars)');
+                    cell_properties.renderer = hotRenderers.getDisabledPropertyRenderer(VALUE_ERROR_GLAZING_BARS_ONLY);
                 } else if (property === 'glazing') {
                     profile_id = item.profile && item.profile.id;
                     options = [];
@@ -806,7 +828,7 @@ export default Marionette.View.extend({
                         cell_properties.source = _.map(options, option => option.get('name'));
                     //  When we have no options, disable editing
                     } else {
-                        message = profile_id ? '(No Variants)' : '(No Profile)';
+                        message = profile_id ? VALUE_ERROR_NO_VARIANTS : VALUE_ERROR_NO_PROFILE;
 
                         cell_properties.readOnly = true;
                         cell_properties.renderer = hotRenderers.getDisabledPropertyRenderer(message);
@@ -839,17 +861,17 @@ export default Marionette.View.extend({
                     _.each(rules_and_restrictions, (rule) => {
                         const restriction_applies = item.checkIfRestrictionApplies(rule);
 
-                        if (rule === 'IS_OPTIONAL') {
+                        if (rule === RULE_IS_OPTIONAL) {
                             is_optional = true;
-                        } else if (restriction_applies && rule === 'DOOR_ONLY') {
+                        } else if (restriction_applies && rule === RULE_DOOR_ONLY) {
                             is_restricted = true;
-                            message = '(Doors Only)';
-                        } else if (restriction_applies && rule === 'OPERABLE_ONLY') {
+                            message = VALUE_ERROR_DOORS_ONLY;
+                        } else if (restriction_applies && rule === RULE_OPERABLE_ONLY) {
                             is_restricted = true;
-                            message = '(Operable Only)';
-                        } else if (restriction_applies && rule === 'GLAZING_BARS_ONLY') {
+                            message = VALUE_ERROR_OPERABLE_ONLY;
+                        } else if (restriction_applies && rule === RULE_GLAZING_BARS_ONLY) {
                             is_restricted = true;
-                            message = '(Has no Bars)';
+                            message = VALUE_ERROR_GLAZING_BARS_ONLY;
                         }
                     }, this);
 
@@ -870,7 +892,7 @@ export default Marionette.View.extend({
                         }
                     //  When we have no options, disable editing
                     } else {
-                        message = profile_id ? '(No Variants)' : '(No Profile)';
+                        message = profile_id ? VALUE_ERROR_NO_VARIANTS : VALUE_ERROR_NO_PROFILE;
 
                         cell_properties.readOnly = true;
                         cell_properties.renderer = hotRenderers.getDisabledPropertyRenderer(message);
@@ -922,7 +944,10 @@ export default Marionette.View.extend({
                 active_tab.unit_options_quantity_columns &&
                 _.contains(active_tab.unit_options_quantity_columns, column_name)
             ) {
-                title = 'Option Qty';
+                const pattern = /(\s\/\s\w+)$/i;
+                const name_suffix = pattern.test(column_name) ? pattern.exec(column_name)[0] : '';
+
+                title = `Option Qty${name_suffix}`;
             } else {
                 title = column_name;
             }
@@ -1040,15 +1065,24 @@ export default Marionette.View.extend({
         };
 
         //  Calculate optimal width for Unit Options columns
-        unit_options_col_widths = _.object(
-            App.settings.dictionaries.getAvailableDictionaryNames(),
-            _.map(App.settings.dictionaries.getAvailableDictionaryNames(), (dictionary_name) => {
-                const calculated_length = 30 + (dictionary_name.length * 7);
+        unit_options_col_widths = this.tabs.unit_options ? _.object(
+              _.union(
+                this.tabs.unit_options.unit_options_columns,
+                this.tabs.unit_options.unit_options_quantity_columns,
+            ),
+            _.map(_.union(
+                this.tabs.unit_options.unit_options_columns,
+                this.tabs.unit_options.unit_options_quantity_columns,
+            ), (column_name) => {
+                const calculated_length =
+                    _.contains(this.tabs.unit_options.unit_options_quantity_columns, column_name) ?
+                    120 :
+                    30 + (column_name.length * 7);
 
-                return unit_options_col_widths[dictionary_name] ?
-                    unit_options_col_widths[dictionary_name] : calculated_length;
+                return unit_options_col_widths[column_name] ?
+                    unit_options_col_widths[column_name] : calculated_length;
             }, this),
-        );
+        ) : {};
 
         col_widths = _.extend({}, col_widths, unit_options_col_widths);
 
@@ -1072,18 +1106,19 @@ export default Marionette.View.extend({
                 isFullRowSelected = selection[3] === selection[3] - selection[1];
             }
 
-            if (isCtrlDown && event.keyCode === 17 && isFullRowSelected) {
+            if (isCtrlDown && event.keyCode === KEY_CTRL && isFullRowSelected) {
                 event.stopImmediatePropagation();
                 return;
             }
 
             //  Ctrl + Y || Ctrl + Shift + Z
-            if (isCtrlDown && (event.keyCode === 89 || (event.shiftKey && event.keyCode === 90))) {
+            if (isCtrlDown && (event.keyCode === KEY_Y || (event.shiftKey && event.keyCode === KEY_Z))) {
                 self.onRedo();
             //  Ctrl + Z
-            } else if (isCtrlDown && event.keyCode === 90) {
+            } else if (isCtrlDown && event.keyCode === KEY_Z) {
                 self.onUndo();
-            } else if (!onlyCtrlKeys && !isCtrlDown && event.keyCode === 78) {
+            //  N
+            } else if (!onlyCtrlKeys && !isCtrlDown && event.keyCode === KEY_N) {
                 self.onNewUnitOrAccessory(event);
                 event.preventDefault();
                 event.stopPropagation();

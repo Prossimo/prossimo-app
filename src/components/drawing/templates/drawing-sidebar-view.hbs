@@ -318,43 +318,83 @@
         </table>
         {{/each}}
 
-        <h4>Estimated Cost for Per-Item-Priced Options</h4>
+        <h4>Estimated Cost for Separately Priced Options</h4>
         <table>
             <tbody>
-                {{#each active_unit_estimated_cost.per_item_priced_options }}
-                <tr>
-                    <th colspan="2">{{ option_index }}</th>
-                </tr>
-                <tr>
-                    <td class="title">Dictionary Name</td>
-                    <td class="value">{{{ dictionary_name }}}</td>
-                </tr>
-                <tr>
-                    <td class="title">Option Name</td>
-                    <td class="value">{{{ option_name }}}</td>
-                </tr>
-                {{#if is_hidden }}
-                <tr>
-                    <td class="title">Is Hidden</td>
-                    <td class="value">Yes</td>
-                </tr>
-                {{/if}}
-                <tr>
-                    <td class="title">Cost / Item</td>
-                    <td class="value">{{{ cost_per_item }}}</td>
-                </tr>
-                <tr>
-                    <td class="title">Quantity</td>
-                    <td class="value">{{{ quantity }}}</td>
-                </tr>
-                <tr>
-                    <td class="title">Added Cost</td>
-                    <td class="value">{{{ cost }}}</td>
-                </tr>
+                {{#each active_unit_estimated_cost.separately_priced_options }}
+                    <tr>
+                        <th colspan="2">{{ option_index }}</th>
+                    </tr>
+                    <tr>
+                        <td class="title">Dictionary Name</td>
+                        <td class="value">{{{ dictionary_name }}}</td>
+                    </tr>
+                    <tr>
+                        <td class="title">Option Name</td>
+                        <td class="value">{{{ option_name }}}</td>
+                    </tr>
+
+                    {{#if is_hidden }}
+                    <tr>
+                        <td class="title">Is Hidden</td>
+                        <td class="value">Yes</td>
+                    </tr>
+                    {{/if}}
+
+                    <tr>
+                        <td class="title">Pricing Scheme</td>
+                        <td class="value">{{{ pricing_scheme }}}</td>
+                    </tr>
+
+                    {{#if operable_sashes_number }}
+                    <tr>
+                        <td class="title">Operable Sashes&nbsp;#</td>
+                        <td class="value">{{{ operable_sashes_number }}}</td>
+                    </tr>
+                    {{else if frame_length }}
+                    <tr>
+                        <td class="title">Frame Outer Length</td>
+                        <td class="value">{{{ frame_length }}}</td>
+                    </tr>
+                    {{else if frame_width }}
+                    <tr>
+                        <td class="title">Sill / Threshold Length</td>
+                        <td class="value">{{{ frame_width }}}</td>
+                    </tr>
+                    {{/if}}
+
+                    {{#if cost_per_item }}
+                    <tr>
+                        <td class="title">Cost / Item</td>
+                        <td class="value">{{{ cost_per_item }}}</td>
+                    </tr>
+                    {{else if cost_per_meter }}
+                    <tr>
+                        <td class="title">Cost / m</td>
+                        <td class="value">{{{ cost_per_meter }}}</td>
+                    </tr>
+                    {{/if}}
+
+                    {{#if quantity }}
+                    <tr>
+                        <td class="title">Quantity</td>
+                        <td class="value">{{{ quantity }}}</td>
+                    </tr>
+                    {{else if quantity_per_sash }}
+                    <tr>
+                        <td class="title">Quantity / Sash </td>
+                        <td class="value">{{{ quantity_per_sash }}}</td>
+                    </tr>
+                    {{/if}}
+
+                    <tr>
+                        <td class="title">Added Cost</td>
+                        <td class="value">{{{ cost }}}</td>
+                    </tr>
                 {{/each}}
                 <tr class="total">
                     <td class="title">Total Cost for Options</td>
-                    <td class="value">{{{ active_unit_estimated_cost.per_item_priced_options_total_cost }}}</td>
+                    <td class="value">{{{ active_unit_estimated_cost.separately_priced_options_total_cost }}}</td>
                 </tr>
             </tbody>
         </table>

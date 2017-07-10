@@ -5,17 +5,25 @@ import clone from 'clone';
 import App from '../../main';
 import Schema from '../../schema';
 import { object, convert, math } from '../../utils';
-import constants from '../../constants';
 import UnitOptionCollection from '../collections/inline/unit-option-collection';
 import { globalChannel } from '../../utils/radio';
 
-const UNSET_VALUE = '--';
-const REDISTRIBUTE_BARS_PRECISION = 0;
+import {
+    PRICING_SCHEME_NONE,
+    PRICING_SCHEME_PRICING_GRIDS,
+    PRICING_SCHEME_PER_ITEM,
+    PRICING_SCHEME_LINEAR_EQUATION,
+    PRICING_SCHEME_PER_OPERABLE_SASH,
+    PRICING_SCHEME_PER_FRAME_LENGTH,
+    PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
+    RULE_IS_OPTIONAL,
+    RULE_DOOR_ONLY,
+    RULE_OPERABLE_ONLY,
+    RULE_GLAZING_BARS_ONLY,
+    UNSET_VALUE,
+} from '../../constants';
 
-const PRICING_SCHEME_NONE = constants.PRICING_SCHEME_NONE;
-const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
-const PRICING_SCHEME_PER_ITEM = constants.PRICING_SCHEME_PER_ITEM;
-const PRICING_SCHEME_LINEAR_EQUATION = constants.PRICING_SCHEME_LINEAR_EQUATION;
+const REDISTRIBUTE_BARS_PRECISION = 0;
 
 const UNIT_PROPERTIES = [
     { name: 'mark', title: 'Mark', type: 'string' },
@@ -685,7 +693,7 @@ const Unit = Backbone.Model.extend({
                 const dictionary_id = dictionary.id;
                 const profile_id = this.profile && this.profile.id;
                 const rules = dictionary.get('rules_and_restrictions');
-                const is_optional = _.contains(rules, 'IS_OPTIONAL');
+                const is_optional = _.contains(rules, RULE_IS_OPTIONAL);
 
                 if (!is_optional && dictionary_id && profile_id) {
                     //  TODO: we need to call this directly on `dictionary` iterable
@@ -2375,6 +2383,7 @@ const Unit = Backbone.Model.extend({
     //  These values could be used as a base to calculate estimated
     //  cost of options for the unit
     getLinearAndAreaStats() {
+        const operableSashesNumber = this.getOperableSashesNumber();
         const profileWeight = this.profile.get('weight_per_length');
         const fillingWeight = {};
 
@@ -2386,7 +2395,11 @@ const Unit = Backbone.Model.extend({
 
         const sizes = this.getSizes();
         const result = {
+            number_of: {
+                operable_sashes: operableSashesNumber,
+            },
             frame: {
+                width: 0,
                 linear: 0,
                 linear_without_intersections: 0,
                 area: 0,
@@ -2444,6 +2457,8 @@ const Unit = Backbone.Model.extend({
         function getArea(width, height) {
             return math.square_meters(width, height);
         }
+
+        result.frame.width = sizes.frame.width;
 
         result.frame.linear = getProfilePerimeter(sizes.frame.width, sizes.frame.height);
         result.frame.linear_without_intersections =
@@ -2600,6 +2615,17 @@ const Unit = Backbone.Model.extend({
 
         return result.sashes;
     },
+    getOperableSashesNumber() {
+        let counter = 0;
+
+        this.getSashList().forEach((sash) => {
+            if (_.contains(OPERABLE_SASH_TYPES, sash.original_type)) {
+                counter += 1;
+            }
+        });
+
+        return counter;
+    },
     //  This function is used to "slice" unit into a set of fixed and
     //  operable sections, meaning we just draw some imaginary lines so
     //  that each part of the unit should belong to some section. And for
@@ -2666,11 +2692,18 @@ const Unit = Backbone.Model.extend({
         result[PRICING_SCHEME_PRICING_GRIDS] = [];
         result[PRICING_SCHEME_PER_ITEM] = [];
         result[PRICING_SCHEME_LINEAR_EQUATION] = [];
+        result[PRICING_SCHEME_PER_OPERABLE_SASH] = [];
+        result[PRICING_SCHEME_PER_FRAME_LENGTH] = [];
+        result[PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH] = [];
 
         _.each(connected_options, (option) => {
             const pricing_data = option.entry.getPricingDataForProfile(profile_id);
 
-            if (!option.is_restricted && pricing_data && pricing_data.scheme !== PRICING_SCHEME_NONE) {
+            if (
+                !option.is_restricted && pricing_data &&
+                pricing_data.scheme !== PRICING_SCHEME_NONE &&
+                result[pricing_data.scheme] !== undefined
+            ) {
                 result[pricing_data.scheme].push({
                     dictionary_name: option.dictionary.get('name'),
                     is_hidden: option.dictionary.get('is_hidden'),
@@ -2802,6 +2835,7 @@ const Unit = Backbone.Model.extend({
     getEstimatedUnitCost() {
         const sections_list = this.getSectionsListWithEstimatedCost();
         const options_list = this.getUnitOptionsGroupedByPricingScheme();
+        const unit_stats = this.getLinearAndAreaStats();
         const unit_cost = {
             total: 0,
             base: 0,
@@ -2822,10 +2856,36 @@ const Unit = Backbone.Model.extend({
             unit_cost.options += section.options_cost;
         }, this);
 
-        //  Now add cost for all per-item priced options
+        //  Add cost for all per-item priced options
         _.each(options_list[PRICING_SCHEME_PER_ITEM], (option) => {
             unit_cost.total += option.pricing_data.cost_per_item * option.quantity;
             unit_cost.options += option.pricing_data.cost_per_item * option.quantity;
+        }, this);
+
+        //  Add cost for all per-operable-sash priced options
+        _.each(options_list[PRICING_SCHEME_PER_OPERABLE_SASH], (option) => {
+            const option_cost = option.pricing_data.cost_per_item *
+                option.quantity *
+                unit_stats.number_of.operable_sashes;
+
+            unit_cost.total += option_cost;
+            unit_cost.options += option_cost;
+        }, this);
+
+        //  Add cost for all options priced per frame length
+        _.each(options_list[PRICING_SCHEME_PER_FRAME_LENGTH], (option) => {
+            const option_cost = option.pricing_data.cost_per_item * (unit_stats.frame.linear / 1000);
+
+            unit_cost.total += option_cost;
+            unit_cost.options += option_cost;
+        }, this);
+
+        //  Add cost for all options priced per sill / threshold length
+        _.each(options_list[PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH], (option) => {
+            const option_cost = option.pricing_data.cost_per_item * (unit_stats.frame.width / 1000);
+
+            unit_cost.total += option_cost;
+            unit_cost.options += option_cost;
         }, this);
 
         if (unit_cost.total) {
@@ -2993,11 +3053,11 @@ const Unit = Backbone.Model.extend({
     checkIfRestrictionApplies(restriction) {
         let restriction_applies = false;
 
-        if (restriction === 'DOOR_ONLY' && !this.isDoorType()) {
+        if (restriction === RULE_DOOR_ONLY && !this.isDoorType()) {
             restriction_applies = true;
-        } else if (restriction === 'OPERABLE_ONLY' && !this.hasOperableSections()) {
+        } else if (restriction === RULE_OPERABLE_ONLY && !this.hasOperableSections()) {
             restriction_applies = true;
-        } else if (restriction === 'GLAZING_BARS_ONLY' && !this.hasGlazingBars()) {
+        } else if (restriction === RULE_GLAZING_BARS_ONLY && !this.hasGlazingBars()) {
             restriction_applies = true;
         }
 

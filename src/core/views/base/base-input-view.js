@@ -8,8 +8,10 @@ import template from '../../../templates/core/base/base-input-view.hbs';
 //  inputs. Each input extends this view in its own way
 //  ------------------------------------------------------------------------
 
-const ENTER_KEY = 13;
-const ESC_KEY = 27;
+import {
+    KEY_ENTER,
+    KEY_ESC,
+} from '../../../constants';
 
 export default Marionette.View.extend({
     className: 'input-container',
@@ -92,12 +94,12 @@ export default Marionette.View.extend({
         }
     },
     confirmOnEnter(e) {
-        if (e.which === ENTER_KEY) {
+        if (e.which === KEY_ENTER) {
             this.stopEditing();
         }
     },
     cancelOnEscape(e) {
-        if (e.which === ESC_KEY) {
+        if (e.which === KEY_ESC) {
             this.revertEditable();
         }
     },

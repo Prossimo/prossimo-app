@@ -6,7 +6,7 @@ import Schema from '../../schema';
 import { object } from '../../utils';
 import DictionaryEntryProfileCollection from '../collections/inline/dictionary-entry-to-profile-collection';
 
-const UNSET_VALUE = '--';
+import { UNSET_VALUE } from '../../constants';
 
 const ENTRY_PROPERTIES = [
     { name: 'name', title: 'Name', type: 'string' },

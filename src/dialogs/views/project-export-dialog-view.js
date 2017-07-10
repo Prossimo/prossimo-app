@@ -5,7 +5,7 @@ import Clipboard from 'clipboard';
 import BaseDialogView from './base-dialog-view';
 import template from '../../templates/dialogs/project-export-dialog-view.hbs';
 
-const UNSET_VALUE = '--';
+import { UNSET_VALUE } from '../../constants';
 
 export default BaseDialogView.extend({
     className: 'project-export-modal modal fade',
