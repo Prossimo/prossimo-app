@@ -74,6 +74,22 @@ describe('Unit model', () => {
                     },
                 ],
             },
+            {
+                id: 38,
+                position: 3,
+                name: 'Opening Restrictor',
+                pricing_scheme: 'PER_OPERABLE_SASH',
+                entries: [
+                    {
+                        id: 84,
+                        name: 'Normal Restrictor',
+                        dictionary_entry_profiles: [
+                            { profile_id: 17, is_default: false },
+                            { profile_id: 1, is_default: false },
+                        ],
+                    },
+                ],
+            },
         ], { parse: true });
     });
 
@@ -283,6 +299,11 @@ describe('Unit model', () => {
                     dictionary_id: 32,
                     quantity: 1,
                 },
+                {
+                    dictionary_entry_id: 84,
+                    dictionary_id: 38,
+                    quantity: 1,
+                },
             ]);
         });
 
@@ -302,18 +323,23 @@ describe('Unit model', () => {
                     dictionary_id: 32,
                     quantity: 1,
                 },
+                {
+                    dictionary_entry_id: 84,
+                    dictionary_id: 38,
+                    quantity: 1,
+                },
             ]);
         });
     });
 
     describe('getCurrentUnitOptions function', () => {
-        it('should have exactly 2 unit options if created with profile_id=1', () => {
+        it('should have exactly 3 unit options if created with profile_id=1', () => {
             const unit = new Unit({
                 profile_id: 1,
             });
             const current_options = unit.getCurrentUnitOptions();
 
-            expect(current_options.length).to.equal(2);
+            expect(current_options.length).to.equal(3);
         });
 
         it('should have unit option (at position 0) that belongs to a correct dictionary', () => {
@@ -396,6 +422,15 @@ describe('Unit model', () => {
             expect(grouped_by_scheme.PER_ITEM.length).to.equal(2);
         });
 
+        it('should have exactly 1 option inside PER_OPERABLE_SASH group', () => {
+            const unit = new Unit({
+                profile_id: 1,
+            });
+            const grouped_by_scheme = unit.getUnitOptionsGroupedByPricingScheme();
+
+            expect(grouped_by_scheme.PER_OPERABLE_SASH.length).to.equal(1);
+        });
+
         it('should not have any options inside PRICING_GRIDS group', () => {
             const unit = new Unit({
                 profile_id: 1,
@@ -413,8 +448,8 @@ describe('Unit model', () => {
             });
             const current_options = unit.getCurrentUnitOptions();
 
-            //  getCurrentUnitOptions returns array with 2 elements
-            expect(current_options.length).to.equal(2);
+            //  getCurrentUnitOptions returns array with 3 elements
+            expect(current_options.length).to.equal(3);
             //  First option is from Interior Handle dictionary
             expect(current_options[0].dictionary.get('name')).to.equal('Interior Handle');
             //  First option is Red Metal Handle
@@ -428,8 +463,8 @@ describe('Unit model', () => {
             unit.persistOption(17, 77);
             const current_options = unit.getCurrentUnitOptions();
 
-            //  getCurrentUnitOptions still returns array with 2 elements
-            expect(current_options.length).to.equal(2);
+            //  getCurrentUnitOptions still returns array with 3 elements
+            expect(current_options.length).to.equal(3);
             //  First option is still Red Metal Handle
             expect(current_options[0].entry.get('name')).to.equal('Red Metal Handle');
         });
@@ -441,8 +476,8 @@ describe('Unit model', () => {
             unit.persistOption(17, 14);
             const current_options = unit.getCurrentUnitOptions();
 
-            //  getCurrentUnitOptions still returns array with 2 elements
-            expect(current_options.length).to.equal(2);
+            //  getCurrentUnitOptions still returns array with 3 elements
+            expect(current_options.length).to.equal(3);
             //  First option is now White Plastic Handle
             expect(current_options[0].entry.get('name')).to.equal('White Plastic Handle');
             //  First option quantity is 1
@@ -457,8 +492,8 @@ describe('Unit model', () => {
             unit.persistOption(17, 14, 5);
             const current_options = unit.getCurrentUnitOptions();
 
-            //  getCurrentUnitOptions still returns array with 2 elements
-            expect(current_options.length).to.equal(2);
+            //  getCurrentUnitOptions still returns array with 3 elements
+            expect(current_options.length).to.equal(3);
             //  First option is still White Plastic Handle
             expect(current_options[0].entry.get('name')).to.equal('White Plastic Handle');
             //  First option quantity is now 5
@@ -472,8 +507,8 @@ describe('Unit model', () => {
             unit.persistOption(17, false);
             const current_options = unit.getCurrentUnitOptions();
 
-            //  getCurrentUnitOptions now returns array with only 1 element
-            expect(current_options.length).to.equal(1);
+            //  getCurrentUnitOptions now returns array with only 2 elements
+            expect(current_options.length).to.equal(2);
             //  First option is now Blue Metal Hande - External
             expect(current_options[0].entry.get('name')).to.equal('Blue Metal Hande - External');
         });

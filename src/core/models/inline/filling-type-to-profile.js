@@ -2,14 +2,15 @@ import Backbone from 'backbone';
 import _ from 'underscore';
 
 import Schema from '../../../schema';
-import constants from '../../../constants';
 import { object } from '../../../utils';
 import PricingGridCollection from '../../collections/inline/pricing-grid-collection';
 import PricingEquationParamsCollection from '../../collections/inline/pricing-equation-params-collection';
 
-const PRICING_SCHEME_NONE = constants.PRICING_SCHEME_NONE;
-const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
-const PRICING_SCHEME_LINEAR_EQUATION = constants.PRICING_SCHEME_LINEAR_EQUATION;
+import {
+    PRICING_SCHEME_NONE,
+    PRICING_SCHEME_PRICING_GRIDS,
+    PRICING_SCHEME_LINEAR_EQUATION,
+} from '../../../constants';
 
 const PROFILE_CONNECTION_PROPERTIES = [
     { name: 'profile_id', title: 'Profile ID', type: 'number' },

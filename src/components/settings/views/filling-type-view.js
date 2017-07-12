@@ -8,6 +8,8 @@ import BaseInputView from '../../../core/views/base/base-input-view';
 import ProfileConnectionsTableView from './profile-connections-table-view';
 import template from '../templates/filling-type-view.hbs';
 
+import { PRICING_SCHEME_TITLES } from '../../../constants';
+
 export default Marionette.View.extend({
     tagName: 'div',
     className: 'filling-type',
@@ -85,7 +87,10 @@ export default Marionette.View.extend({
             if (attribute_name === 'type') {
                 data_array = model.getBaseTypes();
             } else if (attribute_name === 'pricing_scheme') {
-                data_array = model.getPossiblePricingSchemes();
+                data_array = model.getPossiblePricingSchemes().map(name => ({
+                    name,
+                    title: PRICING_SCHEME_TITLES[name] || name,
+                }));
             }
 
             return _.map(data_array, item => ({

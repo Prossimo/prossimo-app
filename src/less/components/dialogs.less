@@ -9,23 +9,47 @@
 //  Items / Profiles availability modal (used for Options and Filling Types)
 //  ------------------------------------------------------------------------
 
-.items-profiles-table-modal h3 {
-    margin-top: 1rem;
-    margin-bottom: 3rem;
-}
+.items-profiles-table-modal {
+    h3 {
+        margin-top: 1rem;
+        margin-bottom: 3rem;
+    }
 
-.items-profiles-table-modal .modal-dialog {
-    padding: 0 30px;
-    width: 100%;
-    min-width: 800px;
-}
+    .modal-dialog {
+        width: 800px;
+    }
 
-.items-profiles-table-scroll-wrapper {
-    position: relative;
-    overflow: hidden;
-    width: 100%;
-    height: 500px;
-    background-color: #d9d9d9;
+    &.is-wide .modal-dialog {
+        padding: 0 30px;
+        width: 100%;
+        min-width: 800px;
+    }
+
+    .item-selector {
+        .clearfix();
+        margin: 0 0 3rem;
+    }
+
+    .item-selector h5,
+    .item-selector div {
+        float: left;
+    }
+
+    .item-selector h5 {
+        margin-right: 3rem;
+    }
+
+    .item-selector .btn {
+        border-color: darken(@white, 20%);
+    }
+
+    .items-profiles-table-scroll-wrapper {
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        height: 500px;
+        background-color: #d9d9d9;
+    }
 }
 
 

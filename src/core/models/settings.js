@@ -4,29 +4,9 @@ import $ from 'jquery';
 
 import App from '../../main';
 import { globalChannel } from '../../utils/radio';
-import Profile from './profile';
 import ProfileCollection from '../collections/profile-collection';
 import FillingTypeCollection from '../collections/filling-type-collection';
 import OptionsDictionaryCollection from '../collections/options-dictionary-collection';
-
-//  --------------------------------------------------------------------
-//  That's what we use for Units
-//  --------------------------------------------------------------------
-
-const GLAZING_BAR_WIDTHS = [12, 22, 44];
-const OPENING_DIRECTIONS = ['Inward', 'Outward'];
-
-//  --------------------------------------------------------------------
-//  That's what we use for Profiles
-//  --------------------------------------------------------------------
-
-const SYSTEMS = ['Workhorse uPVC', 'Pinnacle uPVC'];
-const SUPPLIER_SYSTEMS = ['Gaelan S8000', 'Gaelan S9000'];
-const CORNER_TYPES = ['Mitered', 'Square (Vertical)', 'Square (Horizontal)'];
-
-//  --------------------------------------------------------------------
-// That's what we use for settings
-//  --------------------------------------------------------------------
 
 const SETTINGS_PROPERTIES = [
     { name: 'api_base_path', title: 'API Base Path', type: 'string' },
@@ -113,6 +93,8 @@ export default Backbone.Model.extend({
     //  We trigger an event when dictionaries / profiles / filling types
     //  have changed, so we get a chance to update units if needed
     //  TODO: trigger events for profiles and filling types
+    //  TODO: instead of sending events, we should update units inside current
+    //  project or quote (projects should be contained inside this model)
     onScreenChange() {
         _.each(this._dependencies_changed, (value, depencency_name) => {
             if (depencency_name === 'dictionaries') {
@@ -135,7 +117,7 @@ export default Backbone.Model.extend({
         //  If we have a router, we want to monitor all changes
         this.listenTo(App.router, 'route', this.onScreenChange);
     },
-    //  We use deferred to wait for 2 requests (profiles and filling types)
+    //  We use deferred to wait for 3 requests (profiles, fillings, options)
     //  to finish before triggering event (and starting to load projects)
     fetchData() {
         const d1 = $.Deferred();
@@ -197,63 +179,5 @@ export default Backbone.Model.extend({
         });
 
         return name_title_type_hash;
-    },
-    //  TODO: move all profile-related function to Profile Collection
-    getAvailableProfileNames() {
-        return this.profiles.map(item => item.get('name'));
-    },
-    getProfileNamesByIds(ids_array) {
-        let name_list = [];
-
-        this.profiles.each((item) => {
-            const index = ids_array.indexOf(item.id);
-
-            if (index !== -1) {
-                name_list.push({ index, name: item.get('name') });
-            }
-        }, this);
-
-        name_list = _.pluck(name_list, 'name');
-
-        return name_list;
-    },
-    getProfileByIdOrDummy(profile_id) {
-        const profile = this.profiles.get(profile_id);
-
-        return profile || new Profile({
-            is_dummy: true,
-        });
-    },
-    getProfileIdByName(profile_name) {
-        const profile = this.profiles.findWhere({ name: profile_name });
-
-        return profile ? profile.get('id') : null;
-    },
-    getDefaultProfileId() {
-        let default_profile_id = 0;
-
-        if (this.profiles.length) {
-            default_profile_id = this.profiles.at(0).get('id');
-        }
-
-        return default_profile_id;
-    },
-    getGlazingBarWidths() {
-        return GLAZING_BAR_WIDTHS;
-    },
-    getSystems() {
-        return SYSTEMS;
-    },
-    getSupplierSystems() {
-        return SUPPLIER_SYSTEMS;
-    },
-    getFrameCornerTypes() {
-        return CORNER_TYPES;
-    },
-    getSashCornerTypes() {
-        return CORNER_TYPES;
-    },
-    getOpeningDirections() {
-        return OPENING_DIRECTIONS;
     },
 });

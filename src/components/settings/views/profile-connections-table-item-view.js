@@ -1,15 +1,20 @@
 import Marionette from 'backbone.marionette';
+import _ from 'underscore';
 
-import constants from '../../../constants';
 import App from '../../../main';
 import BaseInputView from '../../../core/views/base/base-input-view';
 import EquationParamsView from './equation-params-view';
 import PricingGridsEditorView from './pricing-grids-editor-view';
 import template from '../templates/profile-connections-table-item-view.hbs';
 
-const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
-const PRICING_SCHEME_PER_ITEM = constants.PRICING_SCHEME_PER_ITEM;
-const PRICING_SCHEME_LINEAR_EQUATION = constants.PRICING_SCHEME_LINEAR_EQUATION;
+import {
+    PRICING_SCHEME_PRICING_GRIDS,
+    PRICING_SCHEME_PER_ITEM,
+    PRICING_SCHEME_LINEAR_EQUATION,
+    PRICING_SCHEME_PER_OPERABLE_SASH,
+    PRICING_SCHEME_PER_FRAME_LENGTH,
+    PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
+} from '../../../constants';
 
 export default Marionette.View.extend({
     tagName: 'div',
@@ -20,6 +25,11 @@ export default Marionette.View.extend({
         $cost_per_item_container: 'td.profile-cost-per-item',
         $equation_params_container: 'td.profile-linear-cost',
         $toggle_grid: '.js-toggle-grid',
+    },
+    regions: {
+        grid_container: '@ui.$grid_container',
+        cost_per_item_container: '@ui.$cost_per_item_container',
+        equation_params_container: '@ui.$equation_params_container',
     },
     events: {
         'click @ui.$toggle_grid': 'toggleGrid',
@@ -63,13 +73,17 @@ export default Marionette.View.extend({
     templateContext() {
         const pricing_data = this.model.getPricingData();
         const has_grids = pricing_data && pricing_data.scheme === PRICING_SCHEME_PRICING_GRIDS;
-        const has_per_item_cost = pricing_data && pricing_data.scheme === PRICING_SCHEME_PER_ITEM;
         const has_linear_cost = pricing_data && pricing_data.scheme === PRICING_SCHEME_LINEAR_EQUATION;
+        const has_per_item_cost = pricing_data &&
+            _.contains([PRICING_SCHEME_PER_ITEM, PRICING_SCHEME_PER_OPERABLE_SASH], pricing_data.scheme);
+        const has_per_length_cost = pricing_data &&
+            _.contains([PRICING_SCHEME_PER_FRAME_LENGTH, PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH], pricing_data.scheme);
 
         return {
             has_grids,
             has_per_item_cost,
             has_linear_cost,
+            has_per_length_cost,
             show_grids: this.show_grids,
             profile_name: this.getProfileName(),
             pricing_grid_string: has_grids && this.getPricingGridString(),
@@ -78,53 +92,25 @@ export default Marionette.View.extend({
     onRender() {
         const context = this.templateContext();
 
-        if (this.pricing_grid_view) {
-            this.pricing_grids_view.destroy();
-        }
-
-        if (this.per_item_cost_editor_view) {
-            this.per_item_cost_editor_view.destroy();
-        }
-
-        if (this.equation_params_view) {
-            this.equation_params_view.destroy();
-        }
-
         if (context.has_grids) {
-            this.pricing_grids_view = new PricingGridsEditorView({
+            this.showChildView('grid_container', new PricingGridsEditorView({
                 grids: this.model.get('pricing_grids'),
                 parent_view: this,
                 show_notice: true,
-            });
-            this.ui.$grid_container.append(this.pricing_grids_view.render().el);
+            }));
         }
 
-        if (context.has_per_item_cost) {
-            this.per_item_cost_editor_view = new BaseInputView({
+        if (context.has_per_item_cost || context.has_per_length_cost) {
+            this.showChildView('cost_per_item_container', new BaseInputView({
                 model: this.model,
                 param: 'cost_per_item',
-            });
-            this.ui.$cost_per_item_container.append(this.per_item_cost_editor_view.render().el);
+            }));
         }
 
         if (context.has_linear_cost) {
-            this.equation_params_view = new EquationParamsView({
+            this.showChildView('equation_params_container', new EquationParamsView({
                 collection: this.model.get('pricing_equation_params'),
-            });
-            this.ui.$equation_params_container.append(this.equation_params_view.render().el);
-        }
-    },
-    onBeforeDestroy() {
-        if (this.pricing_grid_view) {
-            this.pricing_grids_view.destroy();
-        }
-
-        if (this.per_item_cost_editor_view) {
-            this.per_item_cost_editor_view.destroy();
-        }
-
-        if (this.equation_params_view) {
-            this.equation_params_view.destroy();
+            }));
         }
     },
     initialize() {

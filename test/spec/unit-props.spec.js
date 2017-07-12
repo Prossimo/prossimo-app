@@ -951,4 +951,36 @@ describe('Unit model tests: ', () => {
 
         delete App.settings;
     });
+
+    describe('Unit getOperableSashesNumber function', () => {
+        const unit = new Unit({
+            width: c.mm_to_inches(800),
+            height: c.mm_to_inches(1650),
+        });
+
+        unit.profile = new Profile({
+            frame_width: 70,
+            mullion_width: 92,
+            sash_frame_width: 82,
+            sash_frame_overlap: 34,
+            sash_mullion_overlap: 34,
+        });
+
+        equal(unit.getOperableSashesNumber(), 0, 'Unit has 0 operable sashes after creation');
+
+        //  Spit sections and add sash
+        const root_id = unit.get('root_section').id;
+
+        unit.splitSection(root_id, 'horizontal');
+        unit.setSectionMullionPosition(root_id, 1308);
+
+        const full_root = unit.generateFullRoot();
+        const top_section = full_root.sections[0];
+        const bottom_section = full_root.sections[1];
+
+        unit.setSectionSashType(top_section.id, 'tilt_turn_left');
+        unit.setSectionSashType(bottom_section.id, 'turn_only_left');
+
+        equal(unit.getOperableSashesNumber(), 2, 'Unit now has 2 operable sashes');
+    });
 });

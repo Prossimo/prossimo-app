@@ -3,13 +3,21 @@ import _ from 'underscore';
 
 import Schema from '../../schema';
 import { object } from '../../utils';
-import constants from '../../constants';
 import OptionsDictionaryEntryCollection from '../collections/options-dictionary-entry-collection';
 
-const PRICING_SCHEME_NONE = constants.PRICING_SCHEME_NONE;
-const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
-const PRICING_SCHEME_PER_ITEM = constants.PRICING_SCHEME_PER_ITEM;
-const PRICING_SCHEME_LINEAR_EQUATION = constants.PRICING_SCHEME_LINEAR_EQUATION;
+import {
+    PRICING_SCHEME_NONE,
+    PRICING_SCHEME_PRICING_GRIDS,
+    PRICING_SCHEME_PER_ITEM,
+    PRICING_SCHEME_LINEAR_EQUATION,
+    PRICING_SCHEME_PER_OPERABLE_SASH,
+    PRICING_SCHEME_PER_FRAME_LENGTH,
+    PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
+    RULE_DOOR_ONLY,
+    RULE_OPERABLE_ONLY,
+    RULE_GLAZING_BARS_ONLY,
+    RULE_IS_OPTIONAL,
+} from '../../constants';
 
 //  TODO: should `rules_and_restrctions` here be an array? or inline model?
 const DICTIONARY_PROPERTIES = [
@@ -21,7 +29,10 @@ const DICTIONARY_PROPERTIES = [
 ];
 
 const POSSIBLE_RULES_AND_RESTRICTIONS = [
-    'DOOR_ONLY', 'OPERABLE_ONLY', 'GLAZING_BARS_ONLY', 'IS_OPTIONAL',
+    RULE_DOOR_ONLY,
+    RULE_OPERABLE_ONLY,
+    RULE_GLAZING_BARS_ONLY,
+    RULE_IS_OPTIONAL,
 ];
 
 const POSSIBLE_PRICING_SCHEMES = [
@@ -29,6 +40,9 @@ const POSSIBLE_PRICING_SCHEMES = [
     PRICING_SCHEME_PRICING_GRIDS,
     PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_LINEAR_EQUATION,
+    PRICING_SCHEME_PER_OPERABLE_SASH,
+    PRICING_SCHEME_PER_FRAME_LENGTH,
+    PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
 ];
 
 function getDefaultRulesAndRestrictions() {
@@ -211,7 +225,10 @@ export default Backbone.Model.extend({
         return POSSIBLE_PRICING_SCHEMES;
     },
     hasQuantity() {
-        return this.get('pricing_scheme') === PRICING_SCHEME_PER_ITEM;
+        return _.contains([PRICING_SCHEME_PER_ITEM, PRICING_SCHEME_PER_OPERABLE_SASH], this.get('pricing_scheme'));
+    },
+    getQuantityMultiplier() {
+        return this.get('pricing_scheme') === PRICING_SCHEME_PER_OPERABLE_SASH ? 'Sash' : '';
     },
     initialize(attributes, options) {
         this.options = options || {};

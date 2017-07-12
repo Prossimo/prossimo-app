@@ -3,6 +3,8 @@ import Marionette from 'backbone.marionette';
 
 import template from '../../../templates/core/base/base-datepicker-input-view.hbs';
 
+import { DATE_FORMAT_BS_DATEPICKER } from '../../../constants';
+
 export default Marionette.View.extend({
     className: 'input-container',
     template,
@@ -66,7 +68,7 @@ export default Marionette.View.extend({
 
         this.ui.$input.datepicker({
             autoclose: true,
-            format: 'd MM, yyyy',
+            format: DATE_FORMAT_BS_DATEPICKER,
             todayHighlight: true,
             zIndexOffset: 300,
         })

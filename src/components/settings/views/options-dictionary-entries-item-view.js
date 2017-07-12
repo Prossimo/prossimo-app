@@ -44,7 +44,7 @@ export default Marionette.View.extend({
 
         if (profiles_ids && profiles_ids.length) {
             if (App.settings) {
-                profiles_names_list = App.settings.getProfileNamesByIds(profiles_ids.sort());
+                profiles_names_list = App.settings.profiles.getProfileNamesByIds(profiles_ids.sort());
             } else {
                 profiles_names_list = profiles_ids.sort();
             }

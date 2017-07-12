@@ -500,6 +500,21 @@ test('Prices tests', () => {
                     },
                 ],
             },
+            {
+                name: 'Opening Restrictor',
+                pricing_scheme: 'PER_OPERABLE_SASH',
+                id: 4,
+                entries: [
+                    {
+                        name: 'Basic Restrictor',
+                        id: 12,
+                        dictionary_entry_profiles: [
+                            { profile_id: 3 },
+                            { profile_id: 6 },
+                        ],
+                    },
+                ],
+            },
         ], { parse: true });
 
         const unit = new Unit({
@@ -519,6 +534,7 @@ test('Prices tests', () => {
         let grouped_options = unit.getUnitOptionsGroupedByPricingScheme();
 
         equal(grouped_options.PER_ITEM.length, 1, 'PER_ITEM group contains one option');
+        equal(grouped_options.PER_OPERABLE_SASH.length, 1, 'PER_OPERABLE_SASH group contains one option');
         equal(grouped_options.PRICING_GRIDS.length, 1, 'PRICING_GRIDS group contains one option');
 
         equal(
@@ -540,6 +556,11 @@ test('Prices tests', () => {
                 quantity: 1,
             },
             'The option inside PER_ITEM group matches the expected data',
+        );
+        equal(
+            grouped_options.PER_OPERABLE_SASH[0].dictionary_name,
+            'Opening Restrictor',
+            'The option inside PER_OPERABLE_SASH group is from Opening Restrictor dictionary',
         );
 
         //  Now we want to restrict one dictionary to DOOR_ONLY and see if this
@@ -600,7 +621,48 @@ test('Prices tests', () => {
                         id: 7,
                         dictionary_entry_profiles: [
                             { profile_id: 3, cost_per_item: 14 },
-                            { profile_id: 6 },
+                        ],
+                    },
+                ],
+            },
+            {
+                name: 'Opening Restrictor',
+                pricing_scheme: 'PER_OPERABLE_SASH',
+                id: 4,
+                entries: [
+                    {
+                        name: 'Basic Restrictor',
+                        id: 12,
+                        dictionary_entry_profiles: [
+                            { profile_id: 3, cost_per_item: 22 },
+                        ],
+                    },
+                ],
+            },
+            {
+                name: 'Additional Outer Profile',
+                pricing_scheme: 'PER_FRAME_LENGTH',
+                id: 8,
+                entries: [
+                    {
+                        name: 'Basic Outer Profile',
+                        id: 13,
+                        dictionary_entry_profiles: [
+                            { profile_id: 3, cost_per_item: 11 },
+                        ],
+                    },
+                ],
+            },
+            {
+                name: 'Some Per Sill Length Priced Thing',
+                pricing_scheme: 'PER_SILL_OR_THRESHOLD_LENGTH',
+                id: 9,
+                entries: [
+                    {
+                        name: 'Basic Thing of This Type',
+                        id: 15,
+                        dictionary_entry_profiles: [
+                            { profile_id: 3, cost_per_item: 32.3 },
                         ],
                     },
                 ],
@@ -636,6 +698,21 @@ test('Prices tests', () => {
                     },
                 ],
                 pricing_scheme: 'PRICING_GRIDS',
+            },
+            {
+                name: 'Economy Triple Glazed',
+                type: 'glass',
+                id: 19,
+                filling_type_profiles: [
+                    {
+                        profile_id: 3,
+                        pricing_equation_params: [
+                            { name: 'fixed', param_a: 11, param_b: 39 },
+                            { name: 'operable', param_a: 9, param_b: 62 },
+                        ],
+                    },
+                ],
+                pricing_scheme: 'LINEAR_EQUATION',
             },
         ], { parse: true });
 
@@ -676,8 +753,8 @@ test('Prices tests', () => {
             App.settings.filling_types.at(0).get('name'),
         );
 
-        const sections_list = unit.getSectionsListWithEstimatedCost();
-        const estimated_cost = unit.getEstimatedUnitCost();
+        let sections_list = unit.getSectionsListWithEstimatedCost();
+        let estimated_cost = unit.getEstimatedUnitCost();
 
         //  First section base cost
         equal(sections_list[0].width.toFixed(2), '1574.80', 'Section width is correct');
@@ -703,7 +780,49 @@ test('Prices tests', () => {
         );
 
         //  Unit total cost
-        equal(estimated_cost.total.toFixed(2), '218.03', 'Unit total cost is correct');
+        equal(estimated_cost.total.toFixed(2), '357.19', 'Unit total cost is correct');
+        equal(
+            estimated_cost.total,
+            estimated_cost.base + estimated_cost.fillings + estimated_cost.options,
+            'Unit total cost is the combination of base, filllings and options cost',
+        );
+
+        //  ----------------------------------------------------------------
+        //  Now set section type to operable, change filling type, and repeat calculations
+        //  ----------------------------------------------------------------
+
+        unit.setSectionSashType(unit.get('root_section').id, 'tilt_turn_left');
+        unit.setFillingType(
+            unit.get('root_section').id,
+            App.settings.filling_types.at(1).get('type'),
+            App.settings.filling_types.at(1).get('name'),
+        );
+
+        sections_list = unit.getSectionsListWithEstimatedCost();
+        estimated_cost = unit.getEstimatedUnitCost();
+
+        //  First section base cost
+        equal(sections_list[0].price_per_square_meter.toFixed(2), '60.00', 'Section price_per_square_meter is correct');
+        equal(sections_list[0].base_cost.toFixed(2), '230.40', 'Section base_cost is correct');
+
+        //  First section filling cost
+        equal(sections_list[0].filling_cost.toFixed(2), '96.56', 'Section filling_cost is correct');
+
+        //  First section options cost
+        equal(sections_list[0].options.length, 1, 'Section has one priced option');
+        equal(sections_list[0].options[0].price_increase.toFixed(2), '10.00', 'First option price_increase is correct');
+        equal(sections_list[0].options_cost.toFixed(2), '23.04', 'Section options_cost is correct');
+
+        //  First section total cost
+        equal(sections_list[0].total_cost.toFixed(2), '350.00', 'Section total_cost is correct');
+        equal(
+            sections_list[0].total_cost,
+            sections_list[0].base_cost + sections_list[0].filling_cost + sections_list[0].options_cost,
+            'Section total_cost is the combination of base, fillling and options cost',
+        );
+
+        //  Unit total cost (includes price for interior handle and opening restrictor)
+        equal(estimated_cost.total.toFixed(2), '525.16', 'Unit total cost is correct');
         equal(
             estimated_cost.total,
             estimated_cost.base + estimated_cost.fillings + estimated_cost.options,

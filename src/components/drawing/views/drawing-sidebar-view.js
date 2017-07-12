@@ -4,12 +4,24 @@ import Marionette from 'backbone.marionette';
 
 import App from '../../../main';
 import { math, format, convert } from '../../../utils';
-import constants from '../../../constants';
 import template from '../templates/drawing-sidebar-view.hbs';
 
-const UNSET_VALUE = '--';
-
-const PRICING_SCHEME_PRICING_GRIDS = constants.PRICING_SCHEME_PRICING_GRIDS;
+import {
+    PRICING_SCHEME_PER_ITEM,
+    PRICING_SCHEME_PRICING_GRIDS,
+    PRICING_SCHEME_PER_OPERABLE_SASH,
+    PRICING_SCHEME_PER_FRAME_LENGTH,
+    PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
+    PRICING_SCHEME_TITLES,
+    RULE_DOOR_ONLY,
+    RULE_OPERABLE_ONLY,
+    RULE_GLAZING_BARS_ONLY,
+    UNSET_VALUE,
+    VALUE_ERROR_DOORS_ONLY,
+    VALUE_ERROR_OPERABLE_ONLY,
+    VALUE_ERROR_GLAZING_BARS_ONLY,
+    VALUE_ERROR_NONE,
+} from '../../../constants';
 
 export default Marionette.View.extend({
     tagName: 'div',
@@ -163,9 +175,9 @@ export default Marionette.View.extend({
                     let val = params_source[prop_name] || active_unit.get(prop_name);
 
                     if (active_unit.isOperableOnlyAttribute(prop_name) && !active_unit.hasOperableSections()) {
-                        val = '(Operable Only)';
+                        val = VALUE_ERROR_OPERABLE_ONLY;
                     } else if (active_unit.isGlazingBarProperty(prop_name) && !active_unit.hasGlazingBars()) {
-                        val = '(Has no Bars)';
+                        val = VALUE_ERROR_GLAZING_BARS_ONLY;
                     }
 
                     return val;
@@ -189,7 +201,7 @@ export default Marionette.View.extend({
                 let current_dictionary_name = dictionary_name;
                 let rules_and_restrictions;
                 let is_hidden = false;
-                let value = '(None)';
+                let value = VALUE_ERROR_NONE;
                 let is_restricted = false;
                 let current_options = [];
 
@@ -203,15 +215,15 @@ export default Marionette.View.extend({
                 _.each(rules_and_restrictions, (rule) => {
                     const restriction_applies = active_unit.checkIfRestrictionApplies(rule);
 
-                    if (restriction_applies && rule === 'DOOR_ONLY') {
+                    if (restriction_applies && rule === RULE_DOOR_ONLY) {
                         is_restricted = true;
-                        value = '(Doors Only)';
-                    } else if (restriction_applies && rule === 'OPERABLE_ONLY') {
+                        value = VALUE_ERROR_DOORS_ONLY;
+                    } else if (restriction_applies && rule === RULE_OPERABLE_ONLY) {
                         is_restricted = true;
-                        value = '(Operable Only)';
-                    } else if (restriction_applies && rule === 'GLAZING_BARS_ONLY') {
+                        value = VALUE_ERROR_OPERABLE_ONLY;
+                    } else if (restriction_applies && rule === RULE_GLAZING_BARS_ONLY) {
                         is_restricted = true;
-                        value = '(Has no Bars)';
+                        value = VALUE_ERROR_GLAZING_BARS_ONLY;
                     }
                 }, this);
 
@@ -262,6 +274,8 @@ export default Marionette.View.extend({
 
         return active_unit_profile_properties;
     },
+    //  TODO: most of this functionality should be moved to unit model, we
+    //  should only apply formatters here
     getActiveUnitSashList() {
         const project_settings = App.settings.getProjectSettings();
         const f = format;
@@ -372,6 +386,7 @@ export default Marionette.View.extend({
         const stats_data = [];
 
         const titles = {
+            operable_sashes: 'Operable Sashes',
             frame: 'Frame',
             sashes: 'Sash Frames',
             mullions: 'Mullions',
@@ -395,6 +410,16 @@ export default Marionette.View.extend({
             const hasBaseFilling = this.options.parent_view.active_unit.hasBaseFilling();
 
             unit_stats = this.options.parent_view.active_unit.getLinearAndAreaStats();
+
+            stats_data.push({
+                title: 'Number Of',
+                data: Object.keys(unit_stats.number_of).map(key => ({
+                    key,
+                    title: titles[key],
+                    value: unit_stats.number_of[key],
+                    is_total: false,
+                })),
+            });
 
             _.each(unit_stats, (item, key) => {
                 _.each(data_groups, (group_name) => {
@@ -422,8 +447,10 @@ export default Marionette.View.extend({
             }, this);
 
             _.each(group_titles, (title, key) => {
-                group_data[key] = _.sortBy(group_data[key], param => _.indexOf(['frame', 'sashes', 'mullions', 'profile_total', 'glasses',
-                    'openings', 'glazing_bars', 'unit_total'], param.key));
+                group_data[key] = _.sortBy(group_data[key], param => _.indexOf([
+                    'operable_sashes', 'frame', 'sashes', 'mullions', 'profile_total', 'glasses',
+                    'openings', 'glazing_bars', 'unit_total',
+                ], param.key));
 
                 stats_data.push({
                     title,
@@ -441,12 +468,13 @@ export default Marionette.View.extend({
         let active_unit_profile;
         const result = {
             sections: [],
-            per_item_priced_options: [],
+            separately_priced_options: [],
         };
 
         if (this.options.parent_view.active_unit) {
             active_unit_profile = this.options.parent_view.active_unit.profile;
             const unit_cost = this.options.parent_view.active_unit.getEstimatedUnitCost();
+            const unit_stats = this.options.parent_view.active_unit.getLinearAndAreaStats();
 
             result.profile_name = active_unit_profile ? active_unit_profile.get('name') : UNSET_VALUE;
             result.base_cost = f.fixed(unit_cost.base);
@@ -472,7 +500,7 @@ export default Marionette.View.extend({
                     m.square_meters(source_item.width, source_item.height),
                     2, 'sup');
 
-                section_item.base_pricing_scheme = source_item.base_pricing_scheme;
+                section_item.base_pricing_scheme = PRICING_SCHEME_TITLES[source_item.base_pricing_scheme];
                 section_item.price_per_square_meter = f.fixed(source_item.price_per_square_meter);
                 section_item.base_cost = f.fixed(source_item.base_cost);
                 section_item.show_price_per_square_meter =
@@ -480,7 +508,7 @@ export default Marionette.View.extend({
 
                 //  Add cost for Filling
                 section_item.filling_name = source_item.filling_name;
-                section_item.filling_pricing_scheme = source_item.filling_pricing_scheme;
+                section_item.filling_pricing_scheme = PRICING_SCHEME_TITLES[source_item.filling_pricing_scheme];
                 section_item.filling_price_increase = f.percent(source_item.filling_price_increase);
                 section_item.filling_cost = f.fixed(source_item.filling_cost);
                 section_item.show_filling_price_increase =
@@ -490,7 +518,7 @@ export default Marionette.View.extend({
                 section_item.options = _.map(source_item.options, (item, item_index) => ({
                     index: `Option #${item_index + 1}`,
                     dictionary_name: item.dictionary_name,
-                    pricing_scheme: item.dictionary_pricing_scheme,
+                    pricing_scheme: PRICING_SCHEME_TITLES[item.dictionary_pricing_scheme],
                     is_hidden: item.is_hidden,
                     option_name: item.option_name,
                     price_increase: f.percent(item.price_increase),
@@ -503,26 +531,62 @@ export default Marionette.View.extend({
                 result.sections.push(section_item);
             }, this);
 
-            let per_item_priced_options_total_cost = 0;
+            let separately_priced_options_total_cost = 0;
 
             //  Collect detailed pricing data for per-item-priced options
-            _.each(unit_cost.options_list.PER_ITEM, (source_item, index) => {
+            _.each(_.union(
+                unit_cost.options_list[PRICING_SCHEME_PER_ITEM],
+                unit_cost.options_list[PRICING_SCHEME_PER_OPERABLE_SASH],
+                unit_cost.options_list[PRICING_SCHEME_PER_FRAME_LENGTH],
+                unit_cost.options_list[PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH],
+            ), (source_item, index) => {
+                const scheme = source_item.pricing_data.scheme;
                 const option_item = {};
+                let option_cost = 0;
 
                 option_item.option_index = `Option #${index + 1}`;
                 option_item.option_name = source_item.option_name;
                 option_item.dictionary_name = source_item.dictionary_name;
                 option_item.is_hidden = source_item.is_hidden;
-                option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
-                option_item.quantity = source_item.quantity;
-                option_item.cost = f.fixed(source_item.pricing_data.cost_per_item * source_item.quantity);
+                option_item.pricing_scheme = PRICING_SCHEME_TITLES[scheme];
 
-                per_item_priced_options_total_cost += source_item.pricing_data.cost_per_item * source_item.quantity;
+                if (scheme === PRICING_SCHEME_PER_ITEM) {
+                    option_cost = source_item.pricing_data.cost_per_item * source_item.quantity;
 
-                result.per_item_priced_options.push(option_item);
+                    option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
+                    option_item.quantity = source_item.quantity;
+                } else if (scheme === PRICING_SCHEME_PER_OPERABLE_SASH) {
+                    const operable_sashes_number = unit_stats.number_of.operable_sashes;
+
+                    option_cost = source_item.pricing_data.cost_per_item * source_item.quantity * operable_sashes_number;
+
+                    option_item.operable_sashes_number = operable_sashes_number;
+                    option_item.quantity_per_sash = source_item.quantity;
+                    option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
+                } else if (scheme === PRICING_SCHEME_PER_FRAME_LENGTH) {
+                    const frame_length = unit_stats.frame.linear;
+
+                    option_cost = source_item.pricing_data.cost_per_item * (frame_length / 1000);
+
+                    option_item.frame_length = f.dimension_mm(frame_length);
+                    option_item.cost_per_meter = f.fixed(source_item.pricing_data.cost_per_item);
+                } else if (scheme === PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH) {
+                    const frame_width = unit_stats.frame.width;
+
+                    option_cost = source_item.pricing_data.cost_per_item * (frame_width / 1000);
+
+                    option_item.frame_width = f.dimension_mm(frame_width);
+                    option_item.cost_per_meter = f.fixed(source_item.pricing_data.cost_per_item);
+                }
+
+                option_item.cost = f.fixed(option_cost);
+
+                separately_priced_options_total_cost += option_cost;
+
+                result.separately_priced_options.push(option_item);
             }, this);
 
-            result.per_item_priced_options_total_cost = f.fixed(per_item_priced_options_total_cost);
+            result.separately_priced_options_total_cost = f.fixed(separately_priced_options_total_cost);
         }
 
         return result;
