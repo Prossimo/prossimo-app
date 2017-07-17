@@ -36,6 +36,7 @@ describe('Multiunit model', () => {
             multiunit_subunits: [{ id: subunit1.id }, { id: subunit2.id }, { id: subunit3.id }],
             root_section: {
                 id: 18,
+                originCoords: { x: 0, y: 0 },
                 connectors: [
                     { id: 1, side: 'right', connects: [11, 12], width: 20, facewidth: 40 },
                     { id: 2, side: 'right', connects: [12, 101], width: 20, facewidth: 40 },
@@ -59,6 +60,7 @@ describe('Multiunit model', () => {
                 quantity: 1,
                 root_section: JSON.stringify({
                     id: 18,
+                    originCoords: { x: 0, y: 0 },
                     connectors: [
                         { id: 1, side: 'right', connects: [11, 12], width: 20, facewidth: 40, length: 0 },
                         { id: 2, side: 'right', connects: [12, 101], width: 20, facewidth: 40, length: 0 },
@@ -79,6 +81,7 @@ describe('Multiunit model', () => {
             multiunit_subunits: [{ id: 11 }, { id: 12 }, { id: 101 }],
             root_section: JSON.stringify({
                 id: 18,
+                originCoords: { x: 0, y: 0 },
                 connectors: [
                     { id: 1, side: 'right', connects: [11, 12], width: 20, facewidth: 40, length: 0 },
                     { id: 2, side: 'right', connects: [12, 101], width: 20, facewidth: 40, length: 0 },
@@ -166,6 +169,7 @@ describe('Multiunit model', () => {
             multiunit_subunits: [{ id: subunit1.id }, { id: subunit2.id }, { id: subunit3.id }],
             root_section: JSON.stringify({
                 id: 18,
+                originCoords: { x: 0, y: 0 },
                 connectors: [
                     { id: 1, side: 'right', connects: [11, 12], width: 20, facewidth: 40, length: 0 },
                     { id: 2, side: 'right', connects: [12, 101], width: 20, facewidth: 40, length: 0 },
@@ -211,6 +215,7 @@ describe('Multiunit model', () => {
             quantity: 1,
             root_section: JSON.stringify({
                 id: 18,
+                originCoords: { x: 0, y: 0 },
                 connectors: [
                     { id: 1, side: 'right', connects: [11, 12], width: 20, facewidth: 40, length: 0 },
                     { id: 2, side: 'right', connects: [12, 101], width: 20, facewidth: 40, length: 0 },
