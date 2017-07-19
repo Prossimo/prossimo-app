@@ -1251,8 +1251,6 @@ export default Backbone.KonvaView.extend({
         const isOutsideView = !isInsideView;
         const hasOutsideHandle = this._model.profile.hasOutsideHandle();
         const isEntryDoor = this._model.profile.isEntryDoor();
-        const isVisible = isInsideView || (isOutsideView && hasOutsideHandle);
-        const isInvisible = !isVisible;
         const pos = {
             x: null,
             y: null,
@@ -1290,6 +1288,8 @@ export default Backbone.KonvaView.extend({
             type === 'slide-left' || type === 'flush-turn-left' ||
             type === 'slide_right' || type === 'tilt_slide_right');
         const isTiltSection = (type === 'tilt_only');
+        const isVisible = isInsideView || (isOutsideView && hasOutsideHandle && !isTiltSection);
+        const isInvisible = !isVisible;
 
         if (isVisible) {
             positionOver();
