@@ -723,7 +723,7 @@ export default Backbone.KonvaView.extend({
                 if (invertedType === 'horizontal') {
                     let pos = correction.pos;
 
-                    if (!module.getState('openingView')) {
+                    if (!this._module.getState('openingView')) {
                         pos = correction.pos;
                     } else if (correction.pos === 0) {
                         pos = correction.size * -1;
