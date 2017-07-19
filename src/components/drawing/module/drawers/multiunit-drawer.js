@@ -141,7 +141,9 @@ export default Backbone.KonvaView.extend({
         return back;
     },
     createConnectors(subunitGroup) {
-        if (!subunitGroup) { return; }
+        if (!subunitGroup) {
+            return undefined;
+        }
 
         const self = this;
         const model = this._model;
@@ -166,8 +168,8 @@ export default Backbone.KonvaView.extend({
         return group;
     },
     createConnector(connector, options) {
-        if (!connector) { return; }
-        if (!(options && options.subunitKonvas)) { return; }
+        if (!connector) { return undefined; }
+        if (!(options && options.subunitKonvas)) { return undefined; }
 
         const ratio = this._ratio;
         const flipX = options && options.flipX;
@@ -220,7 +222,7 @@ export default Backbone.KonvaView.extend({
             drawingX = (flipX) ? (parentX + parentWidth) - faceOverlap : parentX - width - faceOverlap;
             drawingY = parentY;
         } else {
-            return;
+            return undefined;
         }
 
         const drawingFace = new Konva.Line({
@@ -284,7 +286,7 @@ export default Backbone.KonvaView.extend({
         return group;
     },
     createSubunitsOverlays(subunitGroup) {
-        if (!subunitGroup) { return; }
+        if (!subunitGroup) { return undefined; }
 
         const group = new Konva.Group({ name: 'subunitOverlays' });
 

@@ -46,14 +46,14 @@ test('Profile collection tests', () => {
         ]);
 
         deepEqual(collection.getAvailableProfileNames(), [
+            'Test Profile',
             'Another Test Profile',
             'Nice Test Profile',
-            'Test Profile',
         ], 'getAvailableProfileNames returns the expected result');
 
         deepEqual(collection.getProfileNamesByIds([44, 18]), [
-            'Nice Test Profile',
             'Test Profile',
+            'Nice Test Profile',
         ], 'getProfileNamesByIds returns the expected result for an array of 2 ids');
         deepEqual(collection.getProfileNamesByIds([]), [], 'getProfileNamesByIds returns empty result for an empty array');
     });
@@ -91,7 +91,7 @@ test('Profile collection tests', () => {
         const default_for_collection = collection.getDefaultProfileId();
         const default_for_empty_collection = empty_collection.getDefaultProfileId();
 
-        equal(default_for_collection, 2, 'getDefaultProfileId returns the id of the first profile in collection');
+        equal(default_for_collection, 44, 'getDefaultProfileId returns the id of the first profile in collection');
         equal(default_for_empty_collection, undefined, 'getDefaultProfileId returns the undefined for an empty collection');
     });
 });

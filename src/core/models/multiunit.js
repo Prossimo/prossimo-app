@@ -587,13 +587,14 @@ export default Backbone.Model.extend({
         this.subunitsTreeForEach(subunitsTree, (node) => {
             if (!node.unit) { return; }
 
+            const currentNode = node;
             const isOrigin = self.isOriginId(node.unit.id);
 
             if (isOrigin) {
-                node.width = node.unit.getInMetric('width', 'mm');
-                node.height = node.unit.getInMetric('height', 'mm');
-                node.x = (originCoords && originCoords.x) || 0;
-                node.y = (originCoords && originCoords.y) || 0;
+                currentNode.width = node.unit.getInMetric('width', 'mm');
+                currentNode.height = node.unit.getInMetric('height', 'mm');
+                currentNode.x = (originCoords && originCoords.x) || 0;
+                currentNode.y = (originCoords && originCoords.y) || 0;
             } else {
                 const width = node.unit.getInMetric('width', 'mm');
                 const height = node.unit.getInMetric('height', 'mm');
@@ -605,21 +606,21 @@ export default Backbone.Model.extend({
                 const gap = parentConnector.width;
                 const side = parentConnector.side;
 
-                node.width = width;
-                node.height = height;
+                currentNode.width = width;
+                currentNode.height = height;
 
                 if (side && side === 'top') {
-                    node.x = (flipX) ? parentX + (parentWidth - width) : parentX;
-                    node.y = parentY - gap - height;
+                    currentNode.x = (flipX) ? parentX + (parentWidth - width) : parentX;
+                    currentNode.y = parentY - gap - height;
                 } else if (side && side === 'right') {
-                    node.x = (flipX) ? parentX - gap - width : parentX + parentWidth + gap;
-                    node.y = parentY;
+                    currentNode.x = (flipX) ? parentX - gap - width : parentX + parentWidth + gap;
+                    currentNode.y = parentY;
                 } else if (side && side === 'bottom') {
-                    node.x = (flipX) ? parentX + (parentWidth - width) : parentX;
-                    node.y = parentY + parentHeight + gap;
+                    currentNode.x = (flipX) ? parentX + (parentWidth - width) : parentX;
+                    currentNode.y = parentY + parentHeight + gap;
                 } else if (side && side === 'left') {
-                    node.x = (flipX) ? parentX + parentWidth + gap : parentX - gap - width;
-                    node.y = parentY;
+                    currentNode.x = (flipX) ? parentX + parentWidth + gap : parentX - gap - width;
+                    currentNode.y = parentY;
                 }
             }
         });
@@ -630,7 +631,9 @@ export default Backbone.Model.extend({
             const delta = Math.abs(rect.x);
 
             this.subunitsTreeForEach(subunitsTree, (node) => {
-                node.x += delta;
+                const currentNode = node;
+
+                currentNode.x += delta;
             });
         }
 
@@ -826,13 +829,14 @@ export default Backbone.Model.extend({
             const hasWidth = _.isNumber(connector.width);
             const hasFacewidth = _.isNumber(connector.facewidth);
             const hasLength = _.isNumber(connector.length);
+            const currentConnector = connector;
 
             if (!hasWidth) {
-                connector.width = CONNECTOR_DEFAULTS.width;
+                currentConnector.width = CONNECTOR_DEFAULTS.width;
             }
 
             if (!hasFacewidth) {
-                connector.width = CONNECTOR_DEFAULTS.facewidth;
+                currentConnector.width = CONNECTOR_DEFAULTS.facewidth;
             }
 
             if (!hasId || !hasSide || !hasConnects) {
@@ -842,7 +846,7 @@ export default Backbone.Model.extend({
 
             if (!hasLength) {
                 connectors[index] = this.updateConnectorLength(
-                    connector,
+                    currentConnector,
                     parentSubunit && parentSubunit.getUnit(),
                     childSubunit && childSubunit.getUnit(),
                 );
@@ -916,28 +920,29 @@ export default Backbone.Model.extend({
         }
 
         const self = this;
-        const parentSubunit = this.getSubunitLinkedUnitById(options.connects[0]);
+        const currentOptions = options;
+        const parentSubunit = this.getSubunitLinkedUnitById(currentOptions.connects[0]);
         const connectors = this.get('root_section').connectors;
         let newChildSubunit;
 
-        const pushConnector = function () {
+        const pushConnector = () => {
             const connector = {
                 id: _.uniqueId(),
-                connects: options.connects,
-                side: options.side,
-                width: options.width || CONNECTOR_DEFAULTS.width,
-                facewidth: options.facewidth || CONNECTOR_DEFAULTS.facewidth,
+                connects: currentOptions.connects,
+                side: currentOptions.side,
+                width: currentOptions.width || CONNECTOR_DEFAULTS.width,
+                facewidth: currentOptions.facewidth || CONNECTOR_DEFAULTS.facewidth,
             };
 
             connectors.push(connector);
             self.updateConnectorLength(connector, parentSubunit, newChildSubunit);
 
-            if (options.success) {
-                options.success();
+            if (currentOptions.success) {
+                currentOptions.success();
             }
         };
 
-        if (!options.connects[1]) {
+        if (!currentOptions.connects[1]) {
             newChildSubunit = new Unit({
                 position: parentSubunit.collection.getMaxPosition() + 1,
             });
@@ -947,7 +952,7 @@ export default Backbone.Model.extend({
                 height: parentSubunit.get('height'),
             }, {
                 success() {
-                    options.connects[1] = newChildSubunit.id;
+                    currentOptions.connects[1] = newChildSubunit.id;
                     pushConnector();
                     self.addSubunit(newChildSubunit);
                 },
@@ -968,16 +973,17 @@ export default Backbone.Model.extend({
         return removed_connector;
     },
     updateConnectorLength(connector, parentSubunit, childSubunit) {
+        const currentConnector = connector;
         const parent = parentSubunit || this.getSubunitLinkedUnitById(connector.connects[0]);
         const child = childSubunit || this.getSubunitLinkedUnitById(connector.connects[1]);
         let parentSide;
         let childSide;
 
         if (!(parent && child)) {
-            return;
+            return undefined;
         }
 
-        if (connector.side === 'top' || connector.side === 'bottom') {
+        if (currentConnector.side === 'top' || currentConnector.side === 'bottom') {
             parentSide = parent.getInMetric('width', 'mm');
             childSide = child.getInMetric('width', 'mm');
         } else {
@@ -985,9 +991,9 @@ export default Backbone.Model.extend({
             childSide = child.getInMetric('height', 'mm');
         }
 
-        connector.length = Math.min(parentSide, childSide);
+        currentConnector.length = Math.min(parentSide, childSide);
 
-        return connector;
+        return currentConnector;
     },
     updateConnectorsLength() {
         const connectors = this.get('root_section').connectors;

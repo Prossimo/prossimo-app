@@ -186,6 +186,8 @@ export default function (opts) {
                     options: clone(options),
                 };
             }
+
+            return undefined;
         },
     });
 
