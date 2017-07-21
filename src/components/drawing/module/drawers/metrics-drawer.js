@@ -929,11 +929,12 @@ export default Backbone.KonvaView.extend({
     createWholeMultiunitMetrics(connectors, width, height) {
         const group = new Konva.Group();
         const model = this._model;
-        const root_section = this._model.generateFullRoot();
         const metricSize = this._metricSize;
-        const isPreview = this._module.getState('isPreview');
-        const vRows = (connectors.vertical.length) ? 1 : 0;
-        const hRows = (connectors.horizontal.length) ? 1 : 0;
+        //  TODO: we should show sizes for each subunit, and uncomment this
+        // const vRows = (connectors.vertical.length) ? 1 : 0;
+        // const hRows = (connectors.horizontal.length) ? 1 : 0;
+        const vRows = 0;
+        const hRows = 0;
 
         // Vertical metric
         const verticalWholeMetric = this.createVerticalMetric(metricSize, height, {
@@ -951,15 +952,6 @@ export default Backbone.KonvaView.extend({
         const hPosition = { x: 0, y: height + (vRows * metricSize) };
         horizontalWholeMertic.position(hPosition);
         group.add(horizontalWholeMertic);
-
-        // Controls
-        if (!isPreview) {
-            const vControls = this.createWholeControls(root_section.id, metricSize, height, 'vertical');
-            const hControls = this.createWholeControls(root_section.id, width, metricSize, 'horizontal');
-            vControls.position(vPosition);
-            hControls.position(hPosition);
-            group.add(vControls, hControls);
-        }
 
         return group;
     },
