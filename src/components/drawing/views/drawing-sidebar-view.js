@@ -10,7 +10,12 @@ import {
     PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_PRICING_GRIDS,
     PRICING_SCHEME_PER_OPERABLE_SASH,
+    PRICING_SCHEME_PER_MULLION,
     PRICING_SCHEME_PER_FRAME_LENGTH,
+    PRICING_SCHEME_PER_SASH_FRAME_LENGTH,
+    PRICING_SCHEME_PER_MULLION_LENGTH,
+    PRICING_SCHEME_PER_PROFILE_LENGTH,
+    PRICING_SCHEME_PER_GLAZING_BAR_LENGTH,
     PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
     PRICING_SCHEME_TITLES,
     RULE_DOOR_ONLY,
@@ -533,11 +538,16 @@ export default Marionette.View.extend({
 
             let separately_priced_options_total_cost = 0;
 
-            //  Collect detailed pricing data for per-item-priced options
+            //  Collect detailed pricing data for separately priced options
             _.each(_.union(
                 unit_cost.options_list[PRICING_SCHEME_PER_ITEM],
                 unit_cost.options_list[PRICING_SCHEME_PER_OPERABLE_SASH],
+                unit_cost.options_list[PRICING_SCHEME_PER_MULLION],
                 unit_cost.options_list[PRICING_SCHEME_PER_FRAME_LENGTH],
+                unit_cost.options_list[PRICING_SCHEME_PER_SASH_FRAME_LENGTH],
+                unit_cost.options_list[PRICING_SCHEME_PER_MULLION_LENGTH],
+                unit_cost.options_list[PRICING_SCHEME_PER_PROFILE_LENGTH],
+                unit_cost.options_list[PRICING_SCHEME_PER_GLAZING_BAR_LENGTH],
                 unit_cost.options_list[PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH],
             ), (source_item, index) => {
                 const scheme = source_item.pricing_data.scheme;
@@ -563,12 +573,48 @@ export default Marionette.View.extend({
                     option_item.operable_sashes_number = operable_sashes_number;
                     option_item.quantity_per_sash = source_item.quantity;
                     option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
+                } else if (scheme === PRICING_SCHEME_PER_MULLION) {
+                    const mullions_number = unit_stats.number_of.mullions;
+
+                    option_cost = source_item.pricing_data.cost_per_item * source_item.quantity * mullions_number;
+
+                    option_item.mullions_number = mullions_number;
+                    option_item.quantity_per_mullion = source_item.quantity;
+                    option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
                 } else if (scheme === PRICING_SCHEME_PER_FRAME_LENGTH) {
                     const frame_length = unit_stats.frame.linear;
 
                     option_cost = source_item.pricing_data.cost_per_item * (frame_length / 1000);
 
                     option_item.frame_length = f.dimension_mm(frame_length);
+                    option_item.cost_per_meter = f.fixed(source_item.pricing_data.cost_per_item);
+                } else if (scheme === PRICING_SCHEME_PER_SASH_FRAME_LENGTH) {
+                    const sash_frame_length = unit_stats.sashes.linear;
+
+                    option_cost = source_item.pricing_data.cost_per_item * (sash_frame_length / 1000);
+
+                    option_item.sash_frame_length = f.dimension_mm(sash_frame_length);
+                    option_item.cost_per_meter = f.fixed(source_item.pricing_data.cost_per_item);
+                } else if (scheme === PRICING_SCHEME_PER_MULLION_LENGTH) {
+                    const mullions_length = unit_stats.mullions.linear;
+
+                    option_cost = source_item.pricing_data.cost_per_item * (mullions_length / 1000);
+
+                    option_item.mullions_length = f.dimension_mm(mullions_length);
+                    option_item.cost_per_meter = f.fixed(source_item.pricing_data.cost_per_item);
+                } else if (scheme === PRICING_SCHEME_PER_PROFILE_LENGTH) {
+                    const profile_length = unit_stats.profile_total.linear;
+
+                    option_cost = source_item.pricing_data.cost_per_item * (profile_length / 1000);
+
+                    option_item.profile_length = f.dimension_mm(profile_length);
+                    option_item.cost_per_meter = f.fixed(source_item.pricing_data.cost_per_item);
+                } else if (scheme === PRICING_SCHEME_PER_GLAZING_BAR_LENGTH) {
+                    const glazing_bars_length = unit_stats.glazing_bars.linear;
+
+                    option_cost = source_item.pricing_data.cost_per_item * (glazing_bars_length / 1000);
+
+                    option_item.glazing_bars_length = f.dimension_mm(glazing_bars_length);
                     option_item.cost_per_meter = f.fixed(source_item.pricing_data.cost_per_item);
                 } else if (scheme === PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH) {
                     const frame_width = unit_stats.frame.width;

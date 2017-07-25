@@ -351,10 +351,35 @@
                         <td class="title">Operable Sashes&nbsp;#</td>
                         <td class="value">{{{ operable_sashes_number }}}</td>
                     </tr>
+                    {{else if mullions_number }}
+                    <tr>
+                        <td class="title">Mullions&nbsp;#</td>
+                        <td class="value">{{{ mullions_number }}}</td>
+                    </tr>
                     {{else if frame_length }}
                     <tr>
                         <td class="title">Frame Outer Length</td>
                         <td class="value">{{{ frame_length }}}</td>
+                    </tr>
+                    {{else if sash_frame_length }}
+                    <tr>
+                        <td class="title">Total Sash Frames Length</td>
+                        <td class="value">{{{ sash_frame_length }}}</td>
+                    </tr>
+                    {{else if mullions_length }}
+                    <tr>
+                        <td class="title">Total Mullions Length</td>
+                        <td class="value">{{{ mullions_length }}}</td>
+                    </tr>
+                    {{else if profile_length }}
+                    <tr>
+                        <td class="title">Total Profile Length</td>
+                        <td class="value">{{{ profile_length }}}</td>
+                    </tr>
+                    {{else if glazing_bars_length }}
+                    <tr>
+                        <td class="title">Total Glazing Bars Length</td>
+                        <td class="value">{{{ glazing_bars_length }}}</td>
                     </tr>
                     {{else if frame_width }}
                     <tr>
@@ -384,6 +409,11 @@
                     <tr>
                         <td class="title">Quantity / Sash </td>
                         <td class="value">{{{ quantity_per_sash }}}</td>
+                    </tr>
+                    {{else if quantity_per_mullion }}
+                    <tr>
+                        <td class="title">Quantity / Mullion </td>
+                        <td class="value">{{{ quantity_per_mullion }}}</td>
                     </tr>
                     {{/if}}
 

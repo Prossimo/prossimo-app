@@ -1076,7 +1076,7 @@ export default Marionette.View.extend({
             ), (column_name) => {
                 const calculated_length =
                     _.contains(this.tabs.unit_options.unit_options_quantity_columns, column_name) ?
-                    120 :
+                    140 :
                     30 + (column_name.length * 7);
 
                 return unit_options_col_widths[column_name] ?
