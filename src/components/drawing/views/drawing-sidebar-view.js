@@ -513,6 +513,12 @@ export default Marionette.View.extend({
 
                 //  Add cost for Filling
                 section_item.filling_name = source_item.filling_name;
+                section_item.filling_width = f.dimension_mm(source_item.filling_width);
+                section_item.filling_height = f.dimension_mm(source_item.filling_height);
+                section_item.filling_area = f.square_meters(
+                    m.square_meters(source_item.filling_width, source_item.filling_height),
+                    2, 'sup');
+
                 section_item.filling_pricing_scheme = PRICING_SCHEME_TITLES[source_item.filling_pricing_scheme];
                 section_item.filling_price_increase = f.percent(source_item.filling_price_increase);
                 section_item.filling_cost = f.fixed(source_item.filling_cost);

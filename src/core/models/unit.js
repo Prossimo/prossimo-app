@@ -2668,6 +2668,8 @@ const Unit = Backbone.Model.extend({
             current_area.width = current_root.openingParams.width;
             current_area.height = current_root.openingParams.height;
             current_area.filling_name = current_root.fillingName;
+            current_area.filling_width = current_root.glassParams.width;
+            current_area.filling_height = current_root.glassParams.height;
 
             _.each(['top', 'right', 'bottom', 'left'], (position) => {
                 const measurement = position === 'top' || position === 'bottom' ?
@@ -2773,8 +2775,8 @@ const Unit = Backbone.Model.extend({
                     section.filling_price_increase = ft_pricing_data.pricing_grids.getValueForGrid(
                         section.type,
                         {
-                            height: section.height,
-                            width: section.width,
+                            height: section.filling_height,
+                            width: section.filling_width,
                         },
                     ) || 0;
                     section.filling_pricing_scheme = PRICING_SCHEME_PRICING_GRIDS;
@@ -2785,7 +2787,7 @@ const Unit = Backbone.Model.extend({
                     const ft_param_b = ft_params_source.get('param_b') || 0;
 
                     section.filling_pricing_scheme = PRICING_SCHEME_LINEAR_EQUATION;
-                    section.filling_cost = (ft_param_a * (section.height / 1000) * (section.width / 1000)) + ft_param_b;
+                    section.filling_cost = (ft_param_a * (section.filling_height / 1000) * (section.filling_width / 1000)) + ft_param_b;
                 }
             }
 

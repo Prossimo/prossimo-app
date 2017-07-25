@@ -397,6 +397,9 @@ test('Prices tests', () => {
         equal(m.square_meters(sections_list[0].width, sections_list[0].height).toFixed(2), '1.92', 'First section area is expected to be 1.92');
         equal(m.square_meters(sections_list[1].width, sections_list[1].height).toFixed(2), '1.92', 'Second section area is expected to be 1.92');
 
+        equal(m.square_meters(sections_list[0].filling_width, sections_list[0].filling_height).toFixed(3), '1.348', 'First section filling area is expected to be 1.348');
+        equal(m.square_meters(sections_list[1].filling_width, sections_list[1].filling_height).toFixed(3), '1.348', 'Second section filling area is expected to be 1.348');
+
         //  Types should be determined properly
         equal(sections_list[0].type, 'fixed', 'First section type is expected to be fixed');
         equal(sections_list[1].type, 'fixed', 'Second section type is expected to be fixed');
@@ -768,8 +771,8 @@ test('Prices tests', () => {
         equal(sections_list[0].base_cost.toFixed(2), '164.69', 'Section base_cost is correct');
 
         //  First section filling cost
-        equal(sections_list[0].filling_price_increase.toFixed(2), '11.16', 'Section filling_price_increase is correct');
-        equal(sections_list[0].filling_cost.toFixed(2), '18.37', 'Section filling_cost is correct');
+        equal(sections_list[0].filling_price_increase.toFixed(2), '11.34', 'Section filling_price_increase is correct');
+        equal(sections_list[0].filling_cost.toFixed(2), '18.68', 'Section filling_cost is correct');
 
         //  First section options cost
         equal(sections_list[0].options.length, 1, 'Section has one priced option');
@@ -777,7 +780,7 @@ test('Prices tests', () => {
         equal(sections_list[0].options_cost.toFixed(2), '20.97', 'Section options_cost is correct');
 
         //  First section total cost
-        equal(sections_list[0].total_cost.toFixed(2), '204.03', 'Section total_cost is correct');
+        equal(sections_list[0].total_cost.toFixed(2), '204.34', 'Section total_cost is correct');
         equal(
             sections_list[0].total_cost,
             sections_list[0].base_cost + sections_list[0].filling_cost + sections_list[0].options_cost,
@@ -785,7 +788,7 @@ test('Prices tests', () => {
         );
 
         //  Unit total cost
-        equal(estimated_cost.total.toFixed(2), '357.19', 'Unit total cost is correct');
+        equal(estimated_cost.total.toFixed(2), '357.50', 'Unit total cost is correct');
         equal(
             estimated_cost.total,
             estimated_cost.base + estimated_cost.fillings + estimated_cost.options,
@@ -811,7 +814,7 @@ test('Prices tests', () => {
         equal(sections_list[0].base_cost.toFixed(2), '230.40', 'Section base_cost is correct');
 
         //  First section filling cost
-        equal(sections_list[0].filling_cost.toFixed(2), '96.56', 'Section filling_cost is correct');
+        equal(sections_list[0].filling_cost.toFixed(2), '88.54', 'Section filling_cost is correct');
 
         //  First section options cost
         equal(sections_list[0].options.length, 1, 'Section has one priced option');
@@ -819,7 +822,7 @@ test('Prices tests', () => {
         equal(sections_list[0].options_cost.toFixed(2), '23.04', 'Section options_cost is correct');
 
         //  First section total cost
-        equal(sections_list[0].total_cost.toFixed(2), '350.00', 'Section total_cost is correct');
+        equal(sections_list[0].total_cost.toFixed(2), '341.98', 'Section total_cost is correct');
         equal(
             sections_list[0].total_cost,
             sections_list[0].base_cost + sections_list[0].filling_cost + sections_list[0].options_cost,
@@ -830,7 +833,7 @@ test('Prices tests', () => {
         equal(estimated_cost.options.toFixed(2), '198.20', 'Options total cost is correct');
 
         //  Unit total cost (includes price for interior handle and opening restrictor)
-        equal(estimated_cost.total.toFixed(2), '525.16', 'Unit total cost is correct');
+        equal(estimated_cost.total.toFixed(2), '517.13', 'Unit total cost is correct');
         equal(
             estimated_cost.total,
             estimated_cost.base + estimated_cost.fillings + estimated_cost.options,
@@ -863,10 +866,10 @@ test('Prices tests', () => {
         estimated_cost = unit.getEstimatedUnitCost();
 
         //  Total cost for options
-        equal(estimated_cost.options.toFixed(2), '623.85', 'Options total cost is correct');
+        equal(estimated_cost.options.toFixed(2), '623.85', 'Options total cost is correct after adding profile length based options');
 
         //  Unit total cost
-        equal(estimated_cost.total.toFixed(2), '950.81', 'Unit total cost is correct');
+        equal(estimated_cost.total.toFixed(2), '942.78', 'Unit total cost is correct after adding profile length based options');
 
         App.settings.dictionaries.add([
             {
@@ -889,10 +892,10 @@ test('Prices tests', () => {
         estimated_cost = unit.getEstimatedUnitCost();
 
         //  Total cost for options
-        equal(estimated_cost.options.toFixed(2), '732.18', 'Options total cost is correct');
+        equal(estimated_cost.options.toFixed(2), '732.18', 'Options total cost is correct after adding sash frame based options');
 
         //  Unit total cost
-        equal(estimated_cost.total.toFixed(2), '1059.14', 'Unit total cost is correct');
+        equal(estimated_cost.total.toFixed(2), '1051.12', 'Unit total cost is correct after adding sash frame based options');
 
         App.settings.dictionaries.add([
             {
@@ -930,10 +933,10 @@ test('Prices tests', () => {
         estimated_cost = unit.getEstimatedUnitCost();
 
         //  Total cost for options
-        equal(estimated_cost.options.toFixed(2), '804.48', 'Options total cost is correct');
+        equal(estimated_cost.options.toFixed(2), '804.48', 'Options total cost is correct after adding mullion based options');
 
         //  Unit total cost
-        equal(estimated_cost.total.toFixed(2), '1075.43', 'Unit total cost is correct');
+        equal(estimated_cost.total.toFixed(2), '1068.40', 'Unit total cost is correct after adding mullion based options');
 
         App.settings.dictionaries.add([
             {
@@ -980,9 +983,9 @@ test('Prices tests', () => {
         estimated_cost = unit.getEstimatedUnitCost();
 
         //  Total cost for options
-        equal(estimated_cost.options.toFixed(2), '895.46', 'Options total cost is correct');
+        equal(estimated_cost.options.toFixed(2), '895.46', 'Options total cost is correct after adding glazing bar based options');
 
         //  Unit total cost
-        equal(estimated_cost.total.toFixed(2), '1166.40', 'Unit total cost is correct');
+        equal(estimated_cost.total.toFixed(2), '1159.38', 'Unit total cost is correct after adding glazing bar based options');
     });
 });
