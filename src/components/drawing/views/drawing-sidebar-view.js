@@ -21,10 +21,12 @@ import {
     RULE_DOOR_ONLY,
     RULE_OPERABLE_ONLY,
     RULE_GLAZING_BARS_ONLY,
+    RULE_MULLIONS_ONLY,
     UNSET_VALUE,
     VALUE_ERROR_DOORS_ONLY,
     VALUE_ERROR_OPERABLE_ONLY,
     VALUE_ERROR_GLAZING_BARS_ONLY,
+    VALUE_ERROR_MULLIONS_ONLY,
     VALUE_ERROR_NONE,
 } from '../../../constants';
 
@@ -229,6 +231,9 @@ export default Marionette.View.extend({
                     } else if (restriction_applies && rule === RULE_GLAZING_BARS_ONLY) {
                         is_restricted = true;
                         value = VALUE_ERROR_GLAZING_BARS_ONLY;
+                    } else if (restriction_applies && rule === RULE_MULLIONS_ONLY) {
+                        is_restricted = true;
+                        value = VALUE_ERROR_MULLIONS_ONLY;
                     }
                 }, this);
 

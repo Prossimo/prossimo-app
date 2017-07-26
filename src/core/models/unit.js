@@ -25,6 +25,7 @@ import {
     RULE_DOOR_ONLY,
     RULE_OPERABLE_ONLY,
     RULE_GLAZING_BARS_ONLY,
+    RULE_MULLIONS_ONLY,
     UNSET_VALUE,
 } from '../../constants';
 
@@ -2632,6 +2633,9 @@ const Unit = Backbone.Model.extend({
             _.contains(['vertical', 'horizontal'], mullion.type),
         ).length || 0;
     },
+    hasMullions() {
+        return this.getMullionsQuantity() > 0;
+    },
     //  This function is used to "slice" unit into a set of fixed and
     //  operable sections, meaning we just draw some imaginary lines so
     //  that each part of the unit should belong to some section. And for
@@ -3113,6 +3117,8 @@ const Unit = Backbone.Model.extend({
         } else if (restriction === RULE_OPERABLE_ONLY && !this.hasOperableSections()) {
             restriction_applies = true;
         } else if (restriction === RULE_GLAZING_BARS_ONLY && !this.hasGlazingBars()) {
+            restriction_applies = true;
+        } else if (restriction === RULE_MULLIONS_ONLY && !this.hasMullions()) {
             restriction_applies = true;
         }
 

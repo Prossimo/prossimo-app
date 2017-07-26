@@ -37,12 +37,14 @@ export const PRICING_SCHEME_TITLES = {
 export const RULE_DOOR_ONLY = 'DOOR_ONLY';
 export const RULE_OPERABLE_ONLY = 'OPERABLE_ONLY';
 export const RULE_GLAZING_BARS_ONLY = 'GLAZING_BARS_ONLY';
+export const RULE_MULLIONS_ONLY = 'MULLIONS_ONLY';
 export const RULE_IS_OPTIONAL = 'IS_OPTIONAL';
 
 export const RULE_TITLES = {
     [RULE_DOOR_ONLY]: 'Only for Doors',
     [RULE_OPERABLE_ONLY]: 'Only if has Operable Sashes',
     [RULE_GLAZING_BARS_ONLY]: 'Only if has Glazing Bars',
+    [RULE_MULLIONS_ONLY]: 'Only if has Mullions',
     [RULE_IS_OPTIONAL]: 'Is Optional',
 };
 
@@ -72,6 +74,7 @@ export const KEY_N = 78;
 export const VALUE_ERROR_DOORS_ONLY = '(Doors Only)';
 export const VALUE_ERROR_OPERABLE_ONLY = '(Operable Only)';
 export const VALUE_ERROR_GLAZING_BARS_ONLY = '(Has no Bars)';
+export const VALUE_ERROR_MULLIONS_ONLY = '(Has no Mullions)';
 export const VALUE_ERROR_NONE = '(None)';
 export const VALUE_ERROR_NO_VARIANTS = '(No Variants)';
 export const VALUE_ERROR_NO_PROFILE = '(No Profile)';
