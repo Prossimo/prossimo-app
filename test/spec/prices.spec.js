@@ -397,6 +397,9 @@ test('Prices tests', () => {
         equal(m.square_meters(sections_list[0].width, sections_list[0].height).toFixed(2), '1.92', 'First section area is expected to be 1.92');
         equal(m.square_meters(sections_list[1].width, sections_list[1].height).toFixed(2), '1.92', 'Second section area is expected to be 1.92');
 
+        equal(m.square_meters(sections_list[0].filling_width, sections_list[0].filling_height).toFixed(3), '1.348', 'First section filling area is expected to be 1.348');
+        equal(m.square_meters(sections_list[1].filling_width, sections_list[1].filling_height).toFixed(3), '1.348', 'Second section filling area is expected to be 1.348');
+
         //  Types should be determined properly
         equal(sections_list[0].type, 'fixed', 'First section type is expected to be fixed');
         equal(sections_list[1].type, 'fixed', 'Second section type is expected to be fixed');
@@ -654,12 +657,12 @@ test('Prices tests', () => {
                 ],
             },
             {
-                name: 'Some Per Sill Length Priced Thing',
+                name: 'External Sill',
                 pricing_scheme: 'PER_SILL_OR_THRESHOLD_LENGTH',
                 id: 9,
                 entries: [
                     {
-                        name: 'Basic Thing of This Type',
+                        name: 'Aluminium Sill with End-Caps',
                         id: 15,
                         dictionary_entry_profiles: [
                             { profile_id: 3, cost_per_item: 32.3 },
@@ -725,6 +728,11 @@ test('Prices tests', () => {
             id: 3,
             name: 'Nice and Cool Profile',
             unit_type: 'Window',
+            frame_width: 70,
+            mullion_width: 92,
+            sash_frame_width: 82,
+            sash_frame_overlap: 34,
+            sash_mullion_overlap: 12,
             pricing_scheme: 'PRICING_GRIDS',
             pricing_grids: [
                 {
@@ -763,8 +771,8 @@ test('Prices tests', () => {
         equal(sections_list[0].base_cost.toFixed(2), '164.69', 'Section base_cost is correct');
 
         //  First section filling cost
-        equal(sections_list[0].filling_price_increase.toFixed(2), '11.16', 'Section filling_price_increase is correct');
-        equal(sections_list[0].filling_cost.toFixed(2), '18.37', 'Section filling_cost is correct');
+        equal(sections_list[0].filling_price_increase.toFixed(2), '11.34', 'Section filling_price_increase is correct');
+        equal(sections_list[0].filling_cost.toFixed(2), '18.68', 'Section filling_cost is correct');
 
         //  First section options cost
         equal(sections_list[0].options.length, 1, 'Section has one priced option');
@@ -772,7 +780,7 @@ test('Prices tests', () => {
         equal(sections_list[0].options_cost.toFixed(2), '20.97', 'Section options_cost is correct');
 
         //  First section total cost
-        equal(sections_list[0].total_cost.toFixed(2), '204.03', 'Section total_cost is correct');
+        equal(sections_list[0].total_cost.toFixed(2), '204.34', 'Section total_cost is correct');
         equal(
             sections_list[0].total_cost,
             sections_list[0].base_cost + sections_list[0].filling_cost + sections_list[0].options_cost,
@@ -780,7 +788,7 @@ test('Prices tests', () => {
         );
 
         //  Unit total cost
-        equal(estimated_cost.total.toFixed(2), '357.19', 'Unit total cost is correct');
+        equal(estimated_cost.total.toFixed(2), '357.50', 'Unit total cost is correct');
         equal(
             estimated_cost.total,
             estimated_cost.base + estimated_cost.fillings + estimated_cost.options,
@@ -806,7 +814,7 @@ test('Prices tests', () => {
         equal(sections_list[0].base_cost.toFixed(2), '230.40', 'Section base_cost is correct');
 
         //  First section filling cost
-        equal(sections_list[0].filling_cost.toFixed(2), '96.56', 'Section filling_cost is correct');
+        equal(sections_list[0].filling_cost.toFixed(2), '88.54', 'Section filling_cost is correct');
 
         //  First section options cost
         equal(sections_list[0].options.length, 1, 'Section has one priced option');
@@ -814,19 +822,170 @@ test('Prices tests', () => {
         equal(sections_list[0].options_cost.toFixed(2), '23.04', 'Section options_cost is correct');
 
         //  First section total cost
-        equal(sections_list[0].total_cost.toFixed(2), '350.00', 'Section total_cost is correct');
+        equal(sections_list[0].total_cost.toFixed(2), '341.98', 'Section total_cost is correct');
         equal(
             sections_list[0].total_cost,
             sections_list[0].base_cost + sections_list[0].filling_cost + sections_list[0].options_cost,
             'Section total_cost is the combination of base, fillling and options cost',
         );
 
+        //  Total cost for options
+        equal(estimated_cost.options.toFixed(2), '198.20', 'Options total cost is correct');
+
         //  Unit total cost (includes price for interior handle and opening restrictor)
-        equal(estimated_cost.total.toFixed(2), '525.16', 'Unit total cost is correct');
+        equal(estimated_cost.total.toFixed(2), '517.13', 'Unit total cost is correct');
         equal(
             estimated_cost.total,
             estimated_cost.base + estimated_cost.fillings + estimated_cost.options,
             'Unit total cost is the combination of base, filllings and options cost',
         );
+
+        //  ----------------------------------------------------------------
+        //  Now add new dictionaries, split section in two parts,
+        //  add glazing bars, repeat calculations
+        //  ----------------------------------------------------------------
+
+        App.settings.dictionaries.add([
+            {
+                name: 'Profile Lamination',
+                pricing_scheme: 'PER_PROFILE_LENGTH',
+                id: 12,
+                entries: [
+                    {
+                        name: 'Oak Style Lamination',
+                        id: 17,
+                        dictionary_entry_profiles: [
+                            { profile_id: 3, cost_per_item: 27 },
+                        ],
+                    },
+                ],
+            },
+        ], { parse: true });
+
+        unit.validateUnitOptions();
+        estimated_cost = unit.getEstimatedUnitCost();
+
+        //  Total cost for options
+        equal(estimated_cost.options.toFixed(2), '623.85', 'Options total cost is correct after adding profile length based options');
+
+        //  Unit total cost
+        equal(estimated_cost.total.toFixed(2), '942.78', 'Unit total cost is correct after adding profile length based options');
+
+        App.settings.dictionaries.add([
+            {
+                name: 'Some Weird Thing',
+                pricing_scheme: 'PER_SASH_FRAME_LENGTH',
+                id: 19,
+                entries: [
+                    {
+                        name: 'Basic Thing',
+                        id: 23,
+                        dictionary_entry_profiles: [
+                            { profile_id: 3, cost_per_item: 14 },
+                        ],
+                    },
+                ],
+            },
+        ], { parse: true });
+
+        unit.validateUnitOptions();
+        estimated_cost = unit.getEstimatedUnitCost();
+
+        //  Total cost for options
+        equal(estimated_cost.options.toFixed(2), '732.18', 'Options total cost is correct after adding sash frame based options');
+
+        //  Unit total cost
+        equal(estimated_cost.total.toFixed(2), '1051.12', 'Unit total cost is correct after adding sash frame based options');
+
+        App.settings.dictionaries.add([
+            {
+                name: 'Static Connector (Placeholder)',
+                pricing_scheme: 'PER_MULLION_LENGTH',
+                id: 11,
+                entries: [
+                    {
+                        name: 'Basic Connector',
+                        id: 16,
+                        dictionary_entry_profiles: [
+                            { profile_id: 3, cost_per_item: 23 },
+                        ],
+                    },
+                ],
+            },
+            {
+                name: 'Mullion Connector Hardware',
+                pricing_scheme: 'PER_MULLION',
+                id: 18,
+                entries: [
+                    {
+                        name: 'Basic Hardware Piece',
+                        id: 22,
+                        dictionary_entry_profiles: [
+                            { profile_id: 3, cost_per_item: 7 },
+                        ],
+                    },
+                ],
+            },
+        ], { parse: true });
+
+        unit.splitSection(unit.get('root_section').id, 'horizontal');
+        unit.validateUnitOptions();
+        estimated_cost = unit.getEstimatedUnitCost();
+
+        //  Total cost for options
+        equal(estimated_cost.options.toFixed(2), '804.48', 'Options total cost is correct after adding mullion based options');
+
+        //  Unit total cost
+        equal(estimated_cost.total.toFixed(2), '1068.40', 'Unit total cost is correct after adding mullion based options');
+
+        App.settings.dictionaries.add([
+            {
+                name: 'Glazing Bars',
+                pricing_scheme: 'PER_GLAZING_BAR_LENGTH',
+                id: 13,
+                entries: [
+                    {
+                        name: '1 3/4" Between Panes',
+                        id: 19,
+                        dictionary_entry_profiles: [
+                            { profile_id: 3, cost_per_item: 19 },
+                        ],
+                    },
+                ],
+            },
+        ], { parse: true });
+
+        const top_section = unit.generateFullRoot().sections[0];
+
+        unit.setSectionBars(top_section.id, {
+            horizontal: [
+                {
+                    id: '8888',
+                    position: 351.73,
+                },
+                {
+                    id: '8889',
+                    position: 703.46,
+                },
+            ],
+            vertical: [
+                {
+                    id: '8890',
+                    position: 446.26,
+                },
+                {
+                    id: '8891',
+                    position: 892.53,
+                },
+            ],
+        });
+        unit.validateUnitOptions();
+        estimated_cost = unit.getEstimatedUnitCost();
+
+        //  Total cost for options
+        equal(estimated_cost.options.toFixed(2), '895.46', 'Options total cost is correct after adding glazing bar based options');
+
+        //  Unit total cost
+        equal(estimated_cost.total.toFixed(2), '1159.38', 'Unit total cost is correct after adding glazing bar based options');
     });
 });

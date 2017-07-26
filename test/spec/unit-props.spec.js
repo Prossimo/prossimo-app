@@ -952,7 +952,7 @@ describe('Unit model tests: ', () => {
         delete App.settings;
     });
 
-    describe('Unit getOperableSashesNumber function', () => {
+    describe('Unit getOperableSashesQuantity function', () => {
         const unit = new Unit({
             width: c.mm_to_inches(800),
             height: c.mm_to_inches(1650),
@@ -966,7 +966,7 @@ describe('Unit model tests: ', () => {
             sash_mullion_overlap: 34,
         });
 
-        equal(unit.getOperableSashesNumber(), 0, 'Unit has 0 operable sashes after creation');
+        equal(unit.getOperableSashesQuantity(), 0, 'Unit has 0 operable sashes after creation');
 
         //  Spit sections and add sash
         const root_id = unit.get('root_section').id;
@@ -981,6 +981,50 @@ describe('Unit model tests: ', () => {
         unit.setSectionSashType(top_section.id, 'tilt_turn_left');
         unit.setSectionSashType(bottom_section.id, 'turn_only_left');
 
-        equal(unit.getOperableSashesNumber(), 2, 'Unit now has 2 operable sashes');
+        equal(unit.getOperableSashesQuantity(), 2, 'Unit now has 2 operable sashes');
+    });
+
+    describe('Unit getMullionsQuantity function', () => {
+        const unit = new Unit({
+            width: c.mm_to_inches(800),
+            height: c.mm_to_inches(1650),
+        });
+
+        unit.profile = new Profile({
+            frame_width: 70,
+            mullion_width: 92,
+            sash_frame_width: 82,
+            sash_frame_overlap: 34,
+            sash_mullion_overlap: 34,
+        });
+
+        equal(unit.getMullionsQuantity(), 0, 'Unit has 0 mullions after creation');
+
+        //  Spit sections
+        const root_id = unit.get('root_section').id;
+
+        unit.splitSection(root_id, 'horizontal');
+        unit.setSectionMullionPosition(root_id, 1308);
+
+        equal(unit.getMullionsQuantity(), 1, 'Unit has 1 mullion after splitting the root section');
+
+        let full_root = unit.generateFullRoot();
+        const top_section = full_root.sections[0];
+
+        unit.splitSection(top_section.id, 'vertical');
+
+        equal(unit.getMullionsQuantity(), 2, 'Unit has 2 mullions after splitting the top section');
+
+        full_root = unit.generateFullRoot();
+        const top_left_section = full_root.sections[0].sections[0];
+        const bottom_section = full_root.sections[1];
+
+        unit.splitSection(top_left_section.id, 'horizontal');
+
+        equal(unit.getMullionsQuantity(), 3, 'Unit has 3 mullions after splitting the top left section');
+
+        unit.splitSection(bottom_section.id, 'vertical_invisible');
+
+        equal(unit.getMullionsQuantity(), 3, 'Unit still has 3 mullions after adding an invisible one');
     });
 });

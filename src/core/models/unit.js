@@ -11,15 +11,21 @@ import { globalChannel } from '../../utils/radio';
 import {
     PRICING_SCHEME_NONE,
     PRICING_SCHEME_PRICING_GRIDS,
-    PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_LINEAR_EQUATION,
+    PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_PER_OPERABLE_SASH,
+    PRICING_SCHEME_PER_MULLION,
     PRICING_SCHEME_PER_FRAME_LENGTH,
+    PRICING_SCHEME_PER_SASH_FRAME_LENGTH,
+    PRICING_SCHEME_PER_MULLION_LENGTH,
+    PRICING_SCHEME_PER_PROFILE_LENGTH,
+    PRICING_SCHEME_PER_GLAZING_BAR_LENGTH,
     PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
     RULE_IS_OPTIONAL,
     RULE_DOOR_ONLY,
     RULE_OPERABLE_ONLY,
     RULE_GLAZING_BARS_ONLY,
+    RULE_MULLIONS_ONLY,
     UNSET_VALUE,
 } from '../../constants';
 
@@ -2383,7 +2389,8 @@ const Unit = Backbone.Model.extend({
     //  These values could be used as a base to calculate estimated
     //  cost of options for the unit
     getLinearAndAreaStats() {
-        const operableSashesNumber = this.getOperableSashesNumber();
+        const operableSashesQuantity = this.getOperableSashesQuantity();
+        const mullionsQuantity = this.getMullionsQuantity();
         const profileWeight = this.profile.get('weight_per_length');
         const fillingWeight = {};
 
@@ -2396,7 +2403,8 @@ const Unit = Backbone.Model.extend({
         const sizes = this.getSizes();
         const result = {
             number_of: {
-                operable_sashes: operableSashesNumber,
+                operable_sashes: operableSashesQuantity,
+                mullions: mullionsQuantity,
             },
             frame: {
                 width: 0,
@@ -2615,16 +2623,18 @@ const Unit = Backbone.Model.extend({
 
         return result.sashes;
     },
-    getOperableSashesNumber() {
-        let counter = 0;
-
-        this.getSashList().forEach((sash) => {
-            if (_.contains(OPERABLE_SASH_TYPES, sash.original_type)) {
-                counter += 1;
-            }
-        });
-
-        return counter;
+    getOperableSashesQuantity() {
+        return this.getSashList().filter(sash =>
+            _.contains(OPERABLE_SASH_TYPES, sash.original_type),
+        ).length || 0;
+    },
+    getMullionsQuantity() {
+        return this.getMullions().filter(mullion =>
+            _.contains(['vertical', 'horizontal'], mullion.type),
+        ).length || 0;
+    },
+    hasMullions() {
+        return this.getMullionsQuantity() > 0;
     },
     //  This function is used to "slice" unit into a set of fixed and
     //  operable sections, meaning we just draw some imaginary lines so
@@ -2662,6 +2672,8 @@ const Unit = Backbone.Model.extend({
             current_area.width = current_root.openingParams.width;
             current_area.height = current_root.openingParams.height;
             current_area.filling_name = current_root.fillingName;
+            current_area.filling_width = current_root.glassParams.width;
+            current_area.filling_height = current_root.glassParams.height;
 
             _.each(['top', 'right', 'bottom', 'left'], (position) => {
                 const measurement = position === 'top' || position === 'bottom' ?
@@ -2690,10 +2702,15 @@ const Unit = Backbone.Model.extend({
         const result = {};
 
         result[PRICING_SCHEME_PRICING_GRIDS] = [];
-        result[PRICING_SCHEME_PER_ITEM] = [];
         result[PRICING_SCHEME_LINEAR_EQUATION] = [];
+        result[PRICING_SCHEME_PER_ITEM] = [];
         result[PRICING_SCHEME_PER_OPERABLE_SASH] = [];
+        result[PRICING_SCHEME_PER_MULLION] = [];
         result[PRICING_SCHEME_PER_FRAME_LENGTH] = [];
+        result[PRICING_SCHEME_PER_SASH_FRAME_LENGTH] = [];
+        result[PRICING_SCHEME_PER_MULLION_LENGTH] = [];
+        result[PRICING_SCHEME_PER_PROFILE_LENGTH] = [];
+        result[PRICING_SCHEME_PER_GLAZING_BAR_LENGTH] = [];
         result[PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH] = [];
 
         _.each(connected_options, (option) => {
@@ -2762,8 +2779,8 @@ const Unit = Backbone.Model.extend({
                     section.filling_price_increase = ft_pricing_data.pricing_grids.getValueForGrid(
                         section.type,
                         {
-                            height: section.height,
-                            width: section.width,
+                            height: section.filling_height,
+                            width: section.filling_width,
                         },
                     ) || 0;
                     section.filling_pricing_scheme = PRICING_SCHEME_PRICING_GRIDS;
@@ -2774,7 +2791,7 @@ const Unit = Backbone.Model.extend({
                     const ft_param_b = ft_params_source.get('param_b') || 0;
 
                     section.filling_pricing_scheme = PRICING_SCHEME_LINEAR_EQUATION;
-                    section.filling_cost = (ft_param_a * (section.height / 1000) * (section.width / 1000)) + ft_param_b;
+                    section.filling_cost = (ft_param_a * (section.filling_height / 1000) * (section.filling_width / 1000)) + ft_param_b;
                 }
             }
 
@@ -2872,9 +2889,51 @@ const Unit = Backbone.Model.extend({
             unit_cost.options += option_cost;
         }, this);
 
+        //  Add cost for all per-mullion priced options
+        _.each(options_list[PRICING_SCHEME_PER_MULLION], (option) => {
+            const option_cost = option.pricing_data.cost_per_item *
+                option.quantity *
+                unit_stats.number_of.mullions;
+
+            unit_cost.total += option_cost;
+            unit_cost.options += option_cost;
+        }, this);
+
         //  Add cost for all options priced per frame length
         _.each(options_list[PRICING_SCHEME_PER_FRAME_LENGTH], (option) => {
             const option_cost = option.pricing_data.cost_per_item * (unit_stats.frame.linear / 1000);
+
+            unit_cost.total += option_cost;
+            unit_cost.options += option_cost;
+        }, this);
+
+        //  Add cost for all options priced per sash frame length
+        _.each(options_list[PRICING_SCHEME_PER_SASH_FRAME_LENGTH], (option) => {
+            const option_cost = option.pricing_data.cost_per_item * (unit_stats.sashes.linear / 1000);
+
+            unit_cost.total += option_cost;
+            unit_cost.options += option_cost;
+        }, this);
+
+        //  Add cost for all options priced per mullion length
+        _.each(options_list[PRICING_SCHEME_PER_MULLION_LENGTH], (option) => {
+            const option_cost = option.pricing_data.cost_per_item * (unit_stats.mullions.linear / 1000);
+
+            unit_cost.total += option_cost;
+            unit_cost.options += option_cost;
+        }, this);
+
+        //  Add cost for all options priced per profile length
+        _.each(options_list[PRICING_SCHEME_PER_PROFILE_LENGTH], (option) => {
+            const option_cost = option.pricing_data.cost_per_item * (unit_stats.profile_total.linear / 1000);
+
+            unit_cost.total += option_cost;
+            unit_cost.options += option_cost;
+        }, this);
+
+        //  Add cost for all options priced per glazing bar length
+        _.each(options_list[PRICING_SCHEME_PER_GLAZING_BAR_LENGTH], (option) => {
+            const option_cost = option.pricing_data.cost_per_item * (unit_stats.glazing_bars.linear / 1000);
 
             unit_cost.total += option_cost;
             unit_cost.options += option_cost;
@@ -3058,6 +3117,8 @@ const Unit = Backbone.Model.extend({
         } else if (restriction === RULE_OPERABLE_ONLY && !this.hasOperableSections()) {
             restriction_applies = true;
         } else if (restriction === RULE_GLAZING_BARS_ONLY && !this.hasGlazingBars()) {
+            restriction_applies = true;
+        } else if (restriction === RULE_MULLIONS_ONLY && !this.hasMullions()) {
             restriction_applies = true;
         }
 
