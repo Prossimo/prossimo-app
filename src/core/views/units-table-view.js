@@ -19,10 +19,12 @@ import {
     RULE_DOOR_ONLY,
     RULE_OPERABLE_ONLY,
     RULE_GLAZING_BARS_ONLY,
+    RULE_MULLIONS_ONLY,
     UNSET_VALUE,
     VALUE_ERROR_DOORS_ONLY,
     VALUE_ERROR_OPERABLE_ONLY,
     VALUE_ERROR_GLAZING_BARS_ONLY,
+    VALUE_ERROR_MULLIONS_ONLY,
     VALUE_ERROR_NO_VARIANTS,
     VALUE_ERROR_NO_PROFILE,
     KEY_CTRL,
@@ -872,6 +874,9 @@ export default Marionette.View.extend({
                         } else if (restriction_applies && rule === RULE_GLAZING_BARS_ONLY) {
                             is_restricted = true;
                             message = VALUE_ERROR_GLAZING_BARS_ONLY;
+                        } else if (restriction_applies && rule === RULE_MULLIONS_ONLY) {
+                            is_restricted = true;
+                            message = VALUE_ERROR_MULLIONS_ONLY;
                         }
                     }, this);
 
@@ -1076,7 +1081,7 @@ export default Marionette.View.extend({
             ), (column_name) => {
                 const calculated_length =
                     _.contains(this.tabs.unit_options.unit_options_quantity_columns, column_name) ?
-                    120 :
+                    140 :
                     30 + (column_name.length * 7);
 
                 return unit_options_col_widths[column_name] ?

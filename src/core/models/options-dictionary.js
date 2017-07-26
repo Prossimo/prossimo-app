@@ -8,14 +8,20 @@ import OptionsDictionaryEntryCollection from '../collections/options-dictionary-
 import {
     PRICING_SCHEME_NONE,
     PRICING_SCHEME_PRICING_GRIDS,
-    PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_LINEAR_EQUATION,
+    PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_PER_OPERABLE_SASH,
+    PRICING_SCHEME_PER_MULLION,
     PRICING_SCHEME_PER_FRAME_LENGTH,
+    PRICING_SCHEME_PER_SASH_FRAME_LENGTH,
+    PRICING_SCHEME_PER_MULLION_LENGTH,
+    PRICING_SCHEME_PER_PROFILE_LENGTH,
+    PRICING_SCHEME_PER_GLAZING_BAR_LENGTH,
     PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
     RULE_DOOR_ONLY,
     RULE_OPERABLE_ONLY,
     RULE_GLAZING_BARS_ONLY,
+    RULE_MULLIONS_ONLY,
     RULE_IS_OPTIONAL,
 } from '../../constants';
 
@@ -32,16 +38,22 @@ const POSSIBLE_RULES_AND_RESTRICTIONS = [
     RULE_DOOR_ONLY,
     RULE_OPERABLE_ONLY,
     RULE_GLAZING_BARS_ONLY,
+    RULE_MULLIONS_ONLY,
     RULE_IS_OPTIONAL,
 ];
 
 const POSSIBLE_PRICING_SCHEMES = [
     PRICING_SCHEME_NONE,
     PRICING_SCHEME_PRICING_GRIDS,
-    PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_LINEAR_EQUATION,
+    PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_PER_OPERABLE_SASH,
+    PRICING_SCHEME_PER_MULLION,
     PRICING_SCHEME_PER_FRAME_LENGTH,
+    PRICING_SCHEME_PER_SASH_FRAME_LENGTH,
+    PRICING_SCHEME_PER_MULLION_LENGTH,
+    PRICING_SCHEME_PER_PROFILE_LENGTH,
+    PRICING_SCHEME_PER_GLAZING_BAR_LENGTH,
     PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
 ];
 
@@ -225,10 +237,23 @@ export default Backbone.Model.extend({
         return POSSIBLE_PRICING_SCHEMES;
     },
     hasQuantity() {
-        return _.contains([PRICING_SCHEME_PER_ITEM, PRICING_SCHEME_PER_OPERABLE_SASH], this.get('pricing_scheme'));
+        return _.contains([
+            PRICING_SCHEME_PER_ITEM,
+            PRICING_SCHEME_PER_OPERABLE_SASH,
+            PRICING_SCHEME_PER_MULLION,
+        ], this.get('pricing_scheme'));
     },
     getQuantityMultiplier() {
-        return this.get('pricing_scheme') === PRICING_SCHEME_PER_OPERABLE_SASH ? 'Sash' : '';
+        let multiplier = '';
+
+        if (this.hasQuantity() && this.get('pricing_scheme') !== PRICING_SCHEME_PER_ITEM) {
+            multiplier = {
+                [PRICING_SCHEME_PER_OPERABLE_SASH]: 'Sash',
+                [PRICING_SCHEME_PER_MULLION]: 'Mullion',
+            }[this.get('pricing_scheme')];
+        }
+
+        return multiplier;
     },
     initialize(attributes, options) {
         this.options = options || {};
