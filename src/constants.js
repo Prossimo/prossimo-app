@@ -30,6 +30,40 @@ export const PRICING_SCHEME_TITLES = {
     [PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH]: 'Per Sill / Threshold Length',
 };
 
+export const PRICING_SCHEME_GROUPS = [
+    {
+        title: 'Area-based, % Increase',
+        entries: [
+            PRICING_SCHEME_PRICING_GRIDS,
+        ],
+    },
+    {
+        title: 'Area-based, Flat Increase',
+        entries: [
+            PRICING_SCHEME_LINEAR_EQUATION,
+        ],
+    },
+    {
+        title: 'Cost Per Item',
+        entries: [
+            PRICING_SCHEME_PER_ITEM,
+            PRICING_SCHEME_PER_OPERABLE_SASH,
+            PRICING_SCHEME_PER_MULLION,
+        ],
+    },
+    {
+        title: 'Cost Per Length',
+        entries: [
+            PRICING_SCHEME_PER_FRAME_LENGTH,
+            PRICING_SCHEME_PER_SASH_FRAME_LENGTH,
+            PRICING_SCHEME_PER_MULLION_LENGTH,
+            PRICING_SCHEME_PER_PROFILE_LENGTH,
+            PRICING_SCHEME_PER_GLAZING_BAR_LENGTH,
+            PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
+        ],
+    },
+];
+
 //  ------------------------------------------------------------------------
 //  Rules and restrictions (Dictionary attributes)
 //  ------------------------------------------------------------------------
@@ -47,6 +81,24 @@ export const RULE_TITLES = {
     [RULE_MULLIONS_ONLY]: 'Only if has Mullions',
     [RULE_IS_OPTIONAL]: 'Is Optional',
 };
+
+export const RULE_GROUPS = [
+    {
+        title: 'Rules',
+        entries: [
+            RULE_IS_OPTIONAL,
+        ],
+    },
+    {
+        title: 'Restrictions',
+        entries: [
+            RULE_DOOR_ONLY,
+            RULE_OPERABLE_ONLY,
+            RULE_GLAZING_BARS_ONLY,
+            RULE_MULLIONS_ONLY,
+        ],
+    },
+];
 
 //  ------------------------------------------------------------------------
 //  Common string values
