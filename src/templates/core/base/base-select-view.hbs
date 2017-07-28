@@ -1,5 +1,12 @@
 <select class="selectpicker"{{#if multiple }} multiple{{/if}}>
-    {{#each options }}
+    {{#each options.ungrouped }}
     <option value="{{ value }}"{{#if is_selected}} selected{{/if}}>{{ title }}</option>
+    {{/each}}
+    {{#each options.grouped }}
+    <optgroup label="{{ title }}">
+        {{#each entries }}
+        <option value="{{ value }}"{{#if is_selected}} selected{{/if}}>{{ title }}</option>
+        {{/each}}
+    </optgroup>
     {{/each}}
 </select>

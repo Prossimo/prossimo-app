@@ -9,7 +9,9 @@ import template from '../templates/options-dictionary-view.hbs';
 
 import {
     RULE_TITLES,
+    RULE_GROUPS,
     PRICING_SCHEME_TITLES,
+    PRICING_SCHEME_GROUPS,
 } from '../../../constants';
 
 export default Marionette.View.extend({
@@ -101,6 +103,7 @@ export default Marionette.View.extend({
                 value,
                 title: RULE_TITLES[value] || value,
             })),
+            groups: RULE_GROUPS,
             multiple: true,
         });
 
@@ -111,6 +114,7 @@ export default Marionette.View.extend({
                 value,
                 title: PRICING_SCHEME_TITLES[value] || value,
             })),
+            groups: PRICING_SCHEME_GROUPS,
             multiple: false,
         });
 
