@@ -22,21 +22,40 @@ export default Marionette.View.extend({
             this.model.persist(this.options.param, new_value);
         }
     },
+    getOptionsList() {
+        const options_list = {
+            ungrouped: [],
+            grouped: this.options.groups.map(origin_group => ({
+                title: origin_group.title,
+                entries: [],
+            })),
+        };
+
+        this.options.values.forEach((item) => {
+            const value = item.value || item;
+            const is_selected = this.options.multiple ?
+                _.contains(this.model.get(this.options.param), value) :
+                this.model.get(this.options.param) === value;
+            const origin_group = this.options.groups.length ? this.options.groups.find(group => _.contains(group.entries, value)) : null;
+            let target_group = origin_group && options_list.grouped.find(group => group.title === origin_group.title);
+
+            target_group = target_group ? target_group.entries : options_list.ungrouped;
+
+            target_group.push({
+                is_selected,
+                value,
+                title: item.title || value,
+            });
+        });
+
+        options_list.grouped = options_list.grouped.filter(group => group.entries.length > 0);
+
+        return options_list;
+    },
     templateContext() {
         return {
             multiple: this.options.multiple,
-            options: _.map(this.options.values, (item) => {
-                const value = item.value || item;
-                const is_selected = this.options.multiple ?
-                    _.contains(this.model.get(this.options.param), value) :
-                    this.model.get(this.options.param) === value;
-
-                return {
-                    is_selected,
-                    value,
-                    title: item.title || value,
-                };
-            }),
+            options: this.getOptionsList(),
         };
     },
     //  TODO: make is_disabled a property, similar how it's done for
@@ -63,12 +82,13 @@ export default Marionette.View.extend({
             size: 'normal',
             multiple: false,
             values: [],
+            groups: [],
             custom_setter: false,
         };
 
         this.options = _.extend({}, default_options, options);
 
-        if (!_.isArray(this.options.values) || !_.isObject(this.options.values)) {
+        if (!_.isArray(this.options.values) && !_.isObject(this.options.values)) {
             throw new Error('Values should either be array or object');
         }
     },
