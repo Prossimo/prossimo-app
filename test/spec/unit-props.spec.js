@@ -334,6 +334,7 @@ describe('Unit model tests: ', () => {
         equal(unit_size_stats.openings.area, 1.336422, 'Unit openings area');
         equal(unit_size_stats.glasses.area, 2.374956, 'Unit glasses area');
         equal(unit_size_stats.glasses.area_both_sides, 2.374956 * 2, 'Unit glasses area for both sides');
+        equal(unit_size_stats.glasses.linear, 12412, 'Unit glasses frame total length');
 
         //  Now add some glazing bars and get stats for them
         unit.setSectionBars(bottom_right_section.id, {
@@ -1026,5 +1027,49 @@ describe('Unit model tests: ', () => {
         unit.splitSection(bottom_section.id, 'vertical_invisible');
 
         equal(unit.getMullionsQuantity(), 3, 'Unit still has 3 mullions after adding an invisible one');
+    });
+
+    describe('Unit getCornersQuantity function', () => {
+        const unit = new Unit({
+            width: c.mm_to_inches(800),
+            height: c.mm_to_inches(1650),
+        });
+
+        unit.profile = new Profile({
+            frame_width: 70,
+            mullion_width: 92,
+            sash_frame_width: 82,
+            sash_frame_overlap: 34,
+            sash_mullion_overlap: 34,
+        });
+
+        equal(unit.getCornersQuantity(), 4, 'Unit has 4 corners after creation');
+
+        //  Spit sections
+        const root_id = unit.get('root_section').id;
+
+        unit.splitSection(root_id, 'horizontal');
+        unit.setSectionMullionPosition(root_id, 1308);
+
+        equal(unit.getCornersQuantity(), 4, 'Unit still has 4 corners after splitting the root section');
+
+        let full_root = unit.generateFullRoot();
+        const top_section = full_root.sections[0];
+
+        unit.splitSection(top_section.id, 'vertical');
+
+        equal(unit.getCornersQuantity(), 4, 'Unit still has 4 corners after splitting the top section');
+
+        full_root = unit.generateFullRoot();
+        const top_left_section = full_root.sections[0].sections[0];
+        const bottom_section = full_root.sections[1];
+
+        unit.setSectionSashType(top_left_section.id, 'tilt_turn_left');
+
+        equal(unit.getCornersQuantity(), 8, 'Unit has 8 corners after changing top left section type to operable');
+
+        unit.setSectionSashType(bottom_section.id, 'turn_only_left');
+
+        equal(unit.getCornersQuantity(), 12, 'Unit has 12 corners after changing bottom section type to operable');
     });
 });

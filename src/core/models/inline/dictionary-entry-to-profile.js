@@ -127,6 +127,12 @@ export default Backbone.Model.extend({
             } else {
                 pricing_data.cost_per_item = this.get('cost_per_item');
             }
+
+            if (parent_dictionary.hasPerItemCost()) {
+                pricing_data.has_per_item_cost = true;
+            } else if (parent_dictionary.hasPerLengthCost()) {
+                pricing_data.has_per_length_cost = true;
+            }
         }
 
         return pricing_data;
