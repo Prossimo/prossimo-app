@@ -7,16 +7,7 @@ import { math, format, convert } from '../../../utils';
 import template from '../templates/drawing-sidebar-view.hbs';
 
 import {
-    PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_PRICING_GRIDS,
-    PRICING_SCHEME_PER_OPERABLE_SASH,
-    PRICING_SCHEME_PER_MULLION,
-    PRICING_SCHEME_PER_FRAME_LENGTH,
-    PRICING_SCHEME_PER_SASH_FRAME_LENGTH,
-    PRICING_SCHEME_PER_MULLION_LENGTH,
-    PRICING_SCHEME_PER_PROFILE_LENGTH,
-    PRICING_SCHEME_PER_GLAZING_BAR_LENGTH,
-    PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
     PRICING_SCHEME_TITLES,
     RULE_DOOR_ONLY,
     RULE_OPERABLE_ONLY,
@@ -397,6 +388,7 @@ export default Marionette.View.extend({
 
         const titles = {
             operable_sashes: 'Operable Sashes',
+            corners: 'Corners',
             frame: 'Frame',
             sashes: 'Sash Frames',
             mullions: 'Mullions',
@@ -434,6 +426,8 @@ export default Marionette.View.extend({
             _.each(unit_stats, (item, key) => {
                 _.each(data_groups, (group_name) => {
                     if (item[group_name]) {
+                        const title = (key === 'glasses' && group_name === 'linear') ? 'Fillings Frame' : titles[key];
+                        const is_total = (key === 'profile_total' && group_name !== 'weight') || key === 'unit_total';
                         let value;
 
                         group_data[group_name] = group_data[group_name] || [];
@@ -448,9 +442,9 @@ export default Marionette.View.extend({
 
                         group_data[group_name].push({
                             key,
-                            title: titles[key],
+                            title,
                             value,
-                            is_total: (key === 'profile_total' && group_name !== 'weight') || key === 'unit_total',
+                            is_total,
                         });
                     }
                 }, this);
@@ -478,13 +472,12 @@ export default Marionette.View.extend({
         let active_unit_profile;
         const result = {
             sections: [],
-            separately_priced_options: [],
+            separate_options: [],
         };
 
         if (this.options.parent_view.active_unit) {
             active_unit_profile = this.options.parent_view.active_unit.profile;
             const unit_cost = this.options.parent_view.active_unit.getEstimatedUnitCost();
-            const unit_stats = this.options.parent_view.active_unit.getLinearAndAreaStats();
 
             result.profile_name = active_unit_profile ? active_unit_profile.get('name') : UNSET_VALUE;
             result.base_cost = f.fixed(unit_cost.base);
@@ -493,12 +486,13 @@ export default Marionette.View.extend({
             result.total_cost = f.fixed(unit_cost.total);
             result.original_currency = this.options.parent_view.active_unit.get('original_currency');
             result.conversion_rate = f.fixed(this.options.parent_view.active_unit.get('conversion_rate'), 3);
+            result.separate_options_total_cost = f.fixed(unit_cost.separate_options);
 
             //  This is not super nice because we duplicate code from unit.js
             result.converted_cost = f.price_usd(unit_cost.total / parseFloat(result.conversion_rate));
 
             //  Collect detailed pricing data for sections
-            _.each(unit_cost.sections_list, (source_item, index) => {
+            unit_cost.sections_list.forEach((source_item, index) => {
                 const section_item = {};
 
                 section_item.name = `Section #${index + 1}`;
@@ -545,105 +539,34 @@ export default Marionette.View.extend({
                 section_item.total_cost = f.fixed(source_item.total_cost);
 
                 result.sections.push(section_item);
-            }, this);
+            });
 
-            let separately_priced_options_total_cost = 0;
-
-            //  Collect detailed pricing data for separately priced options
-            _.each(_.union(
-                unit_cost.options_list[PRICING_SCHEME_PER_ITEM],
-                unit_cost.options_list[PRICING_SCHEME_PER_OPERABLE_SASH],
-                unit_cost.options_list[PRICING_SCHEME_PER_MULLION],
-                unit_cost.options_list[PRICING_SCHEME_PER_FRAME_LENGTH],
-                unit_cost.options_list[PRICING_SCHEME_PER_SASH_FRAME_LENGTH],
-                unit_cost.options_list[PRICING_SCHEME_PER_MULLION_LENGTH],
-                unit_cost.options_list[PRICING_SCHEME_PER_PROFILE_LENGTH],
-                unit_cost.options_list[PRICING_SCHEME_PER_GLAZING_BAR_LENGTH],
-                unit_cost.options_list[PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH],
-            ), (source_item, index) => {
+            unit_cost.separate_options_list.forEach((source_item, index) => {
                 const scheme = source_item.pricing_data.scheme;
                 const option_item = {};
-                let option_cost = 0;
 
                 option_item.option_index = `Option #${index + 1}`;
                 option_item.option_name = source_item.option_name;
                 option_item.dictionary_name = source_item.dictionary_name;
                 option_item.is_hidden = source_item.is_hidden;
                 option_item.pricing_scheme = PRICING_SCHEME_TITLES[scheme];
+                option_item.cost = f.fixed(source_item.cost);
 
-                if (scheme === PRICING_SCHEME_PER_ITEM) {
-                    option_cost = source_item.pricing_data.cost_per_item * source_item.quantity;
-
-                    option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
+                if (source_item.has_quantity) {
+                    option_item.quantity_title = source_item.quantity_title;
                     option_item.quantity = source_item.quantity;
-                } else if (scheme === PRICING_SCHEME_PER_OPERABLE_SASH) {
-                    const operable_sashes_number = unit_stats.number_of.operable_sashes;
-
-                    option_cost = source_item.pricing_data.cost_per_item * source_item.quantity * operable_sashes_number;
-
-                    option_item.operable_sashes_number = operable_sashes_number;
-                    option_item.quantity_per_sash = source_item.quantity;
-                    option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
-                } else if (scheme === PRICING_SCHEME_PER_MULLION) {
-                    const mullions_number = unit_stats.number_of.mullions;
-
-                    option_cost = source_item.pricing_data.cost_per_item * source_item.quantity * mullions_number;
-
-                    option_item.mullions_number = mullions_number;
-                    option_item.quantity_per_mullion = source_item.quantity;
-                    option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
-                } else if (scheme === PRICING_SCHEME_PER_FRAME_LENGTH) {
-                    const frame_length = unit_stats.frame.linear;
-
-                    option_cost = source_item.pricing_data.cost_per_item * (frame_length / 1000);
-
-                    option_item.frame_length = f.dimension_mm(frame_length);
-                    option_item.cost_per_meter = f.fixed(source_item.pricing_data.cost_per_item);
-                } else if (scheme === PRICING_SCHEME_PER_SASH_FRAME_LENGTH) {
-                    const sash_frame_length = unit_stats.sashes.linear;
-
-                    option_cost = source_item.pricing_data.cost_per_item * (sash_frame_length / 1000);
-
-                    option_item.sash_frame_length = f.dimension_mm(sash_frame_length);
-                    option_item.cost_per_meter = f.fixed(source_item.pricing_data.cost_per_item);
-                } else if (scheme === PRICING_SCHEME_PER_MULLION_LENGTH) {
-                    const mullions_length = unit_stats.mullions.linear;
-
-                    option_cost = source_item.pricing_data.cost_per_item * (mullions_length / 1000);
-
-                    option_item.mullions_length = f.dimension_mm(mullions_length);
-                    option_item.cost_per_meter = f.fixed(source_item.pricing_data.cost_per_item);
-                } else if (scheme === PRICING_SCHEME_PER_PROFILE_LENGTH) {
-                    const profile_length = unit_stats.profile_total.linear;
-
-                    option_cost = source_item.pricing_data.cost_per_item * (profile_length / 1000);
-
-                    option_item.profile_length = f.dimension_mm(profile_length);
-                    option_item.cost_per_meter = f.fixed(source_item.pricing_data.cost_per_item);
-                } else if (scheme === PRICING_SCHEME_PER_GLAZING_BAR_LENGTH) {
-                    const glazing_bars_length = unit_stats.glazing_bars.linear;
-
-                    option_cost = source_item.pricing_data.cost_per_item * (glazing_bars_length / 1000);
-
-                    option_item.glazing_bars_length = f.dimension_mm(glazing_bars_length);
-                    option_item.cost_per_meter = f.fixed(source_item.pricing_data.cost_per_item);
-                } else if (scheme === PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH) {
-                    const frame_width = unit_stats.frame.width;
-
-                    option_cost = source_item.pricing_data.cost_per_item * (frame_width / 1000);
-
-                    option_item.frame_width = f.dimension_mm(frame_width);
-                    option_item.cost_per_meter = f.fixed(source_item.pricing_data.cost_per_item);
                 }
 
-                option_item.cost = f.fixed(option_cost);
+                option_item.cost_per_item = f.fixed(source_item.pricing_data.cost_per_item);
+                option_item.cost_title = source_item.basis.type === 'linear' ? 'Cost / m' : 'Cost / Item';
 
-                separately_priced_options_total_cost += option_cost;
+                option_item.basis_title = source_item.basis.title;
+                option_item.basis_value = source_item.basis.type === 'linear' ?
+                    f.dimension_mm(source_item.basis.value) :
+                    source_item.basis.value;
 
-                result.separately_priced_options.push(option_item);
-            }, this);
-
-            result.separately_priced_options_total_cost = f.fixed(separately_priced_options_total_cost);
+                result.separate_options.push(option_item);
+            });
         }
 
         return result;

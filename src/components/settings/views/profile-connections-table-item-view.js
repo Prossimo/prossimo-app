@@ -1,5 +1,4 @@
 import Marionette from 'backbone.marionette';
-import _ from 'underscore';
 
 import App from '../../../main';
 import BaseInputView from '../../../core/views/base/base-input-view';
@@ -10,15 +9,6 @@ import template from '../templates/profile-connections-table-item-view.hbs';
 import {
     PRICING_SCHEME_PRICING_GRIDS,
     PRICING_SCHEME_LINEAR_EQUATION,
-    PRICING_SCHEME_PER_ITEM,
-    PRICING_SCHEME_PER_OPERABLE_SASH,
-    PRICING_SCHEME_PER_MULLION,
-    PRICING_SCHEME_PER_FRAME_LENGTH,
-    PRICING_SCHEME_PER_SASH_FRAME_LENGTH,
-    PRICING_SCHEME_PER_MULLION_LENGTH,
-    PRICING_SCHEME_PER_PROFILE_LENGTH,
-    PRICING_SCHEME_PER_GLAZING_BAR_LENGTH,
-    PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
 } from '../../../constants';
 
 export default Marionette.View.extend({
@@ -79,19 +69,8 @@ export default Marionette.View.extend({
         const pricing_data = this.model.getPricingData();
         const has_grids = pricing_data && pricing_data.scheme === PRICING_SCHEME_PRICING_GRIDS;
         const has_linear_cost = pricing_data && pricing_data.scheme === PRICING_SCHEME_LINEAR_EQUATION;
-        const has_per_item_cost = pricing_data && _.contains([
-            PRICING_SCHEME_PER_ITEM,
-            PRICING_SCHEME_PER_OPERABLE_SASH,
-            PRICING_SCHEME_PER_MULLION,
-        ], pricing_data.scheme);
-        const has_per_length_cost = pricing_data && _.contains([
-            PRICING_SCHEME_PER_FRAME_LENGTH,
-            PRICING_SCHEME_PER_SASH_FRAME_LENGTH,
-            PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
-            PRICING_SCHEME_PER_MULLION_LENGTH,
-            PRICING_SCHEME_PER_PROFILE_LENGTH,
-            PRICING_SCHEME_PER_GLAZING_BAR_LENGTH,
-        ], pricing_data.scheme);
+        const has_per_item_cost = pricing_data && pricing_data.has_per_item_cost;
+        const has_per_length_cost = pricing_data && pricing_data.has_per_length_cost;
 
         return {
             has_grids,

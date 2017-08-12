@@ -431,13 +431,13 @@ describe('Unit model', () => {
             expect(grouped_by_scheme.PER_OPERABLE_SASH.length).to.equal(1);
         });
 
-        it('should not have any options inside PRICING_GRIDS group', () => {
+        it('should not have PRICING_GRIDS group', () => {
             const unit = new Unit({
                 profile_id: 1,
             });
             const grouped_by_scheme = unit.getUnitOptionsGroupedByPricingScheme();
 
-            expect(grouped_by_scheme.PRICING_GRIDS.length).to.equal(0);
+            expect(grouped_by_scheme.PRICING_GRIDS).to.equal(undefined);
         });
     });
 
