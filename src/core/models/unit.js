@@ -3525,6 +3525,21 @@ const Unit = Backbone.Model.extend({
 
         return this.pick(model_attributes_to_cache);
     },
+    checkIfCacheIsValid() {
+        const old_drawing_representation = this._cache && this._cache.drawing_representation_string;
+        const new_drawing_representation = JSON.stringify(this.getDrawingRepresentation());
+        let is_valid = false;
+
+        if (old_drawing_representation === new_drawing_representation) {
+            is_valid = true;
+        } else {
+            this._cache = {
+                drawing_representation_string: new_drawing_representation,
+            };
+        }
+
+        return is_valid;
+    },
     //  This is a wrapper for `app.preview`, we need it because we want to
     //  cache preview at the model level to improve app rendering times.
     //  The way it works is it assumes that preview should be the same if
@@ -3547,36 +3562,25 @@ const Unit = Backbone.Model.extend({
             use_cache = false;
         }
 
-        const drawing_representation_string = JSON.stringify(this.getDrawingRepresentation());
         const options_json_string = JSON.stringify(_.omit(complete_preview_options, 'model'));
+        const is_cache_valid = this.checkIfCacheIsValid();
 
         //  If we already got an image for the same model representation
         //  and same preview options, just return it from the cache
-        //  TODO: drawing representation string should be encoded here
-        if (
-            use_cache === true && this.preview && this.preview.result &&
-            this.preview.result[options_json_string] &&
-            drawing_representation_string === this.preview.drawing_representation_string
-        ) {
-            return this.preview.result[options_json_string];
+        if (use_cache === true && this._cache.preview && this._cache.preview[options_json_string] && is_cache_valid) {
+            return this._cache.preview[options_json_string];
         }
 
         const result = generatePreview(this, preview_options);
 
         //  If model representation changes, preview cache should be erased
-        if (
-            (use_cache === true && (!this.preview || !this.preview.result)) ||
-            (use_cache === true && drawing_representation_string !== this.preview.drawing_representation_string)
-        ) {
-            this.preview = {
-                drawing_representation_string,
-                result: {},
-            };
+        if (use_cache === true && (!this._cache.preview || !is_cache_valid)) {
+            this._cache.preview = {};
         }
 
         //  Add new preview to cache
         if (use_cache === true) {
-            this.preview.result[options_json_string] = result;
+            this._cache.preview[options_json_string] = result;
         }
 
         return result;

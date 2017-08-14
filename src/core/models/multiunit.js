@@ -41,12 +41,6 @@ export default Backbone.Model.extend({
         this._cache = {};
 
         if (!this.options.proxy) {
-            //  TODO: we only want to update size in the following cases: subunit changes,
-            //  connector changes, subunit profile changes, subunit options change,
-            //  dictionaries or fillings change, etc.
-            //  TODO: actually, we might only want to update this when size changes,
-            //  and in all other cases we want to update the preview
-            this.on('change', this.updateMultiunitSize);
             this.on('add', this.updateSubunitsMetadata);
 
             //  TODO: maybe we want to trigger this by less events (no change?)
@@ -337,11 +331,6 @@ export default Backbone.Model.extend({
         this.validateSubunits();
         this.updateConnectorsLength();
     },
-    updateMultiunitSize(eventData) {
-        if (eventData.changed.width || eventData.changed.height) {
-            this.recalculateSizes();
-        }
-    },
     //  If validation succeeds, there is no return value. Otherwise, it returns
     //  the error object. This is consistent with how Backbone does validation
     validateSubunits(options) {
@@ -437,10 +426,14 @@ export default Backbone.Model.extend({
         return subunit_link && subunit_link.getUnit();
     },
     getWidth() {
-        return this._cache.width || this.recalculateSizes().width;
+        const is_cache_valid = this.checkIfCacheIsValid();
+
+        return (is_cache_valid && this._cache.width) || this.recalculateSizes().width;
     },
     getHeight() {
-        return this._cache.height || this.recalculateSizes().height;
+        const is_cache_valid = this.checkIfCacheIsValid();
+
+        return (is_cache_valid && this._cache.height) || this.recalculateSizes().height;
     },
     // Updates multiunit width/height based on subunit sizes & positions
     recalculateSizes() {
@@ -1023,9 +1016,23 @@ export default Backbone.Model.extend({
             subunits: this.get('multiunit_subunits').map(subunit => subunit.invokeOnUnit('getDrawingRepresentation')),
         };
     },
+    checkIfCacheIsValid() {
+        const old_drawing_representation = this._cache && this._cache.drawing_representation_string;
+        const new_drawing_representation = JSON.stringify(this.getDrawingRepresentation());
+        let is_valid = false;
+
+        if (old_drawing_representation === new_drawing_representation) {
+            is_valid = true;
+        } else {
+            this._cache = {
+                drawing_representation_string: new_drawing_representation,
+            };
+        }
+
+        return is_valid;
+    },
     //  TODO: this is identical to getPreview from Unit model so maybe
     //  we want to move them both to a mixin or something
-    //  TODO: use this._cache.preview instead of this.preview
     getPreview(preview_options) {
         const complete_preview_options = mergePreviewOptions(this, preview_options);
         let use_cache = true;
@@ -1036,35 +1043,25 @@ export default Backbone.Model.extend({
             use_cache = false;
         }
 
-        const drawing_representation_string = JSON.stringify(this.getDrawingRepresentation());
         const options_json_string = JSON.stringify(_.omit(complete_preview_options, 'model'));
+        const is_cache_valid = this.checkIfCacheIsValid();
 
         //  If we already got an image for the same model representation
         //  and same preview options, just return it from the cache
-        if (
-            use_cache === true && this.preview && this.preview.result &&
-            this.preview.result[options_json_string] &&
-            drawing_representation_string === this.preview.drawing_representation_string
-        ) {
-            return this.preview.result[options_json_string];
+        if (use_cache === true && this._cache.preview && this._cache.preview[options_json_string] && is_cache_valid) {
+            return this._cache.preview[options_json_string];
         }
 
         const result = generatePreview(this, preview_options);
 
         //  If model representation changes, preview cache should be erased
-        if (
-            (use_cache === true && (!this.preview || !this.preview.result)) ||
-            (use_cache === true && drawing_representation_string !== this.preview.drawing_representation_string)
-        ) {
-            this.preview = {
-                drawing_representation_string,
-                result: {},
-            };
+        if (use_cache === true && (!this._cache.preview || !is_cache_valid)) {
+            this._cache.preview = {};
         }
 
         //  Add new preview to cache
         if (use_cache === true) {
-            this.preview.result[options_json_string] = result;
+            this._cache.preview[options_json_string] = result;
         }
 
         return result;
