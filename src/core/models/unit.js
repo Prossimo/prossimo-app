@@ -15,12 +15,15 @@ import {
     PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_PER_OPERABLE_SASH,
     PRICING_SCHEME_PER_MULLION,
+    PRICING_SCHEME_PER_CORNER,
     PRICING_SCHEME_PER_FRAME_LENGTH,
     PRICING_SCHEME_PER_SASH_FRAME_LENGTH,
     PRICING_SCHEME_PER_MULLION_LENGTH,
     PRICING_SCHEME_PER_PROFILE_LENGTH,
     PRICING_SCHEME_PER_GLAZING_BAR_LENGTH,
     PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
+    PRICING_SCHEME_PER_FRAME_HEIGHT,
+    PRICING_SCHEME_PER_FILLING_FRAME_LENGTH,
     RULE_IS_OPTIONAL,
     RULE_DOOR_ONLY,
     RULE_OPERABLE_ONLY,
@@ -2391,6 +2394,7 @@ const Unit = Backbone.Model.extend({
     getLinearAndAreaStats() {
         const operableSashesQuantity = this.getOperableSashesQuantity();
         const mullionsQuantity = this.getMullionsQuantity();
+        const cornersQuantity = this.getCornersQuantity();
         const profileWeight = this.profile.get('weight_per_length');
         const fillingWeight = {};
 
@@ -2405,9 +2409,11 @@ const Unit = Backbone.Model.extend({
             number_of: {
                 operable_sashes: operableSashesQuantity,
                 mullions: mullionsQuantity,
+                corners: cornersQuantity,
             },
             frame: {
                 width: 0,
+                height: 0,
                 linear: 0,
                 linear_without_intersections: 0,
                 area: 0,
@@ -2420,6 +2426,7 @@ const Unit = Backbone.Model.extend({
                 area_both_sides: 0,
             },
             glasses: {
+                linear: 0,
                 area: 0,
                 area_both_sides: 0,
                 weight: 0,
@@ -2450,11 +2457,11 @@ const Unit = Backbone.Model.extend({
             },
         };
 
-        function getProfilePerimeter(width, height) {
+        function getPerimeter(width, height) {
             return (width + height) * 2;
         }
 
-        function getProfilePerimeterWithoutIntersections(width, height, frame_width) {
+        function getPerimeterWithoutIntersections(width, height, frame_width) {
             return ((width + height) * 2) - (frame_width * 4);
         }
 
@@ -2467,17 +2474,18 @@ const Unit = Backbone.Model.extend({
         }
 
         result.frame.width = sizes.frame.width;
+        result.frame.height = sizes.frame.height;
 
-        result.frame.linear = getProfilePerimeter(sizes.frame.width, sizes.frame.height);
+        result.frame.linear = getPerimeter(sizes.frame.width, sizes.frame.height);
         result.frame.linear_without_intersections =
-            getProfilePerimeterWithoutIntersections(sizes.frame.width, sizes.frame.height, sizes.frame.frame_width);
+            getPerimeterWithoutIntersections(sizes.frame.width, sizes.frame.height, sizes.frame.frame_width);
         result.frame.area = getArea(result.frame.linear_without_intersections, sizes.frame.frame_width);
         result.frame.area_both_sides = result.frame.area * 2;
 
         _.each(sizes.sashes, (sash) => {
-            const sash_perimeter = getProfilePerimeter(sash.width, sash.height);
+            const sash_perimeter = getPerimeter(sash.width, sash.height);
             const sash_perimeter_without_intersections =
-                getProfilePerimeterWithoutIntersections(sash.width, sash.height, sash.frame_width);
+                getPerimeterWithoutIntersections(sash.width, sash.height, sash.frame_width);
 
             result.sashes.linear += sash_perimeter;
             result.sashes.linear_without_intersections += sash_perimeter_without_intersections;
@@ -2520,9 +2528,11 @@ const Unit = Backbone.Model.extend({
 
         _.each(sizes.glasses, (glass) => {
             const area = getArea(glass.width, glass.height);
+            const filling_frame_length = getPerimeter(glass.width, glass.height);
 
             result.glasses.area += area;
-            result.glasses.area_both_sides += getArea(glass.width, glass.height) * 2;
+            result.glasses.area_both_sides += area * 2;
+            result.glasses.linear += filling_frame_length;
 
             if (fillingWeight[glass.name]) {
                 result.glasses.weight += area * fillingWeight[glass.name];
@@ -2633,6 +2643,11 @@ const Unit = Backbone.Model.extend({
             _.contains(['vertical', 'horizontal'], mullion.type),
         ).length || 0;
     },
+    getCornersQuantity() {
+        return ((this.getSashList().filter(sash =>
+            _.contains(SASH_TYPES_WITH_OPENING, sash.original_type),
+        ).length || 0) * 4) + 4;
+    },
     hasMullions() {
         return this.getMullionsQuantity() > 0;
     },
@@ -2701,26 +2716,14 @@ const Unit = Backbone.Model.extend({
         const profile_id = this.profile.id;
         const result = {};
 
-        result[PRICING_SCHEME_PRICING_GRIDS] = [];
-        result[PRICING_SCHEME_LINEAR_EQUATION] = [];
-        result[PRICING_SCHEME_PER_ITEM] = [];
-        result[PRICING_SCHEME_PER_OPERABLE_SASH] = [];
-        result[PRICING_SCHEME_PER_MULLION] = [];
-        result[PRICING_SCHEME_PER_FRAME_LENGTH] = [];
-        result[PRICING_SCHEME_PER_SASH_FRAME_LENGTH] = [];
-        result[PRICING_SCHEME_PER_MULLION_LENGTH] = [];
-        result[PRICING_SCHEME_PER_PROFILE_LENGTH] = [];
-        result[PRICING_SCHEME_PER_GLAZING_BAR_LENGTH] = [];
-        result[PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH] = [];
-
-        _.each(connected_options, (option) => {
+        connected_options.forEach((option) => {
             const pricing_data = option.entry.getPricingDataForProfile(profile_id);
+            const quantity_multiplier = option.dictionary.getQuantityMultiplier();
+            const quantity_title = `Quantity${quantity_multiplier ? ` / ${quantity_multiplier}` : ''}`;
 
-            if (
-                !option.is_restricted && pricing_data &&
-                pricing_data.scheme !== PRICING_SCHEME_NONE &&
-                result[pricing_data.scheme] !== undefined
-            ) {
+            if (!option.is_restricted && pricing_data && pricing_data.scheme !== PRICING_SCHEME_NONE) {
+                result[pricing_data.scheme] = result[pricing_data.scheme] || [];
+
                 result[pricing_data.scheme].push({
                     dictionary_name: option.dictionary.get('name'),
                     is_hidden: option.dictionary.get('is_hidden'),
@@ -2728,9 +2731,10 @@ const Unit = Backbone.Model.extend({
                     pricing_data,
                     has_quantity: option.has_quantity,
                     quantity: option.quantity,
+                    quantity_title: option.has_quantity ? quantity_title : undefined,
                 });
             }
-        }, this);
+        });
 
         return result;
     },
@@ -2858,94 +2862,132 @@ const Unit = Backbone.Model.extend({
             base: 0,
             fillings: 0,
             options: 0,
+            separate_options: 0,
             sections_list,
             options_list,
+            separate_options_list: [],
             real_cost: {
                 total: this.get('original_cost'),
                 difference: 0,
             },
         };
 
-        _.each(sections_list, (section) => {
+        function getOptionCost(current_option) {
+            function getCostFunction(scheme) {
+                return {
+                    [PRICING_SCHEME_PER_ITEM]: option => option.pricing_data.cost_per_item * option.quantity,
+                    [PRICING_SCHEME_PER_OPERABLE_SASH]: option =>
+                        option.pricing_data.cost_per_item * option.quantity * unit_stats.number_of.operable_sashes,
+                    [PRICING_SCHEME_PER_MULLION]: option =>
+                        option.pricing_data.cost_per_item * option.quantity * unit_stats.number_of.mullions,
+                    [PRICING_SCHEME_PER_CORNER]: option =>
+                        option.pricing_data.cost_per_item * option.quantity * unit_stats.number_of.corners,
+                    [PRICING_SCHEME_PER_FRAME_LENGTH]: option => option.pricing_data.cost_per_item * (unit_stats.frame.linear / 1000),
+                    [PRICING_SCHEME_PER_SASH_FRAME_LENGTH]: option => option.pricing_data.cost_per_item * (unit_stats.sashes.linear / 1000),
+                    [PRICING_SCHEME_PER_MULLION_LENGTH]: option => option.pricing_data.cost_per_item * (unit_stats.mullions.linear / 1000),
+                    [PRICING_SCHEME_PER_PROFILE_LENGTH]: option =>
+                        option.pricing_data.cost_per_item * (unit_stats.profile_total.linear / 1000),
+                    [PRICING_SCHEME_PER_GLAZING_BAR_LENGTH]: option =>
+                        option.pricing_data.cost_per_item * (unit_stats.glazing_bars.linear / 1000),
+                    [PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH]: option =>
+                        option.pricing_data.cost_per_item * (unit_stats.frame.width / 1000),
+                    [PRICING_SCHEME_PER_FRAME_HEIGHT]: option => option.pricing_data.cost_per_item * (unit_stats.frame.height / 1000),
+                    [PRICING_SCHEME_PER_FILLING_FRAME_LENGTH]: option =>
+                        option.pricing_data.cost_per_item * (unit_stats.glasses.linear / 1000),
+                }[scheme] || _.noop();
+            }
+
+            return getCostFunction(current_option.pricing_data.scheme)(current_option);
+        }
+
+        function getOptionBasis(current_option) {
+            return {
+                [PRICING_SCHEME_PER_ITEM]: {
+                    type: 'number_of',
+                },
+                [PRICING_SCHEME_PER_OPERABLE_SASH]: {
+                    title: 'Operable Sashes&nbsp;#',
+                    value: unit_stats.number_of.operable_sashes,
+                    type: 'number_of',
+                },
+                [PRICING_SCHEME_PER_MULLION]: {
+                    title: 'Mullions&nbsp;#',
+                    value: unit_stats.number_of.mullions,
+                    type: 'number_of',
+                },
+                [PRICING_SCHEME_PER_CORNER]: {
+                    title: 'Corners&nbsp;#',
+                    value: unit_stats.number_of.corners,
+                    type: 'number_of',
+                },
+                [PRICING_SCHEME_PER_FRAME_LENGTH]: {
+                    title: 'Frame Outer Length',
+                    value: unit_stats.frame.linear,
+                    type: 'linear',
+                },
+                [PRICING_SCHEME_PER_SASH_FRAME_LENGTH]: {
+                    title: 'Total Sash Frames Length',
+                    value: unit_stats.sashes.linear,
+                    type: 'linear',
+                },
+                [PRICING_SCHEME_PER_MULLION_LENGTH]: {
+                    title: 'Total Mullions Length',
+                    value: unit_stats.mullions.linear,
+                    type: 'linear',
+                },
+                [PRICING_SCHEME_PER_PROFILE_LENGTH]: {
+                    title: 'Total Profile Length',
+                    value: unit_stats.profile_total.linear,
+                    type: 'linear',
+                },
+                [PRICING_SCHEME_PER_GLAZING_BAR_LENGTH]: {
+                    title: 'Total Glazing Bars Length',
+                    value: unit_stats.glazing_bars.linear,
+                    type: 'linear',
+                },
+                [PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH]: {
+                    title: 'Sill / Threshold Length',
+                    value: unit_stats.frame.width,
+                    type: 'linear',
+                },
+                [PRICING_SCHEME_PER_FRAME_HEIGHT]: {
+                    title: 'Frame Height',
+                    value: unit_stats.frame.height,
+                    type: 'linear',
+                },
+                [PRICING_SCHEME_PER_FILLING_FRAME_LENGTH]: {
+                    title: 'Fillings Frame Length',
+                    value: unit_stats.glasses.linear,
+                    type: 'linear',
+                },
+            }[current_option.pricing_data.scheme] || undefined;
+        }
+
+        sections_list.forEach((section) => {
             unit_cost.total += section.total_cost;
             unit_cost.base += section.base_cost;
             unit_cost.fillings += section.filling_cost;
             unit_cost.options += section.options_cost;
-        }, this);
+        });
 
-        //  Add cost for all per-item priced options
-        _.each(options_list[PRICING_SCHEME_PER_ITEM], (option) => {
-            unit_cost.total += option.pricing_data.cost_per_item * option.quantity;
-            unit_cost.options += option.pricing_data.cost_per_item * option.quantity;
-        }, this);
+        //  Add cost for all separately priced options
+        Object.keys(options_list).forEach((scheme) => {
+            if (scheme !== PRICING_SCHEME_PRICING_GRIDS && scheme !== PRICING_SCHEME_LINEAR_EQUATION) {
+                options_list[scheme].forEach((option) => {
+                    const option_cost = getOptionCost(option);
+                    const option_basis = getOptionBasis(option);
 
-        //  Add cost for all per-operable-sash priced options
-        _.each(options_list[PRICING_SCHEME_PER_OPERABLE_SASH], (option) => {
-            const option_cost = option.pricing_data.cost_per_item *
-                option.quantity *
-                unit_stats.number_of.operable_sashes;
+                    unit_cost.total += option_cost;
+                    unit_cost.options += option_cost;
+                    unit_cost.separate_options += option_cost;
 
-            unit_cost.total += option_cost;
-            unit_cost.options += option_cost;
-        }, this);
-
-        //  Add cost for all per-mullion priced options
-        _.each(options_list[PRICING_SCHEME_PER_MULLION], (option) => {
-            const option_cost = option.pricing_data.cost_per_item *
-                option.quantity *
-                unit_stats.number_of.mullions;
-
-            unit_cost.total += option_cost;
-            unit_cost.options += option_cost;
-        }, this);
-
-        //  Add cost for all options priced per frame length
-        _.each(options_list[PRICING_SCHEME_PER_FRAME_LENGTH], (option) => {
-            const option_cost = option.pricing_data.cost_per_item * (unit_stats.frame.linear / 1000);
-
-            unit_cost.total += option_cost;
-            unit_cost.options += option_cost;
-        }, this);
-
-        //  Add cost for all options priced per sash frame length
-        _.each(options_list[PRICING_SCHEME_PER_SASH_FRAME_LENGTH], (option) => {
-            const option_cost = option.pricing_data.cost_per_item * (unit_stats.sashes.linear / 1000);
-
-            unit_cost.total += option_cost;
-            unit_cost.options += option_cost;
-        }, this);
-
-        //  Add cost for all options priced per mullion length
-        _.each(options_list[PRICING_SCHEME_PER_MULLION_LENGTH], (option) => {
-            const option_cost = option.pricing_data.cost_per_item * (unit_stats.mullions.linear / 1000);
-
-            unit_cost.total += option_cost;
-            unit_cost.options += option_cost;
-        }, this);
-
-        //  Add cost for all options priced per profile length
-        _.each(options_list[PRICING_SCHEME_PER_PROFILE_LENGTH], (option) => {
-            const option_cost = option.pricing_data.cost_per_item * (unit_stats.profile_total.linear / 1000);
-
-            unit_cost.total += option_cost;
-            unit_cost.options += option_cost;
-        }, this);
-
-        //  Add cost for all options priced per glazing bar length
-        _.each(options_list[PRICING_SCHEME_PER_GLAZING_BAR_LENGTH], (option) => {
-            const option_cost = option.pricing_data.cost_per_item * (unit_stats.glazing_bars.linear / 1000);
-
-            unit_cost.total += option_cost;
-            unit_cost.options += option_cost;
-        }, this);
-
-        //  Add cost for all options priced per sill / threshold length
-        _.each(options_list[PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH], (option) => {
-            const option_cost = option.pricing_data.cost_per_item * (unit_stats.frame.width / 1000);
-
-            unit_cost.total += option_cost;
-            unit_cost.options += option_cost;
-        }, this);
+                    unit_cost.separate_options_list.push(_.extend({}, option, {
+                        cost: option_cost,
+                        basis: option_basis,
+                    }));
+                });
+            }
+        });
 
         if (unit_cost.total) {
             unit_cost.real_cost.difference = ((unit_cost.real_cost.total - unit_cost.total) / unit_cost.total) * 100;

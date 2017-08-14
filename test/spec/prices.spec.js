@@ -553,10 +553,12 @@ test('Prices tests', () => {
                 pricing_data: {
                     scheme: 'PER_ITEM',
                     cost_per_item: 0,
+                    has_per_item_cost: true,
                 },
                 has_quantity: true,
                 is_hidden: false,
                 quantity: 1,
+                quantity_title: 'Quantity',
             },
             'The option inside PER_ITEM group matches the expected data',
         );
@@ -572,7 +574,7 @@ test('Prices tests', () => {
         grouped_options = unit.getUnitOptionsGroupedByPricingScheme();
 
         equal(grouped_options.PER_ITEM.length, 1, 'PER_ITEM group still contains one option');
-        equal(grouped_options.PRICING_GRIDS.length, 0, 'PRICING_GRIDS group does not contain any options anymore');
+        equal(grouped_options.PRICING_GRIDS, undefined, 'PRICING_GRIDS group does not contain any options anymore, so it does not exist');
     });
 
 
@@ -867,7 +869,6 @@ test('Prices tests', () => {
 
         //  Total cost for options
         equal(estimated_cost.options.toFixed(2), '623.85', 'Options total cost is correct after adding profile length based options');
-
         //  Unit total cost
         equal(estimated_cost.total.toFixed(2), '942.78', 'Unit total cost is correct after adding profile length based options');
 
@@ -893,7 +894,6 @@ test('Prices tests', () => {
 
         //  Total cost for options
         equal(estimated_cost.options.toFixed(2), '732.18', 'Options total cost is correct after adding sash frame based options');
-
         //  Unit total cost
         equal(estimated_cost.total.toFixed(2), '1051.12', 'Unit total cost is correct after adding sash frame based options');
 
@@ -934,7 +934,6 @@ test('Prices tests', () => {
 
         //  Total cost for options
         equal(estimated_cost.options.toFixed(2), '804.48', 'Options total cost is correct after adding mullion based options');
-
         //  Unit total cost
         equal(estimated_cost.total.toFixed(2), '1068.40', 'Unit total cost is correct after adding mullion based options');
 
@@ -984,8 +983,86 @@ test('Prices tests', () => {
 
         //  Total cost for options
         equal(estimated_cost.options.toFixed(2), '895.46', 'Options total cost is correct after adding glazing bar based options');
-
         //  Unit total cost
         equal(estimated_cost.total.toFixed(2), '1159.38', 'Unit total cost is correct after adding glazing bar based options');
+
+        //  ----------------------------------------------------------------
+        //  Now add more new dictionaries, and test a few new schemes
+        //  ----------------------------------------------------------------
+
+        App.settings.dictionaries.add([
+            {
+                name: 'Fillings Safety Profile',
+                pricing_scheme: 'PER_FILLING_FRAME_LENGTH',
+                id: 22,
+                entries: [
+                    {
+                        name: 'Foam Profile',
+                        id: 29,
+                        dictionary_entry_profiles: [
+                            { profile_id: 3, cost_per_item: 0.5 },
+                        ],
+                    },
+                ],
+            },
+        ], { parse: true });
+
+        unit.validateUnitOptions();
+        estimated_cost = unit.getEstimatedUnitCost();
+
+        //  Total cost for options
+        equal(estimated_cost.options.toFixed(2), '900.24', 'Options total cost is correct after adding filling length based options');
+        //  Unit total cost
+        equal(estimated_cost.total.toFixed(2), '1164.16', 'Unit total cost is correct after adding filling length based options');
+
+        App.settings.dictionaries.add([
+            {
+                name: 'Static Connector Thing',
+                pricing_scheme: 'PER_FRAME_HEIGHT',
+                id: 23,
+                entries: [
+                    {
+                        name: 'Simple Connector',
+                        id: 31,
+                        dictionary_entry_profiles: [
+                            { profile_id: 3, cost_per_item: 0.75 },
+                        ],
+                    },
+                ],
+            },
+        ], { parse: true });
+
+        unit.validateUnitOptions();
+        estimated_cost = unit.getEstimatedUnitCost();
+
+        //  Total cost for options
+        equal(estimated_cost.options.toFixed(2), '902.07', 'Options total cost is correct after adding frame height based options');
+        //  Unit total cost
+        equal(estimated_cost.total.toFixed(2), '1165.99', 'Unit total cost is correct after adding frame height based options');
+
+        App.settings.dictionaries.add([
+            {
+                name: 'Corner Safety Things',
+                pricing_scheme: 'PER_CORNER',
+                id: 24,
+                entries: [
+                    {
+                        name: 'Foam Piece',
+                        id: 34,
+                        dictionary_entry_profiles: [
+                            { profile_id: 3, cost_per_item: 2 },
+                        ],
+                    },
+                ],
+            },
+        ], { parse: true });
+
+        unit.validateUnitOptions();
+        estimated_cost = unit.getEstimatedUnitCost();
+
+        //  Total cost for options
+        equal(estimated_cost.options.toFixed(2), '918.07', 'Options total cost is correct after adding corner based options');
+        //  Unit total cost
+        equal(estimated_cost.total.toFixed(2), '1181.99', 'Unit total cost is correct after adding corner based options');
     });
 });

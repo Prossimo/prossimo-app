@@ -12,12 +12,15 @@ import {
     PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_PER_OPERABLE_SASH,
     PRICING_SCHEME_PER_MULLION,
+    PRICING_SCHEME_PER_CORNER,
     PRICING_SCHEME_PER_FRAME_LENGTH,
     PRICING_SCHEME_PER_SASH_FRAME_LENGTH,
     PRICING_SCHEME_PER_MULLION_LENGTH,
     PRICING_SCHEME_PER_PROFILE_LENGTH,
     PRICING_SCHEME_PER_GLAZING_BAR_LENGTH,
     PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
+    PRICING_SCHEME_PER_FRAME_HEIGHT,
+    PRICING_SCHEME_PER_FILLING_FRAME_LENGTH,
     RULE_DOOR_ONLY,
     RULE_OPERABLE_ONLY,
     RULE_GLAZING_BARS_ONLY,
@@ -49,12 +52,15 @@ const POSSIBLE_PRICING_SCHEMES = [
     PRICING_SCHEME_PER_ITEM,
     PRICING_SCHEME_PER_OPERABLE_SASH,
     PRICING_SCHEME_PER_MULLION,
+    PRICING_SCHEME_PER_CORNER,
     PRICING_SCHEME_PER_FRAME_LENGTH,
     PRICING_SCHEME_PER_SASH_FRAME_LENGTH,
     PRICING_SCHEME_PER_MULLION_LENGTH,
     PRICING_SCHEME_PER_PROFILE_LENGTH,
     PRICING_SCHEME_PER_GLAZING_BAR_LENGTH,
     PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
+    PRICING_SCHEME_PER_FRAME_HEIGHT,
+    PRICING_SCHEME_PER_FILLING_FRAME_LENGTH,
 ];
 
 function getDefaultRulesAndRestrictions() {
@@ -241,6 +247,7 @@ export default Backbone.Model.extend({
             PRICING_SCHEME_PER_ITEM,
             PRICING_SCHEME_PER_OPERABLE_SASH,
             PRICING_SCHEME_PER_MULLION,
+            PRICING_SCHEME_PER_CORNER,
         ], this.get('pricing_scheme'));
     },
     getQuantityMultiplier() {
@@ -250,10 +257,26 @@ export default Backbone.Model.extend({
             multiplier = {
                 [PRICING_SCHEME_PER_OPERABLE_SASH]: 'Sash',
                 [PRICING_SCHEME_PER_MULLION]: 'Mullion',
+                [PRICING_SCHEME_PER_CORNER]: 'Corner',
             }[this.get('pricing_scheme')];
         }
 
         return multiplier;
+    },
+    hasPerItemCost() {
+        return this.hasQuantity();
+    },
+    hasPerLengthCost() {
+        return _.contains([
+            PRICING_SCHEME_PER_FRAME_LENGTH,
+            PRICING_SCHEME_PER_SASH_FRAME_LENGTH,
+            PRICING_SCHEME_PER_SILL_OR_THRESHOLD_LENGTH,
+            PRICING_SCHEME_PER_FRAME_HEIGHT,
+            PRICING_SCHEME_PER_MULLION_LENGTH,
+            PRICING_SCHEME_PER_PROFILE_LENGTH,
+            PRICING_SCHEME_PER_GLAZING_BAR_LENGTH,
+            PRICING_SCHEME_PER_FILLING_FRAME_LENGTH,
+        ], this.get('pricing_scheme'));
     },
     initialize(attributes, options) {
         this.options = options || {};
