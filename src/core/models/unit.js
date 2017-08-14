@@ -7,7 +7,7 @@ import Schema from '../../schema';
 import { object, convert, math } from '../../utils';
 import UnitOptionCollection from '../collections/inline/unit-option-collection';
 import Multiunit from './multiunit';
-import { mergePreviewOptions, generatePreview } from '../../components/drawing/module/preview';
+import { mergePreviewOptions, generatePreview } from '../../components/drawing/builder/preview';
 import { globalChannel } from '../../utils/radio';
 
 import {
@@ -1410,7 +1410,7 @@ const Unit = Backbone.Model.extend({
         }
     },
     getCircleSashData(sectionId) {
-        let root;
+        let current_root;
         const section = this.getSection(sectionId);
         const result = {};
 
@@ -1438,13 +1438,13 @@ const Unit = Backbone.Model.extend({
         // But other methods could use this helpful information about type.
         // For example, it used in unit-drawer.js
         if (result.type === 'circle' || result.type === 'arc') {
-            root = this.generateFullRoot();
+            current_root = this.generateFullRoot();
 
             result.circle = {
-                x: root.sashParams.x,
-                y: root.sashParams.y,
+                x: current_root.sashParams.x,
+                y: current_root.sashParams.y,
             };
-            result.radius = Math.min(root.sashParams.width, root.sashParams.height) / 2;
+            result.radius = Math.min(current_root.sashParams.width, current_root.sashParams.height) / 2;
         }
 
         return result;
@@ -3247,9 +3247,9 @@ const Unit = Backbone.Model.extend({
     },
     /* trapezoid start */
     isTrapezoid() {
-        const root = this.generateFullRoot();
+        const current_root = this.generateFullRoot();
 
-        return root.trapezoidHeights;
+        return current_root.trapezoidHeights;
     },
     /* Determines if the unit has at least one horizontal mullion */
     hasHorizontalMullion() {
@@ -3257,7 +3257,7 @@ const Unit = Backbone.Model.extend({
             (previous, current) => previous || (current.type === 'horizontal' || current.type === 'horizontal_invisible'), false);
     },
     /* Determines the number of vertical metric columns on the unit drawing's left and right sides
-     * Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js */
+     * Duplicates logic from MetricsDrawer /static/source/js/drawing/builder/metrics-drawer.js */
     leftMetricCount(isInsideView) {
         // Inside view //
 
@@ -3280,7 +3280,7 @@ const Unit = Backbone.Model.extend({
         return (this.hasHorizontalMullion()) ? 2 : 1;
     },
     /* Determines the number of vertical metric columns on the unit drawing's right side
-     * Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js */
+     * Duplicates logic from MetricsDrawer /static/source/js/drawing/builder/metrics-drawer.js */
     rightMetricCount(isInsideView) {
         // Inside view //
 

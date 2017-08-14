@@ -12,10 +12,10 @@ const DELAYED_HOVER_DEFAULT_DELAY = 400;
 const SECTION_MENU_HOVER_DELAY = 100;
 
 // This module starts manually with required parameters:
-// new DrawingModule({
+// new DrawingBuilder({
 //     model: model,                // link to the model
 //     stage: stage,                // link to the Konva.Stage or null
-//                                  // if it's not defined — Module should create
+//                                  // if it's not defined — Builder should create
 //                                  // his own Konva.Stage and append it into
 //                                  // invisible area on the page
 //     layers: {                    // options of layers. Unit and Metrics layers is a default.
@@ -51,7 +51,7 @@ export default Marionette.Object.extend({
         if ('model' in opts) {
             this.assignModel(opts.model);
         } else {
-            throw new Error('DrawingModule can\'t start without a defined Model!');
+            throw new Error('DrawingBuilder can\'t start without a defined Model!');
         }
 
         // Bind events
@@ -208,7 +208,7 @@ export default Marionette.Object.extend({
         const frameOnScreenHeight = frameHeight * ratio;
 
         // Shift drawing right or left depending on metrics displayed
-        // Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js
+        // Duplicates logic from MetricsDrawer /static/source/js/drawing/builder/metrics-drawer.js
         let metricShiftX = 0 - ((2 - model.leftMetricCount(isInsideView)) * (metricSize / 2));
 
         if (model.rightMetricCount() > 1) {
@@ -504,7 +504,7 @@ export default Marionette.Object.extend({
     // Create private Konva.Stage (if it wasn't defined in options)
     createStage() {
         const container = $('<div>', {
-            id: 'drawing-module-container',
+            id: 'drawing-builder-container',
         });
 
         const stage = new Konva.Stage({

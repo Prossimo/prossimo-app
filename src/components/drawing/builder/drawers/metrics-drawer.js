@@ -7,15 +7,15 @@ import { format, convert } from '../../../../utils';
 
 export default Backbone.KonvaView.extend({
     initialize(params) {
-        this._module = params.builder;
+        this._builder = params.builder;
 
         this.layer = params.layer;
         this.stage = params.stage;
 
-        this._model = this._module.get('model');
+        this._model = this._builder.get('model');
         this._metricSize = params.metricSize;
         this._controlSize = this._metricSize / 4;
-        this._ratio = this._module.get('ratio');
+        this._ratio = this._builder.get('ratio');
     },
     el() {
         const group = new Konva.Group();
@@ -23,7 +23,7 @@ export default Backbone.KonvaView.extend({
         return group;
     },
     render() {
-        this._ratio = this._module.get('ratio');
+        this._ratio = this._builder.get('ratio');
 
         // Clear all previous objects
         this.layer.destroyChildren();
@@ -55,7 +55,7 @@ export default Backbone.KonvaView.extend({
         } else {
             let mullions;
 
-            if (this._module.getState('openingView')) {
+            if (this._builder.getState('openingView')) {
                 mullions = this._model.getMullions();
             } else {
                 mullions = this._model.getRevertedMullions();
@@ -67,7 +67,7 @@ export default Backbone.KonvaView.extend({
         group.add(infoGroup);
 
         // get stage center
-        const center = this._module.get('center');
+        const center = this._builder.get('center');
         // place unit on stage center
         group.position(center);
 
@@ -97,7 +97,7 @@ export default Backbone.KonvaView.extend({
         // Draw whole metrics
         group.add(this.createWholeMetrics(measurements, width, height));
 
-        if (!this._module.getState('isPreview')) {
+        if (!this._builder.getState('isPreview')) {
             // Draw mullion controls
             group.add(this.createMullionControls(controls, width, height));
         }
@@ -112,7 +112,7 @@ export default Backbone.KonvaView.extend({
         const horizontalMullions = [];
 
         mullions.forEach((mul) => {
-            if (this._module.getState('selected:mullion') !== null && this._module.getState('selected:mullion') !== mul.id) {
+            if (this._builder.getState('selected:mullion') !== null && this._builder.getState('selected:mullion') !== mul.id) {
                 return;
             }
 
@@ -296,7 +296,7 @@ export default Backbone.KonvaView.extend({
                     }
 
                     // Change state for mullions if this is vertical mullion and it's outside view
-                    if (current_edge === 'mullion' && type === 'vertical' && this._module.getState('openingView')) {
+                    if (current_edge === 'mullion' && type === 'vertical' && this._builder.getState('openingView')) {
                         edge_state = _.contains(['max', 'min'], edge_state) ? { max: 'min', min: 'max' }[edge_state] : 'center';
                     }
 
@@ -334,7 +334,7 @@ export default Backbone.KonvaView.extend({
         });
 
         // Switch edges for frame dimension-point for vertical mullions if it's outside view
-        if (this._module.getState('openingView') && result.vertical.length > 0) {
+        if (this._builder.getState('openingView') && result.vertical.length > 0) {
             const firstState = result.vertical[0].edges[0].state;
             const secondState = result.vertical[result.vertical.length - 1].edges[1].state;
 
@@ -408,7 +408,7 @@ export default Backbone.KonvaView.extend({
         const gap = (mullion.index === 1) ? '_gap' : '';
         const methodName = `setter_${type}${gap}`;
         const params = clone(current_params);
-        const openingView = this._module.getState('openingView');
+        const openingView = this._builder.getState('openingView');
 
         const correction = view.getTotalCorrection(mullion, type);
         const methods = {
@@ -507,7 +507,7 @@ export default Backbone.KonvaView.extend({
                     let state = section.measurements.mullion[mType][0];
 
                     // Change state if this is vertical control and it's outside view
-                    if (type === 'vertical' && this._module.getState('openingView')) {
+                    if (type === 'vertical' && this._builder.getState('openingView')) {
                         state = _.contains(['max', 'min'], state) ? { max: 'min', min: 'max' }[state] : 'center';
                     }
 
@@ -567,7 +567,7 @@ export default Backbone.KonvaView.extend({
         const measurementData = root_section.measurements.frame;
         const current_correction = correction || this.getCorrection();
 
-        if (type === 'horizontal' && this._module.getState('openingView')) {
+        if (type === 'horizontal' && this._builder.getState('openingView')) {
             measurementData[type].reverse();
         }
 
@@ -606,7 +606,7 @@ export default Backbone.KonvaView.extend({
     },
     createControl(width, height) {
         const view = this;
-        const style = this._module.getStyle('measurements');
+        const style = this._builder.getStyle('measurements');
         const control = new Konva.Rect({
             width,
             height,
@@ -650,7 +650,7 @@ export default Backbone.KonvaView.extend({
         for (let i = 0; i < 2; i += 1) {
             // Create control
             const control = this.createControl(size_1, size_2);
-            const index = (!this._module.getState('openingView')) ? i : (i + 1) % 2;
+            const index = (!this._builder.getState('openingView')) ? i : (i + 1) % 2;
 
             // Attach event
             control.on('click', this.createMeasurementSelectFrame.bind(this, section_id, 'frame', type, index));
@@ -723,7 +723,7 @@ export default Backbone.KonvaView.extend({
                 if (invertedType === 'horizontal') {
                     let pos = correction.pos;
 
-                    if (!this._module.getState('openingView')) {
+                    if (!this._builder.getState('openingView')) {
                         pos = correction.pos;
                     } else if (correction.pos === 0) {
                         pos = correction.size * -1;
@@ -775,12 +775,12 @@ export default Backbone.KonvaView.extend({
     createMeasurementSelectUI(event, opts) {
         const view = this;
         const controlSize = this._metricSize / 4;
-        const style = this._module.getStyle('measurements');
+        const style = this._builder.getStyle('measurements');
 
         let min = 'min';
         let max = 'max';
 
-        if (opts.type !== 'vertical' && opts.kind === 'frame' && this._module.getState('openingView')) {
+        if (opts.type !== 'vertical' && opts.kind === 'frame' && this._builder.getState('openingView')) {
             min = 'max';
             max = 'min';
         }
@@ -820,7 +820,7 @@ export default Backbone.KonvaView.extend({
 
             let value = opt.value;
 
-            if (opts.type !== 'vertical' && opts.kind === 'mullion' && this._module.getState('openingView')) {
+            if (opts.type !== 'vertical' && opts.kind === 'mullion' && this._builder.getState('openingView')) {
                 value = this._model.getInvertedMeasurementVal(opt.value);
             }
 
@@ -1071,7 +1071,7 @@ export default Backbone.KonvaView.extend({
         group.add(horizontalWholeMertic);
 
         // Create controls
-        if (!this._module.getState('isPreview')) {
+        if (!this._builder.getState('isPreview')) {
             const vControls = this.createWholeControls(root_section.id, this._metricSize, vHeight, 'vertical');
             const hControls = this.createWholeControls(root_section.id, hWidth, this._metricSize, 'horizontal');
 
@@ -1123,12 +1123,14 @@ export default Backbone.KonvaView.extend({
         }
 
         const view = this;
-        const style = this._module.getStyle('overlay_measurements');
+        const style = this._builder.getStyle('overlay_measurements');
         const group = new Konva.Group();
-        const root = (this._module.getState('openingView')) ? this._model.generateFullRoot() : this._model.generateFullReversedRoot();
+        const current_root = (this._builder.getState('openingView')) ?
+            this._model.generateFullRoot() :
+            this._model.generateFullReversedRoot();
         const results = [];
 
-        findOverlay(root, results);
+        findOverlay(current_root, results);
 
         results.forEach((metric) => {
             const mSize = (this._metricSize / 2);
@@ -1276,7 +1278,7 @@ export default Backbone.KonvaView.extend({
         if (type === 'horizontal') {
             edgeTypes = [edges.left, edges.right];
 
-            if (!this._module.getState('insideView')) {
+            if (!this._builder.getState('insideView')) {
                 edgeTypes.reverse();
             }
         } else {
@@ -1362,7 +1364,7 @@ export default Backbone.KonvaView.extend({
             strokeWidth: styles.label.strokeWidth,
         }));
         const inches = convert.mm_to_inches(params.getter());
-        const val = format.dimension(inches, 'fraction', this._module.getState('inchesDisplayMode'));
+        const val = format.dimension(inches, 'fraction', this._builder.getState('inchesDisplayMode'));
         const textInches = new Konva.Text({
             text: val,
             padding: styles.label.padding,
@@ -1379,7 +1381,7 @@ export default Backbone.KonvaView.extend({
 
         if (params.setter) {
             labelInches.on('click tap', () => {
-                this._module.trigger('labelClicked', {
+                this._builder.trigger('labelClicked', {
                     params,
                     pos: labelInches.getAbsolutePosition(),
                     size: textInches.size(),
@@ -1466,7 +1468,7 @@ export default Backbone.KonvaView.extend({
             strokeWidth: styles.label.strokeWidth,
         }));
         const inches = convert.mm_to_inches(params.getter());
-        const val = format.dimension(inches, 'fraction', this._module.getState('inchesDisplayMode'));
+        const val = format.dimension(inches, 'fraction', this._builder.getState('inchesDisplayMode'));
         const textInches = new Konva.Text({
             text: val,
             padding: styles.label.padding,
@@ -1483,7 +1485,7 @@ export default Backbone.KonvaView.extend({
 
         if (params.setter) {
             labelInches.on('click tap', () => {
-                this._module.trigger('labelClicked', {
+                this._builder.trigger('labelClicked', {
                     params,
                     pos: labelInches.getAbsolutePosition(),
                     size: textInches.size(),
@@ -1495,7 +1497,7 @@ export default Backbone.KonvaView.extend({
         return group;
     },
     getDefaultMetricStyles() {
-        return this._module.getStyle('measurements');
+        return this._builder.getStyle('measurements');
     },
     updateLayer() {
         this.layer.draw();

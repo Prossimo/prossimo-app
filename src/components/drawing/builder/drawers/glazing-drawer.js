@@ -10,9 +10,9 @@ const MINIMAL_GAP = 25;
 
 export default Backbone.KonvaView.extend({
     initialize(params) {
-        this._module = params.builder;
-        this._model = this._module.get('model');
-        this._ratio = this._module.get('ratio');
+        this._builder = params.builder;
+        this._model = this._builder.get('model');
+        this._ratio = this._builder.get('ratio');
 
         this.layer = params.layer;
         this.stage = params.stage;
@@ -31,7 +31,7 @@ export default Backbone.KonvaView.extend({
         if (this.sectionId) {
             this.section = this._model.getSection(this.sectionId);
 
-            this._ratio = this._module.get('ratio');
+            this._ratio = this._builder.get('ratio');
 
             // Clear all previous objects
             this.layer.destroyChildren();
@@ -44,33 +44,33 @@ export default Backbone.KonvaView.extend({
     events: {},
     // handlers
     handleBarClick(data) {
-        this._module.setState({
+        this._builder.setState({
             selectedBar: data,
             selectedEdge: null,
         });
     },
     handleEdgeOver(key) {
-        this._module.setState({
+        this._builder.setState({
             hoverEdge: key,
         });
     },
     handleEdgeOut() {
-        this._module.setState({
+        this._builder.setState({
             hoverEdge: null,
         });
     },
     handleEdgeClick(key) {
-        this._module.setState({
+        this._builder.setState({
             selectedEdge: key,
         });
     },
     handleControlOver(key) {
-        this._module.setState({
+        this._builder.setState({
             hoverControl: key,
         });
     },
     handleControlOut() {
-        this._module.setState({
+        this._builder.setState({
             hoverControl: null,
         });
     },
@@ -109,7 +109,7 @@ export default Backbone.KonvaView.extend({
     },
     // Common methods
     resetStates() {
-        this._module.setState({
+        this._builder.setState({
             selectedBar: null,
             selectedEdge: null,
             hoverEdge: null,
@@ -117,7 +117,7 @@ export default Backbone.KonvaView.extend({
         });
     },
     getDefaultMetricStyles() {
-        return this._module.getStyle('measurements');
+        return this._builder.getStyle('measurements');
     },
     updateLayer() {
         this.layer.draw();
@@ -249,7 +249,7 @@ export default Backbone.KonvaView.extend({
     },
     createGlass(params) {
         const group = new Konva.Group();
-        const style = this._module.getStyle('fillings');
+        const style = this._builder.getStyle('fillings');
 
         const glass = new Konva.Rect({
             x: params.x,
@@ -295,8 +295,8 @@ export default Backbone.KonvaView.extend({
                 data = this.section.bars[type][i];
 
                 isSelected = (
-                    this._module.getState('selectedBar') !== null &&
-                    this._module.getState('selectedBar').id === data.id
+                    this._builder.getState('selectedBar') !== null &&
+                    this._builder.getState('selectedBar').id === data.id
                 );
 
                 pos_from = 0;
@@ -341,16 +341,16 @@ export default Backbone.KonvaView.extend({
                 });
 
                 // Draw controls to switch edges
-                if (isSelected && this._module.getState('selectedEdge') === null) {
+                if (isSelected && this._builder.getState('selectedEdge') === null) {
                     // 1. Draw controls to select edge
                     controls.add(this.createEdgeControls({
                         type,
                         position,
                         edges,
                     }));
-                } else if (isSelected && this._module.getState('selectedEdge') !== null) {
+                } else if (isSelected && this._builder.getState('selectedEdge') !== null) {
                     // 2. Draw controls to bound selected edge
-                    selectedEdge = this._module.getState('selectedEdge');
+                    selectedEdge = this._builder.getState('selectedEdge');
 
                     const invertedType = (type === 'vertical') ? 'horizontal' : 'vertical';
 
@@ -480,8 +480,8 @@ export default Backbone.KonvaView.extend({
         let isCircleSelected;
 
         for (let j = 0; j < 2; j += 1) {
-            isCircleSelected = (this._module.getState('selectedEdge') === j);
-            isCircleHover = (this._module.getState('hoverEdge') === j);
+            isCircleSelected = (this._builder.getState('selectedEdge') === j);
+            isCircleHover = (this._builder.getState('hoverEdge') === j);
 
             if (!isCircleSelected) {
                 // Position
@@ -518,14 +518,14 @@ export default Backbone.KonvaView.extend({
         return controls;
     },
     createBoundControl(params) {
-        const style = this._module.getStyle('glazing_controls');
+        const style = this._builder.getStyle('glazing_controls');
         const circle = new Konva.Circle({
             name: 'control',
             x: params.position.x,
             y: params.position.y,
             radius: this._model.get('glazing_bar_width') * style.bound.radius,
             fill: style.bound.fill,
-            opacity: (this._module.getState('hoverControl') === params.index) ?
+            opacity: (this._builder.getState('hoverControl') === params.index) ?
                 style.bound.hover.opacity : style.bound.normal.opacity,
         });
 
@@ -746,7 +746,7 @@ export default Backbone.KonvaView.extend({
             strokeWidth: styles.label.strokeWidth,
         }));
         const inches = convert.mm_to_inches(params.getter());
-        const val = format.dimension(inches, 'fraction', this._module.getState('inchesDisplayMode'));
+        const val = format.dimension(inches, 'fraction', this._builder.getState('inchesDisplayMode'));
         const textInches = new Konva.Text({
             text: val,
             padding: styles.label.padding,
@@ -766,7 +766,7 @@ export default Backbone.KonvaView.extend({
             params.canBeNegative = true;
 
             labelInches.on('click tap', () => {
-                this._module.trigger('labelClicked', {
+                this._builder.trigger('labelClicked', {
                     params,
                     pos: labelInches.getAbsolutePosition(),
                     size: textInches.size(),
@@ -855,7 +855,7 @@ export default Backbone.KonvaView.extend({
             strokeWidth: styles.label.strokeWidth,
         }));
         const inches = convert.mm_to_inches(params.getter());
-        const val = format.dimension(inches, 'fraction', this._module.getState('inchesDisplayMode'));
+        const val = format.dimension(inches, 'fraction', this._builder.getState('inchesDisplayMode'));
         const textInches = new Konva.Text({
             text: val,
             padding: styles.label.padding,
@@ -875,7 +875,7 @@ export default Backbone.KonvaView.extend({
             params.canBeNegative = true;
 
             labelInches.on('click tap', () => {
-                this._module.trigger('labelClicked', {
+                this._builder.trigger('labelClicked', {
                     params,
                     pos: labelInches.getAbsolutePosition(),
                     size: textInches.size(),

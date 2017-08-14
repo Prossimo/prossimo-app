@@ -6,7 +6,7 @@ import Schema from '../../schema';
 import { object, convert } from '../../utils';
 import Unit from './unit';
 import MultiunitSubunitCollection from '../collections/inline/multiunit-subunit-collection';
-import { mergePreviewOptions, generatePreview } from '../../components/drawing/module/preview';
+import { mergePreviewOptions, generatePreview } from '../../components/drawing/builder/preview';
 
 const MULTIUNIT_PROPERTIES = [
     { name: 'multiunit_subunits', title: 'Subunits', type: 'collection:MultiunitSubunitCollection' },

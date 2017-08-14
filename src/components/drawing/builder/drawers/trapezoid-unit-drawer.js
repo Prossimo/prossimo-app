@@ -44,13 +44,13 @@ function drawLouver(context, model, options) {
 
 export default Backbone.KonvaView.extend({
     initialize(params) {
-        this._module = params.builder;
+        this._builder = params.builder;
 
         this.layer = params.layer;
         this.stage = params.stage;
 
-        this._model = this._module.get('model');
-        this._ratio = this._module.get('ratio');
+        this._model = this._builder.get('model');
+        this._ratio = this._builder.get('ratio');
     },
     el() {
         const group = new Konva.Group();
@@ -58,7 +58,7 @@ export default Backbone.KonvaView.extend({
         return group;
     },
     render() {
-        this._ratio = this._module.get('ratio');
+        this._ratio = this._builder.get('ratio');
 
         // Clear all previous objects
         this.layer.destroyChildren();
@@ -123,30 +123,30 @@ export default Backbone.KonvaView.extend({
         this.deselectAll();
     },
     onIndexHoverClick(event) {
-        this._module.stopSectionMenuHover();
+        this._builder.stopSectionMenuHover();
         this.setSelection(event, 'sash', 'filling');
     },
     onIndexHoverEnter(event) {
-        this._module.startSectionMenuHover({ sectionId: event.target.getAttr('sectionId') });
+        this._builder.startSectionMenuHover({ sectionId: event.target.getAttr('sectionId') });
     },
     onIndexHoverMove() {
-        this._module.restartSectionMenuHover();
+        this._builder.restartSectionMenuHover();
     },
     onIndexHoverLeave() {
-        this._module.stopSectionMenuHover();
+        this._builder.stopSectionMenuHover();
     },
     // Keyboards handlers
     onKeyDown(e) {
         const isRemove = e.key === 'Delete' || e.key === 'Backspace';
         const isNumeric = /^[0-9]$/.test(e.key);
-        const selectedMullionId = this._module.getState('selected:mullion');
+        const selectedMullionId = this._builder.getState('selected:mullion');
         const isMullionSelected = !!selectedMullionId;
 
         if (isRemove) {
             e.preventDefault();
             this.removeSelected();
         } else if (isNumeric && isMullionSelected) {
-            this._module.trigger('mullionNumericInput', { mullionId: selectedMullionId });
+            this._builder.trigger('mullionNumericInput', { mullionId: selectedMullionId });
         }
     },
     // Selections
@@ -156,19 +156,19 @@ export default Backbone.KonvaView.extend({
         this.deselectAll();
 
         if (type === 'unit') {
-            this._module.setState('selected:unit', 'frame');
+            this._builder.setState('selected:unit', 'frame');
         } else if (type === 'sash' && origin) {
-            this._module.setState('selected:sash', origin.attrs.sectionId);
+            this._builder.setState('selected:sash', origin.attrs.sectionId);
         } else if (type === 'mullion' && origin) {
-            this._module.setState('selected:mullion', origin.attrs.sectionId);
+            this._builder.setState('selected:mullion', origin.attrs.sectionId);
         }
     },
     deselectAll(preventUpdate) {
-        this._module.deselectAll(preventUpdate);
+        this._builder.deselectAll(preventUpdate);
     },
     removeSelected() {
-        const selectedMullionId = this._module.getState('selected:mullion');
-        const selectedSashId = this._module.getState('selected:sash');
+        const selectedMullionId = this._builder.getState('selected:mullion');
+        const selectedSashId = this._builder.getState('selected:sash');
 
         if (selectedMullionId) {
             this._model.removeMullion(selectedMullionId);
@@ -183,21 +183,23 @@ export default Backbone.KonvaView.extend({
     // Create unit
     createUnit() {
         const group = this.el;
-        const root = (this._module.getState('openingView')) ? this._model.generateFullRoot() : this._model.generateFullReversedRoot();
+        const current_root = (this._builder.getState('openingView')) ?
+            this._model.generateFullRoot() :
+            this._model.generateFullReversedRoot();
 
         group.add(this.createBack());
 
-        const frameGroup = this.createMainFrame(root);
-        const sectionGroup = this.createSectionGroup(root);
+        const frameGroup = this.createMainFrame(current_root);
+        const sectionGroup = this.createSectionGroup(current_root);
 
         group.add(frameGroup);
         group.add(sectionGroup);
 
-        const center = this._module.get('center');
+        const center = this._builder.get('center');
         // place unit on stage center
         group.position(center);
 
-        if (!this._module.getState('openingView')) {
+        if (!this._builder.getState('openingView')) {
             frameGroup.moveToTop();
         }
 
@@ -215,7 +217,7 @@ export default Backbone.KonvaView.extend({
         return back;
     },
     // Create main frame
-    createMainFrame(root) {
+    createMainFrame(current_root) {
         const group = new Konva.Group();
 
         let frameGroup;
@@ -231,10 +233,10 @@ export default Backbone.KonvaView.extend({
             if (this._model.isTrapezoid()) {
                 frameGroup = this.createDoorTrapezoidFrame({
                     name: 'mainFrame',
-                    sectionId: root.id,
+                    sectionId: current_root.id,
                     width: this._model.getInMetric('width', 'mm'),
                     height: this._model.getInMetric('height', 'mm'),
-                    trapezoidHeights: this._model.getTrapezoidHeights(this._module.getState('insideView')),
+                    trapezoidHeights: this._model.getTrapezoidHeights(this._builder.getState('insideView')),
                     maxHeight: this._model.getTrapezoidMaxHeight(),
                     trapezoidCorners: this._model.getMainTrapezoidInnerCorners(),
                     frameWidth: this._model.profile.get('frame_width'),
@@ -242,7 +244,7 @@ export default Backbone.KonvaView.extend({
             } else {
                 frameGroup = this.createDoorFrame({
                     name: 'mainFrame',
-                    sectionId: root.id,
+                    sectionId: current_root.id,
                     width: this._model.getInMetric('width', 'mm'),
                     height: this._model.getInMetric('height', 'mm'),
                     frameWidth: this._model.profile.get('frame_width'),
@@ -251,7 +253,7 @@ export default Backbone.KonvaView.extend({
         } else if (isArchedWindow) {
             frameGroup = this.createArchedFrame({
                 name: 'mainFrame',
-                sectionId: root.id,
+                sectionId: current_root.id,
                 width: this._model.getInMetric('width', 'mm'),
                 height: this._model.getInMetric('height', 'mm'),
                 frameWidth: this._model.profile.get('frame_width'),
@@ -260,17 +262,17 @@ export default Backbone.KonvaView.extend({
         } else if (isCircleWindow) {
             frameGroup = this.createCircleFrame({
                 name: 'mainFrame',
-                sectionId: root.id,
+                sectionId: current_root.id,
                 radius: this._model.getCircleRadius(),
                 frameWidth: this._model.profile.get('frame_width'),
             });
         } else if (this._model.isTrapezoid()) {
             frameGroup = this.createTrapezoidFrame({
                 name: 'mainFrame',
-                sectionId: root.id,
+                sectionId: current_root.id,
                 width: this._model.getInMetric('width', 'mm'),
                 height: this._model.getInMetric('height', 'mm'),
-                trapezoidHeights: this._model.getTrapezoidHeights(this._module.getState('insideView')),
+                trapezoidHeights: this._model.getTrapezoidHeights(this._builder.getState('insideView')),
                 maxHeight: this._model.getTrapezoidMaxHeight(),
                 trapezoidCorners: this._model.getMainTrapezoidInnerCorners(),
                 frameWidth: this._model.profile.get('frame_width'),
@@ -278,7 +280,7 @@ export default Backbone.KonvaView.extend({
         } else {
             frameGroup = this.createFrame({
                 name: 'mainFrame',
-                sectionId: root.id,
+                sectionId: current_root.id,
                 width: this._model.getInMetric('width', 'mm'),
                 height: this._model.getInMetric('height', 'mm'),
                 frameWidth: this._model.profile.get('frame_width'),
@@ -327,7 +329,7 @@ export default Backbone.KonvaView.extend({
     },
     createArchSashFrame(params) {
         const group = new Konva.Group({ name: params.name || 'frame', sectionId: params.section.id });
-        const style = this._module.getStyle('frame');
+        const style = this._builder.getStyle('frame');
         const opts = this.getCircleSashDrawingOpts(params);
 
         const straightEdges = this.createStraightEdges(params, opts, style);
@@ -516,8 +518,8 @@ export default Backbone.KonvaView.extend({
         const frameWidth = params.frameWidth;  // in mm
         const width = params.width;
         const height = params.height;
-        const isSelected = this._module.getState('selected:unit') === 'frame';
-        const style = (isSelected) ? this._module.getStyle('frame').selected : this._module.getStyle('frame').default;
+        const isSelected = this._builder.getState('selected:unit') === 'frame';
+        const style = (isSelected) ? this._builder.getStyle('frame').selected : this._builder.getStyle('frame').default;
 
         const top = new Konva.Line({
             points: [
@@ -572,8 +574,8 @@ export default Backbone.KonvaView.extend({
         const width = params.width;
         const trapezoidHeights = params.trapezoidHeights;
         const maxHeight = params.maxHeight;
-        const isSelected = this._module.getState('selected:unit') === 'frame';
-        const style = (isSelected) ? this._module.getStyle('frame').selected : this._module.getStyle('frame').default;
+        const isSelected = this._builder.getState('selected:unit') === 'frame';
+        const style = (isSelected) ? this._builder.getStyle('frame').selected : this._builder.getStyle('frame').default;
 
         const top = new Konva.Line({
             points: [
@@ -663,8 +665,8 @@ export default Backbone.KonvaView.extend({
 
         current_section.trapezoid.frame = points;
 
-        const isSelected = this._module.getState('selected:sash') === 'filling';
-        const style = (isSelected) ? this._module.getStyle('frame').selected : this._module.getStyle('frame').default;
+        const isSelected = this._builder.getState('selected:sash') === 'filling';
+        const style = (isSelected) ? this._builder.getStyle('frame').selected : this._builder.getStyle('frame').default;
 
         const group = new Konva.Group({
             name: 'frame',
@@ -728,7 +730,7 @@ export default Backbone.KonvaView.extend({
         const frameWidth = this._model.profile.get('frame_width');
 
         // Extend opts with styles
-        _.extend(opts, this._module.getStyle('flush_frame'));
+        _.extend(opts, this._builder.getStyle('flush_frame'));
         // Extend with sizes and data
         _.extend(opts, {
             width,
@@ -773,10 +775,10 @@ export default Backbone.KonvaView.extend({
         const thresholdWidth = this._model.profile.get('threshold_width');
         const width = params.width;
         const height = params.height;
-        const isSelected = this._module.getState('selected:unit') === 'frame';
+        const isSelected = this._builder.getState('selected:unit') === 'frame';
         const style = {
-            frame: (isSelected) ? this._module.getStyle('frame').selected : this._module.getStyle('frame').default,
-            bottom: this._module.getStyle('door_bottom'),
+            frame: (isSelected) ? this._builder.getStyle('frame').selected : this._builder.getStyle('frame').default,
+            bottom: this._builder.getStyle('door_bottom'),
         };
 
         const top = new Konva.Line({
@@ -838,10 +840,10 @@ export default Backbone.KonvaView.extend({
         const width = params.width;
         const trapezoidHeights = params.trapezoidHeights;
         const maxHeight = params.maxHeight;
-        const isSelected = this._module.getState('selected:unit') === 'frame';
+        const isSelected = this._builder.getState('selected:unit') === 'frame';
         const style = {
-            frame: (isSelected) ? this._module.getStyle('frame').selected : this._module.getStyle('frame').default,
-            bottom: this._module.getStyle('door_bottom'),
+            frame: (isSelected) ? this._builder.getStyle('frame').selected : this._builder.getStyle('frame').default,
+            bottom: this._builder.getStyle('door_bottom'),
         };
 
         const top = new Konva.Line({
@@ -904,8 +906,8 @@ export default Backbone.KonvaView.extend({
         const height = params.height;
         const archHeight = params.archHeight;
 
-        const isSelected = this._module.getState('selected:unit') === 'frame';
-        const style = (isSelected) ? this._module.getStyle('frame').selected : this._module.getStyle('frame').default;
+        const isSelected = this._builder.getState('selected:unit') === 'frame';
+        const style = (isSelected) ? this._builder.getStyle('frame').selected : this._builder.getStyle('frame').default;
 
         const top = new Konva.Shape({
             stroke: style.stroke,
@@ -994,7 +996,7 @@ export default Backbone.KonvaView.extend({
         const group = new Konva.Group({ name: params.name || 'frame', sectionId: params.sectionId });
         const frameWidth = params.frameWidth;
         const radius = params.radius;
-        const style = this._module.getStyle('frame');
+        const style = this._builder.getStyle('frame');
 
         group.add(new Konva.Arc({
             x: radius,
@@ -1022,20 +1024,20 @@ export default Backbone.KonvaView.extend({
         return group;
     },
     // Create sections
-    createSectionGroup(root) {
+    createSectionGroup(current_root) {
         const drawer = this;
         // group for all nested elements
         const sectionsGroup = new Konva.Group();
 
         // create sections(sashes) recursively
-        const sections = this.createSectionsTree(root);
+        const sections = this.createSectionsTree(current_root);
 
         const radius = this._model.getCircleRadius();
         const frameWidth = this._model.profile.get('frame_width');
 
         // Reverse sections array to sorting from the deepest children
         // To make parent mullions lays over children sashes
-        // if (!this._module.getState('openingView')) { comment when fix bug width different mullions width
+        // if (!this._builder.getState('openingView')) { comment when fix bug width different mullions width
         //     sections.reverse();
         // }
 
@@ -1090,8 +1092,8 @@ export default Backbone.KonvaView.extend({
             const section = this._model.getSection(group.attrs.sectionId);
             // Make some correction in sorting order if section has...
             if (
-                (section.fillingType === 'interior-flush-panel' && this._module.getState('openingView')) ||
-                (section.fillingType === 'exterior-flush-panel' && !this._module.getState('openingView')) ||
+                (section.fillingType === 'interior-flush-panel' && this._builder.getState('openingView')) ||
+                (section.fillingType === 'exterior-flush-panel' && !this._builder.getState('openingView')) ||
                 section.fillingType === 'full-flush-panel'
             ) {
                 // Move frame before filling
@@ -1117,7 +1119,7 @@ export default Backbone.KonvaView.extend({
             const mullion = this.createMullion(rootSection);
 
             // fix bug width different mullion width
-            if (this._module.getState('openingView')) {
+            if (this._builder.getState('openingView')) {
                 objects.push(mullion);
             }
 
@@ -1130,7 +1132,7 @@ export default Backbone.KonvaView.extend({
             objects.push(level);
 
             // fix bug width different mullion width
-            if (!this._module.getState('openingView')) {
+            if (!this._builder.getState('openingView')) {
                 objects.push(mullion);
             }
         } else {
@@ -1140,8 +1142,8 @@ export default Backbone.KonvaView.extend({
         return objects;
     },
     createMullion(section) {
-        const style = this._module.getStyle('mullions');
-        const fillStyle = this._module.getStyle('fillings');
+        const style = this._builder.getStyle('mullions');
+        const fillStyle = this._builder.getStyle('fillings');
         const group = new Konva.Group({
             id: `mullion-${section.id}`,
             name: 'mullion',
@@ -1216,7 +1218,7 @@ export default Backbone.KonvaView.extend({
         const isHorizontalInvisible = (
             section.divider === 'horizontal_invisible'
         );
-        const isSelected = this._module.getState('selected:mullion') === section.id;
+        const isSelected = this._builder.getState('selected:mullion') === section.id;
 
         // do not show mullion for type vertical_invisible
         // and sash is added for both right and left sides
@@ -1342,7 +1344,7 @@ export default Backbone.KonvaView.extend({
 
         if (
             _.includes(['full-flush-panel', 'exterior-flush-panel'], sectionData.fillingType) &&
-            !this._module.getState('openingView')
+            !this._builder.getState('openingView')
         ) {
             fill.x = sectionData.openingParams.x - sectionData.sashParams.x;
             fill.y = sectionData.openingParams.y - sectionData.sashParams.y;
@@ -1350,7 +1352,7 @@ export default Backbone.KonvaView.extend({
             fill.height = sectionData.openingParams.height;
         } else if (
             _.includes(['full-flush-panel', 'interior-flush-panel'], sectionData.fillingType) &&
-            this._module.getState('openingView')
+            this._builder.getState('openingView')
         ) {
             fill.x = 0;
             fill.y = 0;
@@ -1380,7 +1382,7 @@ export default Backbone.KonvaView.extend({
         ].indexOf(sectionData.sashType) === -1);
 
         const shouldDrawHandle = this.shouldDrawHandle(sectionData.sashType);
-        const isSelected = (this._module.getState('selected:sash') === sectionData.id);
+        const isSelected = (this._builder.getState('selected:sash') === sectionData.id);
         let circleClip = {};
         let frameGroup;
 
@@ -1531,7 +1533,7 @@ export default Backbone.KonvaView.extend({
         const sashList = this._model.getSashList();
         const index = _.findIndex(sashList, s => s.id === sectionData.id);
 
-        if (this._module.getState('drawIndexes') && index >= 0) {
+        if (this._builder.getState('drawIndexes') && index >= 0) {
             const indexes = this.createSectionIndexes(sectionData, { main: index, add: null });
 
             group.add(this.createIndexes(indexes));
@@ -1591,8 +1593,8 @@ export default Backbone.KonvaView.extend({
         const handle = new Konva.Group();
         const type = section.sashType;
         const offset = params.frameWidth / 2;
-        const style = this._module.getStyle('handle');
-        const isInsideView = this._module.getState('insideView');
+        const style = this._builder.getStyle('handle');
+        const isInsideView = this._builder.getState('insideView');
         const isOutsideView = !isInsideView;
         const hasOutsideHandle = this._model.profile.hasOutsideHandle();
         const isEntryDoor = this._model.profile.isEntryDoor();
@@ -1764,7 +1766,7 @@ export default Backbone.KonvaView.extend({
     },
     applyHandleFixes() {
         const self = this;
-        const style = this._module.getStyle('handle');
+        const style = this._builder.getStyle('handle');
         const handleKonvas = this.layer.find('.handle');
         const vagueBaseStrokeThreshold = 0.25;
         const isPhantomJS = !!window._phantom;
@@ -1822,9 +1824,9 @@ export default Backbone.KonvaView.extend({
         const model = this._model;
         const group = new Konva.Group({ name: 'direction' });
         const type = section.sashType;
-        const style = this._module.getStyle('direction_line');
-        const isAmericanHinge = this._module.getState('hingeIndicatorMode') === 'american';
-        const isEuropeanHinge = this._module.getState('hingeIndicatorMode') === 'european';
+        const style = this._builder.getStyle('direction_line');
+        const isAmericanHinge = this._builder.getState('hingeIndicatorMode') === 'american';
+        const isEuropeanHinge = this._builder.getState('hingeIndicatorMode') === 'european';
         const isLeft = type.indexOf('left') !== -1;
         const isRight = type.indexOf('right') !== -1;
         const hasHiddenLatch = type.indexOf('_hinge_hidden_latch') !== -1;
@@ -1996,7 +1998,7 @@ export default Backbone.KonvaView.extend({
 
         // If section has children, create Indexes for them recursively
         if (mainSection.sections.length) {
-            if (this._module.getState('insideView') && mainSection.divider === 'vertical') {
+            if (this._builder.getState('insideView') && mainSection.divider === 'vertical') {
                 mainSection.sections.reverse();
             }
 
@@ -2086,14 +2088,14 @@ export default Backbone.KonvaView.extend({
         const group = new Konva.Group({ name: 'index' });
 
         indexes.forEach((section) => {
-            const add = (this._module.get('debug') ? ` (${section.id})` : '');
+            const add = (this._builder.get('debug') ? ` (${section.id})` : '');
             const opts = {
                 width: section.size.width,
                 text: section.text + add,
                 listening: false,
             };
 
-            _.extend(opts, this._module.getStyle('indexes'));
+            _.extend(opts, this._builder.getStyle('indexes'));
             opts.fontSize /= this._ratio;
 
             const number = new Konva.Text(opts);
@@ -2128,7 +2130,7 @@ export default Backbone.KonvaView.extend({
         const wrapper = params.wrapper;
         const isLouver = current_section.fillingType === 'louver';
         const frameWidth = params.frameWidth || this._model.profile.get('frame_width');
-        const style = this._module.getStyle('fillings');
+        const style = this._builder.getStyle('fillings');
         const group = new Konva.Group({ name: 'filling' });
         let crossing = {
             left: this._model.getTrapezoidCrossing(
@@ -2361,7 +2363,7 @@ export default Backbone.KonvaView.extend({
         let data;
         let space;
 
-        const style = this._module.getStyle('bars');
+        const style = this._builder.getStyle('bars');
 
         let _from;
         let _to;
@@ -2490,7 +2492,7 @@ export default Backbone.KonvaView.extend({
                 { x: wrapper.x + fillWidth, y: wrapper.y + fillHeight },
             ),
         };
-        const style = this._module.getStyle('selection');
+        const style = this._builder.getStyle('selection');
 
         const group = new Konva.Group({
             name: 'selection',

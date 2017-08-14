@@ -2,12 +2,17 @@ import _ from 'underscore';
 import Backbone from 'backbone';
 import Konva from '../konva-clip-patch';
 
+import {
+    KEY_BACKSPACE,
+    KEY_DELETE,
+} from '../../../../constants';
+
 export default Backbone.KonvaView.extend({
     initialize(params) {
-        this._module = params.builder;
-        this._model = this._module.get('model');
-        this._isInside = this._module.getState('insideView');
-        this._ratio = this._module.get('ratio');
+        this._builder = params.builder;
+        this._model = this._builder.get('model');
+        this._isInside = this._builder.getState('insideView');
+        this._ratio = this._builder.get('ratio');
 
         this.layer = params.layer;
         this.stage = params.stage;
@@ -18,8 +23,8 @@ export default Backbone.KonvaView.extend({
         return group;
     },
     render() {
-        this._ratio = this._module.get('ratio');
-        this._isInside = this._module.getState('insideView');
+        this._ratio = this._builder.get('ratio');
+        this._isInside = this._builder.getState('insideView');
 
         // Clear all previous objects
         this.layer.destroyChildren();
@@ -48,7 +53,7 @@ export default Backbone.KonvaView.extend({
     },
     // Keyboards handlers
     onKeyDown(e) {
-        if (e.keyCode === 46 || e.keyCode === 8) {  // DEL or BACKSPACE
+        if (e.keyCode === KEY_BACKSPACE || e.keyCode === KEY_DELETE) {
             e.preventDefault();
             this.removeSelected();
         }
@@ -60,14 +65,14 @@ export default Backbone.KonvaView.extend({
         this.deselectAll(true);
 
         if (type === 'subunit') {
-            this._module.setState('selected:subunit', origin.attrs.subunitId, false);
+            this._builder.setState('selected:subunit', origin.attrs.subunitId, false);
         }
     },
     deselectAll(preventUpdate) {
-        this._module.deselectAll(preventUpdate);
+        this._builder.deselectAll(preventUpdate);
     },
     removeSelected() {
-        const selectedSubunitId = this._module.getState('selected:subunit');
+        const selectedSubunitId = this._builder.getState('selected:subunit');
         let selectedSubunit;
 
         if (selectedSubunitId) {
@@ -91,7 +96,7 @@ export default Backbone.KonvaView.extend({
         group.add(subunitsIndexesGroup);
         group.add(subunitsOverlaysGroup);
 
-        const center = this._module.get('center');
+        const center = this._builder.get('center');
         // place unit on stage center
         group.position(center);
 
@@ -115,7 +120,7 @@ export default Backbone.KonvaView.extend({
                 preview: true,
                 isMaximized: true,
                 drawIndexes: false,
-                isSelected: (this._module.getState('selected:subunit') === node.unit.id),
+                isSelected: (this._builder.getState('selected:subunit') === node.unit.id),
             });
 
             subunitGroup.setAttrs({
@@ -179,7 +184,7 @@ export default Backbone.KonvaView.extend({
         });
 
         // to millimetres
-        const style = this._module.getStyle('frame').default;
+        const style = this._builder.getStyle('frame').default;
         const parentSubunitId = this._model.getConnectorParentSubunitId(connector.id);
 
         const parentKonva = options.subunitKonvas.filter(konva =>
@@ -249,7 +254,7 @@ export default Backbone.KonvaView.extend({
         const ratio = this._ratio;
         const group = new Konva.Group({ name: 'subunit_indexes' });
         const tree = this._model.getSubunitsCoordinatesTree({ flipX: this._isInside });
-        const style = this._module.getStyle('subunit_indexes');
+        const style = this._builder.getStyle('subunit_indexes');
 
         this._model.subunitsTreeForEach(tree, (node) => {
             const subunitWidth = node.width * ratio;

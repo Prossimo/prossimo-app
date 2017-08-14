@@ -1,19 +1,20 @@
 import $ from 'jquery';
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
-import Konva from '../module/konva-clip-patch';
+import Konva from '../builder/konva-clip-patch';
 
 import App from '../../../main';
 import { parseFormat, format, convert } from '../../../utils';
 import Unit from '../../../core/models/unit';
 import UndoManager from '../../../utils/undomanager';
-import DrawingModule from '../module/drawing-module';
+import DrawingBuilder from '../builder/drawing-builder';
 import DrawingGlazingPopup from './drawing-glazing-view';
 import template from '../templates/drawing-view.hbs';
 
 import {
     KEY_ENTER,
     KEY_ESC,
+    KEY_SHIFT,
 } from '../../../constants';
 
 const HELP_SQUARES_KEYPRESS_DELAY = 800;
@@ -201,7 +202,7 @@ export default Marionette.View.extend({
         this.helpSquaresShow();
     },
     handleModifierKeyUp(event) {
-        const isShift = _.contains(['ShiftLeft', 'ShiftRight'], event.code) || event.keyCode === 16;
+        const isShift = _.contains(['ShiftLeft', 'ShiftRight'], event.code) || event.keyCode === KEY_SHIFT;
         const eventKey = (isShift) ? 'Shift' : event.key;
         let modifierKeysPressed = this.state.modifierKeysPressed;
         const hasPressedKey = modifierKeysPressed && modifierKeysPressed.length && _.contains(modifierKeysPressed, eventKey);
@@ -218,18 +219,18 @@ export default Marionette.View.extend({
         return this.undo_manager.handler.redo();
     },
     handleCanvasClick(e) {
-        if (this.module.isCloningFilling()) {
-            this.module.cloneFillingDismiss();
+        if (this.builder.isCloningFilling()) {
+            this.builder.cloneFillingDismiss();
             e.preventDefault();
-        } else if (this.module.isSyncingFilling()) {
-            this.module.syncFillingDismiss();
+        } else if (this.builder.isSyncingFilling()) {
+            this.builder.syncFillingDismiss();
             e.preventDefault();
         }
         this.closeSectionHoverMenu();
     },
     handleCanvasKeyDown(e) {
-        if (this.module && !this.state.inputFocused) {
-            this.module.handleKeyEvents(e);
+        if (this.builder && !this.state.inputFocused) {
+            this.builder.handleKeyEvents(e);
         }
     },
     handleAdditionalMetricsChange(evt) {
@@ -259,7 +260,7 @@ export default Marionette.View.extend({
             openingView: this.isOpeningView(),
         });
 
-        this.module.setState({
+        this.builder.setState({
             insideView: this.isInsideView(),
             openingView: this.isOpeningView(),
         });
@@ -275,15 +276,15 @@ export default Marionette.View.extend({
     },
     handleFillingCloneClick() {
         if (this.state.selectedSashId) {
-            this.module.cloneFillingStart(this.state.selectedSashId);
+            this.builder.cloneFillingStart(this.state.selectedSashId);
         }
-        // Continues at this.bindModuleEvents()
+        // Continues at this.bindBuilderEvents()
     },
     handleFillingSyncClick() {
         if (this.state.selectedSashId) {
-            this.module.syncFillingStart(this.state.selectedSashId);
+            this.builder.syncFillingStart(this.state.selectedSashId);
         }
-        // Continues at this.bindModuleEvents()
+        // Continues at this.bindBuilderEvents()
     },
     handleFillingTypeChange() {
         let filling_type;
@@ -319,7 +320,7 @@ export default Marionette.View.extend({
         this.model.splitSection(this.state.selectedSashId, divider);
 
         this.deselectAll();
-        this.module.deselectAll();
+        this.builder.deselectAll();
         this.closeSectionHoverMenu();
     },
     handleChangeSashTypeClick(e) {
@@ -356,12 +357,12 @@ export default Marionette.View.extend({
         });
     },
     handleHoveringSectionControlsClick() {
-        this.setState({ selectedSashId: this.module.getState('selected:sash') }, true);
+        this.setState({ selectedSashId: this.builder.getState('selected:sash') }, true);
     },
     handleHoveringSectionControlsClickThrough() {
-        const selectedSashId = this.module.getState('selected:sash');
+        const selectedSashId = this.builder.getState('selected:sash');
         this.closeSectionHoverMenu();
-        this.module.setState('selected:sash', selectedSashId);
+        this.builder.setState('selected:sash', selectedSashId);
     },
     handleHoveringSectionControlsLeave() {
         this.closeSectionHoverMenu();
@@ -386,7 +387,7 @@ export default Marionette.View.extend({
             modelId = this.model.id;
         } else if (relation === 'multiunit') {
             multiunit = this.model;
-            modelId = this.module.getState('selected:subunit');
+            modelId = this.builder.getState('selected:subunit');
         }
 
         if (modelId && connectorSide) {
@@ -407,7 +408,7 @@ export default Marionette.View.extend({
         if (isModelSubunit) {
             target = this.model;
         } else if (isModelMultiunit) {
-            target = this.model.getSubunitLinkedUnitById(this.module.getState('selected:subunit'));
+            target = this.model.getSubunitLinkedUnitById(this.builder.getState('selected:subunit'));
         } else {
             target = this.model;
         }
@@ -454,36 +455,36 @@ export default Marionette.View.extend({
             size: 10,
         });
 
-        this.module = new DrawingModule({
+        this.builder = new DrawingBuilder({
             model: this.model,
             stage: this.stage,
             layers: {},
             metricSize: this.metric_size,
         });
 
-        this.module.setState({
+        this.builder.setState({
             insideView: this.isInsideView(),
             openingView: this.isOpeningView(),
         });
 
         // To show debug info, just uncomment it:
-        // this.module.set('debug', true);
+        // this.builder.set('debug', true);
 
-        this.bindModuleEvents();
+        this.bindBuilderEvents();
         this.elementsToShortcuts(this.ui.$shortcuts);
     },
     // Marrionente lifecycle method
     onBeforeDestroy() {
         this.stage.destroy();
-        this.unbindModuleEvents();
+        this.unbindBuilderEvents();
         this.helpSquaresCleanupState();
 
         if (this.glazing_view) {
             this.glazing_view.destroy();
         }
 
-        if (this.module) {
-            this.module.destroy();
+        if (this.builder) {
+            this.builder.destroy();
         }
     },
 
@@ -514,56 +515,56 @@ export default Marionette.View.extend({
         return true;
     },
 
-    bindModuleEvents() {
-        this.listenTo(this.module, 'state:selected:mullion', (data) => {
+    bindBuilderEvents() {
+        this.listenTo(this.builder, 'state:selected:mullion', (data) => {
             if (data.newValue) {
-                this.module.disableDelayedHover();
+                this.builder.disableDelayedHover();
             } else {
-                this.module.enableDelayedHover();
+                this.builder.enableDelayedHover();
             }
             this.deselectAll();
             this.setState({ selectedMullionId: data.newValue });
         });
-        this.listenTo(this.module, 'state:selected:sash', (data) => {
+        this.listenTo(this.builder, 'state:selected:sash', (data) => {
             const sourceSashId = data.oldValue;
             const targetSashId = data.newValue;
 
             if (targetSashId) {
-                this.module.disableDelayedHover();
+                this.builder.disableDelayedHover();
             } else {
-                this.module.enableDelayedHover();
+                this.builder.enableDelayedHover();
             }
 
             if (!targetSashId || targetSashId === sourceSashId) { this.deselectAll(); return; }
 
-            if (this.module.isCloningFilling()) {
-                this.module.cloneFillingFinish(targetSashId);
-            } else if (this.module.isSyncingFilling()) {
-                this.module.syncFillingFinish(targetSashId);
+            if (this.builder.isCloningFilling()) {
+                this.builder.cloneFillingFinish(targetSashId);
+            } else if (this.builder.isSyncingFilling()) {
+                this.builder.syncFillingFinish(targetSashId);
             } else {
                 this.deselectAll();
                 this.setState({ selectedSashId: targetSashId });
             }
         });
-        this.listenTo(this.module, 'state:selected:unit', (data) => {
+        this.listenTo(this.builder, 'state:selected:unit', (data) => {
             this.deselectAll();
             this.setState({ isUnitSelected: data.newValue });
         });
-        this.listenTo(this.module, 'state:selected:subunit', (data) => {
+        this.listenTo(this.builder, 'state:selected:subunit', (data) => {
             this.deselectAll();
             this.setState({ selectedSubunitId: data.newValue });
         });
-        this.listenTo(this.module, 'labelClicked', (data) => {
+        this.listenTo(this.builder, 'labelClicked', (data) => {
             this.createInput(data.params, data.pos, data.size);
         });
-        this.listenTo(this.module, 'mullionNumericInput', (data) => {
+        this.listenTo(this.builder, 'mullionNumericInput', (data) => {
             this.createMullionInput(data.mullionId);
         });
-        this.listenTo(this.module, 'state:cloneFillingSource state:syncFillingSource', () => {
+        this.listenTo(this.builder, 'state:cloneFillingSource state:syncFillingSource', () => {
             this.updateUI();
             this.$('#drawing').focus();
         });
-        this.listenTo(this.module, 'state:sectionHoverMenuOpen', (data) => {
+        this.listenTo(this.builder, 'state:sectionHoverMenuOpen', (data) => {
             const pointerPosition = this.stage.getPointerPosition();
             const x = pointerPosition && pointerPosition.x;
             const y = pointerPosition && pointerPosition.y;
@@ -575,8 +576,8 @@ export default Marionette.View.extend({
             }
         });
     },
-    unbindModuleEvents() {
-        this.stopListening(this.module);
+    unbindBuilderEvents() {
+        this.stopListening(this.builder);
     },
 
     templateContext() {
@@ -604,8 +605,8 @@ export default Marionette.View.extend({
 
     createInput(params, pos, size) {
         const view = this;
-        const module = this.module;
-        const $container = $(module.get('stage').container());
+        const builder = this.builder;
+        const $container = $(builder.get('stage').container());
         const $wrap = $('<div>')
             .addClass('popup-wrap')
             .appendTo($container)
@@ -685,13 +686,13 @@ export default Marionette.View.extend({
         }
 
         const self = this;
-        const module = this.module;
+        const builder = this.builder;
         const model = this.model;
-        const ratio = module.get('ratio');
-        const style = module.getStyle('mullion_input');
+        const ratio = builder.get('ratio');
+        const style = builder.getStyle('mullion_input');
         const isInside = this.isInsideView();
         const isOutside = !isInside;
-        const unitLayer = module.getLayer('unit').layer;
+        const unitLayer = builder.getLayer('unit').layer;
         const mullion = model.getMullion(mullionId);
         const mullionRect = unitLayer.findOne(`#mullion-${mullionId}`).getClientRect();
         const mullionX = (mullionRect.x * ratio) + unitLayer.getClientRect().x;
@@ -702,7 +703,7 @@ export default Marionette.View.extend({
         const inputY = mullionCenterY - (style.height / 2);
         const isVertical = mullion.type === 'vertical' || mullion.type === 'vertical_invisible';
         const isHorizontal = mullion.type === 'horizontal' || mullion.type === 'horizontal_invisible';
-        const $container = $(module.get('stage').container());
+        const $container = $(builder.get('stage').container());
         const containerPosition = ($container.css('position') === 'relative') ? { top: 0, left: 0 } : $container.position();
         const $wrap = $('<div>')
             .addClass('popup-wrap')
@@ -809,7 +810,7 @@ export default Marionette.View.extend({
         this.ui.$hovering_section_controls.toggleClass('open', currentNewState);
         if (!_.isUndefined(x)) { this.ui.$hovering_section_controls.css('left', `${x}px`); }
         if (!_.isUndefined(y)) { this.ui.$hovering_section_controls.css('top', `${y}px`); }
-        this.module.setState('sectionHoverMenuOpen', currentNewState);
+        this.builder.setState('sectionHoverMenuOpen', currentNewState);
     },
     openSectionHoverMenu(options) {
         this.toggleSectionHoverMenu(true, options);
@@ -898,7 +899,7 @@ export default Marionette.View.extend({
         this.ui.$drawing_view_title.text(titleText);
 
         // Mouse pointer
-        if (this.module.isCloningFilling() || this.module.isSyncingFilling()) {
+        if (this.builder.isCloningFilling() || this.builder.isSyncingFilling()) {
             document.body.style.cursor = 'copy';
         } else {
             document.body.style.cursor = 'auto';
@@ -1022,6 +1023,6 @@ export default Marionette.View.extend({
             keysToElementsTable[key].push(element);
         });
 
-        this.module.setState('keysToElementsTable', keysToElementsTable);
+        this.builder.setState('keysToElementsTable', keysToElementsTable);
     },
 });

@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import DrawingModule from './drawing-module';
+import DrawingBuilder from './drawing-builder';
 
 export function mergePreviewOptions(unitModel, options) {
     const defaults = {
@@ -22,11 +22,11 @@ export function generatePreview(unitModel, preview_options) {
     const options = mergePreviewOptions(unitModel, preview_options);
     let result;
 
-    const module = new DrawingModule(options);
+    const builder = new DrawingBuilder(options);
     const isInside = (options.position === 'inside');
 
     if (_.indexOf(['inside', 'outside'], options.position) !== -1) {
-        module.setState({
+        builder.setState({
             insideView: isInside,
             openingView: (isInside && !unitModel.isOpeningDirectionOutward()) ||
                 (options.position === 'outside' && unitModel.isOpeningDirectionOutward()),
@@ -38,13 +38,13 @@ export function generatePreview(unitModel, preview_options) {
     }
 
     if (options.width && options.height) {
-        module.updateSize(options.width, options.height);
+        builder.updateSize(options.width, options.height);
     }
 
     if (options.drawNeighbors) {
-        const style = module.getStyle('neighbors_background');
-        const previewRatio = module.get('ratio');
-        const originCoords = module.layerManager.layers.unit.drawer.layer.getClientRect();
+        const style = builder.getStyle('neighbors_background');
+        const previewRatio = builder.get('ratio');
+        const originCoords = builder.layerManager.layers.unit.drawer.layer.getClientRect();
         const originX = originCoords.x;
         const originY = originCoords.y;
         const parentMultiunit = unitModel.getParentMultiunit();
@@ -73,7 +73,7 @@ export function generatePreview(unitModel, preview_options) {
         }, options);
         const background = parentMultiunit.getPreview(backgroundOptions);
 
-        module.setBackground(background, {
+        builder.setBackground(background, {
             opacity: style.opacity,
             filters: style.filters,
             x: backgroundX,
@@ -82,19 +82,19 @@ export function generatePreview(unitModel, preview_options) {
     }
 
     if (options.mode === 'canvas') {
-        result = module.getCanvas();
+        result = builder.getCanvas();
     } else if (options.mode === 'base64') {
-        result = module.getBase64();
+        result = builder.getBase64();
     } else if (options.mode === 'image') {
-        result = module.getImage();
+        result = builder.getImage();
     } else if (options.mode === 'group') {
-        result = module.getGroup();
+        result = builder.getGroup();
         result.setAttr('name', 'preview');
     }
 
-    //  TODO disentangle Konva.Group from the module and destroy module
+    //  TODO disentangle Konva.Group from the builder and destroy builder
     if (options.mode !== 'group') {
-        module.destroy();
+        builder.destroy();
     }
 
     return result;

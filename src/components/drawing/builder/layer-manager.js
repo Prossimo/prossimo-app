@@ -4,7 +4,7 @@ import Marionette from 'backbone.marionette';
 import Drawers from './drawers';
 import KonvaClipPatch from './konva-clip-patch';
 
-// LayerManager is an important and required part of the DrawingModule,
+// LayerManager is an important and required part of the DrawingBuilder,
 // it's used for creating, storing and working with stage layers. Also, it
 // tranfers keyboard events from view to drawers
 
