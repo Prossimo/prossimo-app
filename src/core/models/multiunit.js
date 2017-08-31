@@ -3,7 +3,7 @@ import _ from 'underscore';
 
 import App from '../../main';
 import Schema from '../../schema';
-import { object, convert } from '../../utils';
+import { object, convert, multiunit } from '../../utils';
 import Unit from './unit';
 import MultiunitSubunitCollection from '../collections/inline/multiunit-subunit-collection';
 import { mergePreviewOptions, generatePreview } from '../../components/drawing/builder/preview';
@@ -43,7 +43,6 @@ export default Backbone.Model.extend({
         if (!this.options.proxy) {
             this.on('add', this.updateSubunitsMetadata);
 
-            //  TODO: maybe we want to trigger this by less events (no change?)
             this.listenTo(this.get('multiunit_subunits'), 'change update reset', () => {
                 this.persist('multiunit_subunits', this.get('multiunit_subunits'), {
                     success: () => {
@@ -51,6 +50,7 @@ export default Backbone.Model.extend({
                         this.recalculateSizes();
                     },
                 });
+                this.trigger('change:multiunit_subunits change');
             });
 
             //  Destroy multiunit when we removed the last subunit
@@ -460,7 +460,10 @@ export default Backbone.Model.extend({
         this._cache.width = convert.mm_to_inches(rect.width);
         this._cache.height = convert.mm_to_inches(rect.height);
 
-        return { width: rect.width, height: rect.height };
+        return {
+            width: convert.mm_to_inches(rect.width),
+            height: convert.mm_to_inches(rect.height),
+        };
     },
     getSubunitNode(subunitId) {
         const subunitPositionsTree = this.getSubunitsCoordinatesTree();
@@ -666,73 +669,18 @@ export default Backbone.Model.extend({
 
         return { x: minX, y: minY, width: multiunitWidth, height: multiunitHeight };
     },
-    //  Generate all possible unique traversal sequences from the list of
-    //  connectors. If we have connectors [[1, 3], [3, 5], [1, 7]], the
-    //  resulting traversal sequences would be [[1, 3, 5], [1, 7]]. These
-    //  sequences could be used for validation or obtaining the origin id
-    getSubunitsTraversalSequences(connectors) {
-        //  Checks that [1, 2] is subsequence of [1, 2, 3]. Order is important
-        function isSubsequence(sequence, parentSequence) {
-            return sequence.map(entry => parentSequence.indexOf(entry)).every((value, index, array) =>
-                (value !== -1 && (index === 0 || value - array[index - 1] === 1)),
-            );
-        }
+    /**
+     * Generate all possible unique traversal sequences from the list of
+     * connectors. If we have connectors [[1, 3], [3, 5], [1, 7]], the
+     * resulting traversal sequences would be [[1, 3, 5], [1, 7]]. These
+     * sequences could be used for validation or obtaining the origin id
+     *
+     * @see multiunit.getSubunitsTraversalSequences from utils.js
+     */
+    getSubunitsTraversalSequences() {
+        const connectors = this.getConnectors().map(connector => connector.connects);
 
-        function canBeLeftJoined(left, right) {
-            return right.length > 1 && left[0] === right[right.length - 1];
-        }
-
-        function canBeRightJoined(right, left) {
-            return left.length > 1 && right[0] === left[left.length - 1];
-        }
-
-        function canBeJoined(left, right) {
-            return canBeLeftJoined(left, right) || canBeRightJoined(right, left);
-        }
-
-        function leftJoinConnectors(left, right) {
-            return canBeLeftJoined(left, right) ? right.slice().concat(left.slice(1)) : [left, right];
-        }
-
-        function rightJoinConnectors(right, left) {
-            return canBeRightJoined(right, left) ? left.slice().concat(right.slice(1)) : [right, left];
-        }
-
-        function joinConnectors(left, right) {
-            let result = [left, right];
-
-            if (canBeLeftJoined(left, right)) {
-                result = leftJoinConnectors(left, right);
-            } else if (canBeRightJoined(right, left)) {
-                result = rightJoinConnectors(right, left);
-            }
-
-            return result;
-        }
-
-        let result = connectors.slice();
-
-        result.forEach((connector1) => {
-            result.forEach((connector2) => {
-                if (canBeJoined(connector1, connector2) && !_.contains((joinConnectors(connector1, connector2), result))) {
-                    result.push(joinConnectors(connector1, connector2));
-                }
-            });
-        });
-
-        result = result.filter((entry) => {
-            let is_unique = true;
-
-            result.forEach((another_entry) => {
-                if (another_entry.length > entry.length && isSubsequence(entry, another_entry)) {
-                    is_unique = false;
-                }
-            });
-
-            return is_unique;
-        });
-
-        return result;
+        return multiunit.getSubunitsTraversalSequences(connectors);
     },
     getSubunitsIds() {
         return this.get('multiunit_subunits').map(subunit => subunit.get('unit_id') || subunit.get('unit_cid'));
@@ -741,14 +689,15 @@ export default Backbone.Model.extend({
         const subunits = this.get('multiunit_subunits');
         const has_single_subunit = subunits && subunits.length === 1;
 
+        // If we only have a single subunit, it means we don't have any
+        // connectors, so we can't use traversal sequences to check origin
         if (has_single_subunit) {
             return subunits.at(0).get('unit_id') || subunits.at(0).get('unit_cid');
         }
 
-        const connections = this.getConnectors().map(connector => connector.connects);
-        const traversal_sequences = this.getSubunitsTraversalSequences(connections);
+        const traversal_sequences = this.getSubunitsTraversalSequences();
         const has_same_origin = traversal_sequences.length && traversal_sequences.map(item => item[0])
-            .every((value, index, array) => (index === 0 || value === array[index - 1]));
+            .every((value, index, arr) => (index === 0 || value === arr[index - 1]));
 
         return has_same_origin ? traversal_sequences[0][0] : undefined;
     },
@@ -773,6 +722,113 @@ export default Backbone.Model.extend({
         return this.get('multiunit_subunits').filter(entry =>
             _.contains(childSubunitsIds, entry.get('unit_id') || entry.get('unit_cid')),
         );
+    },
+    /**
+     * Represent all subunits and connections between them as a matrix, where
+     * left / right siblings are in the same row, and top / bottom siblings
+     * are in the same column
+     *
+     * @see multiunit.getSubunitsAsMatrix from utils.js
+     *
+     * @return {{rows: array, cols: array}} The list of all subunits, represented as nested arrays
+     */
+    getSubunitsAsMatrix() {
+        const has_proper_origin = this.getOriginSubunitId();
+        let connectors = this.getConnectors();
+
+        // Check that connectors produce valid traversal sequences
+        if (!has_proper_origin) {
+            connectors = [];
+        }
+
+        return multiunit.getSubunitsAsMatrix(connectors);
+    },
+    /**
+     * Update subunits width / height so that total width / height of the
+     * multiunit equals the new target size
+     *
+     * @param {string} measurement - <'width'|'height'>
+     * @param {number} new_size - New multiunit size, in mm
+     * @param {string} metric - <'inches'|'mm'> (optional, 'inches' by default)
+     */
+    fitSubunitsToSize(measurement, new_size, metric) {
+        if (!_.contains(['width', 'height'], measurement)) {
+            throw new Error('Measurement should either be width or height');
+        }
+
+        if (metric && !_.contains(['inches', 'mm'], metric)) {
+            throw new Error('Metric should either be inches or mm');
+        }
+
+        let new_size_mm = new_size;
+
+        if (!metric || metric === 'inches') {
+            new_size_mm = convert.inches_to_mm(new_size);
+        }
+
+        const old_size_mm = measurement === 'width' ? convert.inches_to_mm(this.getWidth()) : convert.inches_to_mm(this.getHeight());
+        const size_diff = new_size_mm - old_size_mm;
+        const as_matrix = this.getSubunitsAsMatrix();
+        const data_source = measurement === 'width' ? as_matrix.rows : as_matrix.cols;
+        const total_subunits_count = this.getSubunitsList().length;
+
+        // Do nothing if size didn't change
+        if (old_size_mm === new_size_mm) {
+            return;
+        }
+
+        if (total_subunits_count > 1) {
+            const row_stats = data_source.map((data_row) => {
+                let total_row_width = 0;
+                let no_connectors_row_width = 0;
+                let subunits_count = 0;
+
+                data_row.forEach((row_element) => {
+                    let element_width = 0;
+
+                    if (row_element.type === 'connector') {
+                        element_width = row_element.width;
+                    } else if (row_element.type === 'unit') {
+                        element_width = convert.inches_to_mm(this.getSubunitLinkedUnitById(row_element.id).get(measurement));
+                        no_connectors_row_width += element_width;
+                        subunits_count += 1;
+                    }
+
+                    total_row_width += element_width;
+                });
+
+                return {
+                    total_width: total_row_width,
+                    no_connectors_width: no_connectors_row_width,
+                    subunits_count,
+                };
+            });
+
+            row_stats.forEach((row_data, index) => {
+                const resize_value = size_diff / row_data.subunits_count;
+
+                //  Reize operation itself
+                data_source[index].forEach((row_element) => {
+                    if (row_element.type === 'connector') {
+                        return;
+                    }
+
+                    const target_unit = this.getSubunitLinkedUnitById(row_element.id);
+                    const element_width = convert.inches_to_mm(target_unit.get(measurement));
+                    const new_width = convert.mm_to_inches(element_width + resize_value);
+
+                    target_unit.updateDimension(measurement, new_width);
+                });
+            });
+        } else if (total_subunits_count === 1) {
+            const target_unit = this.getSubunitLinkedUnitById(this.getOriginSubunitId());
+
+            target_unit.updateDimension(measurement, convert.mm_to_inches(new_size_mm));
+        }
+
+        this.recalculateSizes();
+        this.updateConnectorsLength();
+        this.trigger('change');
     },
     /**
      * = Conceptual connector model:

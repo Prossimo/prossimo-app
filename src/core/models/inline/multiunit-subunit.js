@@ -92,5 +92,13 @@ export default Backbone.Model.extend({
     },
     initialize(attributes, options) {
         this.options = options || {};
+
+        //  TODO: we might also want to add another listener for destroy event
+        //  but we have to update multiunit's removeSubunit function then
+        if (this.getUnit()) {
+            this.listenTo(this.getUnit(), 'change', (changed_object) => {
+                this.trigger('change:unit change', changed_object);
+            });
+        }
     },
 });

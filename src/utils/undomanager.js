@@ -106,6 +106,10 @@ export default function (opts) {
             }
         },
         on(model, options) {
+            if (!model) {
+                return undefined;
+            }
+
             const redo_options = clone(options) || {};
 
             const afterAttributes = model.changedAttributes();

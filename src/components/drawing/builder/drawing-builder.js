@@ -49,7 +49,7 @@ export default Marionette.Object.extend({
 
         // Assign model
         if ('model' in opts) {
-            this.assignModel(opts.model);
+            this.assignModel(opts.model, opts);
         } else {
             throw new Error('DrawingBuilder can\'t start without a defined Model!');
         }
@@ -456,9 +456,9 @@ export default Marionette.Object.extend({
         return style;
     },
     // Assign/bind/unbind model
-    assignModel(model) {
+    assignModel(model, opts) {
         this.unbindModel();
-        this.bindModel(model);
+        this.bindModel(model, opts);
     },
     unbindModel() {
         if (this.get('model') !== null) {
@@ -467,9 +467,10 @@ export default Marionette.Object.extend({
 
         this.set('model', null);
     },
-    bindModel(model) {
+    bindModel(model, opts) {
         this.set('model', model);
-        this.listenTo(model, 'change', this.update);
+
+        this.listenTo(model, 'change', this.update.bind(this, opts));
     },
     // Handler
     handleKeyEvents(event) {

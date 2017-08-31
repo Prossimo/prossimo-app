@@ -940,6 +940,11 @@ export default Backbone.KonvaView.extend({
         const verticalWholeMetric = this.createVerticalMetric(metricSize, height, {
             name: 'vertical_whole_metric',
             getter: () => model.getInMetric('height', 'mm'),
+            setter(val) {
+                const current_val = clone(val);
+
+                model.fitSubunitsToSize('height', current_val, 'mm');
+            },
         });
         const vPosition = { x: -metricSize * (hRows + 1), y: 0 };
         verticalWholeMetric.position(vPosition);
@@ -948,6 +953,11 @@ export default Backbone.KonvaView.extend({
         // Horizontal metric
         const horizontalWholeMertic = this.createHorizontalMetric(width, metricSize, {
             getter: () => model.getInMetric('width', 'mm'),
+            setter(val) {
+                const current_val = clone(val);
+
+                model.fitSubunitsToSize('width', current_val, 'mm');
+            },
         });
         const hPosition = { x: 0, y: height + (vRows * metricSize) };
         horizontalWholeMertic.position(hPosition);

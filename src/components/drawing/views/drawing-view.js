@@ -70,7 +70,7 @@ export default Marionette.View.extend({
 
         this.undo_manager = new UndoManager({
             register: this.model,
-            track: true,
+            track: !this.model.isMultiunit(),
         });
     },
     ui: {

@@ -10,7 +10,6 @@ import App from '../../main';
 import UndoManager from '../../utils/undomanager';
 import Unit from '../models/unit';
 import Accessory from '../models/accessory';
-import MultiunitCollection from '../collections/multiunit-collection';
 import UnitsTableTotalPricesView from '../../core/views/units-table-total-prices-view';
 import template from '../../templates/core/units-table-view.hbs';
 
@@ -538,10 +537,14 @@ export default Marionette.View.extend({
 
         const setters_hash = {
             width(model, attr_name, val) {
-                return model.updateDimension(attr_name, self.getSetterParser(column_name, val));
+                return model.isMultiunit() ?
+                    model.fitSubunitsToSize(attr_name, self.getSetterParser(column_name, val)) :
+                    model.updateDimension(attr_name, self.getSetterParser(column_name, val));
             },
             height(model, attr_name, val) {
-                return model.updateDimension(attr_name, self.getSetterParser(column_name, val));
+                return model.isMultiunit() ?
+                    model.fitSubunitsToSize(attr_name, self.getSetterParser(column_name, val)) :
+                    model.updateDimension(attr_name, self.getSetterParser(column_name, val));
             },
         };
 
@@ -678,12 +681,10 @@ export default Marionette.View.extend({
         const properties_hash = {
             ref_num: { readOnly: true },
             width: {
-                readOnly: this.getActiveTab().collection instanceof MultiunitCollection,
                 renderer: hotRenderers.getFormattedRenderer('dimension', null,
                     project_settings.get('inches_display_mode') || null),
             },
             height: {
-                readOnly: this.getActiveTab().collection instanceof MultiunitCollection,
                 renderer: hotRenderers.getFormattedRenderer('dimension_heights', null,
                     project_settings.get('inches_display_mode') || null),
             },

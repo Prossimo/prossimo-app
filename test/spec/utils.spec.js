@@ -1,6 +1,15 @@
 import _ from 'underscore';
 
-import { angle, convert, format, math, parseFormat, vector2d } from '../../src/utils';
+import {
+    angle,
+    convert,
+    format,
+    math,
+    parseFormat,
+    vector2d,
+    array,
+    multiunit,
+} from '../../src/utils';
 
 test('Utils.js tests: ', () => {
     //  ------------------------------------------------------------------------
@@ -483,6 +492,432 @@ test('Utils.js tests: ', () => {
             equal(a.deg_to_rad(1), 0.017453292519943295, 'Expected value is 0.017453292519943295');
             equal(a.deg_to_rad(180), 3.141592653589793, 'Expected value is 3.141592653589793');
             equal(a.deg_to_rad(-180), -3.141592653589793, 'Expected value is -3.141592653589793');
+        });
+    });
+
+    //  ------------------------------------------------------------------------
+    //  Test array functions from utils.js
+    //  ------------------------------------------------------------------------
+    test('array', () => {
+        test('insertAt', () => {
+            const a = array;
+            const data = [4, 4, 4];
+
+            deepEqual(a.insertAt(data, 0, 55), [55, 4, 4, 4], 'New value was added to array, as expected');
+            deepEqual(a.insertAt(data, 1, 55), [4, 55, 4, 4], 'New value was added to array, as expected');
+            deepEqual(a.insertAt(data, 2, 55), [4, 4, 55, 4], 'New value was added to array, as expected');
+            deepEqual(a.insertAt(data, 3, 55), [4, 4, 4, 55], 'New value was added to array, as expected');
+            deepEqual(a.insertAt(data, 4, 55), [4, 4, 4, 55], 'New value was added to array, as expected');
+            deepEqual(a.insertAt(data, 14, 55), [4, 4, 4, 55], 'New value was added to array, as expected');
+
+            deepEqual(a.insertAt(data, -1, 55), [4, 4, 55, 4], 'New value was added to array, as expected');
+            deepEqual(a.insertAt(data, -2, 55), [4, 55, 4, 4], 'New value was added to array, as expected');
+            deepEqual(a.insertAt(data, -3, 55), [55, 4, 4, 4], 'New value was added to array, as expected');
+            deepEqual(a.insertAt(data, -5, 55), [55, 4, 4, 4], 'New value was added to array, as expected');
+
+            deepEqual(a.insertAt(data, 3, 55, 44), [4, 4, 4, 55], 'Only one value was added to array');
+
+            deepEqual(data, [4, 4, 4], 'Original array was not modified');
+        });
+
+        test('insertBefore', () => {
+            const a = array;
+            const data = [7, 8, 9];
+
+            deepEqual(a.insertBefore(data, 7, 55), [55, 7, 8, 9], 'New value was added to array, as expected');
+            deepEqual(a.insertBefore(data, 8, 55), [7, 55, 8, 9], 'New value was added to array, as expected');
+            deepEqual(a.insertBefore(data, 9, 55), [7, 8, 55, 9], 'New value was added to array, as expected');
+            deepEqual(a.insertBefore(data, -1, 55), [7, 8, 9], 'New value was not added to array');
+            deepEqual(a.insertBefore(data, 11, 55), [7, 8, 9], 'New value was not added to array');
+
+            deepEqual(a.insertBefore([7, 7, 7], 7, 55), [55, 7, 7, 7], 'New value was added to array, as expected');
+            deepEqual(a.insertBefore([], 7, 55), [], 'New value was not added to an empty array');
+
+            deepEqual(data, [7, 8, 9], 'Original array was not modified');
+        });
+
+        test('insertAfter', () => {
+            const a = array;
+            const data = [7, 8, 9];
+
+            deepEqual(a.insertAfter(data, 7, 55), [7, 55, 8, 9], 'New value was added to array, as expected');
+            deepEqual(a.insertAfter(data, 8, 55), [7, 8, 55, 9], 'New value was added to array, as expected');
+            deepEqual(a.insertAfter(data, 9, 55), [7, 8, 9, 55], 'New value was added to array, as expected');
+            deepEqual(a.insertAfter(data, -1, 55), [7, 8, 9], 'New value was not added to array');
+            deepEqual(a.insertAfter(data, 11, 55), [7, 8, 9], 'New value was not added to array');
+
+            deepEqual(a.insertAfter([7, 7, 7], 7, 55), [7, 55, 7, 7], 'New value was added to array, as expected');
+            deepEqual(a.insertAfter([], 7, 55), [], 'New value was not added to an empty array');
+
+            deepEqual(data, [7, 8, 9], 'Original array was not modified');
+        });
+    });
+
+    //  ------------------------------------------------------------------------
+    //  Test multiunit helper functions from utils.js
+    //  ------------------------------------------------------------------------
+    test('multiunit helpers', () => {
+        test('getSubunitsTraversalSequences', () => {
+            const connectors = [
+                [1, 4],
+                [1, 5],
+            ];
+
+            deepEqual(multiunit.getSubunitsTraversalSequences(connectors), [
+                [1, 4],
+                [1, 5],
+            ], 'Test 1 traversal sequences are valid');
+
+            const connectors_2 = [
+                [1, 3],
+                [1, 4],
+                [4, 5],
+            ];
+
+            deepEqual(multiunit.getSubunitsTraversalSequences(connectors_2), [
+                [1, 3],
+                [1, 4, 5],
+            ], 'Test 2 traversal sequences are valid');
+
+            const connectors_3 = [
+                [1, 4],
+                [4, 5],
+                [1, 3],
+                [3, 6],
+                [6, 8],
+                [8, 11],
+                [8, 12],
+            ];
+
+            deepEqual(multiunit.getSubunitsTraversalSequences(connectors_3), [
+                [1, 4, 5],
+                [1, 3, 6, 8, 11],
+                [1, 3, 6, 8, 12],
+            ], 'Test 3 traversal sequences are valid');
+
+            const connectors_4 = [
+                [1, 4],
+                [4, 5],
+                [1, 3],
+                [3, 6],
+                [6, 8],
+                [8, 11],
+                [8, 12],
+                [4, 2],
+            ];
+
+            deepEqual(multiunit.getSubunitsTraversalSequences(connectors_4), [
+                [1, 4, 5],
+                [1, 4, 2],
+                [1, 3, 6, 8, 11],
+                [1, 3, 6, 8, 12],
+            ], 'Test 4 traversal sequences are valid');
+
+            const connectors_5 = [
+                [1, 3],
+                [3, 5],
+                [4, 5],
+            ];
+
+            deepEqual(multiunit.getSubunitsTraversalSequences(connectors_5), [
+                [4, 5],
+                [1, 3, 5],
+            ], 'Test 5 traversal sequences are valid');
+
+            const connectors_6 = [
+                [1, 3],
+                [3, 5],
+                [1, 7],
+            ];
+
+            deepEqual(multiunit.getSubunitsTraversalSequences(connectors_6), [
+                [1, 7],
+                [1, 3, 5],
+            ], 'Test 6 traversal sequences are valid');
+
+            const connectors_7 = [
+                [1, 3],
+                [3, 5],
+                [1, 5],
+            ];
+
+            deepEqual(multiunit.getSubunitsTraversalSequences(connectors_7), [
+                [1, 5],
+                [1, 3, 5],
+            ], 'Test 7 traversal sequences are valid');
+
+            const connectors_8 = [
+                [1, 3],
+                [9, 5],
+                [1, 5],
+            ];
+
+            deepEqual(multiunit.getSubunitsTraversalSequences(connectors_8), [
+                [1, 3],
+                [9, 5],
+                [1, 5],
+            ], 'Test 8 traversal sequences are valid');
+
+            deepEqual(multiunit.getSubunitsTraversalSequences([]), [], 'Empty array traversal sequences are empty');
+        });
+
+
+        test('getSubunitsAsMatrix', () => {
+            const connectors = [
+                {
+                    connects: [45, 46],
+                    side: 'bottom',
+                    width: 30,
+                },
+            ];
+
+            deepEqual(multiunit.getSubunitsAsMatrix(connectors), {
+                rows: [
+                    [
+                        { type: 'unit', id: 45 },
+                    ],
+                    [
+                        { type: 'unit', id: 46 },
+                    ],
+                ],
+                cols: [
+                    [
+                        { type: 'unit', id: 45 },
+                        { type: 'connector', width: 30 },
+                        { type: 'unit', id: 46 },
+                    ],
+                ],
+            }, 'Test 1 connectors matrix is valid');
+
+            const connectors_2 = [
+                {
+                    connects: [45, 46],
+                    side: 'bottom',
+                    width: 30,
+                },
+                {
+                    connects: [46, 48],
+                    side: 'bottom',
+                    width: 31,
+                },
+                {
+                    connects: [48, 49],
+                    side: 'bottom',
+                    width: 32,
+                },
+                {
+                    connects: [49, 50],
+                    side: 'right',
+                    width: 33,
+                },
+                {
+                    connects: [50, 51],
+                    side: 'right',
+                    width: 34,
+                },
+                {
+                    connects: [51, 52],
+                    side: 'bottom',
+                    width: 35,
+                },
+            ];
+
+            deepEqual(multiunit.getSubunitsAsMatrix(connectors_2), {
+                rows: [
+                    [
+                        { type: 'unit', id: 45 },
+                    ],
+                    [
+                        { type: 'unit', id: 46 },
+                    ],
+                    [
+                        { type: 'unit', id: 48 },
+                    ],
+                    [
+                        { type: 'unit', id: 49 },
+                        { type: 'connector', width: 33 },
+                        { type: 'unit', id: 50 },
+                        { type: 'connector', width: 34 },
+                        { type: 'unit', id: 51 },
+                    ],
+                    [
+                        { type: 'unit', id: 52 },
+                    ],
+                ],
+                cols: [
+                    [
+                        { type: 'unit', id: 45 },
+                        { type: 'connector', width: 30 },
+                        { type: 'unit', id: 46 },
+                        { type: 'connector', width: 31 },
+                        { type: 'unit', id: 48 },
+                        { type: 'connector', width: 32 },
+                        { type: 'unit', id: 49 },
+                    ],
+                    [
+                        { type: 'unit', id: 50 },
+                    ],
+                    [
+                        { type: 'unit', id: 51 },
+                        { type: 'connector', width: 35 },
+                        { type: 'unit', id: 52 },
+                    ],
+                ],
+            }, 'Test 2 connectors matrix is valid');
+
+            const connectors_3 = [
+                {
+                    connects: [45, 46],
+                    side: 'bottom',
+                    width: 30,
+                },
+                {
+                    connects: [46, 48],
+                    side: 'bottom',
+                    width: 31,
+                },
+                {
+                    connects: [48, 49],
+                    side: 'bottom',
+                    width: 32,
+                },
+                {
+                    connects: [49, 50],
+                    side: 'right',
+                    width: 33,
+                },
+                {
+                    connects: [50, 51],
+                    side: 'right',
+                    width: 34,
+                },
+                {
+                    connects: [51, 52],
+                    side: 'top',
+                    width: 35,
+                },
+            ];
+
+            deepEqual(multiunit.getSubunitsAsMatrix(connectors_3), {
+                rows: [
+                    [
+                        { type: 'unit', id: 45 },
+                    ],
+                    [
+                        { type: 'unit', id: 46 },
+                    ],
+                    [
+                        { type: 'unit', id: 48 },
+                        { type: 'unit', id: 52 },
+                    ],
+                    [
+                        { type: 'unit', id: 49 },
+                        { type: 'connector', width: 33 },
+                        { type: 'unit', id: 50 },
+                        { type: 'connector', width: 34 },
+                        { type: 'unit', id: 51 },
+                    ],
+                ],
+                cols: [
+                    [
+                        { type: 'unit', id: 45 },
+                        { type: 'connector', width: 30 },
+                        { type: 'unit', id: 46 },
+                        { type: 'connector', width: 31 },
+                        { type: 'unit', id: 48 },
+                        { type: 'connector', width: 32 },
+                        { type: 'unit', id: 49 },
+                    ],
+                    [
+                        { type: 'unit', id: 50 },
+                    ],
+                    [
+                        { type: 'unit', id: 52 },
+                        { type: 'connector', width: 35 },
+                        { type: 'unit', id: 51 },
+                    ],
+                ],
+            }, 'Test 3 connectors matrix is valid');
+
+            deepEqual(multiunit.getSubunitsAsMatrix([]), {
+                rows: [],
+                cols: [],
+            }, 'Empty array connectors matrix is empty');
+
+            const connectors_4 = [
+                {
+                    connects: [46, 48],
+                    side: 'bottom',
+                    width: 31,
+                },
+                {
+                    connects: [45, 46],
+                    side: 'bottom',
+                    width: 30,
+                },
+            ];
+
+            deepEqual(multiunit.getSubunitsAsMatrix(connectors_4), {
+                rows: [
+                    [
+                        { type: 'unit', id: 45 },
+                    ],
+                    [
+                        { type: 'unit', id: 46 },
+                    ],
+                    [
+                        { type: 'unit', id: 48 },
+                    ],
+                ],
+                cols: [
+                    [
+                        { type: 'unit', id: 45 },
+                        { type: 'connector', width: 30 },
+                        { type: 'unit', id: 46 },
+                        { type: 'connector', width: 31 },
+                        { type: 'unit', id: 48 },
+                    ],
+                ],
+            }, 'Unsorted array 1 connectors matrix is still valid');
+
+            const connectors_3_random = [
+                {
+                    connects: [51, 52],
+                    side: 'top',
+                    width: 35,
+                },
+                {
+                    connects: [46, 48],
+                    side: 'bottom',
+                    width: 31,
+                },
+                {
+                    connects: [50, 51],
+                    side: 'right',
+                    width: 34,
+                },
+                {
+                    connects: [49, 50],
+                    side: 'right',
+                    width: 33,
+                },
+                {
+                    connects: [48, 49],
+                    side: 'bottom',
+                    width: 32,
+                },
+                {
+                    connects: [45, 46],
+                    side: 'bottom',
+                    width: 30,
+                },
+            ];
+
+            deepEqual(
+                multiunit.getSubunitsAsMatrix(connectors_3),
+                multiunit.getSubunitsAsMatrix(connectors_3_random),
+                'Unsorted array 2 connectors matrix is still valid',
+            );
         });
     });
 });
