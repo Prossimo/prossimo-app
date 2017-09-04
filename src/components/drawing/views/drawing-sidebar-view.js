@@ -18,6 +18,8 @@ export default Marionette.View.extend({
         $next: '.js-next-unit',
         $sidebar_toggle: '.js-sidebar-toggle',
         $unit_details_container: '.unit-details-container',
+        $edit_parent_multiunit: '.js-edit-parent-multiunit',
+        $edit_selected_subunit: '.js-edit-selected-subunit',
     },
     events: {
         'change @ui.$select': 'onChange',
@@ -25,6 +27,8 @@ export default Marionette.View.extend({
         'click @ui.$next': 'onNextBtn',
         'click .nav-tabs a': 'onTabClick',
         'click @ui.$sidebar_toggle': 'onSidebarToggle',
+        'click @ui.$edit_parent_multiunit': 'onEditParentMultiunitClick',
+        'click @ui.$edit_selected_subunit': 'onEditSelectedSubunitClick',
     },
     keyShortcuts: {
         left: 'onPrevBtn',
@@ -89,11 +93,45 @@ export default Marionette.View.extend({
             this.selectUnit(models[prev_index]);
         }
     },
+    onEditParentMultiunitClick() {
+        const parent_multiunit = this.getParentMultiunit();
+
+        this.selectUnit(parent_multiunit);
+    },
+    onEditSelectedSubunitClick() {
+        const selected_subunit = this.getSelectedSubunit();
+
+        this.selectUnit(selected_subunit);
+    },
     onSidebarToggle() {
         this.$el.trigger({ type: 'sidebar-toggle' });
     },
+    getSelectedSubunit() {
+        const is_multiunit = this.options.parent_view.active_unit && this.options.parent_view.active_unit.isMultiunit();
+        const selected_subunit_id = is_multiunit && this.options.parent_view.getDrawingBuilderState('selected:subunit');
+        let selected_subunit;
+
+        if (selected_subunit_id) {
+            selected_subunit = this.collection.get(selected_subunit_id);
+        }
+
+        return selected_subunit;
+    },
+    getParentMultiunit() {
+        const is_subunit = this.options.parent_view.active_unit && this.options.parent_view.active_unit.isSubunit();
+        const parent_multiunit_cid = is_subunit && this.options.parent_view.active_unit.getParentMultiunit().cid;
+        let parent_multiunit;
+
+        if (parent_multiunit_cid) {
+            parent_multiunit = this.options.multiunits.get(parent_multiunit_cid);
+        }
+
+        return parent_multiunit;
+    },
     templateContext() {
         const models = this.getModels();
+        const selected_subunit = this.getSelectedSubunit();
+        const parent_multiunit = this.getParentMultiunit();
 
         return {
             unit_list: models.map(item => ({
@@ -109,6 +147,8 @@ export default Marionette.View.extend({
                 ),
                 unit_relation: item.getRelation(),
             })),
+            selected_subunit_cid: selected_subunit && selected_subunit.cid,
+            parent_multiunit_cid: parent_multiunit && parent_multiunit.cid,
         };
     },
     onRender() {

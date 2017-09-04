@@ -93,6 +93,10 @@ img.button {
 //  Regular selection controls
 //  ------------------------------------------------------------------------
 
+.base-controls {
+    .clearfix();
+}
+
 .drawing-controls {
     flex: 0 1 auto;
     padding: 1rem 3rem;
@@ -369,8 +373,6 @@ img.button {
     float: left;
     padding-right: 2rem;
 
-    a:focus { outline: none; }
-
     .multiunit,
     .subunit {
         overflow: hidden;
@@ -381,21 +383,37 @@ img.button {
         }
     }
 
-    .multiunit,
-    .multiunit:focus {
+    .multiunit {
         background-color: @blue;
+
+        &:hover {
+            background-color: darken(@blue, 10%);
+        }
 
         &:after {
             content: 'Multiunit';
         }
     }
 
-    .subunit,
-    .subunit:focus {
+    .subunit {
         background-color: @teal;
+
+        &:hover {
+            background-color: darken(@teal, 10%);
+        }
 
         &:after {
             content: 'Subunit';
+        }
+    }
+
+    .dropdown-menu > li > a:focus {
+        background-color: @selection-blue;
+        outline: none;
+
+        &,
+        & * {
+            color: @white;
         }
     }
 }
@@ -410,6 +428,10 @@ img.button {
     height: 2em;
     border-radius: 0.3em;
     border: none;
+}
+
+.extra-unit-selector-buttons {
+    margin-top: 1.5rem;
 }
 
 //  Tabs

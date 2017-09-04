@@ -68,10 +68,12 @@ export default Marionette.View.extend({
 
         this.groups = {};
 
-        this.undo_manager = new UndoManager({
-            register: this.model,
-            track: !this.model.isMultiunit(),
-        });
+        if (!this.model.isMultiunit()) {
+            this.undo_manager = new UndoManager({
+                register: this.model,
+                track: !this.model.isMultiunit(),
+            });
+        }
     },
     ui: {
         $drawing_area: '#drawing-area',
@@ -213,10 +215,10 @@ export default Marionette.View.extend({
         this.helpSquaresHide();
     },
     handleUndoClick() {
-        return this.undo_manager.handler.undo();
+        return this.undo_manager ? this.undo_manager.handler.undo() : false;
     },
     handleRedoClick() {
-        return this.undo_manager.handler.redo();
+        return this.undo_manager ? this.undo_manager.handler.redo() : false;
     },
     handleCanvasClick(e) {
         if (this.builder.isCloningFilling()) {
@@ -405,6 +407,7 @@ export default Marionette.View.extend({
         const isModelSubunit = this.model.isSubunit();
         const isModelMultiunit = this.model.isMultiunit();
         let target;
+
         if (isModelSubunit) {
             target = this.model;
         } else if (isModelMultiunit) {
@@ -412,6 +415,7 @@ export default Marionette.View.extend({
         } else {
             target = this.model;
         }
+
         const isTargetSubunit = target.isSubunit();
 
         if (!isTargetSubunit) {
@@ -420,6 +424,7 @@ export default Marionette.View.extend({
             const nextUnit = collection.at(index + 1);
             const prevUnit = (index > 0) && collection.at(index - 1);
             let otherUnit;
+
             if (nextUnit) {
                 otherUnit = nextUnit;
             } else if (prevUnit) {
@@ -428,10 +433,12 @@ export default Marionette.View.extend({
                 otherUnit = new Unit();
                 collection.add(otherUnit);
             }
+
             target.destroy();
             this.selectUnit(otherUnit);
         } else {
             const multiunit = target.getParentMultiunit();
+
             if (multiunit && multiunit.isSubunitRemovable(target.id || target.cid)) {
                 multiunit.removeSubunit(target);
                 this.selectUnit(multiunit);
@@ -867,6 +874,7 @@ export default Marionette.View.extend({
             App.settings && App.settings.filling_types.getByName(selectedSash.fillingName);
         let [isTopConnected, isRightConnected, isBottomConnected, isLeftConnected] = [false, false, false, false];
         let isRemovable = true;
+
         if (isSubunitSelected) {
             let subunit;
             let multiunit;
@@ -944,12 +952,15 @@ export default Marionette.View.extend({
         }
 
         // Undo, Redo buttons
-        if (!this.undo_manager.registered) {
+        if (this.undo_manager && !this.undo_manager.registered) {
             // Register buttons once!
             this.undo_manager.registerButton('undo', this.ui.$undo);
             this.undo_manager.registerButton('redo', this.ui.$redo);
             this.undo_manager.registered = true;
         }
+
+        this.ui.$undo.toggle(!!(this.undo_manager && this.undo_manager.registered));
+        this.ui.$redo.toggle(!!(this.undo_manager && this.undo_manager.registered));
 
         // Clear frame button
         this.ui.$clear_frame.toggle(!isMultiunit);

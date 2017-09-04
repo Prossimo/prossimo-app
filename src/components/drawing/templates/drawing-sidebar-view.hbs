@@ -17,4 +17,14 @@
     </div>
 </div>
 
+{{#if selected_subunit_cid }}
+<div class="extra-unit-selector-buttons">
+    <button class="js-edit-selected-subunit">Edit selected subunit</button>
+</div>
+{{else if parent_multiunit_cid }}
+<div class="extra-unit-selector-buttons">
+    <button class="js-edit-parent-multiunit">Edit parent multiunit</button>
+</div>
+{{/if}}
+
 <div class="unit-details-container"></div>

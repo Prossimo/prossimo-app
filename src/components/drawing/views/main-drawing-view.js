@@ -58,6 +58,9 @@ export default Marionette.View.extend({
             }
         }
     },
+    getDrawingBuilderState(attr) {
+        return this.drawing_view && this.drawing_view.builder.getState(attr);
+    },
     onDrawingViewEvents(e) {
         this.trigger(`drawing_view:${e}`);
     },
