@@ -18,6 +18,8 @@ const MULTIUNIT_PROPERTIES = [
     { name: 'customer_image', title: 'Customer Image', type: 'string' },
     { name: 'position', title: 'Position', type: 'number' },
     { name: 'root_section', title: 'Root Section', type: 'object' },
+    { name: 'connector_width', title: 'Connector Width (mm)', type: 'number' },
+    { name: 'connector_face_width', title: 'Connector Face Width (mm)', type: 'number' },
 ];
 
 const CONNECTOR_DEFAULTS = {
@@ -88,6 +90,8 @@ export default Backbone.Model.extend({
             root_section: (name === 'root_section') ?
                 { id: _.uniqueId(), originCoords: { x: 0, y: 0 }, connectors: [] } :
                 '',
+            connector_width: CONNECTOR_DEFAULTS.width,
+            connector_face_width: CONNECTOR_DEFAULTS.facewidth,
         };
 
         if (_.indexOf(_.keys(type_value_hash), type) !== -1) {
@@ -100,14 +104,19 @@ export default Backbone.Model.extend({
 
         return default_value;
     },
-    parseAndFixRootSection(root_section_data, subunits) {
+    parseAndFixRootSection(root_section_data, subunits, connector_width, connector_face_width) {
         let root_section_parsed = object.extractObjectOrNull(root_section_data);
 
         if (!_.isObject(root_section_parsed)) {
             root_section_parsed = this.getDefaultValue('root_section');
         }
 
-        root_section_parsed = this.validateConnectors(root_section_parsed, subunits);
+        root_section_parsed = this.validateConnectors(
+            root_section_parsed,
+            subunits,
+            connector_width,
+            connector_face_width,
+        );
 
         return root_section_parsed;
     },
@@ -127,7 +136,12 @@ export default Backbone.Model.extend({
         }
 
         if (filtered_data && filtered_data.root_section) {
-            filtered_data.root_section = this.parseAndFixRootSection(filtered_data.root_section, filtered_data.multiunit_subunits);
+            filtered_data.root_section = this.parseAndFixRootSection(
+                filtered_data.root_section,
+                filtered_data.multiunit_subunits,
+                filtered_data.connector_width,
+                filtered_data.connector_face_width,
+            );
         }
 
         //  If this multiunit is created via Unit's toMultiunit() function
@@ -855,9 +869,11 @@ export default Backbone.Model.extend({
      * = Example:
      * { id: '17', side: 'right', connects: ['123', '124'], width: 20, facewidth: 40 }
      */
-    validateConnectors(alternativeRoot, subunitsList) {
+    validateConnectors(alternativeRoot, subunitsList, defaultConnectorWidth, defaultConnectorFaceWidth) {
         const rootSection = alternativeRoot || this.get('root_section');
         const subunits = subunitsList || this.get('multiunit_subunits');
+        const connectorWidth = defaultConnectorWidth || this.getDefaultConnectorWidths().width;
+        const connectorFaceWidth = defaultConnectorFaceWidth || this.getDefaultConnectorWidths().facewidth;
         const connectors = rootSection.connectors;
 
         if (!connectors) {
@@ -880,12 +896,14 @@ export default Backbone.Model.extend({
             const hasLength = _.isNumber(connector.length);
             const currentConnector = connector;
 
-            if (!hasWidth) {
-                currentConnector.width = CONNECTOR_DEFAULTS.width;
+            // TODO: when we add a separate connector model, we shouldn't
+            // check for the second condition here
+            if (!hasWidth || currentConnector.width !== connectorWidth) {
+                currentConnector.width = connectorWidth;
             }
 
-            if (!hasFacewidth) {
-                currentConnector.width = CONNECTOR_DEFAULTS.facewidth;
+            if (!hasFacewidth || currentConnector.facewidth !== connectorFaceWidth) {
+                currentConnector.facewidth = connectorFaceWidth;
             }
 
             if (!hasId || !hasSide || !hasConnects) {
@@ -906,13 +924,47 @@ export default Backbone.Model.extend({
 
         return rootSection;
     },
+    getDefaultConnectorWidths() {
+        return {
+            width: this.get('connector_width') || CONNECTOR_DEFAULTS.width,
+            facewidth: this.get('connector_face_width') || CONNECTOR_DEFAULTS.facewidth,
+        };
+    },
+    updateConnectorWidth(new_value) {
+        const updated_attributes = {};
+
+        updated_attributes.connector_width = new_value;
+        updated_attributes.root_section = this.parseAndFixRootSection(
+            this.get('root_section'),
+            this.get('multiunit_subunits'),
+            new_value,
+            null,
+        );
+
+        this.persist(updated_attributes);
+    },
+    updateConnectorFaceWidth(new_value) {
+        const updated_attributes = {};
+
+        updated_attributes.connector_face_width = new_value;
+        updated_attributes.root_section = this.parseAndFixRootSection(
+            this.get('root_section'),
+            this.get('multiunit_subunits'),
+            null,
+            new_value,
+        );
+
+        this.persist(updated_attributes);
+    },
     getConnectors() {
         return this.get('root_section').connectors.slice();
     },
     getConnectorsByOrientation() {
         const connectorsByOrientation = { vertical: [], horizontal: [] };
         const connectors = this.getConnectors();
+
         if (!connectors) { return connectorsByOrientation; }
+
         connectors.forEach((connector) => {
             if (connector.side === 'top' || connector.side === 'bottom') {
                 connectorsByOrientation.horizontal.push(connector);
@@ -920,6 +972,7 @@ export default Backbone.Model.extend({
                 connectorsByOrientation.vertical.push(connector);
             }
         });
+
         return connectorsByOrientation;
     },
     getConnectorById(id) {
@@ -979,8 +1032,8 @@ export default Backbone.Model.extend({
                 id: _.uniqueId(),
                 connects: currentOptions.connects,
                 side: currentOptions.side,
-                width: currentOptions.width || CONNECTOR_DEFAULTS.width,
-                facewidth: currentOptions.facewidth || CONNECTOR_DEFAULTS.facewidth,
+                width: currentOptions.width || self.getDefaultConnectorWidths().width,
+                facewidth: currentOptions.facewidth || self.getDefaultConnectorWidths().facewidth,
             };
 
             connectors.push(connector);
@@ -1064,7 +1117,7 @@ export default Backbone.Model.extend({
     //  so if any subunit did change, we want to redraw multiunut preview
     getDrawingRepresentation() {
         const model_attributes_to_cache = [
-            'multiunit_subunits', 'root_section', 'position',
+            'multiunit_subunits', 'root_section', 'position', 'connector_width', 'connector_face_width',
         ];
 
         return {

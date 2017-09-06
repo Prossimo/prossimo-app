@@ -127,7 +127,7 @@ export default Marionette.View.extend({
                 title: 'Multiunits',
                 collection: this.options.multiunits,
                 columns: ['move_item', 'ref_num', 'mark', 'quantity', 'width', 'height', 'drawing', 'customer_image',
-                    'width_mm', 'height_mm', 'description', 'notes', 'exceptions'],
+                    'width_mm', 'height_mm', 'connector_width', 'connector_face_width', 'description', 'notes', 'exceptions'],
             },
         };
         this.active_tab = 'specs';
@@ -545,6 +545,12 @@ export default Marionette.View.extend({
                 return model.isMultiunit() ?
                     model.fitSubunitsToSize(attr_name, self.getSetterParser(column_name, val)) :
                     model.updateDimension(attr_name, self.getSetterParser(column_name, val));
+            },
+            connector_width(model, attr_name, val) {
+                return model.updateConnectorWidth(val);
+            },
+            connector_face_width(model, attr_name, val) {
+                return model.updateConnectorFaceWidth(val);
             },
         };
 
@@ -1041,6 +1047,8 @@ export default Marionette.View.extend({
             square_feet_price: 'Price / ft<sup>2</sup>',
             square_feet_price_discounted: 'Price / ft<sup>2</sup> w/D',
             subtotal_profit: 'Subt. Profit',
+            connector_width: 'Conn. Width, mm',
+            connector_face_width: 'Conn. Face Width, mm',
         };
 
         return custom_column_headers_hash[column_name];
@@ -1096,6 +1104,8 @@ export default Marionette.View.extend({
             subtotal_profit: 100,
             square_feet_price_discounted: 100,
             extras_type: 100,
+            connector_width: 120,
+            connector_face_width: 150,
         };
 
         //  Custom widths for some Unit Options columns
@@ -1178,7 +1188,7 @@ export default Marionette.View.extend({
 
         let dropdown_scroll_reset = false;
 
-        const fixed_columns = ['mark', 'quantity', 'width', 'height', 'drawing'];
+        const fixed_columns = ['move_item', 'ref_num', 'mark', 'quantity', 'width', 'height', 'drawing'];
         const active_tab_columns = self.getActiveTab().columns;
         let fixed_columns_count = 0;
 

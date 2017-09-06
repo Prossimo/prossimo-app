@@ -66,6 +66,8 @@ describe('Multiunit model', () => {
                         { id: 2, side: 'right', connects: [12, 101], width: 20, facewidth: 40, length: 0 },
                     ],
                 }),
+                connector_width: 20,
+                connector_face_width: 40,
             },
             'Multiunit should be properly cast to json',
         );
@@ -221,6 +223,8 @@ describe('Multiunit model', () => {
                     { id: 2, side: 'right', connects: [12, 101], width: 20, facewidth: 40, length: 0 },
                 ],
             }),
+            connector_width: 20,
+            connector_face_width: 40,
         };
 
         deepEqual(

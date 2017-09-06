@@ -15,13 +15,15 @@ export default Marionette.View.extend({
         let params_source = {};
 
         const relevant_properties = [
-            'ref_num', 'mark', 'width', 'height', 'description', 'notes', 'exceptions',
+            'ref_num', 'mark', 'width', 'height', 'description', 'notes', 'exceptions', 'connector_width', 'connector_face_width',
         ];
 
         const custom_titles = {
             ref_num: 'Ref #',
             width: 'Width (inches)',
             height: 'Height (inches)',
+            connector_width: 'Conn. Width (mm)',
+            connector_face_width: 'Conn. Face Width (mm)',
         };
 
         params_source = {
