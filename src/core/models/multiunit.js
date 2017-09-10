@@ -420,13 +420,13 @@ export default Backbone.Model.extend({
         const parentConnector = this.getParentConnector(subunitId);
 
         if (isRemovable) {
-            const subunit_link = this.get('multiunit_subunits').getByUnitId(subunitId);
+            const subunitLink = this.get('multiunit_subunits').getByUnitId(subunitId);
 
             if (parentConnector) {
                 this.removeConnector(parentConnector);
             }
 
-            subunit_link.destroy();
+            subunitLink.destroy();
             subunit.destroy();
         }
     },
@@ -466,7 +466,8 @@ export default Backbone.Model.extend({
             this.shiftOrigin({ offsetY: -rect.y });
             rect = this.subunitsTreeGetRect(this.getSubunitsCoordinatesTree());
         } else if (isFloating(coordTree)) {
-            const originY = this.get('root_section').originCoords.y;
+            const rootSection = this.get('root_section');
+            const originY = rootSection && rootSection.originCoords && rootSection.originCoords.y;
             this.shiftOrigin({ offsetY: -originY });
             rect = this.subunitsTreeGetRect(this.getSubunitsCoordinatesTree());
         }
