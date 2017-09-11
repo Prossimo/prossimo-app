@@ -1,21 +1,42 @@
 <div class="drawing-controls help-hidden" id="drawing-controls">
 
-    <button class="btn btn-xs" id="undo">Undo</button>
-    <button class="btn btn-xs" id="redo">Redo</button>
-    <button class="btn btn-xs" id="clear-frame">Clear frame</button>
-    <button class="btn btn-xs" id="change-view-button">Show outside view</button>
-    <div class="drawing-view-title" id="drawing-view-title">Outside view</div>
+    <div class="base-controls">
+        <button class="btn btn-xs" id="undo">Undo</button>
+        <button class="btn btn-xs" id="redo">Redo</button>
+        <button class="btn btn-xs" id="clear-frame">Clear frame</button>
+        <button class="btn btn-xs" id="change-view-button">Show outside view</button>
+        <div class="drawing-view-title" id="drawing-view-title">Outside view</div>
+    </div>
 
     <div class="section-controls" id="section-controls">
+        <span class="multiunit-controls controls-block" id="multiunit-controls">
+            <span class="controls-label">Multiunit:</span>
+            <ul class="button-list">
+                <li>
+                    <img class="button" src="/assets/img/add_connector_menu.png">
+                    <ul class="add-connector button-grid">
+                        <li><img class="add-connector button" data-side="top" src="/assets/img/add_connector_top.png"></li>
+                        <li><img class="add-connector button" data-side="right" src="/assets/img/add_connector_right.png"></li>
+                        <li><img class="add-connector button" data-side="bottom" src="/assets/img/add_connector_bottom.png"></li>
+                        <li><img class="add-connector button" data-side="left" src="/assets/img/add_connector_left.png"></li>
+                    </ul>
+                </li>
+                <li><img class="remove-subunit button" src="/assets/img/remove_subunit.png"></li>
+            </ul>
+        </span>
 
         <span class="arched-controls controls-block" id="arched-controls">
-            <img class="add-arched button" id="add-arched" src="/assets/img/add_arched_section.png"/>
-            <img class="remove-arched button" id="remove-arched" src="/assets/img/remove_arched_section.png"/>
+            <ul class="button-list">
+                <li><img class="add-arched button" id="add-arched" src="/assets/img/add_arched_section.png"></li>
+                <li><img class="remove-arched button" id="remove-arched" src="/assets/img/remove_arched_section.png"></li>
+            </ul>
         </span>
 
         <span class="circular-controls controls-block" id="circular-controls">
-            <img class="add-circular button" id="add-circular" src="/assets/img/add_circular_section.png"/>
-            <img class="remove-circular button" id="remove-circular" src="/assets/img/remove_circular_section.png"/>
+            <ul class="button-list">
+                <li><img class="add-circular button" id="add-circular" src="/assets/img/add_circular_section.png"></li>
+                <li><img class="remove-circular button" id="remove-circular" src="/assets/img/remove_circular_section.png"></li>
+            </ul>
         </span>
 
         <div class="section-split-controls controls-block" id="section-split-controls">
@@ -80,7 +101,6 @@
                 Vent Opn. Size
             </label>
         </span>
-
     </div>
 
 </div>

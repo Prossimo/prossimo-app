@@ -93,6 +93,10 @@ img.button {
 //  Regular selection controls
 //  ------------------------------------------------------------------------
 
+.base-controls {
+    .clearfix();
+}
+
 .drawing-controls {
     flex: 0 1 auto;
     padding: 1rem 3rem;
@@ -131,6 +135,15 @@ img.button {
 
         & + .btn { margin-left: 8px; }
     }
+}
+
+.arched-controls,
+.circular-controls {
+    margin-left: 12px;
+}
+
+.arched-controls[style="display: inline-block;"] + .circular-controls[style="display: inline-block;"] {
+    margin-left: -3px;
 }
 
 .controls-label {
@@ -172,6 +185,54 @@ img.button {
 
 #additional-metrics-opening--label {
     display: none;
+}
+
+.multiunit-controls {
+    .button-list > li { position: relative; }
+
+    .button:hover + .button-grid { display: block; }
+
+    .button-grid {
+        @grid-padding: 8px;
+        @button-size: 35px;
+        @button-margin: 1px;
+
+        .bs-dropdown-style();
+        display: none;
+        position: absolute;
+        left: -(@button-size + @grid-padding + @button-margin);
+        top: -(@button-size + @grid-padding + @button-margin) - 1px;
+        width: @button-size * 3 + @grid-padding * 2 + @button-margin * 2;
+        height: @button-size * 3 + @grid-padding * 2 + @button-margin * 2;
+        padding: @grid-padding;
+        z-index: 1;
+
+        &:hover { display: block; }
+
+        .button {
+            position: absolute;
+
+            &[data-side="top"] {
+                left: @button-size + @grid-padding + @button-margin - 1px;
+                top: @grid-padding - 1px;
+            }
+
+            &[data-side="right"] {
+                top: @button-size + @grid-padding + @button-margin - 1px;
+                right: @grid-padding - 1px;
+            }
+
+            &[data-side="bottom"] {
+                left: @button-size + @grid-padding + @button-margin - 1px;
+                bottom: @grid-padding - 1px;
+            }
+
+            &[data-side="left"] {
+                top: @button-size + @grid-padding + @button-margin - 1px;
+                left: @grid-padding - 1px;
+            }
+        }
+    }
 }
 
 //  ------------------------------------------------------------------------
@@ -221,7 +282,6 @@ img.button {
 
     img.button { .drawing-hover-shadow(); }
 }
-
 
 //  ------------------------------------------------------------------------
 //  Popup
@@ -295,6 +355,16 @@ img.button {
 
 //  Controls
 
+.small-label-right() {
+    position: absolute;
+    display: inline;
+    right: 15px;
+    margin: 0.25em 0;
+    font-size: 80%;
+    vertical-align: middle;
+    opacity: 0.85;
+}
+
 .unit-selector-controls {
     .clearfix();
 }
@@ -302,6 +372,50 @@ img.button {
 .unit-selector-select {
     float: left;
     padding-right: 2rem;
+
+    .multiunit,
+    .subunit {
+        overflow: hidden;
+        padding-right: 4.5em;
+
+        &:after {
+            .small-label-right();
+        }
+    }
+
+    .multiunit {
+        background-color: @blue;
+
+        &:hover {
+            background-color: darken(@blue, 10%);
+        }
+
+        &:after {
+            content: 'Multiunit';
+        }
+    }
+
+    .subunit {
+        background-color: @teal;
+
+        &:hover {
+            background-color: darken(@teal, 10%);
+        }
+
+        &:after {
+            content: 'Subunit';
+        }
+    }
+
+    .dropdown-menu > li > a:focus {
+        background-color: @selection-blue;
+        outline: none;
+
+        &,
+        & * {
+            color: @white;
+        }
+    }
 }
 
 .unit-selector-buttons {
@@ -314,6 +428,10 @@ img.button {
     height: 2em;
     border-radius: 0.3em;
     border: none;
+}
+
+.extra-unit-selector-buttons {
+    margin-top: 1.5rem;
 }
 
 //  Tabs

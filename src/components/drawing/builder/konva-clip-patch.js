@@ -2,7 +2,7 @@ import Konva from 'konva';
 
 // Temporary patch
 // Until in KonvaJS haven't supported custom clipping method (like clip using circle or )
-// If you want to remove it: change a method clipCircle in drawing/module/unit-drawer.js
+// If you want to remove it: change a method clipCircle in drawing/builder/drawers/unit-drawer.js
 
 Konva.Factory.addGetterSetter(Konva.Container, 'clipType');
 Konva.Factory.addGetterSetter(Konva.Container, 'clipRadius');

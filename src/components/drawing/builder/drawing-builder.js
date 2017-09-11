@@ -3,7 +3,6 @@ import $ from 'jquery';
 import Marionette from 'backbone.marionette';
 import Backbone from 'backbone';
 import Konva from 'konva';
-import clone from 'clone';
 
 import App from '../../../main';
 import LayerManager from './layer-manager';
@@ -13,10 +12,10 @@ const DELAYED_HOVER_DEFAULT_DELAY = 400;
 const SECTION_MENU_HOVER_DELAY = 100;
 
 // This module starts manually with required parameters:
-// new DrawingModule({
+// new DrawingBuilder({
 //     model: model,                // link to the model
 //     stage: stage,                // link to the Konva.Stage or null
-//                                  // if it's not defined — Module should create
+//                                  // if it's not defined — Builder should create
 //                                  // his own Konva.Stage and append it into
 //                                  // invisible area on the page
 //     layers: {                    // options of layers. Unit and Metrics layers is a default.
@@ -39,7 +38,7 @@ const SECTION_MENU_HOVER_DELAY = 100;
 //     metricSize: 50               // define a custom metricSize
 // });
 
-const DrawingModule = Marionette.Object.extend({
+export default Marionette.Object.extend({
     initialize(opts) {
         const builder = this;
         const chain = Backbone.$.Deferred();
@@ -50,14 +49,14 @@ const DrawingModule = Marionette.Object.extend({
 
         // Assign model
         if ('model' in opts) {
-            this.assignModel(opts.model);
+            this.assignModel(opts.model, opts);
         } else {
-            throw new Error('DrawingModule can\'t start without defined Model!');
+            throw new Error('DrawingBuilder can\'t start without a defined Model!');
         }
 
         // Bind events
         this.on('state:any', () => {
-            this.update();
+            this.update(opts);
         });
 
         // Assign stage
@@ -161,6 +160,7 @@ const DrawingModule = Marionette.Object.extend({
             hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode'),
             inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
             isPreview: ('preview' in opts && opts.preview) ? opts.preview : false,
+            drawIndexes: ('drawIndexes' in opts && !_.isUndefined(opts.drawIndexes)) ? opts.drawIndexes : true,
         }, false);
 
         return opts;
@@ -175,6 +175,17 @@ const DrawingModule = Marionette.Object.extend({
     assignSizes(opts) {
         const stage = this.get('stage');
         const model = this.get('model');
+        const shrinkFrame = (opts && opts.isMaximized) ? 1 : 0.95;
+        const renderingOffsetX = (opts && opts.isMaximized) ? 0 : 0.5;
+        let topOffset;
+
+        if (opts && opts.isMaximized) {
+            topOffset = 0;
+        } else if (opts && opts.topOffset) {
+            topOffset = opts.topOffset;
+        } else {
+            topOffset = 10 + 0.5; // add 0.5 pixel offset for better strokes
+        }
 
         if (opts && opts.width && opts.height) {
             this.updateSize(opts.width, opts.height);
@@ -188,17 +199,16 @@ const DrawingModule = Marionette.Object.extend({
 
         const isTrapezoid = model.isTrapezoid();
         const isInsideView = this.state.insideView;
-        const topOffset = 10 + 0.5; // we will add 0.5 pixel offset for better strokes
         const wr = (stage.width() - (metricSize * 2)) / frameWidth;
         const hr = (stage.height() - (metricSize * ((isTrapezoid) ? 3 : 2)) - topOffset) / frameHeight;
 
-        const ratio = (Math.min(wr, hr) * 0.95);
+        const ratio = (Math.min(wr, hr) * shrinkFrame);
 
         const frameOnScreenWidth = frameWidth * ratio;
         const frameOnScreenHeight = frameHeight * ratio;
 
         // Shift drawing right or left depending on metrics displayed
-        // Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js
+        // Duplicates logic from MetricsDrawer /static/source/js/drawing/builder/metrics-drawer.js
         let metricShiftX = 0 - ((2 - model.leftMetricCount(isInsideView)) * (metricSize / 2));
 
         if (model.rightMetricCount() > 1) {
@@ -216,7 +226,7 @@ const DrawingModule = Marionette.Object.extend({
                     ((stage.width() / 2) - (frameOnScreenWidth / 2)) +
                     ((isTrapezoid) ? metricSize / 2 : metricSize) +
                     metricShiftX,
-                ) + 0.5,
+                ) + renderingOffsetX,
                 y: topOffset,
             },
         };
@@ -237,9 +247,16 @@ const DrawingModule = Marionette.Object.extend({
                 strokeWidth: 1,
             },
             frame: {
-                fill: 'white',
-                stroke: 'black',
-                strokeWidth: 1,
+                default: {
+                    fill: 'white',
+                    stroke: 'black',
+                    strokeWidth: 1,
+                },
+                selected: {
+                    fill: 'lightgrey',
+                    stroke: 'black',
+                    strokeWidth: 1,
+                },
             },
             door_bottom: {
                 fill: 'grey',
@@ -377,6 +394,16 @@ const DrawingModule = Marionette.Object.extend({
                 fontFamily: 'pt-sans',
                 fontSize: 15,
             },
+            subunit_indexes: {
+                label: {
+                    fill: 'white',
+                    stroke: 'grey',
+                    color: '#444',
+                    strokeWidth: 0.5,
+                    padding: 3,
+                    fontSize: 13,
+                },
+            },
             glazing_controls: {
                 bound: {
                     fill: 'green',
@@ -388,6 +415,10 @@ const DrawingModule = Marionette.Object.extend({
                         opacity: 0.3,
                     },
                 },
+            },
+            neighbors_background: {
+                opacity: 0.3,
+                filters: [Konva.Filters.Grayscale],
             },
         };
 
@@ -425,9 +456,9 @@ const DrawingModule = Marionette.Object.extend({
         return style;
     },
     // Assign/bind/unbind model
-    assignModel(model) {
+    assignModel(model, opts) {
         this.unbindModel();
-        this.bindModel(model);
+        this.bindModel(model, opts);
     },
     unbindModel() {
         if (this.get('model') !== null) {
@@ -436,9 +467,10 @@ const DrawingModule = Marionette.Object.extend({
 
         this.set('model', null);
     },
-    bindModel(model) {
+    bindModel(model, opts) {
         this.set('model', model);
-        this.listenTo(model, 'change', this.update);
+
+        this.listenTo(model, 'change', this.update.bind(this, opts));
     },
     // Handler
     handleKeyEvents(event) {
@@ -473,7 +505,7 @@ const DrawingModule = Marionette.Object.extend({
     // Create private Konva.Stage (if it wasn't defined in options)
     createStage() {
         const container = $('<div>', {
-            id: 'drawing-module-container',
+            id: 'drawing-builder-container',
         });
 
         const stage = new Konva.Stage({
@@ -484,7 +516,28 @@ const DrawingModule = Marionette.Object.extend({
 
         return stage;
     },
+    setBackground(background, options) {
+        if (_.isUndefined(background) || !(background instanceof Konva.Group)) { return; }
 
+        const stage = this.get('stage');
+        const layer = new Konva.Layer({ name: 'background' });
+        const filters = (options && options.filters) ? options.filters : [];
+        const opacity = (options && options.opacity) ? options.opacity : 1;
+
+        background.cache();
+        background.filters(filters);
+        background.setAttrs({
+            name: 'background',
+            opacity,
+        });
+        layer.add(background);
+
+        if (options.x) { layer.offsetX(-options.x); }
+        if (options.y) { layer.offsetY(-options.y); }
+
+        stage.add(layer);
+        layer.moveToBottom();
+    },
     // Events
     update(opts) {
         this.assignSizes(opts);
@@ -492,8 +545,12 @@ const DrawingModule = Marionette.Object.extend({
     },
     // Actions
     deselectAll(preventUpdate) {
-        this.setState('selected:mullion', null, preventUpdate);
-        this.setState('selected:sash', null, preventUpdate);
+        this.setState({
+            'selected:subunit': null,
+            'selected:unit': null,
+            'selected:sash': null,
+            'selected:mullion': null,
+        }, preventUpdate);
     },
     // Get layer to work directly with drawer, for example
     getLayer(name) {
@@ -503,7 +560,7 @@ const DrawingModule = Marionette.Object.extend({
 
         return false;
     },
-    // Get result for preview method: canvas / base64 / image
+    // Get result for preview method: canvas / base64 / image / group
     getCanvas() {
         return this.get('stage').container();
     },
@@ -516,6 +573,9 @@ const DrawingModule = Marionette.Object.extend({
         img.src = this.get('stage').toDataURL();
 
         return img;
+    },
+    getGroup() {
+        return this.get('stage').findOne('Group');
     },
     onBeforeDestroy() {
         const stage = this.get('stage');
@@ -668,73 +728,3 @@ const DrawingModule = Marionette.Object.extend({
         this.setState('sectionHoverMenuOpen', false);
     },
 });
-
-export default DrawingModule;
-
-export const preview = function generatePreview(unitModel, options) {
-    const defaults = {
-        width: 300,
-        height: 300,
-        mode: 'base64',
-        position: 'inside',
-        metricSize: 50,
-        preview: true,
-    };
-    const currentModel = unitModel;
-    const currentOptions = _.defaults({}, clone(options), defaults, { model: currentModel });
-    let result;
-
-    const full_root_json_string = JSON.stringify(currentModel.generateFullRoot());
-    const options_json_string = JSON.stringify(currentOptions);
-
-    //  If we already got an image for the same full_root and same options,
-    //  just return it from our preview cache
-    if (
-        currentModel.preview && currentModel.preview.result &&
-        currentModel.preview.result[options_json_string] &&
-        full_root_json_string === currentModel.preview.full_root_json_string
-    ) {
-        return currentModel.preview.result[options_json_string];
-    }
-
-    //  If full root changes, preview cache should be erased
-    if (
-        !currentModel.preview ||
-        !currentModel.preview.result ||
-        full_root_json_string !== currentModel.preview.full_root_json_string
-    ) {
-        currentModel.preview = {};
-        currentModel.preview.result = {};
-    }
-
-    const module = new DrawingModule(currentOptions);
-
-    if (_.indexOf(['inside', 'outside'], currentOptions.position) !== -1) {
-        module.setState({
-            insideView: currentOptions.position === 'inside',
-            openingView: (currentOptions.position === 'inside' && !currentModel.isOpeningDirectionOutward()) ||
-                (currentOptions.position === 'outside' && currentModel.isOpeningDirectionOutward()),
-            inchesDisplayMode: currentOptions.inchesDisplayMode,
-            hingeIndicatorMode: currentOptions.hingeIndicatorMode,
-        }, false);
-    }
-
-    if (currentOptions.width && currentOptions.height) {
-        module.updateSize(currentOptions.width, currentOptions.height);
-    }
-
-    if (currentOptions.mode === 'canvas') {
-        result = module.getCanvas();
-    } else if (currentOptions.mode === 'base64') {
-        result = module.getBase64();
-    } else if (currentOptions.mode === 'image') {
-        result = module.getImage();
-    }
-
-    module.destroy();
-
-    currentModel.preview.full_root_json_string = full_root_json_string;
-    currentModel.preview.result[options_json_string] = result;
-
-    return result;
-};

@@ -2,10 +2,10 @@ import $ from 'jquery';
 import _ from 'underscore';
 import clone from 'clone';
 import Marionette from 'backbone.marionette';
-import Konva from '../module/konva-clip-patch';
+import Konva from '../builder/konva-clip-patch';
 
-import DrawingModule from '../module/drawing-module';
-import Drawers from '../module/drawers';
+import DrawingBuilder from '../builder/drawing-builder';
+import Drawers from '../builder/drawers';
 import template from '../templates/drawing-glazing-view.hbs';
 
 export default Marionette.View.extend({
@@ -62,19 +62,19 @@ export default Marionette.View.extend({
         this.ui.$modal.remove();
         this.stage.destroy();
 
-        if (this.module) {
-            this.module.destroy();
-            this.unbindModuleEvents();
+        if (this.builder) {
+            this.builder.destroy();
+            this.unbindBuilderEvents();
         }
     },
 
-    bindModuleEvents() {
-        this.listenTo(this.module, 'labelClicked', (data) => {
+    bindBuilderEvents() {
+        this.listenTo(this.builder, 'labelClicked', (data) => {
             this.parent.createInput.call(this, data.params, data.pos, data.size);
         });
     },
-    unbindModuleEvents() {
-        this.stopListening(this.module);
+    unbindBuilderEvents() {
+        this.stopListening(this.builder);
     },
 
     setSection(section_id) {
@@ -83,14 +83,14 @@ export default Marionette.View.extend({
         this.ui.$bar_vertical.val(this.getBarsCount().vertical);
         this.ui.$bar_horizontal.val(this.getBarsCount().horizontal);
 
-        if (this.module) {
-            this.module.destroy();
-            this.unbindModuleEvents();
+        if (this.builder) {
+            this.builder.destroy();
+            this.unbindBuilderEvents();
 
             this.stage.clear();
         }
 
-        this.module = new DrawingModule({
+        this.builder = new DrawingBuilder({
             model: this.model,
             stage: this.stage,
             layers: {
@@ -112,7 +112,7 @@ export default Marionette.View.extend({
             metricSize: this.metric_size,
         });
 
-        this.bindModuleEvents();
+        this.bindBuilderEvents();
 
         return this;
     },

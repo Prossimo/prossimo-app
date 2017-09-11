@@ -1,18 +1,20 @@
 import $ from 'jquery';
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
-import Konva from '../module/konva-clip-patch';
+import Konva from '../builder/konva-clip-patch';
 
 import App from '../../../main';
 import { parseFormat, format, convert } from '../../../utils';
+import Unit from '../../../core/models/unit';
 import UndoManager from '../../../utils/undomanager';
-import DrawingModule from '../module/drawing-module';
+import DrawingBuilder from '../builder/drawing-builder';
 import DrawingGlazingPopup from './drawing-glazing-view';
 import template from '../templates/drawing-view.hbs';
 
 import {
     KEY_ENTER,
     KEY_ESC,
+    KEY_SHIFT,
 } from '../../../constants';
 
 const HELP_SQUARES_KEYPRESS_DELAY = 800;
@@ -66,10 +68,12 @@ export default Marionette.View.extend({
 
         this.groups = {};
 
-        this.undo_manager = new UndoManager({
-            register: this.model,
-            track: true,
-        });
+        if (!this.model.isMultiunit()) {
+            this.undo_manager = new UndoManager({
+                register: this.model,
+                track: !this.model.isMultiunit(),
+            });
+        }
     },
     ui: {
         $drawing_area: '#drawing-area',
@@ -77,6 +81,13 @@ export default Marionette.View.extend({
         $flush_panels: '[data-type="flush-turn-right"], [data-type="flush-turn-left"]',
         $drawing_view_title: '#drawing-view-title',
         $drawing_controls: '#drawing-controls',
+        $multiunit_controls: '#multiunit-controls',
+        $add_connector_buttons: '.add-connector.button',
+        $add_connector_top_button: '.add-connector.button[data-side="top"]',
+        $add_connector_right_button: '.add-connector.button[data-side="right"]',
+        $add_connector_bottom_button: '.add-connector.button[data-side="bottom"]',
+        $add_connector_left_button: '.add-connector.button[data-side="left"]',
+        $remove_subunit_button: '.remove-subunit.button',
         $section_controls: '#section-controls',
         $sash_controls: '#sash-controls',
         $section_split_controls: '#section-split-controls',
@@ -92,6 +103,7 @@ export default Marionette.View.extend({
         $filling_tool_controls: '#filling-tool-controls',
         $filling_clone: '#filling-clone',
         $filling_sync: '#filling-sync',
+        $clear_frame: '#clear-frame',
         $sash_types: '.change-sash-type',
         $metric_controls: '.metric-controls',
         $metrics_glass: '[for="additional-metrics-glass"]',
@@ -111,9 +123,11 @@ export default Marionette.View.extend({
         'contextmenu @ui.$drawing_area': 'handleCanvasClick',
         'click @ui.$hovering_section_controls': 'handleHoveringSectionControlsClickThrough',
         'click @ui.$hovering_section_controls .button': 'handleHoveringSectionControlsClick',  // Keep before button events
+        'click @ui.$add_connector_buttons': 'handleAddConnectorClick',
+        'click @ui.$remove_subunit_button': 'handleRemoveSubunitClick',
         'click .split-section': 'handleSplitSectionClick',
         'click @ui.$sash_types': 'handleChangeSashTypeClick',
-        'click #clear-frame': 'handleClearFrameClick',
+        'click @ui.$clear_frame': 'handleClearFrameClick',
         'click #change-view-button': 'handleChangeView',
         'click @ui.$arched_controls': 'handleArchedClick',
         'click @ui.$circular_controls': 'handleCircularClick',
@@ -125,9 +139,11 @@ export default Marionette.View.extend({
         // Tap
         'tap @ui.$hovering_section_controls': 'handleHoveringSectionControlsClickThrough',
         'tap @ui.$hovering_section_controls .button': 'handleHoveringSectionControlsClick',  // Keep before button events
+        'tap @ui.$add_connector_buttons': 'handleAddConnectorClick',
+        'tap @ui.$remove_subunit_button': 'handleRemoveSubunitClick',
         'tap .split-section': 'handleSplitSectionClick',
         'tap @ui.$sash_types': 'handleChangeSashTypeClick',
-        'tap #clear-frame': 'handleClearFrameClick',
+        'tap @ui.$clear_frame': 'handleClearFrameClick',
         'tap #change-view-button': 'handleChangeView',
         'tap @ui.$arched_controls': 'handleArchedClick',
         'tap @ui.$circular_controls': 'handleCircularClick',
@@ -188,7 +204,7 @@ export default Marionette.View.extend({
         this.helpSquaresShow();
     },
     handleModifierKeyUp(event) {
-        const isShift = _.contains(['ShiftLeft', 'ShiftRight'], event.code) || event.keyCode === 16;
+        const isShift = _.contains(['ShiftLeft', 'ShiftRight'], event.code) || event.keyCode === KEY_SHIFT;
         const eventKey = (isShift) ? 'Shift' : event.key;
         let modifierKeysPressed = this.state.modifierKeysPressed;
         const hasPressedKey = modifierKeysPressed && modifierKeysPressed.length && _.contains(modifierKeysPressed, eventKey);
@@ -199,24 +215,24 @@ export default Marionette.View.extend({
         this.helpSquaresHide();
     },
     handleUndoClick() {
-        return this.undo_manager.handler.undo();
+        return this.undo_manager ? this.undo_manager.handler.undo() : false;
     },
     handleRedoClick() {
-        return this.undo_manager.handler.redo();
+        return this.undo_manager ? this.undo_manager.handler.redo() : false;
     },
     handleCanvasClick(e) {
-        if (this.module.isCloningFilling()) {
-            this.module.cloneFillingDismiss();
+        if (this.builder.isCloningFilling()) {
+            this.builder.cloneFillingDismiss();
             e.preventDefault();
-        } else if (this.module.isSyncingFilling()) {
-            this.module.syncFillingDismiss();
+        } else if (this.builder.isSyncingFilling()) {
+            this.builder.syncFillingDismiss();
             e.preventDefault();
         }
         this.closeSectionHoverMenu();
     },
     handleCanvasKeyDown(e) {
-        if (this.module && !this.state.inputFocused) {
-            this.module.handleKeyEvents(e);
+        if (this.builder && !this.state.inputFocused) {
+            this.builder.handleKeyEvents(e);
         }
     },
     handleAdditionalMetricsChange(evt) {
@@ -246,7 +262,7 @@ export default Marionette.View.extend({
             openingView: this.isOpeningView(),
         });
 
-        this.module.setState({
+        this.builder.setState({
             insideView: this.isInsideView(),
             openingView: this.isOpeningView(),
         });
@@ -262,15 +278,15 @@ export default Marionette.View.extend({
     },
     handleFillingCloneClick() {
         if (this.state.selectedSashId) {
-            this.module.cloneFillingStart(this.state.selectedSashId);
+            this.builder.cloneFillingStart(this.state.selectedSashId);
         }
-        // Continues at this.bindModuleEvents()
+        // Continues at this.bindBuilderEvents()
     },
     handleFillingSyncClick() {
         if (this.state.selectedSashId) {
-            this.module.syncFillingStart(this.state.selectedSashId);
+            this.builder.syncFillingStart(this.state.selectedSashId);
         }
-        // Continues at this.bindModuleEvents()
+        // Continues at this.bindBuilderEvents()
     },
     handleFillingTypeChange() {
         let filling_type;
@@ -306,7 +322,7 @@ export default Marionette.View.extend({
         this.model.splitSection(this.state.selectedSashId, divider);
 
         this.deselectAll();
-        this.module.deselectAll();
+        this.builder.deselectAll();
         this.closeSectionHoverMenu();
     },
     handleChangeSashTypeClick(e) {
@@ -343,18 +359,92 @@ export default Marionette.View.extend({
         });
     },
     handleHoveringSectionControlsClick() {
-        this.setState({ selectedSashId: this.module.getState('selected:sash') }, true);
+        this.setState({ selectedSashId: this.builder.getState('selected:sash') }, true);
     },
     handleHoveringSectionControlsClickThrough() {
-        const selectedSashId = this.module.getState('selected:sash');
+        const selectedSashId = this.builder.getState('selected:sash');
         this.closeSectionHoverMenu();
-        this.module.setState('selected:sash', selectedSashId);
+        this.builder.setState('selected:sash', selectedSashId);
     },
     handleHoveringSectionControlsLeave() {
         this.closeSectionHoverMenu();
     },
+    handleAddConnectorClick(event) {
+        const isDisabled = $(event.target).hasClass('disabled');
+        if (isDisabled) { return; }
+        const flipSideX = side => (_.contains(['left', 'right'], side) ? { right: 'left', left: 'right' }[side] : side);
+        const isInside = this.isInsideView();
+        const sideLabel = $(event.target).data().side;
+        const connectorSide = (isInside) ? flipSideX(sideLabel) : sideLabel;
+        const relation = this.model.getRelation();
+        let multiunit;
+        let modelId;
 
-    // Marrionente lifecycle method
+        if (relation === 'subunit') {
+            multiunit = this.model.getParentMultiunit();
+            modelId = this.model.id;
+        } else if (relation === 'loneunit') {
+            multiunit = this.model.toMultiunit();
+            multiunit.persist({}, { validate: true, parse: true });
+            modelId = this.model.id;
+        } else if (relation === 'multiunit') {
+            multiunit = this.model;
+            modelId = this.builder.getState('selected:subunit');
+        }
+
+        if (modelId && connectorSide) {
+            multiunit.addConnector({
+                connects: [modelId],
+                side: connectorSide,
+                success: () => {
+                    this.options.parent_view.sidebar_view.render();
+                    this.selectUnit(multiunit);
+                },
+            });
+        }
+    },
+    handleRemoveSubunitClick() {
+        const isModelSubunit = this.model.isSubunit();
+        const isModelMultiunit = this.model.isMultiunit();
+        let target;
+
+        if (isModelSubunit) {
+            target = this.model;
+        } else if (isModelMultiunit) {
+            target = this.model.getSubunitLinkedUnitById(this.builder.getState('selected:subunit'));
+        } else {
+            target = this.model;
+        }
+
+        const isTargetSubunit = target.isSubunit();
+
+        if (!isTargetSubunit) {
+            const collection = target.collection;
+            const index = collection.indexOf(target);
+            const nextUnit = collection.at(index + 1);
+            const prevUnit = (index > 0) && collection.at(index - 1);
+            let otherUnit;
+
+            if (nextUnit) {
+                otherUnit = nextUnit;
+            } else if (prevUnit) {
+                otherUnit = prevUnit;
+            } else {
+                otherUnit = new Unit();
+                collection.add(otherUnit);
+            }
+
+            target.destroy();
+            this.selectUnit(otherUnit);
+        } else {
+            const multiunit = target.getParentMultiunit();
+
+            if (multiunit && multiunit.isSubunitRemovable(target.id || target.cid)) {
+                multiunit.removeSubunit(target);
+                this.selectUnit(multiunit);
+            }
+        }
+    },
     onRender() {
         this.changeIcons();
 
@@ -372,36 +462,36 @@ export default Marionette.View.extend({
             size: 10,
         });
 
-        this.module = new DrawingModule({
+        this.builder = new DrawingBuilder({
             model: this.model,
             stage: this.stage,
             layers: {},
             metricSize: this.metric_size,
         });
 
-        this.module.setState({
+        this.builder.setState({
             insideView: this.isInsideView(),
             openingView: this.isOpeningView(),
         });
 
         // To show debug info, just uncomment it:
-        // this.module.set('debug', true);
+        // this.builder.set('debug', true);
 
-        this.bindModuleEvents();
+        this.bindBuilderEvents();
         this.elementsToShortcuts(this.ui.$shortcuts);
     },
     // Marrionente lifecycle method
     onBeforeDestroy() {
         this.stage.destroy();
-        this.unbindModuleEvents();
+        this.unbindBuilderEvents();
         this.helpSquaresCleanupState();
 
         if (this.glazing_view) {
             this.glazing_view.destroy();
         }
 
-        if (this.module) {
-            this.module.destroy();
+        if (this.builder) {
+            this.builder.destroy();
         }
     },
 
@@ -432,46 +522,56 @@ export default Marionette.View.extend({
         return true;
     },
 
-    bindModuleEvents() {
-        this.listenTo(this.module, 'state:selected:mullion', (data) => {
+    bindBuilderEvents() {
+        this.listenTo(this.builder, 'state:selected:mullion', (data) => {
             if (data.newValue) {
-                this.module.disableDelayedHover();
+                this.builder.disableDelayedHover();
             } else {
-                this.module.enableDelayedHover();
+                this.builder.enableDelayedHover();
             }
             this.deselectAll();
             this.setState({ selectedMullionId: data.newValue });
         });
-        this.listenTo(this.module, 'state:selected:sash', (data) => {
+        this.listenTo(this.builder, 'state:selected:sash', (data) => {
             const sourceSashId = data.oldValue;
             const targetSashId = data.newValue;
+
             if (targetSashId) {
-                this.module.disableDelayedHover();
+                this.builder.disableDelayedHover();
             } else {
-                this.module.enableDelayedHover();
+                this.builder.enableDelayedHover();
             }
+
             if (!targetSashId || targetSashId === sourceSashId) { this.deselectAll(); return; }
 
-            if (this.module.isCloningFilling()) {
-                this.module.cloneFillingFinish(targetSashId);
-            } else if (this.module.isSyncingFilling()) {
-                this.module.syncFillingFinish(targetSashId);
+            if (this.builder.isCloningFilling()) {
+                this.builder.cloneFillingFinish(targetSashId);
+            } else if (this.builder.isSyncingFilling()) {
+                this.builder.syncFillingFinish(targetSashId);
             } else {
                 this.deselectAll();
                 this.setState({ selectedSashId: targetSashId });
             }
         });
-        this.listenTo(this.module, 'labelClicked', (data) => {
+        this.listenTo(this.builder, 'state:selected:unit', (data) => {
+            this.deselectAll();
+            this.setState({ isUnitSelected: data.newValue });
+        });
+        this.listenTo(this.builder, 'state:selected:subunit', (data) => {
+            this.deselectAll();
+            this.setState({ selectedSubunitId: data.newValue });
+        });
+        this.listenTo(this.builder, 'labelClicked', (data) => {
             this.createInput(data.params, data.pos, data.size);
         });
-        this.listenTo(this.module, 'mullionNumericInput', (data) => {
+        this.listenTo(this.builder, 'mullionNumericInput', (data) => {
             this.createMullionInput(data.mullionId);
         });
-        this.listenTo(this.module, 'state:cloneFillingSource state:syncFillingSource', () => {
+        this.listenTo(this.builder, 'state:cloneFillingSource state:syncFillingSource', () => {
             this.updateUI();
             this.$('#drawing').focus();
         });
-        this.listenTo(this.module, 'state:sectionHoverMenuOpen', (data) => {
+        this.listenTo(this.builder, 'state:sectionHoverMenuOpen', (data) => {
             const pointerPosition = this.stage.getPointerPosition();
             const x = pointerPosition && pointerPosition.x;
             const y = pointerPosition && pointerPosition.y;
@@ -483,8 +583,8 @@ export default Marionette.View.extend({
             }
         });
     },
-    unbindModuleEvents() {
-        this.stopListening(this.module);
+    unbindBuilderEvents() {
+        this.stopListening(this.builder);
     },
 
     templateContext() {
@@ -512,8 +612,8 @@ export default Marionette.View.extend({
 
     createInput(params, pos, size) {
         const view = this;
-        const module = this.module;
-        const $container = $(module.get('stage').container());
+        const builder = this.builder;
+        const $container = $(builder.get('stage').container());
         const $wrap = $('<div>')
             .addClass('popup-wrap')
             .appendTo($container)
@@ -593,13 +693,13 @@ export default Marionette.View.extend({
         }
 
         const self = this;
-        const module = this.module;
+        const builder = this.builder;
         const model = this.model;
-        const ratio = module.get('ratio');
-        const style = module.getStyle('mullion_input');
+        const ratio = builder.get('ratio');
+        const style = builder.getStyle('mullion_input');
         const isInside = this.isInsideView();
         const isOutside = !isInside;
-        const unitLayer = module.getLayer('unit').layer;
+        const unitLayer = builder.getLayer('unit').layer;
         const mullion = model.getMullion(mullionId);
         const mullionRect = unitLayer.findOne(`#mullion-${mullionId}`).getClientRect();
         const mullionX = (mullionRect.x * ratio) + unitLayer.getClientRect().x;
@@ -610,7 +710,7 @@ export default Marionette.View.extend({
         const inputY = mullionCenterY - (style.height / 2);
         const isVertical = mullion.type === 'vertical' || mullion.type === 'vertical_invisible';
         const isHorizontal = mullion.type === 'horizontal' || mullion.type === 'horizontal_invisible';
-        const $container = $(module.get('stage').container());
+        const $container = $(builder.get('stage').container());
         const containerPosition = ($container.css('position') === 'relative') ? { top: 0, left: 0 } : $container.position();
         const $wrap = $('<div>')
             .addClass('popup-wrap')
@@ -717,7 +817,7 @@ export default Marionette.View.extend({
         this.ui.$hovering_section_controls.toggleClass('open', currentNewState);
         if (!_.isUndefined(x)) { this.ui.$hovering_section_controls.css('left', `${x}px`); }
         if (!_.isUndefined(y)) { this.ui.$hovering_section_controls.css('top', `${y}px`); }
-        this.module.setState('sectionHoverMenuOpen', currentNewState);
+        this.builder.setState('sectionHoverMenuOpen', currentNewState);
     },
     openSectionHoverMenu(options) {
         this.toggleSectionHoverMenu(true, options);
@@ -758,17 +858,47 @@ export default Marionette.View.extend({
             helpSquaresCheckerHandle: null,
         }, true);
     },
-    // Shows and hides various toolbar elements
+    // Here we hide or show various elements in toolbar
     updateUI() {
+        const isInside = this.isInsideView();
         const selectedSashId = this.state.selectedSashId;
-        const selectedSash = this.model.getSection(selectedSashId);
+        const selectedSash = (this.model.getSection) ? this.model.getSection(selectedSashId) : undefined;
         const isSashSelected = !!selectedSash;
         const isLeafSash = isSashSelected && selectedSash.sections.length === 0;
         const hasFrame = isSashSelected && selectedSash.sashType !== 'fixed_in_frame';
+        const isMultiunit = this.model.isMultiunit();
+        const isSubunitSelected = !!(this.state.isUnitSelected || this.state.selectedSubunitId);
         const isArched = !!(isSashSelected && selectedSash.arched);
         const isCircular = !!(isSashSelected && selectedSash.circular);
         const selectedFillingType = isSashSelected && selectedSash.fillingName &&
             App.settings && App.settings.filling_types.getByName(selectedSash.fillingName);
+        let [isTopConnected, isRightConnected, isBottomConnected, isLeftConnected] = [false, false, false, false];
+        let isRemovable = true;
+
+        if (isSubunitSelected) {
+            let subunit;
+            let multiunit;
+            let subunitId;
+
+            if (this.state.isUnitSelected) {
+                subunit = this.model;
+            } else if (this.state.selectedSubunitId) {
+                subunit = this.model.getSubunitLinkedUnitById(this.state.selectedSubunitId);
+            }
+
+            if (subunit) {
+                multiunit = subunit.getParentMultiunit();
+                subunitId = subunit.id;
+            }
+
+            if (multiunit && subunitId) {
+                isTopConnected = _.contains(multiunit.getConnectedSides(subunitId), 'top');
+                isRightConnected = _.contains(multiunit.getConnectedSides(subunitId), 'right');
+                isBottomConnected = _.contains(multiunit.getConnectedSides(subunitId), 'bottom');
+                isLeftConnected = _.contains(multiunit.getConnectedSides(subunitId), 'left');
+                isRemovable = multiunit.isSubunitRemovable(subunitId);
+            }
+        }
 
         // View title
         const buttonText = this.isInsideView() ? 'Show outside view' : 'Show inside view';
@@ -777,45 +907,66 @@ export default Marionette.View.extend({
         this.ui.$drawing_view_title.text(titleText);
 
         // Mouse pointer
-        if (this.module.isCloningFilling() || this.module.isSyncingFilling()) {
+        if (this.builder.isCloningFilling() || this.builder.isSyncingFilling()) {
             document.body.style.cursor = 'copy';
         } else {
             document.body.style.cursor = 'auto';
         }
 
-        //
         // Section controls
-        //
-        this.ui.$filling_tool_controls.toggle(isSashSelected && isLeafSash);
-        this.ui.$bar_controls.toggle(!isArched && isSashSelected && selectedSash.fillingType === 'glass');
-        this.ui.$section_controls.toggle(isSashSelected);
-        this.ui.$sash_controls.toggle(!isArched && isSashSelected && this.model.canAddSashToSection(selectedSashId));
-        this.ui.$section_split_controls.toggle(!isArched);
+        this.ui.$filling_tool_controls.toggle(isSashSelected && isLeafSash && !isSubunitSelected);
+        this.ui.$bar_controls.toggle(!isArched && !isSubunitSelected && isSashSelected && selectedSash.fillingType === 'glass');
+        this.ui.$section_controls.toggle(isSashSelected || isSubunitSelected);
+        this.ui.$sash_controls.toggle(!isArched && !isSubunitSelected && isSashSelected && this.model.canAddSashToSection(selectedSashId));
+        this.ui.$section_split_controls.toggle(isSashSelected && !isSubunitSelected && !isArched);
         if (selectedFillingType) {
             this.ui.$filling_select.val(selectedFillingType.cid);
         } else {
             this.ui.$filling_select.val('');
         }
         this.ui.$filling_select.selectpicker('render');
+        this.ui.$filling_type_controls.toggle(isSashSelected && !isSubunitSelected);
 
         // Arched controls
-        this.ui.$arched_controls.toggle(isSashSelected && this.model.isArchedPossible(selectedSashId));
-        this.ui.$remove_arched.toggle(isArched && !isCircular);
-        this.ui.$add_arched.toggle(!isArched && !isCircular);
+        this.ui.$arched_controls.toggle(isSashSelected && !isSubunitSelected && this.model.isArchedPossible(selectedSashId));
+        this.ui.$remove_arched.toggle(isArched && !isCircular && !isSubunitSelected);
+        this.ui.$add_arched.toggle(!isArched && !isCircular && !isSubunitSelected);
 
         // Circular controls
-        this.ui.$circular_controls.toggle(isSashSelected && this.model.isCircularPossible(selectedSashId));
-        this.ui.$remove_circular.toggle(isCircular && !isArched);
-        this.ui.$add_circular.toggle(!isCircular && !isArched);
+        this.ui.$circular_controls.toggle(isSashSelected && !isSubunitSelected && this.model.isCircularPossible(selectedSashId));
+        this.ui.$remove_circular.toggle(isCircular && !isArched && !isSubunitSelected);
+        this.ui.$add_circular.toggle(!isCircular && !isArched && !isSubunitSelected);
 
-        // Undo/Redo buttons
-        if (!this.undo_manager.registered) {  // Register only once
+        // Multiunit controls
+        this.ui.$multiunit_controls.toggle(isSubunitSelected);
+        this.ui.$add_connector_top_button.toggleClass('disabled', isTopConnected);
+        this.ui.$add_connector_bottom_button.toggleClass('disabled', isBottomConnected);
+        this.ui.$remove_subunit_button.toggleClass('disabled', !isRemovable);
+
+        if (isInside) {
+            this.ui.$add_connector_left_button.toggleClass('disabled', isRightConnected);
+            this.ui.$add_connector_right_button.toggleClass('disabled', isLeftConnected);
+        } else {
+            this.ui.$add_connector_left_button.toggleClass('disabled', isLeftConnected);
+            this.ui.$add_connector_right_button.toggleClass('disabled', isRightConnected);
+        }
+
+        // Undo, Redo buttons
+        if (this.undo_manager && !this.undo_manager.registered) {
+            // Register buttons once!
             this.undo_manager.registerButton('undo', this.ui.$undo);
             this.undo_manager.registerButton('redo', this.ui.$redo);
             this.undo_manager.registered = true;
         }
 
+        this.ui.$undo.toggle(!!(this.undo_manager && this.undo_manager.registered));
+        this.ui.$redo.toggle(!!(this.undo_manager && this.undo_manager.registered));
+
+        // Clear frame button
+        this.ui.$clear_frame.toggle(!isMultiunit);
+
         // Additional overlay metrics
+        this.ui.$metric_controls.toggle(!isMultiunit && !isSubunitSelected);
         if (isSashSelected) {
             this.ui.$metrics_glass_input.prop('checked', selectedSash.measurements.glass);
             this.ui.$metrics_opening_input.prop('checked', selectedSash.measurements.opening);
@@ -827,12 +978,10 @@ export default Marionette.View.extend({
             );
         }
     },
-
     updateSize(width, height) {
         this.stage.width(width || this.ui.$drawing_area.get(0).offsetWidth);
         this.stage.height(height || this.ui.$drawing_area.get(0).offsetHeight);
     },
-
     updateRenderedScene() {
         this.updateUI();
         this.updateSize();
@@ -855,7 +1004,6 @@ export default Marionette.View.extend({
             });
         }
     },
-
     setState(state, preventUpdate) {
         this.state = _.assign(this.state, state);
 
@@ -870,6 +1018,9 @@ export default Marionette.View.extend({
             selectedSashId: null,
         });
     },
+    selectUnit(model) {
+        this.options.parent_view.sidebar_view.selectUnit(model);
+    },
     elementsToShortcuts(elements) {
         let current_elements = elements;
 
@@ -883,6 +1034,6 @@ export default Marionette.View.extend({
             keysToElementsTable[key].push(element);
         });
 
-        this.module.setState('keysToElementsTable', keysToElementsTable);
+        this.builder.setState('keysToElementsTable', keysToElementsTable);
     },
 });

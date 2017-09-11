@@ -3,7 +3,6 @@ import resemble from 'resemblejs';
 
 import Unit from '../../src/core/models/unit';
 import Profile from '../../src/core/models/profile';
-import { preview as previewFn } from '../../src/components/drawing/module/drawing-module';
 
 function getExpectedFile(imgData) {
     const user_agent = navigator.userAgent;
@@ -35,7 +34,7 @@ const runVisualTest = (options) => {
 
     unit.profile = profile;
 
-    const preview = previewFn(unit, {
+    const preview = unit.getPreview({
         width: current_options.test_case.preview_settings.width,
         height: current_options.test_case.preview_settings.height,
         mode: 'base64',
