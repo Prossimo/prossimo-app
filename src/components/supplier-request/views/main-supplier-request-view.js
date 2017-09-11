@@ -2,7 +2,7 @@ import Marionette from 'backbone.marionette';
 
 import App from '../../../main';
 import SupplierRequestHeaderView from './supplier-request-header-view';
-import QuoteTableView from '../../quote/views/quote-table-view';
+import QuoteBodyView from '../../quote/views/quote-body-view';
 import QuoteControlsView from '../../quote/views/quote-controls-view';
 import template from '../templates/main-supplier-request-view.hbs';
 
@@ -38,21 +38,22 @@ export default Marionette.View.extend({
             model: App.current_project,
         });
 
-        this.request_table_view = new QuoteTableView({
+        this.request_body_view = new QuoteBodyView({
             project: App.current_project,
             quote: App.current_quote,
-            collection: App.current_quote.units,
+            multiunits: App.current_quote.multiunits,
+            units: App.current_quote.units,
             extras: App.current_quote.extras,
             display_options,
         });
 
         this.ui.$controls_container.append(this.controls_view.render().el);
         this.ui.$header_container.append(this.request_header_view.render().el);
-        this.ui.$table_container.append(this.request_table_view.render().el);
+        this.ui.$table_container.append(this.request_body_view.render().el);
     },
     onBeforeDestroy() {
         this.controls_view.destroy();
         this.request_header_view.destroy();
-        this.request_table_view.destroy();
+        this.request_body_view.destroy();
     },
 });

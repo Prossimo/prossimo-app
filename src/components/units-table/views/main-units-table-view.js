@@ -15,6 +15,7 @@ export default Marionette.View.extend({
         this.units_table_view = new UnitsTableView({
             collection: App.current_quote.units,
             extras: App.current_quote.extras,
+            multiunits: App.current_quote.multiunits,
             parent_view: this,
         });
 

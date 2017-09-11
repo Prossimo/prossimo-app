@@ -6,6 +6,8 @@ import App from '../../main';
 import Schema from '../../schema';
 import { object, convert, math } from '../../utils';
 import UnitOptionCollection from '../collections/inline/unit-option-collection';
+import Multiunit from './multiunit';
+import { mergePreviewOptions, generatePreview } from '../../components/drawing/builder/preview';
 import { globalChannel } from '../../utils/radio';
 
 import {
@@ -503,6 +505,7 @@ const Unit = Backbone.Model.extend({
 
         const type_value_hash = {
             number: 0,
+            array: [],
         };
 
         const name_value_hash = {
@@ -946,11 +949,49 @@ const Unit = Backbone.Model.extend({
 
         return _.pluck(name_title_hash, 'title');
     },
-    getProfileProperties() {
-        return App.settings ? App.settings.getProfileProperties(this.get('profile')) : {};
-    },
+    //  Multiunits and normal units share reference numbers within project.
+    //  Numbering starts with multiunits, the first multiunit within the
+    //  project gets 1, and its subunits are 1a, 1b, 1c etc. Second
+    //  multiunit is 2, and so on. The first normal unit that doesn't
+    //  belong to any collection gets the number of last multiunit + 1,
+    //  the remaining normal units are numbered according to their position
     getRefNum() {
-        return this.collection ? this.collection.indexOf(this) + 1 : -1;
+        const parent_quote_multiunits = this.getParentQuoteMultiunits();
+        let ref_num = -1;
+
+        if (this.collection) {
+            if (parent_quote_multiunits && parent_quote_multiunits.length) {
+                if (this.isSubunit()) {
+                    const parent_multiunit = this.getParentMultiunit();
+                    const subunit_positions = parent_multiunit.get('multiunit_subunits').map(
+                        subunit => parseInt(subunit.invokeOnUnit('get', 'position'), 10)).sort((a, b) => a - b);
+
+                    ref_num = parent_multiunit.getRefNum() + convert.number_to_letters(
+                        subunit_positions.indexOf(this.get('position')) + 1,
+                    );
+                } else {
+                    const number_of_multiunits = parent_quote_multiunits.length;
+                    const loneunit_positions = this.collection.filter(item => !item.isSubunit()).map(
+                        loneunit => parseInt(loneunit.get('position'), 10)).sort((a, b) => a - b);
+
+                    ref_num = loneunit_positions.indexOf(this.get('position')) + number_of_multiunits + 1;
+                }
+            } else {
+                ref_num = this.get('position') + 1;
+            }
+        }
+
+        return ref_num;
+    },
+    getMark() {
+        const parent_multiunit = this.isSubunit() && this.getParentMultiunit();
+
+        return parent_multiunit ? parent_multiunit.get('mark') : this.get('mark');
+    },
+    getQuantity() {
+        const parent_multiunit = this.isSubunit() && this.getParentMultiunit();
+
+        return parent_multiunit ? parent_multiunit.get('quantity') : this.get('quantity');
     },
     getWidthMM() {
         return convert.inches_to_mm(this.get('width'));
@@ -968,7 +1009,7 @@ const Unit = Backbone.Model.extend({
         return math.square_feet(this.get('width'), this.get('height'));
     },
     getTotalSquareFeet() {
-        return this.getAreaInSquareFeet() * parseFloat(this.get('quantity'));
+        return this.getAreaInSquareFeet() * parseFloat(this.getQuantity());
     },
     getAreaInSquareMeters() {
         return math.square_meters(convert.inches_to_mm(this.get('width')), convert.inches_to_mm(this.get('height')));
@@ -977,19 +1018,19 @@ const Unit = Backbone.Model.extend({
         return parseFloat(this.get('original_cost')) / parseFloat(this.get('conversion_rate'));
     },
     getSubtotalCost() {
-        return this.getUnitCost() * parseFloat(this.get('quantity'));
+        return this.getUnitCost() * parseFloat(this.getQuantity());
     },
     getUnitCostDiscounted() {
         return (this.getUnitCost() * (100 - parseFloat(this.get('supplier_discount')))) / 100;
     },
     getSubtotalCostDiscounted() {
-        return this.getUnitCostDiscounted() * parseFloat(this.get('quantity'));
+        return this.getUnitCostDiscounted() * parseFloat(this.getQuantity());
     },
     getUnitPrice() {
         return this.getUnitCostDiscounted() * parseFloat(this.get('price_markup'));
     },
     getSubtotalPrice() {
-        return this.getUnitPrice() * parseFloat(this.get('quantity'));
+        return this.getUnitPrice() * parseFloat(this.getQuantity());
     },
     getUValue() {
         return parseFloat(this.get('uw')) * 0.176;
@@ -1049,8 +1090,8 @@ const Unit = Backbone.Model.extend({
 
         //  Base unit info, always included
         pricing_data = _.extend({}, pricing_data, {
-            mark: this.get('mark'),
-            quantity: this.get('quantity'),
+            mark: this.getMark(),
+            quantity: this.getQuantity(),
             width: this.get('width'),
             height: this.get('height'),
         });
@@ -1369,7 +1410,7 @@ const Unit = Backbone.Model.extend({
         }
     },
     getCircleSashData(sectionId) {
-        let root;
+        let current_root;
         const section = this.getSection(sectionId);
         const result = {};
 
@@ -1397,13 +1438,13 @@ const Unit = Backbone.Model.extend({
         // But other methods could use this helpful information about type.
         // For example, it used in unit-drawer.js
         if (result.type === 'circle' || result.type === 'arc') {
-            root = this.generateFullRoot();
+            current_root = this.generateFullRoot();
 
             result.circle = {
-                x: root.sashParams.x,
-                y: root.sashParams.y,
+                x: current_root.sashParams.x,
+                y: current_root.sashParams.y,
             };
-            result.radius = Math.min(root.sashParams.width, root.sashParams.height) / 2;
+            result.radius = Math.min(current_root.sashParams.width, current_root.sashParams.height) / 2;
         }
 
         return result;
@@ -2331,7 +2372,7 @@ const Unit = Backbone.Model.extend({
             });
         }
 
-        if (current_root.bars.horizontal.length) {
+        if (current_root.bars && current_root.bars.horizontal.length) {
             _.each(current_root.bars.horizontal, () => {
                 result.glazing_bars.push({
                     type: 'horizontal',
@@ -2342,7 +2383,7 @@ const Unit = Backbone.Model.extend({
             });
         }
 
-        if (current_root.bars.vertical.length) {
+        if (current_root.bars && current_root.bars.vertical.length) {
             _.each(current_root.bars.vertical, () => {
                 result.glazing_bars.push({
                     type: 'vertical',
@@ -3194,7 +3235,7 @@ const Unit = Backbone.Model.extend({
     getParentQuote() {
         return this.collection && this.collection.options.quote;
     },
-    //  Check if this unit belongs to the project which is currently active
+    //  Check if this unit belongs to the quote which is currently active
     isParentQuoteActive() {
         let is_active = false;
 
@@ -3206,9 +3247,9 @@ const Unit = Backbone.Model.extend({
     },
     /* trapezoid start */
     isTrapezoid() {
-        const root = this.generateFullRoot();
+        const current_root = this.generateFullRoot();
 
-        return root.trapezoidHeights;
+        return current_root.trapezoidHeights;
     },
     /* Determines if the unit has at least one horizontal mullion */
     hasHorizontalMullion() {
@@ -3216,7 +3257,7 @@ const Unit = Backbone.Model.extend({
             (previous, current) => previous || (current.type === 'horizontal' || current.type === 'horizontal_invisible'), false);
     },
     /* Determines the number of vertical metric columns on the unit drawing's left and right sides
-     * Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js */
+     * Duplicates logic from MetricsDrawer /static/source/js/drawing/builder/metrics-drawer.js */
     leftMetricCount(isInsideView) {
         // Inside view //
 
@@ -3239,7 +3280,7 @@ const Unit = Backbone.Model.extend({
         return (this.hasHorizontalMullion()) ? 2 : 1;
     },
     /* Determines the number of vertical metric columns on the unit drawing's right side
-     * Duplicates logic from MetricsDrawer /static/source/js/drawing/module/metrics-drawer.js */
+     * Duplicates logic from MetricsDrawer /static/source/js/drawing/builder/metrics-drawer.js */
     rightMetricCount(isInsideView) {
         // Inside view //
 
@@ -3422,6 +3463,128 @@ const Unit = Backbone.Model.extend({
         return trapezoidHeights || convert.inches_to_mm(this.get('height'));
     },
     /* trapezoid end */
+    getParentQuoteMultiunits() {
+        const parent_quote = this.getParentQuote();
+
+        return parent_quote && parent_quote.multiunits;
+    },
+    isMultiunit() {
+        return false;
+    },
+    getParentMultiunit() {
+        const parent_quote_multiunits = this.getParentQuoteMultiunits();
+
+        return parent_quote_multiunits && parent_quote_multiunits.getParentForSubunit(this);
+    },
+    isSubunit() {
+        const parent_quote_multiunits = this.getParentQuoteMultiunits();
+
+        return (parent_quote_multiunits && parent_quote_multiunits.isSubunit(this)) || false;
+    },
+    isSubunitOf(multiunit) {
+        return (multiunit && multiunit.hasSubunit(this)) || false;
+    },
+    isRemovable() {
+        return this.isSubunit() && this.getParentMultiunit().isSubunitRemovable(this.id);
+    },
+    getRelation() {
+        return this.isSubunit() ? 'subunit' : 'loneunit';
+    },
+    toMultiunit() {
+        if (this.isSubunit()) {
+            throw new Error('This Unit cannot be converted to a new Multiunit, because it already belongs to one');
+        }
+
+        const parent_quote_multiunits = this.getParentQuoteMultiunits();
+        const new_position = parent_quote_multiunits && parent_quote_multiunits.length ? parent_quote_multiunits.getMaxPosition() + 1 : 0;
+        const multiunit = new Multiunit({
+            position: new_position,
+        }, {
+            from_unit: this,
+            parse: true,
+        });
+
+        if (parent_quote_multiunits) {
+            parent_quote_multiunits.add(multiunit);
+        }
+
+        return multiunit;
+    },
+    //  List attributes that cause unit redraw on change
+    //  TODO: this data should be made a single source of truth for the drawing
+    //  builder, so it shouldn't get anything from model or profile directly
+    getDrawingRepresentation() {
+        const model_attributes_to_cache = [
+            'glazing', 'glazing_bar_width', 'height', 'opening_direction',
+            'profile_id', 'root_section', 'unit_options', 'width',
+        ];
+
+        if (this.isSubunit()) {
+            model_attributes_to_cache.push('position');
+        }
+
+        return this.pick(model_attributes_to_cache);
+    },
+    checkIfCacheIsValid() {
+        const old_drawing_representation = this._cache && this._cache.drawing_representation_string;
+        const new_drawing_representation = JSON.stringify(this.getDrawingRepresentation());
+        let is_valid = false;
+
+        if (old_drawing_representation === new_drawing_representation) {
+            is_valid = true;
+        } else {
+            this._cache = {
+                drawing_representation_string: new_drawing_representation,
+            };
+        }
+
+        return is_valid;
+    },
+    //  This is a wrapper for `app.preview`, we need it because we want to
+    //  cache preview at the model level to improve app rendering times.
+    //  The way it works is it assumes that preview should be the same if
+    //  none of the model attributes that affect drawing did change
+    //
+    //  - For each combination of preview options we store a separate
+    //    preview image inside the Unit model. For example, we have
+    //    different previews for Customer Quote / Supplier Request, and
+    //    we cache them both
+    //  - If drawing_representation_string changes, we want preview cache
+    //    to be erased, and all previews are removed and then re-created
+    //    again at request
+    getPreview(preview_options) {
+        const complete_preview_options = mergePreviewOptions(this, preview_options);
+        let use_cache = true;
+
+        //  In some cases we want to ignore the cache completely, like when
+        //  preview is expected to return a canvas or a Konva.Group
+        if (complete_preview_options.mode === 'canvas' || complete_preview_options.mode === 'group') {
+            use_cache = false;
+        }
+
+        const options_json_string = JSON.stringify(_.omit(complete_preview_options, 'model'));
+        const is_cache_valid = this.checkIfCacheIsValid();
+
+        //  If we already got an image for the same model representation
+        //  and same preview options, just return it from the cache
+        if (use_cache === true && this._cache.preview && this._cache.preview[options_json_string] && is_cache_valid) {
+            return this._cache.preview[options_json_string];
+        }
+
+        const result = generatePreview(this, preview_options);
+
+        //  If model representation changes, preview cache should be erased
+        if (use_cache === true && (!this._cache.preview || !is_cache_valid)) {
+            this._cache.preview = {};
+        }
+
+        //  Add new preview to cache
+        if (use_cache === true) {
+            this._cache.preview[options_json_string] = result;
+        }
+
+        return result;
+    },
 });
 
 export default Unit;

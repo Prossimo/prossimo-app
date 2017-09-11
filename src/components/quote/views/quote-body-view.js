@@ -3,16 +3,15 @@ import Marionette from 'backbone.marionette';
 
 import App from '../../../main';
 import { format } from '../../../utils';
-import QuoteItemView from './quote-item-view';
+import QuoteMultiunitsTableView from './quote-multiunits-table-view';
+import QuoteUnitsTableView from './quote-units-table-view';
 import QuoteExtrasTableView from './quote-extras-table-view';
-import template from '../templates/quote-table-view.hbs';
+import template from '../templates/quote-body-view.hbs';
 
-export default Marionette.CompositeView.extend({
+export default Marionette.View.extend({
     template,
-    childView: QuoteItemView,
-    childViewContainer: '.quote-table-body',
-    reorderOnSort: true,
     ui: {
+        $quote_table_body: '.quote-table-body',
         $extras_table_container: '.quote-extras-table-container',
         $optional_extras_table_container: '.quote-optional-extras-table-container',
     },
@@ -29,16 +28,9 @@ export default Marionette.CompositeView.extend({
         this.display_options = _.extend({}, default_display_options, options.display_options);
 
         this.listenTo(App.current_project.settings, 'change', this.render);
-        this.listenTo(this.collection, 'change', this.render);
+        this.listenTo(this.options.multiunits, 'change', this.render);
+        this.listenTo(this.options.units, 'change', this.render);
         this.listenTo(this.options.extras, 'change', this.render);
-    },
-    childViewOptions() {
-        return {
-            extras: this.options.extras,
-            project: this.options.project,
-            quote: this.options.quote,
-            display_options: this.display_options,
-        };
     },
     getTotalPrices() {
         const total_prices = this.options.quote.getTotalPrices();
@@ -61,8 +53,9 @@ export default Marionette.CompositeView.extend({
     },
     templateContext() {
         return {
-            total_unit_types: this.collection.getTotalUnitTypes(),
-            total_unit_quantity: this.collection.getTotalUnitQuantity(),
+            total_unit_types: this.options.units.getTotalUnitTypes(),
+            total_unit_quantity: this.options.units.getTotalUnitQuantity(),
+            has_multiunits: this.options.multiunits && this.options.multiunits.length,
             has_extras: (this.options.extras && this.options.extras.getRegularItems().length) ||
                 this.options.extras.getOptionalItems().length,
             total_prices: this.getTotalPrices(),
@@ -70,6 +63,29 @@ export default Marionette.CompositeView.extend({
         };
     },
     onRender() {
+        if (this.templateContext().has_multiunits) {
+            this.quote_multiunits_table_view = new QuoteMultiunitsTableView({
+                project: this.options.project,
+                quote: this.options.quote,
+                units: this.options.units,
+                collection: this.options.multiunits,
+                display_options: this.display_options,
+            });
+
+            this.ui.$quote_table_body.append(this.quote_multiunits_table_view.render().el);
+        }
+
+        //  We filter out subunits, because we show them in multiunits table
+        this.quote_units_table_view = new QuoteUnitsTableView({
+            project: this.options.project,
+            quote: this.options.quote,
+            collection: this.options.units,
+            filter: child => !child.isSubunit(),
+            display_options: this.display_options,
+        });
+
+        this.ui.$quote_table_body.append(this.quote_units_table_view.render().el);
+
         if (this.templateContext().has_extras) {
             this.quote_extras_table_view = new QuoteExtrasTableView({
                 collection: this.options.extras,
@@ -88,6 +104,14 @@ export default Marionette.CompositeView.extend({
         }
     },
     onBeforeDestroy() {
+        if (this.quote_multiunits_table_view) {
+            this.quote_multiunits_table_view.destroy();
+        }
+
+        if (this.quote_units_table_view) {
+            this.quote_units_table_view.destroy();
+        }
+
         if (this.quote_extras_table_view) {
             this.quote_extras_table_view.destroy();
         }

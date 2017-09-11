@@ -13,6 +13,30 @@ export const convert = {
     mm_to_inches(mm_value) {
         return parseFloat(mm_value / 25.4);
     },
+    // Converts 1..26 to a..z and 27..702 to aa..zz
+    number_to_letters(number) {
+        if (!_.isNumber(number) || number <= 0 || number > 702) {
+            return '';
+        }
+
+        let table;
+        let base;
+        let convertableNumber;
+
+        if (number <= 26) {
+            table = _.object('0123456789abcdefghijklmnop', 'abcdefghijklmnopqrstuvwxyz');
+            base = 26;
+            convertableNumber = number - 1;
+        } else {
+            table = _.object('0123456789abcdefghijklmnopq', ' abcdefghijklmnopqrstuvwxyz');
+            base = 27;
+            convertableNumber = number + Math.floor((number - 1) / 26);
+        }
+
+        const letters = convertableNumber.toString(base).split('').map(digit => table[digit]).join('');
+
+        return letters;
+    },
 };
 
 export const format = {
@@ -222,6 +246,9 @@ export const format = {
         return suffixes[counter] ?
             `${this.fixed_minimal(current_size_in_bytes, counter < 2 ? 0 : 1)}\u00A0${suffixes[counter]}` :
             'Ovflw.';
+    },
+    yesNo(conditional) {
+        return conditional ? 'Yes' : 'No';
     },
 };
 
@@ -556,6 +583,33 @@ export const array = {
 
         return arr;
     },
+    insertAt(arr, index, new_element) {
+        const copy = arr.slice();
+
+        copy.splice(index, 0, new_element);
+
+        return copy;
+    },
+    insertBefore(arr, element, new_element) {
+        const index = arr.indexOf(element);
+        let copy = arr.slice();
+
+        if (index !== -1) {
+            copy = array.insertAt(copy, index, new_element);
+        }
+
+        return copy;
+    },
+    insertAfter(arr, element, new_element) {
+        const index = arr.indexOf(element);
+        let copy = arr.slice();
+
+        if (index !== -1) {
+            copy = array.insertAt(copy, index + 1, new_element);
+        }
+
+        return copy;
+    },
 };
 
 export const dom = {
@@ -572,4 +626,215 @@ export const dom = {
     },
 };
 
-export default { format, parseFormat, math, convert, object, vector2d, angle, geometry, array, dom };
+export const multiunit = {
+    getSubunitsTraversalSequences(connectors) {
+        // Check that [1, 2] is subsequence of [1, 2, 3]. Order is important
+        const isSubsequence = (sequence, parentSequence) => sequence.map(entry =>
+            parentSequence.indexOf(entry)).every((value, index, arr) =>
+                (value !== -1 && (index === 0 || value - arr[index - 1] === 1)),
+            );
+
+        // Check if some array is an element of a parent array
+        const isContained = (arr, parentArr) => !!parentArr.find(entry => JSON.stringify(entry) === JSON.stringify(arr));
+
+        const canBeLeftJoined = (left, right) => right.length > 1 && left[0] === right[right.length - 1];
+
+        const canBeRightJoined = (right, left) => left.length > 1 && right[0] === left[left.length - 1];
+
+        const canBeJoined = (left, right) => canBeLeftJoined(left, right) || canBeRightJoined(right, left);
+
+        const leftJoinConnectors = (left, right) => (canBeLeftJoined(left, right) ? right.slice().concat(left.slice(1)) : [left, right]);
+
+        const rightJoinConnectors = (right, left) => (canBeRightJoined(right, left) ? left.slice().concat(right.slice(1)) : [right, left]);
+
+        const joinConnectors = (left, right) => {
+            let result = [left, right];
+
+            if (canBeLeftJoined(left, right)) {
+                result = leftJoinConnectors(left, right);
+            } else if (canBeRightJoined(right, left)) {
+                result = rightJoinConnectors(right, left);
+            }
+
+            return result;
+        };
+
+        let result = connectors.slice();
+
+        result.forEach((connector1) => {
+            result.forEach((connector2) => {
+                if (canBeJoined(connector1, connector2) && !isContained(joinConnectors(connector1, connector2), result)) {
+                    result.push(joinConnectors(connector1, connector2));
+                }
+            });
+        });
+
+        result = result.filter((entry) => {
+            let is_unique = true;
+
+            result.forEach((another_entry) => {
+                if (another_entry.length > entry.length && isSubsequence(entry, another_entry)) {
+                    is_unique = false;
+                }
+            });
+
+            return is_unique;
+        });
+
+        return result;
+    },
+    /**
+     * @param {array} connectors - Set of multiunit connectors. Connectors
+     * should be pre-validated (i.e. produce valid traversal sequences)
+     *
+     * @see getSubunitsAsMatrix from models/multiunit.js
+     *
+     * return {{rows: array, cols: array}} Nested arrays, containing entries
+     * like the following:
+     *
+     * {
+     *     type: 'unit',
+     *     id: '<id>',
+     * }
+     *
+     * or
+     *
+     * {
+     *     type: 'connector',
+     *     width: '<width>'
+     * }
+     */
+    getSubunitsAsMatrix(connectors) {
+        const connectors_sorted = [...connectors].sort((a, b) => {
+            if (a.connects[1] <= b.connects[0]) {
+                return -1;
+            } else if (b.connects[1] <= a.connects[0]) {
+                return 1;
+            }
+
+            return 0;
+        });
+
+        const result = {
+            rows: [],
+            cols: [],
+        };
+
+        const findOrCreateUnitRow = (source_array, unit_id) => {
+            let target_row_index = source_array.findIndex(row =>
+                row.find(row_element => row_element.id === unit_id),
+            );
+
+            if (target_row_index === -1) {
+                target_row_index = 0;
+                source_array.push([
+                    {
+                        type: 'unit',
+                        id: unit_id,
+                    },
+                ]);
+            }
+
+            return {
+                row: source_array[target_row_index],
+                index: target_row_index,
+            };
+        };
+
+        connectors_sorted.forEach((connector) => {
+            const [parent_id, child_id] = connector.connects;
+            const { row: parent_row, index: parent_row_index } = findOrCreateUnitRow(result.rows, parent_id);
+            const { row: parent_col, index: parent_col_index } = findOrCreateUnitRow(result.cols, parent_id);
+
+            if (connector.side === 'right') {
+                parent_row.push({
+                    type: 'connector',
+                    width: connector.width,
+                });
+                parent_row.push({
+                    type: 'unit',
+                    id: child_id,
+                });
+
+                let right_col = result.cols[parent_col_index + 1];
+
+                if (!right_col) {
+                    result.cols = array.insertAfter(result.cols, parent_col, []);
+                    right_col = result.cols[parent_col_index + 1];
+                }
+
+                right_col.push({
+                    type: 'unit',
+                    id: child_id,
+                });
+            } else if (connector.side === 'bottom') {
+                parent_col.push({
+                    type: 'connector',
+                    width: connector.width,
+                });
+                parent_col.push({
+                    type: 'unit',
+                    id: child_id,
+                });
+
+                let bottom_row = result.rows[parent_row_index + 1];
+
+                if (!bottom_row) {
+                    result.rows = array.insertAfter(result.rows, parent_row, []);
+                    bottom_row = result.rows[parent_row_index + 1];
+                }
+
+                bottom_row.push({
+                    type: 'unit',
+                    id: child_id,
+                });
+            } else if (connector.side === 'left') {
+                parent_row.unshift({
+                    type: 'connector',
+                    width: connector.width,
+                });
+                parent_row.unshift({
+                    type: 'unit',
+                    id: child_id,
+                });
+
+                let left_col = result.cols[parent_col_index - 1];
+
+                if (!left_col) {
+                    result.cols = array.insertBefore(result.cols, parent_col, []);
+                    left_col = result.cols[parent_col_index - 1];
+                }
+
+                left_col.push({
+                    type: 'unit',
+                    id: child_id,
+                });
+            } else if (connector.side === 'top') {
+                parent_col.unshift({
+                    type: 'connector',
+                    width: connector.width,
+                });
+                parent_col.unshift({
+                    type: 'unit',
+                    id: child_id,
+                });
+
+                let top_row = result.rows[parent_row_index - 1];
+
+                if (!top_row) {
+                    result.rows = array.insertBefore(result.rows, parent_row, []);
+                    top_row = result.rows[parent_row_index - 1];
+                }
+
+                top_row.push({
+                    type: 'unit',
+                    id: child_id,
+                });
+            }
+        });
+
+        return result;
+    },
+};
+
+export default { format, parseFormat, math, convert, object, vector2d, angle, geometry, array, dom, multiunit };

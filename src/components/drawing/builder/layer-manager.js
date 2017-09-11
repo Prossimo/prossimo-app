@@ -4,7 +4,7 @@ import Marionette from 'backbone.marionette';
 import Drawers from './drawers';
 import KonvaClipPatch from './konva-clip-patch';
 
-// LayerManager is an important and required part of the DrawingModule,
+// LayerManager is an important and required part of the DrawingBuilder,
 // it's used for creating, storing and working with stage layers. Also, it
 // tranfers keyboard events from view to drawers
 
@@ -13,6 +13,7 @@ export default Marionette.Object.extend({
         this.layers = {};
 
         this.trapezoid = opts.builder.get('model').isTrapezoid();
+        this.multiunit = opts.builder.get('model').isMultiunit();
         this.createLayers(opts.layers);
 
         // Start listening update on builder
@@ -20,28 +21,60 @@ export default Marionette.Object.extend({
     },
     // Create layers on init
     createLayers(layerOpts) {
+        let DrawerClass;
+        let defaultLayers;
+
         const defaultLayer = {
             zIndex: 0,
             visible: true,
             active: true,
         };
 
-        const defaultLayers = {
-            unit: {
-                DrawerClass: (this.trapezoid) ? Drawers.TrapezoidUnitDrawer : Drawers.UnitDrawer,
-                zIndex: 0,
-                visible: true,
-                active: true,
-            },
-            metrics: {
-                DrawerClass: Drawers.MetricsDrawer,
-                zIndex: 1,
-                visible: true,
-                active: true,
-            },
-        };
+        if (this.trapezoid) {
+            DrawerClass = Drawers.TrapezoidUnitDrawer;
+        } else if (this.multiunit) {
+            DrawerClass = Drawers.MultiunitDrawer;
+        } else {
+            DrawerClass = Drawers.UnitDrawer;
+        }
+
+        if (DrawerClass === Drawers.MultiunitDrawer) {
+            defaultLayers = {
+                unit: {
+                    DrawerClass,
+                    zIndex: 0,
+                    visible: true,
+                    active: true,
+                },
+                metrics: {
+                    DrawerClass: Drawers.MetricsDrawer,
+                    zIndex: 1,
+                    visible: true,
+                    active: true,
+                },
+            };
+        } else {
+            defaultLayers = {
+                unit: {
+                    DrawerClass,
+                    zIndex: 0,
+                    visible: true,
+                    active: true,
+                },
+                metrics: {
+                    DrawerClass: Drawers.MetricsDrawer,
+                    zIndex: 1,
+                    visible: true,
+                    active: true,
+                },
+            };
+        }
 
         const layers = _.defaults(layerOpts, defaultLayers);
+
+        if (layers.metrics) {
+            layers.metrics.active = layers.metrics.active && !!this.getOption('builder').get('metricSize');
+        }
 
         _.each(layerOpts, (layer, key) => {
             if (key in layers && layer.active === false) {

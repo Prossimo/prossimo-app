@@ -73,6 +73,11 @@
         color: #b3b3b3 !important;
     }
 
+    .quote-table-container,
+    .supplier-request-table-container {
+        margin: 0;
+    }
+
     .quote-project-info .client-name small {
         color: #777 !important;
     }
@@ -80,6 +85,10 @@
     .quote-unit-heading .has-discounted-price td strong,
     .quote-unit-heading .has-discounted-price td span {
         min-height: 3rem;
+    }
+
+    .quote-item.subunit .quote-unit-heading  > tbody > tr > td {
+        border-top: 1px solid #ccc;
     }
 
     .product-image img {
@@ -102,12 +111,20 @@
         max-width: @customer_image_size - 50px;
     }
 
-    .sash-list h5 {
-        font-size: 1.1em;
-    }
+    .sash-list,
+    .subunit-list {
+        h5 {
+            font-size: 1.1em;
+        }
 
-    .sash-list h6 {
-        font-size: 1.1em;
+        h6 {
+            font-size: 1.1em;
+        }
+
+        h6 em {
+            font-weight: bold;
+            font-style: normal;
+        }
     }
 
     .quote-item .exceptions,
