@@ -26,11 +26,11 @@
             <td class="price">
                 <ul class="unit-price">
                     <li class="unit">
-                        <strong>Unit Price:</strong>
+                        <strong>Unit Price</strong>
                         <span class="value">{{ price.unit }}</span>
                     </li>
                     <li class="subtotal">
-                        <strong>Subtotal:</strong>
+                        <strong>Subtotal</strong>
                         <span class="value">{{ price.subtotal }}</span>
                     </li>
                 </ul>
@@ -39,12 +39,12 @@
             <td class="price-discounted">
                 <ul class="unit-price">
                     {{#if price.unit_discounted }}<li class="unit">
-                        <strong>Unit Price w/Disc.:</strong>
+                        <strong>Unit Price w/Disc.</strong>
                         <span class="value">{{ price.unit_discounted }}</span>
                     </li>
                     {{/if}}
                     {{#if price.subtotal_discounted }}<li class="subtotal">
-                        <strong>Subtotal w/Disc.:</strong>
+                        <strong>Subtotal w/Disc.</strong>
                         <span class="value">{{ price.subtotal_discounted }}</span>
                     </li>
                     {{/if}}
@@ -95,7 +95,7 @@
         <td class="product-description">
             <ul>
                 {{#each description.params }}
-                    {{#if value }}<li><strong>{{{ title }}}:</strong> <span>{{{ value }}}</span></li>{{/if}}
+                    {{#if value }}<li><strong>{{{ title }}}</strong> <span>{{{ value }}}</span></li>{{/if}}
                 {{/each}}
             </ul>
             {{#if notes }}<p class="notes"><strong>{{ notes }}</strong></p>{{/if}}
@@ -107,8 +107,8 @@
                         <h6><em>{{ ref_num }}:</em> {{ mark }}</h6>
                         <ul>
                             <li><strong>Size <small class="size-label">WxH</small></strong> <span>{{ size }}</span></li>
-                            {{#if description }}<li><strong>Customer Description:</strong> <span>{{ description }}</span></li>{{/if}}
-                            {{#if notes }}<li><strong>Notes:</strong> <span>{{ notes }}</span></li>{{/if}}
+                            {{#if description }}<li><strong>Customer Description</strong> <span>{{ description }}</span></li>{{/if}}
+                            {{#if notes }}<li><strong>Notes</strong> <span>{{ notes }}</span></li>{{/if}}
                         </ul>
                     </div>
                 {{/each}}

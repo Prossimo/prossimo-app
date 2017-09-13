@@ -32,6 +32,13 @@ import {
     RULE_GLAZING_BARS_ONLY,
     RULE_MULLIONS_ONLY,
     UNSET_VALUE,
+    FILLING_TYPE_GLASS,
+    FILLING_TYPE_RECESSED,
+    FILLING_TYPE_INTERIOR_FLUSH_PANEL,
+    FILLING_TYPE_EXTERIOR_FLUSH_PANEL,
+    FILLING_TYPE_FULL_FLUSH_PANEL,
+    FILLING_TYPE_LOUVER,
+    FILLING_TYPE_TITLES,
 } from '../../constants';
 
 const REDISTRIBUTE_BARS_PRECISION = 0;
@@ -111,9 +118,12 @@ const SASH_TYPE_NAME_MAP = {
 };
 
 const FILLING_TYPES = [
-    'glass', 'recessed',
-    'interior-flush-panel', 'exterior-flush-panel',
-    'full-flush-panel', 'louver',
+    FILLING_TYPE_GLASS,
+    FILLING_TYPE_RECESSED,
+    FILLING_TYPE_INTERIOR_FLUSH_PANEL,
+    FILLING_TYPE_EXTERIOR_FLUSH_PANEL,
+    FILLING_TYPE_FULL_FLUSH_PANEL,
+    FILLING_TYPE_LOUVER,
 ];
 
 const MULLION_TYPES = [
@@ -125,8 +135,8 @@ const MULLION_TYPES = [
 //  could know when we don't get the right thing, and try to fix that
 function getDefaultFillingType(default_glazing_name, profile_id) {
     const dummy_type = {
-        fillingType: 'glass',
-        fillingName: 'Glass',
+        fillingType: FILLING_TYPE_GLASS,
+        fillingName: FILLING_TYPE_TITLES[FILLING_TYPE_GLASS],
     };
     let default_type;
 

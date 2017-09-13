@@ -479,7 +479,9 @@ td.product-image.has-customer-image {
 }
 
 .sash-list,
-.subunit-list {
+.subunit-list,
+.sash-types-list,
+.glazing-list {
     h5 {
         margin-left: -1.2rem;
         margin-right: -1.2rem;
@@ -502,6 +504,18 @@ td.product-image.has-customer-image {
 
     li:first-child h6 {
         margin-top: 0;
+    }
+
+    li em {
+        padding: 0 0.2em;
+        font-style: normal;
+        color: darken(@white, 40%);
+    }
+
+    li small {
+        margin-left: 0.8em;
+        padding: 0 0.4em;
+        background-color: darken(@white, 5%);
     }
 }
 

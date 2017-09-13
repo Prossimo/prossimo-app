@@ -9,6 +9,13 @@ import {
     PRICING_SCHEME_PRICING_GRIDS,
     PRICING_SCHEME_LINEAR_EQUATION,
     UNSET_VALUE,
+    FILLING_TYPE_GLASS,
+    FILLING_TYPE_RECESSED,
+    FILLING_TYPE_INTERIOR_FLUSH_PANEL,
+    FILLING_TYPE_EXTERIOR_FLUSH_PANEL,
+    FILLING_TYPE_FULL_FLUSH_PANEL,
+    FILLING_TYPE_LOUVER,
+    FILLING_TYPE_TITLES,
 } from '../../constants';
 
 const POSSIBLE_PRICING_SCHEMES = [
@@ -16,13 +23,14 @@ const POSSIBLE_PRICING_SCHEMES = [
     PRICING_SCHEME_LINEAR_EQUATION,
 ];
 
+// TODO: refactor how this works
 const BASE_TYPES = [
-    { name: 'glass', title: 'Glass' },
-    { name: 'recessed', title: 'Recessed' },
-    { name: 'interior-flush-panel', title: 'Interior Flush Panel' },
-    { name: 'exterior-flush-panel', title: 'Exterior Flush Panel' },
-    { name: 'full-flush-panel', title: 'Full Flush Panel' },
-    { name: 'louver', title: 'Louver' },
+    { name: FILLING_TYPE_GLASS, title: FILLING_TYPE_TITLES[FILLING_TYPE_GLASS] },
+    { name: FILLING_TYPE_RECESSED, title: FILLING_TYPE_TITLES[FILLING_TYPE_RECESSED] },
+    { name: FILLING_TYPE_INTERIOR_FLUSH_PANEL, title: FILLING_TYPE_TITLES[FILLING_TYPE_INTERIOR_FLUSH_PANEL] },
+    { name: FILLING_TYPE_EXTERIOR_FLUSH_PANEL, title: FILLING_TYPE_TITLES[FILLING_TYPE_EXTERIOR_FLUSH_PANEL] },
+    { name: FILLING_TYPE_FULL_FLUSH_PANEL, title: FILLING_TYPE_TITLES[FILLING_TYPE_FULL_FLUSH_PANEL] },
+    { name: FILLING_TYPE_LOUVER, title: FILLING_TYPE_TITLES[FILLING_TYPE_LOUVER] },
 ];
 
 //  TODO: `type` attribute should be actually called `base_type`, makes

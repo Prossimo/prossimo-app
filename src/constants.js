@@ -110,6 +110,26 @@ export const RULE_GROUPS = [
 ];
 
 //  ------------------------------------------------------------------------
+//  Base filling types
+//  ------------------------------------------------------------------------
+
+export const FILLING_TYPE_GLASS = 'glass';
+export const FILLING_TYPE_RECESSED = 'recessed';
+export const FILLING_TYPE_INTERIOR_FLUSH_PANEL = 'interior-flush-panel';
+export const FILLING_TYPE_EXTERIOR_FLUSH_PANEL = 'exterior-flush-panel';
+export const FILLING_TYPE_FULL_FLUSH_PANEL = 'full-flush-panel';
+export const FILLING_TYPE_LOUVER = 'louver';
+
+export const FILLING_TYPE_TITLES = {
+    [FILLING_TYPE_GLASS]: 'Glass',
+    [FILLING_TYPE_RECESSED]: 'Recessed',
+    [FILLING_TYPE_INTERIOR_FLUSH_PANEL]: 'Interior Flush Panel',
+    [FILLING_TYPE_EXTERIOR_FLUSH_PANEL]: 'Exterior Flush Panel',
+    [FILLING_TYPE_FULL_FLUSH_PANEL]: 'Full Flush Panel',
+    [FILLING_TYPE_LOUVER]: 'Louver',
+};
+
+//  ------------------------------------------------------------------------
 //  Common string values
 //  ------------------------------------------------------------------------
 
