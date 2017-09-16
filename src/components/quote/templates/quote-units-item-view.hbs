@@ -32,11 +32,11 @@
         <td class="price">
             <ul class="unit-price">
                 <li class="unit">
-                    <strong>Unit Price:</strong>
+                    <strong>Unit Price</strong>
                     <span class="value">{{ price.unit }}</span>
                 </li>
                 <li class="subtotal">
-                    <strong>Subtotal:</strong>
+                    <strong>Subtotal</strong>
                     <span class="value">{{ price.subtotal }}</span>
                 </li>
             </ul>
@@ -45,17 +45,17 @@
         <td class="price-discounted">
             <ul class="unit-price">
                 {{#if price.discount }}<li class="discount">
-                    <strong>Discount:</strong>
+                    <strong>Discount</strong>
                     <span class="value">{{ price.discount }}</span>
                 </li>
                 {{/if}}
                 {{#if price.unit_discounted }}<li class="unit">
-                    <strong>Unit Price w/Disc.:</strong>
+                    <strong>Unit Price w/Disc.</strong>
                     <span class="value">{{ price.unit_discounted }}</span>
                 </li>
                 {{/if}}
                 {{#if price.subtotal_discounted }}<li class="subtotal">
-                    <strong>Subtotal w/Disc.:</strong>
+                    <strong>Subtotal w/Disc.</strong>
                     <span class="value">{{ price.subtotal_discounted }}</span>
                 </li>
                 {{/if}}
@@ -107,43 +107,29 @@
         {{/if}}
         <td class="product-description">
             <ul>
-                {{#each description.params }}
-                {{#if value }}<li><strong>{{{ title }}}:</strong> <span>{{{ value }}}</span></li>{{/if}}
+                {{#each description_params }}
+                {{#if value }}<li><strong>{{{ title }}}</strong> <span>{{{ value }}}</span></li>{{/if}}
                 {{/each}}
             </ul>
             {{#if notes }}<p class="notes"><strong>{{ notes }}</strong></p>{{/if}}
             {{#if exceptions }}<p class="exceptions"><strong>{{ exceptions }}</strong></p>{{/if}}
-            <div class="sash-list">
-                <h5>Sash List</h5>
-                {{#each description.sashes }}
-                <div class="opening">
-                    <h6>{{ name }}</h6>
+            <div class="sash-types-list">
+                <h5>Sash Types</h5>
+                <ul>
+                    {{#each sash_types }}
+                    <li><strong>{{{ group_title }}}</strong> <span>{{{ type }}}</span></li>
+                    {{/each}}
+                </ul>
+            </div>
+            <div class="glazing-list">
+                <h5>Glazing</h5>
+                <ul>
                     <ul>
-                        <li><strong>Type:</strong> <span>{{ type }}</span></li>
-                        {{#if opening_size }}<li><strong>Vent Opn. Size:</strong> <span>{{{ opening_size }}} </span></li>{{/if}}
-                        {{#if egress_opening_size }}<li><strong>Egress Clear Opn.:</strong> <span>{{{ egress_opening_size }}} </span></li>{{/if}}
-                        {{#if sections }}
-                            {{#if daylight_sum}}<li><strong>Total Daylight:</strong> <span>{{{ daylight_sum }}}</span></li>{{/if}}
-                        {{else}}
-                            {{#if filling_name}}<li><strong>{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}:</strong> <span>{{ filling_name }}</span></li>{{/if}}
-                            {{#if filling_is_glass }}<li><strong>Total Daylight:</strong> <span>{{{ filling_size }}}</span></li>{{/if}}
-                        {{/if}}
-                    </ul>
-                    {{#if sections }}
-                        <ul class="sections">
-                            {{#each sections}}
-                            <li>
-                                <h6>{{ name }}</h6>
-                                <ul>
-                                    <li><strong>{{#if filling_is_glass }}Glazing{{else}}Panel{{/if}}:</strong> <span>{{ filling_name }}</span></li>
-                                    {{#if filling_is_glass }}<li><strong>Daylight:</strong> <span>{{{ filling_size }}}</span></li>{{/if}}
-                                </ul>
-                            </li>
-                            {{/each}}
-                        </ul>
-                    {{/if}}
-                </div>
-                {{/each}}
+                    {{#each glazing_names }}
+                    <li><strong>{{{ group_title }}}</strong> <span>{{{ name }}}{{#if type }}<small>{{{ type }}}</small>{{/if}}</span></li>
+                    {{/each}}
+                </ul>
+                </ul>
             </div>
         </td>
     </tr></tbody>

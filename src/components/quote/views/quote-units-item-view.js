@@ -2,7 +2,7 @@ import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 
 import App from '../../../main';
-import { convert, format, math } from '../../../utils';
+import { convert, format } from '../../../utils';
 import template from '../templates/quote-units-item-view.hbs';
 
 export default Marionette.View.extend({
@@ -27,61 +27,7 @@ export default Marionette.View.extend({
         };
     },
     getDescription() {
-        const view = this;
         const project_settings = App.settings.getProjectSettings();
-
-        //  TODO: this name is a bit misleading
-        function getFillingPerimeter(width, height) {
-            return view.display_options.show_sizes_in_mm ?
-                format.dimensions_mm(width, height) :
-                format.dimensions(
-                    convert.mm_to_inches(width),
-                    convert.mm_to_inches(height),
-                    'fraction',
-                    'inches_only',
-                );
-        }
-
-        function getFillingArea(width, height, suffix_format) {
-            const current_suffix_format = suffix_format || 'sup';
-
-            const result = view.display_options.show_sizes_in_mm ?
-                format.square_meters(math.square_meters(width, height)) :
-                format.square_feet(math.square_feet(convert.mm_to_inches(width),
-                    convert.mm_to_inches(height)), 2, current_suffix_format);
-
-            return result;
-        }
-
-        function getFillingSize(width, height) {
-            const filling_size = getFillingPerimeter(width, height);
-            const filling_area = getFillingArea(width, height);
-
-            return `${filling_size} (${filling_area})`;
-        }
-
-        function getSectionInfo(source) {
-            const result = {};
-
-            result.filling_is_glass = source.filling.type === 'glass';
-            result.filling_name = source.filling.name;
-            result.filling_size = getFillingSize(source.filling.width, source.filling.height);
-
-            //  Show supplier name for filling if it exists
-            if (view.display_options.show_supplier_names && App.settings && source.filling && source.filling.name) {
-                const filling_type = App.settings.filling_types.getByName(source.filling.name);
-
-                if (filling_type && filling_type.get('supplier_name')) {
-                    result.filling_name = filling_type.get('supplier_name');
-                }
-            }
-
-            return result;
-        }
-
-        const sash_list_source = this.model.getSashList(null, null, this.display_options.show_outside_units_view &&
-            this.display_options.show_european_hinge_indicators === false);
-        const sashes = [];
 
         //  This is the list of params that we want to see in the quote. We
         //  throw out attributes that don't apply to the current unit
@@ -97,94 +43,6 @@ export default Marionette.View.extend({
                 return condition;
             }, this);
         const source_hash = this.model.getNameTitleTypeHash(params_list);
-
-        //  Add section for each sash (Sash #N title + sash properties)
-        _.each(sash_list_source, (source_item, index) => {
-            const sash_item = {};
-            let opening_size_data;
-            let egress_opening_size_data;
-            let section_info;
-
-            sash_item.name = `Sash #${index + 1}`;
-            sash_item.type = source_item.type;
-
-            if (source_item.opening.height && source_item.opening.width) {
-                opening_size_data = this.model.getSashOpeningSize(
-                    source_item.opening,
-                    undefined,
-                    undefined,
-                    this.display_options.show_sizes_in_mm ? 'mm' : 'inches',
-                );
-
-                if (opening_size_data) {
-                    sash_item.opening_size = this.display_options.show_sizes_in_mm ?
-                        format.dimensions_and_area_mm(
-                            opening_size_data.width,
-                            opening_size_data.height,
-                            opening_size_data.area,
-                        ) :
-                        format.dimensions_and_area(
-                            opening_size_data.width,
-                            opening_size_data.height,
-                            undefined,
-                            undefined,
-                            opening_size_data.area,
-                        );
-                }
-
-                egress_opening_size_data = this.model.getSashOpeningSize(
-                    source_item.opening,
-                    'egress',
-                    source_item.original_type,
-                    this.display_options.show_sizes_in_mm ? 'mm' : 'inches',
-                );
-
-                if (egress_opening_size_data) {
-                    sash_item.egress_opening_size = this.display_options.show_sizes_in_mm ?
-                        format.dimensions_and_area_mm(
-                            egress_opening_size_data.width,
-                            egress_opening_size_data.height,
-                            egress_opening_size_data.area,
-                        ) :
-                        format.dimensions_and_area(
-                            egress_opening_size_data.width,
-                            egress_opening_size_data.height,
-                            undefined,
-                            undefined,
-                            egress_opening_size_data.area,
-                        );
-                }
-            }
-
-            //  Child sections
-            if (source_item.sections.length) {
-                let sum = 0;
-
-                sash_item.sections = [];
-
-                _.each(source_item.sections, (section, s_index) => {
-                    const section_item = {};
-
-                    section_item.name = `Section #${index + 1}.${s_index + 1}`;
-                    section_info = getSectionInfo(section);
-                    _.extend(section_item, section_info);
-
-                    if (section_info.filling_is_glass) {
-                        sum += parseFloat(getFillingArea(section.filling.width,
-                            section.filling.height, 'numeric'));
-                    }
-
-                    sash_item.sections.push(section_item);
-                }, this);
-
-                sash_item.daylight_sum = sum ? format.square_feet(sum, 2, 'sup') : false;
-            } else {
-                section_info = getSectionInfo(source_item);
-                _.extend(sash_item, section_info);
-            }
-
-            sashes.push(sash_item);
-        }, this);
 
         //  Now get list of Unit Options applicable for this unit
         const dictionaries = _.map(App.settings.dictionaries.filter((dictionary) => {
@@ -261,17 +119,126 @@ export default Marionette.View.extend({
             }, this),
         ));
 
-        const params = _.map(name_title_hash, (item, key) => ({
+        return _.map(name_title_hash, (item, key) => ({
             name: key,
             title: item,
             value: params_source[key] !== undefined ?
                 params_source[key] : this.model.get(key),
         }));
+    },
+    /**
+     * Get types of all sashes, and group them by type, so we could display
+     * something like this:
+     *
+     * 'Sash # 1: Tilt-turn Left Hinge' or 'All Sashes: Fixed'
+     *
+     * @return {Array} an array of objects like {
+     *     group_title: 'All Sashes',
+     *     type: 'Fixed',
+     * }
+     */
+    getSashTypes() {
+        const sash_list_source = this.model.getSashList(null, null, this.display_options.show_outside_units_view &&
+            this.display_options.show_european_hinge_indicators === false);
 
-        return {
-            sashes,
-            params,
-        };
+        //  Group sashes by type, and sort them by min sash id
+        const types = sash_list_source.map((source_item, index) => ({
+            key: source_item.type,
+            index: index + 1,
+        })).reduce((memo, item) => {
+            const new_memo = memo;
+            let target_group = new_memo.find(group => group.type === item.key);
+
+            if (!target_group) {
+                target_group = { type: item.key, entries: [] };
+                new_memo.push(target_group);
+            }
+
+            target_group.entries.push(item.index);
+
+            return new_memo;
+        }, []).sort((a, b) => _.min(a.entries) - _.min(b.entries));
+
+        //  Return properly formatted values
+        return types.map((item) => {
+            let group_title = item.entries.length === 1 ?
+                `Sash <em>#</em>${item.entries[0]}` :
+                `Sashes <em>#</em>${item.entries.join(', ')}`;
+
+            if (types.length === 1) {
+                group_title = 'All Sashes';
+            }
+
+            return {
+                group_title,
+                type: item.type,
+            };
+        });
+    },
+    /**
+     * Get glazing names of all sashes, and group them by name, so we could
+     * display something like this:
+     *
+     * 'Sashes # 1.1, 1.2: Glass' or 'All Sashes: Triple Low Gain - Tempered'
+     *
+     * @return {Array} an array of objects like {
+     *     group_title: 'All Sashes',
+     *     name: 'Triple Low Gain - Tempered',
+     *     type: 'Glass',
+     * }
+     */
+    getGlazingNames() {
+        const sash_list_source = this.model.getSashList(null, null, this.display_options.show_outside_units_view &&
+            this.display_options.show_european_hinge_indicators === false);
+
+        //  Group sashes by glazing name, and sort them by min sash id
+        const glazing_names = sash_list_source.map((source_item, index) => ({
+            name: source_item.filling.name,
+            sections: source_item.sections,
+            index: index + 1,
+        })).reduce((memo, item) => {
+            const new_memo = memo;
+
+            if (item.sections && item.sections.length > 0) {
+                item.sections.forEach((section, section_index) => {
+                    let target_group = new_memo.find(group => group.name === section.filling.name);
+
+                    if (!target_group) {
+                        target_group = { name: section.filling.name, entries: [] };
+                        new_memo.push(target_group);
+                    }
+
+                    target_group.entries.push(`${item.index}.${section_index + 1}`);
+                });
+            } else {
+                let target_group = new_memo.find(group => group.name === item.name);
+
+                if (!target_group) {
+                    target_group = { name: item.name, entries: [] };
+                    new_memo.push(target_group);
+                }
+
+                target_group.entries.push(item.index);
+            }
+
+            return new_memo;
+        }, []).sort((a, b) => _.min(a.entries) - _.min(b.entries));
+
+        //  Return properly formatted values
+        return glazing_names.map((item) => {
+            let group_title = item.entries.length === 1 ?
+                `Sash <em>#</em>${item.entries[0]}` :
+                `Sashes <em>#</em>${item.entries.join(', ')}`;
+
+            if (glazing_names.length === 1) {
+                group_title = 'All Sashes';
+            }
+
+            return {
+                group_title,
+                name: item.name,
+            };
+        });
     },
     getCustomerImage() {
         return this.model.get('customer_image');
@@ -314,7 +281,9 @@ export default Marionette.View.extend({
             is_subunit: this.model.isSubunit(),
             ref_num: this.model.getRefNum(),
             mark: this.model.getMark(),
-            description: this.getDescription(),
+            description_params: this.getDescription(),
+            sash_types: this.getSashTypes(),
+            glazing_names: this.getGlazingNames(),
             notes: this.model.get('notes'),
             exceptions: this.model.get('exceptions'),
             quantity: this.model.getQuantity(),
