@@ -1,6 +1,5 @@
 import Marionette from 'backbone.marionette';
 
-import App from '../../../main';
 import { format } from '../../../utils';
 import Unit from '../../../core/models/unit';
 import Multiunit from '../../../core/models/multiunit';
@@ -33,6 +32,13 @@ export default Marionette.View.extend({
     keyShortcuts: {
         left: 'onPrevBtn',
         right: 'onNextBtn',
+    },
+    initialize() {
+        this.data_store = this.getOption('data_store');
+
+        this.listenTo(this.options.parent_view.active_unit, 'all', this.render);
+        this.listenTo(this.options.parent_view, 'drawing_view:onSetState', this.render);
+        this.listenTo(this.data_store.current_project.settings, 'change', this.render);
     },
     //  Models are sorted like this: [1, 1a, 1b, 2, 2a, 3, 4]
     getModels() {
@@ -166,10 +172,12 @@ export default Marionette.View.extend({
             if (active_unit instanceof Multiunit) {
                 this.unit_details_view = new DrawingSidebarMultiunitDetailsView({
                     model: active_unit,
+                    data_store: this.data_store,
                 });
             } else {
                 this.unit_details_view = new DrawingSidebarUnitDetailsView({
                     model: active_unit,
+                    data_store: this.data_store,
                 });
             }
 
@@ -180,10 +188,5 @@ export default Marionette.View.extend({
         if (this.unit_details_view) {
             this.unit_details_view.destroy();
         }
-    },
-    initialize() {
-        this.listenTo(this.options.parent_view.active_unit, 'all', this.render);
-        this.listenTo(this.options.parent_view, 'drawing_view:onSetState', this.render);
-        this.listenTo(App.current_project.settings, 'change', this.render);
     },
 });

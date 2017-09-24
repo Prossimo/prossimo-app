@@ -6,10 +6,8 @@ import Handsontable from 'handsontable/dist/handsontable.full';
 import { parseFormat, format } from '../../utils';
 import { globalChannel } from '../../utils/radio';
 import hotRenderers from '../../hot-renderers';
-import App from '../../main';
 import UndoManager from '../../utils/undomanager';
 import Unit from '../models/unit';
-import Accessory from '../models/accessory';
 import UnitsTableTotalPricesView from '../../core/views/units-table-total-prices-view';
 import template from '../../templates/core/units-table-view.hbs';
 
@@ -75,6 +73,7 @@ export default Marionette.View.extend({
     initialize() {
         this.table_update_timeout = null;
         this.dropdown_scroll_timer = null;
+        this.data_store = this.getOption('data_store');
 
         this.tabs = {
             specs: {
@@ -89,11 +88,11 @@ export default Marionette.View.extend({
                 title: 'Unit Options',
                 collection: this.collection,
                 columns: ['move_item', 'ref_num', 'mark', 'quantity', 'width', 'height', 'drawing'],
-                unit_options_columns: App.settings.dictionaries.getAvailableDictionaryNames(),
+                unit_options_columns: this.data_store.dictionaries.getAvailableDictionaryNames(),
                 unit_options_quantity_columns: (() => {
                     const columns = [];
 
-                    App.settings.dictionaries.each((dictionary) => {
+                    this.data_store.dictionaries.each((dictionary) => {
                         if (dictionary.hasQuantity()) {
                             const quantity_multiplier = dictionary.getQuantityMultiplier();
                             const name_suffix = `Quantity${quantity_multiplier ? ` / ${quantity_multiplier}` : ''}`;
@@ -167,7 +166,7 @@ export default Marionette.View.extend({
         this.listenTo(this.options.extras, 'all', this.updateTable);
         this.listenTo(this.options.parent_view, 'attach', this.updateTable);
 
-        this.listenTo(App.current_project.settings, 'change', this.render);
+        this.listenTo(this.data_store.current_project.settings, 'change', this.render);
 
         this.listenTo(this.collection, 'invalid', this.showValidationError);
         this.listenTo(this.options.multiunits, 'invalid', this.showValidationError);
@@ -270,21 +269,15 @@ export default Marionette.View.extend({
         }
     },
     addNewUnit() {
-        const new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
-        const new_unit = new Unit({
-            position: new_position,
+        this.collection.create({
+            position: this.collection.length ? this.collection.getMaxPosition() + 1 : 0,
         });
-
-        this.collection.add(new_unit);
         this.ui.$add_new_unit.blur();
     },
     addNewAccessory() {
-        const new_position = this.options.extras.length ? this.options.extras.getMaxPosition() + 1 : 0;
-        const new_accessory = new Accessory({
-            position: new_position,
+        this.options.extras.create({
+            position: this.options.extras.length ? this.options.extras.getMaxPosition() + 1 : 0,
         });
-
-        this.options.extras.add(new_accessory);
         this.ui.$add_new_accessory.blur();
     },
     onNewUnitOrAccessory(e) {
@@ -355,7 +348,8 @@ export default Marionette.View.extend({
         }
     },
     getGetterFunction(unit_model, column_name) {
-        const project_settings = App.settings.getProjectSettings();
+        const project_settings = this.data_store.getProjectSettings();
+        const dictionaries = this.data_store.dictionaries;
         let getter;
 
         //  We use toFixed a lot here because often we want to copy numbers
@@ -462,7 +456,7 @@ export default Marionette.View.extend({
         ) {
             //  TODO: deal with multiple values per dictionary somehow
             getter = (model, attr_name) => {
-                const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(attr_name);
+                const target_dictionary_id = dictionaries.getDictionaryIdByName(attr_name);
                 const current_options = target_dictionary_id ?
                     model.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
 
@@ -474,7 +468,7 @@ export default Marionette.View.extend({
         ) {
             getter = (model, attr_name) => {
                 const target_dictionary_name = extractDictionaryName(attr_name);
-                const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
+                const target_dictionary_id = dictionaries.getDictionaryIdByName(target_dictionary_name);
                 const current_options = target_dictionary_id ?
                     model.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
 
@@ -487,6 +481,7 @@ export default Marionette.View.extend({
         return getter(unit_model, column_name);
     },
     getSetterParser(column_name, ...args) {
+        const profiles = this.data_store.profiles;
         let parser;
 
         const parsers_hash = {
@@ -510,8 +505,8 @@ export default Marionette.View.extend({
                 let profile_id = null;
                 const profile_by_id =
                     (parseInt(val, 10).toString() === val || parseInt(val, 10) === val) &&
-                    App.settings && App.settings.profiles.getProfileByIdOrDummy(parseInt(val, 10));
-                const profile_id_by_name = App.settings && App.settings.profiles.getProfileIdByName(val);
+                    profiles.getProfileByIdOrDummy(parseInt(val, 10));
+                const profile_id_by_name = profiles.getProfileIdByName(val);
 
                 if (profile_by_id && profile_by_id.get('is_dummy') !== true) {
                     profile_id = profile_by_id.get('id');
@@ -532,6 +527,7 @@ export default Marionette.View.extend({
         return parser(column_name, ...args);
     },
     getSetterFunction(unit_model, column_name, ...args) {
+        const dictionaries = this.data_store.dictionaries;
         const self = this;
         let setter;
 
@@ -561,13 +557,13 @@ export default Marionette.View.extend({
             _.contains(this.getActiveTab().unit_options_columns, column_name)
         ) {
             setter = (model, attr_name, val) => {
-                const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(attr_name);
+                const target_dictionary_id = dictionaries.getDictionaryIdByName(attr_name);
 
                 if (!target_dictionary_id) {
                     return false;
                 }
 
-                const target_entry_id = App.settings.dictionaries.getDictionaryEntryIdByName(
+                const target_entry_id = dictionaries.getDictionaryEntryIdByName(
                     target_dictionary_id,
                     val,
                 );
@@ -584,7 +580,7 @@ export default Marionette.View.extend({
         ) {
             setter = (model, attr_name, val) => {
                 const target_dictionary_name = extractDictionaryName(attr_name);
-                const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(target_dictionary_name);
+                const target_dictionary_id = dictionaries.getDictionaryIdByName(target_dictionary_name);
 
                 if (!target_dictionary_id) {
                     return false;
@@ -664,7 +660,7 @@ export default Marionette.View.extend({
         return validator;
     },
     getColumnExtraProperties(column_name) {
-        const project_settings = App.settings.getProjectSettings();
+        const project_settings = this.data_store.getProjectSettings();
         const names_title_type_hash = this.getActiveTab().collection.getNameTitleTypeHash([column_name]);
         const original_type = (names_title_type_hash.length && names_title_type_hash[0].type) || undefined;
 
@@ -762,7 +758,7 @@ export default Marionette.View.extend({
             },
             profile_id: {
                 type: 'dropdown',
-                source: App.settings.profiles.getAvailableProfileNames(),
+                source: this.data_store.profiles.getAvailableProfileNames(),
                 renderer: hotRenderers.unitProfileRenderer,
             },
             total_square_feet: {
@@ -844,6 +840,8 @@ export default Marionette.View.extend({
     //  prevent editing of some attributes that shouldn't be editable for
     //  a certain unit / accessory
     getActiveTabCellsSpecificOptions() {
+        const dictionaries = this.data_store.dictionaries;
+        const filling_types = this.data_store.filling_types;
         const self = this;
 
         return function cellSpecificOptions(row, col) {
@@ -867,7 +865,7 @@ export default Marionette.View.extend({
                     message = UNSET_VALUE;
 
                     if (profile_id) {
-                        options = App.settings.filling_types.getAvailableForProfile(profile_id);
+                        options = filling_types.getAvailableForProfile(profile_id);
                     }
 
                     if (options.length) {
@@ -887,7 +885,7 @@ export default Marionette.View.extend({
                     self.active_tab === 'unit_options' &&
                     _.contains(self.getActiveTab().unit_options_columns, property)
                 ) {
-                    const dictionary_id = App.settings.dictionaries.getDictionaryIdByName(property);
+                    const dictionary_id = dictionaries.getDictionaryIdByName(property);
                     let rules_and_restrictions = [];
                     let is_restricted = false;
                     let is_optional = false;
@@ -897,11 +895,11 @@ export default Marionette.View.extend({
                     message = UNSET_VALUE;
 
                     if (profile_id && dictionary_id) {
-                        options = App.settings.dictionaries.getAvailableOptions(dictionary_id, profile_id, true);
+                        options = dictionaries.getAvailableOptions(dictionary_id, profile_id, true);
                     }
 
                     if (dictionary_id) {
-                        rules_and_restrictions = App.settings.dictionaries.get(dictionary_id)
+                        rules_and_restrictions = dictionaries.get(dictionary_id)
                             .get('rules_and_restrictions');
                     }
 
@@ -1305,7 +1303,7 @@ export default Marionette.View.extend({
         }
 
         this.total_prices_view = new UnitsTableTotalPricesView({
-            model: App.current_quote,
+            model: this.data_store.current_quote,
             units: this.collection,
             extras: this.options.extras,
         });

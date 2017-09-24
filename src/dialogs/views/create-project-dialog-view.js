@@ -1,7 +1,5 @@
 import BaseDialogView from './base-dialog-view';
-import App from '../../main';
 import FileUploaderView from '../../components/file-uploader-view/file-uploader-view';
-import Project from '../../core/models/project';
 import template from '../../templates/dialogs/create-project-dialog-view.hbs';
 
 export default BaseDialogView.extend({
@@ -24,8 +22,14 @@ export default BaseDialogView.extend({
     events: {
         'submit form': 'addNewProject',
     },
+    initialize() {
+        this.data_store = this.getOption('data_store');
+    },
     addNewProject(e) {
-        const newProject = new Project({
+        e.preventDefault();
+        this.$el.modal('hide');
+
+        this.data_store.projects.create({
             project_name: this.ui.$data_project_name.val().trim(),
             client_name: this.ui.$data_client_name.val().trim(),
             client_company_name: this.ui.$data_company.val().trim(),
@@ -37,11 +41,9 @@ export default BaseDialogView.extend({
             shipping_notes: this.ui.$data_shipping_notes.val().trim(),
             lead_time: this.ui.$data_lead_time.val().trim(),
             files: this.file_uploader.getUuidForAllFiles(),
+        }, {
+            collection: this.data_store.projects,
         });
-
-        e.preventDefault();
-        this.$el.modal('hide');
-        App.projects.create(newProject);
     },
     templateContext() {
         return {
@@ -55,6 +57,7 @@ export default BaseDialogView.extend({
 
         this.file_uploader = new FileUploaderView({
             maxLength: 10,
+            data_store: this.data_store,
         });
 
         this.file_uploader.render()

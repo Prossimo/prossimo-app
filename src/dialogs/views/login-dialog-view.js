@@ -1,4 +1,3 @@
-import App from '../../main';
 import BaseDialogView from './base-dialog-view';
 import template from '../../templates/dialogs/login-dialog-view.hbs';
 
@@ -42,7 +41,7 @@ export default BaseDialogView.extend({
 
         this.freezeUI();
 
-        App.session.login({
+        this.options.session.login({
             username,
             password,
         }, {
@@ -88,7 +87,7 @@ export default BaseDialogView.extend({
     },
     templateContext() {
         return {
-            token_expired: App.session.get('token_expired'),
+            token_expired: this.options.session.get('token_expired'),
         };
     },
     onRender() {

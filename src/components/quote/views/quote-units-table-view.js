@@ -15,6 +15,7 @@ export default Marionette.CollectionView.extend({
             project: this.options.project,
             quote: this.options.quote,
             display_options: this.options.display_options,
+            data_store: this.options.data_store,
         };
     },
 });

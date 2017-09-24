@@ -29,6 +29,63 @@ export default Marionette.View.extend({
     events: {
         'click @ui.$remove': 'onRemove',
     },
+    initialize() {
+        this.data_store = this.getOption('data_store');
+        this.dialogs = this.getOption('dialogs');
+        this.should_make_everything_editable = this.shouldMakeEverythingEditable();
+
+        this.name_input_view = new BaseInputView({
+            model: this.model,
+            param: 'name',
+            input_type: 'text',
+            placeholder: 'New Dictionary',
+        });
+
+        this.rules_and_restrictions_view = new BaseSelectView({
+            model: this.model,
+            param: 'rules_and_restrictions',
+            values: this.model.getPossibleRulesAndRestrictions().map(value => ({
+                value,
+                title: RULE_TITLES[value] || value,
+            })),
+            groups: RULE_GROUPS,
+            multiple: true,
+        });
+
+        this.pricing_scheme_view = new BaseSelectView({
+            model: this.model,
+            param: 'pricing_scheme',
+            values: this.model.getPossiblePricingSchemes().map(value => ({
+                value,
+                title: PRICING_SCHEME_TITLES[value] || value,
+            })),
+            groups: PRICING_SCHEME_GROUPS,
+            multiple: false,
+        });
+
+        this.hidden_switch_view = new BaseToggleView({
+            model: this.model,
+            property_name: 'is_hidden',
+            current_value: this.model.get('is_hidden'),
+            values_list: _.map([
+                { value: true, title: 'Yes' },
+                { value: false, title: 'No' },
+            ], (item) => {
+                const is_current = item.value === this.model.get('is_hidden');
+
+                return _.extend({}, item, { is_current });
+            }, this),
+        });
+
+        this.entries_table_view = new OptionsDictionaryEntriesTableView({
+            collection: this.model.entries,
+            data_store: this.data_store,
+            dialogs: this.dialogs,
+        });
+
+        this.listenTo(this.model, 'change:name', this.onChangeName);
+        this.listenTo(this.model, 'change:pricing_scheme', this.onChangePricingScheme);
+    },
     onRemove() {
         this.model.destroy();
     },
@@ -85,58 +142,5 @@ export default Marionette.View.extend({
         if (this.entries_table_view) {
             this.entries_table_view.destroy();
         }
-    },
-    initialize() {
-        this.should_make_everything_editable = this.shouldMakeEverythingEditable();
-
-        this.name_input_view = new BaseInputView({
-            model: this.model,
-            param: 'name',
-            input_type: 'text',
-            placeholder: 'New Dictionary',
-        });
-
-        this.rules_and_restrictions_view = new BaseSelectView({
-            model: this.model,
-            param: 'rules_and_restrictions',
-            values: this.model.getPossibleRulesAndRestrictions().map(value => ({
-                value,
-                title: RULE_TITLES[value] || value,
-            })),
-            groups: RULE_GROUPS,
-            multiple: true,
-        });
-
-        this.pricing_scheme_view = new BaseSelectView({
-            model: this.model,
-            param: 'pricing_scheme',
-            values: this.model.getPossiblePricingSchemes().map(value => ({
-                value,
-                title: PRICING_SCHEME_TITLES[value] || value,
-            })),
-            groups: PRICING_SCHEME_GROUPS,
-            multiple: false,
-        });
-
-        this.hidden_switch_view = new BaseToggleView({
-            model: this.model,
-            property_name: 'is_hidden',
-            current_value: this.model.get('is_hidden'),
-            values_list: _.map([
-                { value: true, title: 'Yes' },
-                { value: false, title: 'No' },
-            ], (item) => {
-                const is_current = item.value === this.model.get('is_hidden');
-
-                return _.extend({}, item, { is_current });
-            }, this),
-        });
-
-        this.entries_table_view = new OptionsDictionaryEntriesTableView({
-            collection: this.model.entries,
-        });
-
-        this.listenTo(this.model, 'change:name', this.onChangeName);
-        this.listenTo(this.model, 'change:pricing_scheme', this.onChangePricingScheme);
     },
 });

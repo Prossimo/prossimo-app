@@ -1,20 +1,11 @@
 import _ from 'underscore';
 
 import { math as m } from '../../src/utils';
-import App from '../../src/main';
 import Profile from '../../src/core/models/profile';
 import Unit from '../../src/core/models/unit';
 import Project from '../../src/core/models/project';
 import Quote from '../../src/core/models/quote';
-
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
-
-const settings = App.settings;
-const restoreSettings = () => {
-    // restore settings
-    App.settings = settings;
-};
+import DataStore from '../../src/core/models/data-store';
 
 test('Prices tests', () => {
     //  ------------------------------------------------------------------------
@@ -475,9 +466,9 @@ test('Prices tests', () => {
     //  Test some estimation-related functions, inc. priced fillings / options
     //  ------------------------------------------------------------------------
     test('unit getUnitOptionsGroupedByPricingScheme function', () => {
-        after(restoreSettings);
+        const data_store = new DataStore();
 
-        App.settings.dictionaries.reset([
+        data_store.dictionaries.reset([
             {
                 name: 'Interior Finish',
                 id: 1,
@@ -527,6 +518,8 @@ test('Prices tests', () => {
         const unit = new Unit({
             width: 62,
             height: 96,
+        }, {
+            data_store,
         });
 
         unit.profile = new Profile({
@@ -574,7 +567,7 @@ test('Prices tests', () => {
 
         //  Now we want to restrict one dictionary to DOOR_ONLY and see if this
         //  option won't be included into unit options anymore
-        App.settings.dictionaries.get(1).set('rules_and_restrictions', ['DOOR_ONLY']);
+        data_store.dictionaries.get(1).set('rules_and_restrictions', ['DOOR_ONLY']);
         grouped_options = unit.getUnitOptionsGroupedByPricingScheme();
 
         equal(grouped_options.PER_ITEM.length, 1, 'PER_ITEM group still contains one option');
@@ -583,9 +576,9 @@ test('Prices tests', () => {
 
 
     test('unit getSectionsListWithEstimatedCost, getEstimatedUnitCost functions', () => {
-        after(restoreSettings);
+        const data_store = new DataStore();
 
-        App.settings.dictionaries.reset([
+        data_store.dictionaries.reset([
             {
                 name: 'Interior Finish',
                 id: 1,
@@ -678,7 +671,7 @@ test('Prices tests', () => {
             },
         ], { parse: true });
 
-        App.settings.filling_types.reset([
+        data_store.filling_types.reset([
             {
                 name: 'Triple Glazed Low-e: U=.11 SHGC=.5 VT=.71',
                 type: 'glass',
@@ -728,6 +721,8 @@ test('Prices tests', () => {
         const unit = new Unit({
             width: 62,
             height: 96,
+        }, {
+            data_store,
         });
 
         unit.profile = new Profile({
@@ -763,8 +758,8 @@ test('Prices tests', () => {
         unit.validateUnitOptions();
         unit.setFillingType(
             unit.get('root_section').id,
-            App.settings.filling_types.at(0).get('type'),
-            App.settings.filling_types.at(0).get('name'),
+            data_store.filling_types.at(0).get('type'),
+            data_store.filling_types.at(0).get('name'),
         );
 
         let sections_list = unit.getSectionsListWithEstimatedCost();
@@ -808,8 +803,8 @@ test('Prices tests', () => {
         unit.setSectionSashType(unit.get('root_section').id, 'tilt_turn_left');
         unit.setFillingType(
             unit.get('root_section').id,
-            App.settings.filling_types.at(1).get('type'),
-            App.settings.filling_types.at(1).get('name'),
+            data_store.filling_types.at(1).get('type'),
+            data_store.filling_types.at(1).get('name'),
         );
 
         sections_list = unit.getSectionsListWithEstimatedCost();
@@ -851,7 +846,7 @@ test('Prices tests', () => {
         //  add glazing bars, repeat calculations
         //  ----------------------------------------------------------------
 
-        App.settings.dictionaries.add([
+        data_store.dictionaries.add([
             {
                 name: 'Profile Lamination',
                 pricing_scheme: 'PER_PROFILE_LENGTH',
@@ -876,7 +871,7 @@ test('Prices tests', () => {
         //  Unit total cost
         equal(estimated_cost.total.toFixed(2), '942.78', 'Unit total cost is correct after adding profile length based options');
 
-        App.settings.dictionaries.add([
+        data_store.dictionaries.add([
             {
                 name: 'Some Weird Thing',
                 pricing_scheme: 'PER_SASH_FRAME_LENGTH',
@@ -901,7 +896,7 @@ test('Prices tests', () => {
         //  Unit total cost
         equal(estimated_cost.total.toFixed(2), '1051.12', 'Unit total cost is correct after adding sash frame based options');
 
-        App.settings.dictionaries.add([
+        data_store.dictionaries.add([
             {
                 name: 'Static Connector (Placeholder)',
                 pricing_scheme: 'PER_MULLION_LENGTH',
@@ -941,7 +936,7 @@ test('Prices tests', () => {
         //  Unit total cost
         equal(estimated_cost.total.toFixed(2), '1068.40', 'Unit total cost is correct after adding mullion based options');
 
-        App.settings.dictionaries.add([
+        data_store.dictionaries.add([
             {
                 name: 'Glazing Bars',
                 pricing_scheme: 'PER_GLAZING_BAR_LENGTH',
@@ -994,7 +989,7 @@ test('Prices tests', () => {
         //  Now add more new dictionaries, and test a few new schemes
         //  ----------------------------------------------------------------
 
-        App.settings.dictionaries.add([
+        data_store.dictionaries.add([
             {
                 name: 'Fillings Safety Profile',
                 pricing_scheme: 'PER_FILLING_FRAME_LENGTH',
@@ -1019,7 +1014,7 @@ test('Prices tests', () => {
         //  Unit total cost
         equal(estimated_cost.total.toFixed(2), '1164.16', 'Unit total cost is correct after adding filling length based options');
 
-        App.settings.dictionaries.add([
+        data_store.dictionaries.add([
             {
                 name: 'Static Connector Thing',
                 pricing_scheme: 'PER_FRAME_HEIGHT',
@@ -1044,7 +1039,7 @@ test('Prices tests', () => {
         //  Unit total cost
         equal(estimated_cost.total.toFixed(2), '1165.99', 'Unit total cost is correct after adding frame height based options');
 
-        App.settings.dictionaries.add([
+        data_store.dictionaries.add([
             {
                 name: 'Corner Safety Things',
                 pricing_scheme: 'PER_CORNER',

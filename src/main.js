@@ -7,10 +7,9 @@ import 'bootstrap-datepicker';
 import 'backbone.marionette.keyshortcuts';
 
 import { getGlobalChannelName } from './utils/radio';
-import Settings from './core/models/settings';
+import DataStore from './core/models/data-store';
 import Session from './core/models/session';
 import Router from './router';
-import ProjectCollection from './core/collections/project-collection';
 import TopBarView from './core/views/top-bar-view';
 import Dialogs from './dialogs';
 import PasteImageHelper from './utils/paste-image';
@@ -32,67 +31,98 @@ class Application extends Marionette.Application {
 
     initialize() {
         //  Object to hold project-independent properties
-        this.settings = new Settings();
-        this.session = new Session();
+        this.session = new Session(null, {
+            app: this,
+        });
+        this.data_store = new DataStore(null, {
+            session: this.session,
+            app: this,
+        });
     }
 
     onStart() {
         this.getChannel().trigger('app:start');
 
         this.router = new Router();
-        this.projects = new ProjectCollection();
+        // this.projects = new ProjectCollection();
         this.main_region = new Marionette.Region({ el: '#main' });
         this.dialogs = new Dialogs();
 
         this.top_bar_view = new TopBarView({
-            collection: this.projects,
+            // collection: this.projects,
+            data_store: this.data_store,
+            session: this.session,
+            dialogs: this.dialogs,
             main_nav_view: new MainNavigationView({
-                dashboard: {
-                    title: 'Dashboard',
-                    path: 'dashboard',
-                    icon_name: 'dashboard',
-                    onAttach: () => {
-                        this.main_region.show(new MainDashboardView());
+                data_store: this.data_store,
+                router: this.router,
+                main_region: this.main_region,
+                entries: {
+                    dashboard: {
+                        title: 'Dashboard',
+                        path: 'dashboard',
+                        icon_name: 'dashboard',
+                        onAttach: () => {
+                            this.main_region.show(new MainDashboardView({
+                                data_store: this.data_store,
+                                dialogs: this.dialogs,
+                            }));
+                        },
                     },
-                },
-                units_table: {
-                    title: 'Units',
-                    path: 'units',
-                    icon_name: 'th',
-                    onAttach: () => {
-                        this.main_region.show(new MainUnitsTableView());
+                    units_table: {
+                        title: 'Units',
+                        path: 'units',
+                        icon_name: 'th',
+                        onAttach: () => {
+                            this.main_region.show(new MainUnitsTableView({
+                                data_store: this.data_store,
+                                dialogs: this.dialogs,
+                            }));
+                        },
                     },
-                },
-                drawing: {
-                    title: 'Drawing',
-                    path: 'drawing',
-                    icon_name: 'pencil',
-                    onAttach: () => {
-                        this.main_region.show(new MainDrawingView());
+                    drawing: {
+                        title: 'Drawing',
+                        path: 'drawing',
+                        icon_name: 'pencil',
+                        onAttach: () => {
+                            this.main_region.show(new MainDrawingView({
+                                data_store: this.data_store,
+                                dialogs: this.dialogs,
+                            }));
+                        },
                     },
-                },
-                quote: {
-                    title: 'Quote',
-                    path: 'quote',
-                    icon_name: 'shopping-cart',
-                    onAttach: () => {
-                        this.main_region.show(new MainQuoteView());
+                    quote: {
+                        title: 'Quote',
+                        path: 'quote',
+                        icon_name: 'shopping-cart',
+                        onAttach: () => {
+                            this.main_region.show(new MainQuoteView({
+                                data_store: this.data_store,
+                                dialogs: this.dialogs,
+                            }));
+                        },
                     },
-                },
-                supplier_request: {
-                    title: 'Supplier',
-                    path: 'supplier',
-                    icon_name: 'send',
-                    onAttach: () => {
-                        this.main_region.show(new MainSupplierRequestView());
+                    supplier_request: {
+                        title: 'Supplier',
+                        path: 'supplier',
+                        icon_name: 'send',
+                        onAttach: () => {
+                            this.main_region.show(new MainSupplierRequestView({
+                                data_store: this.data_store,
+                                dialogs: this.dialogs,
+                            }));
+                        },
                     },
-                },
-                settings: {
-                    title: 'Settings',
-                    path: 'settings',
-                    icon_name: 'wrench',
-                    onAttach: () => {
-                        this.main_region.show(new MainSettingsView());
+                    settings: {
+                        title: 'Settings',
+                        path: 'settings',
+                        icon_name: 'wrench',
+                        onAttach: () => {
+                            this.main_region.show(new MainSettingsView({
+                                data_store: this.data_store,
+                                dialogs: this.dialogs,
+                            }));
+                        },
                     },
                 },
             }),

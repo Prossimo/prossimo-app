@@ -1,11 +1,7 @@
 import _ from 'underscore';
 
-import App from '../../src/main';
 import cases from './visual-test-data';
 import runVisualTest from './visual-test-runner';
-
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
 
 //  Run all available visual tests in a loop
 test('Visual tests', () => {

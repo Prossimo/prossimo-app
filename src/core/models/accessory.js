@@ -2,7 +2,6 @@ import _ from 'underscore';
 import Backbone from 'backbone';
 
 import Schema from '../../schema';
-import App from '../../main';
 
 const EXTRAS_TYPES = ['Regular', 'Shipping', 'Optional', 'Optional, %', 'Hidden', 'Tax'];
 const DEFAULT_EXTRAS_TYPE = 'Regular';
@@ -33,6 +32,13 @@ export default Backbone.Model.extend({
         });
 
         return defaults;
+    },
+    initialize(attributes, options) {
+        this.options = options || {};
+
+        if (!this.options.proxy) {
+            this.data_store = this.options.data_store || (this.collection && this.collection.options.data_store);
+        }
     },
     getNameAttribute() {
         return 'description';
@@ -81,9 +87,6 @@ export default Backbone.Model.extend({
         const accessory_data = data && data.accessory ? data.accessory : data;
 
         return Schema.parseAccordingToSchema(accessory_data, this.schema);
-    },
-    initialize(attributes, options) {
-        this.options = options || {};
     },
     //  If validation is successful, return null, otherwise return error
     validate(attributes) {
@@ -181,15 +184,16 @@ export default Backbone.Model.extend({
     //  Get subtotal price for the extras item. For regular or optional
     //  extras it's just unit price * quantity
     getSubtotalPrice() {
+        const current_quote = this.data_store && this.data_store.current_quote;
         let subtotal_price = this.getUnitPrice() * parseFloat(this.get('quantity'));
 
-        if (App.current_quote) {
+        if (current_quote) {
             //  If this is percent-based optional extras, base is Unit Subtotal
             if (this.isPercentBasedType() && this.isOptionalType()) {
-                subtotal_price = (this.getMarkupPercent() / 100) * App.current_quote.getSubtotalUnitsPrice();
+                subtotal_price = (this.getMarkupPercent() / 100) * current_quote.getSubtotalUnitsPrice();
             //  If this is tax, base is everything except shipping
             } else if (this.isPercentBasedType()) {
-                subtotal_price = (this.getMarkupPercent() / 100) * App.current_quote.getSubtotalPrice();
+                subtotal_price = (this.getMarkupPercent() / 100) * current_quote.getSubtotalPrice();
             }
         }
 

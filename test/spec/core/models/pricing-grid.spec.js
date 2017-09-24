@@ -1,10 +1,6 @@
 import clone from 'clone';
 
-import App from '../../../../src/main';
 import PricingGrid, { Grid } from '../../../../src/core/models/inline/pricing-grid';
-
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
 
 test('Pricing grid', () => {
     test('pricing grid model basic tests', () => {

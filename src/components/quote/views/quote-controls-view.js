@@ -2,7 +2,6 @@ import Marionette from 'backbone.marionette';
 import $ from 'jquery';
 import moment from 'moment';
 
-import App from '../../../main';
 import template from '../templates/quote-controls-view.hbs';
 
 import { DATE_FORMAT_MOMENTJS } from '../../../constants';
@@ -19,6 +18,15 @@ export default Marionette.View.extend({
     events: {
         'click .js-download-pdf': 'onDownloadClick',
         'change input[type="checkbox"]': 'onCheckboxClick',
+    },
+    initialize() {
+        this.data_store = this.getOption('data_store');
+        this.increase_revision = this.options.increase_revision_enabled;
+        this.set_current_date = this.options.set_current_date_enabled;
+
+        const project_settings = this.data_store.getProjectSettings();
+
+        this.listenTo(project_settings, 'change', this.render);
     },
     onCheckboxClick(e) {
         const $target = $(e.target);
@@ -49,7 +57,7 @@ export default Marionette.View.extend({
                 wait: true,
                 async: false,
                 success: () => {
-                    const new_url = App.settings.getPdfDownloadUrl(this.options.quote_mode);
+                    const new_url = this.data_store.getPdfDownloadUrl(this.options.quote_mode);
 
                     window.open(new_url);
                     this.render();
@@ -64,10 +72,10 @@ export default Marionette.View.extend({
         return moment().format(DATE_FORMAT_MOMENTJS);
     },
     templateContext() {
-        const project_settings = App.settings.getProjectSettings();
+        const project_settings = this.data_store.getProjectSettings();
 
         return {
-            urlToDownloadPdf: App.settings.getPdfDownloadUrl(this.options.quote_mode),
+            urlToDownloadPdf: this.data_store.getPdfDownloadUrl(this.options.quote_mode),
             new_revision: this.getNewRevision(),
             new_date: this.getNewDate(),
             increase_revision: this.increase_revision,
@@ -80,13 +88,5 @@ export default Marionette.View.extend({
             show_drawings_in_quote: project_settings.getReadableValue('show_drawings_in_quote'),
             customer_mode: this.options.quote_mode !== 'supplier',
         };
-    },
-    initialize() {
-        const project_settings = App.settings.getProjectSettings();
-
-        this.increase_revision = this.options.increase_revision_enabled;
-        this.set_current_date = this.options.set_current_date_enabled;
-
-        this.listenTo(project_settings, 'change', this.render);
     },
 });

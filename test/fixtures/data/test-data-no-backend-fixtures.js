@@ -1,7 +1,6 @@
 /* eslint quotes:0  */
 /* eslint max-len:0 */
 
-import App from '../../../src/main';
 import Project from '../../../src/core/models/project';
 import { globalChannel } from '../../../src/utils/radio';
 
@@ -223,18 +222,22 @@ const test_project = new Project({
 
 //  Only add this project to the list of projects when the app doesn't
 //  appear to have a connection to the backend
-
+//  TODO: fix this, it doesn't work anyway
 test_project.listenTo(globalChannel, 'auth:no_backend', () => {
-    App.settings.profiles.add(test_profiles_data);
+    const data_store = test_project.data_store;
 
-    test_project.files.add(test_project_files_data);
-    test_project.quotes.add(test_quotes_data);
+    if (data_store) {
+        data_store.profiles.add(test_profiles_data);
 
-    //  Units and extras go to the first quote in the list
-    test_project.quotes.at(0).units.add(test_project_units_data);
-    test_project.quotes.at(0).extras.add(test_project_extras_data);
+        test_project.files.add(test_project_files_data);
+        test_project.quotes.add(test_quotes_data);
 
-    App.projects.add(test_project);
+        //  Units and extras go to the first quote in the list
+        test_project.quotes.at(0).units.add(test_project_units_data);
+        test_project.quotes.at(0).extras.add(test_project_extras_data);
+
+        data_store.projects.add(test_project);
+    }
 
     setTimeout(() => {
         globalChannel.trigger('auth:fetched_no_backend');

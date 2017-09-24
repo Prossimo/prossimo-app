@@ -2,7 +2,6 @@ import Marionette from 'backbone.marionette';
 import $ from 'jquery';
 
 import { globalChannel } from '../../utils/radio';
-import App from '../../main';
 import template from '../../templates/core/project-selector-view.hbs';
 
 export default Marionette.View.extend({
@@ -16,6 +15,9 @@ export default Marionette.View.extend({
         'change @ui.$select': 'onChange',
     },
     initialize() {
+        this.data_store = this.getOption('data_store');
+        this.session = this.getOption('session');
+
         this.listenTo(this.collection, 'all', this.render);
         this.listenTo(globalChannel, 'settings:fetch_data:stop', this.onInitialLogin);
         this.listenTo(globalChannel, 'auth:fetched_no_backend', this.onNoBackend);
@@ -68,24 +70,24 @@ export default Marionette.View.extend({
         const d = $.Deferred();
         const self = this;
 
-        App.current_project = this.collection.get(new_id);
+        this.data_store.current_project = this.collection.get(new_id);
 
-        if (!App.current_project) {
+        if (!this.data_store.current_project) {
             return;
         }
 
-        if (App.current_project.get('no_backend') === true) {
-            App.session.set('no_backend', true);
-        } else if (App.session.get('no_backend') === true) {
-            App.session.set('no_backend', false);
+        if (this.data_store.current_project.get('no_backend') === true) {
+            this.session.set('no_backend', true);
+        } else if (this.session.get('no_backend') === true) {
+            this.session.set('no_backend', false);
         }
 
-        if (App.current_project._wasFetched || App.session.get('no_backend')) {
+        if (this.data_store.current_project._wasFetched || this.session.get('no_backend')) {
             d.resolve('Project was already fetched');
         } else {
             globalChannel.trigger('project_selector:fetch_current:start');
 
-            App.current_project.fetch({
+            this.data_store.current_project.fetch({
                 success() {
                     d.resolve('Fetched project');
                 },
@@ -94,19 +96,19 @@ export default Marionette.View.extend({
 
         $.when(d).done(() => {
             globalChannel.trigger('current_project_changed');
-            App.current_project.trigger('set_active');
+            self.data_store.current_project.trigger('set_active');
 
-            self.stopListening(App.current_project);
+            self.stopListening(self.data_store.current_project);
 
-            if (App.current_project._wasLoaded) {
+            if (self.data_store.current_project._wasLoaded) {
                 globalChannel.trigger('project_selector:fetch_current:stop');
             } else {
-                self.listenToOnce(App.current_project, 'fully_loaded', () => {
+                self.listenToOnce(self.data_store.current_project, 'fully_loaded', () => {
                     globalChannel.trigger('project_selector:fetch_current:stop');
                 }, self);
             }
 
-            self.listenTo(App.current_project, 'change:project_name', self.setNewProjectName);
+            self.listenTo(self.data_store.current_project, 'change:project_name', self.setNewProjectName);
             self.render();
         });
     },
@@ -137,9 +139,9 @@ export default Marionette.View.extend({
     },
     templateContext() {
         return {
-            no_backend: App.session.get('no_backend'),
+            no_backend: this.session.get('no_backend'),
             project_list: this.collection.map(item => ({
-                is_selected: App.current_project && item.id === App.current_project.id,
+                is_selected: this.data_store.current_project && item.id === this.data_store.current_project.id,
                 id: item.id,
                 project_name: item.get('project_name'),
             }), this),

@@ -1,7 +1,6 @@
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 
-import App from '../../../main';
 import { convert, format } from '../../../utils';
 import template from '../templates/quote-units-item-view.hbs';
 
@@ -11,6 +10,11 @@ export default Marionette.View.extend({
         return `quote-item ${this.model.getRelation()}`;
     },
     template,
+    initialize() {
+        this.data_store = this.getOption('data_store');
+        this.display_options = this.getOption('display_options');
+        this.listenTo(this.model, 'change', this.render);
+    },
     getPrices() {
         const unit_price = this.model.getUnitPrice();
         const subtotal_price = this.model.getSubtotalPrice();
@@ -27,7 +31,7 @@ export default Marionette.View.extend({
         };
     },
     getDescription() {
-        const project_settings = App.settings.getProjectSettings();
+        const project_settings = this.data_store.getProjectSettings();
 
         //  This is the list of params that we want to see in the quote. We
         //  throw out attributes that don't apply to the current unit
@@ -45,7 +49,7 @@ export default Marionette.View.extend({
         const source_hash = this.model.getNameTitleTypeHash(params_list);
 
         //  Now get list of Unit Options applicable for this unit
-        const dictionaries = _.map(App.settings.dictionaries.filter((dictionary) => {
+        const dictionaries = _.map(this.data_store.dictionaries.filter((dictionary) => {
             const rules_and_restrictions = dictionary.get('rules_and_restrictions');
             let is_restricted = false;
 
@@ -99,8 +103,8 @@ export default Marionette.View.extend({
         //  Extend unit attributes with options
         params_source = _.extend({}, params_source, _.object(dictionaries, _.map(dictionaries,
             (dictionary_name) => {
-                const dictionary_id = App.settings.dictionaries.getDictionaryIdByName(dictionary_name);
-                const is_dictionary_hidden = App.settings.dictionaries.get(dictionary_id).get('is_hidden');
+                const dictionary_id = this.data_store.dictionaries.getDictionaryIdByName(dictionary_name);
+                const is_dictionary_hidden = this.data_store.dictionaries.get(dictionary_id).get('is_hidden');
                 const current_options = dictionary_id ?
                     this.model.getCurrentUnitOptionsByDictionaryId(dictionary_id) : [];
 
@@ -267,7 +271,7 @@ export default Marionette.View.extend({
             this.model.collection && this.model.collection.hasAtLeastOneCustomerImage();
     },
     shouldShowDrawings() {
-        const project_settings = App.settings && App.settings.getProjectSettings();
+        const project_settings = this.data_store.getProjectSettings();
         const show_drawings = !project_settings || project_settings.get('show_drawings_in_quote');
 
         return show_drawings;
@@ -294,9 +298,5 @@ export default Marionette.View.extend({
             has_dummy_profile: this.model.hasDummyProfile(),
             profile_name: this.model.get('profile_name') || this.model.get('profile_id') || '',
         };
-    },
-    initialize() {
-        this.display_options = this.options.display_options;
-        this.listenTo(this.model, 'change', this.render);
     },
 });

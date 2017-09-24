@@ -1,7 +1,6 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
 
-import App from '../../main';
 import Unit from '../models/unit';
 
 export default Backbone.Collection.extend({
@@ -11,7 +10,7 @@ export default Backbone.Collection.extend({
         const project_id = this.options.project && this.options.project.get('id');
         const quote_id = this.options.quote && this.options.quote.get('id');
 
-        return `${App.settings.get('api_base_path')
+        return `${this.data_store && this.data_store.get('api_base_path')
             }/projects/${project_id
             }/quotes/${quote_id}/units`;
     },
@@ -19,13 +18,15 @@ export default Backbone.Collection.extend({
         const project_id = this.options.project && this.options.project.get('id');
         const quote_id = this.options.quote && this.options.quote.get('id');
 
-        return `${App.settings.get('api_base_path')
+        return `${this.data_store && this.data_store.get('api_base_path')
             }/projects/${project_id
             }/quotes/${quote_id}/reorder_units`;
     },
     initialize(models, options) {
         this.options = options || {};
         this.proxy_unit = new Unit(null, { proxy: true });
+
+        this.data_store = this.options.data_store;
 
         if (this.options.profile) {
             this.profile = this.options.profile;
@@ -115,7 +116,7 @@ export default Backbone.Collection.extend({
         return _.map(this.groupBy('profile_id'), (units, profile_id) => new this.constructor(units, {
             model: this.model,
             comparator: this.comparator,
-            profile: App.settings.profiles.getProfileByIdOrDummy(profile_id),
+            profile: this.data_store && this.data_store.profiles.getProfileByIdOrDummy(profile_id),
         }));
     },
     /**

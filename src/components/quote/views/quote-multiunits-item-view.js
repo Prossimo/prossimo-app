@@ -1,6 +1,5 @@
 import Marionette from 'backbone.marionette';
 
-import App from '../../../main';
 import QuoteUnitsTableView from './quote-units-table-view';
 import { convert, format } from '../../../utils';
 import template from '../templates/quote-multiunits-item-view.hbs';
@@ -8,6 +7,11 @@ import template from '../templates/quote-multiunits-item-view.hbs';
 export default Marionette.View.extend({
     className: 'quote-unit-group multiunit',
     template,
+    initialize() {
+        this.data_store = this.getOption('data_store');
+        this.display_options = this.getOption('display_options');
+        this.listenTo(this.model, 'change', this.render);
+    },
     getPrices() {
         const unit_price = this.model.getUnitPrice();
         const subtotal_price = this.model.getSubtotalPrice();
@@ -24,7 +28,7 @@ export default Marionette.View.extend({
         };
     },
     getDescription() {
-        const project_settings = App.settings.getProjectSettings();
+        const project_settings = this.data_store.getProjectSettings();
         const subunits = this.model.get('multiunit_subunits').map((subunit_link) => {
             const subunit = subunit_link.getUnit();
             const size = this.display_options.show_sizes_in_mm ?
@@ -60,7 +64,7 @@ export default Marionette.View.extend({
         };
     },
     shouldShowDrawings() {
-        const project_settings = App.settings && App.settings.getProjectSettings();
+        const project_settings = this.data_store.getProjectSettings();
         const show_drawings = !project_settings || project_settings.get('show_drawings_in_quote');
 
         return show_drawings;
@@ -117,10 +121,7 @@ export default Marionette.View.extend({
             collection: this.options.units,
             filter: child => child.isSubunitOf(this.model),
             display_options: this.display_options,
+            data_store: this.data_store,
         }));
-    },
-    initialize() {
-        this.display_options = this.options.display_options;
-        this.listenTo(this.model, 'change', this.render);
     },
 });

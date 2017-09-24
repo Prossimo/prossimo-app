@@ -1,23 +1,15 @@
-import { assert } from 'chai';
-
-import App from '../../../../src/main';
 import UnitOptionCollection from '../../../../src/core/collections/inline/unit-option-collection';
 import UnitOption from '../../../../src/core/models/inline/unit-option';
+import DataStore from '../../../../src/core/models/data-store';
 
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
+const DICTIONARIES = [
+    { id: 1, position: 0 },
+    { id: 22, position: 1 },
+    { id: 77, position: 2 },
+    { id: 17, position: 3 },
+];
 
 test('Unit option collection test', () => {
-    before(() => {
-        //  This is here to avoid creating side effects inside tests.
-        //  TODO: we need to get rid of globals eventually
-        App.settings.dictionaries.reset([
-            { id: 1, position: 0 },
-            { id: 22, position: 1 },
-            { id: 77, position: 2 },
-            { id: 17, position: 3 },
-        ], { parse: true });
-    });
     test('UnitOptionCollection basic tests', () => {
         const unit_option_collection = new UnitOptionCollection(null, { parse: true });
 
@@ -71,9 +63,13 @@ test('Unit option collection test', () => {
         equal(nonexistent_item, undefined, 'getByDictionaryId returns undefined if there is no such item');
     });
 
-    //  See global app.settings.dictionaries at the beginning if this file,
+    //  See global DICTIONARIES at the beginning if this file,
     //  it includes specific order of dictionaries which we check here
     test('UnitOptionCollection sorting', () => {
+        const data_store = new DataStore();
+
+        data_store.dictionaries.reset(DICTIONARIES);
+
         const unit_option_collection = new UnitOptionCollection([
             {
                 dictionary_id: 17,
@@ -87,9 +83,12 @@ test('Unit option collection test', () => {
                 dictionary_id: 22,
                 dictionary_entry_id: 35,
             },
-        ], { parse: true });
+        ], {
+            parse: true,
+            dictionaries: data_store.dictionaries,
+        });
 
-        assert.sameMembers(
+        deepEqual(
             unit_option_collection.pluck('dictionary_id'),
             [1, 22, 17],
             'Collection is properly sorted on creation',
@@ -100,7 +99,7 @@ test('Unit option collection test', () => {
             is_default: false,
         }, { parse: true });
 
-        assert.sameMembers(
+        deepEqual(
             unit_option_collection.pluck('dictionary_id'),
             [1, 22, 77, 17],
             'Collection is properly sorted after inserting a new item',

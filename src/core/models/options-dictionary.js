@@ -78,6 +78,25 @@ export default Backbone.Model.extend({
 
         return defaults;
     },
+    initialize(attributes, options) {
+        this.options = options || {};
+
+        if (!this.options.proxy) {
+            this.data_store = this.options.data_store || (this.collection && this.collection.options.data_store);
+
+            this.entries = new OptionsDictionaryEntryCollection(this.get('entries'), {
+                parse: true,
+                dictionary: this,
+                data_store: this.data_store,
+            });
+            this.unset('entries', { silent: true });
+            this.entries.trigger('fully_loaded');
+
+            this.listenTo(this.entries, 'change', (e) => {
+                this.trigger('entries_change', e);
+            });
+        }
+    },
     getNameAttribute() {
         return 'name';
     },
@@ -277,21 +296,5 @@ export default Backbone.Model.extend({
             PRICING_SCHEME_PER_GLAZING_BAR_LENGTH,
             PRICING_SCHEME_PER_FILLING_FRAME_LENGTH,
         ], this.get('pricing_scheme'));
-    },
-    initialize(attributes, options) {
-        this.options = options || {};
-
-        if (!this.options.proxy) {
-            this.entries = new OptionsDictionaryEntryCollection(this.get('entries'), {
-                parse: true,
-                dictionary: this,
-            });
-            this.unset('entries', { silent: true });
-            this.entries.trigger('fully_loaded');
-
-            this.listenTo(this.entries, 'change', (e) => {
-                this.trigger('entries_change', e);
-            });
-        }
     },
 });

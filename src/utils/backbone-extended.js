@@ -3,8 +3,6 @@ import $ from 'jquery';
 import Backbone from 'backbone';
 import clone from 'clone';
 
-import App from '../main';
-
 const oldModelSave = Backbone.Model.prototype.save;
 const sync = Backbone.sync;
 
@@ -70,9 +68,23 @@ _.extend(Backbone.Model.prototype, {
 
         return oldModelSave.call(this, key, val, current_options);
     },
-    //  Don't save anything if we have special flag on `app` or an attribute
+    isInNoBackendMode() {
+        const collection = this.collection || (this.options && this.options.collection);
+        const data_store = this.data_store ||
+            (this.options && this.options.data_store) ||
+            (collection && collection.options.data_store);
+        const session = this.session ||
+            (this.options && this.options.session) ||
+            (data_store && data_store.session);
+
+        return this.no_backend || (this.options && this.options.no_backend) || (session && session.get('no_backend') === true);
+    },
+    //  Don't save anything if we have special session property / no collection
     persist(...args) {
-        if ((App && App.session && App.session.get('no_backend') === true) || this.get('no_backend') === true) {
+        const collection = this.collection || (this.options && this.options.collection);
+        const no_backend = this.isInNoBackendMode();
+
+        if (no_backend || (!this.urlRoot && !(collection && collection.url))) {
             return this.set(...args);
         }
 
@@ -187,9 +199,18 @@ _.extend(Backbone.Collection.prototype, {
             data: JSON.stringify(data_to_sync),
         });
     },
+    isInNoBackendMode() {
+        const data_store = this.data_store || (this.options && this.options.data_store);
+        const session = this.session ||
+            (this.options && this.options.session) ||
+            (data_store && data_store.session);
+
+        return this.no_backend || (this.options && this.options.no_backend) || (session && session.get('no_backend') === true);
+    },
     validatePositions() {
-        let invalid_flag = false;
+        const no_backend = this.isInNoBackendMode();
         const proper_order = [];
+        let invalid_flag = false;
 
         for (let i = 0; i < this.length; i += 1) {
             const current_model = this.models[i];
@@ -207,7 +228,7 @@ _.extend(Backbone.Collection.prototype, {
         if (invalid_flag) {
             this.trigger('sort');
 
-            if (proper_order.length && App.session && App.session.get('no_backend') !== true) {
+            if (proper_order.length && (this.url && !no_backend)) {
                 this.savePositions(proper_order);
             }
         }

@@ -13,6 +13,7 @@ export default Marionette.CollectionView.extend({
             units: this.options.units,
             quote: this.options.quote,
             display_options: this.options.display_options,
+            data_store: this.options.data_store,
         };
     },
 });

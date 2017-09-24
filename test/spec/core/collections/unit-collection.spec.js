@@ -1,13 +1,10 @@
 import _ from 'underscore';
 
-import App from '../../../../src/main';
 import Unit from '../../../../src/core/models/unit';
 import UnitCollection from '../../../../src/core/collections/unit-collection';
 import Quote from '../../../../src/core/models/quote';
 import Profile from '../../../../src/core/models/profile';
-
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
+import DataStore from '../../../../src/core/models/data-store';
 
 describe('Units collection:', () => {
     describe('instanceOf tests', () => {
@@ -17,7 +14,7 @@ describe('Units collection:', () => {
         const quote = new Quote();
 
         instanceOf(unit_model, Unit, 'collection model should belong to Unit object');
-        instanceOf(quote.units, UnitCollection, 'app.Quote().units should belong to app.UnitCollection object');
+        instanceOf(quote.units, UnitCollection, 'Quote().units should belong to UnitCollection object');
     });
 
     describe('basic tests', () => {
@@ -58,6 +55,8 @@ describe('Units collection:', () => {
     });
 
     describe('by profiles', () => {
+        const data_store = new DataStore();
+
         const data = [{
             mark: 'A',
             width: 30,
@@ -87,7 +86,7 @@ describe('Units collection:', () => {
             glazing: '3Std U=.09 SGHC=.5',
             discount: 20,
         }];
-        const units_collection = new UnitCollection(data);
+        const units_collection = new UnitCollection(data, { data_store });
         const profileUnits_collection = units_collection.getUnitsByProfiles();
 
         ok(_.isArray(profileUnits_collection), '#getUnitsByProfiles() should return array');
@@ -100,7 +99,7 @@ describe('Units collection:', () => {
             instanceOf(profileUnit, UnitCollection, 'Project().units should belong to UnitCollection object');
             instanceOf(profileUnitModel, Unit, 'collection model should belong to Unit object');
 
-            instanceOf(profileUnit.profile, Profile, 'this.profile should belong to app.Profile object');
+            instanceOf(profileUnit.profile, Profile, 'this.profile should belong to Profile object');
 
             equal(profileUnit.getTotalUnitTypes(), 2, '#getTotalUnitTypes() should return correct number of models');
             equal(profileUnit.getTotalUnitQuantity(), 3, '#getTotalUnitQuantity() should return sum all "quantity"');

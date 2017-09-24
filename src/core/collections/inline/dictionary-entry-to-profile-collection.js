@@ -1,6 +1,5 @@
 import Backbone from 'backbone';
 
-import App from '../../../main';
 import DictionaryEntryProfile from '../../models/inline/dictionary-entry-to-profile';
 
 export default Backbone.Collection.extend({
@@ -8,8 +7,7 @@ export default Backbone.Collection.extend({
     //  We sort items not by profile id, but by the order of profiles
     //  in their respective collection
     comparator(item) {
-        const corresponding_profile = App.settings && App.settings.profiles &&
-            App.settings.profiles.get(item.get('profile_id'));
+        const corresponding_profile = this.options.profiles && this.options.profiles.get(item.get('profile_id'));
 
         return corresponding_profile ? corresponding_profile.get('position') : Infinity;
     },

@@ -1,11 +1,7 @@
 import _ from 'underscore';
 
-import App from '../../../../src/main';
 import OptionsDictionaryCollection from '../../../../src/core/collections/options-dictionary-collection';
 import OptionsDictionary from '../../../../src/core/models/options-dictionary';
-
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
 
 function getNames(models) {
     return _.map(models, model => model.get('name'));

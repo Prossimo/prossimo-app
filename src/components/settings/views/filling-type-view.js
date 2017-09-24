@@ -2,7 +2,6 @@ import $ from 'jquery';
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 
-import App from '../../../main';
 import BaseSelectView from '../../../core/views/base/base-select-view';
 import BaseInputView from '../../../core/views/base/base-input-view';
 import ProfileConnectionsTableView from './profile-connections-table-view';
@@ -26,54 +25,9 @@ export default Marionette.View.extend({
         'click @ui.$clone': 'cloneItem',
         'click @ui.$remove': 'removeItem',
     },
-    editProfiles() {
-        App.dialogs.showDialog('items-profiles-table', {
-            collection_title: 'Filling Types',
-            active_item: this.model,
-            collection: this.model.collection,
-            profiles: App.settings.profiles,
-            filter_condition(item) {
-                return item.get('name') && !item.hasOnlyDefaultAttributes() && item.get('is_base_type') !== true;
-            },
-        });
-    },
-    removeItem() {
-        this.model.destroy();
-    },
-    cloneItem() {
-        this.model.duplicate();
-    },
-    onChangePricingScheme() {
-        if (this.profile_connections_table_view) {
-            this.profile_connections_table_view.render();
-        }
-    },
-    onRender() {
-        _.each(this.attribute_views, (child_view) => {
-            const $row = $('<tr class="filling-type-attribute-container" />');
-
-            $row.append(`<td><h4 class="title">${child_view.title}</h4></td>`);
-            $('<td />').appendTo($row).append(child_view.view_instance.render().el);
-            this.ui.$table.append($row);
-
-            //  TODO: pass this attribute on init instead of a function call
-            if (this.is_disabled) {
-                child_view.view_instance.disable();
-            }
-        }, this);
-
-        this.ui.$profiles_container.append(this.profile_connections_table_view.render().el);
-    },
-    onBeforeDestroy() {
-        _.each(this.attribute_views, (child_view) => {
-            child_view.view_instance.destroy();
-        }, this);
-
-        if (this.profile_connections_table_view) {
-            this.profile_connections_table_view.destroy();
-        }
-    },
     initialize() {
+        this.data_store = this.getOption('data_store');
+        this.dialogs = this.getOption('dialogs');
         this.attributes_to_render = this.model.getNameTitleTypeHash([
             'name', 'supplier_name', 'type', 'weight_per_area', 'pricing_scheme',
         ]);
@@ -125,8 +79,56 @@ export default Marionette.View.extend({
 
         this.profile_connections_table_view = new ProfileConnectionsTableView({
             collection: this.model.get('filling_type_profiles'),
+            data_store: this.data_store,
         });
 
         this.listenTo(this.model, 'change:pricing_scheme', this.onChangePricingScheme);
+    },
+    editProfiles() {
+        this.dialogs.showDialog('items-profiles-table', {
+            collection_title: 'Filling Types',
+            active_item: this.model,
+            collection: this.model.collection,
+            profiles: this.data_store.profiles,
+            filter_condition(item) {
+                return item.get('name') && !item.hasOnlyDefaultAttributes() && item.get('is_base_type') !== true;
+            },
+        });
+    },
+    removeItem() {
+        this.model.destroy();
+    },
+    cloneItem() {
+        this.model.duplicate();
+    },
+    onChangePricingScheme() {
+        if (this.profile_connections_table_view) {
+            this.profile_connections_table_view.render();
+        }
+    },
+    onRender() {
+        _.each(this.attribute_views, (child_view) => {
+            const $row = $('<tr class="filling-type-attribute-container" />');
+
+            $row.append(`<td><h4 class="title">${child_view.title}</h4></td>`);
+            $('<td />').appendTo($row).append(child_view.view_instance.render().el);
+            this.ui.$table.append($row);
+
+            //  TODO: pass this attribute on init instead of a function call
+            if (this.is_disabled) {
+                child_view.view_instance.disable();
+            }
+        }, this);
+
+        this.ui.$profiles_container.append(this.profile_connections_table_view.render().el);
+    },
+    onBeforeDestroy() {
+        _.each(this.attribute_views, (child_view) => {
+            child_view.view_instance.destroy();
+        }, this);
+
+        if (this.profile_connections_table_view) {
+            this.profile_connections_table_view.destroy();
+        }
     },
 });

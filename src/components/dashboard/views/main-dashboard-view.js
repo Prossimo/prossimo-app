@@ -1,6 +1,5 @@
 import Marionette from 'backbone.marionette';
 
-import App from '../../../main';
 import ProjectInfoView from './project-info-view';
 import ProjectDocumentsView from './project-documents-view';
 import QuoteTotalsView from './quote-totals-view';
@@ -21,10 +20,29 @@ export default Marionette.View.extend({
     events: {
         'click @ui.$export_button': 'showProjectExportDialog',
     },
+    initialize() {
+        this.data_store = this.getOption('data_store');
+
+        this.project_info_view = new ProjectInfoView({
+            model: this.data_store.current_project,
+        });
+
+        this.totals_view = new QuoteTotalsView({
+            model: this.data_store.current_quote,
+        });
+
+        this.quote_info_view = new QuoteInfoView({
+            model: this.data_store.current_quote,
+        });
+
+        this.documents_view = new ProjectDocumentsView({
+            collection: this.data_store.current_project.files,
+        });
+    },
     showProjectExportDialog() {
-        App.dialogs.showDialog('project-export', {
-            model: App.current_project,
-            quote: App.current_quote,
+        this.options.dialogs.showDialog('project-export', {
+            model: this.data_store.current_project,
+            quote: this.data_store.current_quote,
         });
     },
     onRender() {
@@ -38,25 +56,5 @@ export default Marionette.View.extend({
         this.totals_view.destroy();
         this.quote_info_view.destroy();
         this.documents_view.destroy();
-    },
-    initialize() {
-        const currentProject = App.current_project;
-        const currentQuote = App.current_quote;
-
-        this.project_info_view = new ProjectInfoView({
-            model: currentProject,
-        });
-
-        this.totals_view = new QuoteTotalsView({
-            model: currentQuote,
-        });
-
-        this.quote_info_view = new QuoteInfoView({
-            model: currentQuote,
-        });
-
-        this.documents_view = new ProjectDocumentsView({
-            collection: currentProject.files,
-        });
     },
 });

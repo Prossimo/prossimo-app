@@ -1,6 +1,5 @@
 import Marionette from 'backbone.marionette';
 
-import App from '../../../main';
 import DrawingView from './drawing-view';
 import DrawingSidebarView from './drawing-sidebar-view';
 import template from '../templates/main-drawing-view.hbs';
@@ -34,8 +33,9 @@ export default Marionette.View.extend({
     initialize() {
         //  Used to store external state for the drawing_view
         this.global_inside_view = false;
+        this.data_store = this.getOption('data_store');
 
-        this.listenTo(App.current_project.settings, 'change', this.updateDrawingView);
+        this.listenTo(this.data_store.getProjectSettings(), 'change', this.updateDrawingView);
     },
     updateDrawingView(update_rendered_flag) {
         if (this.drawing_view) {
@@ -47,6 +47,7 @@ export default Marionette.View.extend({
             this.drawing_view = new DrawingView({
                 parent_view: this,
                 model: this.active_unit,
+                data_store: this.data_store,
             });
 
             this.listenTo(this.drawing_view, 'all', this.onDrawingViewEvents);
@@ -65,10 +66,12 @@ export default Marionette.View.extend({
         this.trigger(`drawing_view:${e}`);
     },
     onRender() {
-        if (App.current_quote.multiunits.length) {
-            this.active_unit = App.current_quote.multiunits.first();
-        } else if (App.current_quote.units.length) {
-            this.active_unit = App.current_quote.units.first();
+        const current_quote = this.data_store.current_quote;
+
+        if (current_quote.multiunits.length) {
+            this.active_unit = current_quote.multiunits.first();
+        } else if (current_quote.units.length) {
+            this.active_unit = current_quote.units.first();
         } else {
             this.active_unit = null;
         }
@@ -76,9 +79,10 @@ export default Marionette.View.extend({
         this.updateDrawingView();
 
         this.sidebar_view = new DrawingSidebarView({
-            collection: App.current_quote.units,
-            multiunits: (App.current_quote.multiunits) ? App.current_quote.multiunits : undefined,
+            collection: current_quote.units,
+            multiunits: (current_quote.multiunits) ? current_quote.multiunits : undefined,
             parent_view: this,
+            data_store: this.data_store,
         });
 
         this.ui.$sidebar_container.append(this.sidebar_view.render().el);

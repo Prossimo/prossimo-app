@@ -1,9 +1,5 @@
-import App from '../../../../src/main';
 import PricingGridCollection from '../../../../src/core/collections/inline/pricing-grid-collection';
 import PricingGrid from '../../../../src/core/models/inline/pricing-grid';
-
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
 
 test('Pricing grid collection', () => {
     test('basic tests', () => {

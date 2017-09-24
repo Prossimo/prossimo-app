@@ -1,7 +1,6 @@
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 
-import App from '../../../main';
 import { format } from '../../../utils';
 import template from '../templates/drawing-sidebar-multiunit-details-view.hbs';
 
@@ -9,8 +8,11 @@ export default Marionette.View.extend({
     tagName: 'div',
     className: 'drawing-sidebar-multiunit-details',
     template,
+    initialize() {
+        this.data_store = this.getOption('data_store');
+    },
     getMultiunitProperties() {
-        const project_settings = App.settings.getProjectSettings();
+        const project_settings = this.data_store.getProjectSettings();
         let multiunit_properties = [];
         let params_source = {};
 

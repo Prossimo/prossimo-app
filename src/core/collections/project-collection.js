@@ -1,12 +1,11 @@
 import Backbone from 'backbone';
 
-import App from '../../main';
 import Project from '../models/project';
 
 export default Backbone.Collection.extend({
     model: Project,
     url() {
-        return `${App.settings.get('api_base_path')}/projects`;
+        return `${this.options.api_base_path ? this.options.api_base_path : ''}/projects`;
     },
     parse(data) {
         return data.projects || data;
@@ -14,8 +13,11 @@ export default Backbone.Collection.extend({
     comparator(item) {
         return item.id;
     },
-    initialize() {
+    initialize(models, options) {
+        this.options = options || {};
         this.proxy_project = new Project(null, { proxy: true });
+
+        this.data_store = this.options.data_store;
     },
     getNameTitleTypeHash(names) {
         return this.proxy_project.getNameTitleTypeHash(names);

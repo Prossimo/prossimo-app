@@ -1,12 +1,8 @@
 import clone from 'clone';
 
-import App from '../../../../src/main';
 import Profile from '../../../../src/core/models/profile';
 import PricingGridCollection from '../../../../src/core/collections/inline/pricing-grid-collection';
 import PricingEquationParamsCollection from '../../../../src/core/collections/inline/pricing-equation-params-collection';
-
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
 
 test('Profile tests', () => {
     test('profile model basic tests', () => {

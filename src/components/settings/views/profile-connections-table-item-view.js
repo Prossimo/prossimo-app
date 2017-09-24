@@ -1,6 +1,5 @@
 import Marionette from 'backbone.marionette';
 
-import App from '../../../main';
 import BaseInputView from '../../../core/views/base/base-input-view';
 import EquationParamsView from './equation-params-view';
 import PricingGridsEditorView from './pricing-grids-editor-view';
@@ -29,6 +28,12 @@ export default Marionette.View.extend({
     events: {
         'click @ui.$toggle_grid': 'toggleGrid',
     },
+    initialize() {
+        this.data_store = this.getOption('data_store');
+        this.show_grids = false;
+
+        this.listenTo(this.model, 'change:is_default', this.onChangeIsDefault);
+    },
     toggleGrid() {
         this.show_grid = !this.show_grid;
 
@@ -49,7 +54,7 @@ export default Marionette.View.extend({
     },
     getProfileName() {
         const profile_id = this.model.get('profile_id');
-        const profile = App.settings.profiles.get(profile_id);
+        const profile = this.data_store.profiles.get(profile_id);
 
         return profile ? profile.get('name') : `Err: no profile with ID=${profile_id}`;
     },
@@ -105,10 +110,5 @@ export default Marionette.View.extend({
                 collection: this.model.get('pricing_equation_params'),
             }));
         }
-    },
-    initialize() {
-        this.show_grids = false;
-
-        this.listenTo(this.model, 'change:is_default', this.onChangeIsDefault);
     },
 });

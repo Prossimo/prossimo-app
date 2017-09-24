@@ -8,7 +8,6 @@ import 'blueimp-file-upload/js/jquery.fileupload-audio';
 import 'blueimp-file-upload/js/jquery.fileupload-video';
 import 'blueimp-file-upload/js/jquery.fileupload-validate';
 
-import App from '../../main';
 import ProjectFileCollection from '../../core/collections/project-file-collection';
 import template from './files-uploader-view.hbs';
 
@@ -56,6 +55,8 @@ export default Marionette.View.extend({
     },
 
     initialize() {
+        this.data_store = this.getOption('data_store');
+
         if (!$.support.fileInput) {
             this.template = _.template(WARNING_ALERTS_TEMPLATE);
         }
@@ -69,7 +70,7 @@ export default Marionette.View.extend({
 
     onRender() {
         this.fUplad = this.$el.find('input[type="file"]').fileupload(_.extend({
-            url: App.settings.get('api_base_path') + this.options.apiRouter,
+            url: this.data_store.get('api_base_path') + this.options.apiRouter,
             beforeSend(xhr) {
                 xhr.setRequestHeader('Authorization', `Bearer ${window.localStorage.getItem('authToken')}`);
             },

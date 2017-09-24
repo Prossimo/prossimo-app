@@ -2,7 +2,6 @@ import Marionette from 'backbone.marionette';
 import $ from 'jquery';
 
 import { globalChannel } from '../../utils/radio';
-import App from '../../main';
 import ProjectSelectorView from './project-selector-view';
 import StatusPanelView from './status-panel-view';
 import ProjectSettingsPanelView from './project-settings-panel-view';
@@ -31,13 +30,25 @@ export default Marionette.View.extend({
         'click @ui.$edit_quotes': 'showEditQuotesDialog',
     },
     initialize() {
-        this.project_selector_view = new ProjectSelectorView({ collection: this.collection });
-        this.quote_selector_view = new QuoteSelectorView();
-        this.status_panel_view = new StatusPanelView();
+        this.data_store = this.options.data_store;
+
+        this.project_selector_view = new ProjectSelectorView({
+            data_store: this.options.data_store,
+            session: this.options.session,
+            collection: this.data_store.projects,
+        });
+        this.quote_selector_view = new QuoteSelectorView({
+            data_store: this.options.data_store,
+        });
+        this.status_panel_view = new StatusPanelView({
+            session: this.options.session,
+            dialogs: this.options.dialogs,
+        });
         this.spinner_view = new SpinnerView();
         this.main_nav_view = this.options.main_nav_view;
         this.project_settings_panel_view = new ProjectSettingsPanelView({
-            model: App.settings.getProjectSettings(),
+            model: this.options.data_store.getProjectSettings(),
+            data_store: this.options.data_store,
         });
 
         $('#header').append(this.render().el);
@@ -51,13 +62,15 @@ export default Marionette.View.extend({
     },
     showEditQuotesDialog() {
         if (this.isProjectSelected()) {
-            App.dialogs.showDialog('edit-quotes', {
-                collection: App.current_project.quotes,
+            this.options.dialogs.showDialog('edit-quotes', {
+                collection: this.data_store.current_project.quotes,
             });
         }
     },
     showCreateProjectDialog() {
-        App.dialogs.showDialog('createProject');
+        this.options.dialogs.showDialog('createProject', {
+            data_store: this.data_store,
+        });
     },
     onCurrentProjectLoaded() {
         if (this.isProjectSelected()) {
@@ -68,7 +81,7 @@ export default Marionette.View.extend({
         this.$el.removeClass('is-project-settings-panel-open');
     },
     isProjectSelected() {
-        return App.current_project !== undefined;
+        return this.data_store.current_project !== undefined;
     },
     templateContext() {
         return {

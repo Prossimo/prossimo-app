@@ -3,7 +3,6 @@ import $ from 'jquery';
 import _ from 'underscore';
 import clone from 'clone';
 
-import App from '../../main';
 import { globalChannel } from '../../utils/radio';
 import NoProjectSelectedView from '../../core/views/no-project-selected-view';
 import template from '../../templates/core/main-navigation-view.hbs';
@@ -18,12 +17,50 @@ export default Marionette.View.extend({
     events: {
         'click .main-nav a': 'onNavigationClick',
     },
+    initialize() {
+        this.router = this.getOption('router');
+        this.data_store = this.getOption('data_store');
+        this.main_region = this.getOption('main_region');
+
+        this.router_callbacks = {};
+
+        if (this.options && this.options.entries) {
+            _.forEach(this.options.entries, (item, key) => {
+                if (_.isFunction(item.onAttach)) {
+                    const self = this;
+
+                    this.router_callbacks[item.path] = () => {
+                        if (this.data_store.current_quote || item.path === 'settings') {
+                            item.onAttach.call();
+                        } else {
+                            this.main_region.show(new NoProjectSelectedView());
+                        }
+
+                        self.setActivePath(item.path);
+                        self.setTitle(item.title);
+                        self.setActiveNavItem(key);
+                    };
+
+                    //  Execute callback on routing
+                    this.router.addRoute(`${item.path}(/)`, () => {
+                        if (_.isFunction(self.router_callbacks[item.path])) {
+                            self.router_callbacks[item.path].call();
+                        }
+                    });
+                }
+            });
+        }
+
+        $('#main-nav-container').append(this.render().el);
+
+        this.listenTo(globalChannel, 'quote_selector:load_current:stop', this.reloadActiveScreen);
+    },
     onNavigationClick(e) {
         const $event_target = $(e.currentTarget);
         const nav_target = $event_target.attr('href');
 
         e.preventDefault();
-        App.router.navigate(nav_target, { trigger: true });
+        this.router.navigate(nav_target, { trigger: true });
     },
     setTitle(title_part) {
         document.title = `${$('meta[name="app-title"]').attr('value')}: ${title_part
@@ -40,44 +77,10 @@ export default Marionette.View.extend({
             this.router_callbacks[this.active_path].call();
         }
     },
-    initialize() {
-        this.router_callbacks = {};
-
-        if (this.options) {
-            _.forEach(this.options, (item, key) => {
-                if (_.isFunction(item.onAttach)) {
-                    const self = this;
-
-                    this.router_callbacks[item.path] = () => {
-                        if (App.current_quote || item.path === 'settings') {
-                            item.onAttach.call();
-                        } else {
-                            App.main_region.show(new NoProjectSelectedView());
-                        }
-
-                        self.setActivePath(item.path);
-                        self.setTitle(item.title);
-                        self.setActiveNavItem(key);
-                    };
-
-                    //  Execute callback on routing
-                    App.router.addRoute(`${item.path}(/)`, () => {
-                        if (_.isFunction(self.router_callbacks[item.path])) {
-                            self.router_callbacks[item.path].call();
-                        }
-                    });
-                }
-            });
-        }
-
-        $('#main-nav-container').append(this.render().el);
-
-        this.listenTo(globalChannel, 'quote_selector:load_current:stop', this.reloadActiveScreen);
-    },
     onRender() {
         //  Append each navigation item
-        if (this.options) {
-            _.forEach(this.options, (item, key) => {
+        if (this.options && this.options.entries) {
+            _.forEach(this.options.entries, (item, key) => {
                 const current_item = _.extend({}, clone(item), {
                     class_name: key,
                 });

@@ -2,7 +2,6 @@ import _ from 'underscore';
 import Backbone from 'backbone';
 import clone from 'clone';
 
-import App from '../../main';
 import Schema from '../../schema';
 import { object, convert, math } from '../../utils';
 import UnitOptionCollection from '../collections/inline/unit-option-collection';
@@ -133,19 +132,19 @@ const MULLION_TYPES = [
 
 //  TODO: this could return dummy type object or something like that, so we
 //  could know when we don't get the right thing, and try to fix that
-function getDefaultFillingType(default_glazing_name, profile_id) {
+function getDefaultFillingType(default_glazing_name, profile_id, global_filling_types) {
     const dummy_type = {
         fillingType: FILLING_TYPE_GLASS,
         fillingName: FILLING_TYPE_TITLES[FILLING_TYPE_GLASS],
     };
     let default_type;
 
-    if (App.settings && default_glazing_name) {
-        default_type = App.settings.filling_types.getByName(default_glazing_name);
+    if (global_filling_types && default_glazing_name) {
+        default_type = global_filling_types.getByName(default_glazing_name);
     }
 
-    if (!default_type && App.settings && profile_id) {
-        default_type = App.settings.filling_types.getDefaultOrFirstAvailableForProfile(profile_id);
+    if (!default_type && global_filling_types && profile_id) {
+        default_type = global_filling_types.getDefaultOrFirstAvailableForProfile(profile_id);
     }
 
     return default_type ? {
@@ -186,9 +185,9 @@ function getDefaultMeasurements(hasFrame) {
     return result;
 }
 
-function getSectionDefaults(section_type, default_glazing_name, profile_id) {
+function getSectionDefaults(section_type, default_glazing_name, profile_id, global_filling_types) {
     const isRootSection = (section_type === 'root_section');
-    const defaultFilling = getDefaultFillingType(default_glazing_name, profile_id);
+    const defaultFilling = getDefaultFillingType(default_glazing_name, profile_id, global_filling_types);
 
     return {
         id: _.uniqueId(),
@@ -511,6 +510,7 @@ const Unit = Backbone.Model.extend({
     //  attribute, but we actually want it to be evaluated only for the
     //  corresponding attribute (see example for root_section)
     getDefaultValue(name, type) {
+        const filling_types = this.data_store && this.data_store.filling_types;
         let default_value = '';
 
         const type_value_hash = {
@@ -530,8 +530,8 @@ const Unit = Backbone.Model.extend({
             opening_direction: this.getOpeningDirections()[0],
         };
 
-        if (App.settings) {
-            name_value_hash.glazing = App.settings.filling_types.getNames()[0];
+        if (filling_types) {
+            name_value_hash.glazing = filling_types.getNames()[0];
         }
 
         if (_.indexOf(_.keys(type_value_hash), type) !== -1) {
@@ -562,14 +562,18 @@ const Unit = Backbone.Model.extend({
 
         return _.omit(json, properties_to_omit);
     },
-    parse(data) {
+    parse(data, options) {
         const unit_data = data && data.unit ? data.unit : data;
         const parsed_data = Schema.parseAccordingToSchema(unit_data, this.schema);
+        const data_store = options.data_store || (options.collection && options.collection.options.data_store);
 
         if (parsed_data && parsed_data.unit_options) {
             parsed_data.unit_options = new UnitOptionCollection(
                 object.extractObjectOrNull(parsed_data.unit_options),
-                { parse: true },
+                {
+                    parse: true,
+                    dictionaries: data_store && data_store.dictionaries,
+                },
             );
         }
 
@@ -580,6 +584,10 @@ const Unit = Backbone.Model.extend({
         this.profile = null;
 
         if (!this.options.proxy) {
+            this.data_store = this.options.data_store || (this.collection && this.collection.options.data_store);
+
+            const no_backend = this.data_store && this.data_store.session && this.data_store.session.get('no_backend') === true;
+
             this.validateOpeningDirection();
             this.validateRootSection();
             this.setProfile();
@@ -609,8 +617,10 @@ const Unit = Backbone.Model.extend({
             //  considering the id of this unit's profile
             //  TODO: this might be not optimal place to do this since
             //  it doesn't work for fixtures and might not work in some
-            //  other conditions
-            if (this.isNew() && App.session && App.session.get('no_backend') !== true) {
+            //  other conditions. We should do that on parse step or on the
+            //  initial setProfile call
+            if (this.isNew() && !no_backend) {
+                const filling_types = this.data_store && this.data_store.filling_types;
                 const profile_id = this.profile && this.profile.id;
                 const glazing_name = this.get('glazing');
 
@@ -618,7 +628,7 @@ const Unit = Backbone.Model.extend({
                     JSON.stringify(_.omit(this.getDefaultValue('root_section'), 'id')) ===
                     JSON.stringify(_.omit(this.get('root_section'), 'id'))
                 ) {
-                    this.set('root_section', getSectionDefaults('root_section', glazing_name, profile_id));
+                    this.set('root_section', getSectionDefaults('root_section', glazing_name, profile_id, filling_types));
                 }
             }
 
@@ -708,10 +718,13 @@ const Unit = Backbone.Model.extend({
         return current_section;
     },
     getDefaultUnitOptions() {
-        const default_options = new UnitOptionCollection();
+        const dictionaries = this.data_store && this.data_store.dictionaries;
+        const default_options = new UnitOptionCollection(null, {
+            dictionaries,
+        });
 
-        if (App.settings) {
-            App.settings.dictionaries.each((dictionary) => {
+        if (dictionaries) {
+            dictionaries.each((dictionary) => {
                 const dictionary_id = dictionary.id;
                 const profile_id = this.profile && this.profile.id;
                 const rules = dictionary.get('rules_and_restrictions');
@@ -719,7 +732,7 @@ const Unit = Backbone.Model.extend({
 
                 if (!is_optional && dictionary_id && profile_id) {
                     //  TODO: we need to call this directly on `dictionary` iterable
-                    const option = App.settings.dictionaries.getDefaultOrFirstAvailableOption(dictionary_id, profile_id);
+                    const option = dictionaries.getDefaultOrFirstAvailableOption(dictionary_id, profile_id);
 
                     if (option && option.id && dictionary.id) {
                         default_options.add({
@@ -742,12 +755,15 @@ const Unit = Backbone.Model.extend({
         }
     },
     validateUnitOptions() {
+        const dictionaries = this.data_store && this.data_store.dictionaries;
         const default_options = this.getDefaultUnitOptions();
         const current_options = this.get('unit_options');
-        const options_to_set = new UnitOptionCollection();
+        const options_to_set = new UnitOptionCollection(null, {
+            dictionaries,
+        });
 
-        if (App.settings) {
-            App.settings.dictionaries.each((dictionary) => {
+        if (dictionaries) {
+            dictionaries.each((dictionary) => {
                 const dictionary_id = dictionary.id;
                 const profile_id = this.profile && this.profile.id;
 
@@ -801,8 +817,10 @@ const Unit = Backbone.Model.extend({
     //  validateUnitOptions we have above
     //  TODO: this needs tests
     validateFillingTypes() {
+        const filling_types = this.data_store && this.data_store.filling_types;
+
         //  Do nothing in case of dummy profile or no profile
-        if (this.isNew() || !this.profile || this.hasDummyProfile() || !App.settings) {
+        if (this.isNew() || !this.profile || this.hasDummyProfile() || !filling_types) {
             return;
         }
 
@@ -811,14 +829,14 @@ const Unit = Backbone.Model.extend({
         const complete_fillings_list = _.union(current_fillings_list, [glazing]);
 
         const available_for_profile_list = _.difference(
-            _.map(App.settings.filling_types.getAvailableForProfile(this.profile.id), item => item.get('name')),
-            _.pluck(App.settings.filling_types.getBaseTypes(), 'title'),
+            _.map(filling_types.getAvailableForProfile(this.profile.id), item => item.get('name')),
+            _.pluck(filling_types.getBaseTypes(), 'title'),
         );
         const invalid_flag = !!complete_fillings_list.find(filling_name => !_.contains(available_for_profile_list, filling_name));
 
         //  TODO: maybe we could do only one call here?
         if (invalid_flag) {
-            this.persist('glazing', getDefaultFillingType(undefined, this.profile.id).fillingName);
+            this.persist('glazing', getDefaultFillingType(undefined, this.profile.id).fillingName, filling_types);
             this.onGlazingUpdate();
         }
     },
@@ -856,6 +874,7 @@ const Unit = Backbone.Model.extend({
         return error_obj;
     },
     setProfile(options) {
+        const profiles = this.data_store && this.data_store.profiles;
         const default_options = {
             validate_filling_types: false,
         };
@@ -864,12 +883,12 @@ const Unit = Backbone.Model.extend({
         this.profile = null;
 
         //  Assign the default profile id to a newly created unit
-        if (App.settings && !this.get('profile_id') && !this.get('profile_name')) {
-            this.set('profile_id', App.settings.profiles.getDefaultProfileId());
+        if (profiles && !this.get('profile_id') && !this.get('profile_name')) {
+            this.set('profile_id', profiles.getDefaultProfileId());
         }
 
-        if (App.settings) {
-            this.profile = App.settings.profiles.getProfileByIdOrDummy(this.get('profile_id'));
+        if (profiles) {
+            this.profile = profiles.getProfileByIdOrDummy(this.get('profile_id'));
         }
 
         //  Store profile name so in case when profile was deleted we can
@@ -888,6 +907,7 @@ const Unit = Backbone.Model.extend({
         return this.profile && this.profile.get('is_dummy');
     },
     hasOnlyDefaultAttributes() {
+        const profiles = this.data_store && this.data_store.profiles;
         let has_only_defaults = true;
 
         _.each(this.toJSON(), (value, key) => {
@@ -896,11 +916,11 @@ const Unit = Backbone.Model.extend({
                 const type = property_source ? property_source.type : undefined;
 
                 if (key === 'profile_id') {
-                    if (App.settings && App.settings.profiles.getDefaultProfileId() !== value) {
+                    if (profiles && profiles.getDefaultProfileId() !== value) {
                         has_only_defaults = false;
                     }
                 } else if (key === 'profile_name') {
-                    const profile = App.settings && App.settings.profiles.getProfileByIdOrDummy(this.get('profile_id'));
+                    const profile = profiles && profiles.getProfileByIdOrDummy(this.get('profile_id'));
 
                     if (profile && profile.get('name') !== value) {
                         has_only_defaults = false;
@@ -916,6 +936,9 @@ const Unit = Backbone.Model.extend({
                     if (JSON.stringify(this.getDefaultUnitOptions().toJSON()) !== JSON.stringify(value)) {
                         has_only_defaults = false;
                     }
+                //  FIXME: this is temporary and should be fixed
+                } else if (key === 'glazing' && value === '') {
+                    //  do nothing
                 } else if (this.getDefaultValue(key, type) !== value) {
                     has_only_defaults = false;
                 }
@@ -925,11 +948,12 @@ const Unit = Backbone.Model.extend({
         return has_only_defaults;
     },
     onGlazingUpdate() {
-        let filling_type;
+        const filling_types = this.data_store && this.data_store.filling_types;
         const glazing = this.get('glazing');
+        let filling_type;
 
-        if (glazing && App.settings) {
-            filling_type = App.settings.filling_types.getByName(glazing);
+        if (glazing && filling_types) {
+            filling_type = filling_types.getByName(glazing);
 
             if (filling_type) {
                 this.setFillingType(
@@ -1079,6 +1103,7 @@ const Unit = Backbone.Model.extend({
         const sections_list = this.getFixedAndOperableSectionsList();
         const parent_project = this.getParentProject();
         const parent_quote = this.getParentQuote();
+        const dictionaries = this.data_store.dictionaries;
 
         let pricing_data = {};
 
@@ -1190,11 +1215,11 @@ const Unit = Backbone.Model.extend({
         }));
 
         if (options.include_options) {
-            const option_dictionaries = App.settings.dictionaries.getAvailableDictionaryNames();
+            const option_dictionaries = dictionaries.getAvailableDictionaryNames();
 
             _.each(option_dictionaries, (dictionary_name) => {
-                const target_dictionary_id = App.settings.dictionaries.getDictionaryIdByName(dictionary_name);
-                const target_dictionary = App.settings.dictionaries.get(target_dictionary_id);
+                const target_dictionary_id = dictionaries.getDictionaryIdByName(dictionary_name);
+                const target_dictionary = dictionaries.get(target_dictionary_id);
                 const current_options = target_dictionary_id ?
                     this.getCurrentUnitOptionsByDictionaryId(target_dictionary_id) : [];
                 let is_restricted = false;
@@ -1807,6 +1832,7 @@ const Unit = Backbone.Model.extend({
         ));
     },
     removeSash(sectionId) {
+        const filling_types = this.data_store.filling_types;
         const glazing_name = this.get('glazing');
         const profile_id = this.profile && this.profile.id;
 
@@ -1816,7 +1842,7 @@ const Unit = Backbone.Model.extend({
                 divider: null,
                 sections: [],
                 position: null,
-            }, getDefaultFillingType(glazing_name, profile_id))
+            }, getDefaultFillingType(glazing_name, profile_id, filling_types))
         ));
     },
     splitSection(sectionId, type) {
@@ -2298,6 +2324,7 @@ const Unit = Backbone.Model.extend({
         });
     },
     clearFrame() {
+        const filling_types = this.data_store && this.data_store.filling_types;
         const rootId = this.get('root_section').id;
         const profile_id = this.profile && this.profile.id;
         const glazing_name = this.get('glazing');
@@ -2309,7 +2336,7 @@ const Unit = Backbone.Model.extend({
                 divider: null,
                 sections: [],
                 position: null,
-            }, getDefaultFillingType(glazing_name, profile_id))
+            }, getDefaultFillingType(glazing_name, profile_id, filling_types))
         ));
     },
     getResizedSections(oldRoot, newRoot) {
@@ -2420,12 +2447,13 @@ const Unit = Backbone.Model.extend({
         return result;
     },
     hasBaseFilling() {
-        let has_base_filling = false;
+        const filling_types = this.data_store && this.data_store.filling_types;
         const sizes = this.getSizes();
+        let has_base_filling = false;
 
-        if (App.settings && App.settings.filling_types) {
+        if (filling_types) {
             _.find(sizes.glasses, (glass) => {
-                const is_base = App.settings.filling_types.find(
+                const is_base = filling_types.find(
                     filling => filling.get('name') === glass.name && filling.get('is_base_type') === true);
 
                 if (is_base) {
@@ -2443,14 +2471,15 @@ const Unit = Backbone.Model.extend({
     //  These values could be used as a base to calculate estimated
     //  cost of options for the unit
     getLinearAndAreaStats() {
+        const fillingTypes = this.data_store && this.data_store.filling_types;
         const operableSashesQuantity = this.getOperableSashesQuantity();
         const mullionsQuantity = this.getMullionsQuantity();
         const cornersQuantity = this.getCornersQuantity();
         const profileWeight = this.profile.get('weight_per_length');
         const fillingWeight = {};
 
-        if (App.settings && App.settings.filling_types) {
-            App.settings.filling_types.each((filling) => {
+        if (fillingTypes) {
+            fillingTypes.each((filling) => {
                 fillingWeight[filling.get('name')] = filling.get('weight_per_area');
             });
         }
@@ -2667,10 +2696,11 @@ const Unit = Backbone.Model.extend({
             //  If there is no filling data provided for this section,
             //  we just show default filling info
             } else {
+                const filling_types = this.data_store && this.data_store.filling_types;
                 const profile_id = this.profile && this.profile.id;
                 const glazing_name = this.get('glazing');
 
-                filling_type = getDefaultFillingType(glazing_name, profile_id);
+                filling_type = getDefaultFillingType(glazing_name, profile_id, filling_types);
                 current_sash.filling.type = filling_type.fillingType;
                 current_sash.filling.name = filling_type.fillingName;
             }
@@ -2790,6 +2820,7 @@ const Unit = Backbone.Model.extend({
         return result;
     },
     getSectionsListWithEstimatedCost() {
+        const filling_types = this.data_store && this.data_store.filling_types;
         const profile_pricing_data = this.profile.getPricingData();
         const sections_list = this.getFixedAndOperableSectionsList();
         const options_grouped_by_scheme = this.getUnitOptionsGroupedByPricingScheme();
@@ -2825,8 +2856,8 @@ const Unit = Backbone.Model.extend({
             section.filling_cost = 0;
 
             //  Add cost increase for fillings
-            if (App.settings && App.settings.filling_types) {
-                const filling_type = App.settings.filling_types.getByName(section.filling_name);
+            if (filling_types) {
+                const filling_type = filling_types.getByName(section.filling_name);
                 const ft_pricing_data = filling_type && filling_type.getPricingDataForProfile(this.profile.id);
 
                 //  If we have correct pricing scheme and data for filling
@@ -3142,10 +3173,11 @@ const Unit = Backbone.Model.extend({
     },
     //  Get list of options that are currently selected for this unit
     getCurrentUnitOptions() {
+        const dictionaries = this.data_store && this.data_store.dictionaries;
         const options_list = this.get('unit_options');
         const result = [];
 
-        if (App.settings) {
+        if (dictionaries) {
             options_list.each((list_item) => {
                 const option_data = {
                     is_restricted: false,
@@ -3153,7 +3185,7 @@ const Unit = Backbone.Model.extend({
                     has_quantity: false,
                     quantity: undefined,
                 };
-                const target_dictionary = App.settings.dictionaries.get(list_item.get('dictionary_id'));
+                const target_dictionary = dictionaries.get(list_item.get('dictionary_id'));
 
                 if (target_dictionary) {
                     const target_entry = target_dictionary.entries.get(list_item.get('dictionary_entry_id'));
@@ -3193,11 +3225,12 @@ const Unit = Backbone.Model.extend({
     //  TODO: why do we need this function in unit.js if we could call it
     //  on dictionary collection?
     getAvailableOptionsByDictionaryId(dictionary_id) {
-        let result = [];
+        const dictionaries = this.data_store && this.data_store.dictionaries;
         const profile_id = this.profile && this.profile.id;
+        let result = [];
 
-        if (App.settings && profile_id) {
-            result = App.settings.dictionaries.getAvailableOptions(dictionary_id, profile_id, true);
+        if (dictionaries && profile_id) {
+            result = dictionaries.getAvailableOptions(dictionary_id, profile_id, true);
         }
 
         return result;
@@ -3218,12 +3251,16 @@ const Unit = Backbone.Model.extend({
         return restriction_applies;
     },
     persistOption(dictionary_id, dictionary_entry_id, quantity) {
+        const dictionaries = this.data_store.dictionaries;
         const current_unit_options = this.get('unit_options');
         //  New collection contains options from all dictionaries except
         //  for the one we're going to update
         const new_unit_options = new UnitOptionCollection(
             current_unit_options.filter(unit_option => unit_option.get('dictionary_id') !== dictionary_id, this),
-            { parse: true },
+            {
+                parse: true,
+                dictionaries,
+            },
         );
 
         if (dictionary_entry_id) {
@@ -3247,9 +3284,10 @@ const Unit = Backbone.Model.extend({
     },
     //  Check if this unit belongs to the quote which is currently active
     isParentQuoteActive() {
+        const current_quote = this.data_store.current_quote;
         let is_active = false;
 
-        if (App.current_quote && this.collection && this.collection.options.quote && this.collection.options.quote === App.current_quote) {
+        if (current_quote && this.collection && this.collection.options.quote && this.collection.options.quote === current_quote) {
             is_active = true;
         }
 
@@ -3512,6 +3550,7 @@ const Unit = Backbone.Model.extend({
         }, {
             from_unit: this,
             parse: true,
+            data_store: this.data_store,
         });
 
         if (parent_quote_multiunits) {
@@ -3550,7 +3589,7 @@ const Unit = Backbone.Model.extend({
 
         return is_valid;
     },
-    //  This is a wrapper for `app.preview`, we need it because we want to
+    //  This is a wrapper for `preview` function, we need it because we want to
     //  cache preview at the model level to improve app rendering times.
     //  The way it works is it assumes that preview should be the same if
     //  none of the model attributes that affect drawing did change

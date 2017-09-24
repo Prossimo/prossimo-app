@@ -24,6 +24,39 @@ export default Backbone.Model.extend({
 
         return defaults;
     },
+    initialize(attributes, options) {
+        this.options = options || {};
+        this.data_store = this.options.data_store || (this.collection && this.collection.options.data_store);
+        //  Was it fully loaded already? This means it was fetched and all
+        //  dependencies (units etc.) were processed correctly. This flag
+        //  could be used to tell if it's good to render any views
+        this._wasLoaded = false;
+
+        if (!this.options.proxy) {
+            this.units = new UnitCollection(null, {
+                quote: this,
+                project: this.collection && this.collection.options.project,
+                data_store: this.data_store,
+            });
+            this.extras = new AccessoryCollection(null, {
+                quote: this,
+                project: this.collection && this.collection.options.project,
+                data_store: this.data_store,
+            });
+            this.multiunits = new MultiunitCollection(null, {
+                quote: this,
+                project: this.collection && this.collection.options.project,
+                data_store: this.data_store,
+            });
+
+            this.on('sync', this.setDependencies, this);
+            this.on('set_active', this.setDependencies, this);
+
+            if (this.collection && this.collection.options.project) {
+                this.listenTo(this.collection.options.project, 'fully_loaded', this.setDependencies);
+            }
+        }
+    },
     getDefaultValue(name, type) {
         let default_value = '';
 
@@ -303,34 +336,5 @@ export default Backbone.Model.extend({
         });
 
         return error_obj;
-    },
-    initialize(attributes, options) {
-        this.options = options || {};
-        //  Was it fully loaded already? This means it was fetched and all
-        //  dependencies (units etc.) were processed correctly. This flag
-        //  could be used to tell if it's good to render any views
-        this._wasLoaded = false;
-
-        if (!this.options.proxy) {
-            this.units = new UnitCollection(null, {
-                quote: this,
-                project: this.collection && this.collection.options.project,
-            });
-            this.extras = new AccessoryCollection(null, {
-                quote: this,
-                project: this.collection && this.collection.options.project,
-            });
-            this.multiunits = new MultiunitCollection(null, {
-                quote: this,
-                project: this.collection && this.collection.options.project,
-            });
-
-            this.on('sync', this.setDependencies, this);
-            this.on('set_active', this.setDependencies, this);
-
-            if (this.collection && this.collection.options.project) {
-                this.listenTo(this.collection.options.project, 'fully_loaded', this.setDependencies);
-            }
-        }
     },
 });

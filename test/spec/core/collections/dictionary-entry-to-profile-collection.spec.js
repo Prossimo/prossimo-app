@@ -1,25 +1,16 @@
-import { assert } from 'chai';
-
-import App from '../../../../src/main';
 import DictionaryEntryProfile from '../../../../src/core/models/inline/dictionary-entry-to-profile';
 import PricingGridCollection from '../../../../src/core/collections/inline/pricing-grid-collection';
 import DictionaryEntryProfileCollection from '../../../../src/core/collections/inline/dictionary-entry-to-profile-collection';
+import DataStore from '../../../../src/core/models/data-store';
 
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
+const PROFILES = [
+    { id: 1, position: 0 },
+    { id: 22, position: 1 },
+    { id: 77, position: 2 },
+    { id: 17, position: 3 },
+];
 
 test('DictionaryEntryProfileCollection tests', () => {
-    before(() => {
-        //  This is here to avoid creating side effects inside tests.
-        //  TODO: we need to get rid of globals eventually
-        App.settings.profiles.reset([
-            { id: 1, position: 0 },
-            { id: 22, position: 1 },
-            { id: 77, position: 2 },
-            { id: 17, position: 3 },
-        ], { parse: true });
-    });
-
     test('DictionaryEntryProfileCollection basic tests', () => {
         const dep_collection = new DictionaryEntryProfileCollection(null, { parse: true });
 
@@ -70,9 +61,13 @@ test('DictionaryEntryProfileCollection tests', () => {
         equal(nonexistent_item, undefined, 'getByProfileId returns undefined if there is no such item');
     });
 
-    //  See global app.settings.profiles at the beginning if this file,
+    //  See global PROFILES at the beginning if this file,
     //  it includes specific order of profiles which we check here
     test('DictionaryEntryProfileCollection sorting', () => {
+        const data_store = new DataStore();
+
+        data_store.profiles.reset(PROFILES);
+
         const dep_collection = new DictionaryEntryProfileCollection([
             {
                 profile_id: 17,
@@ -86,9 +81,12 @@ test('DictionaryEntryProfileCollection tests', () => {
                 profile_id: 22,
                 is_default: true,
             },
-        ], { parse: true });
+        ], {
+            parse: true,
+            profiles: data_store.profiles,
+        });
 
-        assert.sameMembers(
+        deepEqual(
             dep_collection.pluck('profile_id'),
             [1, 22, 17],
             'Collection is properly sorted on creation',
@@ -99,7 +97,7 @@ test('DictionaryEntryProfileCollection tests', () => {
             is_default: false,
         }, { parse: true });
 
-        assert.sameMembers(
+        deepEqual(
             dep_collection.pluck('profile_id'),
             [1, 22, 77, 17],
             'Collection is properly sorted after inserting a new item',

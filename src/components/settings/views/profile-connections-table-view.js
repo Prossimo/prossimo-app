@@ -13,4 +13,9 @@ export default Marionette.CollectionView.extend({
     className: 'profile-connections-table',
     childView: ProfileConnectionsTableItemView,
     emptyView: empty_view,
+    childViewOptions() {
+        return {
+            data_store: this.options.data_store,
+        };
+    },
 });

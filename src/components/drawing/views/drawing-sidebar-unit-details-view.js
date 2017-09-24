@@ -2,7 +2,6 @@ import $ from 'jquery';
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 
-import App from '../../../main';
 import { math, format, convert } from '../../../utils';
 import template from '../templates/drawing-sidebar-unit-details-view.hbs';
 
@@ -36,6 +35,7 @@ export default Marionette.View.extend({
         pagedown: 'goToNextTab',
     },
     initialize() {
+        this.data_store = this.getOption('data_store');
         this.tabs = {
             unit_properties: {
                 title: 'Unit',
@@ -82,7 +82,7 @@ export default Marionette.View.extend({
         return this.model.get('customer_image') || null;
     },
     getUnitProperties() {
-        const project_settings = App.settings.getProjectSettings();
+        const project_settings = this.data_store.getProjectSettings();
         let unit_properties = [];
         let params_source = {};
 
@@ -126,12 +126,13 @@ export default Marionette.View.extend({
         return unit_properties;
     },
     getUnitOptions() {
-        const options_list = App.settings.dictionaries.getAvailableDictionaryNames();
+        const dictionaries = this.data_store.dictionaries;
+        const options_list = dictionaries.getAvailableDictionaryNames();
         let has_hidden_options = false;
         let unit_options = [];
 
         unit_options = _.map(options_list, (dictionary_name) => {
-            const dictionary_id = App.settings.dictionaries.getDictionaryIdByName(dictionary_name);
+            const dictionary_id = dictionaries.getDictionaryIdByName(dictionary_name);
             let current_dictionary_name = dictionary_name;
             let rules_and_restrictions;
             let is_hidden = false;
@@ -140,8 +141,8 @@ export default Marionette.View.extend({
             let current_options = [];
 
             if (dictionary_id) {
-                rules_and_restrictions = App.settings.dictionaries.get(dictionary_id).get('rules_and_restrictions');
-                is_hidden = App.settings.dictionaries.get(dictionary_id).get('is_hidden');
+                rules_and_restrictions = dictionaries.get(dictionary_id).get('rules_and_restrictions');
+                is_hidden = dictionaries.get(dictionary_id).get('is_hidden');
             }
 
             _.each(rules_and_restrictions, (rule) => {
@@ -207,7 +208,7 @@ export default Marionette.View.extend({
     //  TODO: most of this functionality should be moved to unit model, we
     //  should only apply formatters here
     getUnitSashList() {
-        const project_settings = App.settings.getProjectSettings();
+        const project_settings = this.data_store.getProjectSettings();
         const sashes = [];
 
         function getFillingPerimeter(width, height) {

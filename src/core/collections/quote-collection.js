@@ -1,17 +1,23 @@
 import Backbone from 'backbone';
 
-import App from '../../main';
 import Quote from '../models/quote';
 
 export default Backbone.Collection.extend({
     model: Quote,
     reorder_property_name: 'quotes',
     url() {
-        return `${App.settings.get('api_base_path')}/projects/${this.options.project.get('id')}/quotes`;
+        return `${this.data_store.get('api_base_path')}/projects/${this.options.project.get('id')}/quotes`;
     },
     reorder_url() {
-        return `${App.settings.get('api_base_path')
+        return `${this.data_store.get('api_base_path')
             }/projects/${this.options.project.get('id')}/reorder_quotes`;
+    },
+    initialize(models, options) {
+        this.options = options || {};
+        this.proxy_quote = new Quote(null, { proxy: true });
+        this.data_store = this.options.data_store;
+
+        this.listenTo(this.options.project, 'fully_loaded', this.validatePositions);
     },
     parse(data) {
         return data.quotes || data;
@@ -24,11 +30,5 @@ export default Backbone.Collection.extend({
     },
     getDefaultQuote() {
         return this.first();
-    },
-    initialize(models, options) {
-        this.options = options || {};
-        this.proxy_quote = new Quote(null, { proxy: true });
-
-        this.listenTo(this.options.project, 'fully_loaded', this.validatePositions);
     },
 });

@@ -1,6 +1,5 @@
 import Marionette from 'backbone.marionette';
 
-import App from '../../../main';
 import QuoteHeaderView from './quote-header-view';
 import QuoteBodyView from './quote-body-view';
 import QuoteControlsView from './quote-controls-view';
@@ -15,9 +14,12 @@ export default Marionette.View.extend({
         $header_container: '.quote-header-container',
         $table_container: '.quote-table-container',
     },
+    initialize() {
+        this.data_store = this.getOption('data_store');
+    },
     templateContext() {
         return {
-            lead_time: App.current_project.get('lead_time'),
+            lead_time: this.data_store.current_project.get('lead_time'),
         };
     },
     onRender() {
@@ -31,25 +33,27 @@ export default Marionette.View.extend({
         };
 
         this.controls_view = new QuoteControlsView({
-            project: App.current_project,
-            quote: App.current_quote,
+            project: this.data_store.current_project,
+            quote: this.data_store.current_quote,
             quote_mode: 'quote',
             increase_revision_enabled: true,
             set_current_date_enabled: true,
+            data_store: this.data_store,
             display_options,
         });
 
         this.quote_header_view = new QuoteHeaderView({
-            model: App.current_project,
-            quote: App.current_quote,
+            model: this.data_store.current_project,
+            quote: this.data_store.current_quote,
         });
 
         this.quote_body_view = new QuoteBodyView({
-            project: App.current_project,
-            quote: App.current_quote,
-            multiunits: App.current_quote.multiunits,
-            units: App.current_quote.units,
-            extras: App.current_quote.extras,
+            project: this.data_store.current_project,
+            quote: this.data_store.current_quote,
+            multiunits: this.data_store.current_quote.multiunits,
+            units: this.data_store.current_quote.units,
+            extras: this.data_store.current_quote.extras,
+            data_store: this.data_store,
             display_options,
         });
 

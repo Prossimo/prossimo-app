@@ -1,109 +1,95 @@
-import App from '../../../../src/main';
 import Unit from '../../../../src/core/models/unit';
 import UnitOptionCollection from '../../../../src/core/collections/inline/unit-option-collection';
+import Session from '../../../../src/core/models/session';
+import DataStore from '../../../../src/core/models/data-store';
 
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
+const session = new Session({ no_backend: true });
+
+const PROFILES = [
+    { id: 1, position: 0 },
+    { id: 22, position: 1 },
+    { id: 77, position: 2 },
+    { id: 17, position: 3 },
+];
+
+const DICTIONARIES = [
+    {
+        id: 17,
+        position: 0,
+        name: 'Interior Handle',
+        pricing_scheme: 'PER_ITEM',
+        entries: [
+            {
+                id: 14,
+                name: 'White Plastic Handle',
+                dictionary_entry_profiles: [
+                    { profile_id: 17, is_default: false },
+                    { profile_id: 1, is_default: false },
+                    { profile_id: 22, is_default: true },
+                ],
+            },
+            {
+                id: 77,
+                name: 'Red Metal Handle',
+                dictionary_entry_profiles: [
+                    { profile_id: 17, is_default: false },
+                    { profile_id: 1, is_default: true },
+                ],
+            },
+        ],
+    },
+    {
+        id: 32,
+        position: 1,
+        name: 'Exterior Handle',
+        pricing_scheme: 'PER_ITEM',
+        entries: [
+            {
+                id: 53,
+                name: 'Blue Metal Hande - External',
+                dictionary_entry_profiles: [
+                    { profile_id: 17, is_default: false },
+                    { profile_id: 1, is_default: false },
+                ],
+            },
+        ],
+    },
+    {
+        id: 19,
+        position: 2,
+        name: 'External Sill',
+        pricing_scheme: 'PRICING_GRIDS',
+        rules_and_restrictions: ['IS_OPTIONAL'],
+        entries: [
+            {
+                id: 8,
+                name: 'Nice Sill',
+                dictionary_entry_profiles: [
+                    { profile_id: 17, is_default: false },
+                    { profile_id: 1, is_default: false },
+                ],
+            },
+        ],
+    },
+    {
+        id: 38,
+        position: 3,
+        name: 'Opening Restrictor',
+        pricing_scheme: 'PER_OPERABLE_SASH',
+        entries: [
+            {
+                id: 84,
+                name: 'Normal Restrictor',
+                dictionary_entry_profiles: [
+                    { profile_id: 17, is_default: false },
+                    { profile_id: 1, is_default: false },
+                ],
+            },
+        ],
+    },
+];
 
 describe('Unit model', () => {
-    before(() => {
-        //  This is here to avoid creating side effects inside tests.
-        //  TODO: we need to get rid of globals eventually
-        App.settings.profiles.reset([
-            { id: 1, position: 0 },
-            { id: 22, position: 1 },
-            { id: 77, position: 2 },
-            { id: 17, position: 3 },
-        ], { parse: true });
-        App.settings.dictionaries.reset([
-            {
-                id: 17,
-                position: 0,
-                name: 'Interior Handle',
-                pricing_scheme: 'PER_ITEM',
-                entries: [
-                    {
-                        id: 14,
-                        name: 'White Plastic Handle',
-                        dictionary_entry_profiles: [
-                            { profile_id: 17, is_default: false },
-                            { profile_id: 1, is_default: false },
-                            { profile_id: 22, is_default: true },
-                        ],
-                    },
-                    {
-                        id: 77,
-                        name: 'Red Metal Handle',
-                        dictionary_entry_profiles: [
-                            { profile_id: 17, is_default: false },
-                            { profile_id: 1, is_default: true },
-                        ],
-                    },
-                ],
-            },
-            {
-                id: 32,
-                position: 1,
-                name: 'Exterior Handle',
-                pricing_scheme: 'PER_ITEM',
-                entries: [
-                    {
-                        id: 53,
-                        name: 'Blue Metal Hande - External',
-                        dictionary_entry_profiles: [
-                            { profile_id: 17, is_default: false },
-                            { profile_id: 1, is_default: false },
-                        ],
-                    },
-                ],
-            },
-            {
-                id: 19,
-                position: 2,
-                name: 'External Sill',
-                pricing_scheme: 'PRICING_GRIDS',
-                rules_and_restrictions: ['IS_OPTIONAL'],
-                entries: [
-                    {
-                        id: 8,
-                        name: 'Nice Sill',
-                        dictionary_entry_profiles: [
-                            { profile_id: 17, is_default: false },
-                            { profile_id: 1, is_default: false },
-                        ],
-                    },
-                ],
-            },
-            {
-                id: 38,
-                position: 3,
-                name: 'Opening Restrictor',
-                pricing_scheme: 'PER_OPERABLE_SASH',
-                entries: [
-                    {
-                        id: 84,
-                        name: 'Normal Restrictor',
-                        dictionary_entry_profiles: [
-                            { profile_id: 17, is_default: false },
-                            { profile_id: 1, is_default: false },
-                        ],
-                    },
-                ],
-            },
-        ], { parse: true });
-    });
-
-    after(() => {
-        delete App.settings;
-    });
-
-    it('should have a correctly configured environment', () => {
-        expect(App.session.get('no_backend')).to.be.true;
-        expect(App.settings.filling_types.toJSON().length > 0).to.be.true;
-        expect(App.settings.profiles.toJSON().length > 0).to.be.true;
-        expect(App.settings.dictionaries.toJSON().length > 0).to.be.true;
-    });
-
     describe('Basic tests', () => {
         const unit = new Unit();
 
@@ -156,11 +142,16 @@ describe('Unit model', () => {
         });
     });
 
-    //  TODO: this relies on globally available app.settings.profiles
     describe('toJSON function', () => {
+        const data_store = new DataStore(null, { session });
+
+        data_store.profiles.reset(PROFILES);
+        data_store.dictionaries.reset(DICTIONARIES);
+
         const data_to_set = {
             quantity: 15,
             whatever: true,
+            glazing: 'Glass',
             root_section: JSON.stringify({
                 bars: {
                     horizontal: [],
@@ -181,10 +172,10 @@ describe('Unit model', () => {
             }),
         };
 
-        const unit = new Unit(data_to_set, { parse: true });
+        const unit = new Unit(data_to_set, { parse: true, data_store });
 
         it('should be correctly cast to JSON representation', () => {
-            expect(unit.toJSON()).to.contain.any.keys({
+            expect(unit.toJSON()).to.deep.equal({
                 conversion_rate: 0.9,
                 customer_image: '',
                 description: '',
@@ -192,7 +183,7 @@ describe('Unit model', () => {
                 exceptions: '',
                 glazing: 'Glass',
                 glazing_bar_width: 12,
-                height: 0,
+                height: '0',
                 mark: '',
                 notes: '',
                 opening_direction: 'Inward',
@@ -233,6 +224,11 @@ describe('Unit model', () => {
                         dictionary_id: 32,
                         quantity: 1,
                     },
+                    {
+                        dictionary_entry_id: 84,
+                        dictionary_id: 38,
+                        quantity: 1,
+                    },
                 ],
                 uw: 0,
                 width: 0,
@@ -241,6 +237,11 @@ describe('Unit model', () => {
     });
 
     describe('hasOnlyDefaultAttributes function', () => {
+        const data_store = new DataStore(null, { session });
+
+        data_store.profiles.reset(PROFILES, { parse: true });
+        data_store.dictionaries.reset(DICTIONARIES, { parse: true });
+
         it('should have only default attributes upon creation', () => {
             const unit_zero = new Unit({ profile_id: 1 });
 
@@ -256,7 +257,7 @@ describe('Unit model', () => {
         });
 
         it('should not have default attributes after setting "profile_id"', () => {
-            const unit_two = new Unit({ profile_id: 1 });
+            const unit_two = new Unit({ profile_id: 1 }, { data_store });
 
             expect(unit_two.hasOnlyDefaultAttributes()).to.be.ok;
             unit_two.set('profile_id', 17);
@@ -264,7 +265,7 @@ describe('Unit model', () => {
         });
 
         it('should not have default attributes after modifying "root_section"', () => {
-            const unit_three = new Unit({ profile_id: 1 });
+            const unit_three = new Unit({ profile_id: 1 }, { data_store });
 
             expect(unit_three.hasOnlyDefaultAttributes()).to.be.ok;
             unit_three.toggleCircular(unit_three.get('root_section').id, true);
@@ -272,7 +273,7 @@ describe('Unit model', () => {
         });
 
         it('should not have default attributes after resetting unit options', () => {
-            const unit_four = new Unit({ profile_id: 1 });
+            const unit_four = new Unit({ profile_id: 1 }, { data_store });
 
             expect(unit_four.hasOnlyDefaultAttributes()).to.be.ok;
             unit_four.get('unit_options').reset();
@@ -280,13 +281,16 @@ describe('Unit model', () => {
         });
     });
 
-    //  TODO: This relies on globally available app.settings.dictionaries, we need
-    //  to get rid of globals eventually
     describe('getDefaultUnitOptions function', () => {
+        const data_store = new DataStore(null, { session });
+
+        data_store.profiles.reset(PROFILES, { parse: true });
+        data_store.dictionaries.reset(DICTIONARIES, { parse: true });
+
         it('should have correct default unit options if created with profile_id=1', () => {
             const unit = new Unit({
                 profile_id: 1,
-            });
+            }, { data_store });
 
             expect(unit.getDefaultUnitOptions().toJSON()).to.deep.equal([
                 {
@@ -310,7 +314,7 @@ describe('Unit model', () => {
         it('should have correct default unit options if created with profile_id=17', () => {
             const another_unit = new Unit({
                 profile_id: 17,
-            });
+            }, { data_store });
 
             expect(another_unit.getDefaultUnitOptions().toJSON()).to.deep.equal([
                 {
@@ -333,10 +337,15 @@ describe('Unit model', () => {
     });
 
     describe('getCurrentUnitOptions function', () => {
+        const data_store = new DataStore(null, { session });
+
+        data_store.profiles.reset(PROFILES, { parse: true });
+        data_store.dictionaries.reset(DICTIONARIES, { parse: true });
+
         it('should have exactly 3 unit options if created with profile_id=1', () => {
             const unit = new Unit({
                 profile_id: 1,
-            });
+            }, { data_store });
             const current_options = unit.getCurrentUnitOptions();
 
             expect(current_options.length).to.equal(3);
@@ -345,7 +354,7 @@ describe('Unit model', () => {
         it('should have unit option (at position 0) that belongs to a correct dictionary', () => {
             const unit = new Unit({
                 profile_id: 1,
-            });
+            }, { data_store });
             const current_options = unit.getCurrentUnitOptions();
             const first_option = current_options[0];
 
@@ -361,7 +370,7 @@ describe('Unit model', () => {
         it('should have unit option (at position 0) that is serialized to json as expected', () => {
             const unit = new Unit({
                 profile_id: 1,
-            });
+            }, { data_store });
             const current_options = unit.getCurrentUnitOptions();
             const first_option = current_options[0];
 
@@ -391,10 +400,15 @@ describe('Unit model', () => {
     });
 
     describe('getCurrentUnitOptionsByDictionaryId function', () => {
+        const data_store = new DataStore(null, { session });
+
+        data_store.profiles.reset(PROFILES, { parse: true });
+        data_store.dictionaries.reset(DICTIONARIES, { parse: true });
+
         it('should have exactly 1 option from dictionary with id=17', () => {
             const unit = new Unit({
                 profile_id: 1,
-            });
+            }, { data_store });
             const options_by_dictionary = unit.getCurrentUnitOptionsByDictionaryId(17);
 
             expect(options_by_dictionary.length).to.equal(1);
@@ -403,7 +417,7 @@ describe('Unit model', () => {
         it('should return the expected entry for dictionary with id=17', () => {
             const unit = new Unit({
                 profile_id: 1,
-            });
+            }, { data_store });
             const current_options = unit.getCurrentUnitOptions();
             const first_option = current_options[0];
             const options_by_dictionary = unit.getCurrentUnitOptionsByDictionaryId(17);
@@ -413,10 +427,15 @@ describe('Unit model', () => {
     });
 
     describe('getUnitOptionsGroupedByPricingScheme function', () => {
+        const data_store = new DataStore(null, { session });
+
+        data_store.profiles.reset(PROFILES, { parse: true });
+        data_store.dictionaries.reset(DICTIONARIES, { parse: true });
+
         it('should have exactly 2 options inside PER_ITEM group', () => {
             const unit = new Unit({
                 profile_id: 1,
-            });
+            }, { data_store });
             const grouped_by_scheme = unit.getUnitOptionsGroupedByPricingScheme();
 
             expect(grouped_by_scheme.PER_ITEM.length).to.equal(2);
@@ -425,7 +444,7 @@ describe('Unit model', () => {
         it('should have exactly 1 option inside PER_OPERABLE_SASH group', () => {
             const unit = new Unit({
                 profile_id: 1,
-            });
+            }, { data_store });
             const grouped_by_scheme = unit.getUnitOptionsGroupedByPricingScheme();
 
             expect(grouped_by_scheme.PER_OPERABLE_SASH.length).to.equal(1);
@@ -434,7 +453,7 @@ describe('Unit model', () => {
         it('should not have PRICING_GRIDS group', () => {
             const unit = new Unit({
                 profile_id: 1,
-            });
+            }, { data_store });
             const grouped_by_scheme = unit.getUnitOptionsGroupedByPricingScheme();
 
             expect(grouped_by_scheme.PRICING_GRIDS).to.equal(undefined);
@@ -442,10 +461,15 @@ describe('Unit model', () => {
     });
 
     describe('persistOption function', () => {
+        const data_store = new DataStore(null, { session });
+
+        data_store.profiles.reset(PROFILES, { parse: true });
+        data_store.dictionaries.reset(DICTIONARIES, { parse: true });
+
         it('should have correct options upon creation', () => {
             const unit = new Unit({
                 profile_id: 1,
-            });
+            }, { data_store });
             const current_options = unit.getCurrentUnitOptions();
 
             //  getCurrentUnitOptions returns array with 3 elements
@@ -459,7 +483,7 @@ describe('Unit model', () => {
         it('should correctly persist same Red Metal Handle we already have', () => {
             const unit = new Unit({
                 profile_id: 1,
-            });
+            }, { data_store });
             unit.persistOption(17, 77);
             const current_options = unit.getCurrentUnitOptions();
 
@@ -472,7 +496,7 @@ describe('Unit model', () => {
         it('should correctly persist some different handle, and it should replace the existing one', () => {
             const unit = new Unit({
                 profile_id: 1,
-            });
+            }, { data_store });
             unit.persistOption(17, 14);
             const current_options = unit.getCurrentUnitOptions();
 
@@ -487,7 +511,7 @@ describe('Unit model', () => {
         it('should correctly persist option quantity without modifying the option', () => {
             const unit = new Unit({
                 profile_id: 1,
-            });
+            }, { data_store });
             unit.persistOption(17, 14);
             unit.persistOption(17, 14, 5);
             const current_options = unit.getCurrentUnitOptions();
@@ -503,7 +527,7 @@ describe('Unit model', () => {
         it('should correctly remove option', () => {
             const unit = new Unit({
                 profile_id: 1,
-            });
+            }, { data_store });
             unit.persistOption(17, false);
             const current_options = unit.getCurrentUnitOptions();
 

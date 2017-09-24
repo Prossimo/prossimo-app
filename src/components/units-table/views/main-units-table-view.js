@@ -1,6 +1,5 @@
 import Marionette from 'backbone.marionette';
 
-import App from '../../../main';
 import UnitsTableView from '../../../core/views/units-table-view';
 import template from '../templates/main-units-table-view.hbs';
 
@@ -11,12 +10,16 @@ export default Marionette.View.extend({
     ui: {
         $wrapper: '.units-table-wrapper',
     },
+    initialize() {
+        this.data_store = this.getOption('data_store');
+    },
     onRender() {
         this.units_table_view = new UnitsTableView({
-            collection: App.current_quote.units,
-            extras: App.current_quote.extras,
-            multiunits: App.current_quote.multiunits,
+            collection: this.data_store.current_quote.units,
+            extras: this.data_store.current_quote.extras,
+            multiunits: this.data_store.current_quote.multiunits,
             parent_view: this,
+            data_store: this.data_store,
         });
 
         this.ui.$wrapper.append(this.units_table_view.render().el);

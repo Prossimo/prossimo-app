@@ -14,6 +14,8 @@ export default Marionette.CompositeView.extend({
     childViewContainer: '.entries-container',
     childViewOptions() {
         return {
+            dialogs: this.options.dialogs,
+            data_store: this.options.data_store,
             parent_view: this,
         };
     },
@@ -36,6 +38,14 @@ export default Marionette.CompositeView.extend({
         'command+shift+z': 'onRedo',
         'ctrl+y': 'onRedo',
         'command+y': 'onRedo',
+    },
+    initialize() {
+        this.undo_manager = new UndoManager({
+            register: this.collection,
+            track: true,
+        });
+
+        this.listenTo(this.collection, 'remove', this.onRemoveEntry);
     },
     addNewEntry(e) {
         const new_position = this.collection.length ? this.collection.getMaxPosition() + 1 : 0;
@@ -68,14 +78,6 @@ export default Marionette.CompositeView.extend({
         return {
             entries_length: this.collection.length,
         };
-    },
-    initialize() {
-        this.undo_manager = new UndoManager({
-            register: this.collection,
-            track: true,
-        });
-
-        this.listenTo(this.collection, 'remove', this.onRemoveEntry);
     },
     onRender() {
         const self = this;

@@ -2,13 +2,13 @@ import Backbone from 'backbone';
 import _ from 'underscore';
 import $ from 'jquery';
 
-import App from '../../main';
 import { globalChannel } from '../../utils/radio';
 import ProfileCollection from '../collections/profile-collection';
 import FillingTypeCollection from '../collections/filling-type-collection';
 import OptionsDictionaryCollection from '../collections/options-dictionary-collection';
+import ProjectCollection from '../collections/project-collection';
 
-const SETTINGS_PROPERTIES = [
+const data_store_PROPERTIES = [
     { name: 'api_base_path', title: 'API Base Path', type: 'string' },
     { name: 'pdf_api_base_path', title: 'PDF API Base Path', type: 'string' },
 ];
@@ -17,7 +17,7 @@ export default Backbone.Model.extend({
     defaults() {
         const defaults = {};
 
-        _.each(SETTINGS_PROPERTIES, (item) => {
+        _.each(data_store_PROPERTIES, (item) => {
             defaults[item.name] = this.getDefaultValue(item.name, item.type);
         });
 
@@ -50,10 +50,10 @@ export default Backbone.Model.extend({
         const base_url = this.get('pdf_api_base_path');
         const replacement_table = {
             ':type': current_quote_type,
-            ':quote_id': String(App.current_quote.getNumber()),
-            ':project_name': encodeURIComponent(App.current_project.get('project_name')),
-            ':quote_name': encodeURIComponent(App.current_quote.get('name')),
-            ':revision': String(App.current_quote.get('revision')),
+            ':quote_id': String(this.current_quote.getNumber()),
+            ':project_name': encodeURIComponent(this.current_project.get('project_name')),
+            ':quote_name': encodeURIComponent(this.current_quote.get('name')),
+            ':revision': String(this.current_quote.get('revision')),
             ':token': window.localStorage.getItem('authToken'),
         };
         let url = '/:type/:quote_id/:project_name/:quote_name/:revision/:token';
@@ -62,29 +62,41 @@ export default Backbone.Model.extend({
 
         return base_url + url;
     },
-    initialize() {
-        this.listenTo(globalChannel, 'app:start', () => {
-            this.profiles = new ProfileCollection(null, {
-                api_base_path: this.get('api_base_path'),
-            });
+    initialize(attributes, options) {
+        this.options = options || {};
 
-            this.filling_types = new FillingTypeCollection(null, {
-                api_base_path: this.get('api_base_path'),
-                append_base_types: true,
-            });
+        this.current_project = undefined;
+        this.current_quote = undefined;
+        this.session = this.options.session;
 
-            this.dictionaries = new OptionsDictionaryCollection(null, {
-                api_base_path: this.get('api_base_path'),
-            });
+        this.profiles = new ProfileCollection(null, {
+            api_base_path: this.get('api_base_path'),
+            data_store: this,
+        });
 
-            this.project_settings = null;
-            this._dependencies_changed = {};
+        this.filling_types = new FillingTypeCollection(null, {
+            api_base_path: this.get('api_base_path'),
+            append_base_types: true,
+            data_store: this,
+        });
 
-            //  When any dictionary or dictionary entry is changed, we remember
-            //  this fact to trigger an event later, when we switch screens
-            this.listenTo(this.dictionaries, 'change entries_change', () => {
-                this._dependencies_changed = _.extend({}, this._dependencies_changed, { dictionaries: true });
-            });
+        this.dictionaries = new OptionsDictionaryCollection(null, {
+            api_base_path: this.get('api_base_path'),
+            data_store: this,
+        });
+
+        this.projects = new ProjectCollection(null, {
+            api_base_path: this.get('api_base_path'),
+            data_store: this,
+        });
+
+        this.project_settings = null;
+        this._dependencies_changed = {};
+
+        //  When any dictionary or dictionary entry is changed, we remember
+        //  this fact to trigger an event later, when we switch screens
+        this.listenTo(this.dictionaries, 'change entries_change', () => {
+            this._dependencies_changed = _.extend({}, this._dependencies_changed, { dictionaries: true });
         });
 
         this.listenTo(globalChannel, 'auth:initial_login', this.onInitialLogin);
@@ -106,16 +118,17 @@ export default Backbone.Model.extend({
     },
     //  TODO: why don't we call this directly from the current project?
     setProjectSettings() {
-        this.project_settings = App.current_project.settings;
+        this.project_settings = this.current_project.settings;
     },
     getProjectSettings() {
         return this.project_settings ? this.project_settings : null;
     },
     onInitialLogin() {
+        const router = this.options.app && this.options.app.router;
         this.fetchData();
 
         //  If we have a router, we want to monitor all changes
-        this.listenTo(App.router, 'route', this.onScreenChange);
+        this.listenTo(router, 'route', this.onScreenChange);
     },
     //  We use deferred to wait for 3 requests (profiles, fillings, options)
     //  to finish before triggering event (and starting to load projects)
@@ -124,6 +137,7 @@ export default Backbone.Model.extend({
         const d2 = $.Deferred();
         const d3 = $.Deferred();
 
+        //  TODO: rename events here
         globalChannel.trigger('settings:fetch_data:start');
 
         $.when(d1, d2, d3).done(() => {
@@ -169,10 +183,10 @@ export default Backbone.Model.extend({
         });
     },
     getNameTitleTypeHash(names) {
-        const selected_names = names || _.pluck(SETTINGS_PROPERTIES, 'name');
+        const selected_names = names || _.pluck(data_store_PROPERTIES, 'name');
         const name_title_type_hash = {};
 
-        _.each(SETTINGS_PROPERTIES, (item) => {
+        _.each(data_store_PROPERTIES, (item) => {
             if (_.indexOf(selected_names, item.name) !== -1) {
                 name_title_type_hash[item.name] = { title: item.title, type: item.type };
             }

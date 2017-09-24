@@ -2,7 +2,6 @@ import $ from 'jquery';
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 
-import App from '../../../main';
 import BaseInputView from '../../../core/views/base/base-input-view';
 import ProfileConnectionsTableView from './profile-connections-table-view';
 import template from '../templates/options-dictionary-entries-item-view.hbs';
@@ -27,24 +26,54 @@ export default Marionette.View.extend({
         'click @ui.$remove': 'removeEntry',
         'click @ui.$expand': 'expandEntry',
     },
+    initialize() {
+        this.data_store = this.getOption('data_store');
+        this.dialogs = this.getOption('dialogs');
+        this.is_expanded = false;
+        this.name_input_view = new BaseInputView({
+            model: this.model,
+            param: 'name',
+            input_type: 'text',
+            placeholder: 'New Entry',
+        });
+
+        this.supplier_name_input_view = new BaseInputView({
+            model: this.model,
+            param: 'supplier_name',
+            input_type: 'text',
+            placeholder: '',
+        });
+
+        this.profile_connections_table_view = new ProfileConnectionsTableView({
+            collection: this.model.get('dictionary_entry_profiles'),
+            data_store: this.data_store,
+        });
+
+        this.listenTo(this.model, 'change:dictionary_entry_profiles change:namechange:supplier_name', () => {
+            this.render();
+            this.name_input_view.delegateEvents();
+            this.supplier_name_input_view.delegateEvents();
+        });
+    },
     editProfiles() {
-        App.dialogs.showDialog('items-profiles-table', {
+        this.dialogs.showDialog('items-profiles-table', {
             collection_title: this.model.collection.options.dictionary.get('name'),
             active_item: this.model,
             collection: this.model.collection,
-            profiles: App.settings.profiles,
+            profiles: this.data_store.profiles,
             filter_condition(item) {
                 return item.get('name') && !item.hasOnlyDefaultAttributes();
             },
         });
     },
     getProfilesNamesList() {
+        const profiles = this.data_store.profiles;
         const profiles_ids = this.model.get('dictionary_entry_profiles').pluck('profile_id');
         let profiles_names_list = [];
 
         if (profiles_ids && profiles_ids.length) {
-            if (App.settings) {
-                profiles_names_list = App.settings.profiles.getProfileNamesByIds(profiles_ids.sort());
+            if (profiles) {
+                profiles_names_list = profiles.getProfileNamesByIds(profiles_ids.sort());
             } else {
                 profiles_names_list = profiles_ids.sort();
             }
@@ -119,31 +148,5 @@ export default Marionette.View.extend({
 
         this.ui.$profiles_list_container.off();
         this.ui.$profiles_list_container.tooltip('destroy');
-    },
-    initialize() {
-        this.is_expanded = false;
-        this.name_input_view = new BaseInputView({
-            model: this.model,
-            param: 'name',
-            input_type: 'text',
-            placeholder: 'New Entry',
-        });
-
-        this.supplier_name_input_view = new BaseInputView({
-            model: this.model,
-            param: 'supplier_name',
-            input_type: 'text',
-            placeholder: '',
-        });
-
-        this.profile_connections_table_view = new ProfileConnectionsTableView({
-            collection: this.model.get('dictionary_entry_profiles'),
-        });
-
-        this.listenTo(this.model, 'change:dictionary_entry_profiles change:namechange:supplier_name', () => {
-            this.render();
-            this.name_input_view.delegateEvents();
-            this.supplier_name_input_view.delegateEvents();
-        });
     },
 });

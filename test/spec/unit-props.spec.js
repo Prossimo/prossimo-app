@@ -1,12 +1,7 @@
-import _ from 'underscore';
-
-import App from '../../src/main';
 import { convert as c } from '../../src/utils';
 import Unit from '../../src/core/models/unit';
 import Profile from '../../src/core/models/profile';
-
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
+import DataStore from '../../src/core/models/data-store';
 
 describe('Unit model tests: ', () => {
     describe('unit basic tests', () => {
@@ -859,33 +854,14 @@ describe('Unit model tests: ', () => {
     //  Unit weight estimates
     //  ------------------------------------------------------------------------
     describe('Unit weight calculations function', () => {
-        const createFilling = (type, name, weight) => {
-            const attrs = {
-                type,
-                name,
-                weight_per_area: weight,
-            };
-
-            return {
-                get: attr => attrs[attr],
-            };
-        };
-
-        // create default values
-        const unitSizes = {
-            width: c.mm_to_inches(800),
-            height: c.mm_to_inches(1650),
-        };
-        const fillings = _([
-            createFilling('glass', 'Test glass', 0.2),
-            createFilling('recessed', 'Test recessed', 0.8),
-        ]);
-        const profileWeight = 1.5;
+        const data_store = new DataStore();
 
         // set values
         const unit = new Unit({
-            width: unitSizes.width,
-            height: unitSizes.height,
+            width: c.mm_to_inches(800),
+            height: c.mm_to_inches(1650),
+        }, {
+            data_store,
         });
 
         unit.profile = new Profile({
@@ -894,11 +870,21 @@ describe('Unit model tests: ', () => {
             sash_frame_width: 82,
             sash_frame_overlap: 34,
             sash_mullion_overlap: 34,
-            weight_per_length: profileWeight,
+            weight_per_length: 1.5,
         });
-        App.settings = {
-            filling_types: fillings,
-        };
+
+        data_store.filling_types.reset([
+            {
+                name: 'Test Glass',
+                type: 'glass',
+                weight_per_area: 0.2,
+            },
+            {
+                name: 'Test Recessed',
+                type: 'recessed',
+                weight_per_area: 0.8,
+            },
+        ]);
 
         // spit sections and add sash
         const root_id = unit.get('root_section').id;
@@ -919,7 +905,7 @@ describe('Unit model tests: ', () => {
         let stats;
 
         // run tests for different filling types
-        fillings.each((filling) => {
+        data_store.filling_types.each((filling) => {
             // set filling type and get unit stats
             unit.setFillingType(unit.get('root_section').id, filling.get('type'), filling.get('name'));
             stats = unit.getLinearAndAreaStats();
@@ -933,14 +919,14 @@ describe('Unit model tests: ', () => {
         });
 
         //  Now set different fillings for top and bottom sashes
-        unit.setFillingType(top_section.id, fillings._wrapped[0].get('type'), fillings._wrapped[0].get('name'));
-        unit.setFillingType(bottom_section.id, fillings._wrapped[1].get('type'), fillings._wrapped[1].get('name'));
+        unit.setFillingType(top_section.id, data_store.filling_types.at(0).get('type'), data_store.filling_types.at(0).get('name'));
+        unit.setFillingType(bottom_section.id, data_store.filling_types.at(1).get('type'), data_store.filling_types.at(1).get('name'));
 
         stats = unit.getLinearAndAreaStats();
 
         //  Check that profile weight is calculated properly
         equal(
-            roundWeight((stats.profile_total.linear / 1000) * profileWeight),
+            roundWeight((stats.profile_total.linear / 1000) * unit.profile.get('weight_per_length')),
             roundWeight(stats.profile_total.weight),
             'Profile weight calculation',
         );
@@ -949,8 +935,6 @@ describe('Unit model tests: ', () => {
         equal(stats.profile_total.weight.toFixed(3), '17.370', 'Profile weight matches pre-calculated value');
         equal(stats.glasses.weight.toFixed(3), '0.182', 'Glasses weight matches pre-calculated value');
         equal(stats.unit_total.weight.toFixed(3), `${0.182 + 17.370}`, 'Total unit weight matches pre-calculated value');
-
-        delete App.settings;
     });
 
     describe('Unit getOperableSashesQuantity function', () => {

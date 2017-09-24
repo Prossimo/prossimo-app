@@ -1,13 +1,9 @@
 import clone from 'clone';
 
-import App from '../../../../src/main';
 import DictionaryEntryProfile from '../../../../src/core/models/inline/dictionary-entry-to-profile';
 import PricingGridCollection from '../../../../src/core/collections/inline/pricing-grid-collection';
 import PricingEquationParamsCollection from '../../../../src/core/collections/inline/pricing-equation-params-collection';
 import OptionsDictionary from '../../../../src/core/models/options-dictionary';
-
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
 
 test('DictionaryEntryProfile tests', () => {
     test('DictionaryEntryProfile model basic tests', () => {

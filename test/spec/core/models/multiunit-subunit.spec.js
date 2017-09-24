@@ -1,8 +1,4 @@
-import App from '../../../../src/main';
 import MultiunitSubunit from '../../../../src/core/models/inline/multiunit-subunit';
-
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
 
 test('MultiunitSubunit test', () => {
     test('MultiunitSubunit model basic tests', () => {

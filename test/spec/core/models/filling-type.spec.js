@@ -1,18 +1,14 @@
 import _ from 'underscore';
-import { assert } from 'chai';
 
-import App from '../../../../src/main';
 import FillingType from '../../../../src/core/models/filling-type';
 import FillingTypeProfileCollection from '../../../../src/core/collections/inline/filling-type-to-profile-collection';
-
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
+import DataStore from '../../../../src/core/models/data-store';
 
 test('Filling type tests', () => {
-    before(() => {
-        //  This is here to avoid creating side effects inside tests.
-        //  TODO: we need to get rid of globals eventually
-        App.settings.profiles.reset([
+    test('filling type model basic tests', () => {
+        const data_store = new DataStore();
+
+        data_store.profiles.reset([
             { id: 1, position: 0 },
             { id: 2, position: 1 },
             { id: 3, position: 2 },
@@ -20,9 +16,7 @@ test('Filling type tests', () => {
             { id: 77, position: 4 },
             { id: 17, position: 5 },
         ], { parse: true });
-    });
 
-    test('filling type model basic tests', () => {
         const filling = new FillingType();
 
         equal(filling.get('type'), 'glass', 'Filling gets "glass" type by default');
@@ -50,9 +44,12 @@ test('Filling type tests', () => {
                     is_default: true,
                 },
             ],
-        }, { parse: true });
+        }, {
+            parse: true,
+            data_store,
+        });
 
-        assert.sameMembers(filling_two.get('filling_type_profiles').pluck('profile_id'),
+        deepEqual(filling_two.get('filling_type_profiles').pluck('profile_id'),
             [1, 2, 3],
             'filling_type_profiles should be sorted on parse',
         );

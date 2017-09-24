@@ -1,7 +1,6 @@
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 
-import App from '../../../main';
 import { format } from '../../../utils';
 import QuoteMultiunitsTableView from './quote-multiunits-table-view';
 import QuoteUnitsTableView from './quote-units-table-view';
@@ -26,8 +25,9 @@ export default Marionette.View.extend({
         };
 
         this.display_options = _.extend({}, default_display_options, options.display_options);
+        this.data_store = this.getOption('data_store');
 
-        this.listenTo(App.current_project.settings, 'change', this.render);
+        this.listenTo(this.data_store.current_project.settings, 'change', this.render);
         this.listenTo(this.options.multiunits, 'change', this.render);
         this.listenTo(this.options.units, 'change', this.render);
         this.listenTo(this.options.extras, 'change', this.render);
@@ -70,6 +70,7 @@ export default Marionette.View.extend({
                 units: this.options.units,
                 collection: this.options.multiunits,
                 display_options: this.display_options,
+                data_store: this.data_store,
             });
 
             this.ui.$quote_table_body.append(this.quote_multiunits_table_view.render().el);
@@ -82,6 +83,7 @@ export default Marionette.View.extend({
             collection: this.options.units,
             filter: child => !child.isSubunit(),
             display_options: this.display_options,
+            data_store: this.data_store,
         });
 
         this.ui.$quote_table_body.append(this.quote_units_table_view.render().el);

@@ -1,19 +1,32 @@
 import Backbone from 'backbone';
 import _ from 'underscore';
 
-import App from '../../main';
 import OptionsDictionaryEntry from '../models/options-dictionary-entry';
 
 export default Backbone.Collection.extend({
     model: OptionsDictionaryEntry,
     reorder_property_name: 'entries',
     url() {
-        return `${App.settings.get('api_base_path')}/dictionaries/${
-            this.options.dictionary.get('id')}/entries`;
+        const api_base_path = this.data_store && this.data_store.get('api_base_path');
+        const dictionary_id = this.options.dictionary && this.options.dictionary.get('id');
+
+        return `${api_base_path}/dictionaries/${dictionary_id}/entries`;
     },
     reorder_url() {
-        return `${App.settings.get('api_base_path')}/dictionaries/${
-            this.options.dictionary.get('id')}/reorder_entries`;
+        const api_base_path = this.data_store && this.data_store.get('api_base_path');
+        const dictionary_id = this.options.dictionary && this.options.dictionary.get('id');
+
+        return `${api_base_path}/dictionaries/${dictionary_id}/reorder_entries`;
+    },
+    initialize(models, options) {
+        this.options = options || {};
+        this.proxy_entry = new OptionsDictionaryEntry(null, { proxy: true });
+        this.data_store = this.options.data_store;
+
+        this.once('fully_loaded', () => {
+            this.validatePositions();
+            this.validatePerProfileDefaults();
+        }, this);
     },
     parse(data) {
         //  We do this check to avoid confusion with native JS
@@ -101,14 +114,5 @@ export default Backbone.Collection.extend({
             //  Set old_item as available but not default for profile_id
             old_item.setProfileAvailability(profile_id, true, false);
         }
-    },
-    initialize(models, options) {
-        this.options = options || {};
-        this.proxy_entry = new OptionsDictionaryEntry(null, { proxy: true });
-
-        this.once('fully_loaded', () => {
-            this.validatePositions();
-            this.validatePerProfileDefaults();
-        }, this);
     },
 });

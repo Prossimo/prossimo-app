@@ -1,7 +1,6 @@
 import Backbone from 'backbone';
 import _ from 'underscore';
 
-import App from '../../main';
 import Schema from '../../schema';
 import { object, convert, multiunit } from '../../utils';
 import Unit from './unit';
@@ -43,6 +42,8 @@ export default Backbone.Model.extend({
         this._cache = {};
 
         if (!this.options.proxy) {
+            this.data_store = this.options.data_store || (this.collection && this.collection.options.data_store);
+
             this.on('add', this.updateSubunitsMetadata);
 
             this.listenTo(this.get('multiunit_subunits'), 'change update reset', () => {
@@ -219,10 +220,11 @@ export default Backbone.Model.extend({
     },
     //  Check if this unit belongs to the quote which is currently active
     isParentQuoteActive() {
+        const current_quote = this.data_store.current_quote;
         const parent_quote = this.getParentQuote();
         let is_active = false;
 
-        if (App.current_quote && parent_quote && parent_quote === App.current_quote) {
+        if (current_quote && parent_quote && parent_quote === current_quote) {
             is_active = true;
         }
 
@@ -1046,18 +1048,15 @@ export default Backbone.Model.extend({
         };
 
         if (!currentOptions.connects[1]) {
-            newChildSubunit = new Unit({
-                position: parentSubunit.collection.getMaxPosition() + 1,
-            });
-            parentSubunit.collection.add(newChildSubunit);
-            newChildSubunit.persist({
+            parentSubunit.collection.create({
                 width: parentSubunit.get('width'),
                 height: parentSubunit.get('height'),
+                position: parentSubunit.collection.getMaxPosition() + 1,
             }, {
-                success() {
-                    currentOptions.connects[1] = newChildSubunit.id;
+                success(model) {
+                    currentOptions.connects[1] = model.id;
                     pushConnector();
-                    self.addSubunit(newChildSubunit);
+                    self.addSubunit(model);
                 },
             });
         } else {

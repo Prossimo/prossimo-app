@@ -60,6 +60,15 @@ export default Backbone.Model.extend({
     getNameAttribute() {
         return 'name';
     },
+    initialize(attributes, options) {
+        this.options = options || {};
+        this.data_store = this.options.data_store || (this.collection && this.collection.options.data_store);
+
+        //  Any change to `filling_type_profiles` should be persisted
+        this.listenTo(this.get('filling_type_profiles'), 'change update', () => {
+            this.persist('filling_type_profiles', this.get('filling_type_profiles'));
+        });
+    },
     getAttributeType(attribute_name) {
         const name_title_hash = this.getNameTitleTypeHash();
         const target_attribute = _.findWhere(name_title_hash, { name: attribute_name });
@@ -79,6 +88,7 @@ export default Backbone.Model.extend({
             pricing_scheme: this.getPossiblePricingSchemes()[0],
             filling_type_profiles: new FillingTypeProfileCollection(null, {
                 parent_filling_type: this,
+                profiles: this.data_store && this.data_store.profiles,
             }),
         };
 
@@ -101,7 +111,8 @@ export default Backbone.Model.extend({
 
         return Backbone.sync.call(this, method, model, current_options);
     },
-    parse(data) {
+    parse(data, options) {
+        const data_store = options.data_store || (options.collection && options.collection.options.data_store);
         const filling_type_data = data && data.filling_type ? data.filling_type : data;
         const parsed_data = Schema.parseAccordingToSchema(filling_type_data, this.schema);
 
@@ -109,6 +120,7 @@ export default Backbone.Model.extend({
             parsed_data.filling_type_profiles = new FillingTypeProfileCollection(
                 object.extractObjectOrNull(parsed_data.filling_type_profiles),
                 {
+                    profiles: data_store && data_store.profiles,
                     parent_filling_type: this,
                     parse: true,
                 },
@@ -294,13 +306,5 @@ export default Backbone.Model.extend({
         }
 
         return pricing_data;
-    },
-    initialize(attributes, options) {
-        this.options = options || {};
-
-        //  Any change to `filling_type_profiles` should be persisted
-        this.listenTo(this.get('filling_type_profiles'), 'change update', () => {
-            this.persist('filling_type_profiles', this.get('filling_type_profiles'));
-        });
     },
 });

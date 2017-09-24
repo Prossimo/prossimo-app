@@ -3,7 +3,6 @@ import _ from 'underscore';
 import $ from 'jquery';
 
 import User from './user';
-import App from '../../main';
 import { globalChannel } from '../../utils/radio';
 
 //  Monkey-patch Backbone.Sync to include auth token with every request
@@ -48,9 +47,10 @@ export default Backbone.Model.extend({
         is_logged_in: false,
         token_expired: false,
     },
-    initialize() {
+    initialize(attributes, options) {
         const self = this;
 
+        this.options = options || {};
         this.user = new User();
 
         this.listenTo(globalChannel, 'auth:error', this.onAuthError);
@@ -70,19 +70,27 @@ export default Backbone.Model.extend({
         this.user.reset();
     },
     onAuthError() {
+        const dialogs = this.options.app && this.options.app.dialogs;
         window.localStorage.removeItem('authToken');
 
         if (this.get('is_initial') === false) {
             this.set('token_expired', true);
         }
 
-        App.dialogs.showDialog('login');
+        dialogs.showDialog('login', {
+            session: this,
+        });
     },
     onAuthLogout() {
-        App.dialogs.showDialog('login');
+        const dialogs = this.options.app && this.options.app.dialogs;
+
+        dialogs.showDialog('login', {
+            session: this,
+        });
     },
     // Contact server to see if it thinks that user is logged in
     checkAuth(callback) {
+        const data_store = this.options.app && this.options.app.data_store;
         const self = this;
         const d = $.Deferred();
 
@@ -94,7 +102,7 @@ export default Backbone.Model.extend({
         }
 
         this.fetch({
-            url: `${App.settings.get('api_base_path')}/users/current`,
+            url: `${data_store.get('api_base_path')}/users/current`,
             success(model, response) {
                 if (!response.error && response.user) {
                     self.updateSessionUser(response.user);
@@ -143,10 +151,11 @@ export default Backbone.Model.extend({
         });
     },
     postAuth(opts, callback) {
+        const data_store = this.options.app && this.options.app.data_store;
         const self = this;
 
         $.ajax({
-            url: `${App.settings.get('api_base_path')}/login_check`,
+            url: `${data_store.get('api_base_path')}/login_check`,
             contentType: 'application/json',
             dataType: 'json',
             type: 'POST',

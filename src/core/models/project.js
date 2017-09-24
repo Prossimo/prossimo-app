@@ -1,7 +1,6 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
 
-import App from '../../main';
 import Schema from '../../schema';
 import QuoteCollection from '../collections/quote-collection';
 import ProjectFileCollection from '../collections/project-file-collection';
@@ -48,6 +47,37 @@ export default Backbone.Model.extend({
         }
 
         return default_value;
+    },
+    initialize(attributes, options) {
+        this.options = options || {};
+        //  Was it fetched from the server already? This flag could be used
+        //  to tell whether we need to request data from server
+        this._wasFetched = false;
+        //  Was it fully loaded already? This means it was fetched and all
+        //  dependencies (files etc.) were processed correctly. This flag
+        //  could be used to tell if it's good to render any views
+        this._wasLoaded = false;
+
+        if (!this.options.proxy) {
+            this.data_store = this.options.data_store || (this.collection && this.collection.options.data_store);
+
+            this.files = new ProjectFileCollection(null, {
+                project: this,
+                data_store: this.data_store,
+            });
+            this.settings = new ProjectSettings(null, {
+                project: this,
+                data_store: this.data_store,
+            });
+            this.quotes = new QuoteCollection(null, {
+                project: this,
+                data_store: this.data_store,
+            });
+
+            this.on('sync', this.setDependencies, this);
+            this.on('set_active', this.setDependencies, this);
+            this.listenTo(this.settings, 'change', this.updateSettings);
+        }
     },
     getNameAttribute() {
         return 'project_name';
@@ -129,32 +159,13 @@ export default Backbone.Model.extend({
     getUuidsForFiles() {
         return this.get('files') || (this.files && this.files.getUuids());
     },
-    initialize(attributes, options) {
-        this.options = options || {};
-        //  Was it fetched from the server already? This flag could be used
-        //  to tell whether we need to request data from server
-        this._wasFetched = false;
-        //  Was it fully loaded already? This means it was fetched and all
-        //  dependencies (files etc.) were processed correctly. This flag
-        //  could be used to tell if it's good to render any views
-        this._wasLoaded = false;
-
-        if (!this.options.proxy) {
-            this.files = new ProjectFileCollection(null, { project: this });
-            this.settings = new ProjectSettings(null, { project: this });
-            this.quotes = new QuoteCollection(null, { project: this });
-
-            this.on('sync', this.setDependencies, this);
-            this.on('set_active', this.setDependencies, this);
-            this.listenTo(this.settings, 'change', this.updateSettings);
-        }
-    },
     setDependencies(model, response, options) {
+        const no_backend = this.data_store && this.data_store.session && this.data_store.session.get('no_backend') === true;
         let changed_flag = false;
 
         //  If response is empty or there was an error
         if (
-            (!response && App.session.get('no_backend') !== true) ||
+            (!response && !no_backend) ||
             (options && options.xhr && options.xhr.status && options.xhr.status !== 200)
         ) {
             return;
@@ -237,7 +248,7 @@ export default Backbone.Model.extend({
         }
 
         const quote_mode = options.quote_mode || 'current';
-        const current_quote = App.current_quote;
+        const current_quote = this.data_store.current_quote;
         const default_quote = this.quotes.getDefaultQuote();
         let quotes_units_data = [];
 

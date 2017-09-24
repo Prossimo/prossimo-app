@@ -1,7 +1,6 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
 
-import App from '../../main';
 import Accessory from '../models/accessory';
 
 //  Helper function. Get total price for the subset of collection
@@ -19,18 +18,19 @@ export default Backbone.Collection.extend({
     model: Accessory,
     reorder_property_name: 'accessories',
     url() {
-        return `${App.settings.get('api_base_path')
+        return `${this.data_store && this.data_store.get('api_base_path')
             }/projects/${this.options.project.get('id')
             }/quotes/${this.options.quote.get('id')}/accessories`;
     },
     reorder_url() {
-        return `${App.settings.get('api_base_path')
+        return `${this.data_store && this.data_store.get('api_base_path')
             }/projects/${this.options.project.get('id')
             }/quotes/${this.options.quote.get('id')}/reorder_accessories`;
     },
     initialize(models, options) {
         this.options = options || {};
         this.proxy_accessory = new Accessory(null, { proxy: true });
+        this.data_store = this.options.data_store;
 
         //  When parent quote is fully loaded, we validate positions
         this.listenTo(this.options.quote, 'fully_loaded', this.validatePositions);

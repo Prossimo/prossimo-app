@@ -1,7 +1,6 @@
 import Marionette from 'backbone.marionette';
 
 import { globalChannel } from '../../utils/radio';
-import App from '../../main';
 import template from '../../templates/core/quote-selector-view.hbs';
 
 export default Marionette.View.extend({
@@ -14,30 +13,35 @@ export default Marionette.View.extend({
     events: {
         'change @ui.$select': 'onChange',
     },
+    initialize() {
+        this.data_store = this.getOption('data_store');
+
+        this.listenTo(globalChannel, 'project_selector:fetch_current:stop', this.onCurrentProjectLoaded);
+    },
     onChange() {
         const new_id = this.ui.$select.val();
 
         this.setCurrentQuote(new_id);
     },
     setCurrentQuote(new_id) {
-        App.current_quote = this.collection.get(new_id);
+        this.data_store.current_quote = this.collection.get(new_id);
 
         globalChannel.trigger('current_quote_changed');
 
-        if (App.current_quote) {
-            App.current_quote.trigger('set_active');
+        if (this.data_store.current_quote) {
+            this.data_store.current_quote.trigger('set_active');
 
-            this.stopListening(App.current_quote);
+            this.stopListening(this.data_store.current_quote);
 
-            if (App.current_quote._wasLoaded) {
+            if (this.data_store.current_quote._wasLoaded) {
                 globalChannel.trigger('quote_selector:load_current:stop');
             } else {
-                this.listenToOnce(App.current_quote, 'fully_loaded', () => {
+                this.listenToOnce(this.data_store.current_quote, 'fully_loaded', () => {
                     globalChannel.trigger('quote_selector:load_current:stop');
                 }, this);
             }
 
-            this.listenTo(App.current_quote, 'remove', () => {
+            this.listenTo(this.data_store.current_quote, 'remove', () => {
                 this.selectFirstOrDefaultQuote();
             });
         } else {
@@ -61,7 +65,7 @@ export default Marionette.View.extend({
         return {
             is_disabled,
             quote_list: !is_disabled ? this.collection.map(item => ({
-                is_selected: App.current_quote && item.id === App.current_quote.id,
+                is_selected: this.data_store.current_quote && item.id === this.data_store.current_quote.id,
                 id: item.id,
                 quote_name: item.getName(),
             })) : [],
@@ -85,8 +89,8 @@ export default Marionette.View.extend({
             this.stopListening(this.collection);
         }
 
-        if (App.current_project) {
-            this.collection = App.current_project.quotes;
+        if (this.data_store.current_project) {
+            this.collection = this.data_store.current_project.quotes;
             this.listenTo(this.collection, 'all', this.render);
 
             //  See if window hash contains quote id
@@ -99,8 +103,5 @@ export default Marionette.View.extend({
                 this.selectFirstOrDefaultQuote();
             }
         }
-    },
-    initialize() {
-        this.listenTo(globalChannel, 'project_selector:fetch_current:stop', this.onCurrentProjectLoaded);
     },
 });

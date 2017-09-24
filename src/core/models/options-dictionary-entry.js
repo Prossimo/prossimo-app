@@ -34,6 +34,15 @@ export default Backbone.Model.extend({
     getNameAttribute() {
         return 'name';
     },
+    initialize(attributes, options) {
+        this.options = options || {};
+        this.data_store = this.options.data_store || (this.collection && this.collection.options.data_store);
+
+        //  Any change to `dictionary_entry_profiles` should be persisted
+        this.listenTo(this.get('dictionary_entry_profiles'), 'change update', () => {
+            this.persist('dictionary_entry_profiles', this.get('dictionary_entry_profiles'));
+        });
+    },
     getDefaultValue(name, type) {
         let default_value = '';
 
@@ -45,6 +54,7 @@ export default Backbone.Model.extend({
             data: getDefaultEntryData(),
             dictionary_entry_profiles: new DictionaryEntryProfileCollection(null, {
                 parent_entry: this,
+                profiles: this.data_store && this.data_store.profiles,
             }),
         };
 
@@ -67,7 +77,8 @@ export default Backbone.Model.extend({
 
         return Backbone.sync.call(this, method, model, current_options);
     },
-    parse(data) {
+    parse(data, options) {
+        const data_store = options.data_store || (options.collection && options.collection.options.data_store);
         const entry_data = data && data.entry ? data.entry : data;
         const parsed_data = Schema.parseAccordingToSchema(entry_data, this.schema);
 
@@ -75,6 +86,7 @@ export default Backbone.Model.extend({
             parsed_data.dictionary_entry_profiles = new DictionaryEntryProfileCollection(
                 object.extractObjectOrNull(parsed_data.dictionary_entry_profiles),
                 {
+                    profiles: data_store && data_store.profiles,
                     parent_entry: this,
                     parse: true,
                 },
@@ -281,13 +293,5 @@ export default Backbone.Model.extend({
         const dictionary = this.getParentDictionary();
 
         return dictionary && dictionary.get('is_hidden');
-    },
-    initialize(attributes, options) {
-        this.options = options || {};
-
-        //  Any change to `dictionary_entry_profiles` should be persisted
-        this.listenTo(this.get('dictionary_entry_profiles'), 'change update', () => {
-            this.persist('dictionary_entry_profiles', this.get('dictionary_entry_profiles'));
-        });
     },
 });

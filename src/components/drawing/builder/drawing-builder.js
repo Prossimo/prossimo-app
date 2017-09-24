@@ -4,7 +4,6 @@ import Marionette from 'backbone.marionette';
 import Backbone from 'backbone';
 import Konva from 'konva';
 
-import App from '../../../main';
 import LayerManager from './layer-manager';
 import { object, dom } from '../../../utils';
 
@@ -24,11 +23,11 @@ const SECTION_MENU_HOVER_DELAY = 100;
 //              active: false       // or it can be removed from layers list at all
 //         },
 //         metrics: {
-//              DrawerClass: App.Drawers.CustomMetricsDrawer, // also you can specify custom drawers
+//              DrawerClass: Drawers.CustomMetricsDrawer, // also you can specify custom drawers
 //              zIndex: 10          // and specify zIndex (order of layers)
 //         },
 //         customLayer: {
-//              DrawerClass: App.Drawers.Custom // also you can add any number of custom layers
+//              DrawerClass: Drawers.Custom // also you can add any number of custom layers
 //                                              // but it should have a unique key in layers object
 //                                              // and should have a link to any Drawer
 //         }
@@ -153,12 +152,8 @@ export default Marionette.Object.extend({
         return opts;
     },
     assignDefaultStates(opts) {
-        const project_settings = App.settings && App.settings.getProjectSettings();
-
         this.setState({
             type: ('type' in opts && opts.type) ? opts.type : 'unit',
-            hingeIndicatorMode: project_settings && project_settings.get('hinge_indicator_mode'),
-            inchesDisplayMode: project_settings && project_settings.get('inches_display_mode'),
             isPreview: ('preview' in opts && opts.preview) ? opts.preview : false,
             drawIndexes: ('drawIndexes' in opts && !_.isUndefined(opts.drawIndexes)) ? opts.drawIndexes : true,
         }, false);

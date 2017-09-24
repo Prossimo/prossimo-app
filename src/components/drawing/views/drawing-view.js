@@ -3,7 +3,6 @@ import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 import Konva from '../builder/konva-clip-patch';
 
-import App from '../../../main';
 import { parseFormat, format, convert } from '../../../utils';
 import Unit from '../../../core/models/unit';
 import UndoManager from '../../../utils/undomanager';
@@ -42,7 +41,9 @@ export default Marionette.View.extend({
     tagName: 'div',
     template,
     initialize(opts) {
-        const project_settings = App.settings.getProjectSettings();
+        this.data_store = this.getOption('data_store');
+
+        const project_settings = this.data_store.getProjectSettings();
 
         this.listenTo(this.model, 'all', this.updateRenderedScene);
         this.on('update_rendered', this.updateRenderedScene, this);
@@ -289,10 +290,11 @@ export default Marionette.View.extend({
         // Continues at this.bindBuilderEvents()
     },
     handleFillingTypeChange() {
+        const filling_types = this.data_store.filling_types;
         let filling_type;
 
-        if (App.settings) {
-            filling_type = App.settings.filling_types.getById(this.ui.$filling_select.val());
+        if (filling_types) {
+            filling_type = filling_types.getById(this.ui.$filling_select.val());
             this.model.setFillingType(this.state.selectedSashId,
                 filling_type.get('type'), filling_type.get('name'));
         }
@@ -586,13 +588,13 @@ export default Marionette.View.extend({
     unbindBuilderEvents() {
         this.stopListening(this.builder);
     },
-
     templateContext() {
-        let available_filling_types = [];
+        const filling_types = this.data_store.filling_types;
         const profile_id = this.model.profile && this.model.profile.id;
+        let available_filling_types = [];
 
-        if (App.settings && profile_id) {
-            available_filling_types = App.settings.filling_types.getAvailableForProfile(profile_id);
+        if (filling_types && profile_id) {
+            available_filling_types = filling_types.getAvailableForProfile(profile_id);
         }
 
         return {
@@ -870,8 +872,9 @@ export default Marionette.View.extend({
         const isSubunitSelected = !!(this.state.isUnitSelected || this.state.selectedSubunitId);
         const isArched = !!(isSashSelected && selectedSash.arched);
         const isCircular = !!(isSashSelected && selectedSash.circular);
+        const fillingTypes = this.data_store.filling_types;
         const selectedFillingType = isSashSelected && selectedSash.fillingName &&
-            App.settings && App.settings.filling_types.getByName(selectedSash.fillingName);
+            fillingTypes && fillingTypes.getByName(selectedSash.fillingName);
         let [isTopConnected, isRightConnected, isBottomConnected, isLeftConnected] = [false, false, false, false];
         let isRemovable = true;
 

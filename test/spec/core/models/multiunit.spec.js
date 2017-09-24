@@ -1,13 +1,9 @@
 import _ from 'underscore';
 
-import App from '../../../../src/main';
 import Unit from '../../../../src/core/models/unit';
 import Multiunit from '../../../../src/core/models/multiunit';
 import UnitCollection from '../../../../src/core/collections/unit-collection';
 import MultiunitSubunitCollection from '../../../../src/core/collections/inline/multiunit-subunit-collection';
-
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
 
 describe('Multiunit model', () => {
     test('multiunit model basic tests', () => {

@@ -1,6 +1,5 @@
 import Marionette from 'backbone.marionette';
 
-import App from '../../../main';
 import SupplierRequestHeaderView from './supplier-request-header-view';
 import QuoteBodyView from '../../quote/views/quote-body-view';
 import QuoteControlsView from '../../quote/views/quote-controls-view';
@@ -15,6 +14,9 @@ export default Marionette.View.extend({
         $header_container: '.supplier-request-header-container',
         $table_container: '.supplier-request-table-container',
     },
+    initialize() {
+        this.data_store = this.getOption('data_store');
+    },
     onRender() {
         const display_options = {
             show_price: false,
@@ -26,24 +28,26 @@ export default Marionette.View.extend({
         };
 
         this.controls_view = new QuoteControlsView({
-            project: App.current_project,
-            quote: App.current_quote,
+            project: this.data_store.current_project,
+            quote: this.data_store.current_quote,
             quote_mode: 'supplier',
             increase_revision_enabled: false,
             set_current_date_enabled: false,
+            data_store: this.data_store,
             display_options,
         });
 
         this.request_header_view = new SupplierRequestHeaderView({
-            model: App.current_project,
+            model: this.data_store.current_project,
         });
 
         this.request_body_view = new QuoteBodyView({
-            project: App.current_project,
-            quote: App.current_quote,
-            multiunits: App.current_quote.multiunits,
-            units: App.current_quote.units,
-            extras: App.current_quote.extras,
+            project: this.data_store.current_project,
+            quote: this.data_store.current_quote,
+            multiunits: this.data_store.current_quote.multiunits,
+            units: this.data_store.current_quote.units,
+            extras: this.data_store.current_quote.extras,
+            data_store: this.data_store,
             display_options,
         });
 

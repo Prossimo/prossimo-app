@@ -1,11 +1,7 @@
-import App from '../../../../src/main';
 import MultiunitSubunitCollection from '../../../../src/core/collections/inline/multiunit-subunit-collection';
 import MultiunitSubunit from '../../../../src/core/models/inline/multiunit-subunit';
 import UnitCollection from '../../../../src/core/collections/unit-collection';
 import Unit from '../../../../src/core/models/unit';
-
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
 
 test('MultiunitSubunit collection test', () => {
     test('MultiunitSubunitCollection basic tests', () => {

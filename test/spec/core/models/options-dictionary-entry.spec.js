@@ -1,17 +1,16 @@
 import _ from 'underscore';
-import { assert } from 'chai';
 
-import App from '../../../../src/main';
 import OptionsDictionaryEntry from '../../../../src/core/models/options-dictionary-entry';
-
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
+import DataStore from '../../../../src/core/models/data-store';
 
 test('Options dictionary entry tests', () => {
-    before(() => {
-        //  This is here to avoid creating side effects inside tests.
-        //  TODO: we need to get rid of globals eventually
-        App.settings.profiles.reset([
+    //  ------------------------------------------------------------------------
+    //  Single dictionary entry
+    //  ------------------------------------------------------------------------
+    test('dictionary entry basic test', () => {
+        const data_store = new DataStore();
+
+        data_store.profiles.reset([
             { id: 1, position: 0 },
             { id: 2, position: 1 },
             { id: 3, position: 2 },
@@ -19,11 +18,7 @@ test('Options dictionary entry tests', () => {
             { id: 77, position: 4 },
             { id: 17, position: 5 },
         ], { parse: true });
-    });
-    //  ------------------------------------------------------------------------
-    //  Single dictionary entry
-    //  ------------------------------------------------------------------------
-    test('dictionary entry basic test', () => {
+
         const entry = new OptionsDictionaryEntry({
             name: 'White Plastic Handle',
             price: 15,
@@ -48,9 +43,12 @@ test('Options dictionary entry tests', () => {
                     is_default: true,
                 },
             ],
-        }, { parse: true });
+        }, {
+            parse: true,
+            data_store,
+        });
 
-        assert.sameMembers(entry_two.get('dictionary_entry_profiles').pluck('profile_id'),
+        deepEqual(entry_two.get('dictionary_entry_profiles').pluck('profile_id'),
             [1, 2, 3],
             'dictionary_entry_profiles should be sorted on parse',
         );

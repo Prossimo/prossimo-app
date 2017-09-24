@@ -1,12 +1,8 @@
 import _ from 'underscore';
 import $ from 'jquery';
 
-import App from '../../../src/main';
 import cases from '../visual-test-data';
 import runVisualTest from '../visual-test-runner';
-
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
 
 const diff_threshold = 0;
 

@@ -1,10 +1,6 @@
 import clone from 'clone';
 
-import App from '../../../../src/main';
 import ProjectSettings from '../../../../src/core/models/inline/project-settings';
-
-App.session.set('no_backend', true);
-App.getChannel().trigger('app:start');
 
 test('Project settings test', () => {
     test('project settings model basic tests', () => {

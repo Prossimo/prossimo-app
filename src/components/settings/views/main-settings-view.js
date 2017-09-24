@@ -2,7 +2,6 @@ import $ from 'jquery';
 import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 
-import App from '../../../main';
 import { globalChannel } from '../../../utils/radio';
 import ProfilesView from './profiles-view';
 import FillingTypesView from './filling-types-view';
@@ -20,6 +19,24 @@ export default Marionette.View.extend({
     },
     events: {
         'click .nav-tabs a': 'onTabClick',
+    },
+    initialize() {
+        this.data_store = this.getOption('data_store');
+        this.dialogs = this.getOption('dialogs');
+        this.tabs = {
+            profiles: {
+                title: 'Profiles',
+            },
+            filling_types: {
+                title: 'Filling Types',
+            },
+            options: {
+                title: 'Options',
+            },
+        };
+        this.active_tab = 'profiles';
+
+        this.listenTo(globalChannel, 'settings:fetch_data:stop', this.render);
     },
     getActiveTab() {
         return this.tabs[this.active_tab];
@@ -39,7 +56,7 @@ export default Marionette.View.extend({
     onRender() {
         if (this.active_tab === 'profiles') {
             this.profiles_view = new ProfilesView({
-                collection: App.settings.profiles,
+                collection: this.data_store.profiles,
                 parent_view: this,
             });
 
@@ -50,7 +67,9 @@ export default Marionette.View.extend({
 
         if (this.active_tab === 'filling_types') {
             this.filling_types_view = new FillingTypesView({
-                collection: App.settings.filling_types,
+                collection: this.data_store.filling_types,
+                data_store: this.data_store,
+                dialogs: this.dialogs,
                 parent_view: this,
             });
 
@@ -61,7 +80,9 @@ export default Marionette.View.extend({
 
         if (this.active_tab === 'options') {
             this.options_view = new OptionsView({
-                collection: App.settings.dictionaries,
+                collection: this.data_store.dictionaries,
+                data_store: this.data_store,
+                dialogs: this.dialogs,
                 parent_view: this,
             });
 
@@ -91,21 +112,5 @@ export default Marionette.View.extend({
         if (this.options_view) {
             this.options_view.destroy();
         }
-    },
-    initialize() {
-        this.tabs = {
-            profiles: {
-                title: 'Profiles',
-            },
-            filling_types: {
-                title: 'Filling Types',
-            },
-            options: {
-                title: 'Options',
-            },
-        };
-        this.active_tab = 'profiles';
-
-        this.listenTo(globalChannel, 'settings:fetch_data:stop', this.render);
     },
 });
