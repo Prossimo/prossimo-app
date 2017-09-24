@@ -1,3 +1,4 @@
+import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 
 import App from '../../../main';
@@ -24,6 +25,7 @@ export default Marionette.View.extend({
         };
     },
     getDescription() {
+        const show_customer_description = this.display_options.show_customer_image_and_description !== false;
         const project_settings = App.settings.getProjectSettings();
         const subunits = this.model.get('multiunit_subunits').map((subunit_link) => {
             const subunit = subunit_link.getUnit();
@@ -31,17 +33,21 @@ export default Marionette.View.extend({
                 format.dimensions_mm(convert.inches_to_mm(subunit.get('width')), convert.inches_to_mm(subunit.get('height'))) :
                 format.dimensions(subunit.get('width'), subunit.get('height'), 'fraction',
                     project_settings && project_settings.get('inches_display_mode'));
-
-            return {
+            const subunit_attributes = {
                 ref_num: subunit.getRefNum(),
                 mark: subunit.getMark(),
                 size,
-                description: subunit.get('description'),
                 notes: subunit.get('notes'),
             };
-        }, this);
 
-        const params = {
+            if (show_customer_description) {
+                subunit_attributes.description = subunit.get('description');
+            }
+
+            return subunit_attributes;
+        });
+
+        const params = _.filter({
             size: {
                 title: 'Size <small class="size-label">WxH</small>',
                 value: this.display_options.show_sizes_in_mm ?
@@ -52,7 +58,16 @@ export default Marionette.View.extend({
                 title: this.model.getTitles(['description'])[0],
                 value: this.model.get('description'),
             },
-        };
+        },
+        (param, key) => {
+            let condition = true;
+
+            if (key === 'description' && !show_customer_description) {
+                condition = false;
+            }
+
+            return condition;
+        });
 
         return {
             params,
@@ -66,7 +81,7 @@ export default Marionette.View.extend({
         return show_drawings;
     },
     shouldShowCustomerImage() {
-        return this.display_options.show_customer_image !== false &&
+        return this.display_options.show_customer_image_and_description !== false &&
             this.model.collection && this.model.collection.hasAtLeastOneCustomerImage();
     },
     getCustomerImage() {

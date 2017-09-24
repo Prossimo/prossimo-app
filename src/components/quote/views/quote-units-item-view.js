@@ -27,6 +27,7 @@ export default Marionette.View.extend({
         };
     },
     getDescription() {
+        const show_customer_description = this.display_options.show_customer_image_and_description !== false;
         const project_settings = App.settings.getProjectSettings();
 
         //  This is the list of params that we want to see in the quote. We
@@ -37,6 +38,10 @@ export default Marionette.View.extend({
                 let condition = true;
 
                 if (this.model.isOperableOnlyAttribute(param) && !this.model.hasOperableSections()) {
+                    condition = false;
+                }
+
+                if (param === 'description' && !show_customer_description) {
                     condition = false;
                 }
 
@@ -263,7 +268,7 @@ export default Marionette.View.extend({
         };
     },
     shouldShowCustomerImage() {
-        return this.display_options.show_customer_image !== false &&
+        return this.display_options.show_customer_image_and_description !== false &&
             this.model.collection && this.model.collection.hasAtLeastOneCustomerImage();
     },
     shouldShowDrawings() {
