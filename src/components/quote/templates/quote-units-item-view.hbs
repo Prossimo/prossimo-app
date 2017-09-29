@@ -17,6 +17,12 @@
                         <span>{{ quantity }}</span>
                     </td>
                     {{/unless}}
+                    {{#if is_subunit }}
+                    <td class="configuration">
+                        <strong>Multi-frame unit</strong>
+                        <span>Part of a multi-frame unit</span>
+                    </td>
+                    {{/if}}
                     {{#if has_dummy_profile }}
                     <td class="no-profile-warning">
                         <p>
@@ -67,7 +73,6 @@
 </table>
 
 <table class="quote-unit{{#if is_subunit }} subunit{{else}} loneunit{{/if}} {{ responsive_mode }}">
-    {{#unless is_subunit }}
     <thead>
         <tr>
             {{#if product_image }}
@@ -82,7 +87,6 @@
             {{/unless}}
         </tr>
     </thead>
-    {{/unless}}
     <tbody><tr>
         {{#if product_image }}
         <td class="product-image{{#if customer_image }} has-customer-image{{/if}}">
