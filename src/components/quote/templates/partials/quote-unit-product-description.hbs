@@ -1,0 +1,34 @@
+<td class="product-description">
+    <div class="description-data-container">
+        <div class="description-params">
+            {{#if description_separate_row }}
+            <h5>Product Description</h5>
+            {{/if}}
+            <ul>
+                {{#each description_params }}
+                {{#if value }}<li><strong>{{{ title }}}</strong> <span>{{{ value }}}</span></li>{{/if}}
+                {{/each}}
+            </ul>
+            {{#if notes }}<p class="notes"><strong>{{ notes }}</strong></p>{{/if}}
+            {{#if exceptions }}<p class="exceptions"><strong>{{ exceptions }}</strong></p>{{/if}}
+        </div>
+        <div class="sash-types-list">
+            <h5>Sash Types</h5>
+            <ul>
+                {{#each sash_types }}
+                <li><strong>{{{ group_title }}}</strong> <span>{{{ type }}}</span></li>
+                {{/each}}
+            </ul>
+        </div>
+        <div class="glazing-list">
+            <h5>Glazing</h5>
+            <ul>
+                <ul>
+                {{#each glazing_names }}
+                <li><strong>{{{ group_title }}}</strong> <span>{{{ name }}}{{#if type }}<small>{{{ type }}}</small>{{/if}}</span></li>
+                {{/each}}
+            </ul>
+            </ul>
+        </div>
+    </div>
+</td>

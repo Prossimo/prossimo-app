@@ -449,6 +449,9 @@ export default Backbone.Model.extend({
 
         return (is_cache_valid && this._cache.height) || this.recalculateSizes().height;
     },
+    getAspectRatio() {
+        return parseFloat(this.getWidth()) / parseFloat(this.getHeight());
+    },
     // Updates multiunit width/height based on subunit sizes & positions
     recalculateSizes() {
         const isFloating = (coordTree) => {

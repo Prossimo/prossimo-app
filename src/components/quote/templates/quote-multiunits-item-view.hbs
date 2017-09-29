@@ -55,7 +55,7 @@
     </tr></tbody>
 </table>
 
-<table class="quote-unit multiunit">
+<table class="quote-unit multiunit {{ responsive_mode }}">
     <thead>
     <tr>
         {{#if product_image }}
@@ -65,7 +65,9 @@
                 <th class="customer-image">Customer Image</th>
             {{/if}}
         {{/if}}
+        {{#unless description_separate_row }}
         <th class="product-description">Product Description</th>
+        {{/unless}}
     </tr>
     </thead>
     <tbody><tr>
@@ -92,29 +94,16 @@
             </td>
             {{/if}}
         {{/if}}
-        <td class="product-description">
-            <ul>
-                {{#each description.params }}
-                    {{#if value }}<li><strong>{{{ title }}}</strong> <span>{{{ value }}}</span></li>{{/if}}
-                {{/each}}
-            </ul>
-            {{#if notes }}<p class="notes"><strong>{{ notes }}</strong></p>{{/if}}
-            {{#if exceptions }}<p class="exceptions"><strong>{{ exceptions }}</strong></p>{{/if}}
-            <div class="subunit-list">
-                <h5>Unit List</h5>
-                {{#each description.subunits }}
-                    <div class="subunit">
-                        <h6><em>{{ ref_num }}:</em> {{ mark }}</h6>
-                        <ul>
-                            <li><strong>Size <small class="size-label">WxH</small></strong> <span>{{ size }}</span></li>
-                            {{#if description }}<li><strong>Customer Description</strong> <span>{{ description }}</span></li>{{/if}}
-                            {{#if notes }}<li><strong>Notes</strong> <span>{{ notes }}</span></li>{{/if}}
-                        </ul>
-                    </div>
-                {{/each}}
-            </div>
-        </td>
-    </tr></tbody>
+        {{#unless description_separate_row }}
+        @require( './partials/quote-multiunit-product-description.hbs' )
+        {{/unless}}
+    </tr>
+    {{#if description_separate_row }}
+    <tr>
+        @require( './partials/quote-multiunit-product-description.hbs' )
+    </tr>
+    {{/if}}
+    </tbody>
 </table>
 
 <div class="subunits-container"></div>

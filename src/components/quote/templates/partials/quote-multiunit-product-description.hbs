@@ -1,0 +1,29 @@
+<td class="product-description">
+    <div class="description-data-container">
+        <div class="description-params">
+            {{#if description_separate_row }}
+            <h5>Product Description</h5>
+            {{/if}}
+            <ul>
+                {{#each description.params }}
+                    {{#if value }}<li><strong>{{{ title }}}</strong> <span>{{{ value }}}</span></li>{{/if}}
+                {{/each}}
+            </ul>
+            {{#if notes }}<p class="notes"><strong>{{ notes }}</strong></p>{{/if}}
+            {{#if exceptions }}<p class="exceptions"><strong>{{ exceptions }}</strong></p>{{/if}}
+        </div>
+        <div class="subunit-list">
+            <h5>Unit List</h5>
+            {{#each description.subunits }}
+                <div class="subunit">
+                    <h6>{{ ref_num }}</h6>
+                    <ul>
+                        <li><strong>Size <small class="size-label">WxH</small></strong> <span>{{ size }}</span></li>
+                        {{#if description }}<li><strong>Customer Description</strong> <span>{{ description }}</span></li>{{/if}}
+                        {{#if notes }}<li><strong>Notes</strong> <span>{{ notes }}</span></li>{{/if}}
+                    </ul>
+                </div>
+            {{/each}}
+        </div>
+    </div>
+</td>

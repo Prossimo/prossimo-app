@@ -89,19 +89,40 @@ export default Marionette.View.extend({
     },
     getProductImage() {
         const position = this.display_options.show_outside_units_view ? 'outside' : 'inside';
-        const preview_size = 600;
+        const responsive_mode = this.getResponsiveMode();
         const title = position === 'inside' ? 'View from Interior' : 'View from Exterior';
+        const preview_size = {
+            width: responsive_mode === 'extrawide' ? 1100 : 600,
+            height: responsive_mode === 'extrawide' ? 400 : 600,
+        };
 
         return {
             img: this.model.getPreview({
-                width: preview_size,
-                height: preview_size,
+                width: preview_size.width,
+                height: preview_size.height,
                 mode: 'base64',
                 position,
                 hingeIndicatorMode: this.display_options.show_european_hinge_indicators ? 'european' : 'american',
             }),
             title,
         };
+    },
+    /**
+     * We determine a mode to draw a quote entry for this multiunit. Variants:
+     * `normal`     - just draw it as usual
+     * `extrawide`  - image will take more width, all text columns go below
+     *
+     * @return {string} Multiunit drawing mode
+     */
+    getResponsiveMode() {
+        const aspect_ratio = this.model.getAspectRatio();
+        let mode = 'normal';
+
+        if (aspect_ratio > 3) {
+            mode = 'extrawide';
+        }
+
+        return mode;
     },
     templateContext() {
         const show_customer_image = this.shouldShowCustomerImage();
@@ -111,6 +132,8 @@ export default Marionette.View.extend({
         return {
             ref_num: this.model.getRefNum(),
             mark: this.model.get('mark'),
+            responsive_mode: this.getResponsiveMode(),
+            description_separate_row: this.getResponsiveMode() === 'extrawide',
             description: this.getDescription(),
             notes: this.model.get('notes'),
             quantity: this.model.get('quantity'),

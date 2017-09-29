@@ -1,5 +1,7 @@
 @preview_size: 600px;
+@preview_size_extrawide: 1200px;
 @customer_image_size: 150px;
+@customer_image_size_extrawide: 220px;
 
 @border_dark: 1px solid darken(@white, 20%);
 @border_medium: 1px solid darken(@white, 15%);
@@ -478,6 +480,7 @@ td.product-image.has-customer-image {
     max-height: @preview_size;
 }
 
+.description-params,
 .sash-list,
 .subunit-list,
 .sash-types-list,
@@ -491,8 +494,13 @@ td.product-image.has-customer-image {
         background-color: @bg_light;
         font-weight: 700;
     }
+}
 
-    h6 {
+.sash-list,
+.subunit-list,
+.sash-types-list,
+.glazing-list {
+   h6 {
         font-size: 14px;
         font-weight: 700;
     }
@@ -532,6 +540,102 @@ td.product-image.has-customer-image {
     width: 30%;
 }
 
+//  ------------------------------------------------------------------------
+//  Extrawide units
+//  ------------------------------------------------------------------------
+
+.quote-unit.extrawide {
+    td.product-image
+    th.product-image {
+        width: 100%;
+    }
+
+    td.product-description {
+        padding: 0;
+        width: 100%;
+    }
+
+    .description-data-container {
+        width: 100%;
+        display: table;
+    }
+
+    .description-data-container > div {
+        width: 27%;
+        padding: 0 1.2rem;
+        display: table-cell;
+    }
+
+    .description-data-container .description-params {
+        width: 46%;
+    }
+
+    .description-data-container > div + div {
+        border-left: @border_light;
+    }
+
+    td.product-description h5 {
+        margin-top: 0;
+        border-top: 0;
+    }
+
+    td.product-image,
+    th.product-image {
+        width: 100%;
+        min-width: @preview_size_extrawide + @customer_image_size_extrawide + 20px;
+    }
+
+    .product-image img {
+        max-width: @preview_size_extrawide;
+    }
+
+    td.product-image.has-customer-image {
+        padding-right: @customer_image_size_extrawide;
+    }
+
+    .product-image .customer-image-inner {
+        width: @customer_image_size_extrawide;
+    }
+
+    .customer-image-inner img {
+        max-width: @customer_image_size_extrawide;
+        max-height: @customer_image_size_extrawide;
+    }
+
+    .customer-image .customer-image-inner img {
+        max-width: @preview_size_extrawide;
+        max-height: @preview_size_extrawide;
+    }
+}
+
+.quote-unit.multiunit.extrawide {
+    .description-data-container .subunit-list {
+        width: 50%;
+    }
+
+    .description-data-container .subunit {
+        position: relative;
+        padding-left: 10%;
+
+        h6 {
+            position: absolute;
+            left: 0;
+            margin: 0;
+        }
+
+        ul {
+            margin-bottom: 5px;
+        }
+
+        &:last-of-type ul {
+            margin-bottom: 10px;
+        }
+    }
+
+    .description-data-container .description-params {
+        width: 50%;
+    }
+}
 
 //  ------------------------------------------------------------------------
 //  Table Footer (Total Prices)

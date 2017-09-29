@@ -250,14 +250,18 @@ export default Marionette.View.extend({
     },
     getProductImage() {
         const position = this.display_options.show_outside_units_view ? 'outside' : 'inside';
-        const preview_size = 600;
+        const responsive_mode = this.getResponsiveMode();
         const title = position === 'inside' ? 'View from Interior' : 'View from Exterior';
         const is_subunit = this.model.isSubunit();
+        const preview_size = {
+            width: responsive_mode === 'extrawide' ? 1100 : 600,
+            height: responsive_mode === 'extrawide' ? 400 : 600,
+        };
 
         return {
             img: this.model.getPreview({
-                width: preview_size,
-                height: preview_size,
+                width: preview_size.width,
+                height: preview_size.height,
                 mode: 'base64',
                 position,
                 drawNeighbors: is_subunit,
@@ -266,6 +270,23 @@ export default Marionette.View.extend({
             }),
             title,
         };
+    },
+    /**
+     * We determine a mode to draw a quote entry for this unit. It could be:
+     * `normal`     - just draw it as usual
+     * `extrawide`  - image will take more width, all text columns go below
+     *
+     * @return {string} Unit drawing mode
+     */
+    getResponsiveMode() {
+        const aspect_ratio = this.model.getAspectRatio();
+        let mode = 'normal';
+
+        if (aspect_ratio > 3) {
+            mode = 'extrawide';
+        }
+
+        return mode;
     },
     shouldShowCustomerImage() {
         return this.display_options.show_customer_image_and_description !== false &&
@@ -286,6 +307,8 @@ export default Marionette.View.extend({
             is_subunit: this.model.isSubunit(),
             ref_num: this.model.getRefNum(),
             mark: this.model.getMark(),
+            responsive_mode: this.getResponsiveMode(),
+            description_separate_row: this.getResponsiveMode() === 'extrawide',
             description_params: this.getDescription(),
             sash_types: this.getSashTypes(),
             glazing_names: this.getGlazingNames(),
