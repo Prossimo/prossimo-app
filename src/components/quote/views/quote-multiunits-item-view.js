@@ -5,6 +5,7 @@ import App from '../../../main';
 import QuoteUnitsTableView from './quote-units-table-view';
 import { convert, format } from '../../../utils';
 import template from '../templates/quote-multiunits-item-view.hbs';
+import { getResponsiveMode, getPreviewSize } from '../../../utils/quote-helpers';
 
 export default Marionette.View.extend({
     className: 'quote-unit-group multiunit',
@@ -91,10 +92,11 @@ export default Marionette.View.extend({
         const position = this.display_options.show_outside_units_view ? 'outside' : 'inside';
         const responsive_mode = this.getResponsiveMode();
         const title = position === 'inside' ? 'View from Interior' : 'View from Exterior';
-        const preview_size = {
-            width: responsive_mode === 'extrawide' ? 1100 : 600,
-            height: responsive_mode === 'extrawide' ? 400 : 600,
-        };
+        const preview_size = getPreviewSize({
+            type: 'drawing',
+            mode: responsive_mode,
+            has_customer_image: this.shouldShowCustomerImage(),
+        });
 
         return {
             img: this.model.getPreview({
@@ -108,21 +110,16 @@ export default Marionette.View.extend({
         };
     },
     /**
-     * We determine a mode to draw a quote entry for this multiunit. Variants:
-     * `normal`     - just draw it as usual
-     * `extrawide`  - image will take more width, all text columns go below
+     * We determine a mode to draw a quote entry for this multiunit
+     * @see getResponsiveMode() from quote helpers
      *
      * @return {string} Multiunit drawing mode
      */
     getResponsiveMode() {
-        const aspect_ratio = this.model.getAspectRatio();
-        let mode = 'normal';
-
-        if (aspect_ratio > 3) {
-            mode = 'extrawide';
-        }
-
-        return mode;
+        return getResponsiveMode({
+            width_mm: this.model.getWidthMM(),
+            height_mm: this.model.getHeightMM(),
+        });
     },
     templateContext() {
         const show_customer_image = this.shouldShowCustomerImage();

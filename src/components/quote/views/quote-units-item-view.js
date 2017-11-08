@@ -4,6 +4,7 @@ import Marionette from 'backbone.marionette';
 import App from '../../../main';
 import { convert, format } from '../../../utils';
 import template from '../templates/quote-units-item-view.hbs';
+import { getResponsiveMode, getPreviewSize } from '../../../utils/quote-helpers';
 
 export default Marionette.View.extend({
     tagName: 'div',
@@ -253,10 +254,11 @@ export default Marionette.View.extend({
         const responsive_mode = this.getResponsiveMode();
         const title = position === 'inside' ? 'View from Interior' : 'View from Exterior';
         const is_subunit = this.model.isSubunit();
-        const preview_size = {
-            width: responsive_mode === 'extrawide' ? 1100 : 600,
-            height: responsive_mode === 'extrawide' ? 400 : 600,
-        };
+        const preview_size = getPreviewSize({
+            type: 'drawing',
+            mode: responsive_mode,
+            has_customer_image: this.shouldShowCustomerImage(),
+        });
 
         return {
             img: this.model.getPreview({
@@ -272,21 +274,16 @@ export default Marionette.View.extend({
         };
     },
     /**
-     * We determine a mode to draw a quote entry for this unit. It could be:
-     * `normal`     - just draw it as usual
-     * `extrawide`  - image will take more width, all text columns go below
+     * We determine a mode to draw a quote entry for this unit
+     * @see getResponsiveMode() from quote helpers
      *
      * @return {string} Unit drawing mode
      */
     getResponsiveMode() {
-        const aspect_ratio = this.model.getAspectRatio();
-        let mode = 'normal';
-
-        if (aspect_ratio > 3) {
-            mode = 'extrawide';
-        }
-
-        return mode;
+        return getResponsiveMode({
+            width_mm: this.model.getWidthMM(),
+            height_mm: this.model.getHeightMM(),
+        });
     },
     shouldShowCustomerImage() {
         return this.display_options.show_customer_image_and_description !== false &&

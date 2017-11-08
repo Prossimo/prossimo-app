@@ -449,6 +449,12 @@ export default Backbone.Model.extend({
 
         return (is_cache_valid && this._cache.height) || this.recalculateSizes().height;
     },
+    getWidthMM() {
+        return convert.inches_to_mm(this.getWidth());
+    },
+    getHeightMM() {
+        return convert.inches_to_mm(this.getHeight());
+    },
     getAspectRatio() {
         return parseFloat(this.getWidth()) / parseFloat(this.getHeight());
     },
