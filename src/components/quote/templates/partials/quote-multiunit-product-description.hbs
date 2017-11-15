@@ -1,9 +1,9 @@
 <td class="product-description">
     <div class="description-data-container">
-        <div class="description-params">
-            {{#if description_separate_row }}
+        <div class="product-description-title">
             <h5>Product Description</h5>
-            {{/if}}
+        </div>
+        <div class="description-params">
             <ul>
                 {{#each description.params }}
                     {{#if value }}<li><strong>{{{ title }}}</strong> <span>{{{ value }}}</span></li>{{/if}}

@@ -257,7 +257,7 @@ export default Marionette.View.extend({
         const preview_size = getPreviewSize({
             type: 'drawing',
             mode: responsive_mode,
-            has_customer_image: this.shouldShowCustomerImage(),
+            has_customer_image: this.shouldShowCustomerImage() && this.getCustomerImage(),
         });
 
         return {

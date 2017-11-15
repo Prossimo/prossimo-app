@@ -1,7 +1,6 @@
-@preview_size: 600px;
-@preview_size_extrawide: 1200px;
-@customer_image_size: 150px;
-@customer_image_size_extrawide: 220px;
+//  ------------------------------------------------------------------------
+//  Variables
+//  ------------------------------------------------------------------------
 
 @border_dark: 1px solid darken(@white, 20%);
 @border_medium: 1px solid darken(@white, 15%);
@@ -9,8 +8,160 @@
 
 @bg_light: darken(@white, 1%);
 
+//  TODO: remove
+@preview_size: 600px;
+@preview_size_extrawide: 1200px;
+@customer_image_size: 150px;
+@customer_image_size_extrawide: 220px;
+
 @quote_max_width: 170rem;
 @quote_min_width: 150rem;
+
+@cell_padding: 0.7rem 1.2rem;
+
+
+//  ------------------------------------------------------------------------
+//  Layout constants and calculations
+//
+//  We have 4 basic layout variations:
+//
+//  - normal unit (height >= width)
+//  - wide unit (width > height)
+//  - extrawide unit (width is significantly more than height)
+//  - extralarge unit (so big that we want to show drawing on separate page)
+//
+//  Each of these layouts can also come with or without a customer image. So
+//  this gives us 8 different layouts in total
+//  ------------------------------------------------------------------------
+
+//  Major page layout blocks
+//  ------------------------------------------------------------------------
+
+@page_width_mm:                     297;
+@page_height_mm:                    210;
+
+@page_margin_top_mm:                10;
+@page_margin_right_mm:              10;
+@page_margin_bottom_mm:             10;
+@page_margin_left_mm:               8;
+
+//  This is the page sizes minus margins, the area available for us per page
+@page_inner_width_mm:               @page_width_mm - (@page_margin_right_mm + @page_margin_left_mm);
+@page_inner_height_mm:              @page_height_mm - (@page_margin_top_mm + @page_margin_bottom_mm);
+
+@item_header_height_mm:             16;
+@item_header_margin_bottom_mm:      2;
+
+//  The part below the header, here we put visuals and description
+@item_content_height_mm:            @page_inner_height_mm - (@item_header_height_mm + @item_header_margin_bottom_mm);
+
+@item_description_width_mm:         @page_inner_width_mm * 33.3 / 100;
+@item_visuals_width_mm:             @page_inner_width_mm - @item_description_width_mm;
+
+@item_description_extrawide_margin_bottom_mm:   2;
+@item_description_extrawide_width_mm:   @page_inner_width_mm;
+@item_description_extrawide_height_mm:  (@item_content_height_mm * 25.5 / 100) - @item_description_extrawide_margin_bottom_mm;
+
+@item_visuals_extrawide_width_mm:   @page_inner_width_mm;
+@item_visuals_extrawide_height_mm:  @item_content_height_mm -
+    (@item_description_extrawide_height_mm + @item_description_extrawide_margin_bottom_mm);
+
+@item_visuals_extralarge_width_mm:  @page_inner_width_mm;
+@item_visuals_extralarge_height_mm: @page_inner_height_mm;
+
+//  Drawing and customer image part
+//  ------------------------------------------------------------------------
+
+@customer_image_normal_width_mm:    28;
+@customer_image_normal_height_mm:   56;
+
+@drawing_padding_mm:                5;
+@drawing_normal_width_mm:           @item_visuals_width_mm - @drawing_padding_mm * 2;
+@drawing_normal_height_mm:          @item_content_height_mm - @drawing_padding_mm * 2;
+@drawing_wide_width_mm:             @item_visuals_width_mm - @drawing_padding_mm * 2;
+@drawing_wide_height_mm:            @item_content_height_mm - @drawing_padding_mm * 2;
+
+@drawing_normal_padding_right_mm:   @drawing_padding_mm * 2 + @customer_image_normal_width_mm;
+@drawing_normal_has_ci_width_mm:    @item_visuals_width_mm - (@drawing_padding_mm + @drawing_normal_padding_right_mm);
+@drawing_normal_has_ci_height_mm:   @item_content_height_mm - @drawing_padding_mm * 2;
+
+@customer_image_wide_width_mm:      56;
+@customer_image_wide_height_mm:     34;
+
+@drawing_wide_padding_bottom_mm:    @drawing_padding_mm * 2 + @customer_image_wide_height_mm;
+@drawing_wide_has_ci_width_mm:      @item_visuals_width_mm - @drawing_padding_mm * 2;
+@drawing_wide_has_ci_height_mm:     @item_content_height_mm - (@drawing_padding_mm + @drawing_wide_padding_bottom_mm);
+
+@customer_image_extrawide_width_mm:     100;
+@customer_image_extrawide_height_mm:    34;
+
+@drawing_extrawide_width_mm:        @item_visuals_extrawide_width_mm - @drawing_padding_mm * 2;
+@drawing_extrawide_height_mm:       @item_visuals_extrawide_height_mm - @drawing_padding_mm * 2;
+
+@drawing_extrawide_has_ci_width_mm:     @item_visuals_extrawide_width_mm - @drawing_padding_mm * 2;
+@drawing_extrawide_has_ci_height_mm:    @item_visuals_extrawide_height_mm - (@drawing_padding_mm * 3 + @customer_image_extrawide_height_mm);
+
+@customer_image_extralarge_width_mm:    121;
+@customer_image_extralarge_height_mm:   56;
+
+@drawing_extralarge_width_mm:       @item_visuals_extralarge_width_mm - @drawing_padding_mm * 2;
+@drawing_extralarge_height_mm:      @item_visuals_extralarge_height_mm - @drawing_padding_mm * 2;
+
+@drawing_extralarge_has_ci_width_mm:    @item_visuals_extralarge_width_mm - @drawing_padding_mm * 2;
+@drawing_extralarge_has_ci_height_mm:   @item_visuals_extralarge_height_mm - @drawing_padding_mm * 2;
+
+//  Resolution and scaling
+//
+//  Base screen pixel density resolution (windows / linux) is 96 px per inch,
+//  we convert this to mms. Scaling is how much larger than this we want our
+//  desktop sizes to be. And @ppmm stands for pixels per millimeter
+//  ------------------------------------------------------------------------
+
+@screen_resolution:                 96 / 25.4;
+@print_resolution:                  144 / 25.4;
+@optimal_resolution:                120 / 25.4;
+@scaling_factor:                    @optimal_resolution / @screen_resolution;
+@ppmm:                              @screen_resolution * @scaling_factor;
+
+//  TODO: those aren't really used, should be removed also
+
+//  Image sizes in pixels
+//
+//  These sizes are calculated based on the page margin sizes from the above,
+//  resolution and other conditions
+//  ------------------------------------------------------------------------
+
+@customer_image_normal_width_px:    floor(@customer_image_normal_width_mm * @ppmm);
+@customer_image_normal_height_px:   floor(@customer_image_normal_height_mm * @ppmm);
+
+@drawing_normal_width_px:           floor(@drawing_normal_width_mm * @ppmm);
+@drawing_normal_height_px:          floor(@drawing_normal_height_mm * @ppmm);
+@drawing_normal_has_ci_width_px:    floor(@drawing_normal_has_ci_width_mm * @ppmm);
+@drawing_normal_has_ci_height_px:   floor(@drawing_normal_has_ci_height_mm * @ppmm);
+
+@customer_image_wide_width_px:      floor(@customer_image_wide_width_mm * @ppmm);
+@customer_image_wide_height_px:     floor(@customer_image_wide_height_mm * @ppmm);
+
+@drawing_wide_width_px:             floor(@drawing_wide_width_mm * @ppmm);
+@drawing_wide_height_px:            floor(@drawing_wide_height_mm * @ppmm);
+@drawing_wide_has_ci_width_px:      floor(@drawing_wide_has_ci_width_mm * @ppmm);
+@drawing_wide_has_ci_height_px:     floor(@drawing_wide_has_ci_height_mm * @ppmm);
+
+@customer_image_extrawide_width_px:     floor(@customer_image_extrawide_width_mm * @ppmm);
+@customer_image_extrawide_height_px:    floor(@customer_image_extrawide_height_mm * @ppmm);
+
+@drawing_extrawide_width_px:        floor(@drawing_extrawide_width_mm * @ppmm);
+@drawing_extrawide_height_px:       floor(@drawing_extrawide_height_mm * @ppmm);
+@drawing_extrawide_has_ci_width_px:     floor(@drawing_extrawide_has_ci_width_mm * @ppmm);
+@drawing_extrawide_has_ci_height_px:    floor(@drawing_extrawide_has_ci_height_mm * @ppmm);
+
+@customer_image_extralarge_width_px:    floor(@customer_image_extralarge_width_mm * @ppmm);
+@customer_image_extralarge_height_px:   floor(@customer_image_extralarge_height_mm * @ppmm);
+
+@drawing_extralarge_width_px:       floor(@drawing_extralarge_width_mm * @ppmm);
+@drawing_extralarge_height_px:      floor(@drawing_extralarge_height_mm * @ppmm);
+@drawing_extralarge_has_ci_width_px:    floor(@drawing_extralarge_has_ci_width_mm * @ppmm);
+@drawing_extralarge_has_ci_height_px:   floor(@drawing_extralarge_has_ci_height_mm * @ppmm);
 
 
 //  ------------------------------------------------------------------------
@@ -30,19 +181,32 @@
 
 .quote-container {
     margin-bottom: 2rem;
-    padding: 3rem 4rem 4rem;
+    // padding: 3rem 4rem 4rem;
+        // unit(ceil(@page_margin_top_mm * @ppmm), px)
+        // unit(ceil(@page_margin_right_mm * @ppmm), px)
+        // unit(ceil(@page_margin_bottom_mm * @ppmm), px)
+        // unit(ceil(@page_margin_left_mm * @ppmm), px);
+    padding:
+        unit(floor(@page_margin_top_mm * @ppmm), px)
+        unit(floor(@page_margin_right_mm * @ppmm), px)
+        unit(floor(@page_margin_bottom_mm * @ppmm), px)
+        unit(floor(@page_margin_left_mm * @ppmm), px);
     background-color: @white;
     border: @border_medium;
     min-height: 100%;
-    max-width: @quote_max_width;
-    min-width: @quote_min_width;
+    // max-width: @quote_max_width;
+    // min-width: @quote_min_width;
+    // max-width: unit(ceil(@page_inner_width_mm * @ppmm), px);
+    //  TODO: maybe wrap into some additional container?
+    //  we now have a problem with item header being wider than content
+    max-width: unit(ceil((@page_inner_width_mm + @page_margin_right_mm + @page_margin_left_mm) * @ppmm), px);
     width: 100%;
     overflow: visible;
 }
 
 
 //  ------------------------------------------------------------------------
-//  Quote controls
+//  Quote controls (above quote container)
 //  ------------------------------------------------------------------------
 
 .quote-controls-container {
@@ -51,7 +215,8 @@
     margin: 0 0 2rem;
     border: @border_medium;
     background-color: darken(@white, 2%);
-    max-width: @quote_max_width;
+    // max-width: @quote_max_width;
+    max-width: unit(ceil(@page_inner_width_mm * @ppmm), px);
 
     .display-options > div,
     .export-options-container > div {
@@ -116,39 +281,41 @@
 //  Quote header (Company info)
 //  ------------------------------------------------------------------------
 
-.quote-header {
-    position: relative;
-    margin-bottom: 3rem;
-    text-align: right;
-}
+.quote-header-container {
+    .quote-header {
+        position: relative;
+        margin-bottom: 3rem;
+        text-align: right;
+    }
 
-.mavrik-logo {
-    position: absolute;
-    top: 2rem;
-    left: 0;
-    width: 35rem;
-    height: auto;
-}
+    .mavrik-logo {
+        position: absolute;
+        top: 2rem;
+        left: 0;
+        width: 35rem;
+        height: auto;
+    }
 
-.mavrik-logo img {
-    width: 100%;
-    height: auto;
-}
+    .mavrik-logo img {
+        width: 100%;
+        height: auto;
+    }
 
-.quote-header h1 {
-    padding-top: 2rem;
-    margin: 0 0 4rem;
-    font-weight: 700;
-    color: darken(@white, 30%);
-    text-transform: uppercase;
-    text-align: right;
-}
+    .quote-header h1 {
+        padding-top: 2rem;
+        margin: 0 0 4rem;
+        font-weight: 700;
+        color: darken(@white, 30%);
+        text-transform: uppercase;
+        text-align: right;
+    }
 
-.quote-header ul {
-    display: inline-block;
-    text-align: left;
-    margin: 0 3rem;
-    list-style-type: none;
+    .quote-header ul {
+        display: inline-block;
+        text-align: left;
+        margin: 0 3rem;
+        list-style-type: none;
+    }
 }
 
 
@@ -156,351 +323,397 @@
 //  Project info
 //  ------------------------------------------------------------------------
 
-.quote-project-info .project-name {
-    text-transform: uppercase;
-    font-weight: 700;
-    font-size: 2em;
-    letter-spacing: 0.05em;
-}
+.quote-project-info {
+    .project-name {
+        text-transform: uppercase;
+        font-weight: 700;
+        font-size: 2em;
+        letter-spacing: 0.05em;
+    }
 
-.quote-project-info ul {
-    list-style-type: none;
-    padding: 0;
-}
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
 
-.quote-project-info .client-name small {
-    display: block;
-    margin-bottom: 1rem;
-    color: #777;
+    .client-name small {
+        display: block;
+        margin-bottom: 1rem;
+        color: #777;
+    }
 }
 
 
 //  ------------------------------------------------------------------------
-//  Table
+//  Table (units, extras, subtotal)
 //  ------------------------------------------------------------------------
 
 .quote-table-container {
     margin: 3rem 0 0;
 }
 
+//  TODO: paddings here should be probably moved to a variable
 .quote-table {
     width: 100%;
     table-layout: fixed;
-}
 
-.quote-table thead th {
-    padding: 0.7rem 1.2rem;
-    border: @border_dark;
-    background-color: @bg_light;
-}
+    thead th {
+        // padding: 0.7rem 1.2rem;
+        padding: @cell_padding;
+        border: @border_dark;
+        background-color: @bg_light;
+    }
 
-.quote-table tbody td {
-    padding: 0.7rem 1.2rem;
-    border: @border_light;
-    vertical-align: top;
+    tbody td {
+        // padding: 0.7rem 1.2rem;
+        padding: @cell_padding;
+        border: @border_light;
+        vertical-align: top;
+    }
 }
 
 
 //  ------------------------------------------------------------------------
-//  Unit info heading (ref, mark, qty, price)
+//  Single unit item
 //  ------------------------------------------------------------------------
 
 .multiunit-titlebar {
-    padding: 0.7rem 1.2rem;
+    // padding: 0.7rem 1.2rem;
+    padding: @cell_padding;
     border: @border_dark;
     border-bottom: none;
     background-color: @bg_light;
 }
 
 .quote-item {
-    margin-bottom: 2rem;
+    //  TODO: this should be a variable
+    margin-bottom: 3rem;
 }
-
-.quote-item.multiunit,
-.quote-item.subunit {
-    margin-bottom: -1px;
-}
-
-.quote-unit-group.multiunit {
-    margin-bottom: 2rem;
-}
-
-.subunits-container {
-    position: relative;
-
-    .quote-item {
-        margin-bottom: 0;
-    }
-}
-
-.quote-unit-heading {
-    width: 100%;
-    table-layout: fixed;
-}
-
-.quote-unit-heading tbody td {
-    border: @border_dark;
-    background-color: @bg_light;
-    border-bottom: none;
-}
-
-.quote-item.subunit .quote-unit-heading tbody td {
-    border-top: none;
-}
-
-.quote-unit-heading td strong,
-.quote-unit-heading td span {
-    min-height: 3rem;
-    vertical-align: middle;
-}
-
-.quote-unit-heading .has-discounted-price td strong,
-.quote-unit-heading .has-discounted-price td span {
-    min-height: 3.7rem;
-}
-
-.quote-unit-heading td.primary-info {
-    padding: 0;
-    width: 56%;
-}
-
-.quote-unit-heading .primary-info td {
-    border-left: none;
-    border-top: none;
-    border-bottom: none;
-    padding: 0;
-}
-
-.quote-unit-heading .primary-info strong,
-.quote-unit-heading .primary-info span {
-    display: block;
-    float: left;
-    padding: 0.5rem 1.5rem;
-}
-
-.quote-unit-heading .primary-info strong {
-    border-right: @border_dark;
-    background-color: @bg_light;
-}
-
-.quote-unit-heading .primary-info span {
-    background-color: @white;
-}
-
-.quote-unit-heading .primary-info.has-price strong {
-    border-bottom: @border_dark;
-    border-right: none;
-}
-
-.quote-unit-heading .primary-info.has-price strong,
-.quote-unit-heading .primary-info.has-price span {
-    float: none;
-}
-
-.quote-unit-heading tbody td.price,
-.quote-unit-heading tbody td.price-discounted {
-    font-size: 1em;
-    width: 22%;
-}
-
-.quote-table .unit-price {
-    display: table;
-    margin: 0;
-    width: 100%;
-}
-
-.quote-table .unit-price li {
-    display: table-row;
-}
-
-.quote-table .unit-price strong {
-    display: table-cell;
-    font-weight: 400;
-    font-style: normal;
-}
-
-.quote-table .unit-price span {
-    display: table-cell;
-    text-align: right;
-}
-
-.quote-table .unit-price .subtotal strong,
-.quote-table .unit-price .subtotal span {
-    font-weight: 700;
-}
-
-.quote-unit-heading td.no-profile-warning {
-    padding: 0.5rem 1.5rem;
-    border: none;
-    vertical-align: middle;
-}
-
-.no-profile-warning p {
-    margin: 0;
-    font-weight: 700;
-    color: @red;
-}
-
-.no-profile-warning p i {
-    padding-right: 0.5em;
-}
-
-
-//  ------------------------------------------------------------------------
-//  Unit info (image, details)
-//  ------------------------------------------------------------------------
 
 .quote-unit {
     width: 100%;
     table-layout: fixed;
 }
 
-td.product-description,
-td.tech-specs {
-    font-size: 0.9em;
+// .quote-item.multiunit,
+// .quote-item.subunit {
+//     margin-bottom: -1px;
+// }
+
+.quote-unit-group.multiunit {
+    margin-bottom: 3rem;
 }
 
-.quote-item .exceptions {
-    color: @red;
-    font-size: 1.1em;
-}
-
-.product-description ul,
-.tech-specs ul {
-    display: table;
-    padding: 0;
-    list-style-type: none;
-    width: 100%;
-}
-
-.product-description li,
-.tech-specs li {
-    display: table-row;
-}
-
-.product-description li strong,
-.tech-specs li strong {
-    display: table-cell;
-    padding-right: 2rem;
-    font-weight: 400;
-    font-style: italic;
-    width: 27%;
-    vertical-align: top;
-}
-
-.product-description li span,
-.tech-specs li span {
-    display: table-cell;
-    width: 73%;
-    vertical-align: bottom;
-}
-
-li.opening h6 {
-    display: table-row;
-    padding: 1rem 0 0.4rem;
-    font-size: 1em;
-    font-weight: 700;
-}
-
-li.opening p {
-    display: table-row;
-    margin-bottom: 0;
-}
-
-table.subtotal,
-table.total-units {
-    table-layout: fixed;
-    width: 100%;
-    border: @border_light;
-    background-color: @bg_light;
-}
-
-td.product-image,
-th.product-image {
-    width: 56%;
-    min-width: @preview_size + @customer_image_size + 20px;
-}
-
-th.product-image em {
-    font-weight: 400;
-}
-
-.quote-item.multiunit thead th em {
-    font-weight: 400;
-}
-
-.product-image img {
-    display: block;
-    max-height: @preview_size;
-    max-width: @preview_size;
-}
-
-td.product-description,
-th.product-description {
-    width: 44%;
-}
-
-.product-description .size-label {
-    font-size: 0.8em;
-    padding: 0 0.4rem;
-    background-color: darken(@white, 5%);
-    font-style: normal;
-}
-
-td.product-image.has-customer-image {
+.subunits-container {
     position: relative;
-    padding-right: @customer_image_size;
+
+    margin-top: 3rem;
+
+    // .quote-item {
+    //     margin-bottom: 0;
+    // }
 }
 
-.product-image .customer-image-inner {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: @customer_image_size;
-    padding-bottom: 20px;
-    border-bottom: @border_light;
-    border-left: @border_light;
+//  TODO: what does this rule do?
+// .quote-item.multiunit thead th em {
+//     font-weight: 400;
+// }
+
+
+//  ------------------------------------------------------------------------
+//  Unit info heading (ref, mark, qty, price)
+//  ------------------------------------------------------------------------
+
+.quote-unit-heading {
+    width: 100%;
+    margin-bottom: unit(ceil(@item_header_margin_bottom_mm * @ppmm), px);
+    height: unit(ceil(@item_header_height_mm * @ppmm), px);
+    table-layout: fixed;
+
+    tbody td {
+        // padding: @cell_padding;
+        border: @border_dark;
+        background-color: @bg_light;
+        // border-bottom: none;
+    }
+
+    td strong,
+    td span {
+        min-height: 3rem;
+        vertical-align: middle;
+    }
+
+    .has-discounted-price td strong,
+    .has-discounted-price td span {
+        min-height: 3.7rem;
+    }
+
+    td.primary-info {
+        padding: 0;
+        width: 56%;
+    }
+
+    //  Primary info (left part)
+    //  --------------------------------------------------------------------
+
+    .primary-info td {
+        border-left: none;
+        border-top: none;
+        border-bottom: none;
+        padding: 0;
+    }
+
+    .primary-info strong,
+    .primary-info span {
+        display: block;
+        float: left;
+        padding: 0.5rem 1.5rem;
+    }
+
+    .primary-info strong {
+        border-right: @border_dark;
+        background-color: @bg_light;
+    }
+
+    .primary-info span {
+        background-color: @white;
+    }
+
+    .primary-info.has-price strong {
+        border-bottom: @border_dark;
+        border-right: none;
+    }
+
+    .primary-info.has-price strong,
+    .primary-info.has-price span {
+        float: none;
+    }
+
+    //  No profile warning (also left)
+    //  --------------------------------------------------------------------
+
+    td.no-profile-warning {
+        padding: 0.5rem 1.5rem;
+        border: none;
+        vertical-align: middle;
+    }
+
+    .no-profile-warning p {
+        margin: 0;
+        font-weight: 700;
+        color: @red;
+    }
+
+    .no-profile-warning p i {
+        padding-right: 0.5em;
+    }
+
+    //  Price info (right part)
+    //  --------------------------------------------------------------------
+
+    tbody td.price,
+    tbody td.price-discounted {
+        font-size: 1em;
+        width: 22%;
+    }
+
+    .unit-price {
+        display: table;
+        margin: 0;
+        width: 100%;
+    }
+
+    .unit-price li {
+        display: table-row;
+    }
+
+    .unit-price strong {
+        display: table-cell;
+        font-weight: 400;
+        font-style: normal;
+    }
+
+    .unit-price span {
+        display: table-cell;
+        text-align: right;
+    }
+
+    .unit-price .subtotal strong,
+    .unit-price .subtotal span {
+        font-weight: 700;
+    }
 }
 
-.customer-image-inner h5 {
-    text-align: center;
-    font-style: italic;
+//  Subunit tweaks
+//  ------------------------------------------------------------------------
+
+// .quote-item.subunit .quote-unit-heading tbody td {
+//     border-top: none;
+// }
+
+
+//  ------------------------------------------------------------------------
+//  Unit visuals
+//  ------------------------------------------------------------------------
+
+// td.product-visuals,
+// th.product-visuals {
+//     // width: 56%;
+//     // min-width: @preview_size + @customer_image_size + 20px;
+//     width: unit(ceil(@item_visuals_width_mm * @ppmm), px);
+// }
+
+// th.product-visuals em {
+//     font-weight: 400;
+// }
+
+//  TODO: should be a nicer way to add this selector
+.quote-table tbody td.product-visuals {
+    padding: 0;
 }
 
-.customer-image-inner img {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    max-width: @customer_image_size;
-    max-height: @customer_image_size;
+td.product-visuals {
+    width: unit(ceil(@item_visuals_width_mm * @ppmm), px);
+
+    .product-visuals-container {
+        position: relative;
+        padding: unit(floor(@drawing_padding_mm * @ppmm), px);
+        min-height: unit(ceil(@item_content_height_mm * @ppmm), px);
+        // background-color: #ccc;
+    }
+
+    .product-visuals-title {
+        position: absolute;
+        top: 0;
+        left: 0;
+        //  TODO: all paddings should be set via variables
+        // padding: 0.7rem 1.2rem;
+        padding: @cell_padding;
+    }
+
+    .product-visuals-title h5 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .product-visuals-title em {
+        font-weight: 400;
+    }
+
+    .product-image-wrapper {
+        // background-color: darkgray;
+        // max-height: @preview_size;
+        // max-width: @preview_size;
+        max-width: unit(ceil(@drawing_normal_width_mm * @ppmm), px);
+        max-height: unit(ceil(@drawing_normal_height_mm * @ppmm), px);
+        overflow: hidden;
+    }
+
+    .product-image-wrapper img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        // background-color: lightblue;
+    }
 }
 
-.customer-image .customer-image-inner img {
-    max-width: @preview_size;
-    max-height: @preview_size;
+
+//  ------------------------------------------------------------------------
+//  Unit description
+//  ------------------------------------------------------------------------
+
+// td.product-description,
+// th.product-description {
+//     // width: 44%;
+//     width: unit(ceil(@item_description_width_mm * @ppmm), px);
+// }
+
+//  TODO: again, should be a nicer way to set this rule
+.quote-table tbody td.product-description {
+    padding: 0;
 }
 
-.description-params,
-.sash-list,
-.subunit-list,
-.sash-types-list,
-.glazing-list {
+td.product-description {
+    width: unit(ceil(@item_description_width_mm * @ppmm), px);
+    font-size: 0.9em;
+
+    // .product-description-title {
+        // border-bottom: @border_light;
+        // background-color: @bg_light;
+    // }
+
+    // .product-description-title h5 {
     h5 {
-        margin-left: -1.2rem;
-        margin-right: -1.2rem;
-        padding: 0.7rem 1.2rem;
+        margin: 0;
+        padding: @cell_padding;
         border-top: @border_light;
         border-bottom: @border_light;
         background-color: @bg_light;
         font-weight: 700;
     }
-}
 
-.sash-list,
-.subunit-list,
-.sash-types-list,
-.glazing-list {
-   h6 {
+    .product-description-title h5 {
+        border-top: none;
+    }
+
+    .exceptions {
+        color: @red;
+        font-size: 1.1em;
+    }
+
+    div > h6,
+    div > ul,
+    div > p {
+        margin: @cell_padding;
+    }
+
+    ul {
+        display: table;
+        padding: 0;
+        // padding: @cell_padding;
+        list-style-type: none;
+        width: 100%;
+    }
+
+    li {
+        display: table-row;
+    }
+
+    li > strong {
+        display: table-cell;
+        padding-right: 2rem;
+        font-weight: 400;
+        font-style: italic;
+        width: 27%;
+        vertical-align: top;
+    }
+
+    li > span {
+        display: table-cell;
+        width: 73%;
+        vertical-align: bottom;
+    }
+
+    // li.opening h6 {
+    //     display: table-row;
+    //     padding: 1rem 0 0.4rem;
+    //     font-size: 1em;
+    //     font-weight: 700;
+    // }
+
+    // li.opening p {
+    //     display: table-row;
+    //     margin-bottom: 0;
+    // }
+
+    .size-label {
+        font-size: 0.8em;
+        padding: 0 0.4rem;
+        background-color: darken(@white, 5%);
+        font-style: normal;
+    }
+
+    h6 {
         font-size: 14px;
         font-weight: 700;
     }
@@ -510,9 +723,9 @@ td.product-image.has-customer-image {
         font-style: normal;
     }
 
-    li:first-child h6 {
-        margin-top: 0;
-    }
+    // li:first-child h6 {
+    //     margin-top: 0;
+    // }
 
     li em {
         padding: 0 0.2em;
@@ -520,15 +733,309 @@ td.product-image.has-customer-image {
         color: darken(@white, 40%);
     }
 
-    li small {
-        margin-left: 0.8em;
-        padding: 0 0.4em;
-        background-color: darken(@white, 5%);
+    // li small {
+    //     margin-left: 0.8em;
+    //     padding: 0 0.4em;
+    //     background-color: darken(@white, 5%);
+    // }
+}
+
+// .description-params,
+// .sash-list,
+// .subunit-list,
+// .sash-types-list,
+// .glazing-list {
+//     h5 {
+//         margin-left: -1.2rem;
+//         margin-right: -1.2rem;
+//         padding: 0.7rem 1.2rem;
+//         border-top: @border_light;
+//         border-bottom: @border_light;
+//         background-color: @bg_light;
+//         font-weight: 700;
+//     }
+// }
+
+// .sash-list,
+// .subunit-list,
+// .sash-types-list,
+// .glazing-list {
+// }
+
+// .sash-list .sections li:first-child h6 {
+//     margin-top: 0;
+// }
+
+
+//  ------------------------------------------------------------------------
+//  Normal layout with a customer image
+//  ------------------------------------------------------------------------
+
+// .has-customer-image td.product-image {
+.has-customer-image td.product-visuals {
+    .product-visuals-container {
+        // padding-right: @customer_image_size;
+        padding-right: unit(floor(@drawing_normal_padding_right_mm * @ppmm), px);
+    }
+
+    .customer-image-inner {
+        // position: absolute;
+        // top: 0;
+        // right: 0;
+        // width: @customer_image_size;
+        // padding-bottom: 20px;
+
+        // border-bottom: @border_light;
+        // border-left: @border_light;
+
+        // background-color: darkred;
+        position: absolute;
+        bottom: unit(ceil(@drawing_padding_mm * @ppmm), px);
+        right: 0;
+        width: unit(ceil(@customer_image_normal_width_mm * @ppmm), px);
+        height: unit(ceil(@customer_image_normal_height_mm * @ppmm), px);
+    }
+
+    .customer-image-inner h5 {
+        text-align: center;
+        font-style: italic;
+    }
+
+    .customer-image-wrapper {
+        // max-height: @preview_size;
+        // max-width: @preview_size;
+        // max-width: unit(ceil(@drawing_normal_width_mm * @ppmm), px);
+        // max-height: unit(ceil(@drawing_normal_height_mm * @ppmm), px);
+        overflow: hidden;
+    }
+
+    .customer-image-wrapper img {
+        // display: block;
+        // margin-left: auto;
+        // margin-right: auto;
+        // max-width: @customer_image_size;
+        // max-height: @customer_image_size;
+        display: block;
+        max-width: 100%;
+        height: auto;
+    }
+
+    // //  TODO: does this even work?
+    // .customer-image .customer-image-inner img {
+    //     max-width: @preview_size;
+    //     max-height: @preview_size;
+    // }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Wide layout
+//  ------------------------------------------------------------------------
+
+.quote-unit.layout-wide {
+    td.product-visuals {
+        .product-image-wrapper {
+            max-width: unit(ceil(@drawing_wide_width_mm * @ppmm), px);
+            max-height: unit(ceil(@drawing_wide_height_mm * @ppmm), px);
+        }
     }
 }
 
-.sash-list .sections li:first-child h6 {
-    margin-top: 0;
+
+//  ------------------------------------------------------------------------
+//  Wide layout with a customer image
+//  ------------------------------------------------------------------------
+
+.quote-unit.layout-wide.has-customer-image {
+    td.product-visuals {
+        .product-visuals-container {
+            padding: unit(floor(@drawing_padding_mm * @ppmm), px);
+            padding-bottom: unit(floor(@drawing_wide_padding_bottom_mm * @ppmm), px);
+        }
+
+        .customer-image-inner {
+            right: unit(ceil(@drawing_padding_mm * @ppmm), px);
+            bottom: 0;
+            width: unit(ceil(@customer_image_wide_width_mm * @ppmm), px);
+            height: unit(ceil(@customer_image_wide_height_mm * @ppmm), px);
+        }
+    }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Extrawide layout
+//  ------------------------------------------------------------------------
+
+.quote-unit.layout-extrawide {
+    td.product-visuals {
+        width: 100%;
+
+        .product-visuals-container {
+            min-height: unit(ceil(@item_visuals_extrawide_height_mm * @ppmm), px);
+        }
+
+        //  FIXME: for some reason this is constrained by an outer wrapper (so
+        //  1271px is wrapped into 1268px, needs to be fixed)
+        .product-image-wrapper {
+            max-width: unit(ceil(@drawing_extrawide_width_mm * @ppmm), px);
+            max-height: unit(ceil(@drawing_extrawide_height_mm * @ppmm), px);
+        }
+    }
+}
+
+
+// .quote-unit.extrawide {
+
+// .quote-unit.layout-extrawide {
+//     // td.product-image,
+//     // th.product-image {
+//     //     width: 100%;
+//     // }
+
+//     //  TODO: This doesn't work probably
+//     td.product-visuals,
+//     th.product-visuals {
+//         width: 100%;
+//     }
+
+//     td.product-description {
+//         padding: 0;
+//         width: 100%;
+//     }
+
+//     .description-data-container {
+//         width: 100%;
+//         display: table;
+//     }
+
+//     .description-data-container > div {
+//         width: 27%;
+//         padding: 0 1.2rem;
+//         display: table-cell;
+//     }
+
+//     .description-data-container .description-params {
+//         width: 46%;
+//     }
+
+//     .description-data-container > div + div {
+//         border-left: @border_light;
+//     }
+
+//     td.product-description h5 {
+//         margin-top: 0;
+//         border-top: 0;
+//     }
+
+//     // td.product-image,
+//     // th.product-image {
+//     td.product-visuals,
+//     th.product-visuals {
+//         width: 100%;
+//         min-width: @preview_size_extrawide + @customer_image_size_extrawide + 20px;
+//     }
+
+//     // .product-image img {
+//     .product-visuals img {
+//         max-width: @preview_size_extrawide;
+//     }
+
+//     // td.product-image.has-customer-image {
+//     .has-customer-image td.product-visuals {
+//         padding-right: @customer_image_size_extrawide;
+//     }
+
+//     // .product-image .customer-image-inner {
+//     .product-visuals .customer-image-inner {
+//         width: @customer_image_size_extrawide;
+//     }
+
+//     .customer-image-inner img {
+//         max-width: @customer_image_size_extrawide;
+//         max-height: @customer_image_size_extrawide;
+//     }
+
+//     .customer-image .customer-image-inner img {
+//         max-width: @preview_size_extrawide;
+//         max-height: @preview_size_extrawide;
+//     }
+// }
+
+// .quote-unit.multiunit.extrawide {
+
+// .quote-unit.multiunit.layout-extrawide {
+//     .description-data-container .subunit-list {
+//         width: 50%;
+//     }
+
+//     .description-data-container .subunit {
+//         position: relative;
+//         padding-left: 10%;
+
+//         h6 {
+//             position: absolute;
+//             left: 0;
+//             margin: 0;
+//         }
+
+//         ul {
+//             margin-bottom: 5px;
+//         }
+
+//         &:last-of-type ul {
+//             margin-bottom: 10px;
+//         }
+//     }
+
+//     .description-data-container .description-params {
+//         width: 50%;
+//     }
+// }
+
+
+//  ------------------------------------------------------------------------
+//  Extrawide layout with a customer image
+//  ------------------------------------------------------------------------
+
+.quote-unit.layout-extrawide.has-customer-image {
+    td.product-visuals {
+        .product-visuals-container {
+            padding: unit(floor(@drawing_padding_mm * @ppmm), px);
+            min-height: unit(ceil((@item_visuals_extrawide_height_mm - @drawing_padding_mm * 2 - @customer_image_extrawide_height_mm) * @ppmm), px);
+        }
+
+        //  TODO: not sure about the left margin here, disabled it currently
+        .customer-image-inner {
+            margin-bottom: unit(ceil(@drawing_padding_mm * @ppmm), px);
+            // margin-left: unit(ceil(@drawing_padding_mm * @ppmm), px);
+            position: relative;
+            top: auto;
+            right: auto;
+            left: auto;
+            bottom: auto;
+            width: unit(ceil(@customer_image_extrawide_width_mm * @ppmm), px);
+            height: unit(ceil(@customer_image_extrawide_height_mm * @ppmm), px);
+        }
+    }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Quote subtotal (for units)
+//  ------------------------------------------------------------------------
+
+table.subtotal,
+table.total-units {
+    table-layout: fixed;
+    width: 100%;
+    border: @border_light;
+    background-color: @bg_light;
+
+    // th,
+    // td {
+    //     padding: @cell_padding;
+    // }
 }
 
 .subtotal td.price,
@@ -540,105 +1047,9 @@ td.product-image.has-customer-image {
     width: 30%;
 }
 
-//  ------------------------------------------------------------------------
-//  Extrawide units
-//  ------------------------------------------------------------------------
-
-.quote-unit.extrawide {
-    td.product-image
-    th.product-image {
-        width: 100%;
-    }
-
-    td.product-description {
-        padding: 0;
-        width: 100%;
-    }
-
-    .description-data-container {
-        width: 100%;
-        display: table;
-    }
-
-    .description-data-container > div {
-        width: 27%;
-        padding: 0 1.2rem;
-        display: table-cell;
-    }
-
-    .description-data-container .description-params {
-        width: 46%;
-    }
-
-    .description-data-container > div + div {
-        border-left: @border_light;
-    }
-
-    td.product-description h5 {
-        margin-top: 0;
-        border-top: 0;
-    }
-
-    td.product-image,
-    th.product-image {
-        width: 100%;
-        min-width: @preview_size_extrawide + @customer_image_size_extrawide + 20px;
-    }
-
-    .product-image img {
-        max-width: @preview_size_extrawide;
-    }
-
-    td.product-image.has-customer-image {
-        padding-right: @customer_image_size_extrawide;
-    }
-
-    .product-image .customer-image-inner {
-        width: @customer_image_size_extrawide;
-    }
-
-    .customer-image-inner img {
-        max-width: @customer_image_size_extrawide;
-        max-height: @customer_image_size_extrawide;
-    }
-
-    .customer-image .customer-image-inner img {
-        max-width: @preview_size_extrawide;
-        max-height: @preview_size_extrawide;
-    }
-}
-
-.quote-unit.multiunit.extrawide {
-    .description-data-container .subunit-list {
-        width: 50%;
-    }
-
-    .description-data-container .subunit {
-        position: relative;
-        padding-left: 10%;
-
-        h6 {
-            position: absolute;
-            left: 0;
-            margin: 0;
-        }
-
-        ul {
-            margin-bottom: 5px;
-        }
-
-        &:last-of-type ul {
-            margin-bottom: 10px;
-        }
-    }
-
-    .description-data-container .description-params {
-        width: 50%;
-    }
-}
 
 //  ------------------------------------------------------------------------
-//  Table Footer (Total Prices)
+//  Table footer (Total Prices)
 //  ------------------------------------------------------------------------
 
 .quote-table tfoot td {
@@ -689,12 +1100,8 @@ div + table.grand-total {
 
 
 //  ------------------------------------------------------------------------
-//  Extras table
+//  Quote Extras
 //  ------------------------------------------------------------------------
-
-.quote-extras-table {
-    &:extend(.quote-table all);
-}
 
 .extras-heading {
     margin: 0.8rem 0.8rem 0;
@@ -711,20 +1118,24 @@ div + table.grand-total {
     font-weight: 700;
 }
 
-.extras-heading + table,
-.optional-extras-subheading + table {
-    margin-top: 1rem;
+.quote-extras-table {
+    &:extend(.quote-table all);
 }
 
-td.extras-product-description,
-th.extras-product-description {
-    width: 65%;
+.extras-heading + .quote-extras-table,
+.optional-extras-subheading + .quote-extras-table {
+    margin-top: 1rem;
 }
 
 .quote-extras-table {
     td.ref,
     th.ref {
         width: 5%;
+    }
+
+    td.extras-product-description,
+    th.extras-product-description {
+        width: 65%;
     }
 
     td.quantity,
@@ -763,33 +1174,44 @@ th.extras-product-description {
 
 .quote-terms-info {
     margin-top: 6rem;
+
+    h2 {
+        width: 60%;
+        font-size: 1.5em;
+        font-weight: 700;
+    }
+
+    ul {
+        margin: 4rem 0;
+        padding: 0;
+        list-style-type: none;
+    }
+
+    .warranty {
+        font-weight: 700;
+    }
+
+    table {
+        margin: 4rem 0 0;
+        width: 100%;
+    }
+
+    table td {
+        padding: 1rem 0;
+    }
+
+    table span {
+        color: lighten(@black, 40%);
+    }
 }
 
-.quote-terms-info h2 {
-    width: 60%;
-    font-size: 1.5em;
-    font-weight: 700;
-}
 
-.quote-terms-info ul {
-    margin: 4rem 0;
-    padding: 0;
-    list-style-type: none;
-}
 
-.warranty {
-    font-weight: 700;
-}
+//  ------------------------------------------------------------------------
+//  Print styles and adjustments. The most important difference is that we
+//  have to re-set dimensions / paddings for major layout elements, because
+//  they were declared using px units above, and for print we need them to be
+//  set in millimeters
+//  ------------------------------------------------------------------------
 
-.quote-terms-info table {
-    margin: 4rem 0 0;
-    width: 100%;
-}
 
-.quote-terms-info table td {
-    padding: 1rem 0;
-}
-
-.quote-terms-info table span {
-    color: lighten(@black, 40%);
-}

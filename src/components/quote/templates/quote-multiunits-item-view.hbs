@@ -55,11 +55,11 @@
     </tr></tbody>
 </table>
 
-<table class="quote-unit multiunit {{ responsive_mode }}">
-    <thead>
+<table class="quote-unit multiunit layout-{{ responsive_mode }}{{#if customer_image }} has-customer-image{{/if}}">
+    {{!-- <thead>
     <tr>
         {{#if product_image }}
-            <th class="product-image">Shop Drawing: <em>{{ product_image.title }}</em></th>
+            <th class="product-visuals">Shop Drawing: <em>{{ product_image.title }}</em></th>
         {{else}}
             {{#if customer_image }}
                 <th class="customer-image">Customer Image</th>
@@ -69,27 +69,39 @@
         <th class="product-description">Product Description</th>
         {{/unless}}
     </tr>
-    </thead>
+    </thead> --}}
     <tbody><tr>
         {{#if product_image }}
-            <td class="product-image{{#if customer_image }} has-customer-image{{/if}}">
-                <div class="product-image-inner">
-                    {{#if product_image.img }}
-                        <div class="image-wrapper"><img src="{{ product_image.img }}" alt=""></div>
+            <td class="product-visuals">
+                <div class="product-visuals-container">
+                    <div class="product-visuals-title">
+                        {{#if product_image }}
+                            <h5>Shop Drawing: <em>{{ product_image.title }}</em></h5>
+                        {{else}}
+                            {{#if customer_image }}
+                                <h5>Customer Image</h5>
+                            {{/if}}
+                        {{/if}}
+                    </div>
+
+                    <div class="product-image-inner">
+                        {{#if product_image.img }}
+                            <div class="product-image-wrapper"><img src="{{ product_image.img }}" alt=""></div>
+                        {{/if}}
+                    </div>
+                    {{#if customer_image }}
+                    <div class="customer-image-inner">
+                        <h5>Customer Image</h5>
+                        <div class="customer-image-wrapper"><img src="{{ customer_image }}" alt=""></div>
+                    </div>
                     {{/if}}
                 </div>
-                {{#if customer_image }}
-                <div class="customer-image-inner">
-                    <h5>Customer Image</h5>
-                    <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
-                </div>
-                {{/if}}
             </td>
         {{else}}
             {{#if customer_image }}
             <td class="customer-image">
                 <div class="customer-image-inner">
-                    <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
+                    <div class="customer-image-wrapper"><img src="{{ customer_image }}" alt=""></div>
                 </div>
             </td>
             {{/if}}

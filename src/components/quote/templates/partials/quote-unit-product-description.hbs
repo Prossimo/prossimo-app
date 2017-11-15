@@ -1,9 +1,9 @@
 <td class="product-description">
     <div class="description-data-container">
-        <div class="description-params">
-            {{#if description_separate_row }}
+        <div class="product-description-title">
             <h5>Product Description</h5>
-            {{/if}}
+        </div>
+        <div class="description-params">
             <ul>
                 {{#each description_params }}
                 {{#if value }}<li><strong>{{{ title }}}</strong> <span>{{{ value }}}</span></li>{{/if}}
@@ -23,11 +23,9 @@
         <div class="glazing-list">
             <h5>Glazing</h5>
             <ul>
-                <ul>
                 {{#each glazing_names }}
                 <li><strong>{{{ group_title }}}</strong> <span>{{{ name }}}{{#if type }}<small>{{{ type }}}</small>{{/if}}</span></li>
                 {{/each}}
-            </ul>
             </ul>
         </div>
     </div>
