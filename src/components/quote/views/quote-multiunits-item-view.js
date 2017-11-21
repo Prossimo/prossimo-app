@@ -130,7 +130,7 @@ export default Marionette.View.extend({
             ref_num: this.model.getRefNum(),
             mark: this.model.get('mark'),
             responsive_mode: this.getResponsiveMode(),
-            description_separate_row: this.getResponsiveMode() === 'extrawide',
+            description_separate_row: ['extrawide', 'extralarge'].indexOf(this.getResponsiveMode()) !== -1,
             description: this.getDescription(),
             notes: this.model.get('notes'),
             quantity: this.model.get('quantity'),

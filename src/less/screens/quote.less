@@ -27,7 +27,7 @@
 //
 //  - normal unit (height >= width)
 //  - wide unit (width > height)
-//  - extrawide unit (width is significantly more than height)
+//  - extrawide unit (width is significantly larger than height)
 //  - extralarge unit (so big that we want to show drawing on separate page)
 //
 //  Each of these layouts can also come with or without a customer image. So
@@ -199,8 +199,9 @@
     // max-width: unit(ceil(@page_inner_width_mm * @ppmm), px);
     //  TODO: maybe wrap into some additional container?
     //  we now have a problem with item header being wider than content
-    max-width: unit(ceil((@page_inner_width_mm + @page_margin_right_mm + @page_margin_left_mm) * @ppmm), px);
-    width: 100%;
+    // max-width: unit(ceil((@page_width_mm + @page_margin_right_mm + @page_margin_left_mm) * @ppmm), px);
+    width: unit(ceil(@page_width_mm * @ppmm), px);
+    // width: 100%;
     overflow: visible;
 }
 
@@ -216,7 +217,8 @@
     border: @border_medium;
     background-color: darken(@white, 2%);
     // max-width: @quote_max_width;
-    max-width: unit(ceil(@page_inner_width_mm * @ppmm), px);
+    // max-width: unit(ceil(@page_width_mm * @ppmm), px);
+    width: unit(ceil(@page_width_mm * @ppmm), px);
 
     .display-options > div,
     .export-options-container > div {
@@ -388,6 +390,7 @@
 .quote-item {
     //  TODO: this should be a variable
     margin-bottom: 3rem;
+    max-width: unit(ceil(@page_inner_width_mm * @ppmm), px);
 }
 
 .quote-unit {
@@ -437,16 +440,16 @@
         // border-bottom: none;
     }
 
-    td strong,
-    td span {
-        min-height: 3rem;
-        vertical-align: middle;
-    }
+    // td strong,
+    // td span {
+    //     min-height: 3rem;
+    //     vertical-align: bottom;
+    // }
 
-    .has-discounted-price td strong,
-    .has-discounted-price td span {
-        min-height: 3.7rem;
-    }
+    // .has-discounted-price td strong,
+    // .has-discounted-price td span {
+    //     min-height: 3.7rem;
+    // }
 
     td.primary-info {
         padding: 0;
@@ -456,11 +459,20 @@
     //  Primary info (left part)
     //  --------------------------------------------------------------------
 
+    .primary-info table {
+        height: 100%;
+    }
+
     .primary-info td {
-        border-left: none;
-        border-top: none;
-        border-bottom: none;
+        border: none;
+        // border-left: none;
+        // border-top: none;
+        // border-bottom: none;
         padding: 0;
+    }
+
+    .primary-info td:last-child {
+        border-right: @border_dark;
     }
 
     .primary-info strong,
@@ -471,16 +483,19 @@
     }
 
     .primary-info strong {
-        border-right: @border_dark;
+        font-weight: 400;
+        // border-right: @border_dark;
         background-color: @bg_light;
     }
 
     .primary-info span {
-        background-color: @white;
+        // background-color: @white;
+        font-weight: 700;
+        font-size: 1.2em;
     }
 
     .primary-info.has-price strong {
-        border-bottom: @border_dark;
+        // border-bottom: @border_dark;
         border-right: none;
     }
 
@@ -570,6 +585,7 @@
 //  TODO: should be a nicer way to add this selector
 .quote-table tbody td.product-visuals {
     padding: 0;
+    border-right: none;
 }
 
 td.product-visuals {
@@ -631,11 +647,19 @@ td.product-visuals {
 //  TODO: again, should be a nicer way to set this rule
 .quote-table tbody td.product-description {
     padding: 0;
+    border-left: none;
 }
 
 td.product-description {
     width: unit(ceil(@item_description_width_mm * @ppmm), px);
     font-size: 0.9em;
+
+    .description-data-container {
+        // height: 100%;
+        min-height: unit(ceil(@item_content_height_mm * @ppmm), px);
+        border-left: @border_light;
+        margin-left: unit(ceil(2 * @ppmm), px);
+    }
 
     // .product-description-title {
         // border-bottom: @border_light;
@@ -646,9 +670,9 @@ td.product-description {
     h5 {
         margin: 0;
         padding: @cell_padding;
-        border-top: @border_light;
-        border-bottom: @border_light;
-        background-color: @bg_light;
+        // border-top: @border_light;
+        // border-bottom: @border_light;
+        // background-color: @bg_light;
         font-weight: 700;
     }
 
@@ -789,15 +813,17 @@ td.product-description {
         // border-left: @border_light;
 
         // background-color: darkred;
+        // background-color: lightyellow;
         position: absolute;
         bottom: unit(ceil(@drawing_padding_mm * @ppmm), px);
         right: 0;
         width: unit(ceil(@customer_image_normal_width_mm * @ppmm), px);
-        height: unit(ceil(@customer_image_normal_height_mm * @ppmm), px);
+        height: auto;
+        max-height: unit(ceil(@customer_image_normal_height_mm * @ppmm), px);
     }
 
     .customer-image-inner h5 {
-        text-align: center;
+        // text-align: center;
         font-style: italic;
     }
 
@@ -855,9 +881,9 @@ td.product-description {
 
         .customer-image-inner {
             right: unit(ceil(@drawing_padding_mm * @ppmm), px);
-            bottom: 0;
+            // bottom: 0;
             width: unit(ceil(@customer_image_wide_width_mm * @ppmm), px);
-            height: unit(ceil(@customer_image_wide_height_mm * @ppmm), px);
+            max-height: unit(ceil(@customer_image_wide_height_mm * @ppmm), px);
         }
     }
 }
@@ -867,6 +893,18 @@ td.product-description {
 //  Extrawide layout
 //  ------------------------------------------------------------------------
 
+//  TODO: again, this is not right
+//  TODO: we probably should set these borders on div containers, not tables
+.quote-table .quote-unit.layout-extrawide tbody {
+    td.product-visuals {
+        border-right: @border_light;
+    }
+
+    td.product-description {
+        border-right: none;
+    }
+}
+
 .quote-unit.layout-extrawide {
     td.product-visuals {
         width: 100%;
@@ -875,11 +913,19 @@ td.product-description {
             min-height: unit(ceil(@item_visuals_extrawide_height_mm * @ppmm), px);
         }
 
-        //  FIXME: for some reason this is constrained by an outer wrapper (so
-        //  1271px is wrapped into 1268px, needs to be fixed)
         .product-image-wrapper {
             max-width: unit(ceil(@drawing_extrawide_width_mm * @ppmm), px);
             max-height: unit(ceil(@drawing_extrawide_height_mm * @ppmm), px);
+        }
+    }
+
+    td.product-description {
+        .description-data-container {
+            min-height: unit(ceil(@item_description_extrawide_height_mm * @ppmm), px);
+            margin-left: 0;
+            border-bottom: @border_light;
+            border-right: @border_light;
+            margin-bottom: unit(ceil(@item_description_extrawide_margin_bottom_mm * @ppmm), px);
         }
     }
 }
@@ -1015,7 +1061,45 @@ td.product-description {
             left: auto;
             bottom: auto;
             width: unit(ceil(@customer_image_extrawide_width_mm * @ppmm), px);
-            height: unit(ceil(@customer_image_extrawide_height_mm * @ppmm), px);
+            // height: unit(ceil(@customer_image_extrawide_height_mm * @ppmm), px);
+            height: auto;
+            max-height: unit(ceil(@customer_image_extrawide_height_mm * @ppmm), px);
+        }
+    }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Extralarge layout
+//  ------------------------------------------------------------------------
+
+.quote-unit.layout-extralarge {
+    &:extend(.quote-unit.layout-extrawide all);
+
+    td.product-visuals {
+        .product-visuals-container {
+            min-height: unit(ceil(@item_visuals_extralarge_height_mm * @ppmm), px);
+        }
+
+        .product-image-wrapper {
+            max-width: unit(ceil(@drawing_extralarge_width_mm * @ppmm), px);
+            max-height: unit(ceil(@drawing_extralarge_height_mm * @ppmm), px);
+        }
+    }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Extralarge layout with a customer image
+//  ------------------------------------------------------------------------
+
+.quote-unit.layout-extralarge.has-customer-image {
+    td.product-visuals {
+        .customer-image-inner {
+            width: unit(ceil(@customer_image_extralarge_width_mm * @ppmm), px);
+            // height: unit(ceil(@customer_image_extralarge_height_mm * @ppmm), px);
+            height: auto;
+            max-height: unit(ceil(@customer_image_extralarge_height_mm * @ppmm), px);
         }
     }
 }

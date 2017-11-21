@@ -70,7 +70,13 @@
         {{/unless}}
     </tr>
     </thead> --}}
-    <tbody><tr>
+    <tbody>
+        {{#if description_separate_row }}
+        <tr>
+            @require( './partials/quote-multiunit-product-description.hbs' )
+        </tr>
+        {{/if}}
+        <tr>
         {{#if product_image }}
             <td class="product-visuals">
                 <div class="product-visuals-container">
@@ -84,17 +90,18 @@
                         {{/if}}
                     </div>
 
-                    <div class="product-image-inner">
-                        {{#if product_image.img }}
-                            <div class="product-image-wrapper"><img src="{{ product_image.img }}" alt=""></div>
-                        {{/if}}
-                    </div>
                     {{#if customer_image }}
                     <div class="customer-image-inner">
                         <h5>Customer Image</h5>
                         <div class="customer-image-wrapper"><img src="{{ customer_image }}" alt=""></div>
                     </div>
                     {{/if}}
+
+                    <div class="product-image-inner">
+                        {{#if product_image.img }}
+                            <div class="product-image-wrapper"><img src="{{ product_image.img }}" alt=""></div>
+                        {{/if}}
+                    </div>
                 </div>
             </td>
         {{else}}
@@ -110,11 +117,6 @@
         @require( './partials/quote-multiunit-product-description.hbs' )
         {{/unless}}
     </tr>
-    {{#if description_separate_row }}
-    <tr>
-        @require( './partials/quote-multiunit-product-description.hbs' )
-    </tr>
-    {{/if}}
     </tbody>
 </table>
 

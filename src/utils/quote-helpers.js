@@ -56,8 +56,7 @@ export function getPreviewSize(opts) {
  * @return {string} Unit drawing mode
  */
 export function getResponsiveMode(opts) {
-    //  TODO: extralarge is not used at the moment, need to figure out the
-    //  appropriate conditions for it
+    //  TODO: figure out more appropriate conditions for extrawide / extralarge
 
     const defaults = {
         width_mm: 0,
@@ -73,6 +72,14 @@ export function getResponsiveMode(opts) {
 
     if (options.width_mm > options.height_mm * 3) {
         mode = 'extrawide';
+    }
+
+    if (
+        options.width_mm > options.height_mm &&
+        options.width_mm > 7000 &&
+        options.height_mm > 2000
+    ) {
+        mode = 'extralarge';
     }
 
     return mode;

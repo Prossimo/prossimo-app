@@ -305,7 +305,7 @@ export default Marionette.View.extend({
             ref_num: this.model.getRefNum(),
             mark: this.model.getMark(),
             responsive_mode: this.getResponsiveMode(),
-            description_separate_row: this.getResponsiveMode() === 'extrawide',
+            description_separate_row: ['extrawide', 'extralarge'].indexOf(this.getResponsiveMode()) !== -1,
             description_params: this.getDescription(),
             sash_types: this.getSashTypes(),
             glazing_names: this.getGlazingNames(),
