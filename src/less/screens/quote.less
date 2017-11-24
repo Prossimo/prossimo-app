@@ -659,25 +659,24 @@ td.product-description {
         min-height: unit(ceil(@item_content_height_mm * @ppmm), px);
         border-left: @border_light;
         margin-left: unit(ceil(2 * @ppmm), px);
+        padding: @cell_padding;
     }
 
-    // .product-description-title {
-        // border-bottom: @border_light;
-        // background-color: @bg_light;
-    // }
-
-    // .product-description-title h5 {
     h5 {
-        margin: 0;
-        padding: @cell_padding;
-        // border-top: @border_light;
-        // border-bottom: @border_light;
-        // background-color: @bg_light;
+        // margin: 0;
         font-weight: 700;
     }
 
-    .product-description-title h5 {
-        border-top: none;
+    li:first-child h5 {
+        margin-top: 0;
+    }
+
+    p {
+        margin-top: 10px;
+    }
+
+    .full-width + .full-width p {
+        margin-top: 0;
     }
 
     .exceptions {
@@ -685,11 +684,11 @@ td.product-description {
         font-size: 1.1em;
     }
 
-    div > h6,
-    div > ul,
-    div > p {
-        margin: @cell_padding;
-    }
+    // div > h6,
+    // div > ul,
+    // div > p {
+    //     margin: @cell_padding;
+    // }
 
     ul {
         display: table;
@@ -701,21 +700,34 @@ td.product-description {
 
     li {
         display: table-row;
+        line-height: 1;
+    }
+
+    li > strong,
+    li > span {
+        display: table-cell;
+        padding-bottom: 0.5em;
     }
 
     li > strong {
-        display: table-cell;
         padding-right: 2rem;
         font-weight: 400;
         font-style: italic;
-        width: 27%;
+        // width: 27%;
         vertical-align: top;
     }
 
     li > span {
-        display: table-cell;
-        width: 73%;
+        // display: table-cell;
+        // width: 73%;
         vertical-align: bottom;
+    }
+
+    //  To counter the fact that headings only occupy one cell in table layout.
+    //  This value is arbitrary, but should do the trick
+    .full-width h5,
+    .full-width p {
+        width: 160%;
     }
 
     // li.opening h6 {
@@ -751,6 +763,7 @@ td.product-description {
     //     margin-top: 0;
     // }
 
+    //  TODO: where is this used? multiunits?
     li em {
         padding: 0 0.2em;
         font-style: normal;
@@ -921,11 +934,37 @@ td.product-description {
 
     td.product-description {
         .description-data-container {
+            //  TODO: min-height here should only be triggered for print
             min-height: unit(ceil(@item_description_extrawide_height_mm * @ppmm), px);
             margin-left: 0;
             border-bottom: @border_light;
             border-right: @border_light;
             margin-bottom: unit(ceil(@item_description_extrawide_margin_bottom_mm * @ppmm), px);
+            column-count: 3;
+            column-gap: 2em;
+        }
+
+        .description-params {
+            display: block;
+        }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        li > strong,
+        li > span {
+            display: inline-block;
+        }
+
+        li > strong {
+            max-width: 50%;
+        }
+
+        li > span {
+            text-align: right;
+            align-self: flex-end;
         }
     }
 }
@@ -1051,15 +1090,21 @@ td.product-description {
             min-height: unit(ceil((@item_visuals_extrawide_height_mm - @drawing_padding_mm * 2 - @customer_image_extrawide_height_mm) * @ppmm), px);
         }
 
+        .product-image-inner {
+            clear: both;
+            width: 100%;
+        }
+
         //  TODO: not sure about the left margin here, disabled it currently
         .customer-image-inner {
-            margin-bottom: unit(ceil(@drawing_padding_mm * @ppmm), px);
             // margin-left: unit(ceil(@drawing_padding_mm * @ppmm), px);
             position: relative;
             top: auto;
             right: auto;
             left: auto;
             bottom: auto;
+            float: right;
+            margin-bottom: unit(ceil(@drawing_padding_mm * @ppmm), px);
             width: unit(ceil(@customer_image_extrawide_width_mm * @ppmm), px);
             // height: unit(ceil(@customer_image_extrawide_height_mm * @ppmm), px);
             height: auto;
