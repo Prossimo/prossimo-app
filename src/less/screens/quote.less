@@ -2,20 +2,18 @@
 //  Variables
 //  ------------------------------------------------------------------------
 
-@border_dark: 1px solid darken(@white, 20%);
-@border_medium: 1px solid darken(@white, 15%);
-@border_light: 1px solid darken(@white, 10%);
+@gray_2: darken(@white, 2%);        //  #fafafa
+@gray_10: darken(@white, 10%);      //  #e6e6e6
+@gray_15: darken(@white, 15%);      //  #d9d9d9
+@gray_20: darken(@white, 20%);      //  #ccc
+@gray_55: darken(@white, 55%);      //  #777
 
-@bg_light: darken(@white, 1%);
+@bg_light: @gray_2;
 
-//  TODO: remove
-@preview_size: 600px;
-@preview_size_extrawide: 1200px;
-@customer_image_size: 150px;
-@customer_image_size_extrawide: 220px;
+@border_dark: 1px solid @gray_20;
+@border_medium: 1px solid @gray_15;
+@border_light: 1px solid @gray_10;
 
-@quote_max_width: 170rem;
-@quote_min_width: 150rem;
 
 @cell_padding: 0.7rem 1.2rem;
 
@@ -37,66 +35,66 @@
 //  Major page layout blocks
 //  ------------------------------------------------------------------------
 
-@page_width_mm:                     297;
-@page_height_mm:                    210;
+@page_width_mm:                         297;
+@page_height_mm:                        210;
 
-@page_margin_top_mm:                10;
-@page_margin_right_mm:              10;
-@page_margin_bottom_mm:             10;
-@page_margin_left_mm:               8;
+@page_margin_top_mm:                    10;
+@page_margin_right_mm:                  10;
+@page_margin_bottom_mm:                 10;
+@page_margin_left_mm:                   8;
 
 //  This is the page sizes minus margins, the area available for us per page
-@page_inner_width_mm:               @page_width_mm - (@page_margin_right_mm + @page_margin_left_mm);
-@page_inner_height_mm:              @page_height_mm - (@page_margin_top_mm + @page_margin_bottom_mm);
+@page_inner_width_mm:                   @page_width_mm - (@page_margin_right_mm + @page_margin_left_mm);
+@page_inner_height_mm:                  @page_height_mm - (@page_margin_top_mm + @page_margin_bottom_mm);
 
-@item_header_height_mm:             16;
-@item_header_margin_bottom_mm:      2;
+@item_header_height_mm:                 16;
+@item_header_margin_bottom_mm:          2;
 
 //  The part below the header, here we put visuals and description
-@item_content_height_mm:            @page_inner_height_mm - (@item_header_height_mm + @item_header_margin_bottom_mm);
+@item_content_height_mm:                @page_inner_height_mm - (@item_header_height_mm + @item_header_margin_bottom_mm);
 
-@item_description_width_mm:         @page_inner_width_mm * 33.3 / 100;
-@item_visuals_width_mm:             @page_inner_width_mm - @item_description_width_mm;
+@item_description_width_mm:             @page_inner_width_mm * 33.3 / 100;
+@item_visuals_width_mm:                 @page_inner_width_mm - @item_description_width_mm;
 
 @item_description_extrawide_margin_bottom_mm:   2;
 @item_description_extrawide_width_mm:   @page_inner_width_mm;
 @item_description_extrawide_height_mm:  (@item_content_height_mm * 25.5 / 100) - @item_description_extrawide_margin_bottom_mm;
 
-@item_visuals_extrawide_width_mm:   @page_inner_width_mm;
-@item_visuals_extrawide_height_mm:  @item_content_height_mm -
+@item_visuals_extrawide_width_mm:       @page_inner_width_mm;
+@item_visuals_extrawide_height_mm:      @item_content_height_mm -
     (@item_description_extrawide_height_mm + @item_description_extrawide_margin_bottom_mm);
 
-@item_visuals_extralarge_width_mm:  @page_inner_width_mm;
-@item_visuals_extralarge_height_mm: @page_inner_height_mm;
+@item_visuals_extralarge_width_mm:      @page_inner_width_mm;
+@item_visuals_extralarge_height_mm:     @page_inner_height_mm;
 
 //  Drawing and customer image part
 //  ------------------------------------------------------------------------
 
-@customer_image_normal_width_mm:    28;
-@customer_image_normal_height_mm:   56;
+@customer_image_normal_width_mm:        28;
+@customer_image_normal_height_mm:       56;
 
-@drawing_padding_mm:                5;
-@drawing_normal_width_mm:           @item_visuals_width_mm - @drawing_padding_mm * 2;
-@drawing_normal_height_mm:          @item_content_height_mm - @drawing_padding_mm * 2;
-@drawing_wide_width_mm:             @item_visuals_width_mm - @drawing_padding_mm * 2;
-@drawing_wide_height_mm:            @item_content_height_mm - @drawing_padding_mm * 2;
+@drawing_padding_mm:                    5;
+@drawing_normal_width_mm:               @item_visuals_width_mm - @drawing_padding_mm * 2;
+@drawing_normal_height_mm:              @item_content_height_mm - @drawing_padding_mm * 2;
+@drawing_wide_width_mm:                 @item_visuals_width_mm - @drawing_padding_mm * 2;
+@drawing_wide_height_mm:                @item_content_height_mm - @drawing_padding_mm * 2;
 
-@drawing_normal_padding_right_mm:   @drawing_padding_mm * 2 + @customer_image_normal_width_mm;
-@drawing_normal_has_ci_width_mm:    @item_visuals_width_mm - (@drawing_padding_mm + @drawing_normal_padding_right_mm);
-@drawing_normal_has_ci_height_mm:   @item_content_height_mm - @drawing_padding_mm * 2;
+@drawing_normal_padding_right_mm:       @drawing_padding_mm * 2 + @customer_image_normal_width_mm;
+@drawing_normal_has_ci_width_mm:        @item_visuals_width_mm - (@drawing_padding_mm + @drawing_normal_padding_right_mm);
+@drawing_normal_has_ci_height_mm:       @item_content_height_mm - @drawing_padding_mm * 2;
 
-@customer_image_wide_width_mm:      56;
-@customer_image_wide_height_mm:     34;
+@customer_image_wide_width_mm:          56;
+@customer_image_wide_height_mm:         34;
 
-@drawing_wide_padding_bottom_mm:    @drawing_padding_mm * 2 + @customer_image_wide_height_mm;
-@drawing_wide_has_ci_width_mm:      @item_visuals_width_mm - @drawing_padding_mm * 2;
-@drawing_wide_has_ci_height_mm:     @item_content_height_mm - (@drawing_padding_mm + @drawing_wide_padding_bottom_mm);
+@drawing_wide_padding_bottom_mm:        @drawing_padding_mm * 2 + @customer_image_wide_height_mm;
+@drawing_wide_has_ci_width_mm:          @item_visuals_width_mm - @drawing_padding_mm * 2;
+@drawing_wide_has_ci_height_mm:         @item_content_height_mm - (@drawing_padding_mm + @drawing_wide_padding_bottom_mm);
 
 @customer_image_extrawide_width_mm:     100;
 @customer_image_extrawide_height_mm:    34;
 
-@drawing_extrawide_width_mm:        @item_visuals_extrawide_width_mm - @drawing_padding_mm * 2;
-@drawing_extrawide_height_mm:       @item_visuals_extrawide_height_mm - @drawing_padding_mm * 2;
+@drawing_extrawide_width_mm:            @item_visuals_extrawide_width_mm - @drawing_padding_mm * 2;
+@drawing_extrawide_height_mm:           @item_visuals_extrawide_height_mm - @drawing_padding_mm * 2;
 
 @drawing_extrawide_has_ci_width_mm:     @item_visuals_extrawide_width_mm - @drawing_padding_mm * 2;
 @drawing_extrawide_has_ci_height_mm:    @item_visuals_extrawide_height_mm - (@drawing_padding_mm * 3 + @customer_image_extrawide_height_mm);
@@ -104,8 +102,8 @@
 @customer_image_extralarge_width_mm:    121;
 @customer_image_extralarge_height_mm:   56;
 
-@drawing_extralarge_width_mm:       @item_visuals_extralarge_width_mm - @drawing_padding_mm * 2;
-@drawing_extralarge_height_mm:      @item_visuals_extralarge_height_mm - @drawing_padding_mm * 2;
+@drawing_extralarge_width_mm:           @item_visuals_extralarge_width_mm - @drawing_padding_mm * 2;
+@drawing_extralarge_height_mm:          @item_visuals_extralarge_height_mm - @drawing_padding_mm * 2;
 
 @drawing_extralarge_has_ci_width_mm:    @item_visuals_extralarge_width_mm - @drawing_padding_mm * 2;
 @drawing_extralarge_has_ci_height_mm:   @item_visuals_extralarge_height_mm - @drawing_padding_mm * 2;
@@ -117,11 +115,13 @@
 //  desktop sizes to be. And @ppmm stands for pixels per millimeter
 //  ------------------------------------------------------------------------
 
-@screen_resolution:                 96 / 25.4;
-@print_resolution:                  144 / 25.4;
-@optimal_resolution:                120 / 25.4;
-@scaling_factor:                    @optimal_resolution / @screen_resolution;
-@ppmm:                              @screen_resolution * @scaling_factor;
+@screen_resolution:                     96 / 25.4;
+@print_resolution:                      144 / 25.4;
+@optimal_resolution:                    120 / 25.4;
+@scaling_factor:                        @optimal_resolution / @screen_resolution;
+@ppmm:                                  @screen_resolution * @scaling_factor;
+
+//  TODO: @print_resolution variable is also not used
 
 //  TODO: those aren't really used, should be removed also
 
@@ -131,35 +131,35 @@
 //  resolution and other conditions
 //  ------------------------------------------------------------------------
 
-@customer_image_normal_width_px:    floor(@customer_image_normal_width_mm * @ppmm);
-@customer_image_normal_height_px:   floor(@customer_image_normal_height_mm * @ppmm);
+@customer_image_normal_width_px:        floor(@customer_image_normal_width_mm * @ppmm);
+@customer_image_normal_height_px:       floor(@customer_image_normal_height_mm * @ppmm);
 
-@drawing_normal_width_px:           floor(@drawing_normal_width_mm * @ppmm);
-@drawing_normal_height_px:          floor(@drawing_normal_height_mm * @ppmm);
-@drawing_normal_has_ci_width_px:    floor(@drawing_normal_has_ci_width_mm * @ppmm);
-@drawing_normal_has_ci_height_px:   floor(@drawing_normal_has_ci_height_mm * @ppmm);
+@drawing_normal_width_px:               floor(@drawing_normal_width_mm * @ppmm);
+@drawing_normal_height_px:              floor(@drawing_normal_height_mm * @ppmm);
+@drawing_normal_has_ci_width_px:        floor(@drawing_normal_has_ci_width_mm * @ppmm);
+@drawing_normal_has_ci_height_px:       floor(@drawing_normal_has_ci_height_mm * @ppmm);
 
-@customer_image_wide_width_px:      floor(@customer_image_wide_width_mm * @ppmm);
-@customer_image_wide_height_px:     floor(@customer_image_wide_height_mm * @ppmm);
+@customer_image_wide_width_px:          floor(@customer_image_wide_width_mm * @ppmm);
+@customer_image_wide_height_px:         floor(@customer_image_wide_height_mm * @ppmm);
 
-@drawing_wide_width_px:             floor(@drawing_wide_width_mm * @ppmm);
-@drawing_wide_height_px:            floor(@drawing_wide_height_mm * @ppmm);
-@drawing_wide_has_ci_width_px:      floor(@drawing_wide_has_ci_width_mm * @ppmm);
-@drawing_wide_has_ci_height_px:     floor(@drawing_wide_has_ci_height_mm * @ppmm);
+@drawing_wide_width_px:                 floor(@drawing_wide_width_mm * @ppmm);
+@drawing_wide_height_px:                floor(@drawing_wide_height_mm * @ppmm);
+@drawing_wide_has_ci_width_px:          floor(@drawing_wide_has_ci_width_mm * @ppmm);
+@drawing_wide_has_ci_height_px:         floor(@drawing_wide_has_ci_height_mm * @ppmm);
 
 @customer_image_extrawide_width_px:     floor(@customer_image_extrawide_width_mm * @ppmm);
 @customer_image_extrawide_height_px:    floor(@customer_image_extrawide_height_mm * @ppmm);
 
-@drawing_extrawide_width_px:        floor(@drawing_extrawide_width_mm * @ppmm);
-@drawing_extrawide_height_px:       floor(@drawing_extrawide_height_mm * @ppmm);
+@drawing_extrawide_width_px:            floor(@drawing_extrawide_width_mm * @ppmm);
+@drawing_extrawide_height_px:           floor(@drawing_extrawide_height_mm * @ppmm);
 @drawing_extrawide_has_ci_width_px:     floor(@drawing_extrawide_has_ci_width_mm * @ppmm);
 @drawing_extrawide_has_ci_height_px:    floor(@drawing_extrawide_has_ci_height_mm * @ppmm);
 
 @customer_image_extralarge_width_px:    floor(@customer_image_extralarge_width_mm * @ppmm);
 @customer_image_extralarge_height_px:   floor(@customer_image_extralarge_height_mm * @ppmm);
 
-@drawing_extralarge_width_px:       floor(@drawing_extralarge_width_mm * @ppmm);
-@drawing_extralarge_height_px:      floor(@drawing_extralarge_height_mm * @ppmm);
+@drawing_extralarge_width_px:           floor(@drawing_extralarge_width_mm * @ppmm);
+@drawing_extralarge_height_px:          floor(@drawing_extralarge_height_mm * @ppmm);
 @drawing_extralarge_has_ci_width_px:    floor(@drawing_extralarge_has_ci_width_mm * @ppmm);
 @drawing_extralarge_has_ci_height_px:   floor(@drawing_extralarge_has_ci_height_mm * @ppmm);
 
@@ -215,7 +215,8 @@
     padding: 1rem 0;
     margin: 0 0 2rem;
     border: @border_medium;
-    background-color: darken(@white, 2%);
+    // background-color: darken(@white, 2%);
+    background-color: @gray_2;
     // max-width: @quote_max_width;
     // max-width: unit(ceil(@page_width_mm * @ppmm), px);
     width: unit(ceil(@page_width_mm * @ppmm), px);
@@ -233,7 +234,8 @@
 
     .display-options > div + div,
     .export-options-container > div + div {
-        border-left: 1px solid #ccc;
+        // border-left: 1px solid #ccc;
+        border-left: @border_medium;
     }
 
     .display-options h5 {
@@ -270,7 +272,8 @@
 
     .export-options span em {
         font-style: normal;
-        color: lighten(@black, 45%);
+        // color: lighten(@black, 45%);
+        color: @gray_55;
     }
 
     .download-button .btn {
@@ -280,7 +283,7 @@
 
 
 //  ------------------------------------------------------------------------
-//  Quote header (Company info)
+//  Quote header (Company info etc)
 //  ------------------------------------------------------------------------
 
 .quote-header-container {
@@ -307,7 +310,8 @@
         padding-top: 2rem;
         margin: 0 0 4rem;
         font-weight: 700;
-        color: darken(@white, 30%);
+        // color: darken(@white, 30%);
+        color: @gray_20;
         text-transform: uppercase;
         text-align: right;
     }
@@ -341,7 +345,8 @@
     .client-name small {
         display: block;
         margin-bottom: 1rem;
-        color: #777;
+        // color: #777;
+        color: @gray_55;
     }
 }
 
@@ -379,6 +384,7 @@
 //  Single unit item
 //  ------------------------------------------------------------------------
 
+//  TODO: what is this rule?
 .multiunit-titlebar {
     // padding: 0.7rem 1.2rem;
     padding: @cell_padding;
@@ -478,14 +484,14 @@
     .primary-info strong,
     .primary-info span {
         display: block;
-        float: left;
+        // float: left;
         padding: 0.5rem 1.5rem;
     }
 
     .primary-info strong {
         font-weight: 400;
         // border-right: @border_dark;
-        background-color: @bg_light;
+        // background-color: @bg_light;
     }
 
     .primary-info span {
@@ -494,15 +500,15 @@
         font-size: 1.2em;
     }
 
-    .primary-info.has-price strong {
-        // border-bottom: @border_dark;
-        border-right: none;
-    }
+    // .primary-info.has-price strong {
+    //     // border-bottom: @border_dark;
+    //     border-right: none;
+    // }
 
-    .primary-info.has-price strong,
-    .primary-info.has-price span {
-        float: none;
-    }
+    // .primary-info.has-price strong,
+    // .primary-info.has-price span {
+    //     float: none;
+    // }
 
     //  No profile warning (also left)
     //  --------------------------------------------------------------------
@@ -586,6 +592,7 @@
 .quote-table tbody td.product-visuals {
     padding: 0;
     border-right: none;
+    // border: none;
 }
 
 td.product-visuals {
@@ -648,6 +655,7 @@ td.product-visuals {
 .quote-table tbody td.product-description {
     padding: 0;
     border-left: none;
+    // border: none;
 }
 
 td.product-description {
@@ -671,6 +679,7 @@ td.product-description {
         margin-top: 0;
     }
 
+    //  TODO: why pixels?
     p {
         margin-top: 10px;
     }
@@ -693,6 +702,7 @@ td.product-description {
     ul {
         display: table;
         padding: 0;
+        margin: 0;
         // padding: @cell_padding;
         list-style-type: none;
         width: 100%;
@@ -701,12 +711,14 @@ td.product-description {
     li {
         display: table-row;
         line-height: 1;
+        // line-height: 1.2;
     }
 
     li > strong,
     li > span {
         display: table-cell;
         padding-bottom: 0.5em;
+        // padding-bottom: 0.3em;
     }
 
     li > strong {
@@ -745,7 +757,8 @@ td.product-description {
     .size-label {
         font-size: 0.8em;
         padding: 0 0.4rem;
-        background-color: darken(@white, 5%);
+        // background-color: darken(@white, 5%);
+        background-color: @gray_2;
         font-style: normal;
     }
 
@@ -767,7 +780,8 @@ td.product-description {
     li em {
         padding: 0 0.2em;
         font-style: normal;
-        color: darken(@white, 40%);
+        // color: darken(@white, 40%);
+        color: @gray_55;
     }
 
     // li small {
@@ -951,6 +965,7 @@ td.product-description {
         li {
             display: flex;
             justify-content: space-between;
+            break-inside: avoid-column;
         }
 
         li > strong,
@@ -1330,7 +1345,8 @@ div + table.grand-total {
     }
 
     table span {
-        color: lighten(@black, 40%);
+        // color: lighten(@black, 40%);
+        color: @gray_55;
     }
 }
 
@@ -1343,4 +1359,359 @@ div + table.grand-total {
 //  set in millimeters
 //  ------------------------------------------------------------------------
 
+@media print {
+    @page {
+        size: A4 landscape;
+        //  Bottom margin is reduced by 1 to allow some extra space around
+        //  quote items to avoid borders overflowing to a new page
+        margin:
+            unit(@page_margin_top_mm, mm)
+            unit(@page_margin_right_mm, mm)
+            unit(@page_margin_bottom_mm - 1, mm)
+            unit(@page_margin_left_mm, mm);
+    }
 
+    .header {
+        display: none;
+    }
+
+    .main {
+        padding: 0;
+        width: 100%;
+        height: auto;
+        // font-size: 11px;
+        font-size: 9pt;
+        min-width: 0;
+    }
+
+    .main h5,
+    .main h6 {
+        font-size: 9pt;
+    }
+
+    .units-table-container {
+        display: none;
+    }
+
+    //  Fixes thead printing issue with Chrome 53. See this for more details:
+    //  https://bugs.chromium.org/p/chromium/issues/detail?id=24826
+    thead {
+        display: table-row-group;
+    }
+
+    //  --------------------------------------------------------------------
+    //  Quote-specific styles
+    //  --------------------------------------------------------------------
+
+    .quote-screen,
+    .supplier-request-screen {
+        display: block;
+    }
+
+    .quote-outer-container,
+    .supplier-request-outer-container {
+        padding: 0;
+    }
+
+    .quote-container,
+    .supplier-request-container {
+        padding: 0;
+        margin: 0;
+        border: none;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .quote-outer-container .controls-container,
+    .supplier-request-outer-container .controls-container {
+        display: none;
+    }
+
+    //  Override some bootstrap goodies
+    .quote-container,
+    .supplier-request-container {
+        a[href]:after,
+        abbr[title]:after,
+        a[href^="#"]:after,
+        a[href^="javascript:"]:after {
+            content: '';
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Quote header (Company info etc)
+    //  --------------------------------------------------------------------
+
+    .quote-header-container,
+    .supplier-request-header-container {
+        page-break-after: always;
+    }
+
+    .quote-header h1,
+    .supplier-request-header h1 {
+        // color: #b3b3b3 !important;
+        color: @gray_20 !important;
+    }
+
+    .quote-project-info .client-name small {
+        // color: #777 !important;
+        color: @gray_55 !important;
+    }
+
+    //  --------------------------------------------------------------------
+    //  Table (units, extras, subtotal)
+    //  --------------------------------------------------------------------
+
+    .quote-table-container,
+    .supplier-request-table-container {
+        margin: 0;
+    }
+
+    .quote-table .total-units,
+    .quote-table .subtotal,
+    .quote-extras-table-container,
+    .quote-optional-extras-table-container,
+    .grand-total,
+    .quote-terms-info {
+        page-break-inside: avoid;
+    }
+
+    //  --------------------------------------------------------------------
+    //  Single quote item
+    //  --------------------------------------------------------------------
+
+    .quote-item {
+        max-width: unit(@page_inner_width_mm, mm);
+        min-height: unit(@page_inner_height_mm, mm);
+        page-break-after: always;
+        margin: 0;
+    }
+
+    //  --------------------------------------------------------------------
+    //  Quote item header
+    //  --------------------------------------------------------------------
+
+    .quote-unit-heading {
+        margin-bottom: unit(@item_header_margin_bottom_mm, mm);
+        height: unit(@item_header_height_mm, mm);
+    }
+
+    //  --------------------------------------------------------------------
+    //  Quote item visuals
+    //  --------------------------------------------------------------------
+
+    td.product-visuals {
+        width: unit(@item_visuals_width_mm, mm);
+
+        .product-visuals-container {
+            // position: relative;
+            // padding: unit(floor(@drawing_padding_mm * @ppmm), px);
+            // min-height: unit(ceil(@item_content_height_mm * @ppmm), px);
+            padding: unit(@drawing_padding_mm, mm);
+            min-height: unit(@item_content_height_mm, mm);
+
+            // background-color: #ccc;
+        }
+
+        //  TODO: needs to be reduced in size?
+        .product-visuals-title {
+            // position: absolute;
+        }
+
+        .product-image-wrapper {
+            max-width: unit(@drawing_normal_width_mm, mm);
+            max-height: unit(@drawing_normal_height_mm, mm);
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Quote item description
+    //  --------------------------------------------------------------------
+
+    td.product-description {
+        // width: unit(ceil(@item_description_width_mm * @ppmm), px);
+        width: unit(@item_description_width_mm, mm);
+        // font-size: 0.9em;
+
+        .exceptions,
+        .exceptions strong {
+            color: @red !important;
+        }
+
+        .description-data-container {
+            // height: 100%;
+            // min-height: unit(ceil(@item_content_height_mm * @ppmm), px);
+            min-height: unit(@item_content_height_mm, mm);
+            // border-left: @border_light;
+            // margin-left: unit(ceil(2 * @ppmm), px);
+            margin-left: unit(2, mm);
+            // padding: @cell_padding;
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Normal layout with a customer image
+    //  --------------------------------------------------------------------
+
+    .has-customer-image td.product-visuals {
+        .product-visuals-container {
+            // padding-right: @customer_image_size;
+            // padding-right: unit(floor(@drawing_normal_padding_right_mm * @ppmm), px);
+            padding-right: unit(@drawing_normal_padding_right_mm, mm);
+        }
+
+        .customer-image-inner {
+            // position: absolute;
+            // bottom: unit(ceil(@drawing_padding_mm * @ppmm), px);
+            // right: 0;
+            // width: unit(ceil(@customer_image_normal_width_mm * @ppmm), px);
+            // height: auto;
+            // max-height: unit(ceil(@customer_image_normal_height_mm * @ppmm), px);
+            bottom: unit(@drawing_padding_mm, mm);
+            width: unit(@customer_image_normal_width_mm, mm);
+            max-height: unit(@customer_image_normal_height_mm, mm);
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Wide layout
+    //  --------------------------------------------------------------------
+
+    .quote-unit.layout-wide {
+        td.product-visuals {
+            .product-image-wrapper {
+                max-width: unit(@drawing_wide_width_mm, mm);
+                max-height: unit(@drawing_wide_height_mm, mm);
+            }
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Wide layout with a customer image
+    //  --------------------------------------------------------------------
+
+    .quote-unit.layout-wide.has-customer-image {
+        td.product-visuals {
+            .product-visuals-container {
+                padding: unit(@drawing_padding_mm, mm);
+                padding-bottom: unit(@drawing_wide_padding_bottom_mm, mm);
+            }
+
+            .customer-image-inner {
+                right: unit(@drawing_padding_mm, mm);
+                // bottom: 0;
+                width: unit(@customer_image_wide_width_mm, mm);
+                max-height: unit(@customer_image_wide_height_mm, mm);
+            }
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Extrawide layout
+    //  --------------------------------------------------------------------
+
+    //  FIXME: this doesn't fit into one print page, has extra borders or smth
+    .quote-unit.layout-extrawide {
+        tr + tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+
+        td.product-visuals {
+            // width: 100%;
+
+            .product-visuals-container {
+                min-height: unit(@item_visuals_extrawide_height_mm, mm);
+            }
+
+            .product-image-wrapper {
+                max-width: unit(@drawing_extrawide_width_mm, mm);
+                max-height: unit(@drawing_extrawide_height_mm, mm);
+            }
+        }
+
+        td.product-description {
+            .description-data-container {
+                //  TODO: min-height here should only be triggered for print
+                min-height: unit(@item_description_extrawide_height_mm, mm);
+                // margin-left: 0;
+                // border-bottom: @border_light;
+                // border-right: @border_light;
+                margin-bottom: unit(@item_description_extrawide_margin_bottom_mm, mm);
+                // column-count: 3;
+                // column-gap: 2em;
+            }
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Extrawide layout with a customer image
+    //  --------------------------------------------------------------------
+
+    .quote-unit.layout-extrawide.has-customer-image {
+        td.product-visuals {
+            .product-visuals-container {
+                padding: unit(@drawing_padding_mm, mm);
+                min-height: unit(@item_visuals_extrawide_height_mm - @drawing_padding_mm * 2 - @customer_image_extrawide_height_mm, mm);
+            }
+
+            // .product-image-inner {
+            //     clear: both;
+            //     width: 100%;
+            // }
+
+            .customer-image-inner {
+                // margin-left: unit(ceil(@drawing_padding_mm * @ppmm), px);
+                // position: relative;
+                // top: auto;
+                // right: auto;
+                // left: auto;
+                // bottom: auto;
+                // float: right;
+                margin-bottom: unit(@drawing_padding_mm, mm);
+                width: unit(@customer_image_extrawide_width_mm, mm);
+                // height: unit(ceil(@customer_image_extrawide_height_mm * @ppmm), px);
+                // height: auto;
+                max-height: unit(@customer_image_extrawide_height_mm, mm);
+            }
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Extralarge layout
+    //  --------------------------------------------------------------------
+
+    .quote-unit.layout-extralarge {
+        &:extend(.quote-unit.layout-extrawide all);
+
+        td.product-visuals {
+            .product-visuals-container {
+                min-height: unit(@item_visuals_extralarge_height_mm, mm);
+            }
+
+            .product-image-wrapper {
+                max-width: unit(@drawing_extralarge_width_mm, mm);
+                max-height: unit(@drawing_extralarge_height_mm, mm);
+            }
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Extralarge layout with a customer image
+    //  --------------------------------------------------------------------
+
+    .quote-unit.layout-extralarge.has-customer-image {
+        td.product-visuals {
+            .product-visuals-container {
+                padding: unit(@drawing_padding_mm, mm);
+            }
+
+            .customer-image-inner {
+                width: unit(@customer_image_extralarge_width_mm, mm);
+                // height: unit(ceil(@customer_image_extralarge_height_mm * @ppmm), px);
+                height: auto;
+                max-height: unit(@customer_image_extralarge_height_mm , mm);
+            }
+        }
+    }
+}
