@@ -56,67 +56,49 @@
 </table>
 
 <table class="quote-unit multiunit layout-{{ responsive_mode }}{{#if customer_image }} has-customer-image{{/if}}">
-    {{!-- <thead>
-    <tr>
-        {{#if product_image }}
-            <th class="product-visuals">Shop Drawing: <em>{{ product_image.title }}</em></th>
-        {{else}}
-            {{#if customer_image }}
-                <th class="customer-image">Customer Image</th>
-            {{/if}}
-        {{/if}}
-        {{#unless description_separate_row }}
-        <th class="product-description">Product Description</th>
-        {{/unless}}
-    </tr>
-    </thead> --}}
     <tbody>
         {{#if description_separate_row }}
         <tr>
             @require( './partials/quote-multiunit-product-description.hbs' )
         </tr>
+            {{#if customer_image }}
+            <tr><td class="customer-image">
+                @require( './partials/quote-unit-customer-image.hbs' )
+            </td></tr>
+            {{/if}}
         {{/if}}
         <tr>
-        {{#if product_image }}
-            <td class="product-visuals">
+        {{#if any_image }}
+            <td class="product-visuals{{#unless product_image }} no-drawing{{/unless}}">
                 <div class="product-visuals-container">
                     <div class="product-visuals-title">
-                        {{#if product_image }}
-                            <h5>Shop Drawing: <em>{{ product_image.title }}</em></h5>
-                        {{else}}
-                            {{#if customer_image }}
-                                <h5>Customer Image</h5>
-                            {{/if}}
-                        {{/if}}
-                    </div>
-
-                    {{#if customer_image }}
-                    <div class="customer-image-inner">
+                    {{#if product_image }}
+                        <h5>Shop Drawing: <em>{{ product_image.title }}</em></h5>
+                    {{else}}
                         <h5>Customer Image</h5>
-                        <div class="customer-image-wrapper"><img src="{{ customer_image }}" alt=""></div>
-                    </div>
                     {{/if}}
+                    </div>
 
+                    {{#if product_image }}
                     <div class="product-image-inner">
                         {{#if product_image.img }}
                             <div class="product-image-wrapper"><img src="{{ product_image.img }}" alt=""></div>
                         {{/if}}
                     </div>
+                    {{/if}}
+
+                    {{#unless description_separate_row }}
+                    {{#if customer_image }}
+                        @require( './partials/quote-unit-customer-image.hbs' )
+                    {{/if}}
+                    {{/unless}}
                 </div>
             </td>
-        {{else}}
-            {{#if customer_image }}
-            <td class="customer-image">
-                <div class="customer-image-inner">
-                    <div class="customer-image-wrapper"><img src="{{ customer_image }}" alt=""></div>
-                </div>
-            </td>
-            {{/if}}
         {{/if}}
         {{#unless description_separate_row }}
-        @require( './partials/quote-multiunit-product-description.hbs' )
+            @require( './partials/quote-multiunit-product-description.hbs' )
         {{/unless}}
-    </tr>
+        </tr>
     </tbody>
 </table>
 

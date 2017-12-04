@@ -119,12 +119,16 @@ export default Marionette.View.extend({
         return getResponsiveMode({
             width_mm: this.model.getWidthMM(),
             height_mm: this.model.getHeightMM(),
+            show_drawings: this.shouldShowDrawings(),
         });
     },
     templateContext() {
         const show_customer_image = this.shouldShowCustomerImage();
         const show_drawings = this.shouldShowDrawings();
         const show_price = this.display_options.show_price !== false;
+
+        const customer_image = show_customer_image ? this.getCustomerImage() : '';
+        const product_image = show_drawings ? this.getProductImage() : '';
 
         return {
             ref_num: this.model.getRefNum(),
@@ -134,8 +138,9 @@ export default Marionette.View.extend({
             description: this.getDescription(),
             notes: this.model.get('notes'),
             quantity: this.model.get('quantity'),
-            customer_image: show_customer_image ? this.getCustomerImage() : '',
-            product_image: show_drawings ? this.getProductImage() : '',
+            customer_image,
+            product_image,
+            any_image: customer_image || product_image,
             show_price,
             price: show_price ? this.getPrices() : null,
         };

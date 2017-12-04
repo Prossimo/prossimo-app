@@ -61,6 +61,7 @@ export function getResponsiveMode(opts) {
     const defaults = {
         width_mm: 0,
         height_mm: 0,
+        show_drawings: true,
     };
     const options = _.defaults({}, opts, defaults);
 
@@ -80,6 +81,11 @@ export function getResponsiveMode(opts) {
         options.height_mm > 2000
     ) {
         mode = 'extralarge';
+    }
+
+    //  If we replace drawings with a customer image, force normal layout
+    if (!options.show_drawings) {
+        mode = 'normal';
     }
 
     return mode;
