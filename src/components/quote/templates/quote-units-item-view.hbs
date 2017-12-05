@@ -72,8 +72,8 @@
     </tr></tbody>
 </table>
 
-{{!-- This element can have up to 4 classes at once: "quote-unit loneunit layout-wide has-customer-image" --}}
-<table class="quote-unit{{#if is_subunit }} subunit{{else}} loneunit{{/if}} layout-{{ responsive_mode }}{{#if customer_image }} has-customer-image{{/if}}">
+{{!-- This element can have up to 5 classes at once: "quote-unit loneunit layout-wide has-customer-image" --}}
+<table class="quote-unit{{#if is_subunit }} subunit{{else}} loneunit{{/if}} layout-{{ responsive_mode }}{{#if customer_image }} has-customer-image{{/if}}{{#unless product_image }} no-drawing{{/unless}}">
     <tbody>
         {{#if description_separate_row }}
             <tr>
@@ -87,7 +87,7 @@
         {{/if}}
         <tr>
         {{#if any_image }}
-            <td class="product-visuals{{#unless product_image }} no-drawing{{/unless}}">
+            <td class="product-visuals">
                 <div class="product-visuals-container">
                     <div class="product-visuals-title">
                     {{#if product_image }}

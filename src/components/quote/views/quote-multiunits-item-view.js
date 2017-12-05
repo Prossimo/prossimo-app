@@ -8,7 +8,7 @@ import template from '../templates/quote-multiunits-item-view.hbs';
 import { getResponsiveMode, getPreviewSize } from '../../../utils/quote-helpers';
 
 export default Marionette.View.extend({
-    className: 'quote-unit-group multiunit',
+    className: 'quote-unit-group',
     template,
     getPrices() {
         const unit_price = this.model.getUnitPrice();

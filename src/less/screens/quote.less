@@ -336,15 +336,6 @@
     table-layout: fixed;
 }
 
-.quote-unit-group.multiunit {
-    margin-bottom: @item_margin;
-}
-
-.subunits-container {
-    position: relative;
-    margin-top: @item_margin;
-}
-
 
 //  ------------------------------------------------------------------------
 //  Unit info heading (ref, mark, qty, price)
@@ -433,6 +424,7 @@
 
     .unit-price li {
         display: table-row;
+        line-height: 1.25;
     }
 
     .unit-price strong {
@@ -457,14 +449,12 @@
 //  Unit visuals
 //  ------------------------------------------------------------------------
 
-//  TODO: should be a nicer way to add this selector
 .quote-table tbody td.product-visuals {
     padding: 0;
-    border-right: none;
 }
 
 td.product-visuals {
-    width: unit(ceil(@item_visuals_width_mm * @ppmm), px);
+    width: unit(ceil((@item_visuals_width_mm + 2) * @ppmm), px);
 
     .product-visuals-container {
         position: relative;
@@ -476,6 +466,7 @@ td.product-visuals {
             unit(floor(@drawing_padding_mm * @ppmm), px)
             unit(floor(@drawing_padding_mm * 0.5 * @ppmm), px);
         min-height: unit(ceil(@item_content_height_mm * @ppmm), px);
+        max-width: unit(ceil(@item_visuals_width_mm * @ppmm), px);
     }
 
     .product-visuals-title {
@@ -512,25 +503,17 @@ td.product-visuals {
 //  Unit description
 //  ------------------------------------------------------------------------
 
-//  TODO: again, should be a nicer way to set this rule
 .quote-table tbody td.product-description {
     padding: 0;
-    border-left: none;
 }
 
 td.product-description {
-    width: unit(ceil(@item_description_width_mm * @ppmm), px);
+    width: unit(ceil((@item_description_width_mm - 2) * @ppmm), px);
     font-size: 0.9em;
 
     .description-data-container {
         min-height: unit(ceil(@item_content_height_mm * @ppmm), px);
-        border-left: @border_light;
         padding: @cell_padding;
-    }
-
-    //  Set left margin only when there are both visuals and description
-    td + & .description-data-container {
-        margin-left: unit(ceil(2 * @ppmm), px);
     }
 
     h5 {
@@ -627,7 +610,7 @@ td.product-description {
 
     .customer-image-inner {
         position: absolute;
-        bottom: unit(ceil(@drawing_padding_mm * @ppmm), px);
+        bottom: unit(ceil(@drawing_padding_mm * 0.5 * @ppmm), px);
         right: 0;
         width: unit(ceil(@customer_image_normal_width_mm * @ppmm), px);
         height: auto;
@@ -635,6 +618,10 @@ td.product-description {
     }
 
     .customer-image-inner h5 {
+        position: absolute;
+        top: unit(ceil(@drawing_padding_mm * -1 * @ppmm), px);
+        left: 0;
+        width: 100%;
         margin-top: 0;
         font-style: italic;
     }
@@ -645,8 +632,10 @@ td.product-description {
 
     .customer-image-wrapper img {
         display: block;
-        max-width: 100%;
+        width: auto;
         height: auto;
+        max-width: unit(ceil(@customer_image_normal_width_mm * @ppmm), px);
+        max-height: unit(ceil(@customer_image_normal_height_mm * @ppmm), px);
     }
 }
 
@@ -658,10 +647,16 @@ td.product-description {
 
 
 //  ------------------------------------------------------------------------
-//  Normal layout with a customer image and NO drawing
+//  Normal layout with / without a customer image and NO drawing
 //  ------------------------------------------------------------------------
 
-.has-customer-image td.product-visuals.no-drawing {
+.no-drawing td.product-description {
+    .description-data-container {
+        min-height: 0;
+    }
+}
+
+.has-customer-image.no-drawing td.product-visuals {
     .product-visuals-container {
         padding:
             unit(floor(@drawing_padding_mm * 1.5 * @ppmm), px)
@@ -669,6 +664,7 @@ td.product-description {
             unit(floor(@drawing_padding_mm * 0.5 * @ppmm), px);
         max-width: unit(ceil(@item_visuals_width_mm * @ppmm), px);
         max-height: unit(ceil(@item_content_height_mm * @ppmm), px);
+        min-height: 0;
     }
 
     .customer-image-inner {
@@ -679,6 +675,8 @@ td.product-description {
         left: auto;
         width: 100%;
         height: auto;
+        max-width: unit(floor(@drawing_normal_width_mm * @ppmm), px);
+        max-height: unit(floor(@drawing_normal_height_mm * @ppmm), px);
     }
 
     .customer-image-inner h5 {
@@ -688,8 +686,8 @@ td.product-description {
     .customer-image-wrapper img {
         margin-left: auto;
         margin-right: auto;
-        max-width: unit(floor((@item_visuals_width_mm - @drawing_padding_mm * 2) * @ppmm), px);
-        max-height: unit(floor((@item_content_height_mm - @drawing_padding_mm * 2) * @ppmm), px);
+        max-width: unit(floor(@drawing_normal_width_mm * @ppmm), px);
+        max-height: unit(floor(@drawing_normal_height_mm * @ppmm), px);
     }
 }
 
@@ -726,6 +724,12 @@ td.product-description {
             right: unit(ceil(@drawing_padding_mm * @ppmm), px);
             width: unit(ceil(@customer_image_wide_width_mm * @ppmm), px);
             max-height: unit(ceil(@customer_image_wide_height_mm * @ppmm), px);
+            max-width: unit(ceil(@customer_image_wide_width_mm * @ppmm), px);
+        }
+
+        .customer-image-inner img {
+            max-height: unit(ceil(@customer_image_wide_height_mm * @ppmm), px);
+            max-width: unit(ceil(@customer_image_wide_width_mm * @ppmm), px);
         }
     }
 }
@@ -735,15 +739,15 @@ td.product-description {
 //  Extrawide layout
 //  ------------------------------------------------------------------------
 
-//  TODO: again, this is not right
-//  TODO: we probably should set these borders on div containers, not tables
 .quote-table .quote-unit.layout-extrawide tbody {
-    td.product-visuals {
-        border-right: @border_light;
+    td.product-description {
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
     }
 
-    td.product-description {
-        border-right: none;
+    td.product-visuals {
+        border-top: none;
     }
 }
 
@@ -753,6 +757,8 @@ td.product-description {
 
         .product-visuals-container {
             min-height: unit(ceil(@item_visuals_extrawide_height_mm * @ppmm), px);
+            max-width: none;
+            border-top: @border_light;
         }
 
         .product-image-wrapper {
@@ -763,11 +769,11 @@ td.product-description {
 
     td.product-description {
         .description-data-container {
-            //  TODO: min-height here should only be triggered for print
-            min-height: unit(ceil(@item_description_extrawide_height_mm * @ppmm), px);
+            min-height: 0;
             margin-left: 0;
             border-bottom: @border_light;
             border-right: @border_light;
+            border-left: @border_light;
             margin-bottom: unit(ceil(@item_description_extrawide_margin_bottom_mm * @ppmm), px);
             column-count: 3;
             column-gap: 2em;
@@ -813,6 +819,7 @@ td.product-description {
                 unit(floor(@drawing_padding_mm * @ppmm), px)
                 unit(floor(@drawing_padding_mm * 0.5 * @ppmm), px);
             min-height: unit(ceil((@item_visuals_extrawide_height_mm - @drawing_padding_mm * 2 - @customer_image_extrawide_height_mm) * @ppmm), px);
+            border-top: none;
         }
 
         .product-image-inner {
@@ -820,22 +827,39 @@ td.product-description {
         }
     }
 
+    //  In this case, the whole cell height should be equal to
+    //  @customer_image_extrawide_height_mm + @drawing_padding_mm, so we
+    //  calculate all other heights based on this
     td.customer-image {
+        padding: 0;
+
         .customer-image-inner {
             position: relative;
             top: auto;
             right: auto;
             left: auto;
             bottom: auto;
-            margin-bottom: unit(ceil(@drawing_padding_mm * @ppmm), px);
+            padding:
+                unit(ceil(@drawing_padding_mm * 1.5 * @ppmm), px)
+                unit(ceil(@drawing_padding_mm * @ppmm), px)
+                unit(ceil(@drawing_padding_mm * 0.5 * @ppmm), px);
             width: unit(ceil(@customer_image_extrawide_width_mm * @ppmm), px);
             height: auto;
-            max-height: unit(ceil(@customer_image_extrawide_height_mm * @ppmm), px);
+            max-height: unit(ceil((@customer_image_extrawide_height_mm + @drawing_padding_mm) * @ppmm), px);
         }
 
         .customer-image-inner h5 {
+            padding: @cell_padding;
+            top: 0;
             font-weight: 700;
             font-style: normal;
+            margin-bottom: 0;
+            height: unit(ceil(@drawing_padding_mm * @ppmm), px);
+        }
+
+        .customer-image-inner img {
+            max-width: unit(ceil(@customer_image_extrawide_width_mm * @ppmm), px);
+            max-height: unit(ceil((@customer_image_extrawide_height_mm - @drawing_padding_mm) * @ppmm), px);
         }
     }
 }
@@ -871,7 +895,12 @@ td.product-description {
         .customer-image-inner {
             width: unit(ceil(@customer_image_extralarge_width_mm * @ppmm), px);
             height: auto;
-            max-height: unit(ceil(@customer_image_extralarge_height_mm * @ppmm), px);
+            max-height: unit(ceil((@customer_image_extralarge_height_mm + @drawing_padding_mm) * @ppmm), px);
+        }
+
+        .customer-image-inner img {
+            max-width: unit(ceil(@customer_image_extralarge_width_mm * @ppmm), px);
+            max-height: unit(ceil((@customer_image_extralarge_height_mm - @drawing_padding_mm) * @ppmm), px);
         }
     }
 }
@@ -1090,7 +1119,8 @@ div + table.grand-total {
     }
 
     .main h5,
-    .main h6 {
+    .main h6,
+    td.product-description h6 {
         font-size: 9pt;
     }
 
@@ -1204,14 +1234,15 @@ div + table.grand-total {
     //  --------------------------------------------------------------------
 
     td.product-visuals {
-        width: unit(@item_visuals_width_mm, mm);
+        width: unit(@item_visuals_width_mm + 2, mm);
 
         .product-visuals-container {
             padding:
                 unit(floor(@drawing_padding_mm * 1.5), mm)
-                unit(@drawing_padding_mm, px)
+                unit(@drawing_padding_mm, mm)
                 unit(floor(@drawing_padding_mm * 0.5), mm);
             min-height: unit(@item_content_height_mm, mm);
+            max-width: unit(@item_visuals_width_mm, mm);
         }
 
         .product-image-wrapper {
@@ -1225,7 +1256,7 @@ div + table.grand-total {
     //  --------------------------------------------------------------------
 
     td.product-description {
-        width: unit(@item_description_width_mm, mm);
+        width: unit(@item_description_width_mm - 2, mm);
 
         .exceptions,
         .exceptions strong {
@@ -1234,11 +1265,6 @@ div + table.grand-total {
 
         .description-data-container {
             min-height: unit(@item_content_height_mm, mm);
-        }
-
-        //  Set left margin only when there are both visuals and description
-        td + & .description-data-container {
-            margin-left: unit(2, mm);
         }
     }
 
@@ -1252,8 +1278,17 @@ div + table.grand-total {
         }
 
         .customer-image-inner {
-            bottom: unit(@drawing_padding_mm, mm);
+            bottom: unit(floor(@drawing_padding_mm * 0.5), mm);
             width: unit(@customer_image_normal_width_mm, mm);
+            max-height: unit(@customer_image_normal_height_mm, mm);
+        }
+
+        .customer-image-inner h5 {
+            top: unit(@drawing_padding_mm * -1, mm);
+        }
+
+        .customer-image-inner img {
+            max-width: unit(@customer_image_normal_width_mm, mm);
             max-height: unit(@customer_image_normal_height_mm, mm);
         }
     }
@@ -1262,7 +1297,13 @@ div + table.grand-total {
     //  Normal layout with a customer image and NO drawing
     //  --------------------------------------------------------------------
 
-    .has-customer-image td.product-visuals.no-drawing {
+    .no-drawing td.product-description {
+        .description-data-container {
+            min-height: unit(@item_content_height_mm, mm);
+        }
+    }
+
+    .has-customer-image.no-drawing td.product-visuals {
         .product-visuals-container {
             padding:
                 unit(floor(@drawing_padding_mm * 1.5), mm)
@@ -1270,11 +1311,17 @@ div + table.grand-total {
                 unit(floor(@drawing_padding_mm * 0.5), mm);
             max-width: unit(@item_visuals_width_mm, mm);
             max-height: unit(@item_content_height_mm, mm);
+            min-height: unit(@item_content_height_mm, mm);
+        }
+
+        .customer-image-inner {
+            max-width: unit(@drawing_normal_width_mm, mm);
+            max-height: unit(@drawing_normal_height_mm, mm);
         }
 
         .customer-image-wrapper img {
-            max-width: unit(floor(@item_visuals_width_mm - @drawing_padding_mm * 2), mm);
-            max-height: unit(floor(@item_content_height_mm - @drawing_padding_mm * 2), mm);
+            max-width: unit(@drawing_normal_width_mm, mm);
+            max-height: unit(@drawing_normal_height_mm, mm);
         }
     }
 
@@ -1310,6 +1357,11 @@ div + table.grand-total {
                 width: unit(@customer_image_wide_width_mm, mm);
                 max-height: unit(@customer_image_wide_height_mm, mm);
             }
+
+            .customer-image-inner img {
+                max-width: unit(@customer_image_wide_width_mm, mm);
+                max-height: unit(@customer_image_wide_height_mm, mm);
+            }
         }
     }
 
@@ -1317,7 +1369,6 @@ div + table.grand-total {
     //  Extrawide layout
     //  --------------------------------------------------------------------
 
-    //  FIXME: this doesn't fit into one print page, has extra borders or smth
     .quote-unit.layout-extrawide {
         tr + tr {
             page-break-inside: avoid;
@@ -1327,6 +1378,7 @@ div + table.grand-total {
         td.product-visuals {
             .product-visuals-container {
                 min-height: unit(@item_visuals_extrawide_height_mm, mm);
+                max-width: none;
             }
 
             .product-image-wrapper {
@@ -1337,7 +1389,6 @@ div + table.grand-total {
 
         td.product-description {
             .description-data-container {
-                //  TODO: min-height here should only be triggered for print
                 min-height: unit(@item_description_extrawide_height_mm, mm);
                 margin-bottom: unit(@item_description_extrawide_margin_bottom_mm, mm);
             }
@@ -1359,9 +1410,23 @@ div + table.grand-total {
             }
 
             .customer-image-inner {
-                margin-bottom: unit(@drawing_padding_mm, mm);
+                padding:
+                    unit(ceil(@drawing_padding_mm * 1.5), mm)
+                    unit(@drawing_padding_mm, mm)
+                    unit(ceil(@drawing_padding_mm * 0.5), mm);
+                height: auto;
                 width: unit(@customer_image_extrawide_width_mm, mm);
-                max-height: unit(@customer_image_extrawide_height_mm, mm);
+                max-height: unit(@customer_image_extrawide_height_mm + @drawing_padding_mm, mm);
+                min-height: unit(@customer_image_extrawide_height_mm + @drawing_padding_mm, mm);
+            }
+
+            .customer-image-inner h5 {
+                height: unit(@drawing_padding_mm, mm);
+            }
+
+            .customer-image-inner img {
+                max-width: unit(@customer_image_extrawide_width_mm, mm);
+                max-height: unit(@customer_image_extrawide_height_mm - @drawing_padding_mm, mm);
             }
         }
     }
@@ -1399,9 +1464,18 @@ div + table.grand-total {
             }
 
             .customer-image-inner {
-                width: unit(@customer_image_extralarge_width_mm, mm);
+                padding:
+                    unit(ceil(@drawing_padding_mm * 1.5), mm)
+                    unit(@drawing_padding_mm, mm)
+                    unit(ceil(@drawing_padding_mm * 0.5), mm);
                 height: auto;
-                max-height: unit(@customer_image_extralarge_height_mm , mm);
+                width: unit(@customer_image_extralarge_width_mm, mm);
+                max-height: unit(@customer_image_extralarge_height_mm + @drawing_padding_mm, mm);
+            }
+
+            .customer-image-inner img {
+                max-width: unit(@customer_image_extralarge_width_mm, mm);
+                max-height: unit(@customer_image_extralarge_height_mm - @drawing_padding_mm, mm);
             }
         }
     }
