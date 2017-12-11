@@ -1009,6 +1009,9 @@ const Unit = Backbone.Model.extend({
     getHeightMM() {
         return convert.inches_to_mm(this.get('height'));
     },
+    getAspectRatio() {
+        return parseFloat(this.get('width')) / parseFloat(this.get('height'));
+    },
     getRoughOpeningWidth() {
         return parseFloat(this.get('width')) + 1;
     },

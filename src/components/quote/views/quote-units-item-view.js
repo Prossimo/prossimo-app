@@ -4,6 +4,7 @@ import Marionette from 'backbone.marionette';
 import App from '../../../main';
 import { convert, format } from '../../../utils';
 import template from '../templates/quote-units-item-view.hbs';
+import { getResponsiveMode, getPreviewSize } from '../../../utils/quote-helpers';
 
 export default Marionette.View.extend({
     tagName: 'div',
@@ -27,16 +28,21 @@ export default Marionette.View.extend({
         };
     },
     getDescription() {
+        const show_customer_description = this.display_options.show_customer_image_and_description !== false;
         const project_settings = App.settings.getProjectSettings();
 
         //  This is the list of params that we want to see in the quote. We
         //  throw out attributes that don't apply to the current unit
         const params_list = _.filter(
-            ['rough_opening', 'description', 'opening_direction'],
+            ['description', 'opening_direction'],
             (param) => {
                 let condition = true;
 
                 if (this.model.isOperableOnlyAttribute(param) && !this.model.hasOperableSections()) {
+                    condition = false;
+                }
+
+                if (param === 'description' && !show_customer_description) {
                     condition = false;
                 }
 
@@ -63,14 +69,13 @@ export default Marionette.View.extend({
         //  Here we form the final list of properties to be shown in the
         //  Product Description column in the specific order. We do it in
         //  four steps:
-        //  1. Add Size, Rough Opening and System (or Supplier System)
+        //  1. Add Size and System (or Supplier System)
         //  2. Add properties from the source_hash object, which contains
         //  only those unit attributes that apply to the current unit
         //  3. Add list of Unit Options that apply to the current unit
         //  4. Add Threshold and U Value.
         const name_title_hash = _.extend({
             size: 'Size <small class="size-label">WxH</small>',
-            rough_opening: 'Rough Opening <small class="size-label">WxH</small>',
             system: 'System',
         }, _.object(_.pluck(source_hash, 'name'), _.pluck(source_hash, 'title')),
         _.object(dictionaries, dictionaries), {
@@ -89,11 +94,6 @@ export default Marionette.View.extend({
             threshold: this.model.profile.isThresholdPossible() ?
                 this.model.profile.getThresholdType() : false,
             u_value: this.model.get('uw') ? format.fixed(this.model.getUValue(), 3) : false,
-            rough_opening: this.display_options.show_sizes_in_mm ?
-                format.dimensions_mm(convert.inches_to_mm(this.model.getRoughOpeningWidth()),
-                    convert.inches_to_mm(this.model.getRoughOpeningHeight())) :
-                format.dimensions(this.model.getRoughOpeningWidth(), this.model.getRoughOpeningHeight(),
-                    null, project_settings.get('inches_display_mode') || null),
         };
 
         //  Extend unit attributes with options
@@ -245,14 +245,19 @@ export default Marionette.View.extend({
     },
     getProductImage() {
         const position = this.display_options.show_outside_units_view ? 'outside' : 'inside';
-        const preview_size = 600;
+        const responsive_mode = this.getResponsiveMode();
         const title = position === 'inside' ? 'View from Interior' : 'View from Exterior';
         const is_subunit = this.model.isSubunit();
+        const preview_size = getPreviewSize({
+            type: 'drawing',
+            mode: responsive_mode,
+            has_customer_image: this.shouldShowCustomerImage() && this.getCustomerImage(),
+        });
 
         return {
             img: this.model.getPreview({
-                width: preview_size,
-                height: preview_size,
+                width: preview_size.width,
+                height: preview_size.height,
                 mode: 'base64',
                 position,
                 drawNeighbors: is_subunit,
@@ -262,8 +267,21 @@ export default Marionette.View.extend({
             title,
         };
     },
+    /**
+     * We determine a mode to draw a quote entry for this unit
+     * @see getResponsiveMode() from quote helpers
+     *
+     * @return {string} Unit drawing mode
+     */
+    getResponsiveMode() {
+        return getResponsiveMode({
+            width_mm: this.model.getWidthMM(),
+            height_mm: this.model.getHeightMM(),
+            show_drawings: this.shouldShowDrawings(),
+        });
+    },
     shouldShowCustomerImage() {
-        return this.display_options.show_customer_image !== false &&
+        return this.display_options.show_customer_image_and_description !== false &&
             this.model.collection && this.model.collection.hasAtLeastOneCustomerImage();
     },
     shouldShowDrawings() {
@@ -277,18 +295,24 @@ export default Marionette.View.extend({
         const show_drawings = this.shouldShowDrawings();
         const show_price = this.display_options.show_price !== false;
 
+        const customer_image = show_customer_image ? this.getCustomerImage() : '';
+        const product_image = show_drawings ? this.getProductImage() : '';
+
         return {
             is_subunit: this.model.isSubunit(),
             ref_num: this.model.getRefNum(),
             mark: this.model.getMark(),
+            responsive_mode: this.getResponsiveMode(),
+            description_separate_row: ['extrawide', 'extralarge'].indexOf(this.getResponsiveMode()) !== -1,
             description_params: this.getDescription(),
             sash_types: this.getSashTypes(),
             glazing_names: this.getGlazingNames(),
             notes: this.model.get('notes'),
             exceptions: this.model.get('exceptions'),
             quantity: this.model.getQuantity(),
-            customer_image: show_customer_image ? this.getCustomerImage() : '',
-            product_image: show_drawings ? this.getProductImage() : '',
+            customer_image,
+            product_image,
+            any_image: customer_image || product_image,
             show_price,
             price: show_price ? this.getPrices() : null,
             has_dummy_profile: this.model.hasDummyProfile(),

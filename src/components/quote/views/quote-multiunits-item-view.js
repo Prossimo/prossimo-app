@@ -1,12 +1,14 @@
+import _ from 'underscore';
 import Marionette from 'backbone.marionette';
 
 import App from '../../../main';
 import QuoteUnitsTableView from './quote-units-table-view';
 import { convert, format } from '../../../utils';
 import template from '../templates/quote-multiunits-item-view.hbs';
+import { getResponsiveMode, getPreviewSize } from '../../../utils/quote-helpers';
 
 export default Marionette.View.extend({
-    className: 'quote-unit-group multiunit',
+    className: 'quote-unit-group',
     template,
     getPrices() {
         const unit_price = this.model.getUnitPrice();
@@ -24,6 +26,7 @@ export default Marionette.View.extend({
         };
     },
     getDescription() {
+        const show_customer_description = this.display_options.show_customer_image_and_description !== false;
         const project_settings = App.settings.getProjectSettings();
         const subunits = this.model.get('multiunit_subunits').map((subunit_link) => {
             const subunit = subunit_link.getUnit();
@@ -31,17 +34,21 @@ export default Marionette.View.extend({
                 format.dimensions_mm(convert.inches_to_mm(subunit.get('width')), convert.inches_to_mm(subunit.get('height'))) :
                 format.dimensions(subunit.get('width'), subunit.get('height'), 'fraction',
                     project_settings && project_settings.get('inches_display_mode'));
-
-            return {
+            const subunit_attributes = {
                 ref_num: subunit.getRefNum(),
                 mark: subunit.getMark(),
                 size,
-                description: subunit.get('description'),
                 notes: subunit.get('notes'),
             };
-        }, this);
 
-        const params = {
+            if (show_customer_description) {
+                subunit_attributes.description = subunit.get('description');
+            }
+
+            return subunit_attributes;
+        });
+
+        const params = _.filter({
             size: {
                 title: 'Size <small class="size-label">WxH</small>',
                 value: this.display_options.show_sizes_in_mm ?
@@ -52,7 +59,16 @@ export default Marionette.View.extend({
                 title: this.model.getTitles(['description'])[0],
                 value: this.model.get('description'),
             },
-        };
+        },
+        (param, key) => {
+            let condition = true;
+
+            if (key === 'description' && !show_customer_description) {
+                condition = false;
+            }
+
+            return condition;
+        });
 
         return {
             params,
@@ -66,7 +82,7 @@ export default Marionette.View.extend({
         return show_drawings;
     },
     shouldShowCustomerImage() {
-        return this.display_options.show_customer_image !== false &&
+        return this.display_options.show_customer_image_and_description !== false &&
             this.model.collection && this.model.collection.hasAtLeastOneCustomerImage();
     },
     getCustomerImage() {
@@ -74,13 +90,18 @@ export default Marionette.View.extend({
     },
     getProductImage() {
         const position = this.display_options.show_outside_units_view ? 'outside' : 'inside';
-        const preview_size = 600;
+        const responsive_mode = this.getResponsiveMode();
         const title = position === 'inside' ? 'View from Interior' : 'View from Exterior';
+        const preview_size = getPreviewSize({
+            type: 'drawing',
+            mode: responsive_mode,
+            has_customer_image: this.shouldShowCustomerImage() && this.getCustomerImage(),
+        });
 
         return {
             img: this.model.getPreview({
-                width: preview_size,
-                height: preview_size,
+                width: preview_size.width,
+                height: preview_size.height,
                 mode: 'base64',
                 position,
                 hingeIndicatorMode: this.display_options.show_european_hinge_indicators ? 'european' : 'american',
@@ -88,19 +109,38 @@ export default Marionette.View.extend({
             title,
         };
     },
+    /**
+     * We determine a mode to draw a quote entry for this multiunit
+     * @see getResponsiveMode() from quote helpers
+     *
+     * @return {string} Multiunit drawing mode
+     */
+    getResponsiveMode() {
+        return getResponsiveMode({
+            width_mm: this.model.getWidthMM(),
+            height_mm: this.model.getHeightMM(),
+            show_drawings: this.shouldShowDrawings(),
+        });
+    },
     templateContext() {
         const show_customer_image = this.shouldShowCustomerImage();
         const show_drawings = this.shouldShowDrawings();
         const show_price = this.display_options.show_price !== false;
 
+        const customer_image = show_customer_image ? this.getCustomerImage() : '';
+        const product_image = show_drawings ? this.getProductImage() : '';
+
         return {
             ref_num: this.model.getRefNum(),
             mark: this.model.get('mark'),
+            responsive_mode: this.getResponsiveMode(),
+            description_separate_row: ['extrawide', 'extralarge'].indexOf(this.getResponsiveMode()) !== -1,
             description: this.getDescription(),
             notes: this.model.get('notes'),
             quantity: this.model.get('quantity'),
-            customer_image: show_customer_image ? this.getCustomerImage() : '',
-            product_image: show_drawings ? this.getProductImage() : '',
+            customer_image,
+            product_image,
+            any_image: customer_image || product_image,
             show_price,
             price: show_price ? this.getPrices() : null,
         };

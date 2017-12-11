@@ -1,0 +1,26 @@
+<td class="product-description">
+    <div class="description-data-container">
+        <ul class="description-params">
+            <li class="full-width">
+                <h5>Product Description</h5>
+            </li>
+            {{#each description_params }}
+                {{#if value }}<li><strong>{{{ title }}}</strong> <span>{{{ value }}}</span></li>{{/if}}
+            {{/each}}
+            {{#if notes }}<li class="full-width"><p class="notes"><strong>{{ notes }}</strong></p></li>{{/if}}
+            {{#if exceptions }}<li class="full-width"><p class="exceptions"><strong>{{ exceptions }}</strong></p></li>{{/if}}
+            <li class="full-width">
+                <h5>Sash Types</h5>
+            </li>
+            {{#each sash_types }}
+                <li><strong>{{{ group_title }}}</strong> <span>{{{ type }}}</span></li>
+            {{/each}}
+            <li class="full-width">
+                <h5>Glazing</h5>
+            </li>
+            {{#each glazing_names }}
+                <li><strong>{{{ group_title }}}</strong> <span>{{{ name }}}{{#if type }}<small>{{{ type }}}</small>{{/if}}</span></li>
+            {{/each}}
+        </ul>
+    </div>
+</td>
