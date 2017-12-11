@@ -56,8 +56,6 @@ export function getPreviewSize(opts) {
  * @return {string} Unit drawing mode
  */
 export function getResponsiveMode(opts) {
-    //  TODO: figure out more appropriate conditions for extrawide / extralarge
-
     const defaults = {
         width_mm: 0,
         height_mm: 0,

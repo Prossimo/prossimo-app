@@ -34,7 +34,7 @@ export default Marionette.View.extend({
         //  This is the list of params that we want to see in the quote. We
         //  throw out attributes that don't apply to the current unit
         const params_list = _.filter(
-            ['rough_opening', 'description', 'opening_direction'],
+            ['description', 'opening_direction'],
             (param) => {
                 let condition = true;
 
@@ -69,14 +69,13 @@ export default Marionette.View.extend({
         //  Here we form the final list of properties to be shown in the
         //  Product Description column in the specific order. We do it in
         //  four steps:
-        //  1. Add Size, Rough Opening and System (or Supplier System)
+        //  1. Add Size and System (or Supplier System)
         //  2. Add properties from the source_hash object, which contains
         //  only those unit attributes that apply to the current unit
         //  3. Add list of Unit Options that apply to the current unit
         //  4. Add Threshold and U Value.
         const name_title_hash = _.extend({
             size: 'Size <small class="size-label">WxH</small>',
-            rough_opening: 'Rough Opening <small class="size-label">WxH</small>',
             system: 'System',
         }, _.object(_.pluck(source_hash, 'name'), _.pluck(source_hash, 'title')),
         _.object(dictionaries, dictionaries), {
@@ -95,11 +94,6 @@ export default Marionette.View.extend({
             threshold: this.model.profile.isThresholdPossible() ?
                 this.model.profile.getThresholdType() : false,
             u_value: this.model.get('uw') ? format.fixed(this.model.getUValue(), 3) : false,
-            rough_opening: this.display_options.show_sizes_in_mm ?
-                format.dimensions_mm(convert.inches_to_mm(this.model.getRoughOpeningWidth()),
-                    convert.inches_to_mm(this.model.getRoughOpeningHeight())) :
-                format.dimensions(this.model.getRoughOpeningWidth(), this.model.getRoughOpeningHeight(),
-                    null, project_settings.get('inches_display_mode') || null),
         };
 
         //  Extend unit attributes with options
