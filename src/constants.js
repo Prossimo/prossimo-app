@@ -162,3 +162,30 @@ export const VALUE_ERROR_MULLIONS_ONLY = '(Has no Mullions)';
 export const VALUE_ERROR_NONE = '(None)';
 export const VALUE_ERROR_NO_VARIANTS = '(No Variants)';
 export const VALUE_ERROR_NO_PROFILE = '(No Profile)';
+
+//  ------------------------------------------------------------------------
+//  Preview sizes (at 120 dpi)
+//  ------------------------------------------------------------------------
+
+export const PREVIEW_SIZES = {
+    drawing: {
+        no_ci: {
+            normal: { width: 831, height: 765 },
+            wide: { width: 831, height: 765 },
+            extrawide: { width: 1270, height: 558 },
+            extralarge: { width: 1270, height: 850 },
+        },
+        has_ci: {
+            normal: { width: 676, height: 765 },
+            wide: { width: 831, height: 581 },
+            extrawide: { width: 1270, height: 373 },
+            extralarge: { width: 1270, height: 850 },
+        },
+    },
+    customer_image: {
+        normal: { width: 132, height: 264 },
+        wide: { width: 264, height: 160 },
+        extrawide: { width: 472, height: 160 },
+        extralarge: { width: 571, height: 264 },
+    },
+};

@@ -18,7 +18,7 @@ export default Marionette.View.extend({
     onRender() {
         const display_options = {
             show_price: false,
-            show_customer_image: false,
+            show_customer_image_and_description: false,
             show_outside_units_view: false,
             show_sizes_in_mm: true,
             show_supplier_names: true,

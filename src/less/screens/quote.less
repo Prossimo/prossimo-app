@@ -1,14 +1,131 @@
-@preview_size: 600px;
-@customer_image_size: 150px;
+//  ------------------------------------------------------------------------
+//  Variables
+//  ------------------------------------------------------------------------
 
-@border_dark: 1px solid darken(@white, 20%);
-@border_medium: 1px solid darken(@white, 15%);
-@border_light: 1px solid darken(@white, 10%);
+@gray_2: darken(@white, 2%);        //  #fafafa
+@gray_10: darken(@white, 10%);      //  #e6e6e6
+@gray_15: darken(@white, 15%);      //  #d9d9d9
+@gray_20: darken(@white, 20%);      //  #ccc
+@gray_55: darken(@white, 55%);      //  #777
 
-@bg_light: darken(@white, 1%);
+@bg_light: @gray_2;
 
-@quote_max_width: 170rem;
-@quote_min_width: 150rem;
+@border_dark: 1px solid @gray_20;
+@border_medium: 1px solid @gray_15;
+@border_light: 1px solid @gray_10;
+
+
+@cell_padding: 0.7rem 1.2rem;
+@outer_padding: 2rem;
+@item_margin: 3rem;
+
+
+//  ------------------------------------------------------------------------
+//  Layout constants and calculations
+//
+//  We have 4 basic layout variations:
+//
+//  - normal unit (height >= width)
+//  - wide unit (width > height)
+//  - extrawide unit (width is significantly larger than height)
+//  - extralarge unit (so big that we want to show drawing on separate page)
+//
+//  Each of these layouts can also come with or without a customer image. So
+//  this gives us 8 different layouts in total.
+//
+//  On top of that, we also have two extra layouts for the case when we don't
+//  want to show drawings in the quote. We use normal layout, but show
+//  customer image instead of a drawing if customer image is present. If not,
+//  we just show the description.
+//  ------------------------------------------------------------------------
+
+//  Major page layout blocks
+//  ------------------------------------------------------------------------
+
+@page_width_mm:                         297;
+@page_height_mm:                        210;
+
+@page_margin_top_mm:                    10;
+@page_margin_right_mm:                  10;
+@page_margin_bottom_mm:                 10;
+@page_margin_left_mm:                   8;
+
+//  This is the page sizes minus margins, the area available for us per page
+@page_inner_width_mm:                   @page_width_mm - (@page_margin_right_mm + @page_margin_left_mm);
+@page_inner_height_mm:                  @page_height_mm - (@page_margin_top_mm + @page_margin_bottom_mm);
+
+@item_header_height_mm:                 16;
+@item_header_margin_bottom_mm:          2;
+
+//  The part below the header, here we put visuals and description
+@item_content_height_mm:                @page_inner_height_mm - (@item_header_height_mm + @item_header_margin_bottom_mm);
+
+@item_description_width_mm:             @page_inner_width_mm * 33.3 / 100;
+@item_visuals_width_mm:                 @page_inner_width_mm - @item_description_width_mm;
+
+@item_description_extrawide_margin_bottom_mm:   2;
+@item_description_extrawide_width_mm:   @page_inner_width_mm;
+@item_description_extrawide_height_mm:  (@item_content_height_mm * 25.5 / 100) - @item_description_extrawide_margin_bottom_mm;
+
+@item_visuals_extrawide_width_mm:       @page_inner_width_mm;
+@item_visuals_extrawide_height_mm:      @item_content_height_mm -
+    (@item_description_extrawide_height_mm + @item_description_extrawide_margin_bottom_mm);
+
+@item_visuals_extralarge_width_mm:      @page_inner_width_mm;
+@item_visuals_extralarge_height_mm:     @page_inner_height_mm;
+
+//  Drawing and customer image part
+//  ------------------------------------------------------------------------
+
+@customer_image_normal_width_mm:        28;
+@customer_image_normal_height_mm:       56;
+
+@drawing_padding_mm:                    5;
+@drawing_normal_width_mm:               @item_visuals_width_mm - @drawing_padding_mm * 2;
+@drawing_normal_height_mm:              @item_content_height_mm - @drawing_padding_mm * 2;
+@drawing_wide_width_mm:                 @item_visuals_width_mm - @drawing_padding_mm * 2;
+@drawing_wide_height_mm:                @item_content_height_mm - @drawing_padding_mm * 2;
+
+@drawing_normal_padding_right_mm:       @drawing_padding_mm * 2 + @customer_image_normal_width_mm;
+@drawing_normal_has_ci_width_mm:        @item_visuals_width_mm - (@drawing_padding_mm + @drawing_normal_padding_right_mm);
+@drawing_normal_has_ci_height_mm:       @item_content_height_mm - @drawing_padding_mm * 2;
+
+@customer_image_wide_width_mm:          56;
+@customer_image_wide_height_mm:         34;
+
+@drawing_wide_padding_bottom_mm:        @drawing_padding_mm * 2 + @customer_image_wide_height_mm;
+@drawing_wide_has_ci_width_mm:          @item_visuals_width_mm - @drawing_padding_mm * 2;
+@drawing_wide_has_ci_height_mm:         @item_content_height_mm - (@drawing_padding_mm + @drawing_wide_padding_bottom_mm);
+
+@customer_image_extrawide_width_mm:     100;
+@customer_image_extrawide_height_mm:    34;
+
+@drawing_extrawide_width_mm:            @item_visuals_extrawide_width_mm - @drawing_padding_mm * 2;
+@drawing_extrawide_height_mm:           @item_visuals_extrawide_height_mm - @drawing_padding_mm * 2;
+
+@drawing_extrawide_has_ci_width_mm:     @item_visuals_extrawide_width_mm - @drawing_padding_mm * 2;
+@drawing_extrawide_has_ci_height_mm:    @item_visuals_extrawide_height_mm - (@drawing_padding_mm * 3 + @customer_image_extrawide_height_mm);
+
+@customer_image_extralarge_width_mm:    121;
+@customer_image_extralarge_height_mm:   56;
+
+@drawing_extralarge_width_mm:           @item_visuals_extralarge_width_mm - @drawing_padding_mm * 2;
+@drawing_extralarge_height_mm:          @item_visuals_extralarge_height_mm - @drawing_padding_mm * 2;
+
+@drawing_extralarge_has_ci_width_mm:    @item_visuals_extralarge_width_mm - @drawing_padding_mm * 2;
+@drawing_extralarge_has_ci_height_mm:   @item_visuals_extralarge_height_mm - @drawing_padding_mm * 2;
+
+//  Resolution and scaling
+//
+//  Base screen pixel density resolution (windows / linux) is 96 px per inch,
+//  we convert this to mms. Scaling is how much larger than this we want our
+//  desktop sizes to be. And @ppmm stands for pixels per millimeter
+//  ------------------------------------------------------------------------
+
+@screen_resolution:                     96 / 25.4;
+@optimal_resolution:                    120 / 25.4;
+@scaling_factor:                        @optimal_resolution / @screen_resolution;
+@ppmm:                                  @screen_resolution * @scaling_factor;
 
 
 //  ------------------------------------------------------------------------
@@ -21,35 +138,37 @@
 }
 
 .quote-outer-container {
-    padding: 2rem;
+    padding: @outer_padding;
     flex: 1 1 auto;
     overflow: auto;
 }
 
 .quote-container {
-    margin-bottom: 2rem;
-    padding: 3rem 4rem 4rem;
+    margin-bottom: @outer_padding;
+    padding:
+        unit(floor(@page_margin_top_mm * @ppmm), px)
+        unit(floor(@page_margin_right_mm * @ppmm), px)
+        unit(floor(@page_margin_bottom_mm * @ppmm), px)
+        unit(floor(@page_margin_left_mm * @ppmm), px);
     background-color: @white;
     border: @border_medium;
     min-height: 100%;
-    max-width: @quote_max_width;
-    min-width: @quote_min_width;
-    width: 100%;
+    width: unit(ceil(@page_width_mm * @ppmm), px);
     overflow: visible;
 }
 
 
 //  ------------------------------------------------------------------------
-//  Quote controls
+//  Quote controls (above quote container)
 //  ------------------------------------------------------------------------
 
 .quote-controls-container {
     .clearfix();
     padding: 1rem 0;
-    margin: 0 0 2rem;
+    margin: 0 0 @outer_padding;
     border: @border_medium;
-    background-color: darken(@white, 2%);
-    max-width: @quote_max_width;
+    background-color: @gray_2;
+    width: unit(ceil(@page_width_mm * @ppmm), px);
 
     .display-options > div,
     .export-options-container > div {
@@ -64,7 +183,7 @@
 
     .display-options > div + div,
     .export-options-container > div + div {
-        border-left: 1px solid #ccc;
+        border-left: @border_medium;
     }
 
     .display-options h5 {
@@ -101,7 +220,7 @@
 
     .export-options span em {
         font-style: normal;
-        color: lighten(@black, 45%);
+        color: @gray_55;
     }
 
     .download-button .btn {
@@ -111,42 +230,44 @@
 
 
 //  ------------------------------------------------------------------------
-//  Quote header (Company info)
+//  Quote header (Company info etc)
 //  ------------------------------------------------------------------------
 
-.quote-header {
-    position: relative;
-    margin-bottom: 3rem;
-    text-align: right;
-}
+.quote-header-container {
+    .quote-header {
+        position: relative;
+        margin-bottom: @item_margin;
+        text-align: right;
+    }
 
-.mavrik-logo {
-    position: absolute;
-    top: 2rem;
-    left: 0;
-    width: 35rem;
-    height: auto;
-}
+    .mavrik-logo {
+        position: absolute;
+        top: 2rem;
+        left: 0;
+        width: 35rem;
+        height: auto;
+    }
 
-.mavrik-logo img {
-    width: 100%;
-    height: auto;
-}
+    .mavrik-logo img {
+        width: 100%;
+        height: auto;
+    }
 
-.quote-header h1 {
-    padding-top: 2rem;
-    margin: 0 0 4rem;
-    font-weight: 700;
-    color: darken(@white, 30%);
-    text-transform: uppercase;
-    text-align: right;
-}
+    .quote-header h1 {
+        padding-top: 2rem;
+        margin: 0 0 4rem;
+        font-weight: 700;
+        color: @gray_20;
+        text-transform: uppercase;
+        text-align: right;
+    }
 
-.quote-header ul {
-    display: inline-block;
-    text-align: left;
-    margin: 0 3rem;
-    list-style-type: none;
+    .quote-header ul {
+        display: inline-block;
+        text-align: left;
+        margin: 0 3rem;
+        list-style-type: none;
+    }
 }
 
 
@@ -154,48 +275,65 @@
 //  Project info
 //  ------------------------------------------------------------------------
 
-.quote-project-info .project-name {
-    text-transform: uppercase;
-    font-weight: 700;
-    font-size: 2em;
-    letter-spacing: 0.05em;
-}
+.quote-project-info {
+    .project-name {
+        text-transform: uppercase;
+        font-weight: 700;
+        font-size: 2em;
+        letter-spacing: 0.05em;
+    }
 
-.quote-project-info ul {
-    list-style-type: none;
-    padding: 0;
-}
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
 
-.quote-project-info .client-name small {
-    display: block;
-    margin-bottom: 1rem;
-    color: #777;
+    .client-name small {
+        display: block;
+        margin-bottom: 1rem;
+        color: @gray_55;
+    }
 }
 
 
 //  ------------------------------------------------------------------------
-//  Table
+//  Table (units, extras, subtotal)
 //  ------------------------------------------------------------------------
 
 .quote-table-container {
-    margin: 3rem 0 0;
+    margin: @item_margin 0 0;
 }
 
 .quote-table {
     width: 100%;
     table-layout: fixed;
+
+    thead th {
+        padding: @cell_padding;
+        border: @border_dark;
+        background-color: @bg_light;
+    }
+
+    tbody td {
+        padding: @cell_padding;
+        border: @border_light;
+        vertical-align: top;
+    }
 }
 
-.quote-table thead th {
-    padding: 0.7rem 1.2rem;
-    border: @border_dark;
-    background-color: @bg_light;
+
+//  ------------------------------------------------------------------------
+//  Single unit item
+//  ------------------------------------------------------------------------
+
+.quote-item {
+    margin-bottom: @item_margin;
+    max-width: unit(ceil(@page_inner_width_mm * @ppmm), px);
 }
 
-.quote-table tbody td {
-    padding: 0.7rem 1.2rem;
-    border: @border_light;
-    vertical-align: top;
+.quote-unit {
+    width: 100%;
+    table-layout: fixed;
 }
 
 
@@ -203,293 +341,245 @@
 //  Unit info heading (ref, mark, qty, price)
 //  ------------------------------------------------------------------------
 
-.multiunit-titlebar {
-    padding: 0.7rem 1.2rem;
-    border: @border_dark;
-    border-bottom: none;
-    background-color: @bg_light;
-}
+.quote-unit-heading {
+    width: 100%;
+    margin-bottom: unit(ceil(@item_header_margin_bottom_mm * @ppmm), px);
+    height: unit(ceil(@item_header_height_mm * @ppmm), px);
+    table-layout: fixed;
 
-.quote-item {
-    margin-bottom: 2rem;
-}
+    tbody td {
+        border: @border_dark;
+        background-color: @bg_light;
+    }
 
-.quote-item.multiunit,
-.quote-item.subunit {
-    margin-bottom: -1px;
-}
+    td.primary-info {
+        padding: 0;
+        width: 56%;
+    }
 
-.quote-unit-group.multiunit {
-    margin-bottom: 2rem;
-}
+    //  Primary info (left part)
+    //  --------------------------------------------------------------------
 
-.subunits-container {
-    position: relative;
+    .primary-info table {
+        height: 100%;
+    }
 
-    .quote-item {
-        margin-bottom: 0;
+    .primary-info td {
+        border: none;
+        padding: 0;
+    }
+
+    .primary-info td:last-child {
+        border-right: @border_dark;
+    }
+
+    .primary-info strong,
+    .primary-info span {
+        display: block;
+        padding: 0.5rem 1.5rem;
+    }
+
+    .primary-info strong {
+        font-weight: 400;
+    }
+
+    .primary-info span {
+        font-weight: 700;
+        font-size: 1.2em;
+    }
+
+    //  No profile warning (also left)
+    //  --------------------------------------------------------------------
+
+    td.no-profile-warning {
+        padding: 0.5rem 1.5rem;
+        border: none;
+        vertical-align: middle;
+    }
+
+    .no-profile-warning p {
+        margin: 0;
+        font-weight: 700;
+        color: @red;
+    }
+
+    .no-profile-warning p i {
+        padding-right: 0.5em;
+    }
+
+    //  Price info (right part)
+    //  --------------------------------------------------------------------
+
+    tbody td.price,
+    tbody td.price-discounted {
+        font-size: 1em;
+        width: 22%;
+    }
+
+    .unit-price {
+        display: table;
+        margin: 0;
+        width: 100%;
+    }
+
+    .unit-price li {
+        display: table-row;
+        line-height: 1.25;
+    }
+
+    .unit-price strong {
+        display: table-cell;
+        font-weight: 400;
+        font-style: normal;
+    }
+
+    .unit-price span {
+        display: table-cell;
+        text-align: right;
+    }
+
+    .unit-price .subtotal strong,
+    .unit-price .subtotal span {
+        font-weight: 700;
     }
 }
 
-.quote-unit-heading {
-    width: 100%;
-    table-layout: fixed;
-}
-
-.quote-unit-heading tbody td {
-    border: @border_dark;
-    background-color: @bg_light;
-    border-bottom: none;
-}
-
-.quote-item.subunit .quote-unit-heading tbody td {
-    border-top: none;
-}
-
-.quote-unit-heading td strong,
-.quote-unit-heading td span {
-    min-height: 3rem;
-    vertical-align: middle;
-}
-
-.quote-unit-heading .has-discounted-price td strong,
-.quote-unit-heading .has-discounted-price td span {
-    min-height: 3.7rem;
-}
-
-.quote-unit-heading td.primary-info {
-    padding: 0;
-    width: 56%;
-}
-
-.quote-unit-heading .primary-info td {
-    border-left: none;
-    border-top: none;
-    border-bottom: none;
-    padding: 0;
-}
-
-.quote-unit-heading .primary-info strong,
-.quote-unit-heading .primary-info span {
-    display: block;
-    float: left;
-    padding: 0.5rem 1.5rem;
-}
-
-.quote-unit-heading .primary-info strong {
-    border-right: @border_dark;
-    background-color: @bg_light;
-}
-
-.quote-unit-heading .primary-info span {
-    background-color: @white;
-}
-
-.quote-unit-heading .primary-info.has-price strong {
-    border-bottom: @border_dark;
-    border-right: none;
-}
-
-.quote-unit-heading .primary-info.has-price strong,
-.quote-unit-heading .primary-info.has-price span {
-    float: none;
-}
-
-.quote-unit-heading tbody td.price,
-.quote-unit-heading tbody td.price-discounted {
-    font-size: 1em;
-    width: 22%;
-}
-
-.quote-table .unit-price {
-    display: table;
-    margin: 0;
-    width: 100%;
-}
-
-.quote-table .unit-price li {
-    display: table-row;
-}
-
-.quote-table .unit-price strong {
-    display: table-cell;
-    font-weight: 400;
-    font-style: normal;
-}
-
-.quote-table .unit-price span {
-    display: table-cell;
-    text-align: right;
-}
-
-.quote-table .unit-price .subtotal strong,
-.quote-table .unit-price .subtotal span {
-    font-weight: 700;
-}
-
-.quote-unit-heading td.no-profile-warning {
-    padding: 0.5rem 1.5rem;
-    border: none;
-    vertical-align: middle;
-}
-
-.no-profile-warning p {
-    margin: 0;
-    font-weight: 700;
-    color: @red;
-}
-
-.no-profile-warning p i {
-    padding-right: 0.5em;
-}
-
 
 //  ------------------------------------------------------------------------
-//  Unit info (image, details)
+//  Unit visuals
 //  ------------------------------------------------------------------------
 
-.quote-unit {
-    width: 100%;
-    table-layout: fixed;
-}
-
-td.product-description,
-td.tech-specs {
-    font-size: 0.9em;
-}
-
-.quote-item .exceptions {
-    color: @red;
-    font-size: 1.1em;
-}
-
-.product-description ul,
-.tech-specs ul {
-    display: table;
+.quote-table tbody td.product-visuals {
     padding: 0;
-    list-style-type: none;
-    width: 100%;
 }
 
-.product-description li,
-.tech-specs li {
-    display: table-row;
-}
+td.product-visuals {
+    width: unit(ceil((@item_visuals_width_mm + 2) * @ppmm), px);
 
-.product-description li strong,
-.tech-specs li strong {
-    display: table-cell;
-    padding-right: 2rem;
-    font-weight: 400;
-    font-style: italic;
-    width: 27%;
-    vertical-align: top;
-}
+    .product-visuals-container {
+        position: relative;
+        //  Padding is like this because we want it to be a bit more on the
+        //  top, to allow extra room for the title, but we still want it to
+        //  equal 2 * @drawing_padding_mm in total
+        padding:
+            unit(floor(@drawing_padding_mm * 1.5 * @ppmm), px)
+            unit(floor(@drawing_padding_mm * @ppmm), px)
+            unit(floor(@drawing_padding_mm * 0.5 * @ppmm), px);
+        min-height: unit(ceil(@item_content_height_mm * @ppmm), px);
+        max-width: unit(ceil(@item_visuals_width_mm * @ppmm), px);
+    }
 
-.product-description li span,
-.tech-specs li span {
-    display: table-cell;
-    width: 73%;
-    vertical-align: bottom;
-}
+    .product-visuals-title {
+        position: absolute;
+        top: 0;
+        left: 0;
+        padding: @cell_padding;
+    }
 
-li.opening h6 {
-    display: table-row;
-    padding: 1rem 0 0.4rem;
-    font-size: 1em;
-    font-weight: 700;
-}
-
-li.opening p {
-    display: table-row;
-    margin-bottom: 0;
-}
-
-table.subtotal,
-table.total-units {
-    table-layout: fixed;
-    width: 100%;
-    border: @border_light;
-    background-color: @bg_light;
-}
-
-td.product-image,
-th.product-image {
-    width: 56%;
-    min-width: @preview_size + @customer_image_size + 20px;
-}
-
-th.product-image em {
-    font-weight: 400;
-}
-
-.quote-item.multiunit thead th em {
-    font-weight: 400;
-}
-
-.product-image img {
-    display: block;
-    max-height: @preview_size;
-    max-width: @preview_size;
-}
-
-td.product-description,
-th.product-description {
-    width: 44%;
-}
-
-.product-description .size-label {
-    font-size: 0.8em;
-    padding: 0 0.4rem;
-    background-color: darken(@white, 5%);
-    font-style: normal;
-}
-
-td.product-image.has-customer-image {
-    position: relative;
-    padding-right: @customer_image_size;
-}
-
-.product-image .customer-image-inner {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: @customer_image_size;
-    padding-bottom: 20px;
-    border-bottom: @border_light;
-    border-left: @border_light;
-}
-
-.customer-image-inner h5 {
-    text-align: center;
-    font-style: italic;
-}
-
-.customer-image-inner img {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    max-width: @customer_image_size;
-    max-height: @customer_image_size;
-}
-
-.customer-image .customer-image-inner img {
-    max-width: @preview_size;
-    max-height: @preview_size;
-}
-
-.sash-list,
-.subunit-list,
-.sash-types-list,
-.glazing-list {
-    h5 {
-        margin-left: -1.2rem;
-        margin-right: -1.2rem;
-        padding: 0.7rem 1.2rem;
-        border-top: @border_light;
-        border-bottom: @border_light;
-        background-color: @bg_light;
+    .product-visuals-title h5 {
+        margin: 0;
         font-weight: 700;
+    }
+
+    .product-visuals-title em {
+        font-weight: 400;
+    }
+
+    .product-image-wrapper {
+        max-width: unit(ceil(@drawing_normal_width_mm * @ppmm), px);
+        max-height: unit(ceil(@drawing_normal_height_mm * @ppmm), px);
+        overflow: hidden;
+    }
+
+    .product-image-wrapper img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Unit description
+//  ------------------------------------------------------------------------
+
+.quote-table tbody td.product-description {
+    padding: 0;
+}
+
+td.product-description {
+    width: unit(ceil((@item_description_width_mm - 2) * @ppmm), px);
+    font-size: 0.9em;
+
+    .description-data-container {
+        min-height: unit(ceil(@item_content_height_mm * @ppmm), px);
+        padding: @cell_padding;
+    }
+
+    h5 {
+        font-weight: 700;
+    }
+
+    li:first-child h5 {
+        margin-top: 0;
+    }
+
+    p {
+        margin-top: 1rem;
+    }
+
+    .full-width + .full-width p {
+        margin-top: 0;
+    }
+
+    .exceptions {
+        color: @red;
+        font-size: 1.1em;
+    }
+
+    ul {
+        display: table;
+        table-layout: fixed;
+        padding: 0;
+        margin: 0;
+        list-style-type: none;
+        width: 100%;
+    }
+
+    li {
+        display: table-row;
+        line-height: 1;
+    }
+
+    li > strong,
+    li > span {
+        display: table-cell;
+        padding-bottom: 0.5em;
+    }
+
+    li > strong {
+        padding-right: 2rem;
+        font-weight: 400;
+        font-style: italic;
+        vertical-align: top;
+    }
+
+    li > span {
+        vertical-align: bottom;
+    }
+
+    //  To counter the fact that headings only occupy one cell in table layout.
+    //  This value is arbitrary, but should do the trick
+    .full-width h5,
+    .full-width p {
+        width: 160%;
+    }
+
+    .size-label {
+        font-size: 0.8em;
+        padding: 0 0.4rem;
+        background-color: @gray_2;
+        font-style: normal;
     }
 
     h6 {
@@ -502,25 +592,331 @@ td.product-image.has-customer-image {
         font-style: normal;
     }
 
-    li:first-child h6 {
-        margin-top: 0;
-    }
-
     li em {
         padding: 0 0.2em;
         font-style: normal;
-        color: darken(@white, 40%);
-    }
-
-    li small {
-        margin-left: 0.8em;
-        padding: 0 0.4em;
-        background-color: darken(@white, 5%);
+        color: @gray_55;
     }
 }
 
-.sash-list .sections li:first-child h6 {
-    margin-top: 0;
+
+//  ------------------------------------------------------------------------
+//  Normal layout with a customer image
+//  ------------------------------------------------------------------------
+
+.has-customer-image td.product-visuals {
+    .product-visuals-container {
+        padding-right: unit(floor(@drawing_normal_padding_right_mm * @ppmm), px);
+    }
+
+    .customer-image-inner {
+        position: absolute;
+        bottom: unit(ceil(@drawing_padding_mm * 0.5 * @ppmm), px);
+        right: 0;
+        width: unit(ceil(@customer_image_normal_width_mm * @ppmm), px);
+        height: auto;
+        max-height: unit(ceil(@customer_image_normal_height_mm * @ppmm), px);
+    }
+
+    .customer-image-inner h5 {
+        position: absolute;
+        top: unit(ceil(@drawing_padding_mm * -1 * @ppmm), px);
+        left: 0;
+        width: 100%;
+        margin-top: 0;
+        font-style: italic;
+    }
+
+    .customer-image-wrapper {
+        overflow: hidden;
+    }
+
+    .customer-image-wrapper img {
+        display: block;
+        width: auto;
+        height: auto;
+        max-width: unit(ceil(@customer_image_normal_width_mm * @ppmm), px);
+        max-height: unit(ceil(@customer_image_normal_height_mm * @ppmm), px);
+    }
+}
+
+//  This is actually intended for extrawide / extralarge layouts, but it's here
+//  to extend from the base Normal + Customer Image styles
+.has-customer-image td.customer-image {
+    &:extend(.has-customer-image td.product-visuals all);
+}
+
+
+//  ------------------------------------------------------------------------
+//  Normal layout with / without a customer image and NO drawing
+//  ------------------------------------------------------------------------
+
+.no-drawing td.product-description {
+    .description-data-container {
+        min-height: 0;
+    }
+}
+
+.has-customer-image.no-drawing td.product-visuals {
+    .product-visuals-container {
+        padding:
+            unit(floor(@drawing_padding_mm * 1.5 * @ppmm), px)
+            unit(floor(@drawing_padding_mm * @ppmm), px)
+            unit(floor(@drawing_padding_mm * 0.5 * @ppmm), px);
+        max-width: unit(ceil(@item_visuals_width_mm * @ppmm), px);
+        max-height: unit(ceil(@item_content_height_mm * @ppmm), px);
+        min-height: 0;
+    }
+
+    .customer-image-inner {
+        position: relative;
+        bottom: auto;
+        right: auto;
+        top: auto;
+        left: auto;
+        width: 100%;
+        height: auto;
+        max-width: unit(floor(@drawing_normal_width_mm * @ppmm), px);
+        max-height: unit(floor(@drawing_normal_height_mm * @ppmm), px);
+    }
+
+    .customer-image-inner h5 {
+        display: none;
+    }
+
+    .customer-image-wrapper img {
+        margin-left: auto;
+        margin-right: auto;
+        max-width: unit(floor(@drawing_normal_width_mm * @ppmm), px);
+        max-height: unit(floor(@drawing_normal_height_mm * @ppmm), px);
+    }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Wide layout
+//  ------------------------------------------------------------------------
+
+.quote-unit.layout-wide {
+    td.product-visuals {
+        .product-image-wrapper {
+            max-width: unit(ceil(@drawing_wide_width_mm * @ppmm), px);
+            max-height: unit(ceil(@drawing_wide_height_mm * @ppmm), px);
+        }
+    }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Wide layout with a customer image
+//  ------------------------------------------------------------------------
+
+.quote-unit.layout-wide.has-customer-image {
+    td.product-visuals {
+        .product-visuals-container {
+            padding:
+                unit(floor(@drawing_padding_mm * 1.5 * @ppmm), px)
+                unit(floor(@drawing_padding_mm * @ppmm), px)
+                unit(floor(@drawing_padding_mm * 0.5 * @ppmm), px);
+            padding-bottom: unit(floor((@drawing_wide_padding_bottom_mm - @drawing_padding_mm * 0.5) * @ppmm), px);
+        }
+
+        .customer-image-inner {
+            right: unit(ceil(@drawing_padding_mm * @ppmm), px);
+            width: unit(ceil(@customer_image_wide_width_mm * @ppmm), px);
+            max-height: unit(ceil(@customer_image_wide_height_mm * @ppmm), px);
+            max-width: unit(ceil(@customer_image_wide_width_mm * @ppmm), px);
+        }
+
+        .customer-image-inner img {
+            max-height: unit(ceil(@customer_image_wide_height_mm * @ppmm), px);
+            max-width: unit(ceil(@customer_image_wide_width_mm * @ppmm), px);
+        }
+    }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Extrawide layout
+//  ------------------------------------------------------------------------
+
+.quote-table .quote-unit.layout-extrawide tbody {
+    td.product-description {
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+    }
+
+    td.product-visuals {
+        border-top: none;
+    }
+}
+
+.quote-unit.layout-extrawide {
+    td.product-visuals {
+        width: 100%;
+
+        .product-visuals-container {
+            min-height: unit(ceil(@item_visuals_extrawide_height_mm * @ppmm), px);
+            max-width: none;
+            border-top: @border_light;
+        }
+
+        .product-image-wrapper {
+            max-width: unit(ceil(@drawing_extrawide_width_mm * @ppmm), px);
+            max-height: unit(ceil(@drawing_extrawide_height_mm * @ppmm), px);
+        }
+    }
+
+    td.product-description {
+        .description-data-container {
+            min-height: 0;
+            margin-left: 0;
+            border-bottom: @border_light;
+            border-right: @border_light;
+            border-left: @border_light;
+            margin-bottom: unit(ceil(@item_description_extrawide_margin_bottom_mm * @ppmm), px);
+            column-count: 3;
+            column-gap: 2em;
+        }
+
+        .description-params {
+            display: block;
+        }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            //  Fix issue with text being cut off in Chrome (on printing)
+            break-inside: avoid-column;
+        }
+
+        li > strong,
+        li > span {
+            display: inline-block;
+        }
+
+        li > strong {
+            max-width: 50%;
+        }
+
+        li > span {
+            text-align: right;
+            align-self: flex-end;
+        }
+    }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Extrawide layout with a customer image
+//  ------------------------------------------------------------------------
+
+.quote-unit.layout-extrawide.has-customer-image {
+    td.product-visuals {
+        .product-visuals-container {
+            padding:
+                unit(floor(@drawing_padding_mm * 1.5 * @ppmm), px)
+                unit(floor(@drawing_padding_mm * @ppmm), px)
+                unit(floor(@drawing_padding_mm * 0.5 * @ppmm), px);
+            min-height: unit(ceil((@item_visuals_extrawide_height_mm - @drawing_padding_mm * 2 - @customer_image_extrawide_height_mm) * @ppmm), px);
+            border-top: none;
+        }
+
+        .product-image-inner {
+            width: 100%;
+        }
+    }
+
+    //  In this case, the whole cell height should be equal to
+    //  @customer_image_extrawide_height_mm + @drawing_padding_mm, so we
+    //  calculate all other heights based on this
+    td.customer-image {
+        padding: 0;
+
+        .customer-image-inner {
+            position: relative;
+            top: auto;
+            right: auto;
+            left: auto;
+            bottom: auto;
+            padding:
+                unit(ceil(@drawing_padding_mm * 1.5 * @ppmm), px)
+                unit(ceil(@drawing_padding_mm * @ppmm), px)
+                unit(ceil(@drawing_padding_mm * 0.5 * @ppmm), px);
+            width: unit(ceil(@customer_image_extrawide_width_mm * @ppmm), px);
+            height: auto;
+            max-height: unit(ceil((@customer_image_extrawide_height_mm + @drawing_padding_mm) * @ppmm), px);
+        }
+
+        .customer-image-inner h5 {
+            padding: @cell_padding;
+            top: 0;
+            font-weight: 700;
+            font-style: normal;
+            margin-bottom: 0;
+            height: unit(ceil(@drawing_padding_mm * @ppmm), px);
+        }
+
+        .customer-image-inner img {
+            max-width: unit(ceil(@customer_image_extrawide_width_mm * @ppmm), px);
+            max-height: unit(ceil((@customer_image_extrawide_height_mm - @drawing_padding_mm) * @ppmm), px);
+        }
+    }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Extralarge layout
+//  ------------------------------------------------------------------------
+
+.quote-unit.layout-extralarge {
+    &:extend(.quote-unit.layout-extrawide all);
+
+    td.product-visuals {
+        .product-visuals-container {
+            min-height: unit(ceil(@item_visuals_extralarge_height_mm * @ppmm), px);
+        }
+
+        .product-image-wrapper {
+            max-width: unit(ceil(@drawing_extralarge_width_mm * @ppmm), px);
+            max-height: unit(ceil(@drawing_extralarge_height_mm * @ppmm), px);
+        }
+    }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Extralarge layout with a customer image
+//  ------------------------------------------------------------------------
+
+.quote-unit.layout-extralarge.has-customer-image {
+    td.product-visuals,
+    td.customer-image {
+        .customer-image-inner {
+            width: unit(ceil(@customer_image_extralarge_width_mm * @ppmm), px);
+            height: auto;
+            max-height: unit(ceil((@customer_image_extralarge_height_mm + @drawing_padding_mm) * @ppmm), px);
+        }
+
+        .customer-image-inner img {
+            max-width: unit(ceil(@customer_image_extralarge_width_mm * @ppmm), px);
+            max-height: unit(ceil((@customer_image_extralarge_height_mm - @drawing_padding_mm) * @ppmm), px);
+        }
+    }
+}
+
+
+//  ------------------------------------------------------------------------
+//  Quote subtotal (for units)
+//  ------------------------------------------------------------------------
+
+table.subtotal,
+table.total-units {
+    table-layout: fixed;
+    width: 100%;
+    border: @border_light;
+    background-color: @bg_light;
 }
 
 .subtotal td.price,
@@ -534,7 +930,7 @@ td.product-image.has-customer-image {
 
 
 //  ------------------------------------------------------------------------
-//  Table Footer (Total Prices)
+//  Table footer (Total Prices)
 //  ------------------------------------------------------------------------
 
 .quote-table tfoot td {
@@ -585,12 +981,8 @@ div + table.grand-total {
 
 
 //  ------------------------------------------------------------------------
-//  Extras table
+//  Quote Extras
 //  ------------------------------------------------------------------------
-
-.quote-extras-table {
-    &:extend(.quote-table all);
-}
 
 .extras-heading {
     margin: 0.8rem 0.8rem 0;
@@ -607,20 +999,24 @@ div + table.grand-total {
     font-weight: 700;
 }
 
-.extras-heading + table,
-.optional-extras-subheading + table {
-    margin-top: 1rem;
+.quote-extras-table {
+    &:extend(.quote-table all);
 }
 
-td.extras-product-description,
-th.extras-product-description {
-    width: 65%;
+.extras-heading + .quote-extras-table,
+.optional-extras-subheading + .quote-extras-table {
+    margin-top: 1rem;
 }
 
 .quote-extras-table {
     td.ref,
     th.ref {
         width: 5%;
+    }
+
+    td.extras-product-description,
+    th.extras-product-description {
+        width: 65%;
     }
 
     td.quantity,
@@ -659,33 +1055,429 @@ th.extras-product-description {
 
 .quote-terms-info {
     margin-top: 6rem;
+
+    h2 {
+        width: 60%;
+        font-size: 1.5em;
+        font-weight: 700;
+    }
+
+    ul {
+        margin: 4rem 0;
+        padding: 0;
+        list-style-type: none;
+    }
+
+    .warranty {
+        font-weight: 700;
+    }
+
+    table {
+        margin: 4rem 0 0;
+        width: 100%;
+    }
+
+    table td {
+        padding: 1rem 0;
+    }
+
+    table span {
+        color: @gray_55;
+    }
 }
 
-.quote-terms-info h2 {
-    width: 60%;
-    font-size: 1.5em;
-    font-weight: 700;
-}
 
-.quote-terms-info ul {
-    margin: 4rem 0;
-    padding: 0;
-    list-style-type: none;
-}
 
-.warranty {
-    font-weight: 700;
-}
+//  ------------------------------------------------------------------------
+//  Print styles and adjustments. The most important difference is that we
+//  have to re-set dimensions / paddings for major layout elements, because
+//  they were declared using px units above, and for print we need them to be
+//  set in millimeters
+//  ------------------------------------------------------------------------
 
-.quote-terms-info table {
-    margin: 4rem 0 0;
-    width: 100%;
-}
+@media print {
+    @page {
+        size: A4 landscape;
+        //  Bottom margin is reduced by 1 to allow some extra space around
+        //  quote items to avoid borders overflowing to a new page
+        margin:
+            unit(@page_margin_top_mm, mm)
+            unit(@page_margin_right_mm, mm)
+            unit(@page_margin_bottom_mm - 1, mm)
+            unit(@page_margin_left_mm, mm);
+    }
 
-.quote-terms-info table td {
-    padding: 1rem 0;
-}
+    .header {
+        display: none;
+    }
 
-.quote-terms-info table span {
-    color: lighten(@black, 40%);
+    .main {
+        padding: 0;
+        width: 100%;
+        height: auto;
+        font-size: 9pt;
+        min-width: 0;
+    }
+
+    .main h5,
+    .main h6,
+    td.product-description h6 {
+        font-size: 9pt;
+    }
+
+    .units-table-container {
+        display: none;
+    }
+
+    //  Fixes thead printing issue with Chrome 53. See this for more details:
+    //  https://bugs.chromium.org/p/chromium/issues/detail?id=24826
+    thead {
+        display: table-row-group;
+    }
+
+    //  --------------------------------------------------------------------
+    //  Quote-specific styles
+    //  --------------------------------------------------------------------
+
+    .quote-screen,
+    .supplier-request-screen {
+        display: block;
+    }
+
+    .quote-outer-container,
+    .supplier-request-outer-container {
+        padding: 0;
+    }
+
+    .quote-container,
+    .supplier-request-container {
+        padding: 0;
+        margin: 0;
+        border: none;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .quote-outer-container .controls-container,
+    .supplier-request-outer-container .controls-container {
+        display: none;
+    }
+
+    //  Override some bootstrap goodies
+    .quote-container,
+    .supplier-request-container {
+        a[href]:after,
+        abbr[title]:after,
+        a[href^="#"]:after,
+        a[href^="javascript:"]:after {
+            content: '';
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Quote header (Company info etc)
+    //  --------------------------------------------------------------------
+
+    .quote-header-container,
+    .supplier-request-header-container {
+        page-break-after: always;
+    }
+
+    .quote-header h1,
+    .supplier-request-header h1 {
+        color: @gray_20 !important;
+    }
+
+    .quote-project-info .client-name small {
+        color: @gray_55 !important;
+    }
+
+    //  --------------------------------------------------------------------
+    //  Table (units, extras, subtotal)
+    //  --------------------------------------------------------------------
+
+    .quote-table-container,
+    .supplier-request-table-container {
+        margin: 0;
+    }
+
+    .quote-table .total-units,
+    .quote-table .subtotal,
+    .quote-extras-table-container,
+    .quote-optional-extras-table-container,
+    .grand-total,
+    .quote-terms-info {
+        page-break-inside: avoid;
+    }
+
+    //  --------------------------------------------------------------------
+    //  Single quote item
+    //  --------------------------------------------------------------------
+
+    .quote-item {
+        max-width: unit(@page_inner_width_mm, mm);
+        min-height: unit(@page_inner_height_mm, mm);
+        page-break-after: always;
+        margin: 0;
+    }
+
+    //  --------------------------------------------------------------------
+    //  Quote item header
+    //  --------------------------------------------------------------------
+
+    .quote-unit-heading {
+        margin-bottom: unit(@item_header_margin_bottom_mm, mm);
+        height: unit(@item_header_height_mm, mm);
+    }
+
+    //  --------------------------------------------------------------------
+    //  Quote item visuals
+    //  --------------------------------------------------------------------
+
+    td.product-visuals {
+        width: unit(@item_visuals_width_mm + 2, mm);
+
+        .product-visuals-container {
+            padding:
+                unit(floor(@drawing_padding_mm * 1.5), mm)
+                unit(@drawing_padding_mm, mm)
+                unit(floor(@drawing_padding_mm * 0.5), mm);
+            min-height: unit(@item_content_height_mm, mm);
+            max-width: unit(@item_visuals_width_mm, mm);
+        }
+
+        .product-image-wrapper {
+            max-width: unit(@drawing_normal_width_mm, mm);
+            max-height: unit(@drawing_normal_height_mm, mm);
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Quote item description
+    //  --------------------------------------------------------------------
+
+    td.product-description {
+        width: unit(@item_description_width_mm - 2, mm);
+
+        .exceptions,
+        .exceptions strong {
+            color: @red !important;
+        }
+
+        .description-data-container {
+            min-height: unit(@item_content_height_mm, mm);
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Normal layout with a customer image
+    //  --------------------------------------------------------------------
+
+    .has-customer-image td.product-visuals {
+        .product-visuals-container {
+            padding-right: unit(@drawing_normal_padding_right_mm, mm);
+        }
+
+        .customer-image-inner {
+            bottom: unit(floor(@drawing_padding_mm * 0.5), mm);
+            width: unit(@customer_image_normal_width_mm, mm);
+            max-height: unit(@customer_image_normal_height_mm, mm);
+        }
+
+        .customer-image-inner h5 {
+            top: unit(@drawing_padding_mm * -1, mm);
+        }
+
+        .customer-image-inner img {
+            max-width: unit(@customer_image_normal_width_mm, mm);
+            max-height: unit(@customer_image_normal_height_mm, mm);
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Normal layout with a customer image and NO drawing
+    //  --------------------------------------------------------------------
+
+    .no-drawing td.product-description {
+        .description-data-container {
+            min-height: unit(@item_content_height_mm, mm);
+        }
+    }
+
+    .has-customer-image.no-drawing td.product-visuals {
+        .product-visuals-container {
+            padding:
+                unit(floor(@drawing_padding_mm * 1.5), mm)
+                unit(@drawing_padding_mm, mm)
+                unit(floor(@drawing_padding_mm * 0.5), mm);
+            max-width: unit(@item_visuals_width_mm, mm);
+            max-height: unit(@item_content_height_mm, mm);
+            min-height: unit(@item_content_height_mm, mm);
+        }
+
+        .customer-image-inner {
+            max-width: unit(@drawing_normal_width_mm, mm);
+            max-height: unit(@drawing_normal_height_mm, mm);
+        }
+
+        .customer-image-wrapper img {
+            max-width: unit(@drawing_normal_width_mm, mm);
+            max-height: unit(@drawing_normal_height_mm, mm);
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Wide layout
+    //  --------------------------------------------------------------------
+
+    .quote-unit.layout-wide {
+        td.product-visuals {
+            .product-image-wrapper {
+                max-width: unit(@drawing_wide_width_mm, mm);
+                max-height: unit(@drawing_wide_height_mm, mm);
+            }
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Wide layout with a customer image
+    //  --------------------------------------------------------------------
+
+    .quote-unit.layout-wide.has-customer-image {
+        td.product-visuals {
+            .product-visuals-container {
+                padding:
+                    unit(floor(@drawing_padding_mm * 1.5), mm)
+                    unit(@drawing_padding_mm, mm)
+                    unit(floor(@drawing_padding_mm * 0.5), mm);
+                padding-bottom: unit(floor(@drawing_wide_padding_bottom_mm - @drawing_padding_mm * 0.5), mm);
+            }
+
+            .customer-image-inner {
+                right: unit(@drawing_padding_mm, mm);
+                width: unit(@customer_image_wide_width_mm, mm);
+                max-height: unit(@customer_image_wide_height_mm, mm);
+            }
+
+            .customer-image-inner img {
+                max-width: unit(@customer_image_wide_width_mm, mm);
+                max-height: unit(@customer_image_wide_height_mm, mm);
+            }
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Extrawide layout
+    //  --------------------------------------------------------------------
+
+    .quote-unit.layout-extrawide {
+        tr + tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+
+        td.product-visuals {
+            .product-visuals-container {
+                min-height: unit(@item_visuals_extrawide_height_mm, mm);
+                max-width: none;
+            }
+
+            .product-image-wrapper {
+                max-width: unit(@drawing_extrawide_width_mm, mm);
+                max-height: unit(@drawing_extrawide_height_mm, mm);
+            }
+        }
+
+        td.product-description {
+            .description-data-container {
+                min-height: unit(@item_description_extrawide_height_mm, mm);
+                margin-bottom: unit(@item_description_extrawide_margin_bottom_mm, mm);
+            }
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Extrawide layout with a customer image
+    //  --------------------------------------------------------------------
+
+    .quote-unit.layout-extrawide.has-customer-image {
+        td.product-visuals {
+            .product-visuals-container {
+                padding:
+                    unit(floor(@drawing_padding_mm * 1.5), mm)
+                    unit(@drawing_padding_mm, mm)
+                    unit(floor(@drawing_padding_mm * 0.5), mm);
+                min-height: unit(@item_visuals_extrawide_height_mm - @drawing_padding_mm * 2 - @customer_image_extrawide_height_mm, mm);
+            }
+
+            .customer-image-inner {
+                padding:
+                    unit(ceil(@drawing_padding_mm * 1.5), mm)
+                    unit(@drawing_padding_mm, mm)
+                    unit(ceil(@drawing_padding_mm * 0.5), mm);
+                height: auto;
+                width: unit(@customer_image_extrawide_width_mm, mm);
+                max-height: unit(@customer_image_extrawide_height_mm + @drawing_padding_mm, mm);
+                min-height: unit(@customer_image_extrawide_height_mm + @drawing_padding_mm, mm);
+            }
+
+            .customer-image-inner h5 {
+                height: unit(@drawing_padding_mm, mm);
+            }
+
+            .customer-image-inner img {
+                max-width: unit(@customer_image_extrawide_width_mm, mm);
+                max-height: unit(@customer_image_extrawide_height_mm - @drawing_padding_mm, mm);
+            }
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Extralarge layout
+    //  --------------------------------------------------------------------
+
+    .quote-unit.layout-extralarge {
+        &:extend(.quote-unit.layout-extrawide all);
+
+        td.product-visuals {
+            .product-visuals-container {
+                min-height: unit(@item_visuals_extralarge_height_mm, mm);
+            }
+
+            .product-image-wrapper {
+                max-width: unit(@drawing_extralarge_width_mm, mm);
+                max-height: unit(@drawing_extralarge_height_mm, mm);
+            }
+        }
+    }
+
+    //  --------------------------------------------------------------------
+    //  Extralarge layout with a customer image
+    //  --------------------------------------------------------------------
+
+    .quote-unit.layout-extralarge.has-customer-image {
+        td.product-visuals {
+            .product-visuals-container {
+                padding:
+                    unit(floor(@drawing_padding_mm * 1.5), mm)
+                    unit(@drawing_padding_mm, mm)
+                    unit(floor(@drawing_padding_mm * 0.5), mm);
+            }
+
+            .customer-image-inner {
+                padding:
+                    unit(ceil(@drawing_padding_mm * 1.5), mm)
+                    unit(@drawing_padding_mm, mm)
+                    unit(ceil(@drawing_padding_mm * 0.5), mm);
+                height: auto;
+                width: unit(@customer_image_extralarge_width_mm, mm);
+                max-height: unit(@customer_image_extralarge_height_mm + @drawing_padding_mm, mm);
+            }
+
+            .customer-image-inner img {
+                max-width: unit(@customer_image_extralarge_width_mm, mm);
+                max-height: unit(@customer_image_extralarge_height_mm - @drawing_padding_mm, mm);
+            }
+        }
+    }
 }

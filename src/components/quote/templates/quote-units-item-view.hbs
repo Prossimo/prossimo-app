@@ -17,6 +17,12 @@
                         <span>{{ quantity }}</span>
                     </td>
                     {{/unless}}
+                    {{#if is_subunit }}
+                    <td class="configuration">
+                        <strong>Multi-frame unit</strong>
+                        <span>Part of a multi-frame unit</span>
+                    </td>
+                    {{/if}}
                     {{#if has_dummy_profile }}
                     <td class="no-profile-warning">
                         <p>
@@ -66,71 +72,50 @@
     </tr></tbody>
 </table>
 
-<table class="quote-unit{{#if is_subunit }} subunit{{else}} loneunit{{/if}}">
-    {{#unless is_subunit }}
-    <thead>
-        <tr>
-            {{#if product_image }}
-            <th class="product-image">Shop Drawing: <em>{{ product_image.title }}</em></th>
-            {{else}}
-                {{#if customer_image }}
-                <th class="customer-image">Customer Image</th>
-                {{/if}}
-            {{/if}}
-            <th class="product-description">Product Description</th>
-        </tr>
-    </thead>
-    {{/unless}}
-    <tbody><tr>
-        {{#if product_image }}
-        <td class="product-image{{#if customer_image }} has-customer-image{{/if}}">
-            <div class="product-image-inner">
-                {{#if product_image.img }}
-                    <div class="image-wrapper"><img src="{{ product_image.img }}" alt=""></div>
-                {{/if}}
-            </div>
+{{!-- This element can have up to 5 classes at once: "quote-unit loneunit layout-wide has-customer-image" --}}
+<table class="quote-unit{{#if is_subunit }} subunit{{else}} loneunit{{/if}} layout-{{ responsive_mode }}{{#if customer_image }} has-customer-image{{/if}}{{#unless product_image }} no-drawing{{/unless}}">
+    <tbody>
+        {{#if description_separate_row }}
+            <tr>
+                @require( './partials/quote-unit-product-description.hbs' )
+            </tr>
             {{#if customer_image }}
-            <div class="customer-image-inner">
-                <h5>Customer Image</h5>
-                <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
-            </div>
-            {{/if}}
-        </td>
-        {{else}}
-            {{#if customer_image }}
-            <td class="customer-image">
-                <div class="customer-image-inner">
-                    <div class="image-wrapper"><img src="{{ customer_image }}" alt=""></div>
-                </div>
-            </td>
+            <tr><td class="customer-image">
+                @require( './partials/quote-unit-customer-image.hbs' )
+            </td></tr>
             {{/if}}
         {{/if}}
-        <td class="product-description">
-            <ul>
-                {{#each description_params }}
-                {{#if value }}<li><strong>{{{ title }}}</strong> <span>{{{ value }}}</span></li>{{/if}}
-                {{/each}}
-            </ul>
-            {{#if notes }}<p class="notes"><strong>{{ notes }}</strong></p>{{/if}}
-            {{#if exceptions }}<p class="exceptions"><strong>{{ exceptions }}</strong></p>{{/if}}
-            <div class="sash-types-list">
-                <h5>Sash Types</h5>
-                <ul>
-                    {{#each sash_types }}
-                    <li><strong>{{{ group_title }}}</strong> <span>{{{ type }}}</span></li>
-                    {{/each}}
-                </ul>
-            </div>
-            <div class="glazing-list">
-                <h5>Glazing</h5>
-                <ul>
-                    <ul>
-                    {{#each glazing_names }}
-                    <li><strong>{{{ group_title }}}</strong> <span>{{{ name }}}{{#if type }}<small>{{{ type }}}</small>{{/if}}</span></li>
-                    {{/each}}
-                </ul>
-                </ul>
-            </div>
-        </td>
-    </tr></tbody>
+        <tr>
+        {{#if any_image }}
+            <td class="product-visuals">
+                <div class="product-visuals-container">
+                    <div class="product-visuals-title">
+                    {{#if product_image }}
+                        <h5>Drawing: <em>{{ product_image.title }}</em></h5>
+                    {{else}}
+                        <h5>Customer Image</h5>
+                    {{/if}}
+                    </div>
+
+                    {{#if product_image }}
+                    <div class="product-image-inner">
+                        {{#if product_image.img }}
+                            <div class="product-image-wrapper"><img src="{{ product_image.img }}" alt=""></div>
+                        {{/if}}
+                    </div>
+                    {{/if}}
+
+                    {{#unless description_separate_row }}
+                    {{#if customer_image }}
+                        @require( './partials/quote-unit-customer-image.hbs' )
+                    {{/if}}
+                    {{/unless}}
+                </div>
+            </td>
+        {{/if}}
+        {{#unless description_separate_row }}
+            @require( './partials/quote-unit-product-description.hbs' )
+        {{/unless}}
+        </tr>
+    </tbody>
 </table>
