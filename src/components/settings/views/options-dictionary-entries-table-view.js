@@ -70,6 +70,8 @@ export default Marionette.CompositeView.extend({
         };
     },
     initialize() {
+        // disbale the sort
+        this.collection.sort({ sort: false });
         this.undo_manager = new UndoManager({
             register: this.collection,
             track: true,
