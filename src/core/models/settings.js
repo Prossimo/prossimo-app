@@ -126,34 +126,34 @@ export default Backbone.Model.extend({
 
         globalChannel.trigger('settings:fetch_data:start');
 
-        $.when(d3).done(() => {
+        $.when(d1, d2, d3).done(() => {
             globalChannel.trigger('settings:fetch_data:stop');
         });
 
-        // this.profiles.fetch({
-        //     remove: false,
-        //     data: {
-        //         limit: 0,
-        //     },
-        //     //  Validate positions on load
-        //     success(collection) {
-        //         d1.resolve('Loaded profiles');
-        //         collection.validatePositions();
-        //     },
-        // });
+        this.profiles.fetch({
+            remove: false,
+            data: {
+                limit: 0,
+            },
+            //  Validate positions on load
+            success(collection) {
+                d1.resolve('Loaded profiles');
+                collection.validatePositions();
+            },
+        });
 
-        // this.filling_types.fetch({
-        //     remove: false,
-        //     data: {
-        //         limit: 0,
-        //     },
-        //     //  Validate positions on load
-        //     success(collection) {
-        //         d2.resolve('Loaded filling types');
-        //         collection.validatePositions();
-        //         collection.validatePerProfileDefaults();
-        //     },
-        // });
+        this.filling_types.fetch({
+            remove: false,
+            data: {
+                limit: 0,
+            },
+            //  Validate positions on load
+            success(collection) {
+                d2.resolve('Loaded filling types');
+                collection.validatePositions();
+                collection.validatePerProfileDefaults();
+            },
+        });
 
         this.dictionaries.fetch({
             url: `${this.get('api_base_path')}/dictionaries/full-tree`,
