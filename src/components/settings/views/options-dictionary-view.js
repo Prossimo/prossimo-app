@@ -70,7 +70,7 @@ export default Marionette.View.extend({
     renderElements() {
         if (this.should_make_everything_editable) {
             this.ui.$entries_container.empty().append(this.entries_table_view.render().el);
-            this.rules_and_restrictions_view.enable();
+            // this.rules_and_restrictions_view.enable();
         } else {
             this.ui.$entries_container.empty().append(
                 '<p>Please set dictionary name before adding option variants.</p>',
@@ -79,6 +79,7 @@ export default Marionette.View.extend({
         }
     },
     onRender() {
+
         this.ui.$name_container.append(this.name_input_view.render().el);
         this.ui.$rules_and_restrictions_container.append(this.rules_and_restrictions_view.render().el);
         this.ui.$pricing_scheme_container.append(this.pricing_scheme_view.render().el);
