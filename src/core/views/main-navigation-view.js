@@ -61,7 +61,7 @@ export default Marionette.View.extend({
                     };
 
                     //  Execute callback on routing
-                    App.router.addRoute(`${item.path}(/)`, () => {
+                    App.router.addRoute(`${item.path}`, () => {
                         if (_.isFunction(self.router_callbacks[item.path])) {
                             self.router_callbacks[item.path].call();
                         }
