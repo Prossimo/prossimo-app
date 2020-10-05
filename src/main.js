@@ -105,7 +105,7 @@ class Application extends Marionette.Application {
             Backbone.history.start({ pushState: true });
 
             if (Backbone.history.fragment === '') {
-                this.router.navigate('/dashboard/', { trigger: true });
+                this.router.navigate('/dashboard', { trigger: true });
             }
         });
     }
