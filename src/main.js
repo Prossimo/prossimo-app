@@ -102,10 +102,10 @@ class Application extends Marionette.Application {
         this.session.checkAuth();
 
         this.getChannel().on('auth:initial_login auth:no_backend', () => {
-            Backbone.history.start({ pushState: true });
+            Backbone.history.start({ pushState: false });
 
             if (Backbone.history.fragment === '') {
-                this.router.navigate('/dashboard', { trigger: true });
+                this.router.navigate('/dashboard/', { trigger: true });
             }
         });
     }
