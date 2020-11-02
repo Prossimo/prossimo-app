@@ -120,15 +120,16 @@ export default Backbone.Model.extend({
     //  We use deferred to wait for 3 requests (profiles, fillings, options)
     //  to finish before triggering event (and starting to load projects)
     fetchData() {
-        const d1 = $.Deferred();
-        const d2 = $.Deferred();
-        const d3 = $.Deferred();
+        // Remove the deferred settings
+        // const d1 = $.Deferred();
+        // const d2 = $.Deferred();
+        // const d3 = $.Deferred();
 
         globalChannel.trigger('settings:fetch_data:start');
 
-        $.when(d1, d2, d3).done(() => {
-            globalChannel.trigger('settings:fetch_data:stop');
-        });
+        // $.when(d1, d2, d3).done(() => {
+        //     globalChannel.trigger('settings:fetch_data:stop');
+        // });
 
         this.profiles.fetch({
             remove: false,
@@ -137,7 +138,6 @@ export default Backbone.Model.extend({
             },
             //  Validate positions on load
             success(collection) {
-                d1.resolve('Loaded profiles');
                 collection.validatePositions();
             },
         });
@@ -149,7 +149,6 @@ export default Backbone.Model.extend({
             },
             //  Validate positions on load
             success(collection) {
-                d2.resolve('Loaded filling types');
                 collection.validatePositions();
                 collection.validatePerProfileDefaults();
             },
@@ -163,7 +162,7 @@ export default Backbone.Model.extend({
             },
             //  Validate positions on load
             success(collection) {
-                d3.resolve('Loaded options dictionaries');
+                globalChannel.trigger('settings:fetch_data:stop');
                 collection.validatePositions();
             },
         });
