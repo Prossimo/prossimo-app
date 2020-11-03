@@ -24,4 +24,34 @@
     </button>
 </div>
 
-<div class="entry-table-container"></div>
+<div class="entry-table-container">
+    <div class="options-dictionary-entries-table">
+        <h3>Variants</h3>
+
+        <div class="table-actions">
+            <button class="btn btn-xs js-undo">Undo</button>
+            <button class="btn btn-xs js-redo">Redo</button>
+            <button class="btn add-new-entry js-add-new-entry">Add new entry</button>
+        </div>
+
+        <table>
+            <thead>
+            <th class="entry-drag"></th>
+            <th class="entry-name">Name</th>
+            <th class="entry-supplier-name">Supplier Name</th>
+            <th class="entry-profiles">Available for Profiles</th>
+            <th class="entry-actions"></th>
+            </thead>
+        </table>
+        <div class="entries-container">
+            {{#unless entries_length }}
+                <div class="no-entries-message">
+                    <p>No entries to show. Please create one.</p>
+                </div>
+            {{/unless}}
+        </div>
+        {{#if entries_length }}
+            <p>Drag table rows to reorder.</p>
+        {{/if}}
+    </div>
+</div>

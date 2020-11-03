@@ -21,6 +21,7 @@ export default Marionette.View.extend({
         $expand: '.js-expand-entry',
         $expand_container: '.profile-availability',
     },
+    is_expanded:false,
     events: {
         'click @ui.$edit_profiles': 'editProfiles',
         'click @ui.$clone': 'cloneEntry',
@@ -62,6 +63,9 @@ export default Marionette.View.extend({
         this.is_expanded = !this.is_expanded;
 
         this.ui.$expand_container.toggleClass('is-shown', this.is_expanded);
+        if(this.is_expanded){
+            this.ui.$expand_container.append(this.profile_connections_table_view.render().el);
+        }
     },
     templateContext() {
         const profiles = this.getProfilesNamesList();
@@ -102,7 +106,7 @@ export default Marionette.View.extend({
             this.$el.removeClass('is-new');
         }
 
-        this.ui.$expand_container.append(this.profile_connections_table_view.render().el);
+
     },
     onBeforeDestroy() {
         if (this.name_input_view) {

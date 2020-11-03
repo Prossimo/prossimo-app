@@ -34,19 +34,11 @@ export default Marionette.View.extend({
         this.spinner = this.spinner || new Spinner(this.spinner_options);
     },
     show() {
-        this.active_request_counter += 1;
-
-        if (this.active_request_counter > 0) {
-            $('body').addClass('is-loading');
-            this.spinner.spin(this.ui.$container.get(0));
-        }
+        $('body').addClass('is-loading');
+        this.spinner.spin(this.ui.$container.get(0));
     },
     hide() {
-        this.active_request_counter -= 1;
-
-        if (this.active_request_counter < 1) {
-            $('body').removeClass('is-loading');
-            this.spinner.stop();
-        }
+        $('body').removeClass('is-loading');
+        this.spinner.stop();
     },
 });

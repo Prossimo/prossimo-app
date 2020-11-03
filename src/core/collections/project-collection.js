@@ -16,6 +16,8 @@ export default Backbone.Collection.extend({
     },
     initialize() {
         this.proxy_project = new Project(null, { proxy: true });
+        this.sort({ sort: false });
+        this.reset({ reset: true });
     },
     getNameTitleTypeHash(names) {
         return this.proxy_project.getNameTitleTypeHash(names);

@@ -2,6 +2,8 @@ import _ from 'underscore';
 import clone from 'clone';
 import Decimal from 'decimal.js';
 
+require('toformat')(Decimal);
+
 const MAX_DENOMINATOR = 16;
 //  For numbers that are passed to Decimal constructor
 const MAX_SIGNIFICANT_DIGITS = 15;
