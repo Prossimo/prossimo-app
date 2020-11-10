@@ -14,12 +14,11 @@ jobs:
       with:
         node-version: 6.*
     - run: yarn 
-
+    - run: npm run build
+    - run: tar -czvf deploy.tar dist/
 
     - name: Copy file via scp
       uses: appleboy/scp-action@master
-    - run: npm run build
-    - run: tar -czvf deploy.tar dist/
       with:
         HOST: ${{ secrets.HOST }}
         USERNAME: ${{ secrets.USERNAME }}
