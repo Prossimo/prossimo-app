@@ -18,12 +18,13 @@ jobs:
     - run: tar -czvf deploy.tar dist/
 
     - name: Copy file via scp
-      uses: appleboy/scp-action@master
+      uses: appleboy/ssh-action@master
       with:
         HOST: ${{ secrets.HOST }}
         USERNAME: ${{ secrets.USERNAME }}
         PORT: ${{ secrets.PORT }}
         KEY: ${{ secrets.DOJO }}
-        source: "deploy.tar"
-        target: "/var/www/html/"
+        script: |
+          whoami
+          ls -al
         passphrase: "okeowo1902"
