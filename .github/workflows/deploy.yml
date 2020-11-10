@@ -15,9 +15,7 @@ jobs:
         node-version: 6.*
     - run: yarn 
     - run: npm run build
-    - run: |
-        tar -czvf deploy.tar dist/
-
+    - run: tar -czvf deploy.tar dist/
     - uses: actions/checkout@master
     - name: Copy file via scp
       uses: appleboy/scp-action@master
