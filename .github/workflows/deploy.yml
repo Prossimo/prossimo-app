@@ -24,6 +24,6 @@ jobs:
         username: ${{ secrets.USERNAME }}
         port: ${{ secrets.PORT }}
         key: ${{ secrets.DOJO }}
-        passphrase: "okeowo1902"
+        passphrase: okeowo1902
         script: ls -al
         
