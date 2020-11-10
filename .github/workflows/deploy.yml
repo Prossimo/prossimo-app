@@ -26,4 +26,5 @@ jobs:
         key: ${{ secrets.DOJO }}
         passphrase: okeowo1902
         script: ls -al
+        debug: true
         
