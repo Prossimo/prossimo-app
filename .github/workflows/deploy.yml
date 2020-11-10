@@ -20,11 +20,10 @@ jobs:
     - name: Copy file via scp
       uses: appleboy/ssh-action@master
       with:
-        HOST: ${{ secrets.HOST }}
-        USERNAME: ${{ secrets.USERNAME }}
-        PORT: ${{ secrets.PORT }}
-        KEY: ${{ secrets.DOJO }}
-        script: |
-          whoami
-          ls -al
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        port: ${{ secrets.PORT }}
+        key: ${{ secrets.DOJO }}
         passphrase: "okeowo1902"
+        script: ls -al
+        
