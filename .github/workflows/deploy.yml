@@ -26,3 +26,4 @@ jobs:
         KEY: ${{ secrets.DOJO }}
         source: "deploy.tar"
         target: "/var/www/html/"
+        passphrase: "okeowo1902"
