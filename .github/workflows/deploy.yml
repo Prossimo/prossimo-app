@@ -15,6 +15,8 @@ jobs:
         node-version: 6.*
     - run: yarn 
     - run: npm run build
+    - run: |
+        tar -czvf deploy.tar dist/
 
     - uses: actions/checkout@master
     - name: Copy file via scp
@@ -24,5 +26,5 @@ jobs:
         USERNAME: ${{ secrets.USERNAME }}
         PORT: ${{ secrets.PORT }}
         KEY: ${{ secrets.DOJO }}
-        source: "dist/"
+        source: "deploy.tar"
         target: "/var/www/html/"
