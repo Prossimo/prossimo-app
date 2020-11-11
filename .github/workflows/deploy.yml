@@ -18,11 +18,11 @@ jobs:
     - run: tar -czvf deploy.tar dist/
 
     - name: ls -a via ssh
-  uses: garygrossgarten/github-action-ssh@release
-  with:
-    command: ls -a
-    host: ${{ secrets.HOST }}
-    username: root
-    passphrase: okeowo1902
-    privateKey: ${{ secrets.DOJO}}
+      uses: garygrossgarten/github-action-ssh@release
+      with:
+        command: ls -a
+        host: ${{ secrets.HOST }}
+        username: root
+        passphrase: okeowo1902
+        privateKey: ${{ secrets.DOJO}}
         
