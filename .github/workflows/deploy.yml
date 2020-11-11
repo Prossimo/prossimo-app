@@ -8,22 +8,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 6.*
-      uses: actions/setup-node@v1
-      with:
-        node-version: 6.*
-    - run: yarn 
-    - run: npm run build
-    - run: tar -czvf deploy.tar dist/
-
-    - name: Copy single file to remote
-      uses: garygrossgarten/github-action-scp@release
-      with:
-        local: deploy.tar
-        remote: var/www/html/
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        privateKey: ${{ secrets.DOJO }}
-        passphrase: okeowo1902
+    uses: garygrossgarten/github-action-ssh@release
+    with:
+      command: |
+          cd /var/app/prossimo-app
+          git pull origin
+          npm run build
+          mv dist/ /var/www/html/
+      host: ${{ secrets.HOST }}
+      username: root
+      passphrase: okeowo1902
+      privateKey: ${{ secrets.DOJO}}
         
