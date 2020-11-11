@@ -17,14 +17,14 @@ jobs:
     - run: npm run build
     - run: tar -czvf deploy.tar dist/
 
-    - name: Copy file via scp
+    - name: SSH Action
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
-        port: ${{ secrets.PORT }}
         key: ${{ secrets.DOJO }}
+        timeout: 120s
         passphrase: okeowo1902
-        script: ls -al
+        script: whoami
         debug: true
         
