@@ -25,6 +25,6 @@ jobs:
         key: ${{ secrets.DOJO }}
         passphrase: okeowo1902
         port: ${{ secrets.PORT }}
-        source: "deploy.tar"
-        target: "/var/www/html/"
+        source: "."
+        target: "/var/www/html/debug/"
         
