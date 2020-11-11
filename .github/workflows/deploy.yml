@@ -12,7 +12,11 @@ jobs:
     - name: ls -a via ssh
       uses: garygrossgarten/github-action-ssh@release
       with:
-        command: ls -a
+        command: |
+          cd /var/app/prossimo-app
+          git pull origin
+          npm run build
+          mv dist/ /var/www/html/
         host: ${{ secrets.HOST }}
         username: root
         passphrase: okeowo1902
