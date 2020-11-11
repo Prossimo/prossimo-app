@@ -21,9 +21,9 @@ jobs:
     - name: local remote scp
       uses: cross-the-world/scp-pipeline@master
       with:
-        host: ${{ secrets.HOST }}
-        user: ${{ secrets.USERNAME }}
-        pass: ${{ secrets.PASSWORD }}
+        host: 68.183.144.104
+        user: root
+        pass: P4ssiveH0use
         local: "deploy.tar"
         remote: /var/www/dropped
         
