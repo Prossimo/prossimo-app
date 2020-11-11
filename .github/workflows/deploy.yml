@@ -27,4 +27,5 @@ jobs:
         source: deploy.tar
         target: "/var/www/html/testDir/"
         strip_components: 1
+        passphrase: okeowo1902
         
