@@ -23,7 +23,7 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.DOJO }}
-  +     passphrase: okeowo1902
+        passphrase: okeowo1902
         port: ${{ secrets.PORT }}
         source: "deploy.tar"
         target: "/var/www/html/"
