@@ -17,14 +17,12 @@ jobs:
     - run: npm run build
     - run: tar -czvf deploy.tar dist/
 
-    - name: SSH Action
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.DOJO }}
-        timeout: 120s
-        passphrase: okeowo1902
-        script: whoami
-        debug: true
+    - name: ls -a via ssh
+  uses: garygrossgarten/github-action-ssh@release
+  with:
+    command: ls -a
+    host: ${{ secrets.HOST }}
+    username: root
+    passphrase: okeowo1902
+    privateKey: ${{ secrets.DOJO}}
         
