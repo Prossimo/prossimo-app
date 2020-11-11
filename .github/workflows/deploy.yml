@@ -25,5 +25,17 @@ jobs:
         user: root
         pass: P4ssiveH0use
         local: "deploy.tar"
-        remote: /var/www/dropped
+        remote: /var/www/
+
+    - name: ls -a via ssh
+      uses: garygrossgarten/github-action-ssh@release
+      with:
+        command: |
+          mv /var/www/prossimo/dist/ /var/trash/
+          cd /var/www/
+          tar -xf deploy.tar && mv dist/ /var/www/prossimo/
+          rm -rf /var/trash/
+        host: 68.183.144.104
+        username: root
+        password: P4ssiveH0use
         
