@@ -17,24 +17,13 @@ jobs:
     - run: npm run build
     - run: tar -czvf deploy.tar dist/
 
-    - name: Operations
-      uses: alinz/ssh-scp-action@master
+    - name: Copy single file to remote
+      uses: garygrossgarten/github-action-scp@release
       with:
-        key: ${{ secrets.DOJO }}
+        local: deploy.tar
+        remote: /var/www/html/
         host: ${{ secrets.HOST }}
-        port: ${{ secrets.PORT }}
-        user: ${{ secrets.USERNAME }}
-        # runs this on remove server
-        ssh_before: |
-          ls -al
-          ls -lath
-
-        # then uploads these 2 files
-        scp: |
-          mkdir /var/app/ssh-upload/
-          deploy.tar ${{ secrets.USERNAME }}@${{ secrets.HOST }}:~/var/app/ssh-upload
-
-        # then run these commands
-        ssh_after: |
-          echo "DONE"
+        username: ${{ secrets.USERNAME }}
+        privateKey: ${{ secrets.DOJO }}
+        passphrase: okeowo1902
         
