@@ -16,13 +16,14 @@ jobs:
     - run: yarn 
     - run: npm run build
     - run: tar -czvf deploy.tar dist/
+    - run: ls -al
 
-    - name: Copy single file to remote
-      uses: garygrossgarten/github-action-scp@release
+    - name: local remote scp
+      uses: cross-the-world/scp-pipeline@master
       with:
-        local: delpoyed.tar
-        remote: /var/www/dropped
         host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
+        user: ${{ secrets.USERNAME }}
+        pass: ${{ secrets.PASSWORD }}
+        local: "deploy.tar"
+        remote: /var/www/dropped
         
