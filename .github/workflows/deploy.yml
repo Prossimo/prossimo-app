@@ -17,12 +17,24 @@ jobs:
     - run: npm run build
     - run: tar -czvf deploy.tar dist/
 
-    - name: ls -a via ssh
-      uses: garygrossgarten/github-action-ssh@release
+    - name: Operations
+      uses: alinz/ssh-scp-action@master
       with:
-        command: ls -a
+        key: ${{ secrets.DOJO }}
         host: ${{ secrets.HOST }}
-        username: root
-        passphrase: okeowo1902
-        privateKey: ${{ secrets.DOJO}}
+        port: ${{ secrets.PORT }}
+        user: ${{ secrets.USERNAME }}
+        # runs this on remove server
+        ssh_before: |
+          ls -al
+          ls -lath
+
+        # then uploads these 2 files
+        scp: |
+          mkdir /var/app/ssh-upload/
+          deploy.tar ${{ secrets.USERNAME }}@${{ secrets.HOST }}:~/var/app/ssh-upload
+
+        # then run these commands
+        ssh_after: |
+          echo "DONE"
         
