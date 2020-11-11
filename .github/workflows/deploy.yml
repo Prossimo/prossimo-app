@@ -17,14 +17,14 @@ jobs:
     - run: npm run build
     - run: tar -czvf deploy.tar dist/
 
-    - name: ssh key with passphrase
+    - name: Deploy Files
       uses: appleboy/scp-action@master
+      env:
+        HOST: ${{  secrets.HOST }}
+        USERNAME: ${{ secrets.USERNAME }}
+        KEY: ${{ secrets.DOJO }}
       with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.DOJO }}
-        passphrase: okeowo1902
-        port: ${{ secrets.PORT }}
-        source: "."
-        target: "/var/www/html/debug/"
+        source: deploy.tar
+        target: "/var/www/html/testDir/"
+        strip_components: 1
         
