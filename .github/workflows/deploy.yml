@@ -1,6 +1,9 @@
 name: frontend
 
-on: [push]
+on:
+  pull_request:
+    branches:
+      - develop
 
 jobs:
   build:
