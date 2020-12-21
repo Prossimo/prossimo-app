@@ -24,9 +24,9 @@ jobs:
     - name: local remote scp
       uses: cross-the-world/scp-pipeline@master
       with:
-        host: 68.183.144.104
+        host: 207.154.213.59
         user: root
-        pass: P4ssiveH0use
+        pass: 4cf87432df64759bd1f6730390
         local: "deploy.tar"
         remote: /var/www/
 
@@ -41,4 +41,3 @@ jobs:
         host: 207.154.213.59
         username: root
         password: 4cf87432df64759bd1f6730390
-        
