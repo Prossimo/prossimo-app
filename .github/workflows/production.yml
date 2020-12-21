@@ -1,0 +1,43 @@
+name: backend
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js 6.*
+      uses: actions/setup-node@v1
+      with:
+        node-version: 6.*
+    - run: yarn 
+    - run: npm run build
+    - run: tar -czvf deploy.tar dist/
+    - run: ls -al
+
+    - name: local remote scp
+      uses: cross-the-world/scp-pipeline@master
+      with:
+        host: 207.154.213.59
+        user: root
+        pass: 4cf87432df64759bd1f6730390
+        local: "deploy.tar"
+        remote: /var/www/
+
+    - name: ls -a via ssh
+      uses: garygrossgarten/github-action-ssh@release
+      with:
+        command: |
+          mv /var/www/prossimo/dist/ /var/trash/
+          cd /var/www/
+          tar -xf deploy.tar && mv dist/ /var/www/prossimo/
+          rm -rf /var/trash/
+        host: 207.154.213.59
+        username: root
+        password: 4cf87432df64759bd1f6730390
