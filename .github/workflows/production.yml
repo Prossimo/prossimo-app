@@ -26,7 +26,7 @@ jobs:
       with:
         host: 207.154.213.59
         user: root
-        pass: 4cf87432df64759bd1f6730390
+        pass: Alpha.01$
         local: "deploy.tar"
         remote: /var/www/
 
@@ -40,4 +40,5 @@ jobs:
           rm -rf /var/trash/
         host: 207.154.213.59
         username: root
-        password: 4cf87432df64759bd1f6730390
+        password: Alpha.01$
+        
