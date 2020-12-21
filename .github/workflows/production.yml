@@ -1,4 +1,4 @@
-name: frontend
+name: backend
 
 on:
   pull_request:
@@ -38,7 +38,7 @@ jobs:
           cd /var/www/
           tar -xf deploy.tar && mv dist/ /var/www/prossimo/
           rm -rf /var/trash/
-        host: 68.183.144.104
+        host: 207.154.213.59
         username: root
-        password: P4ssiveH0use
+        password: 4cf87432df64759bd1f6730390
         
