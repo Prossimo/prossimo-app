@@ -1,6 +1,10 @@
 name: backend
 
 on:
+  push:
+    branches:
+      - develop
+
   pull_request:
     branches:
       - develop
@@ -22,13 +26,13 @@ jobs:
     - run: ls -al
 
     - name: local remote scp
-      uses: cross-the-world/scp-pipeline@master
+      uses: appleboy/scp-action@master
       with:
         host: 207.154.213.59
-        user: root
-        pass: Alpha.01$
-        local: "deploy.tar"
-        remote: /var/www/
+        username: root
+        key: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDBZ4pt8gmussZWfW+NEdU3mUJB6U3RVPy/aR3zyYgHejvLgXxfzO6kIz8TwCdMEKhUd4fw98j2HK8t2mKNY5dtDpu80/FgFPiF27C9UYUV+2mb6tMKOZURypDAIgmMVaxUH+L6mXurXnL/84gjgUXRNBO+iGWaI+umt587+tLNvc8cY5RlkmH0LuiOY5E3RuoeGh1QTGzVoLYo+V8lFHiF3ZcvZNvcMsT+qcRqka/2QxJzUyjnjPuZBLWF5enRZzC+AmuOhBumITdBWEWdeBhrF08V27CtHY9/dcM84DX+hq9yIxbAm8Rl/nFPZxM5aTDjBjs64oZdlRqXWe4qUquF x64@ubuntu'
+        source: "deploy.tar"
+        target: "/var/www/"
 
     - name: ls -a via ssh
       uses: garygrossgarten/github-action-ssh@release
