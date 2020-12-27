@@ -30,7 +30,7 @@ jobs:
       with:
         host: 207.154.213.59
         username: root
-        key_path: '../sshKey'
+        key_path: ${{ github.workspace }}/../sshKey
         source: "deploy.tar"
         target: "/var/www/"
         passphrase: okeowo1902
