@@ -45,5 +45,6 @@ jobs:
           rm -rf /var/trash/
         host: 207.154.213.59
         username: root
-        password: Alpha.01$
+        passphrase: okeowo1902
+        privateKey: ${{ github.workspace }}/.github/sshKey
         
