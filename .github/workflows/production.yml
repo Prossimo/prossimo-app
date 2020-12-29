@@ -40,8 +40,8 @@ jobs:
       uses: garygrossgarten/github-action-ssh@release
       with:
         command: |
-          cd /var/www/html/
-          tar -xf /var/www/deploy.tar && mv dist/ ./
+          cd /var/www/
+          tar -xf deploy.tar && mv dist/*.* /var/www/html/
         host: 207.154.213.59
         username: root
         passphrase: okeowo1902
