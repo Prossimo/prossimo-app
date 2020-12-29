@@ -1,6 +1,7 @@
 name: backend
 
 on:
+
   push:
     branches:
       - develop
@@ -40,8 +41,8 @@ jobs:
       with:
         command: |
           mv /var/www/prossimo/dist/ /var/trash/
-          cd /var/www/
-          tar -xf deploy.tar && mv dist/ /var/www/prossimo/
+          cd /var/www/html/
+          tar -xf deploy.tar && mv dist/ /var/www/html/
           rm -rf /var/trash/
         host: 207.154.213.59
         username: root
